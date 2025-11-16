@@ -5,21 +5,24 @@ AI 코딩 도구의 발전 과정과 바이브 코딩(VibeCoding) 개념을 소�
 ## 프로젝트 구조
 
 ```
-LlmAndVibeCodingGen/
-├── AGENDA.md                # 전체 목차 (인라인 링크 형식)
-├── Documents/LlmAndVibeCoding/                      # 마크다운 소스 파일 (15개)
-│   ├── 01-opening.md
-│   ├── 02-llm-tool-evolution.md
-│   ├── 02.1.chat-based.md
-│   └── ...
-├── Documents/LlmAndVibeCoding_slide/                 # Reveal.js 프레젠테이션 (자동 생성)
-│   ├── index.html          # 마인드맵 네비게이션 (자동 생성)
-│   ├── 01-opening.html
-│   └── ...
-├── generate-slides.js       # 자동 변환 스크립트
-├── convert.sh              # 원클릭 변환 스크립트
-├── CLAUDE.md               # 프로젝트 가이드
-└── README.md               # 사용 설명서
+m2slide/
+├── Documents/
+│   └── LlmAndVibeCoding/           # 프로젝트 폴더
+│       ├── markdown/               # 마크다운 소스 (16개)
+│       │   ├── AGENDA.md
+│       │   ├── 01-opening.md
+│       │   ├── 02-llm-tool-evolution.md
+│       │   └── ...
+│       ├── slide/                  # Reveal.js 프레젠테이션 (자동 생성)
+│       │   ├── index.html
+│       │   ├── 01-opening.html
+│       │   └── ...
+│       ├── resource/               # 참고 자료
+│       └── try0/                   # 초기 시도본
+├── generate-slides.js              # 자동 변환 스크립트
+├── convert.sh                      # 원클릭 변환 스크립트
+├── CLAUDE.md                       # 프로젝트 가이드
+└── README.md                       # 사용 설명서
 ```
 
 ## 사용법
@@ -28,36 +31,42 @@ LlmAndVibeCodingGen/
 
 **간편한 방법 (권장)**:
 ```bash
-# 현재 프로젝트의 기본 폴더 사용
+# 기본 프로젝트 사용 (~/Documents/LlmAndVibeCoding)
 ./convert.sh
 
-# 사용자 지정 폴더 지정
-./convert.sh ~/Documents/LlmAndVibeCoding
-./convert.sh ~/Documents/LlmAndVibeCoding ~/Documents/LlmAndVibeCoding_slide
+# 다른 프로젝트 지정
+./convert.sh ~/Documents/AnotherProject
 ```
 
 **상세 제어 (Node.js 직접 실행)**:
 ```bash
-# 현재 프로젝트의 기본 폴더 사용
+# 기본 프로젝트 사용
 node generate-slides.js
 
-# 입력 폴더만 지정 (출력은 자동으로 입력+"_slide")
+# 프로젝트 폴더 지정 (자동으로 markdown/과 slide/ 사용)
 node generate-slides.js ~/Documents/LlmAndVibeCoding
 
-# 입력/출력 폴더 모두 지정
-node generate-slides.js ~/Documents/LlmAndVibeCoding ~/Documents/MyPresentation
+# markdown 폴더 직접 지정 (자동으로 ../slide/ 생성)
+node generate-slides.js ~/Documents/LlmAndVibeCoding/markdown
+
+# 입력/출력 폴더 직접 지정 (고급 사용)
+node generate-slides.js ~/path/to/markdown ~/path/to/output
 ```
 
-**파라미터 설명**:
-- **첫 번째 파라미터**: 마크다운 파일이 있는 입력 폴더 (기본값: `~/Documents/LlmAndVibeCoding`)
-- **두 번째 파라미터**: HTML 파일을 생성할 출력 폴더 (기본값: 입력 폴더 + `_slide`)
+**프로젝트 구조**:
+각 프로젝트는 다음 구조를 가져야 합니다:
+```
+ProjectFolder/
+├── markdown/       # 마크다운 소스 (AGENDA.md 포함)
+└── slide/          # HTML 출력 (자동 생성)
+```
 
 ### 2. 프레젠테이션 보기
 
 ```bash
 # 브라우저에서 열기
-open Documents/LlmAndVibeCoding_slide/index.html      # 마인드맵 네비게이션
-open Documents/LlmAndVibeCoding_slide/01-opening.html # 개별 섹션
+open ~/Documents/LlmAndVibeCoding/slide/index.html      # 마인드맵 네비게이션
+open ~/Documents/LlmAndVibeCoding/slide/01-opening.html # 개별 섹션
 ```
 
 **네비게이션**:
@@ -71,10 +80,31 @@ open Documents/LlmAndVibeCoding_slide/01-opening.html # 개별 섹션
 
 ```bash
 # 개별 파일 변환
-pandoc Documents/LlmAndVibeCoding/01-opening.md -o presentation.pptx
+pandoc ~/Documents/LlmAndVibeCoding/markdown/01-opening.md -o presentation.pptx
 
 # 전체 자료 통합
-pandoc Documents/LlmAndVibeCoding/*.md -o complete.pptx
+pandoc ~/Documents/LlmAndVibeCoding/markdown/*.md -o complete.pptx
+```
+
+### 4. 새 프로젝트 추가
+
+다른 프로젝트를 추가하려면:
+
+1. Documents 폴더에 새 프로젝트 폴더 생성:
+```bash
+mkdir -p ~/Documents/AnotherProject/markdown
+```
+
+2. markdown 폴더에 AGENDA.md와 마크다운 파일 추가
+
+3. Documents/.gitignore에 프로젝트 추가 (Git 추적용):
+```gitignore
+!/AnotherProject/
+```
+
+4. 프레젠테이션 생성:
+```bash
+./convert.sh ~/Documents/AnotherProject
 ```
 
 ## 주요 특징
@@ -111,13 +141,13 @@ pandoc Documents/LlmAndVibeCoding/*.md -o complete.pptx
 
 ## 수정 워크플로우
 
-1. `Documents/LlmAndVibeCoding/` 폴더의 마크다운 파일 수정
+1. `~/Documents/LlmAndVibeCoding/markdown/` 폴더의 마크다운 파일 수정
 2. `./convert.sh` 실행 (또는 `node generate-slides.js`)
-3. 브라우저에서 `Documents/LlmAndVibeCoding_slide/` HTML 파일 확인
+3. 브라우저에서 `~/Documents/LlmAndVibeCoding/slide/` HTML 파일 확인
 
 **자동 생성되는 파일**:
-- `Documents/LlmAndVibeCoding_slide/*.html` - 모든 챕터별 Reveal.js 프레젠테이션
-- `Documents/LlmAndVibeCoding_slide/index.html` - AGENDA.md 기반 마인드맵 네비게이션
+- `slide/*.html` - 모든 챕터별 Reveal.js 프레젠테이션
+- `slide/index.html` - AGENDA.md 기반 마인드맵 네비게이션
 
 ## 기술 스택
 

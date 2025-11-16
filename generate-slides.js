@@ -610,22 +610,37 @@ function main() {
   const args = process.argv.slice(2);
 
   // Parse arguments
-  let inputDir, outputDir;
+  let inputDir, outputDir, projectDir;
 
   if (args.length === 0) {
     // Default: ~/Documents/LlmAndVibeCoding
-    inputDir = path.join(os.homedir(), 'Documents', 'LlmAndVibeCoding');
-    outputDir = path.join(os.homedir(), 'Documents', 'LlmAndVibeCoding_slide');
+    projectDir = path.join(os.homedir(), 'Documents', 'LlmAndVibeCoding');
+    inputDir = path.join(projectDir, 'markdown');
+    outputDir = path.join(projectDir, 'slide');
   } else if (args.length === 1) {
-    // First parameter provided, generate second by adding _slide
-    inputDir = path.resolve(args[0]);
-    outputDir = inputDir + '_slide';
+    // Check if the path ends with 'markdown' or 'slide'
+    const argPath = path.resolve(args[0]);
+    const baseName = path.basename(argPath);
+
+    if (baseName === 'markdown' || baseName === 'slide') {
+      // User provided markdown/slide folder directly
+      projectDir = path.dirname(argPath);
+      inputDir = baseName === 'markdown' ? argPath : path.join(projectDir, 'markdown');
+      outputDir = path.join(projectDir, 'slide');
+    } else {
+      // User provided project folder
+      projectDir = argPath;
+      inputDir = path.join(projectDir, 'markdown');
+      outputDir = path.join(projectDir, 'slide');
+    }
   } else {
-    // Both parameters provided
+    // Both parameters provided (backward compatibility)
     inputDir = path.resolve(args[0]);
     outputDir = path.resolve(args[1]);
+    projectDir = path.dirname(inputDir);
   }
 
+  console.log(`Project directory: ${projectDir || path.dirname(inputDir)}`);
   console.log(`Input directory: ${inputDir}`);
   console.log(`Output directory: ${outputDir}`);
 

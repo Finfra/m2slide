@@ -20,9 +20,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 핵심 아키텍처
 
-### Documents/LlmAndVibeCoding 폴더의 역할
+### 프로젝트 폴더 구조
 
-**중요**: md 파일은 **청중 배포용 참고 자료**이며, 강사용 시나리오가 아닙니다.
+각 프로젝트는 Documents 폴더 아래에 독립적인 폴더로 구성됩니다:
+```
+Documents/
+├── LlmAndVibeCoding/
+│   ├── markdown/       # 마크다운 소스
+│   ├── slide/          # HTML 출력
+│   ├── resource/       # 참고 자료
+│   └── try0/           # 시도본
+└── AnotherProject/     # 다른 프로젝트 예시
+    ├── markdown/
+    └── slide/
+```
+
+**중요**: markdown 파일은 **청중 배포용 참고 자료**이며, 강사용 시나리오가 아닙니다.
 
 - AGENDA.md 구조를 따라 8개 섹션으로 분리
 - 각 파일은 독립적으로 읽을 수 있는 완결된 문서
@@ -92,37 +105,45 @@ pandoc Documents/LlmAndVibeCoding/01-opening.md Documents/LlmAndVibeCoding/02-ll
 ### Reveal.js 프레젠테이션 생성
 
 ```bash
-# 기본 사용 (프로젝트 내 Documents 폴더)
+# 기본 프로젝트 사용
 ./convert.sh
 
-# 사용자 지정 폴더
-./convert.sh ~/Documents/LlmAndVibeCoding
+# 다른 프로젝트 지정
+./convert.sh ~/Documents/AnotherProject
 
-# Node.js 직접 실행 (입력/출력 폴더 모두 지정)
-node generate-slides.js ~/Documents/LlmAndVibeCoding ~/Documents/MyPresentation
+# Node.js 직접 실행
+node generate-slides.js ~/Documents/LlmAndVibeCoding
 ```
 
-**파라미터**:
-- 첫 번째: 입력 폴더 (기본값: `~/Documents/LlmAndVibeCoding`)
-- 두 번째: 출력 폴더 (기본값: 입력 폴더 + `_slide`)
+**프로젝트 구조**:
+- 프로젝트 폴더 지정 시 자동으로 `markdown/`과 `slide/` 하위 폴더 사용
+- `markdown/` 폴더에서 마크다운 파일 읽기
+- `slide/` 폴더에 HTML 파일 생성
 
 ### Markmap 시각화
 
-Documents/LlmAndVibeCoding_slide 폴더에 HTML 파일로 인터랙티브 마인드맵 제공:
+각 프로젝트의 `slide/` 폴더에 HTML 파일로 인터랙티브 마인드맵 제공:
 - markmap.js CDN 사용
 - 각 챕터별 독립적인 HTML 파일
 - index.html에 전체 목차 마인드맵
 
-### Reveal.js 프레젠테이션 생성
+### 새 프로젝트 추가
 
-마크다운 파일을 Reveal.js 기반 HTML 프레젠테이션으로 자동 변환:
-
+1. Documents 폴더에 프로젝트 폴더 생성:
 ```bash
-# 현재 프로젝트 폴더 사용
-./convert.sh
+mkdir -p ~/Documents/MyProject/markdown
+```
 
-# 사용자 지정 폴더 (Node.js 직접)
-node generate-slides.js ~/Documents/LlmAndVibeCoding
+2. markdown 폴더에 AGENDA.md와 마크다운 파일 추가
+
+3. Documents/.gitignore에 프로젝트 추가:
+```gitignore
+!/MyProject/
+```
+
+4. 프레젠테이션 생성:
+```bash
+./convert.sh ~/Documents/MyProject
 ```
 
 **생성되는 HTML 구조**:

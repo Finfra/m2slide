@@ -1,9 +1,11 @@
 # Ignore all files and directories in Documents folder only (not recursive)
 /*
 
-# But allow these specific directories
+# But allow project directories (add new projects here)
 !/LlmAndVibeCoding/
-!/LlmAndVibeCoding_slide/
 
 # Track this .gitignore file itself
 !/.gitignore
+
+# Example: To add another project, uncomment the line below
+# !/AnotherProject/

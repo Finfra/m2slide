@@ -1,34 +1,36 @@
 #!/bin/bash
 
 # Markdown to Reveal.js HTML converter
-# Usage: ./convert.sh [input_dir] [output_dir]
-#   input_dir: Path to markdown files (default: ~/Documents/LlmAndVibeCoding)
-#   output_dir: Path to output HTML files (default: input_dir + "_slide")
+# Usage: ./convert.sh [project_dir]
+#   project_dir: Path to project folder (default: ~/Documents/LlmAndVibeCoding)
+#                Expects project_dir/markdown/ and generates project_dir/slide/
 
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Parse arguments
 if [ $# -eq 0 ]; then
-  # No arguments: use default directories in current project
-  INPUT_DIR="$SCRIPT_DIR/Documents/LlmAndVibeCoding"
-  OUTPUT_DIR="$SCRIPT_DIR/Documents/LlmAndVibeCoding_slide"
-elif [ $# -eq 1 ]; then
-  # One argument: input dir, auto-generate output dir
-  INPUT_DIR="$1"
-  OUTPUT_DIR="${1}_slide"
+  # No arguments: use default project in Documents
+  PROJECT_DIR="$HOME/Documents/LlmAndVibeCoding"
 else
-  # Two arguments: both specified
-  INPUT_DIR="$1"
-  OUTPUT_DIR="$2"
+  # One argument: project directory
+  PROJECT_DIR="$1"
 fi
 
-echo "Input directory: $INPUT_DIR"
-echo "Output directory: $OUTPUT_DIR"
+echo "Project directory: $PROJECT_DIR"
+INPUT_DIR="$PROJECT_DIR/markdown"
+OUTPUT_DIR="$PROJECT_DIR/slide"
 
-# Check if input directory exists
+# Check if project directory exists
+if [ ! -d "$PROJECT_DIR" ]; then
+  echo "❌ Error: Project directory does not exist: $PROJECT_DIR"
+  exit 1
+fi
+
+# Check if markdown directory exists
 if [ ! -d "$INPUT_DIR" ]; then
-  echo "❌ Error: Input directory does not exist: $INPUT_DIR"
+  echo "❌ Error: Markdown directory does not exist: $INPUT_DIR"
+  echo "Expected structure: $PROJECT_DIR/markdown/"
   exit 1
 fi
 
@@ -39,4 +41,4 @@ if [ -d "$OUTPUT_DIR" ]; then
 fi
 
 # Run the generator
-node "$SCRIPT_DIR/generate-slides.js" "$INPUT_DIR" "$OUTPUT_DIR"
+node "$SCRIPT_DIR/generate-slides.js" "$PROJECT_DIR"
