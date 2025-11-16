@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2.3 현재: CLI 기반 시대 (2024-현재)</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
+  <style>
+    .reveal h1 { font-size: 2.5em; }
+    .reveal h2 { font-size: 1.8em; }
+    .reveal h3 { font-size: 1.4em; }
+    .reveal { font-size: 32px; }
+    .reveal table { font-size: 0.7em; }
+    .reveal pre { font-size: 0.6em; }
+    .reveal code { font-size: 0.9em; }
+    .reveal blockquote {
+      font-size: 1.1em;
+      font-style: italic;
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-left: 5px solid #42affa;
+    }
+    .reveal p {
+      font-size: 1em;
+      line-height: 1.6;
+      margin: 0.5em 0;
+      color: #333;
+    }
+    .reveal ul, .reveal ol {
+      display: block;
+      text-align: left;
+      margin: 1em 0;
+    }
+    .reveal li {
+      font-size: 0.9em;
+      line-height: 1.6;
+      margin: 0.3em 0;
+      color: #333;
+    }
+    .reveal strong {
+      color: #222;
+      font-weight: bold;
+    }
+    .reveal img {
+      max-width: 400px;
+      max-height: 300px;
+      margin: 0.5em 0;
+    }
+    #toc-mindmap a {
+      text-decoration: none;
+      color: inherit;
+    }
+    #toc-mindmap text {
+      font-size: 16px !important;
+      font-weight: 500;
+    }
+    .nav-up-btn {
+      position: fixed;
+      bottom: 14px;
+      right: 70px;
+      z-index: 31;
+      background-color: transparent;
+      border: none;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.5);
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+    .nav-up-btn:hover {
+      color: rgba(0, 0, 0, 0.8);
+    }
+    .nav-up-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+    .nav-up-btn span {
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+  <a href="02-llm-tool-evolution.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
+    <svg viewBox="0 0 24 24">
+      <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+    </svg>
+    <span>상위</span>
+  </a>
+  <div class="reveal">
+    <div class="slides">
+
+      <section>
+        <h1>2.3 현재: CLI 기반 시대 (2024-현재)</h1>
+        <svg id="toc-mindmap" style="width: 100%; height: 500px;"></svg>
+      </section>
+
+      <section>
+<h2>2세대: CLI 기반 코딩 시대 (2024-현재)</h2>
+
+<p><strong>터미널에서 실행되는 AI 도구</strong></p>
+<ul>
+<li>에이전트처럼 자율적으로 복잡한 작업 수행</li>
+</ul>
+
+<p><strong>대표 툴</strong></p>
+
+<p><strong>Claude Code</strong></p>
+<ul>
+<li>Anthropic 공식 CLI 도구</li>
+<li>프로젝트 전체 컨텍스트 이해</li>
+<li>파일 생성, 수정, 삭제 자동화</li>
+<li>명령어 실행 및 결과 확인</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 대표 툴 (계속)</h2>
+
+<p><strong>Gemini CLI</strong></p>
+<ul>
+<li>Google Gemini 기반</li>
+<li>빠른 응답 속도</li>
+<li>클라우드 기반 실행</li>
+</ul>
+
+<p><strong>Aider</strong></p>
+<ul>
+<li>Git 친화적 AI 코딩 도구</li>
+<li>터미널 기반 페어 프로그래밍</li>
+<li>자동 커밋 메시지 생성</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 핵심 특징</h2>
+
+<p><strong>CLI 기반 실행 환경</strong></p>
+<ul>
+<li>터미널에서 직접 실행되는 독립 프로그램</li>
+<li>IDE 없이도 완전한 개발 작업 수행</li>
+<li>서버 환경에서도 동작 (SSH 접속 환경)</li>
+<li>로컬 리소스 거의 사용 안 함</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 핵심 특징 (계속)</h2>
+
+<p><strong>에이전트형 자율 작업</strong></p>
+<ul>
+<li>개발자의 의도를 파악하여 다단계 작업 수행</li>
+<li>필요한 파일을 스스로 찾아 수정</li>
+<li>오류 발생 시 자동으로 수정 시도</li>
+</ul>
+
+<p><strong>멀티파일 작업</strong></p>
+<ul>
+<li>프로젝트 전체를 대상으로 작업</li>
+<li>파일 간 의존성 자동 해결</li>
+<li>일관성 있는 코드 스타일 유지</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 도구 사용 능력</h2>
+
+<p><strong>Tool Use (Function Calling)</strong></p>
+<ul>
+<li>터미널 명령어 직접 실행</li>
+<li>파일 시스템 직접 조작</li>
+<li>Git 명령어 자동 실행</li>
+<li>패키지 설치 및 관리</li>
+</ul>
+
+<p><strong>대화형 협업</strong></p>
+<ul>
+<li>자연어로 복잡한 요구사항 전달</li>
+<li>AI가 불명확한 부분 질문</li>
+<li>반복적인 피드백 루프</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 혁신 포인트</h2>
+
+<p><strong>Intent-First Programming</strong></p>
+<pre><code>개발자: "무엇을(What)" 만들지만 설명
+AI: "어떻게(How)" 구현할지 결정
+→ 구현 세부사항은 AI에게 위임</code></pre>
+
+<p><strong>Human-in-the-Loop Verification</strong></p>
+<pre><code>AI 코드 생성 → 개발자 검토 → 승인/수정 → 다음 단계</code></pre>
+
+<p><strong>End-to-End Automation</strong></p>
+<ul>
+<li>요구사항 분석부터 배포까지 자동화</li>
+<li>테스트 코드 자동 생성</li>
+<li>문서화 자동 작성</li>
+</ul>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
+      width: 1280,
+      height: 720,
+      margin: 0.1,
+      slideNumber: 'c/t',
+      transition: 'slide',
+      backgroundTransition: 'fade'
+    });
+
+    // Initialize markmap for table of contents
+    setTimeout(() => {
+      const { markmap } = window;
+      const tocData = {
+      "content": "",
+      "children": [
+            {
+                  "content": "<a href=\"#/1\">2세대: CLI 기반 코딩 시대 (2024-현재)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/2\">2세대: 대표 툴 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/3\">2세대: 핵심 특징</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/4\">2세대: 핵심 특징 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/5\">2세대: 도구 사용 능력</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/6\">2세대: 혁신 포인트</a>",
+                  "children": []
+            }
+      ]
+};
+
+      markmap.Markmap.create('#toc-mindmap', {}, tocData);
+    }, 100);
+
+    // Connect up arrow key to parent page navigation
+    document.addEventListener('keydown', function(event) {
+      // Check if up arrow key is pressed
+      if (event.key === 'ArrowUp' || event.keyCode === 38) {
+        const currentSlide = Reveal.getIndices();
+        // Only navigate to parent if there are no vertical slides
+        if (currentSlide.v === 0) {
+          event.preventDefault();
+          // Navigate to parent page
+          const navLink = document.getElementById('nav-up-link');
+          if (navLink) {
+            window.location.href = navLink.href;
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

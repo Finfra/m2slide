@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<title>Markmap</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+}
+html {
+  font-family: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}
+.header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 30px 20px;
+  text-align: center;
+}
+.header h1 {
+  margin: 0;
+  font-size: 48px;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+.header p {
+  margin: 0;
+  font-size: 16px;
+  opacity: 0.9;
+}
+#mindmap {
+  display: block;
+  width: 100vw;
+  height: calc(100vh - 140px);
+}
+.markmap-dark {
+  background: #27272a;
+  color: white;
+}
+a {
+  text-decoration: none;
+}
+svg text {
+  font-size: 18px !important;
+  font-weight: 500;
+}
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.18.12/dist/style.css">
+</head>
+<body>
+<div class="header">
+  <h1>LLM 툴 진화와 바이브 코딩 세대 구분 - 강연 목차</h1>
+  <p>각 노드를 클릭하면 상세 페이지로 이동합니다</p>
+</div>
+<svg id="mindmap"></svg>
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script><script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script><script src="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.18.12/dist/index.js"></script><script>((r) => {
+          setTimeout(r);
+        })(() => {
+  const { markmap, mm } = window;
+  const toolbar = new markmap.Toolbar();
+  toolbar.attach(mm);
+  const el = toolbar.render();
+  el.setAttribute("style", "position:absolute;bottom:20px;right:20px");
+  document.body.append(el);
+})</script><script>((getMarkmap, getOptions, root2, jsonOptions) => {
+              const markmap = getMarkmap();
+              window.mm = markmap.Markmap.create(
+                "svg#mindmap",
+                (getOptions || markmap.deriveOptions)(jsonOptions),
+                root2
+              );
+              if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+                document.documentElement.classList.add("markmap-dark");
+              }
+            })(() => window.markmap,null,{"content":"","children":[{"content":"<a href=\"01-opening.html\">1. AI 코딩의 패러다임 전환</a>","children":[]},{"content":"<a href=\"02-llm-tool-evolution.html\">2. LLM 코딩 툴의 진화 과정</a>","children":[{"content":"<a href=\"02.1.chat-based.html\">2.1 초기: 채팅 기반 시대 (2022-2023)</a>","children":[]},{"content":"<a href=\"02.2.ide-integration.html\">2.2 전환점: IDE 통합의 시작 (2023-2024)</a>","children":[]},{"content":"<a href=\"02.3.cli-based.html\">2.3 현재: CLI 기반 시대 (2024-현재)</a>","children":[]}]},{"content":"<a href=\"03-vibecoding-concept.html\">3. 바이브 코딩(VibeCoding) 개념과 철학</a>","children":[{"content":"<a href=\"03.1.chat-limitations.html\">3.1 채팅 기반의 한계</a>","children":[]},{"content":"<a href=\"03.2.vibecoding-start.html\">3.2 바이브 코딩의 시작</a>","children":[]}]},{"content":"<a href=\"04-vibecoding-generations.html\">4. 바이브 코딩 세대 구분</a>","children":[{"content":"<a href=\"04.1.ide-generation.html\">4.1 1세대: IDE 기반 코딩</a>","children":[]},{"content":"<a href=\"04.2.cli-generation.html\">4.2 2세대: CLI 기반 코딩</a>","children":[]}]},{"content":"<a href=\"05-generation-comparison.html\">5. 세대별 비교 및 선택 가이드</a>","children":[]},{"content":"<a href=\"06-practical-cases.html\">6. 실전 사례: 세대별 활용법</a>","children":[]},{"content":"<a href=\"07-adoption-roadmap.html\">7. 바이브 코딩 도입 로드맵</a>","children":[]},{"content":"<a href=\"08-qa-closing.html\">8. Q&A 및 클로징</a>","children":[]}]},null)</script>
+</body>
+</html>

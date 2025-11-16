@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4.2 2세대: CLI 기반 코딩</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
+  <style>
+    .reveal h1 { font-size: 2.5em; }
+    .reveal h2 { font-size: 1.8em; }
+    .reveal h3 { font-size: 1.4em; }
+    .reveal { font-size: 32px; }
+    .reveal table { font-size: 0.7em; }
+    .reveal pre { font-size: 0.6em; }
+    .reveal code { font-size: 0.9em; }
+    .reveal blockquote {
+      font-size: 1.1em;
+      font-style: italic;
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-left: 5px solid #42affa;
+    }
+    .reveal p {
+      font-size: 1em;
+      line-height: 1.6;
+      margin: 0.5em 0;
+      color: #333;
+    }
+    .reveal ul, .reveal ol {
+      display: block;
+      text-align: left;
+      margin: 1em 0;
+    }
+    .reveal li {
+      font-size: 0.9em;
+      line-height: 1.6;
+      margin: 0.3em 0;
+      color: #333;
+    }
+    .reveal strong {
+      color: #222;
+      font-weight: bold;
+    }
+    .reveal img {
+      max-width: 400px;
+      max-height: 300px;
+      margin: 0.5em 0;
+    }
+    #toc-mindmap a {
+      text-decoration: none;
+      color: inherit;
+    }
+    #toc-mindmap text {
+      font-size: 16px !important;
+      font-weight: 500;
+    }
+    .nav-up-btn {
+      position: fixed;
+      bottom: 14px;
+      right: 70px;
+      z-index: 31;
+      background-color: transparent;
+      border: none;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.5);
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+    .nav-up-btn:hover {
+      color: rgba(0, 0, 0, 0.8);
+    }
+    .nav-up-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+    .nav-up-btn span {
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+  <a href="04-vibecoding-generations.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
+    <svg viewBox="0 0 24 24">
+      <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+    </svg>
+    <span>상위</span>
+  </a>
+  <div class="reveal">
+    <div class="slides">
+
+      <section>
+        <h1>4.2 2세대: CLI 기반 코딩</h1>
+        <svg id="toc-mindmap" style="width: 100%; height: 500px;"></svg>
+      </section>
+
+      <section>
+<h2>2세대: CLI 기반 코딩</h2>
+
+<p><strong>터미널(CLI)</strong>에서 AI와 대화하며 작업</p>
+<ul>
+<li>IDE 없이도 프로젝트 전체를 자동화</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 대표 툴</h2>
+
+<p><strong>Claude Code</strong></p>
+<ul>
+<li>Anthropic 공식 CLI 도구</li>
+<li>터미널에서 Claude와 직접 대화</li>
+<li>프로젝트 전체 컨텍스트 이해</li>
+<li>자동 파일 수정 및 명령 실행</li>
+</ul>
+
+<p><strong>Gemini CLI</strong></p>
+<ul>
+<li>Google Gemini 기반</li>
+<li>빠른 응답 속도</li>
+<li>클라우드 기반 실행</li>
+<li>DevOps 작업에 최적화</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 대표 툴 (계속)</h2>
+
+<p><strong>Aider</strong></p>
+<ul>
+<li>Git 친화적 AI 코딩 도구</li>
+<li>터미널 기반 페어 프로그래밍</li>
+<li>자동 커밋 메시지 생성</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 장점</h2>
+
+<p><strong>서버/클라우드 기반</strong></p>
+<ul>
+<li>로컬 리소스 거의 사용 안 함</li>
+<li>노트북 배터리 절약</li>
+<li>원격 서버에서 작업 가능</li>
+</ul>
+
+<p><strong>무제한 병렬 처리</strong></p>
+<ul>
+<li>여러 터미널에서 동시 작업</li>
+<li>멀티 프로젝트 동시 관리</li>
+<li>백그라운드 실행 가능</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 장점 (계속)</h2>
+
+<p><strong>스크립트 자동화</strong></p>
+<ul>
+<li>쉘 스크립트와 결합</li>
+<li>CI/CD 파이프라인 통합</li>
+<li>DevOps 워크플로우 자동화</li>
+</ul>
+
+<p><strong>빠른 실행 속도</strong></p>
+<ul>
+<li>GUI 오버헤드 없음</li>
+<li>텍스트 기반으로 빠른 응답</li>
+<li>네트워크 대역폭 효율적</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 단점</h2>
+
+<p><strong>학습 곡선</strong></p>
+<ul>
+<li>터미널 명령어 숙지 필요</li>
+<li>GUI 없이 작업해야 함</li>
+<li>코드 변경 사항 시각화 제한적</li>
+</ul>
+
+<p><strong>시각적 피드백 부족</strong></p>
+<ul>
+<li>diff 확인이 텍스트 기반</li>
+<li>그래픽 UI 프리뷰 불가</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 단점 (계속)</h2>
+
+<p><strong>초기 설정</strong></p>
+<ul>
+<li>환경 변수 설정 필요</li>
+<li>API 키 설정 필수</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 작동 방식</h2>
+
+<pre><code># Claude Code 예시
+$ claude-code
+
+> 프로젝트 분석해서 README.md 업데이트해줘
+
+[Claude가 프로젝트 파일들을 읽고 분석]
+[README.md 자동 수정]
+[변경사항 표시]
+
+> 테스트 코드도 작성해줘
+
+[테스트 파일 자동 생성]
+[npm test 실행하여 검증]</code></pre>
+      </section>
+
+      <section>
+<h2>2세대: 적합한 사용자</h2>
+
+<ul>
+<li><strong>시니어 개발자</strong>: 터미널에 익숙한 사용자</li>
+<li><strong>백엔드/DevOps 개발자</strong>: 서버 관리 및 자동화 작업</li>
+<li><strong>멀티 프로젝트 관리</strong>: 여러 프로젝트를 동시에 진행</li>
+<li><strong>리눅스 사용자</strong>: CLI 환경 선호</li>
+<li><strong>원격 개발</strong>: SSH로 원격 서버 작업</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 대표 워크플로우</h2>
+
+<p><strong>Claude Code 예시</strong></p>
+
+<pre><code># 프로젝트 디렉토리에서
+$ claude-code
+
+> AWS Lambda 함수로 이미지 리사이징 서비스 만들어줘.
+  S3에서 이미지 받아서 처리하고 다시 S3에 저장.
+
+[Claude가 작업 시작]
+✓ lambda_function.py 생성
+✓ requirements.txt 생성
+✓ 환경변수 설정 확인
+✓ SAM template 생성
+✓ README.md 업데이트</code></pre>
+      </section>
+
+      <section>
+<h2>2세대: 대표 워크플로우 (계속)</h2>
+
+<pre><code>> 로컬에서 테스트해줘
+
+[sam local invoke 실행]
+[테스트 결과 확인]
+
+> 문제없으면 배포해줘
+
+[sam deploy 실행]
+[배포 완료]</code></pre>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
+      width: 1280,
+      height: 720,
+      margin: 0.1,
+      slideNumber: 'c/t',
+      transition: 'slide',
+      backgroundTransition: 'fade'
+    });
+
+    // Initialize markmap for table of contents
+    setTimeout(() => {
+      const { markmap } = window;
+      const tocData = {
+      "content": "",
+      "children": [
+            {
+                  "content": "<a href=\"#/1\">2세대: CLI 기반 코딩</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/2\">2세대: 대표 툴</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/3\">2세대: 대표 툴 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/4\">2세대: 장점</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/5\">2세대: 장점 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/6\">2세대: 단점</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/7\">2세대: 단점 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/8\">2세대: 작동 방식</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/9\">2세대: 적합한 사용자</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/10\">2세대: 대표 워크플로우</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/11\">2세대: 대표 워크플로우 (계속)</a>",
+                  "children": []
+            }
+      ]
+};
+
+      markmap.Markmap.create('#toc-mindmap', {}, tocData);
+    }, 100);
+
+    // Connect up arrow key to parent page navigation
+    document.addEventListener('keydown', function(event) {
+      // Check if up arrow key is pressed
+      if (event.key === 'ArrowUp' || event.keyCode === 38) {
+        const currentSlide = Reveal.getIndices();
+        // Only navigate to parent if there are no vertical slides
+        if (currentSlide.v === 0) {
+          event.preventDefault();
+          // Navigate to parent page
+          const navLink = document.getElementById('nav-up-link');
+          if (navLink) {
+            window.location.href = navLink.href;
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4.1 1세대: IDE 기반 코딩</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
+  <style>
+    .reveal h1 { font-size: 2.5em; }
+    .reveal h2 { font-size: 1.8em; }
+    .reveal h3 { font-size: 1.4em; }
+    .reveal { font-size: 32px; }
+    .reveal table { font-size: 0.7em; }
+    .reveal pre { font-size: 0.6em; }
+    .reveal code { font-size: 0.9em; }
+    .reveal blockquote {
+      font-size: 1.1em;
+      font-style: italic;
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-left: 5px solid #42affa;
+    }
+    .reveal p {
+      font-size: 1em;
+      line-height: 1.6;
+      margin: 0.5em 0;
+      color: #333;
+    }
+    .reveal ul, .reveal ol {
+      display: block;
+      text-align: left;
+      margin: 1em 0;
+    }
+    .reveal li {
+      font-size: 0.9em;
+      line-height: 1.6;
+      margin: 0.3em 0;
+      color: #333;
+    }
+    .reveal strong {
+      color: #222;
+      font-weight: bold;
+    }
+    .reveal img {
+      max-width: 400px;
+      max-height: 300px;
+      margin: 0.5em 0;
+    }
+    #toc-mindmap a {
+      text-decoration: none;
+      color: inherit;
+    }
+    #toc-mindmap text {
+      font-size: 16px !important;
+      font-weight: 500;
+    }
+    .nav-up-btn {
+      position: fixed;
+      bottom: 14px;
+      right: 70px;
+      z-index: 31;
+      background-color: transparent;
+      border: none;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.5);
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+    .nav-up-btn:hover {
+      color: rgba(0, 0, 0, 0.8);
+    }
+    .nav-up-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+    .nav-up-btn span {
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+  <a href="04-vibecoding-generations.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
+    <svg viewBox="0 0 24 24">
+      <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+    </svg>
+    <span>상위</span>
+  </a>
+  <div class="reveal">
+    <div class="slides">
+
+      <section>
+        <h1>4.1 1세대: IDE 기반 코딩</h1>
+        <svg id="toc-mindmap" style="width: 100%; height: 500px;"></svg>
+      </section>
+
+      <section>
+<h2>1세대: IDE 기반 코딩</h2>
+
+<p><strong>IDE(통합 개발 환경) 내부</strong>에서 AI와 협업</p>
+<ul>
+<li>친숙한 GUI 환경에서 시각적으로 AI와 상호작용</li>
+</ul>
+      </section>
+
+      <section>
+<h2>1세대: 대표 툴</h2>
+
+<p><strong>Cursor</strong></p>
+<ul>
+<li>VSCode 포크 기반 AI 네이티브 IDE</li>
+<li>GPT-4 기반 코드 생성 및 편집</li>
+<li>Composer 모드로 멀티파일 작업</li>
+</ul>
+
+<p><strong>Cline (구 Claude Dev)</strong></p>
+<ul>
+<li>VSCode 확장 프로그램</li>
+<li>다양한 LLM 모델 선택 가능</li>
+<li>채팅 인터페이스 기반</li>
+</ul>
+      </section>
+
+      <section>
+<h2>1세대: 대표 툴 (계속)</h2>
+
+<p><strong>Windsurf</strong></p>
+<ul>
+<li>Codeium 개발</li>
+<li>Cascade 모드로 자율 작업</li>
+<li>컨텍스트 인식 코드 생성</li>
+</ul>
+
+<p><strong>Continue</strong></p>
+<ul>
+<li>VSCode/JetBrains 확장</li>
+<li>로컬 모델 연동 가능</li>
+<li>실시간 코드 편집</li>
+</ul>
+      </section>
+
+      <section>
+<h2>1세대: 장점</h2>
+
+<p><strong>직관적인 GUI</strong></p>
+<ul>
+<li>시각적 인터페이스로 진입 장벽 낮음</li>
+<li>마우스 클릭으로 쉽게 작업</li>
+<li>코드 변경 사항을 diff 모드로 확인</li>
+</ul>
+
+<p><strong>IDE 기능 활용</strong></p>
+<ul>
+<li>디버거, 터미널, Git 통합</li>
+<li>익숙한 단축키 사용</li>
+<li>파일 탐색기 활용</li>
+</ul>
+      </section>
+
+      <section>
+<h2>1세대: 장점 (계속)</h2>
+
+<p><strong>실시간 피드백</strong></p>
+<ul>
+<li>코드 작성 중 즉시 제안</li>
+<li>인라인 자동완성</li>
+<li>오류 즉시 확인</li>
+</ul>
+      </section>
+
+      <section>
+<h2>1세대: 단점</h2>
+
+<p><strong>로컬 리소스 의존</strong></p>
+<ul>
+<li>IDE 실행으로 메모리 8GB+ 필요</li>
+<li>CPU 사용량 높음</li>
+<li>배터리 소모 증가</li>
+</ul>
+
+<p><strong>단일 프로젝트 제한</strong></p>
+<ul>
+<li>한 번에 하나의 프로젝트만 집중</li>
+<li>멀티 프로젝트 작업 시 IDE 여러 개 실행 필요</li>
+</ul>
+      </section>
+
+      <section>
+<h2>1세대: 단점 (계속)</h2>
+
+<p><strong>GUI 오버헤드</strong></p>
+<ul>
+<li>그래픽 렌더링으로 인한 성능 저하</li>
+<li>원격 서버 작업 시 불편</li>
+</ul>
+      </section>
+
+      <section>
+<h2>1세대: 작동 방식</h2>
+
+<pre><code>1. IDE 실행
+   ↓
+2. AI 확장/기능 활성화
+   ↓
+3. 채팅 패널에서 요청
+   ↓
+4. AI가 코드 생성/수정
+   ↓
+5. diff 모드로 확인
+   ↓
+6. 승인 또는 거부</code></pre>
+      </section>
+
+      <section>
+<h2>1세대: 적합한 사용자</h2>
+
+<ul>
+<li><strong>초보 개발자</strong>: GUI 환경이 익숙한 사용자</li>
+<li><strong>프론트엔드 개발자</strong>: 시각적 피드백이 중요한 작업</li>
+<li><strong>단일 프로젝트 집중</strong>: 하나의 프로젝트에 깊이 파고드는 경우</li>
+<li><strong>윈도우/맥 사용자</strong>: 로컬 환경 개발 선호</li>
+</ul>
+      </section>
+
+      <section>
+<h2>1세대: 대표 워크플로우</h2>
+
+<p><strong>Cursor Composer 예시</strong></p>
+
+<pre><code>1. Cmd+K (macOS) / Ctrl+K (Windows) 단축키
+2. "사용자 프로필 페이지 만들어줘" 입력
+3. AI가 필요한 파일들을 자동으로 생성/수정
+   - UserProfile.tsx
+   - UserProfile.css
+   - types/User.ts
+4. 각 파일의 변경사항을 diff로 확인
+5. Accept All 또는 개별 승인
+6. 실행 및 테스트</code></pre>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
+      width: 1280,
+      height: 720,
+      margin: 0.1,
+      slideNumber: 'c/t',
+      transition: 'slide',
+      backgroundTransition: 'fade'
+    });
+
+    // Initialize markmap for table of contents
+    setTimeout(() => {
+      const { markmap } = window;
+      const tocData = {
+      "content": "",
+      "children": [
+            {
+                  "content": "<a href=\"#/1\">1세대: IDE 기반 코딩</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/2\">1세대: 대표 툴</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/3\">1세대: 대표 툴 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/4\">1세대: 장점</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/5\">1세대: 장점 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/6\">1세대: 단점</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/7\">1세대: 단점 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/8\">1세대: 작동 방식</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/9\">1세대: 적합한 사용자</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/10\">1세대: 대표 워크플로우</a>",
+                  "children": []
+            },
+            {
+                  "content": "하위 챕터",
+                  "children": [
+                        {
+                              "content": "<a href=\"04.2.cli-generation.html\">4.2 2세대: CLI 기반 코딩</a>",
+                              "children": []
+                        }
+                  ]
+            }
+      ]
+};
+
+      markmap.Markmap.create('#toc-mindmap', {}, tocData);
+    }, 100);
+
+    // Connect up arrow key to parent page navigation
+    document.addEventListener('keydown', function(event) {
+      // Check if up arrow key is pressed
+      if (event.key === 'ArrowUp' || event.keyCode === 38) {
+        const currentSlide = Reveal.getIndices();
+        // Only navigate to parent if there are no vertical slides
+        if (currentSlide.v === 0) {
+          event.preventDefault();
+          // Navigate to parent page
+          const navLink = document.getElementById('nav-up-link');
+          if (navLink) {
+            window.location.href = navLink.href;
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
