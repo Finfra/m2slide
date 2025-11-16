@@ -1,15 +1,9 @@
-# Ignore everything in Documents folder
-*
+# Ignore all files and directories in Documents folder only (not recursive)
+/*
 
-# But allow these directories and their contents
-!LlmAndVibeCoding/
-!LlmAndVibeCoding/**
-!LlmAndVibeCoding_slide/
-!LlmAndVibeCoding_slide/**
+# But allow these specific directories
+!/LlmAndVibeCoding/
+!/LlmAndVibeCoding_slide/
 
 # Track this .gitignore file itself
-!.gitignore
-
-# But still ignore .DS_Store files
-.DS_Store
-**/.DS_Store
+!/.gitignore
