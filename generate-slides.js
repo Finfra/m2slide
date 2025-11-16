@@ -656,6 +656,20 @@ function main() {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
+  // Copy img folder if it exists
+  const imgInputDir = path.join(inputDir, 'img');
+  const imgOutputDir = path.join(outputDir, 'img');
+  if (fs.existsSync(imgInputDir)) {
+    console.log(`\nCopying images from ${imgInputDir} to ${imgOutputDir}`);
+    // Remove existing img folder in output if exists
+    if (fs.existsSync(imgOutputDir)) {
+      fs.rmSync(imgOutputDir, { recursive: true, force: true });
+    }
+    // Copy img folder
+    fs.cpSync(imgInputDir, imgOutputDir, { recursive: true });
+    console.log('✅ Images copied successfully');
+  }
+
   // Process all .md files (excluding AGENDA.md, will process it separately)
   const files = fs.readdirSync(inputDir)
     .filter(f => f.endsWith('.md') && f !== 'AGENDA.md')
