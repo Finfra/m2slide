@@ -118,7 +118,7 @@ function processInline(text) {
   text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 
   // Images
-  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="../LlmAndVibeCoding/$2" alt="$1">');
+  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="../Documents/LlmAndVibeCoding/$2" alt="$1">');
 
   // Inline code
   text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
@@ -156,12 +156,12 @@ function parseMarkdownFile(filePath) {
 // Get subsections from AGENDA.md for a given file
 function getSubsections(fileName) {
   try {
-    const agendaPath = path.join(__dirname, 'LlmAndVibeCoding/AGENDA.md');
+    const agendaPath = path.join(__dirname, 'Documents/LlmAndVibeCoding/AGENDA.md');
     const content = fs.readFileSync(agendaPath, 'utf-8');
     const lines = content.split('\n');
 
     // Find the main section for this file
-    const mainPattern = new RegExp(`## \\[(.+?)\\]\\(LlmAndVibeCoding/${fileName}\\)`);
+    const mainPattern = new RegExp(`## \\[(.+?)\\]\\(\\.\\/Documents\\/LlmAndVibeCoding\\/${fileName}\\)`);
     let foundMainSection = false;
     const subsections = [];
 
@@ -186,7 +186,7 @@ function getSubsections(fileName) {
         if (subMatch) {
           const title = subMatch[1];
           const mdPath = subMatch[2];
-          const htmlFile = mdPath.replace('LlmAndVibeCoding/', '').replace('.md', '.html');
+          const htmlFile = mdPath.replace('./Documents/LlmAndVibeCoding/', '').replace('.md', '.html');
           subsections.push({ title, htmlFile });
         }
       }
@@ -201,12 +201,12 @@ function getSubsections(fileName) {
 // Get parent page from AGENDA.md for a given file
 function getParentPage(fileName) {
   try {
-    const agendaPath = path.join(__dirname, 'LlmAndVibeCoding/AGENDA.md');
+    const agendaPath = path.join(__dirname, 'Documents/LlmAndVibeCoding/AGENDA.md');
     const content = fs.readFileSync(agendaPath, 'utf-8');
     const lines = content.split('\n');
 
     // Check if this is a subsection (### pattern)
-    const subPattern = new RegExp(`### \\[(.+?)\\]\\(LlmAndVibeCoding/${fileName}\\)`);
+    const subPattern = new RegExp(`### \\[(.+?)\\]\\(\\.\\/Documents\\/LlmAndVibeCoding\\/${fileName}\\)`);
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -217,7 +217,7 @@ function getParentPage(fileName) {
           const parentMatch = lines[j].match(/^## \[(.+?)\]\((.+?)\)$/);
           if (parentMatch) {
             const mdPath = parentMatch[2];
-            return mdPath.replace('LlmAndVibeCoding/', '').replace('.md', '.html');
+            return mdPath.replace('./Documents/LlmAndVibeCoding/', '').replace('.md', '.html');
           }
         }
       }
@@ -478,7 +478,7 @@ function parseAgenda(agendaPath) {
     if (mainMatch) {
       const title = mainMatch[1];
       const mdPath = mainMatch[2];
-      const htmlPath = mdPath.replace('LlmAndVibeCoding/', '').replace('.md', '.html');
+      const htmlPath = mdPath.replace('./Documents/LlmAndVibeCoding/', '').replace('.md', '.html');
 
       currentSection = {
         content: `<a href="${htmlPath}">${title}</a>`,
@@ -493,7 +493,7 @@ function parseAgenda(agendaPath) {
     if (subMatch && currentSection) {
       const title = subMatch[1];
       const mdPath = subMatch[2];
-      const htmlPath = mdPath.replace('LlmAndVibeCoding/', '').replace('.md', '.html');
+      const htmlPath = mdPath.replace('./Documents/LlmAndVibeCoding/', '').replace('.md', '.html');
 
       currentSection.children.push({
         content: `<a href="${htmlPath}">${title}</a>`,
@@ -605,7 +605,7 @@ function main() {
 
   if (args.length === 0) {
     // Process all .md files in md folder
-    const mdDir = path.join(__dirname, 'LlmAndVibeCoding');
+    const mdDir = path.join(__dirname, 'Documents/LlmAndVibeCoding');
     const files = fs.readdirSync(mdDir)
       .filter(f => f.endsWith('.md'))
       .sort();
@@ -614,7 +614,7 @@ function main() {
 
     files.forEach(file => {
       const inputPath = path.join(mdDir, file);
-      const outputPath = path.join(__dirname, 'LlmAndVibeCoding_slide', file.replace('.md', '.html'));
+      const outputPath = path.join(__dirname, 'Documents/LlmAndVibeCoding_slide', file.replace('.md', '.html'));
 
       console.log(`Processing: ${file}`);
       const html = generateHTML(inputPath);
@@ -624,9 +624,9 @@ function main() {
 
     // Generate index.html
     console.log('\nGenerating index.html...');
-    const agendaPath = path.join(__dirname, 'LlmAndVibeCoding/AGENDA.md');
+    const agendaPath = path.join(__dirname, 'Documents/LlmAndVibeCoding/AGENDA.md');
     const indexHTML = generateIndexHTML(agendaPath);
-    const indexPath = path.join(__dirname, 'LlmAndVibeCoding_slide', 'index.html');
+    const indexPath = path.join(__dirname, 'Documents/LlmAndVibeCoding_slide', 'index.html');
     fs.writeFileSync(indexPath, indexHTML, 'utf-8');
     console.log(`✅ Generated: ${indexPath}`);
 
@@ -635,7 +635,7 @@ function main() {
     // Process single file
     const inputPath = args[0];
     const baseName = path.basename(inputPath, '.md');
-    const outputPath = path.join(__dirname, 'LlmAndVibeCoding_slide', `${baseName}.html`);
+    const outputPath = path.join(__dirname, 'Documents/LlmAndVibeCoding_slide', `${baseName}.html`);
 
     console.log(`Processing: ${inputPath}`);
     const html = generateHTML(inputPath);

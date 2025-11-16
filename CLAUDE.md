@@ -11,16 +11,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 프로젝트 구조
 
 - `AGENDA.md`: 강연의 전체 목차 (인라인 링크 형식으로 각 md 파일 연결)
-- `LlmAndVibeCoding/`: 15개 마크다운 파일 (청중 배포용 자료)
+- `Documents/LlmAndVibeCoding/`: 15개 마크다운 파일 (청중 배포용 자료)
   - 주요 섹션: 01 ~ 08
   - 하위 섹션: 02.1, 02.2, 02.3, 03.1, 03.2, 04.1, 04.2
 - `resource/`: 강연 준비 참고 자료 (/Users/nowage/_doc/3.Resource/_LLM에서 복사됨)
-- `LlmAndVibeCoding_slide/`: 마크다운 시각화 (markmap.js 기반 인터랙티브 마인드맵)
+- `Documents/LlmAndVibeCoding_slide/`: 마크다운 시각화 (markmap.js 기반 인터랙티브 마인드맵)
 - `markmap_try1/`: 초기 시각화 시도본
 
 ## 핵심 아키텍처
 
-### LlmAndVibeCoding 폴더의 역할
+### Documents/LlmAndVibeCoding 폴더의 역할
 
 **중요**: md 파일은 **청중 배포용 참고 자료**이며, 강사용 시나리오가 아닙니다.
 
@@ -77,15 +77,15 @@ md 파일 작성 시 반드시 준수해야 할 원칙:
 
 ```bash
 # 단일 파일 변환
-pandoc LlmAndVibeCoding/01-opening.md -o output.pptx
+pandoc Documents/LlmAndVibeCoding/01-opening.md -o output.pptx
 
 # 전체 강연 자료 통합 (순서대로)
-pandoc LlmAndVibeCoding/01-opening.md LlmAndVibeCoding/02-llm-tool-evolution.md \
-       LlmAndVibeCoding/02.1.chat-based.md LlmAndVibeCoding/02.2.ide-integration.md LlmAndVibeCoding/02.3.cli-based.md \
-       LlmAndVibeCoding/03-vibecoding-concept.md LlmAndVibeCoding/03.1.chat-limitations.md LlmAndVibeCoding/03.2.vibecoding-start.md \
-       LlmAndVibeCoding/04-vibecoding-generations.md LlmAndVibeCoding/04.1.ide-generation.md LlmAndVibeCoding/04.2.cli-generation.md \
-       LlmAndVibeCoding/05-generation-comparison.md LlmAndVibeCoding/06-practical-cases.md \
-       LlmAndVibeCoding/07-adoption-roadmap.md LlmAndVibeCoding/08-qa-closing.md \
+pandoc Documents/LlmAndVibeCoding/01-opening.md Documents/LlmAndVibeCoding/02-llm-tool-evolution.md \
+       Documents/LlmAndVibeCoding/02.1.chat-based.md Documents/LlmAndVibeCoding/02.2.ide-integration.md Documents/LlmAndVibeCoding/02.3.cli-based.md \
+       Documents/LlmAndVibeCoding/03-vibecoding-concept.md Documents/LlmAndVibeCoding/03.1.chat-limitations.md Documents/LlmAndVibeCoding/03.2.vibecoding-start.md \
+       Documents/LlmAndVibeCoding/04-vibecoding-generations.md Documents/LlmAndVibeCoding/04.1.ide-generation.md Documents/LlmAndVibeCoding/04.2.cli-generation.md \
+       Documents/LlmAndVibeCoding/05-generation-comparison.md Documents/LlmAndVibeCoding/06-practical-cases.md \
+       Documents/LlmAndVibeCoding/07-adoption-roadmap.md Documents/LlmAndVibeCoding/08-qa-closing.md \
        -o presentation.pptx
 ```
 
@@ -93,10 +93,10 @@ pandoc LlmAndVibeCoding/01-opening.md LlmAndVibeCoding/02-llm-tool-evolution.md 
 
 ```bash
 # 단일 파일 HTML 변환
-pandoc LlmAndVibeCoding/01-opening.md -o output.html --standalone --css=style.css
+pandoc Documents/LlmAndVibeCoding/01-opening.md -o output.html --standalone --css=style.css
 
 # 전체 자료 통합 HTML
-pandoc LlmAndVibeCoding/*.md -o complete.html --standalone --toc
+pandoc Documents/LlmAndVibeCoding/*.md -o complete.html --standalone --toc
 ```
 
 ### Markmap 시각화
@@ -114,7 +114,7 @@ md 폴더의 마크다운 파일을 Reveal.js 기반 HTML 프레젠테이션으�
 node generate-slides.js
 
 # 또는 개별 파일 생성
-node generate-slides.js LlmAndVibeCoding/01-opening.md
+node generate-slides.js Documents/LlmAndVibeCoding/01-opening.md
 ```
 
 **생성되는 HTML 구조**:
@@ -145,14 +145,14 @@ node generate-slides.js LlmAndVibeCoding/01-opening.md
 
 **올바른 형식** (인라인 링크):
 ```markdown
-## [1. 오프닝: AI 코딩의 패러다임 전환](LlmAndVibeCoding/01-opening.md)
-### [2.1 초기: 채팅 기반 시대 (2022-2023)](LlmAndVibeCoding/02.1.chat-based.md)
+## [1. 오프닝: AI 코딩의 패러다임 전환](Documents/LlmAndVibeCoding/01-opening.md)
+### [2.1 초기: 채팅 기반 시대 (2022-2023)](Documents/LlmAndVibeCoding/02.1.chat-based.md)
 ```
 
 **잘못된 형식** (별도 줄):
 ```markdown
 ## 1. 오프닝: AI 코딩의 패러다임 전환
-[📄 01-opening.md](LlmAndVibeCoding/01-opening.md)
+[📄 01-opening.md](Documents/LlmAndVibeCoding/01-opening.md)
 ```
 
 ### 파일 네이밍 변경 시 주의
@@ -161,8 +161,8 @@ node generate-slides.js LlmAndVibeCoding/01-opening.md
 ```bash
 # 일괄 변경 시 permission denied 발생 가능
 # 개별 실행 권장
-mv LlmAndVibeCoding/02-1-chat-based.md LlmAndVibeCoding/02.1.chat-based.md
-mv LlmAndVibeCoding/02-2-ide-integration.md LlmAndVibeCoding/02.2.ide-integration.md
+mv Documents/LlmAndVibeCoding/02-1-chat-based.md Documents/LlmAndVibeCoding/02.1.chat-based.md
+mv Documents/LlmAndVibeCoding/02-2-ide-integration.md Documents/LlmAndVibeCoding/02.2.ide-integration.md
 ```
 
 ## 핵심 용어 및 개념

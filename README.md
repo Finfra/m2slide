@@ -7,12 +7,12 @@ AI 코딩 도구의 발전 과정과 바이브 코딩(VibeCoding) 개념을 소�
 ```
 LlmAndVibeCodingGen/
 ├── AGENDA.md                # 전체 목차 (인라인 링크 형식)
-├── LlmAndVibeCoding/                      # 마크다운 소스 파일 (15개)
+├── Documents/LlmAndVibeCoding/                      # 마크다운 소스 파일 (15개)
 │   ├── 01-opening.md
 │   ├── 02-llm-tool-evolution.md
 │   ├── 02.1.chat-based.md
 │   └── ...
-├── LlmAndVibeCoding_slide/                 # Reveal.js 프레젠테이션 (자동 생성)
+├── Documents/LlmAndVibeCoding_slide/                 # Reveal.js 프레젠테이션 (자동 생성)
 │   ├── index.html          # 마인드맵 네비게이션 (자동 생성)
 │   ├── 01-opening.html
 │   └── ...
@@ -37,15 +37,15 @@ LlmAndVibeCodingGen/
 node generate-slides.js
 
 # 특정 파일만 변환
-node generate-slides.js LlmAndVibeCoding/01-opening.md
+node generate-slides.js Documents/LlmAndVibeCoding/01-opening.md
 ```
 
 ### 2. 프레젠테이션 보기
 
 ```bash
 # 브라우저에서 열기
-open LlmAndVibeCoding_slide/index.html      # 마인드맵 네비게이션
-open LlmAndVibeCoding_slide/01-opening.html # 개별 섹션
+open Documents/LlmAndVibeCoding_slide/index.html      # 마인드맵 네비게이션
+open Documents/LlmAndVibeCoding_slide/01-opening.html # 개별 섹션
 ```
 
 **네비게이션**:
@@ -59,10 +59,10 @@ open LlmAndVibeCoding_slide/01-opening.html # 개별 섹션
 
 ```bash
 # 개별 파일 변환
-pandoc LlmAndVibeCoding/01-opening.md -o presentation.pptx
+pandoc Documents/LlmAndVibeCoding/01-opening.md -o presentation.pptx
 
 # 전체 자료 통합
-pandoc LlmAndVibeCoding/*.md -o complete.pptx
+pandoc Documents/LlmAndVibeCoding/*.md -o complete.pptx
 ```
 
 ## 주요 특징
@@ -99,13 +99,13 @@ pandoc LlmAndVibeCoding/*.md -o complete.pptx
 
 ## 수정 워크플로우
 
-1. `LlmAndVibeCoding/` 폴더의 마크다운 파일 수정
+1. `Documents/LlmAndVibeCoding/` 폴더의 마크다운 파일 수정
 2. `./convert.sh` 실행 (또는 `node generate-slides.js`)
-3. 브라우저에서 `LlmAndVibeCoding_slide/` HTML 파일 확인
+3. 브라우저에서 `Documents/LlmAndVibeCoding_slide/` HTML 파일 확인
 
 **자동 생성되는 파일**:
-- `LlmAndVibeCoding_slide/*.html` - 모든 챕터별 Reveal.js 프레젠테이션
-- `LlmAndVibeCoding_slide/index.html` - AGENDA.md 기반 마인드맵 네비게이션
+- `Documents/LlmAndVibeCoding_slide/*.html` - 모든 챕터별 Reveal.js 프레젠테이션
+- `Documents/LlmAndVibeCoding_slide/index.html` - AGENDA.md 기반 마인드맵 네비게이션
 
 ## 기술 스택
 

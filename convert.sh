@@ -1,6 +1,6 @@
 #!/bin/bash
 
 # Markdown to Reveal.js HTML converter
-# Removes all existing HTML files and regenerates from LlmAndVibeCoding folder
+# Removes all existing HTML files and regenerates from Documents/LlmAndVibeCoding folder
 
-rm LlmAndVibeCoding_slide/* && node generate-slides.js
+rm Documents/LlmAndVibeCoding_slide/* && node generate-slides.js
