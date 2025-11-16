@@ -89,32 +89,40 @@ pandoc Documents/LlmAndVibeCoding/01-opening.md Documents/LlmAndVibeCoding/02-ll
        -o presentation.pptx
 ```
 
-### HTML 변환
+### Reveal.js 프레젠테이션 생성
 
 ```bash
-# 단일 파일 HTML 변환
-pandoc Documents/LlmAndVibeCoding/01-opening.md -o output.html --standalone --css=style.css
+# 기본 사용 (프로젝트 내 Documents 폴더)
+./convert.sh
 
-# 전체 자료 통합 HTML
-pandoc Documents/LlmAndVibeCoding/*.md -o complete.html --standalone --toc
+# 사용자 지정 폴더
+./convert.sh ~/Documents/LlmAndVibeCoding
+
+# Node.js 직접 실행 (입력/출력 폴더 모두 지정)
+node generate-slides.js ~/Documents/LlmAndVibeCoding ~/Documents/MyPresentation
 ```
+
+**파라미터**:
+- 첫 번째: 입력 폴더 (기본값: `~/Documents/LlmAndVibeCoding`)
+- 두 번째: 출력 폴더 (기본값: 입력 폴더 + `_slide`)
 
 ### Markmap 시각화
 
-slide 폴더에서 HTML 파일로 인터랙티브 마인드맵 제공:
+Documents/LlmAndVibeCoding_slide 폴더에 HTML 파일로 인터랙티브 마인드맵 제공:
 - markmap.js CDN 사용
 - 각 챕터별 독립적인 HTML 파일
+- index.html에 전체 목차 마인드맵
 
 ### Reveal.js 프레젠테이션 생성
 
-md 폴더의 마크다운 파일을 Reveal.js 기반 HTML 프레젠테이션으로 자동 변환:
+마크다운 파일을 Reveal.js 기반 HTML 프레젠테이션으로 자동 변환:
 
 ```bash
-# 자동 생성 스크립트 실행
-node generate-slides.js
+# 현재 프로젝트 폴더 사용
+./convert.sh
 
-# 또는 개별 파일 생성
-node generate-slides.js Documents/LlmAndVibeCoding/01-opening.md
+# 사용자 지정 폴더 (Node.js 직접)
+node generate-slides.js ~/Documents/LlmAndVibeCoding
 ```
 
 **생성되는 HTML 구조**:

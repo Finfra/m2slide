@@ -28,17 +28,29 @@ LlmAndVibeCodingGen/
 
 **간편한 방법 (권장)**:
 ```bash
+# 현재 프로젝트의 기본 폴더 사용
 ./convert.sh
+
+# 사용자 지정 폴더 지정
+./convert.sh ~/Documents/LlmAndVibeCoding
+./convert.sh ~/Documents/LlmAndVibeCoding ~/Documents/LlmAndVibeCoding_slide
 ```
 
-**상세 제어**:
+**상세 제어 (Node.js 직접 실행)**:
 ```bash
-# 모든 md 파일을 HTML로 변환
+# 현재 프로젝트의 기본 폴더 사용
 node generate-slides.js
 
-# 특정 파일만 변환
-node generate-slides.js Documents/LlmAndVibeCoding/01-opening.md
+# 입력 폴더만 지정 (출력은 자동으로 입력+"_slide")
+node generate-slides.js ~/Documents/LlmAndVibeCoding
+
+# 입력/출력 폴더 모두 지정
+node generate-slides.js ~/Documents/LlmAndVibeCoding ~/Documents/MyPresentation
 ```
+
+**파라미터 설명**:
+- **첫 번째 파라미터**: 마크다운 파일이 있는 입력 폴더 (기본값: `~/Documents/LlmAndVibeCoding`)
+- **두 번째 파라미터**: HTML 파일을 생성할 출력 폴더 (기본값: 입력 폴더 + `_slide`)
 
 ### 2. 프레젠테이션 보기
 

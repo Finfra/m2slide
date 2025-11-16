@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
 // Markdown to HTML converter
 function convertMarkdownToHTML(markdown) {
@@ -118,7 +119,8 @@ function processInline(text) {
   text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 
   // Images
-  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="../Documents/LlmAndVibeCoding/$2" alt="$1">');
+  // Images - keep relative path from markdown file
+  text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
 
   // Inline code
   text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
@@ -154,14 +156,16 @@ function parseMarkdownFile(filePath) {
 }
 
 // Get subsections from AGENDA.md for a given file
-function getSubsections(fileName) {
+function getSubsections(fileName, agendaPath) {
   try {
-    const agendaPath = path.join(__dirname, 'Documents/LlmAndVibeCoding/AGENDA.md');
+    if (!agendaPath || !fs.existsSync(agendaPath)) {
+      return [];
+    }
     const content = fs.readFileSync(agendaPath, 'utf-8');
     const lines = content.split('\n');
 
-    // Find the main section for this file
-    const mainPattern = new RegExp(`## \\[(.+?)\\]\\(\\.\\/Documents\\/LlmAndVibeCoding\\/${fileName}\\)`);
+    // Find the main section for this file (supports ./ relative paths)
+    const mainPattern = new RegExp(`## \\[(.+?)\\]\\(\\.\/${fileName}\\)`);
     let foundMainSection = false;
     const subsections = [];
 
@@ -186,7 +190,7 @@ function getSubsections(fileName) {
         if (subMatch) {
           const title = subMatch[1];
           const mdPath = subMatch[2];
-          const htmlFile = mdPath.replace('./Documents/LlmAndVibeCoding/', '').replace('.md', '.html');
+          const htmlFile = path.basename(mdPath, '.md') + '.html';
           subsections.push({ title, htmlFile });
         }
       }
@@ -199,14 +203,16 @@ function getSubsections(fileName) {
 }
 
 // Get parent page from AGENDA.md for a given file
-function getParentPage(fileName) {
+function getParentPage(fileName, agendaPath) {
   try {
-    const agendaPath = path.join(__dirname, 'Documents/LlmAndVibeCoding/AGENDA.md');
+    if (!agendaPath || !fs.existsSync(agendaPath)) {
+      return 'index.html';
+    }
     const content = fs.readFileSync(agendaPath, 'utf-8');
     const lines = content.split('\n');
 
-    // Check if this is a subsection (### pattern)
-    const subPattern = new RegExp(`### \\[(.+?)\\]\\(\\.\\/Documents\\/LlmAndVibeCoding\\/${fileName}\\)`);
+    // Check if this is a subsection (### pattern with ./ relative path)
+    const subPattern = new RegExp(`### \\[(.+?)\\]\\(\\.\/${fileName}\\)`);
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
@@ -217,7 +223,7 @@ function getParentPage(fileName) {
           const parentMatch = lines[j].match(/^## \[(.+?)\]\((.+?)\)$/);
           if (parentMatch) {
             const mdPath = parentMatch[2];
-            return mdPath.replace('./Documents/LlmAndVibeCoding/', '').replace('.md', '.html');
+            return path.basename(mdPath, '.md') + '.html';
           }
         }
       }
@@ -231,7 +237,7 @@ function getParentPage(fileName) {
 }
 
 // Generate table of contents data for markmap
-function generateTOC(slides, fileName) {
+function generateTOC(slides, fileName, agendaPath) {
   const tocItems = slides.slice(1).map((slide, index) => {
     const slideNum = index + 1;
     let label = `슬라이드 ${slideNum}`;
@@ -249,7 +255,7 @@ function generateTOC(slides, fileName) {
   });
 
   // Add subsections if they exist
-  const subsections = getSubsections(fileName);
+  const subsections = getSubsections(fileName, agendaPath);
   if (subsections.length > 0) {
     const subsectionNodes = subsections.map(sub => ({
       content: `<a href="${sub.htmlFile}">${sub.title}</a>`,
@@ -298,11 +304,11 @@ ${html}
 }
 
 // Generate complete HTML file
-function generateHTML(filePath) {
+function generateHTML(filePath, agendaPath) {
   const slides = parseMarkdownFile(filePath);
   const fileName = path.basename(filePath);
-  const tocData = generateTOC(slides, fileName);
-  const parentPage = getParentPage(fileName);
+  const tocData = generateTOC(slides, fileName, agendaPath);
+  const parentPage = getParentPage(fileName, agendaPath);
   const title = slides[0].title || path.basename(filePath, '.md');
 
   const slidesHTML = slides.map(generateSlideHTML).join('\n\n');
@@ -478,7 +484,7 @@ function parseAgenda(agendaPath) {
     if (mainMatch) {
       const title = mainMatch[1];
       const mdPath = mainMatch[2];
-      const htmlPath = mdPath.replace('./Documents/LlmAndVibeCoding/', '').replace('.md', '.html');
+      const htmlPath = path.basename(mdPath, '.md') + '.html';
 
       currentSection = {
         content: `<a href="${htmlPath}">${title}</a>`,
@@ -493,7 +499,7 @@ function parseAgenda(agendaPath) {
     if (subMatch && currentSection) {
       const title = subMatch[1];
       const mdPath = subMatch[2];
-      const htmlPath = mdPath.replace('./Documents/LlmAndVibeCoding/', '').replace('.md', '.html');
+      const htmlPath = path.basename(mdPath, '.md') + '.html';
 
       currentSection.children.push({
         content: `<a href="${htmlPath}">${title}</a>`,
@@ -603,45 +609,71 @@ svg text {
 function main() {
   const args = process.argv.slice(2);
 
+  // Parse arguments
+  let inputDir, outputDir;
+
   if (args.length === 0) {
-    // Process all .md files in md folder
-    const mdDir = path.join(__dirname, 'Documents/LlmAndVibeCoding');
-    const files = fs.readdirSync(mdDir)
-      .filter(f => f.endsWith('.md'))
-      .sort();
+    // Default: ~/Documents/LlmAndVibeCoding
+    inputDir = path.join(os.homedir(), 'Documents', 'LlmAndVibeCoding');
+    outputDir = path.join(os.homedir(), 'Documents', 'LlmAndVibeCoding_slide');
+  } else if (args.length === 1) {
+    // First parameter provided, generate second by adding _slide
+    inputDir = path.resolve(args[0]);
+    outputDir = inputDir + '_slide';
+  } else {
+    // Both parameters provided
+    inputDir = path.resolve(args[0]);
+    outputDir = path.resolve(args[1]);
+  }
 
-    console.log(`Found ${files.length} markdown files`);
+  console.log(`Input directory: ${inputDir}`);
+  console.log(`Output directory: ${outputDir}`);
 
-    files.forEach(file => {
-      const inputPath = path.join(mdDir, file);
-      const outputPath = path.join(__dirname, 'Documents/LlmAndVibeCoding_slide', file.replace('.md', '.html'));
+  // Check if input directory exists
+  if (!fs.existsSync(inputDir)) {
+    console.error(`❌ Error: Input directory does not exist: ${inputDir}`);
+    process.exit(1);
+  }
 
-      console.log(`Processing: ${file}`);
-      const html = generateHTML(inputPath);
-      fs.writeFileSync(outputPath, html, 'utf-8');
-      console.log(`  → Generated: ${outputPath}`);
-    });
+  // Ensure output directory exists
+  if (!fs.existsSync(outputDir)) {
+    console.log(`Creating output directory: ${outputDir}`);
+    fs.mkdirSync(outputDir, { recursive: true });
+  }
 
-    // Generate index.html
-    console.log('\nGenerating index.html...');
-    const agendaPath = path.join(__dirname, 'Documents/LlmAndVibeCoding/AGENDA.md');
+  // Process all .md files (excluding AGENDA.md, will process it separately)
+  const files = fs.readdirSync(inputDir)
+    .filter(f => f.endsWith('.md') && f !== 'AGENDA.md')
+    .sort();
+
+  console.log(`\nFound ${files.length} markdown files`);
+
+  // Get AGENDA.md path (will be used by all file processing)
+  const agendaPath = path.join(inputDir, 'AGENDA.md');
+
+  files.forEach(file => {
+    const inputPath = path.join(inputDir, file);
+    const outputPath = path.join(outputDir, file.replace('.md', '.html'));
+
+    console.log(`Processing: ${file}`);
+    const html = generateHTML(inputPath, agendaPath);
+    fs.writeFileSync(outputPath, html, 'utf-8');
+    console.log(`  → Generated: ${outputPath}`);
+  });
+
+  // Generate index.html from AGENDA.md
+  console.log('\nGenerating index.html...');
+  if (fs.existsSync(agendaPath)) {
     const indexHTML = generateIndexHTML(agendaPath);
-    const indexPath = path.join(__dirname, 'Documents/LlmAndVibeCoding_slide', 'index.html');
+    const indexPath = path.join(outputDir, 'index.html');
     fs.writeFileSync(indexPath, indexHTML, 'utf-8');
     console.log(`✅ Generated: ${indexPath}`);
-
-    console.log('\n✅ All files processed!');
   } else {
-    // Process single file
-    const inputPath = args[0];
-    const baseName = path.basename(inputPath, '.md');
-    const outputPath = path.join(__dirname, 'Documents/LlmAndVibeCoding_slide', `${baseName}.html`);
-
-    console.log(`Processing: ${inputPath}`);
-    const html = generateHTML(inputPath);
-    fs.writeFileSync(outputPath, html, 'utf-8');
-    console.log(`✅ Generated: ${outputPath}`);
+    console.log(`⚠️  AGENDA.md not found in ${inputDir}, skipping index.html generation`);
   }
+
+  console.log('\n✅ All files processed!');
+  console.log(`\nOpen ${path.join(outputDir, 'index.html')} in your browser to view the presentation.`);
 }
 
 main();
