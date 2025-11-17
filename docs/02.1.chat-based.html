@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2.1 초기: 채팅 기반 시대 (2022-2023)</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
+  <style>
+    .reveal h1 { font-size: 2.5em; }
+    .reveal h2 { font-size: 1.8em; }
+    .reveal h3 { font-size: 1.4em; }
+    .reveal { font-size: 32px; }
+    .reveal table { font-size: 0.7em; }
+    .reveal pre { font-size: 0.6em; }
+    .reveal code { font-size: 0.9em; }
+    .reveal blockquote {
+      font-size: 1.1em;
+      font-style: italic;
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-left: 5px solid #42affa;
+    }
+    .reveal p {
+      font-size: 1em;
+      line-height: 1.6;
+      margin: 0.5em 0;
+      color: #333;
+    }
+    .reveal ul, .reveal ol {
+      display: block;
+      text-align: left;
+      margin: 1em 0;
+    }
+    .reveal li {
+      font-size: 0.9em;
+      line-height: 1.6;
+      margin: 0.3em 0;
+      color: #333;
+    }
+    .reveal strong {
+      color: #222;
+      font-weight: bold;
+    }
+    .reveal img {
+      max-width: 400px;
+      max-height: 300px;
+      margin: 0.5em 0;
+    }
+    #toc-mindmap a {
+      text-decoration: none;
+      color: inherit;
+    }
+    #toc-mindmap text {
+      font-size: 16px !important;
+      font-weight: 500;
+    }
+    .nav-up-btn {
+      position: fixed;
+      bottom: 14px;
+      right: 70px;
+      z-index: 31;
+      background-color: transparent;
+      border: none;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.5);
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+    .nav-up-btn:hover {
+      color: rgba(0, 0, 0, 0.8);
+    }
+    .nav-up-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+    .nav-up-btn span {
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+  <a href="02-llm-tool-evolution.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
+    <svg viewBox="0 0 24 24">
+      <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+    </svg>
+    <span>상위</span>
+  </a>
+  <div class="reveal">
+    <div class="slides">
+
+      <section>
+        <h1>2.1 초기: 채팅 기반 시대 (2022-2023)</h1>
+        <svg id="toc-mindmap" style="width: 100%; height: 500px;"></svg>
+      </section>
+
+      <section>
+<h2>0세대: 채팅 기반 시대 (2022-2023)</h2>
+
+<p><strong>2022년 11월 ChatGPT 출시</strong></p>
+<ul>
+<li>개발자들이 AI와 상호작용하는 방식의 근본적 변화</li>
+</ul>
+
+<p><strong>대표 툴</strong></p>
+<ul>
+<li>ChatGPT (OpenAI)</li>
+<li>Bard (Google)</li>
+<li>Claude (Anthropic)</li>
+</ul>
+      </section>
+
+      <section>
+<h2>0세대: 작동 방식</h2>
+
+<p><strong>워크플로우</strong></p>
+<pre><code>1. 개발자 → 자연어로 질문
+2. LLM → 코드 스니펫 생성
+3. 개발자 → 복사하여 IDE에 붙여넣기
+4. 수정 필요 → 다시 채팅으로 질문</code></pre>
+      </section>
+
+      <section>
+<h2>0세대: 특징</h2>
+
+<p><strong>장점</strong></p>
+<ul>
+<li>순수 대화형 인터페이스</li>
+<li>웹 브라우저 기반으로 접근 용이</li>
+</ul>
+
+<p><strong>한계</strong></p>
+<ul>
+<li>프로젝트 컨텍스트 단절</li>
+<li>복사-붙여넣기 반복 작업</li>
+<li>파일 간 의존성 파악 불가</li>
+<li>멀티파일 작업 불가능</li>
+</ul>
+      </section>
+
+      <section>
+<h2>0세대: 의미</h2>
+
+<blockquote>
+AI가 코드를 작성할 수 있다는 개념을 대중화시킨<br>
+<strong>혁명적 시작점</strong>
+</blockquote>
+
+<ul>
+<li>코드 조각 중심의 도움</li>
+<li>학습 도구로서의 가치</li>
+<li>다음 세대를 위한 토대</li>
+</ul>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
+      width: 1280,
+      height: 720,
+      margin: 0.1,
+      slideNumber: 'c/t',
+      transition: 'slide',
+      backgroundTransition: 'fade'
+    });
+
+    // Initialize mermaid for diagrams
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose'
+    });
+
+    // Initialize markmap for table of contents
+    setTimeout(() => {
+      const { markmap } = window;
+      const tocData = {
+      "content": "",
+      "children": [
+            {
+                  "content": "<a href=\"#/1\">0세대: 채팅 기반 시대 (2022-2023)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/2\">0세대: 작동 방식</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/3\">0세대: 특징</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/4\">0세대: 의미</a>",
+                  "children": []
+            },
+            {
+                  "content": "하위 챕터",
+                  "children": [
+                        {
+                              "content": "<a href=\"02.2.ide-integration.html\">2.2 전환점: IDE 통합의 시작 (2023-2024)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"02.3.cli-based.html\">2.3 현재: CLI 기반 시대 (2024-현재)</a>",
+                              "children": []
+                        }
+                  ]
+            }
+      ]
+};
+
+      markmap.Markmap.create('#toc-mindmap', {}, tocData);
+    }, 100);
+
+    // Connect up arrow key to parent page navigation
+    document.addEventListener('keydown', function(event) {
+      // Check if up arrow key is pressed
+      if (event.key === 'ArrowUp' || event.keyCode === 38) {
+        const currentSlide = Reveal.getIndices();
+        // Only navigate to parent if there are no vertical slides
+        if (currentSlide.v === 0) {
+          event.preventDefault();
+          // Navigate to parent page
+          const navLink = document.getElementById('nav-up-link');
+          if (navLink) {
+            window.location.href = navLink.href;
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

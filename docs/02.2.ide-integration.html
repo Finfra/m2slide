@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2.2 전환점: IDE 통합의 시작 (2023-2024)</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
+  <style>
+    .reveal h1 { font-size: 2.5em; }
+    .reveal h2 { font-size: 1.8em; }
+    .reveal h3 { font-size: 1.4em; }
+    .reveal { font-size: 32px; }
+    .reveal table { font-size: 0.7em; }
+    .reveal pre { font-size: 0.6em; }
+    .reveal code { font-size: 0.9em; }
+    .reveal blockquote {
+      font-size: 1.1em;
+      font-style: italic;
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-left: 5px solid #42affa;
+    }
+    .reveal p {
+      font-size: 1em;
+      line-height: 1.6;
+      margin: 0.5em 0;
+      color: #333;
+    }
+    .reveal ul, .reveal ol {
+      display: block;
+      text-align: left;
+      margin: 1em 0;
+    }
+    .reveal li {
+      font-size: 0.9em;
+      line-height: 1.6;
+      margin: 0.3em 0;
+      color: #333;
+    }
+    .reveal strong {
+      color: #222;
+      font-weight: bold;
+    }
+    .reveal img {
+      max-width: 400px;
+      max-height: 300px;
+      margin: 0.5em 0;
+    }
+    #toc-mindmap a {
+      text-decoration: none;
+      color: inherit;
+    }
+    #toc-mindmap text {
+      font-size: 16px !important;
+      font-weight: 500;
+    }
+    .nav-up-btn {
+      position: fixed;
+      bottom: 14px;
+      right: 70px;
+      z-index: 31;
+      background-color: transparent;
+      border: none;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.5);
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+    .nav-up-btn:hover {
+      color: rgba(0, 0, 0, 0.8);
+    }
+    .nav-up-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+    .nav-up-btn span {
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+  <a href="02-llm-tool-evolution.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
+    <svg viewBox="0 0 24 24">
+      <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+    </svg>
+    <span>상위</span>
+  </a>
+  <div class="reveal">
+    <div class="slides">
+
+      <section>
+        <h1>2.2 전환점: IDE 통합의 시작 (2023-2024)</h1>
+        <svg id="toc-mindmap" style="width: 100%; height: 500px;"></svg>
+      </section>
+
+      <section>
+<h2>1세대: IDE 통합의 시작 (2023-2024)</h2>
+
+<p><strong>개발 환경과의 융합</strong></p>
+<ul>
+<li>IDE에 AI를 직접 통합하는 시도</li>
+</ul>
+
+<p><strong>대표 툴</strong></p>
+
+<p><strong>GitHub Copilot</strong> (2023년 초)</p>
+<ul>
+<li>Microsoft와 OpenAI 협력</li>
+<li>VSCode, JetBrains IDE 지원</li>
+<li>인라인 코드 자동완성</li>
+</ul>
+      </section>
+
+      <section>
+<h2>1세대: 대표 툴 (계속)</h2>
+
+<p><strong>Cursor</strong> (2023년 중반)</p>
+<ul>
+<li>VSCode 포크 기반 AI 네이티브 IDE</li>
+<li>GPT-4 기반 코드 생성</li>
+<li>프로젝트 전체 컨텍스트 이해</li>
+</ul>
+
+<p><strong>Cline</strong> (2023년 후반)</p>
+<ul>
+<li>VSCode 확장 형태</li>
+<li>다양한 LLM 모델 선택 가능</li>
+<li>채팅 기반 코드 수정</li>
+</ul>
+      </section>
+
+      <section>
+<h2>1세대: 핵심 특징</h2>
+
+<p><strong>IDE 네이티브 통합</strong></p>
+<ul>
+<li>코드 에디터 내에서 직접 AI 활용</li>
+<li>실시간 코드 제안 및 자동완성</li>
+<li>파일 탐색기와 연동</li>
+</ul>
+
+<p><strong>프로젝트 컨텍스트 인식</strong></p>
+<ul>
+<li>현재 작업 중인 파일 내용 이해</li>
+<li>프로젝트 구조 파악 (제한적)</li>
+<li>관련 파일 참조 가능</li>
+</ul>
+      </section>
+
+      <section data-markdown>
+        <textarea data-template>
+## 1세대: 개선점
+
+| 항목 | 0세대 (채팅) | 1세대 (IDE) |
+|------|-------------|------------|
+| 작업 환경 | 브라우저 ↔ IDE | IDE 통합 |
+| 컨텍스트 | 대화 내용만 | 프로젝트 파일 |
+| 워크플로우 | 복사-붙여넣기 | 직접 편집 |
+| 생산성 | 낮음 | 중간 |
+</textarea>
+      </section>
+
+      <section>
+<h2>1세대: 한계</h2>
+
+<p><strong>여전한 제약</strong></p>
+<ul>
+<li>단일 파일 중심 작업 (멀티파일 제한적)</li>
+<li>수동 개입 필요 (파일 생성/삭제)</li>
+<li>로컬 리소스 의존 (메모리 사용 증가)</li>
+</ul>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
+      width: 1280,
+      height: 720,
+      margin: 0.1,
+      slideNumber: 'c/t',
+      transition: 'slide',
+      backgroundTransition: 'fade'
+    });
+
+    // Initialize mermaid for diagrams
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose'
+    });
+
+    // Initialize markmap for table of contents
+    setTimeout(() => {
+      const { markmap } = window;
+      const tocData = {
+      "content": "",
+      "children": [
+            {
+                  "content": "<a href=\"#/1\">1세대: IDE 통합의 시작 (2023-2024)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/2\">1세대: 대표 툴 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/3\">1세대: 핵심 특징</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/4\">1세대: 개선점</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/5\">1세대: 한계</a>",
+                  "children": []
+            },
+            {
+                  "content": "하위 챕터",
+                  "children": [
+                        {
+                              "content": "<a href=\"02.3.cli-based.html\">2.3 현재: CLI 기반 시대 (2024-현재)</a>",
+                              "children": []
+                        }
+                  ]
+            }
+      ]
+};
+
+      markmap.Markmap.create('#toc-mindmap', {}, tocData);
+    }, 100);
+
+    // Connect up arrow key to parent page navigation
+    document.addEventListener('keydown', function(event) {
+      // Check if up arrow key is pressed
+      if (event.key === 'ArrowUp' || event.keyCode === 38) {
+        const currentSlide = Reveal.getIndices();
+        // Only navigate to parent if there are no vertical slides
+        if (currentSlide.v === 0) {
+          event.preventDefault();
+          // Navigate to parent page
+          const navLink = document.getElementById('nav-up-link');
+          if (navLink) {
+            window.location.href = navLink.href;
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

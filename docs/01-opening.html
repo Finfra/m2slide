@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1. AI 코딩의 패러다임 전환</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
+  <style>
+    .reveal h1 { font-size: 2.5em; }
+    .reveal h2 { font-size: 1.8em; }
+    .reveal h3 { font-size: 1.4em; }
+    .reveal { font-size: 32px; }
+    .reveal table { font-size: 0.7em; }
+    .reveal pre { font-size: 0.6em; }
+    .reveal code { font-size: 0.9em; }
+    .reveal blockquote {
+      font-size: 1.1em;
+      font-style: italic;
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-left: 5px solid #42affa;
+    }
+    .reveal p {
+      font-size: 1em;
+      line-height: 1.6;
+      margin: 0.5em 0;
+      color: #333;
+    }
+    .reveal ul, .reveal ol {
+      display: block;
+      text-align: left;
+      margin: 1em 0;
+    }
+    .reveal li {
+      font-size: 0.9em;
+      line-height: 1.6;
+      margin: 0.3em 0;
+      color: #333;
+    }
+    .reveal strong {
+      color: #222;
+      font-weight: bold;
+    }
+    .reveal img {
+      max-width: 400px;
+      max-height: 300px;
+      margin: 0.5em 0;
+    }
+    #toc-mindmap a {
+      text-decoration: none;
+      color: inherit;
+    }
+    #toc-mindmap text {
+      font-size: 16px !important;
+      font-weight: 500;
+    }
+    .nav-up-btn {
+      position: fixed;
+      bottom: 14px;
+      right: 70px;
+      z-index: 31;
+      background-color: transparent;
+      border: none;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.5);
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+    .nav-up-btn:hover {
+      color: rgba(0, 0, 0, 0.8);
+    }
+    .nav-up-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+    .nav-up-btn span {
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
+    <svg viewBox="0 0 24 24">
+      <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+    </svg>
+    <span>상위</span>
+  </a>
+  <div class="reveal">
+    <div class="slides">
+
+      <section>
+        <h1>1. AI 코딩의 패러다임 전환</h1>
+        <svg id="toc-mindmap" style="width: 100%; height: 500px;"></svg>
+      </section>
+
+      <section>
+<h2>개발 방식의 변화</h2>
+
+<p><div style="float:right; margin-left:15px; max-width:400px;"></p>
+
+<div class="mermaid">
+graph TD;
+    A[2022 이전] --> B[ChatGPT];
+    A --> C[IDE 통합];
+    B --> D[CLI 시대];
+    C --> D;
+</div>
+
+<p></div></p>
+
+<p><strong>2022년 이전</strong></p>
+<ul>
+<li>개발자가 코드를 한 줄 한 줄 직접 타이핑</li>
+<li>Stack Overflow와 문서 검색에 의존</li>
+<li>반복적인 코딩 작업에 많은 시간 소요</li>
+</ul>
+
+<p><strong>2022년 ChatGPT 등장</strong></p>
+<ul>
+<li>자연어로 질문하고 코드 조각을 얻는 방식 시작</li>
+<li>개발 보조 도구로서 LLM 활용 증가</li>
+</ul>
+      </section>
+
+      <section>
+<p><div style="float:right; margin-left:15px; text-align:right;"></p>
+<p>  <img src="img/test.png" width="200" /></p>
+<p>  <br></p>
+<p>  <img src="img/test.png" width="200" /></p>
+<p></div></p>
+
+
+<h2>개발 방식의 변화 (계속)</h2>
+<p><img src="img/test.png" alt="test"></p>
+<p><strong>2023년 IDE 통합</strong></p>
+<ul>
+<li>GitHub Copilot, Cursor 등 IDE 내 실시간 코드 제안</li>
+<li>개발 흐름을 끊지 않는 인라인 자동완성</li>
+<li>프로젝트 컨텍스트를 일부 이해하기 시작</li>
+</ul>
+
+<p><strong>2024년 CLI 기반 코딩 시대</strong></p>
+<ul>
+<li>터미널에서 실행되는 AI 도구 등장 (Claude Code, Gemini CLI)</li>
+<li>AI가 전체 프로젝트를 이해하고 파일을 직접 수정</li>
+<li>에이전트처럼 자율적으로 멀티파일 작업 수행</li>
+</ul>
+      </section>
+
+      <section>
+<h2>변화의 속도</h2>
+
+<ul>
+<li><strong>ChatGPT</strong>: 출시 후 2개월 만에 1억 사용자 돌파</li>
+<li><strong>생산성 향상</strong>: GitHub Copilot 도입 기업의 개발자 생산성 55% 증가</li>
+<li><strong>시장 성장</strong>: AI 코딩 도구 시장, 2024년 기준 연 100% 이상 성장</li>
+</ul>
+      </section>
+
+      <section>
+<h2>기술적 배경</h2>
+
+<p><strong>LLM 성능 향상</strong></p>
+<ul>
+<li>GPT-4, Claude 3.5 Sonnet 등 강력한 모델 등장</li>
+<li>코드 이해 및 생성 능력 비약적 발전</li>
+</ul>
+
+<p><strong>컨텍스트 윈도우 확대</strong></p>
+<ul>
+<li>초기 4K 토큰 → 현재 200K 토큰 이상</li>
+<li>전체 코드베이스를 한 번에 이해 가능</li>
+</ul>
+
+<p><strong>개발 도구 통합</strong></p>
+<ul>
+<li>IDE, CLI, 에디터와의 원활한 연동</li>
+<li>파일 시스템 직접 접근 및 수정 가능</li>
+</ul>
+      </section>
+
+      <section>
+<h2>패러다임 전환: Code-First → Intent-First</h2>
+
+<p><strong>전통적 개발 방식</strong></p>
+<pre><code>개발자 아이디어 → 코드 작성 → 실행 → 디버깅 → 수정 → 반복</code></pre>
+<ul>
+<li>모든 코드를 개발자가 직접 작성</li>
+<li>문법과 API 세부사항 암기 필요</li>
+<li>반복적인 보일러플레이트 코드 작성</li>
+</ul>
+
+<p><strong>AI 시대 개발 방식</strong></p>
+<pre><code>개발자 의도 → 자연어 설명 → AI 코드 생성 → 검토 및 수정 → 완료</code></pre>
+<ul>
+<li>"무엇을" 만들지 설명하면 AI가 "어떻게" 구현</li>
+<li>고수준 설계와 비즈니스 로직에 집중</li>
+</ul>
+      </section>
+
+      <section data-markdown>
+        <textarea data-template>
+## 개발자 역할의 변화
+
+| 구분      | 전통적 개발    | AI 시대 개발     |
+| --------- | -------------- | ---------------- |
+| 주요 역할 | 코드 작성자    | 의도 설계자      |
+| 필요 역량 | 문법 전문가    | 아키텍처 설계자  |
+| 작업 방식 | 디버깅 중심    | 품질 검토 중심   |
+| 시간 배분 | 반복 작업 수행 | 창의적 문제 해결 |
+</textarea>
+      </section>
+
+      <section>
+<h2>핵심 인사이트</h2>
+
+<blockquote>
+개발자는 더 이상 "코드 타이핑 기계"가 아닌<br>
+<strong>"시스템 설계자이자 품질 관리자"</strong>로 진화하고 있습니다.
+</blockquote>
+
+<ul>
+<li><strong>반복 작업 자동화</strong>: 보일러플레이트, CRUD, 테스트 코드 등</li>
+<li><strong>창의성 증대</strong>: 비즈니스 로직과 사용자 경험 개선에 집중</li>
+<li><strong>생산성 향상</strong>: 같은 시간에 더 많은 가치 창출</li>
+</ul>
+      </section>
+
+      <section>
+<h2>본 자료의 구성</h2>
+
+<ol>
+<li><strong>LLM 코딩 툴의 진화 과정</strong> (2022-2024)</li>
+<li><strong>바이브 코딩(VibeCoding)</strong> 개념과 철학</li>
+<li><strong>세대 구분</strong>: IDE 기반(1세대) vs CLI 기반(2세대)</li>
+<li><strong>세대별 비교</strong> 및 선택 가이드</li>
+<li><strong>실전 사례</strong>와 활용법</li>
+<li><strong>도입 로드맵</strong>과 실천 전략</li>
+</ol>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
+      width: 1280,
+      height: 720,
+      margin: 0.1,
+      slideNumber: 'c/t',
+      transition: 'slide',
+      backgroundTransition: 'fade'
+    });
+
+    // Initialize mermaid for diagrams
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose'
+    });
+
+    // Initialize markmap for table of contents
+    setTimeout(() => {
+      const { markmap } = window;
+      const tocData = {
+      "content": "",
+      "children": [
+            {
+                  "content": "<a href=\"#/1\">개발 방식의 변화</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/2\">개발 방식의 변화 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/3\">변화의 속도</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/4\">기술적 배경</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/5\">패러다임 전환: Code-First → Intent-First</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/6\">개발자 역할의 변화</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/7\">핵심 인사이트</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/8\">본 자료의 구성</a>",
+                  "children": []
+            }
+      ]
+};
+
+      markmap.Markmap.create('#toc-mindmap', {}, tocData);
+    }, 100);
+
+    // Connect up arrow key to parent page navigation
+    document.addEventListener('keydown', function(event) {
+      // Check if up arrow key is pressed
+      if (event.key === 'ArrowUp' || event.keyCode === 38) {
+        const currentSlide = Reveal.getIndices();
+        // Only navigate to parent if there are no vertical slides
+        if (currentSlide.v === 0) {
+          event.preventDefault();
+          // Navigate to parent page
+          const navLink = document.getElementById('nav-up-link');
+          if (navLink) {
+            window.location.href = navLink.href;
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

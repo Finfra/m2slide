@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3. 바이브 코딩(VibeCoding) 개념과 철학</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
+  <style>
+    .reveal h1 { font-size: 2.5em; }
+    .reveal h2 { font-size: 1.8em; }
+    .reveal h3 { font-size: 1.4em; }
+    .reveal { font-size: 32px; }
+    .reveal table { font-size: 0.7em; }
+    .reveal pre { font-size: 0.6em; }
+    .reveal code { font-size: 0.9em; }
+    .reveal blockquote {
+      font-size: 1.1em;
+      font-style: italic;
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-left: 5px solid #42affa;
+    }
+    .reveal p {
+      font-size: 1em;
+      line-height: 1.6;
+      margin: 0.5em 0;
+      color: #333;
+    }
+    .reveal ul, .reveal ol {
+      display: block;
+      text-align: left;
+      margin: 1em 0;
+    }
+    .reveal li {
+      font-size: 0.9em;
+      line-height: 1.6;
+      margin: 0.3em 0;
+      color: #333;
+    }
+    .reveal strong {
+      color: #222;
+      font-weight: bold;
+    }
+    .reveal img {
+      max-width: 400px;
+      max-height: 300px;
+      margin: 0.5em 0;
+    }
+    #toc-mindmap a {
+      text-decoration: none;
+      color: inherit;
+    }
+    #toc-mindmap text {
+      font-size: 16px !important;
+      font-weight: 500;
+    }
+    .nav-up-btn {
+      position: fixed;
+      bottom: 14px;
+      right: 70px;
+      z-index: 31;
+      background-color: transparent;
+      border: none;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.5);
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+    .nav-up-btn:hover {
+      color: rgba(0, 0, 0, 0.8);
+    }
+    .nav-up-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+    .nav-up-btn span {
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
+    <svg viewBox="0 0 24 24">
+      <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+    </svg>
+    <span>상위</span>
+  </a>
+  <div class="reveal">
+    <div class="slides">
+
+      <section>
+        <h1>3. 바이브 코딩(VibeCoding) 개념과 철학</h1>
+        <svg id="toc-mindmap" style="width: 100%; height: 500px;"></svg>
+      </section>
+
+      <section>
+<h2>바이브 코딩이란?</h2>
+
+<p><strong>자연어로 의도를 전달</strong>하면</p>
+<p>AI가 <strong>실제 개발 환경에서 직접 코드를 작성하고 수정</strong>하는</p>
+<p>새로운 개발 방식</p>
+      </section>
+
+      <section>
+<h2>핵심 개념</h2>
+
+<blockquote>
+"느낌(Vibe)만 전달하면 AI가 알아서 코딩한다"
+</blockquote>
+
+<p><strong>Vibe</strong>: 개발자의 의도, 느낌, 요구사항</p>
+<p><strong>Coding</strong>: AI가 실제 코드로 구현</p>
+
+<p>단순 코드 생성을 넘어</p>
+<p><strong>개발 환경 전체와 통합</strong>되어</p>
+<p>파일을 직접 수정하고, 테스트를 실행하며, 오류를 수정</p>
+      </section>
+
+      <section>
+<h2>바이브 코딩의 핵심 원칙</h2>
+
+<p><strong>Intent-First Programming (의도 우선 프로그래밍)</strong></p>
+
+<pre><code>전통적 개발: "어떻게(How)" 구현할지 고민
+바이브 코딩: "무엇을(What)" 만들지만 설명</code></pre>
+
+<p><strong>예시</strong></p>
+<pre><code>❌ "useState를 사용해서 counter 변수를 만들고..."
+✅ "카운터 기능이 있는 컴포넌트 만들어줘"</code></pre>
+      </section>
+
+      <section>
+<h2>바이브 코딩의 핵심 원칙 (계속)</h2>
+
+<p><strong>Human-in-the-Loop Verification (인간 검증 루프)</strong></p>
+
+<pre><code>AI 코드 생성 → 개발자 검토 → 승인/수정 → 다음 단계</code></pre>
+
+<ul>
+<li>AI가 빠르게 구현</li>
+<li>개발자가 품질 검증</li>
+<li>안전하고 신뢰할 수 있는 결과</li>
+</ul>
+      </section>
+
+      <section>
+<h2>바이브 코딩의 핵심 원칙 (계속)</h2>
+
+<p><strong>Context-Aware Development (컨텍스트 인식 개발)</strong></p>
+
+<p>AI가 프로젝트 전체를 이해하고 작업:</p>
+<ul>
+<li>기존 코드 스타일 학습</li>
+<li>파일 간 의존성 파악</li>
+<li>프로젝트 규칙 준수</li>
+</ul>
+      </section>
+
+      <section>
+<h2>철학</h2>
+
+<p><strong>"개발자는 창조자, AI는 실행자"</strong></p>
+
+<p><strong>개발자의 역할</strong></p>
+<ul>
+<li>문제 정의</li>
+<li>요구사항 명세</li>
+<li>아키텍처 설계</li>
+<li>품질 검증</li>
+</ul>
+
+<p><strong>AI의 역할</strong></p>
+<ul>
+<li>반복 작업 자동화</li>
+<li>보일러플레이트 코드 생성</li>
+<li>테스트 코드 작성</li>
+<li>문서화</li>
+</ul>
+      </section>
+
+      <section>
+<h2>바이브 코딩 워크플로우</h2>
+
+<pre><code>1. 개발자: 의도 전달 (자연어)
+   "사용자 인증 기능 추가해줘"
+
+2. AI: 요구사항 파악 및 질문
+   "JWT 토큰 방식으로 하시겠어요?"
+
+3. 개발자: 세부 사항 확인
+   "응, JWT로 하고 localStorage에 저장해"
+
+4. AI: 코드 생성 및 파일 수정
+   - auth.service.ts 생성
+   - API 엔드포인트 추가
+   - 컴포넌트 수정
+
+5. 개발자: 검토 및 승인
+   "좋아, 이제 로그인 페이지도 만들어줘"</code></pre>
+      </section>
+
+      <section>
+<h2>왜 "바이브"인가?</h2>
+
+<p><strong>직관성</strong></p>
+<ul>
+<li>정확한 문법이 아닌 <strong>느낌</strong>만 전달</li>
+<li>"이런 느낌으로 만들어줘" 같은 추상적 요청도 가능</li>
+</ul>
+
+<p><strong>자연스러움</strong></p>
+<ul>
+<li>마치 동료와 대화하듯 편안하게 요청</li>
+<li>딱딱한 명령어가 아닌 자연어 사용</li>
+</ul>
+
+<p><strong>유연성</strong></p>
+<ul>
+<li>완벽한 명세가 아니어도 작동</li>
+<li>AI가 불명확한 부분은 질문하며 보완</li>
+</ul>
+      </section>
+
+      <section>
+<h2>바이브 코딩의 핵심 가치</h2>
+
+<p><strong>생산성 향상</strong></p>
+<ul>
+<li>반복 작업 제거</li>
+<li>빠른 프로토타이핑</li>
+<li>신속한 이터레이션</li>
+</ul>
+
+<p><strong>창의성 증대</strong></p>
+<ul>
+<li>구현 세부사항에서 해방</li>
+<li>비즈니스 로직에 집중</li>
+<li>더 많은 실험 가능</li>
+</ul>
+      </section>
+
+      <section>
+<h2>바이브 코딩의 핵심 가치 (계속)</h2>
+
+<p><strong>진입 장벽 낮춤</strong></p>
+<ul>
+<li>초보 개발자도 복잡한 기능 구현 가능</li>
+<li>새로운 기술 스택 빠르게 학습</li>
+<li>모범 사례 자동 적용</li>
+</ul>
+
+<p><strong>품질 향상</strong></p>
+<ul>
+<li>일관된 코드 스타일</li>
+<li>자동 테스트 생성</li>
+<li>보안 모범 사례 적용</li>
+</ul>
+      </section>
+
+      <section>
+<h2>바이브 코딩 vs 전통 코딩</h2>
+
+<p><strong>개발 프로세스 비교</strong></p>
+
+<p><strong>전통 코딩</strong></p>
+<pre><code>요구사항 분석 (1시간)
+기술 스택 조사 (2시간)
+아키텍처 설계 (3시간)
+코드 작성 (10시간)
+테스트 작성 (4시간)
+디버깅 (5시간)
+문서화 (2시간)
+───────────────
+총 27시간</code></pre>
+      </section>
+
+      <section>
+<h2>바이브 코딩 vs 전통 코딩 (계속)</h2>
+
+<p><strong>바이브 코딩</strong></p>
+<pre><code>요구사항 분석 (1시간)
+AI와 대화하며 구현 (3시간)
+코드 검토 및 수정 (2시간)
+테스트 검토 (1시간)
+문서 검토 (30분)
+───────────────
+총 7.5시간</code></pre>
+
+<p><strong>시간 절감</strong>: 약 <strong>70%</strong></p>
+      </section>
+
+      <section>
+<h2>주의사항</h2>
+
+<p><strong>AI가 못하는 것</strong></p>
+<ul>
+<li>비즈니스 요구사항 파악</li>
+<li>최적의 아키텍처 선택</li>
+<li>보안 취약점 완벽한 식별</li>
+<li>복잡한 알고리즘 최적화</li>
+</ul>
+
+<p><strong>개발자가 해야 할 것</strong></p>
+<ul>
+<li>요구사항 명확히 정의</li>
+<li>AI 생성 코드 검토</li>
+<li>아키텍처 의사결정</li>
+<li>최종 품질 책임</li>
+</ul>
+      </section>
+
+      <section>
+<h2>바이브 코딩의 성공 조건</h2>
+
+<p><strong>명확한 의도 전달</strong></p>
+
+<p>❌ 나쁜 예: "뭔가 좋은 거 만들어줘"</p>
+
+<p>✅ 좋은 예:</p>
+<pre><code>"사용자가 상품을 장바구니에 담고,
+결제할 수 있는 기능을 만들어줘.
+결제는 토스페이먼츠 API를 사용하고,
+주문 내역은 데이터베이스에 저장해줘."</code></pre>
+      </section>
+
+      <section>
+<h2>바이브 코딩의 성공 조건 (계속)</h2>
+
+<p><strong>적절한 검증</strong></p>
+<ul>
+<li>생성된 코드를 <strong>반드시 읽고 이해</strong></li>
+<li>테스트 실행으로 <strong>동작 확인</strong></li>
+<li>보안 취약점 <strong>수동 검토</strong></li>
+</ul>
+
+<p><strong>점진적 개발</strong></p>
+<pre><code>큰 기능을 한 번에 요청 (X)
+작은 단위로 나누어 요청 (O)
+각 단계마다 검증
+다음 단계 진행</code></pre>
+      </section>
+
+      <section>
+<h2>바이브 코딩의 성공 조건 (계속)</h2>
+
+<p><strong>Git 활용</strong></p>
+
+<pre><code class="language-bash"># 자주 커밋하여 롤백 가능성 확보
+git add .
+git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
+      </section>
+
+      <section>
+<h2>바이브 코딩이 가져온 변화</h2>
+
+<p><strong>개발 문화의 변화</strong></p>
+
+<p><strong>Before</strong></p>
+<ul>
+<li>코드 라인 수가 생산성 지표</li>
+<li>타이핑 속도가 중요</li>
+<li>"어떻게" 구현할지 고민</li>
+</ul>
+
+<p><strong>After</strong></p>
+<ul>
+<li>구현한 기능이 생산성 지표</li>
+<li>문제 정의 능력이 중요</li>
+<li>"무엇을" 만들지 고민</li>
+</ul>
+      </section>
+
+      <section>
+<h2>바이브 코딩이 가져온 변화 (계속)</h2>
+
+<p><strong>학습 방식의 변화</strong></p>
+
+<p><strong>Before</strong></p>
+<ul>
+<li>문서 읽기 → 예제 따라하기 → 숙달</li>
+<li>수개월의 학습 곡선</li>
+</ul>
+
+<p><strong>After</strong></p>
+<ul>
+<li>AI에게 질문 → 즉시 구현 → 코드 이해</li>
+<li>수일의 학습 곡선</li>
+</ul>
+      </section>
+
+      <section>
+<h2>바이브 코딩이 가져온 변화 (계속)</h2>
+
+<p><strong>팀 협업의 변화</strong></p>
+
+<p><strong>Before</strong></p>
+<ul>
+<li>시니어 개발자의 코드 리뷰 대기</li>
+<li>구현 방법에 대한 긴 논의</li>
+</ul>
+
+<p><strong>After</strong></p>
+<ul>
+<li>AI가 1차 구현 → 시니어가 설계 검토</li>
+<li>비즈니스 로직에 집중한 논의</li>
+</ul>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+  <script>
+    Reveal.initialize({
+      hash: true,
+      plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
+      width: 1280,
+      height: 720,
+      margin: 0.1,
+      slideNumber: 'c/t',
+      transition: 'slide',
+      backgroundTransition: 'fade'
+    });
+
+    // Initialize mermaid for diagrams
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose'
+    });
+
+    // Initialize markmap for table of contents
+    setTimeout(() => {
+      const { markmap } = window;
+      const tocData = {
+      "content": "",
+      "children": [
+            {
+                  "content": "<a href=\"#/1\">바이브 코딩이란?</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/2\">핵심 개념</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/3\">바이브 코딩의 핵심 원칙</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/4\">바이브 코딩의 핵심 원칙 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/5\">바이브 코딩의 핵심 원칙 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/6\">철학</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/7\">바이브 코딩 워크플로우</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/8\">왜 \"바이브\"인가?</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/9\">바이브 코딩의 핵심 가치</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/10\">바이브 코딩의 핵심 가치 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/11\">바이브 코딩 vs 전통 코딩</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/12\">바이브 코딩 vs 전통 코딩 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/13\">주의사항</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/14\">바이브 코딩의 성공 조건</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/15\">바이브 코딩의 성공 조건 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/16\">바이브 코딩의 성공 조건 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/17\">바이브 코딩이 가져온 변화</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/18\">바이브 코딩이 가져온 변화 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/19\">바이브 코딩이 가져온 변화 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "하위 챕터",
+                  "children": [
+                        {
+                              "content": "<a href=\"03.1.chat-limitations.html\">3.1 채팅 기반의 한계</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"03.2.vibecoding-start.html\">3.2 바이브 코딩의 시작</a>",
+                              "children": []
+                        }
+                  ]
+            }
+      ]
+};
+
+      markmap.Markmap.create('#toc-mindmap', {}, tocData);
+    }, 100);
+
+    // Connect up arrow key to parent page navigation
+    document.addEventListener('keydown', function(event) {
+      // Check if up arrow key is pressed
+      if (event.key === 'ArrowUp' || event.keyCode === 38) {
+        const currentSlide = Reveal.getIndices();
+        // Only navigate to parent if there are no vertical slides
+        if (currentSlide.v === 0) {
+          event.preventDefault();
+          // Navigate to parent page
+          const navLink = document.getElementById('nav-up-link');
+          if (navLink) {
+            window.location.href = navLink.href;
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
