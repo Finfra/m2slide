@@ -75,13 +75,27 @@ function convertMarkdownToHTML(markdown) {
 
     // Code blocks
     if (line.match(/^```/)) {
+      // Extract language from code block (e.g., ```javascript, ```mermaid)
+      const langMatch = line.match(/^```(\w+)/);
+      const lang = langMatch ? langMatch[1] : '';
+
       let codeLines = [];
       i++; // Skip opening ```
       while (i < lines.length && !lines[i].match(/^```/)) {
         codeLines.push(lines[i]);
         i++;
       }
-      html.push('<pre><code>' + codeLines.join('\n') + '</code></pre>');
+
+      // Special handling for mermaid diagrams
+      if (lang === 'mermaid') {
+        html.push('<div class="mermaid">');
+        html.push(codeLines.join('\n'));
+        html.push('</div>');
+      } else {
+        // Regular code block
+        const langClass = lang ? ` class="language-${lang}"` : '';
+        html.push(`<pre><code${langClass}>` + codeLines.join('\n') + '</code></pre>');
+      }
       continue;
     }
 
@@ -422,6 +436,7 @@ ${slidesHTML}
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
   <script>
     Reveal.initialize({
       hash: true,
@@ -432,6 +447,13 @@ ${slidesHTML}
       slideNumber: 'c/t',
       transition: 'slide',
       backgroundTransition: 'fade'
+    });
+
+    // Initialize mermaid for diagrams
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose'
     });
 
     // Initialize markmap for table of contents
