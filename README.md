@@ -2,6 +2,10 @@
 
 AI 코딩 도구의 발전 과정과 바이브 코딩(VibeCoding) 개념을 소개하는 30분 강연 자료
 
+**🌐 온라인 프레젠테이션**: https://finfra.github.io/m2slide/
+
+> GitHub Pages를 통해 웹브라우저에서 바로 프레젠테이션을 볼 수 있습니다.
+
 ## 프로젝트 구조
 
 ```
@@ -149,13 +153,43 @@ mkdir -p Documents/AnotherProject/markdown
 - `slide/*.html` - 모든 챕터별 Reveal.js 프레젠테이션
 - `slide/index.html` - AGENDA.md 기반 마인드맵 네비게이션
 
+## GitHub Pages 배포
+
+### 웹 배포 워크플로우
+
+마크다운 수정 후 웹에 자동 배포:
+
+```bash
+# 1. HTML 재생성
+./convert.sh Documents/LlmAndVibeCoding
+
+# 2. docs 폴더에 복사
+cp -r Documents/LlmAndVibeCoding/slide/* docs/
+
+# 3. Git 커밋 및 푸시
+git add docs
+git commit -m "Update slides"
+git push
+```
+
+약 1-2분 후 https://finfra.github.io/m2slide/ 에서 업데이트된 내용 확인 가능
+
+### GitHub Pages 설정 (최초 1회)
+
+1. https://github.com/Finfra/m2slide 접속
+2. **Settings** → **Pages** 메뉴
+3. **Source**: Branch `main`, Folder `/docs` 선택
+4. **Save** 버튼 클릭
+
 ## 기술 스택
 
 - **Reveal.js 5.0.4**: 프레젠테이션 프레임워크
-- **Markmap.js**: 마인드맵 시각화
+- **Markmap.js**: 마인드맵 시각화 (목차)
+- **Mermaid.js 10.9.0**: 다이어그램 렌더링
 - **D3.js**: 데이터 시각화
 - **Node.js**: 자동 변환 스크립트
 - **Pandoc**: PowerPoint 변환 (선택)
+- **GitHub Pages**: 웹 호스팅
 
 ## 라이선스
 
