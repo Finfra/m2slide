@@ -613,8 +613,8 @@ function main() {
   let inputDir, outputDir, projectDir;
 
   if (args.length === 0) {
-    // Default: ~/Documents/LlmAndVibeCoding
-    projectDir = path.join(os.homedir(), 'Documents', 'LlmAndVibeCoding');
+    // Default: Documents/LlmAndVibeCoding relative to script location
+    projectDir = path.join(__dirname, 'Documents', 'LlmAndVibeCoding');
     inputDir = path.join(projectDir, 'markdown');
     outputDir = path.join(projectDir, 'slide');
   } else if (args.length === 1) {

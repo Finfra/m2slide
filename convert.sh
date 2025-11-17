@@ -2,7 +2,7 @@
 
 # Markdown to Reveal.js HTML converter
 # Usage: ./convert.sh [project_dir]
-#   project_dir: Path to project folder (default: ~/Documents/LlmAndVibeCoding)
+#   project_dir: Path to project folder (default: ./Documents/LlmAndVibeCoding)
 #                Expects project_dir/markdown/ and generates project_dir/slide/
 
 # Get script directory
@@ -10,8 +10,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Parse arguments
 if [ $# -eq 0 ]; then
-  # No arguments: use default project in Documents
-  PROJECT_DIR="$HOME/Documents/LlmAndVibeCoding"
+  # No arguments: use default project relative to script location
+  PROJECT_DIR="$SCRIPT_DIR/Documents/LlmAndVibeCoding"
 else
   # One argument: project directory
   PROJECT_DIR="$1"

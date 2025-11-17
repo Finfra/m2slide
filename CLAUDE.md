@@ -109,10 +109,10 @@ pandoc Documents/LlmAndVibeCoding/01-opening.md Documents/LlmAndVibeCoding/02-ll
 ./convert.sh
 
 # 다른 프로젝트 지정
-./convert.sh ~/Documents/AnotherProject
+./convert.sh Documents/AnotherProject
 
 # Node.js 직접 실행
-node generate-slides.js ~/Documents/LlmAndVibeCoding
+node generate-slides.js Documents/LlmAndVibeCoding
 ```
 
 **프로젝트 구조**:
@@ -131,7 +131,7 @@ node generate-slides.js ~/Documents/LlmAndVibeCoding
 
 1. Documents 폴더에 프로젝트 폴더 생성:
 ```bash
-mkdir -p ~/Documents/MyProject/markdown
+mkdir -p Documents/MyProject/markdown
 ```
 
 2. markdown 폴더에 AGENDA.md와 마크다운 파일 추가
@@ -143,7 +143,7 @@ mkdir -p ~/Documents/MyProject/markdown
 
 4. 프레젠테이션 생성:
 ```bash
-./convert.sh ~/Documents/MyProject
+./convert.sh Documents/MyProject
 ```
 
 **생성되는 HTML 구조**:
