@@ -4,8 +4,19 @@
 
 ## 개발 방식의 변화
 
+<div style="float:right; margin-left:15px; max-width:400px;">
+
+```mermaid
+graph TD;
+    A[2022 이전] --> B[ChatGPT];
+    A --> C[IDE 통합];
+    B --> D[CLI 시대];
+    C --> D;
+```
+
+</div>
+
 **2022년 이전**
-![test](img/test.png)
 - 개발자가 코드를 한 줄 한 줄 직접 타이핑
 - Stack Overflow와 문서 검색에 의존
 - 반복적인 코딩 작업에 많은 시간 소요
@@ -15,9 +26,15 @@
 - 개발 보조 도구로서 LLM 활용 증가
 
 ---
+<div style="float:right; margin-left:15px; text-align:right;">
+  <img src="img/test.png" width="200" />
+  <br>
+  <img src="img/test.png" width="200" />
+</div>
+
 
 ## 개발 방식의 변화 (계속)
-
+![test](img/test.png)
 **2023년 IDE 통합**
 - GitHub Copilot, Cursor 등 IDE 내 실시간 코드 제안
 - 개발 흐름을 끊지 않는 인라인 자동완성
