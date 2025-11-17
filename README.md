@@ -10,7 +10,7 @@ AI 코딩 도구의 발전 과정과 바이브 코딩(VibeCoding) 개념을 소�
 
 ```
 m2slide/
-├── Documents/
+├── Projects/
 │   └── LlmAndVibeCoding/           # 프로젝트 폴더
 │       ├── markdown/               # 마크다운 소스 (16개)
 │       │   ├── AGENDA.md
@@ -23,8 +23,10 @@ m2slide/
 │       │   └── ...
 │       ├── resource/               # 참고 자료
 │       └── try0/                   # 초기 시도본
+├── config.yml                      # 현재 프로젝트 설정
 ├── generate-slides.js              # 자동 변환 스크립트
 ├── convert.sh                      # 원클릭 변환 스크립트
+├── deploy.sh                       # GitHub Pages 배포 스크립트
 ├── CLAUDE.md                       # 프로젝트 가이드
 └── README.md                       # 사용 설명서
 ```
@@ -35,12 +37,19 @@ m2slide/
 
 **간편한 방법 (권장)**:
 ```bash
-# 기본 프로젝트 사용 (./Documents/LlmAndVibeCoding)
+# config.yml의 현재 프로젝트 사용
 ./convert.sh
 
-# 다른 프로젝트 지정
-./convert.sh Documents/AnotherProject
+# 다른 프로젝트 지정 (config.yml 무시)
+./convert.sh Projects/AnotherProject
 ```
+
+**현재 프로젝트 설정** (`config.yml`):
+```yaml
+# 기본 프로젝트 변경
+current_project: LlmAndVibeCoding
+```
+`./convert.sh`와 `./deploy.sh`는 이 설정을 자동으로 읽습니다.
 
 **상세 제어 (Node.js 직접 실행)**:
 ```bash
@@ -48,13 +57,13 @@ m2slide/
 node generate-slides.js
 
 # 프로젝트 폴더 지정 (자동으로 markdown/과 slide/ 사용)
-node generate-slides.js Documents/LlmAndVibeCoding
+node generate-slides.js Projects/LlmAndVibeCoding
 
 # markdown 폴더 직접 지정 (자동으로 ../slide/ 생성)
-node generate-slides.js Documents/LlmAndVibeCoding/markdown
+node generate-slides.js Projects/LlmAndVibeCoding/markdown
 
 # 입력/출력 폴더 직접 지정 (고급 사용)
-node generate-slides.js Documents/LlmAndVibeCoding/markdown Documents/LlmAndVibeCoding/slide
+node generate-slides.js Projects/LlmAndVibeCoding/markdown Projects/LlmAndVibeCoding/slide
 ```
 
 **프로젝트 구조**:
@@ -69,8 +78,8 @@ ProjectFolder/
 
 ```bash
 # 브라우저에서 열기
-open Documents/LlmAndVibeCoding/slide/index.html      # 마인드맵 네비게이션
-open Documents/LlmAndVibeCoding/slide/01-opening.html # 개별 섹션
+open Projects/LlmAndVibeCoding/slide/index.html      # 마인드맵 네비게이션
+open Projects/LlmAndVibeCoding/slide/01-opening.html # 개별 섹션
 ```
 
 **네비게이션**:
@@ -84,10 +93,10 @@ open Documents/LlmAndVibeCoding/slide/01-opening.html # 개별 섹션
 
 ```bash
 # 개별 파일 변환
-pandoc Documents/LlmAndVibeCoding/markdown/01-opening.md -o presentation.pptx
+pandoc Projects/LlmAndVibeCoding/markdown/01-opening.md -o presentation.pptx
 
 # 전체 자료 통합
-pandoc Documents/LlmAndVibeCoding/markdown/*.md -o complete.pptx
+pandoc Projects/LlmAndVibeCoding/markdown/*.md -o complete.pptx
 ```
 
 ### 4. 새 프로젝트 추가
@@ -96,19 +105,19 @@ pandoc Documents/LlmAndVibeCoding/markdown/*.md -o complete.pptx
 
 1. Documents 폴더에 새 프로젝트 폴더 생성:
 ```bash
-mkdir -p Documents/AnotherProject/markdown
+mkdir -p Projects/AnotherProject/markdown
 ```
 
 2. markdown 폴더에 AGENDA.md와 마크다운 파일 추가
 
-3. Documents/.gitignore에 프로젝트 추가 (Git 추적용):
+3. Projects/.gitignore에 프로젝트 추가 (Git 추적용):
 ```gitignore
 !/AnotherProject/
 ```
 
 4. 프레젠테이션 생성:
 ```bash
-./convert.sh Documents/AnotherProject
+./convert.sh Projects/AnotherProject
 ```
 
 ## 주요 특징
@@ -145,9 +154,9 @@ mkdir -p Documents/AnotherProject/markdown
 
 ## 수정 워크플로우
 
-1. `Documents/LlmAndVibeCoding/markdown/` 폴더의 마크다운 파일 수정
+1. `Projects/LlmAndVibeCoding/markdown/` 폴더의 마크다운 파일 수정
 2. `./convert.sh` 실행 (또는 `node generate-slides.js`)
-3. 브라우저에서 `Documents/LlmAndVibeCoding/slide/` HTML 파일 확인
+3. 브라우저에서 `Projects/LlmAndVibeCoding/slide/` HTML 파일 확인
 
 **자동 생성되는 파일**:
 - `slide/*.html` - 모든 챕터별 Reveal.js 프레젠테이션
@@ -157,14 +166,22 @@ mkdir -p Documents/AnotherProject/markdown
 
 ### 웹 배포 워크플로우
 
-마크다운 수정 후 웹에 자동 배포:
+**간편한 방법 (권장)**:
+```bash
+# config.yml의 현재 프로젝트를 자동으로 배포
+./deploy.sh
 
+# 커스텀 커밋 메시지 사용
+./deploy.sh "Add new slides about AI coding"
+```
+
+**수동 배포**:
 ```bash
 # 1. HTML 재생성
-./convert.sh Documents/LlmAndVibeCoding
+./convert.sh
 
 # 2. docs 폴더에 복사
-cp -r Documents/LlmAndVibeCoding/slide/* docs/
+cp -r Projects/LlmAndVibeCoding/slide/* docs/
 
 # 3. Git 커밋 및 푸시
 git add docs
@@ -173,6 +190,12 @@ git push
 ```
 
 약 1-2분 후 https://finfra.github.io/m2slide/ 에서 업데이트된 내용 확인 가능
+
+**deploy.sh 스크립트 기능**:
+- config.yml에서 현재 프로젝트 자동 읽기
+- slide 폴더를 docs 폴더로 자동 복사
+- Git add, commit, push 자동 실행
+- 변경사항이 없으면 자동으로 종료
 
 ### GitHub Pages 설정 (최초 1회)
 

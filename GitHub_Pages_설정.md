@@ -30,12 +30,19 @@
 
 이후 마크다운 파일을 수정하고 다음 명령을 실행하면 자동으로 웹페이지가 업데이트됩니다:
 
+**간편한 방법 (권장)**:
+```bash
+# config.yml의 현재 프로젝트를 자동으로 배포
+./deploy.sh
+```
+
+**수동 배포**:
 ```bash
 # 1. HTML 재생성
-./convert.sh Documents/LlmAndVibeCoding
+./convert.sh
 
 # 2. docs 폴더에 복사
-cp -r Documents/LlmAndVibeCoding/slide/* docs/
+cp -r Projects/LlmAndVibeCoding/slide/* docs/
 
 # 3. Git 커밋 및 푸시
 git add docs

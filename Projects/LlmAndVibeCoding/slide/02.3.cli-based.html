@@ -3,11 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3.1 채팅 기반의 한계</title>
+  <title>2.3 현재: CLI 기반 시대 (2024-현재)</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
   <style>
+    * {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    }
     .reveal h1 { font-size: 2.5em; }
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
@@ -53,6 +56,7 @@
       color: inherit;
     }
     #toc-mindmap text {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif !important;
       font-size: 16px !important;
       font-weight: 500;
     }
@@ -87,7 +91,7 @@
   </style>
 </head>
 <body>
-  <a href="03-vibecoding-concept.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
+  <a href="02-llm-tool-evolution.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
     <svg viewBox="0 0 24 24">
       <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
     </svg>
@@ -97,73 +101,113 @@
     <div class="slides">
 
       <section>
-        <h1>3.1 채팅 기반의 한계</h1>
+        <h1>2.3 현재: CLI 기반 시대 (2024-현재)</h1>
         <svg id="toc-mindmap" style="width: 100%; height: 500px;"></svg>
       </section>
 
       <section>
-<h2>채팅 기반의 한계</h2>
+<h2>2세대: CLI 기반 코딩 시대 (2024-현재)</h2>
 
-<p><strong>전통적인 ChatGPT 방식의 워크플로우</strong></p>
-
-<pre><code>1. ChatGPT에 질문
-   ↓
-2. 코드 복사
-   ↓
-3. IDE에 붙여넣기
-   ↓
-4. 오류 발생
-   ↓
-5. 다시 ChatGPT에 질문
-   ↓
-6. 반복...</code></pre>
-      </section>
-
-      <section>
-<h2>채팅 기반의 주요 한계</h2>
-
-<p><strong>컨텍스트 단절</strong></p>
+<p><strong>터미널에서 실행되는 AI 도구</strong></p>
 <ul>
-<li>프로젝트 구조를 AI가 모름</li>
-<li>파일 간 의존성 무시</li>
-<li>기존 코드 스타일 불일치</li>
+<li>에이전트처럼 자율적으로 복잡한 작업 수행</li>
 </ul>
 
-<p><strong>복사-붙여넣기 지옥</strong></p>
+<p><strong>대표 툴</strong></p>
+
+<p><strong>Claude Code</strong></p>
 <ul>
-<li>코드 복사 → IDE 전환 → 붙여넣기 → 들여쓰기 수정</li>
-<li>import 문 추가 → 오류 확인 → 다시 ChatGPT로...</li>
+<li>Anthropic 공식 CLI 도구</li>
+<li>프로젝트 전체 컨텍스트 이해</li>
+<li>파일 생성, 수정, 삭제 자동화</li>
+<li>명령어 실행 및 결과 확인</li>
 </ul>
       </section>
 
       <section>
-<h2>구체적 사례: React 컴포넌트</h2>
+<h2>2세대: 대표 툴 (계속)</h2>
 
-<p><strong>ChatGPT 방식</strong></p>
-<pre><code>1. "로그인 폼 컴포넌트 만들어줘"
-2. 코드 복사
-3. LoginForm.tsx 파일 생성
-4. 붙여넣기
-5. 오류: useState가 import 안됨
-6. import 추가
-7. 오류: 기존 스타일 컴포넌트와 충돌
-8. 다시 ChatGPT: "styled-components 사용하도록 수정해줘"
-9. 반복...</code></pre>
+<p><strong>Gemini CLI</strong></p>
+<ul>
+<li>Google Gemini 기반</li>
+<li>빠른 응답 속도</li>
+<li>클라우드 기반 실행</li>
+</ul>
 
-<p><strong>소요 시간</strong>: 약 15-20분</p>
+<p><strong>Aider</strong></p>
+<ul>
+<li>Git 친화적 AI 코딩 도구</li>
+<li>터미널 기반 페어 프로그래밍</li>
+<li>자동 커밋 메시지 생성</li>
+</ul>
       </section>
 
-      <section data-markdown>
-        <textarea data-template>
-## 생산성 차이
+      <section>
+<h2>2세대: 핵심 특징</h2>
 
-| 작업 | ChatGPT | 바이브 코딩 | 차이 |
-|------|---------|-----------|------|
-| 컴포넌트 생성 | 15분 | 3분 | **5배** |
-| 버그 수정 | 20분 | 5분 | **4배** |
-| 리팩토링 | 30분 | 8분 | **3.7배** |
-| 테스트 작성 | 25분 | 7분 | **3.5배** |
-</textarea>
+<p><strong>CLI 기반 실행 환경</strong></p>
+<ul>
+<li>터미널에서 직접 실행되는 독립 프로그램</li>
+<li>IDE 없이도 완전한 개발 작업 수행</li>
+<li>서버 환경에서도 동작 (SSH 접속 환경)</li>
+<li>로컬 리소스 거의 사용 안 함</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 핵심 특징 (계속)</h2>
+
+<p><strong>에이전트형 자율 작업</strong></p>
+<ul>
+<li>개발자의 의도를 파악하여 다단계 작업 수행</li>
+<li>필요한 파일을 스스로 찾아 수정</li>
+<li>오류 발생 시 자동으로 수정 시도</li>
+</ul>
+
+<p><strong>멀티파일 작업</strong></p>
+<ul>
+<li>프로젝트 전체를 대상으로 작업</li>
+<li>파일 간 의존성 자동 해결</li>
+<li>일관성 있는 코드 스타일 유지</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 도구 사용 능력</h2>
+
+<p><strong>Tool Use (Function Calling)</strong></p>
+<ul>
+<li>터미널 명령어 직접 실행</li>
+<li>파일 시스템 직접 조작</li>
+<li>Git 명령어 자동 실행</li>
+<li>패키지 설치 및 관리</li>
+</ul>
+
+<p><strong>대화형 협업</strong></p>
+<ul>
+<li>자연어로 복잡한 요구사항 전달</li>
+<li>AI가 불명확한 부분 질문</li>
+<li>반복적인 피드백 루프</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 혁신 포인트</h2>
+
+<p><strong>Intent-First Programming</strong></p>
+<pre><code>개발자: "무엇을(What)" 만들지만 설명
+AI: "어떻게(How)" 구현할지 결정
+→ 구현 세부사항은 AI에게 위임</code></pre>
+
+<p><strong>Human-in-the-Loop Verification</strong></p>
+<pre><code>AI 코드 생성 → 개발자 검토 → 승인/수정 → 다음 단계</code></pre>
+
+<p><strong>End-to-End Automation</strong></p>
+<ul>
+<li>요구사항 분석부터 배포까지 자동화</li>
+<li>테스트 코드 자동 생성</li>
+<li>문서화 자동 작성</li>
+</ul>
       </section>
 
     </div>
@@ -175,6 +219,7 @@
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
   <script>
     Reveal.initialize({
       hash: true,
@@ -187,6 +232,13 @@
       backgroundTransition: 'fade'
     });
 
+    // Initialize mermaid for diagrams
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose'
+    });
+
     // Initialize markmap for table of contents
     setTimeout(() => {
       const { markmap } = window;
@@ -194,29 +246,28 @@
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">채팅 기반의 한계</a>",
+                  "content": "<a href=\"#/1\">2세대: CLI 기반 코딩 시대 (2024-현재)</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/2\">채팅 기반의 주요 한계</a>",
+                  "content": "<a href=\"#/2\">2세대: 대표 툴 (계속)</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">구체적 사례: React 컴포넌트</a>",
+                  "content": "<a href=\"#/3\">2세대: 핵심 특징</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/4\">생산성 차이</a>",
+                  "content": "<a href=\"#/4\">2세대: 핵심 특징 (계속)</a>",
                   "children": []
             },
             {
-                  "content": "하위 챕터",
-                  "children": [
-                        {
-                              "content": "<a href=\"03.2.vibecoding-start.html\">3.2 바이브 코딩의 시작</a>",
-                              "children": []
-                        }
-                  ]
+                  "content": "<a href=\"#/5\">2세대: 도구 사용 능력</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/6\">2세대: 혁신 포인트</a>",
+                  "children": []
             }
       ]
 };

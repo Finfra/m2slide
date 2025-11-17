@@ -3,11 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>4.2 2세대: CLI 기반 코딩</title>
+  <title>4.1 1세대: IDE 기반 코딩</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
   <style>
+    * {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    }
     .reveal h1 { font-size: 2.5em; }
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
@@ -53,6 +56,7 @@
       color: inherit;
     }
     #toc-mindmap text {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif !important;
       font-size: 16px !important;
       font-weight: 500;
     }
@@ -97,174 +101,152 @@
     <div class="slides">
 
       <section>
-        <h1>4.2 2세대: CLI 기반 코딩</h1>
+        <h1>4.1 1세대: IDE 기반 코딩</h1>
         <svg id="toc-mindmap" style="width: 100%; height: 500px;"></svg>
       </section>
 
       <section>
-<h2>2세대: CLI 기반 코딩</h2>
+<h2>1세대: IDE 기반 코딩</h2>
 
-<p><strong>터미널(CLI)</strong>에서 AI와 대화하며 작업</p>
+<p><strong>IDE(통합 개발 환경) 내부</strong>에서 AI와 협업</p>
 <ul>
-<li>IDE 없이도 프로젝트 전체를 자동화</li>
+<li>친숙한 GUI 환경에서 시각적으로 AI와 상호작용</li>
 </ul>
       </section>
 
       <section>
-<h2>2세대: 대표 툴</h2>
+<h2>1세대: 대표 툴</h2>
 
-<p><strong>Claude Code</strong></p>
+<p><strong>Cursor</strong></p>
 <ul>
-<li>Anthropic 공식 CLI 도구</li>
-<li>터미널에서 Claude와 직접 대화</li>
-<li>프로젝트 전체 컨텍스트 이해</li>
-<li>자동 파일 수정 및 명령 실행</li>
+<li>VSCode 포크 기반 AI 네이티브 IDE</li>
+<li>GPT-4 기반 코드 생성 및 편집</li>
+<li>Composer 모드로 멀티파일 작업</li>
 </ul>
 
-<p><strong>Gemini CLI</strong></p>
+<p><strong>Cline (구 Claude Dev)</strong></p>
 <ul>
-<li>Google Gemini 기반</li>
-<li>빠른 응답 속도</li>
-<li>클라우드 기반 실행</li>
-<li>DevOps 작업에 최적화</li>
+<li>VSCode 확장 프로그램</li>
+<li>다양한 LLM 모델 선택 가능</li>
+<li>채팅 인터페이스 기반</li>
 </ul>
       </section>
 
       <section>
-<h2>2세대: 대표 툴 (계속)</h2>
+<h2>1세대: 대표 툴 (계속)</h2>
 
-<p><strong>Aider</strong></p>
+<p><strong>Windsurf</strong></p>
 <ul>
-<li>Git 친화적 AI 코딩 도구</li>
-<li>터미널 기반 페어 프로그래밍</li>
-<li>자동 커밋 메시지 생성</li>
+<li>Codeium 개발</li>
+<li>Cascade 모드로 자율 작업</li>
+<li>컨텍스트 인식 코드 생성</li>
+</ul>
+
+<p><strong>Continue</strong></p>
+<ul>
+<li>VSCode/JetBrains 확장</li>
+<li>로컬 모델 연동 가능</li>
+<li>실시간 코드 편집</li>
 </ul>
       </section>
 
       <section>
-<h2>2세대: 장점</h2>
+<h2>1세대: 장점</h2>
 
-<p><strong>서버/클라우드 기반</strong></p>
+<p><strong>직관적인 GUI</strong></p>
 <ul>
-<li>로컬 리소스 거의 사용 안 함</li>
-<li>노트북 배터리 절약</li>
-<li>원격 서버에서 작업 가능</li>
+<li>시각적 인터페이스로 진입 장벽 낮음</li>
+<li>마우스 클릭으로 쉽게 작업</li>
+<li>코드 변경 사항을 diff 모드로 확인</li>
 </ul>
 
-<p><strong>무제한 병렬 처리</strong></p>
+<p><strong>IDE 기능 활용</strong></p>
 <ul>
-<li>여러 터미널에서 동시 작업</li>
-<li>멀티 프로젝트 동시 관리</li>
-<li>백그라운드 실행 가능</li>
-</ul>
-      </section>
-
-      <section>
-<h2>2세대: 장점 (계속)</h2>
-
-<p><strong>스크립트 자동화</strong></p>
-<ul>
-<li>쉘 스크립트와 결합</li>
-<li>CI/CD 파이프라인 통합</li>
-<li>DevOps 워크플로우 자동화</li>
-</ul>
-
-<p><strong>빠른 실행 속도</strong></p>
-<ul>
-<li>GUI 오버헤드 없음</li>
-<li>텍스트 기반으로 빠른 응답</li>
-<li>네트워크 대역폭 효율적</li>
+<li>디버거, 터미널, Git 통합</li>
+<li>익숙한 단축키 사용</li>
+<li>파일 탐색기 활용</li>
 </ul>
       </section>
 
       <section>
-<h2>2세대: 단점</h2>
+<h2>1세대: 장점 (계속)</h2>
 
-<p><strong>학습 곡선</strong></p>
+<p><strong>실시간 피드백</strong></p>
 <ul>
-<li>터미널 명령어 숙지 필요</li>
-<li>GUI 없이 작업해야 함</li>
-<li>코드 변경 사항 시각화 제한적</li>
-</ul>
-
-<p><strong>시각적 피드백 부족</strong></p>
-<ul>
-<li>diff 확인이 텍스트 기반</li>
-<li>그래픽 UI 프리뷰 불가</li>
+<li>코드 작성 중 즉시 제안</li>
+<li>인라인 자동완성</li>
+<li>오류 즉시 확인</li>
 </ul>
       </section>
 
       <section>
-<h2>2세대: 단점 (계속)</h2>
+<h2>1세대: 단점</h2>
 
-<p><strong>초기 설정</strong></p>
+<p><strong>로컬 리소스 의존</strong></p>
 <ul>
-<li>환경 변수 설정 필요</li>
-<li>API 키 설정 필수</li>
+<li>IDE 실행으로 메모리 8GB+ 필요</li>
+<li>CPU 사용량 높음</li>
+<li>배터리 소모 증가</li>
+</ul>
+
+<p><strong>단일 프로젝트 제한</strong></p>
+<ul>
+<li>한 번에 하나의 프로젝트만 집중</li>
+<li>멀티 프로젝트 작업 시 IDE 여러 개 실행 필요</li>
 </ul>
       </section>
 
       <section>
-<h2>2세대: 작동 방식</h2>
+<h2>1세대: 단점 (계속)</h2>
 
-<pre><code># Claude Code 예시
-$ claude-code
-
-> 프로젝트 분석해서 README.md 업데이트해줘
-
-[Claude가 프로젝트 파일들을 읽고 분석]
-[README.md 자동 수정]
-[변경사항 표시]
-
-> 테스트 코드도 작성해줘
-
-[테스트 파일 자동 생성]
-[npm test 실행하여 검증]</code></pre>
-      </section>
-
-      <section>
-<h2>2세대: 적합한 사용자</h2>
-
+<p><strong>GUI 오버헤드</strong></p>
 <ul>
-<li><strong>시니어 개발자</strong>: 터미널에 익숙한 사용자</li>
-<li><strong>백엔드/DevOps 개발자</strong>: 서버 관리 및 자동화 작업</li>
-<li><strong>멀티 프로젝트 관리</strong>: 여러 프로젝트를 동시에 진행</li>
-<li><strong>리눅스 사용자</strong>: CLI 환경 선호</li>
-<li><strong>원격 개발</strong>: SSH로 원격 서버 작업</li>
+<li>그래픽 렌더링으로 인한 성능 저하</li>
+<li>원격 서버 작업 시 불편</li>
 </ul>
       </section>
 
       <section>
-<h2>2세대: 대표 워크플로우</h2>
+<h2>1세대: 작동 방식</h2>
 
-<p><strong>Claude Code 예시</strong></p>
-
-<pre><code># 프로젝트 디렉토리에서
-$ claude-code
-
-> AWS Lambda 함수로 이미지 리사이징 서비스 만들어줘.
-  S3에서 이미지 받아서 처리하고 다시 S3에 저장.
-
-[Claude가 작업 시작]
-✓ lambda_function.py 생성
-✓ requirements.txt 생성
-✓ 환경변수 설정 확인
-✓ SAM template 생성
-✓ README.md 업데이트</code></pre>
+<pre><code>1. IDE 실행
+   ↓
+2. AI 확장/기능 활성화
+   ↓
+3. 채팅 패널에서 요청
+   ↓
+4. AI가 코드 생성/수정
+   ↓
+5. diff 모드로 확인
+   ↓
+6. 승인 또는 거부</code></pre>
       </section>
 
       <section>
-<h2>2세대: 대표 워크플로우 (계속)</h2>
+<h2>1세대: 적합한 사용자</h2>
 
-<pre><code>> 로컬에서 테스트해줘
+<ul>
+<li><strong>초보 개발자</strong>: GUI 환경이 익숙한 사용자</li>
+<li><strong>프론트엔드 개발자</strong>: 시각적 피드백이 중요한 작업</li>
+<li><strong>단일 프로젝트 집중</strong>: 하나의 프로젝트에 깊이 파고드는 경우</li>
+<li><strong>윈도우/맥 사용자</strong>: 로컬 환경 개발 선호</li>
+</ul>
+      </section>
 
-[sam local invoke 실행]
-[테스트 결과 확인]
+      <section>
+<h2>1세대: 대표 워크플로우</h2>
 
-> 문제없으면 배포해줘
+<p><strong>Cursor Composer 예시</strong></p>
 
-[sam deploy 실행]
-[배포 완료]</code></pre>
+<pre><code>1. Cmd+K (macOS) / Ctrl+K (Windows) 단축키
+2. "사용자 프로필 페이지 만들어줘" 입력
+3. AI가 필요한 파일들을 자동으로 생성/수정
+   - UserProfile.tsx
+   - UserProfile.css
+   - types/User.ts
+4. 각 파일의 변경사항을 diff로 확인
+5. Accept All 또는 개별 승인
+6. 실행 및 테스트</code></pre>
       </section>
 
     </div>
@@ -276,6 +258,7 @@ $ claude-code
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
   <script>
     Reveal.initialize({
       hash: true,
@@ -288,6 +271,13 @@ $ claude-code
       backgroundTransition: 'fade'
     });
 
+    // Initialize mermaid for diagrams
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose'
+    });
+
     // Initialize markmap for table of contents
     setTimeout(() => {
       const { markmap } = window;
@@ -295,48 +285,53 @@ $ claude-code
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">2세대: CLI 기반 코딩</a>",
+                  "content": "<a href=\"#/1\">1세대: IDE 기반 코딩</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/2\">2세대: 대표 툴</a>",
+                  "content": "<a href=\"#/2\">1세대: 대표 툴</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">2세대: 대표 툴 (계속)</a>",
+                  "content": "<a href=\"#/3\">1세대: 대표 툴 (계속)</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/4\">2세대: 장점</a>",
+                  "content": "<a href=\"#/4\">1세대: 장점</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/5\">2세대: 장점 (계속)</a>",
+                  "content": "<a href=\"#/5\">1세대: 장점 (계속)</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/6\">2세대: 단점</a>",
+                  "content": "<a href=\"#/6\">1세대: 단점</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/7\">2세대: 단점 (계속)</a>",
+                  "content": "<a href=\"#/7\">1세대: 단점 (계속)</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/8\">2세대: 작동 방식</a>",
+                  "content": "<a href=\"#/8\">1세대: 작동 방식</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/9\">2세대: 적합한 사용자</a>",
+                  "content": "<a href=\"#/9\">1세대: 적합한 사용자</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/10\">2세대: 대표 워크플로우</a>",
+                  "content": "<a href=\"#/10\">1세대: 대표 워크플로우</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/11\">2세대: 대표 워크플로우 (계속)</a>",
-                  "children": []
+                  "content": "하위 챕터",
+                  "children": [
+                        {
+                              "content": "<a href=\"04.2.cli-generation.html\">4.2 2세대: CLI 기반 코딩</a>",
+                              "children": []
+                        }
+                  ]
             }
       ]
 };

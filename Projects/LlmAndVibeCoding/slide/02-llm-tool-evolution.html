@@ -3,11 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>4.1 1세대: IDE 기반 코딩</title>
+  <title>2. LLM 코딩 툴의 진화 과정</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
   <style>
+    * {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    }
     .reveal h1 { font-size: 2.5em; }
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
@@ -53,6 +56,7 @@
       color: inherit;
     }
     #toc-mindmap text {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif !important;
       font-size: 16px !important;
       font-weight: 500;
     }
@@ -87,7 +91,7 @@
   </style>
 </head>
 <body>
-  <a href="04-vibecoding-generations.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
+  <a href="index.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
     <svg viewBox="0 0 24 24">
       <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
     </svg>
@@ -97,152 +101,94 @@
     <div class="slides">
 
       <section>
-        <h1>4.1 1세대: IDE 기반 코딩</h1>
+        <h1>2. LLM 코딩 툴의 진화 과정</h1>
         <svg id="toc-mindmap" style="width: 100%; height: 500px;"></svg>
       </section>
 
       <section>
-<h2>1세대: IDE 기반 코딩</h2>
+<h2>진화 타임라인</h2>
 
-<p><strong>IDE(통합 개발 환경) 내부</strong>에서 AI와 협업</p>
+<pre><code>2022-2023        2023-2024           2024-현재
+채팅 기반    →    IDE 통합      →    CLI 기반
+(0세대)          (1세대)            (2세대)</code></pre>
+      </section>
+
+      <section>
+<h2>진화의 핵심 동인</h2>
+
+<p><strong>기술적 발전</strong></p>
+
+<p><strong>LLM 성능 향상</strong></p>
 <ul>
-<li>친숙한 GUI 환경에서 시각적으로 AI와 상호작용</li>
+<li>GPT-3.5 → GPT-4 → Claude 3.5 Sonnet</li>
+<li>코드 이해 및 생성 능력 비약적 향상</li>
+</ul>
+
+<p><strong>컨텍스트 윈도우 확대</strong></p>
+<ul>
+<li>4K 토큰 → 32K → 200K 토큰</li>
+<li>전체 코드베이스를 한 번에 이해 가능</li>
 </ul>
       </section>
 
       <section>
-<h2>1세대: 대표 툴</h2>
+<h2>진화의 핵심 동인 (계속)</h2>
 
-<p><strong>Cursor</strong></p>
+<p><strong>도구 사용 능력 (Function Calling)</strong></p>
 <ul>
-<li>VSCode 포크 기반 AI 네이티브 IDE</li>
-<li>GPT-4 기반 코드 생성 및 편집</li>
-<li>Composer 모드로 멀티파일 작업</li>
+<li>AI가 직접 API 호출</li>
+<li>파일 시스템 조작</li>
+<li>명령어 실행</li>
 </ul>
 
-<p><strong>Cline (구 Claude Dev)</strong></p>
+<p><strong>사용자 니즈 변화</strong></p>
 <ul>
-<li>VSCode 확장 프로그램</li>
-<li>다양한 LLM 모델 선택 가능</li>
-<li>채팅 인터페이스 기반</li>
-</ul>
-      </section>
-
-      <section>
-<h2>1세대: 대표 툴 (계속)</h2>
-
-<p><strong>Windsurf</strong></p>
-<ul>
-<li>Codeium 개발</li>
-<li>Cascade 모드로 자율 작업</li>
-<li>컨텍스트 인식 코드 생성</li>
-</ul>
-
-<p><strong>Continue</strong></p>
-<ul>
-<li>VSCode/JetBrains 확장</li>
-<li>로컬 모델 연동 가능</li>
-<li>실시간 코드 편집</li>
+<li>더 빠른 개발 속도 요구</li>
+<li>더 적은 반복 작업 원함</li>
+<li>더 높은 코드 품질 기대</li>
 </ul>
       </section>
 
-      <section>
-<h2>1세대: 장점</h2>
+      <section data-markdown>
+        <textarea data-template>
+## 세대별 비교 요약
 
-<p><strong>직관적인 GUI</strong></p>
-<ul>
-<li>시각적 인터페이스로 진입 장벽 낮음</li>
-<li>마우스 클릭으로 쉽게 작업</li>
-<li>코드 변경 사항을 diff 모드로 확인</li>
-</ul>
-
-<p><strong>IDE 기능 활용</strong></p>
-<ul>
-<li>디버거, 터미널, Git 통합</li>
-<li>익숙한 단축키 사용</li>
-<li>파일 탐색기 활용</li>
-</ul>
+| 특징 | 0세대<br/>(채팅) | 1세대<br/>(IDE) | 2세대<br/>(CLI) |
+|------|----------------|----------------|----------------|
+| **시기** | 2022-2023 | 2023-2024 | 2024-현재 |
+| **환경** | 웹 브라우저 | IDE 통합 | CLI/서버 |
+| **컨텍스트** | 대화 내용 | 현재 파일 | 프로젝트 전체 |
+| **작업 범위** | 코드 조각 | 단일 파일 | 멀티파일 |
+| **자동화** | 없음 | 부분적 | 전면적 |
+| **생산성** | 낮음 | 중간 | 높음 |
+</textarea>
       </section>
 
       <section>
-<h2>1세대: 장점 (계속)</h2>
+<h2>미래 전망</h2>
 
-<p><strong>실시간 피드백</strong></p>
+<p><strong>다음 진화 단계</strong></p>
+
 <ul>
-<li>코드 작성 중 즉시 제안</li>
-<li>인라인 자동완성</li>
-<li>오류 즉시 확인</li>
+<li><strong>완전 자율 개발</strong>: 요구사항만으로 전체 애플리케이션 생성</li>
+<li><strong>팀 협업 에이전트</strong>: 여러 AI 에이전트가 역할 분담하여 협업</li>
+<li><strong>지속적 학습</strong>: 프로젝트별 코딩 스타일 학습 및 적응</li>
+<li><strong>실시간 코드 리뷰</strong>: AI가 실시간으로 코드 품질 검증</li>
 </ul>
       </section>
 
-      <section>
-<h2>1세대: 단점</h2>
+      <section data-markdown>
+        <textarea data-template>
+## 개발자 역할의 변화
 
-<p><strong>로컬 리소스 의존</strong></p>
-<ul>
-<li>IDE 실행으로 메모리 8GB+ 필요</li>
-<li>CPU 사용량 높음</li>
-<li>배터리 소모 증가</li>
-</ul>
+기술의 진화와 함께 개발자의 역할도 진화:
 
-<p><strong>단일 프로젝트 제한</strong></p>
-<ul>
-<li>한 번에 하나의 프로젝트만 집중</li>
-<li>멀티 프로젝트 작업 시 IDE 여러 개 실행 필요</li>
-</ul>
-      </section>
-
-      <section>
-<h2>1세대: 단점 (계속)</h2>
-
-<p><strong>GUI 오버헤드</strong></p>
-<ul>
-<li>그래픽 렌더링으로 인한 성능 저하</li>
-<li>원격 서버 작업 시 불편</li>
-</ul>
-      </section>
-
-      <section>
-<h2>1세대: 작동 방식</h2>
-
-<pre><code>1. IDE 실행
-   ↓
-2. AI 확장/기능 활성화
-   ↓
-3. 채팅 패널에서 요청
-   ↓
-4. AI가 코드 생성/수정
-   ↓
-5. diff 모드로 확인
-   ↓
-6. 승인 또는 거부</code></pre>
-      </section>
-
-      <section>
-<h2>1세대: 적합한 사용자</h2>
-
-<ul>
-<li><strong>초보 개발자</strong>: GUI 환경이 익숙한 사용자</li>
-<li><strong>프론트엔드 개발자</strong>: 시각적 피드백이 중요한 작업</li>
-<li><strong>단일 프로젝트 집중</strong>: 하나의 프로젝트에 깊이 파고드는 경우</li>
-<li><strong>윈도우/맥 사용자</strong>: 로컬 환경 개발 선호</li>
-</ul>
-      </section>
-
-      <section>
-<h2>1세대: 대표 워크플로우</h2>
-
-<p><strong>Cursor Composer 예시</strong></p>
-
-<pre><code>1. Cmd+K (macOS) / Ctrl+K (Windows) 단축키
-2. "사용자 프로필 페이지 만들어줘" 입력
-3. AI가 필요한 파일들을 자동으로 생성/수정
-   - UserProfile.tsx
-   - UserProfile.css
-   - types/User.ts
-4. 각 파일의 변경사항을 diff로 확인
-5. Accept All 또는 개별 승인
-6. 실행 및 테스트</code></pre>
+| 기존 | 새로운 역할 |
+|------|----------|
+| 코드 작성자 | 시스템 설계자 |
+| 구현 전문가 | 품질 관리자 |
+| 타이핑 중심 | 의도 전달 중심 |
+</textarea>
       </section>
 
     </div>
@@ -254,6 +200,7 @@
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
   <script>
     Reveal.initialize({
       hash: true,
@@ -266,6 +213,13 @@
       backgroundTransition: 'fade'
     });
 
+    // Initialize mermaid for diagrams
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose'
+    });
+
     // Initialize markmap for table of contents
     setTimeout(() => {
       const { markmap } = window;
@@ -273,50 +227,42 @@
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">1세대: IDE 기반 코딩</a>",
+                  "content": "<a href=\"#/1\">진화 타임라인</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/2\">1세대: 대표 툴</a>",
+                  "content": "<a href=\"#/2\">진화의 핵심 동인</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">1세대: 대표 툴 (계속)</a>",
+                  "content": "<a href=\"#/3\">진화의 핵심 동인 (계속)</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/4\">1세대: 장점</a>",
+                  "content": "<a href=\"#/4\">세대별 비교 요약</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/5\">1세대: 장점 (계속)</a>",
+                  "content": "<a href=\"#/5\">미래 전망</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/6\">1세대: 단점</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/7\">1세대: 단점 (계속)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/8\">1세대: 작동 방식</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/9\">1세대: 적합한 사용자</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/10\">1세대: 대표 워크플로우</a>",
+                  "content": "<a href=\"#/6\">개발자 역할의 변화</a>",
                   "children": []
             },
             {
                   "content": "하위 챕터",
                   "children": [
                         {
-                              "content": "<a href=\"04.2.cli-generation.html\">4.2 2세대: CLI 기반 코딩</a>",
+                              "content": "<a href=\"02.1.chat-based.html\">2.1 초기: 채팅 기반 시대 (2022-2023)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"02.2.ide-integration.html\">2.2 전환점: IDE 통합의 시작 (2023-2024)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"02.3.cli-based.html\">2.3 현재: CLI 기반 시대 (2024-현재)</a>",
                               "children": []
                         }
                   ]

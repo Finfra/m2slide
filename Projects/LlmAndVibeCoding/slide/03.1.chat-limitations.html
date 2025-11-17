@@ -3,11 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2.2 전환점: IDE 통합의 시작 (2023-2024)</title>
+  <title>3.1 채팅 기반의 한계</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
   <style>
+    * {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    }
     .reveal h1 { font-size: 2.5em; }
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
@@ -53,6 +56,7 @@
       color: inherit;
     }
     #toc-mindmap text {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif !important;
       font-size: 16px !important;
       font-weight: 500;
     }
@@ -87,7 +91,7 @@
   </style>
 </head>
 <body>
-  <a href="02-llm-tool-evolution.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
+  <a href="03-vibecoding-concept.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
     <svg viewBox="0 0 24 24">
       <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
     </svg>
@@ -97,86 +101,73 @@
     <div class="slides">
 
       <section>
-        <h1>2.2 전환점: IDE 통합의 시작 (2023-2024)</h1>
+        <h1>3.1 채팅 기반의 한계</h1>
         <svg id="toc-mindmap" style="width: 100%; height: 500px;"></svg>
       </section>
 
       <section>
-<h2>1세대: IDE 통합의 시작 (2023-2024)</h2>
+<h2>채팅 기반의 한계</h2>
 
-<p><strong>개발 환경과의 융합</strong></p>
+<p><strong>전통적인 ChatGPT 방식의 워크플로우</strong></p>
+
+<pre><code>1. ChatGPT에 질문
+   ↓
+2. 코드 복사
+   ↓
+3. IDE에 붙여넣기
+   ↓
+4. 오류 발생
+   ↓
+5. 다시 ChatGPT에 질문
+   ↓
+6. 반복...</code></pre>
+      </section>
+
+      <section>
+<h2>채팅 기반의 주요 한계</h2>
+
+<p><strong>컨텍스트 단절</strong></p>
 <ul>
-<li>IDE에 AI를 직접 통합하는 시도</li>
+<li>프로젝트 구조를 AI가 모름</li>
+<li>파일 간 의존성 무시</li>
+<li>기존 코드 스타일 불일치</li>
 </ul>
 
-<p><strong>대표 툴</strong></p>
-
-<p><strong>GitHub Copilot</strong> (2023년 초)</p>
+<p><strong>복사-붙여넣기 지옥</strong></p>
 <ul>
-<li>Microsoft와 OpenAI 협력</li>
-<li>VSCode, JetBrains IDE 지원</li>
-<li>인라인 코드 자동완성</li>
+<li>코드 복사 → IDE 전환 → 붙여넣기 → 들여쓰기 수정</li>
+<li>import 문 추가 → 오류 확인 → 다시 ChatGPT로...</li>
 </ul>
       </section>
 
       <section>
-<h2>1세대: 대표 툴 (계속)</h2>
+<h2>구체적 사례: React 컴포넌트</h2>
 
-<p><strong>Cursor</strong> (2023년 중반)</p>
-<ul>
-<li>VSCode 포크 기반 AI 네이티브 IDE</li>
-<li>GPT-4 기반 코드 생성</li>
-<li>프로젝트 전체 컨텍스트 이해</li>
-</ul>
+<p><strong>ChatGPT 방식</strong></p>
+<pre><code>1. "로그인 폼 컴포넌트 만들어줘"
+2. 코드 복사
+3. LoginForm.tsx 파일 생성
+4. 붙여넣기
+5. 오류: useState가 import 안됨
+6. import 추가
+7. 오류: 기존 스타일 컴포넌트와 충돌
+8. 다시 ChatGPT: "styled-components 사용하도록 수정해줘"
+9. 반복...</code></pre>
 
-<p><strong>Cline</strong> (2023년 후반)</p>
-<ul>
-<li>VSCode 확장 형태</li>
-<li>다양한 LLM 모델 선택 가능</li>
-<li>채팅 기반 코드 수정</li>
-</ul>
-      </section>
-
-      <section>
-<h2>1세대: 핵심 특징</h2>
-
-<p><strong>IDE 네이티브 통합</strong></p>
-<ul>
-<li>코드 에디터 내에서 직접 AI 활용</li>
-<li>실시간 코드 제안 및 자동완성</li>
-<li>파일 탐색기와 연동</li>
-</ul>
-
-<p><strong>프로젝트 컨텍스트 인식</strong></p>
-<ul>
-<li>현재 작업 중인 파일 내용 이해</li>
-<li>프로젝트 구조 파악 (제한적)</li>
-<li>관련 파일 참조 가능</li>
-</ul>
+<p><strong>소요 시간</strong>: 약 15-20분</p>
       </section>
 
       <section data-markdown>
         <textarea data-template>
-## 1세대: 개선점
+## 생산성 차이
 
-| 항목 | 0세대 (채팅) | 1세대 (IDE) |
-|------|-------------|------------|
-| 작업 환경 | 브라우저 ↔ IDE | IDE 통합 |
-| 컨텍스트 | 대화 내용만 | 프로젝트 파일 |
-| 워크플로우 | 복사-붙여넣기 | 직접 편집 |
-| 생산성 | 낮음 | 중간 |
+| 작업 | ChatGPT | 바이브 코딩 | 차이 |
+|------|---------|-----------|------|
+| 컴포넌트 생성 | 15분 | 3분 | **5배** |
+| 버그 수정 | 20분 | 5분 | **4배** |
+| 리팩토링 | 30분 | 8분 | **3.7배** |
+| 테스트 작성 | 25분 | 7분 | **3.5배** |
 </textarea>
-      </section>
-
-      <section>
-<h2>1세대: 한계</h2>
-
-<p><strong>여전한 제약</strong></p>
-<ul>
-<li>단일 파일 중심 작업 (멀티파일 제한적)</li>
-<li>수동 개입 필요 (파일 생성/삭제)</li>
-<li>로컬 리소스 의존 (메모리 사용 증가)</li>
-</ul>
       </section>
 
     </div>
@@ -188,6 +179,7 @@
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
   <script>
     Reveal.initialize({
       hash: true,
@@ -200,6 +192,13 @@
       backgroundTransition: 'fade'
     });
 
+    // Initialize mermaid for diagrams
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose'
+    });
+
     // Initialize markmap for table of contents
     setTimeout(() => {
       const { markmap } = window;
@@ -207,30 +206,26 @@
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">1세대: IDE 통합의 시작 (2023-2024)</a>",
+                  "content": "<a href=\"#/1\">채팅 기반의 한계</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/2\">1세대: 대표 툴 (계속)</a>",
+                  "content": "<a href=\"#/2\">채팅 기반의 주요 한계</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">1세대: 핵심 특징</a>",
+                  "content": "<a href=\"#/3\">구체적 사례: React 컴포넌트</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/4\">1세대: 개선점</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/5\">1세대: 한계</a>",
+                  "content": "<a href=\"#/4\">생산성 차이</a>",
                   "children": []
             },
             {
                   "content": "하위 챕터",
                   "children": [
                         {
-                              "content": "<a href=\"02.3.cli-based.html\">2.3 현재: CLI 기반 시대 (2024-현재)</a>",
+                              "content": "<a href=\"03.2.vibecoding-start.html\">3.2 바이브 코딩의 시작</a>",
                               "children": []
                         }
                   ]

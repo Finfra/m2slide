@@ -1,4 +1,4 @@
-# Ignore all files and directories in Documents folder only (not recursive)
+# Ignore all files and directories in Projects folder only (not recursive)
 /*
 
 # But allow project directories (add new projects here)

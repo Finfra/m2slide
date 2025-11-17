@@ -1,0 +1,6 @@
+# m2slide Configuration
+# Current project configuration
+
+# Default project name (used by convert.sh and deploy.sh)
+# Project path will be: Projects/{current_project}
+current_project: LlmAndVibeCoding

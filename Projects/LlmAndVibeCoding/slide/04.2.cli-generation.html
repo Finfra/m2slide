@@ -3,11 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2.3 현재: CLI 기반 시대 (2024-현재)</title>
+  <title>4.2 2세대: CLI 기반 코딩</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
   <style>
+    * {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    }
     .reveal h1 { font-size: 2.5em; }
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
@@ -53,6 +56,7 @@
       color: inherit;
     }
     #toc-mindmap text {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif !important;
       font-size: 16px !important;
       font-weight: 500;
     }
@@ -87,7 +91,7 @@
   </style>
 </head>
 <body>
-  <a href="02-llm-tool-evolution.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
+  <a href="04-vibecoding-generations.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
     <svg viewBox="0 0 24 24">
       <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
     </svg>
@@ -97,38 +101,41 @@
     <div class="slides">
 
       <section>
-        <h1>2.3 현재: CLI 기반 시대 (2024-현재)</h1>
+        <h1>4.2 2세대: CLI 기반 코딩</h1>
         <svg id="toc-mindmap" style="width: 100%; height: 500px;"></svg>
       </section>
 
       <section>
-<h2>2세대: CLI 기반 코딩 시대 (2024-현재)</h2>
+<h2>2세대: CLI 기반 코딩</h2>
 
-<p><strong>터미널에서 실행되는 AI 도구</strong></p>
+<p><strong>터미널(CLI)</strong>에서 AI와 대화하며 작업</p>
 <ul>
-<li>에이전트처럼 자율적으로 복잡한 작업 수행</li>
-</ul>
-
-<p><strong>대표 툴</strong></p>
-
-<p><strong>Claude Code</strong></p>
-<ul>
-<li>Anthropic 공식 CLI 도구</li>
-<li>프로젝트 전체 컨텍스트 이해</li>
-<li>파일 생성, 수정, 삭제 자동화</li>
-<li>명령어 실행 및 결과 확인</li>
+<li>IDE 없이도 프로젝트 전체를 자동화</li>
 </ul>
       </section>
 
       <section>
-<h2>2세대: 대표 툴 (계속)</h2>
+<h2>2세대: 대표 툴</h2>
+
+<p><strong>Claude Code</strong></p>
+<ul>
+<li>Anthropic 공식 CLI 도구</li>
+<li>터미널에서 Claude와 직접 대화</li>
+<li>프로젝트 전체 컨텍스트 이해</li>
+<li>자동 파일 수정 및 명령 실행</li>
+</ul>
 
 <p><strong>Gemini CLI</strong></p>
 <ul>
 <li>Google Gemini 기반</li>
 <li>빠른 응답 속도</li>
 <li>클라우드 기반 실행</li>
+<li>DevOps 작업에 최적화</li>
 </ul>
+      </section>
+
+      <section>
+<h2>2세대: 대표 툴 (계속)</h2>
 
 <p><strong>Aider</strong></p>
 <ul>
@@ -139,71 +146,129 @@
       </section>
 
       <section>
-<h2>2세대: 핵심 특징</h2>
+<h2>2세대: 장점</h2>
 
-<p><strong>CLI 기반 실행 환경</strong></p>
+<p><strong>서버/클라우드 기반</strong></p>
 <ul>
-<li>터미널에서 직접 실행되는 독립 프로그램</li>
-<li>IDE 없이도 완전한 개발 작업 수행</li>
-<li>서버 환경에서도 동작 (SSH 접속 환경)</li>
 <li>로컬 리소스 거의 사용 안 함</li>
+<li>노트북 배터리 절약</li>
+<li>원격 서버에서 작업 가능</li>
+</ul>
+
+<p><strong>무제한 병렬 처리</strong></p>
+<ul>
+<li>여러 터미널에서 동시 작업</li>
+<li>멀티 프로젝트 동시 관리</li>
+<li>백그라운드 실행 가능</li>
 </ul>
       </section>
 
       <section>
-<h2>2세대: 핵심 특징 (계속)</h2>
+<h2>2세대: 장점 (계속)</h2>
 
-<p><strong>에이전트형 자율 작업</strong></p>
+<p><strong>스크립트 자동화</strong></p>
 <ul>
-<li>개발자의 의도를 파악하여 다단계 작업 수행</li>
-<li>필요한 파일을 스스로 찾아 수정</li>
-<li>오류 발생 시 자동으로 수정 시도</li>
+<li>쉘 스크립트와 결합</li>
+<li>CI/CD 파이프라인 통합</li>
+<li>DevOps 워크플로우 자동화</li>
 </ul>
 
-<p><strong>멀티파일 작업</strong></p>
+<p><strong>빠른 실행 속도</strong></p>
 <ul>
-<li>프로젝트 전체를 대상으로 작업</li>
-<li>파일 간 의존성 자동 해결</li>
-<li>일관성 있는 코드 스타일 유지</li>
-</ul>
-      </section>
-
-      <section>
-<h2>2세대: 도구 사용 능력</h2>
-
-<p><strong>Tool Use (Function Calling)</strong></p>
-<ul>
-<li>터미널 명령어 직접 실행</li>
-<li>파일 시스템 직접 조작</li>
-<li>Git 명령어 자동 실행</li>
-<li>패키지 설치 및 관리</li>
-</ul>
-
-<p><strong>대화형 협업</strong></p>
-<ul>
-<li>자연어로 복잡한 요구사항 전달</li>
-<li>AI가 불명확한 부분 질문</li>
-<li>반복적인 피드백 루프</li>
+<li>GUI 오버헤드 없음</li>
+<li>텍스트 기반으로 빠른 응답</li>
+<li>네트워크 대역폭 효율적</li>
 </ul>
       </section>
 
       <section>
-<h2>2세대: 혁신 포인트</h2>
+<h2>2세대: 단점</h2>
 
-<p><strong>Intent-First Programming</strong></p>
-<pre><code>개발자: "무엇을(What)" 만들지만 설명
-AI: "어떻게(How)" 구현할지 결정
-→ 구현 세부사항은 AI에게 위임</code></pre>
-
-<p><strong>Human-in-the-Loop Verification</strong></p>
-<pre><code>AI 코드 생성 → 개발자 검토 → 승인/수정 → 다음 단계</code></pre>
-
-<p><strong>End-to-End Automation</strong></p>
+<p><strong>학습 곡선</strong></p>
 <ul>
-<li>요구사항 분석부터 배포까지 자동화</li>
-<li>테스트 코드 자동 생성</li>
-<li>문서화 자동 작성</li>
+<li>터미널 명령어 숙지 필요</li>
+<li>GUI 없이 작업해야 함</li>
+<li>코드 변경 사항 시각화 제한적</li>
 </ul>
+
+<p><strong>시각적 피드백 부족</strong></p>
+<ul>
+<li>diff 확인이 텍스트 기반</li>
+<li>그래픽 UI 프리뷰 불가</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 단점 (계속)</h2>
+
+<p><strong>초기 설정</strong></p>
+<ul>
+<li>환경 변수 설정 필요</li>
+<li>API 키 설정 필수</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 작동 방식</h2>
+
+<pre><code class="language-bash"># Claude Code 예시
+$ claude-code
+
+> 프로젝트 분석해서 README.md 업데이트해줘
+
+[Claude가 프로젝트 파일들을 읽고 분석]
+[README.md 자동 수정]
+[변경사항 표시]
+
+> 테스트 코드도 작성해줘
+
+[테스트 파일 자동 생성]
+[npm test 실행하여 검증]</code></pre>
+      </section>
+
+      <section>
+<h2>2세대: 적합한 사용자</h2>
+
+<ul>
+<li><strong>시니어 개발자</strong>: 터미널에 익숙한 사용자</li>
+<li><strong>백엔드/DevOps 개발자</strong>: 서버 관리 및 자동화 작업</li>
+<li><strong>멀티 프로젝트 관리</strong>: 여러 프로젝트를 동시에 진행</li>
+<li><strong>리눅스 사용자</strong>: CLI 환경 선호</li>
+<li><strong>원격 개발</strong>: SSH로 원격 서버 작업</li>
+</ul>
+      </section>
+
+      <section>
+<h2>2세대: 대표 워크플로우</h2>
+
+<p><strong>Claude Code 예시</strong></p>
+
+<pre><code class="language-bash"># 프로젝트 디렉토리에서
+$ claude-code
+
+> AWS Lambda 함수로 이미지 리사이징 서비스 만들어줘.
+  S3에서 이미지 받아서 처리하고 다시 S3에 저장.
+
+[Claude가 작업 시작]
+✓ lambda_function.py 생성
+✓ requirements.txt 생성
+✓ 환경변수 설정 확인
+✓ SAM template 생성
+✓ README.md 업데이트</code></pre>
+      </section>
+
+      <section>
+<h2>2세대: 대표 워크플로우 (계속)</h2>
+
+<pre><code class="language-bash">> 로컬에서 테스트해줘
+
+[sam local invoke 실행]
+[테스트 결과 확인]
+
+> 문제없으면 배포해줘
+
+[sam deploy 실행]
+[배포 완료]</code></pre>
       </section>
 
     </div>
@@ -215,6 +280,7 @@ AI: "어떻게(How)" 구현할지 결정
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
   <script>
     Reveal.initialize({
       hash: true,
@@ -227,6 +293,13 @@ AI: "어떻게(How)" 구현할지 결정
       backgroundTransition: 'fade'
     });
 
+    // Initialize mermaid for diagrams
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose'
+    });
+
     // Initialize markmap for table of contents
     setTimeout(() => {
       const { markmap } = window;
@@ -234,27 +307,47 @@ AI: "어떻게(How)" 구현할지 결정
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">2세대: CLI 기반 코딩 시대 (2024-현재)</a>",
+                  "content": "<a href=\"#/1\">2세대: CLI 기반 코딩</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/2\">2세대: 대표 툴 (계속)</a>",
+                  "content": "<a href=\"#/2\">2세대: 대표 툴</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">2세대: 핵심 특징</a>",
+                  "content": "<a href=\"#/3\">2세대: 대표 툴 (계속)</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/4\">2세대: 핵심 특징 (계속)</a>",
+                  "content": "<a href=\"#/4\">2세대: 장점</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/5\">2세대: 도구 사용 능력</a>",
+                  "content": "<a href=\"#/5\">2세대: 장점 (계속)</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/6\">2세대: 혁신 포인트</a>",
+                  "content": "<a href=\"#/6\">2세대: 단점</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/7\">2세대: 단점 (계속)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/8\">2세대: 작동 방식</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/9\">2세대: 적합한 사용자</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/10\">2세대: 대표 워크플로우</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/11\">2세대: 대표 워크플로우 (계속)</a>",
                   "children": []
             }
       ]

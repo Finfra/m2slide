@@ -2,7 +2,7 @@
 
 # Markdown to Reveal.js HTML converter
 # Usage: ./convert.sh [project_dir]
-#   project_dir: Path to project folder (default: ./Documents/LlmAndVibeCoding)
+#   project_dir: Path to project folder (default: from config.yml)
 #                Expects project_dir/markdown/ and generates project_dir/slide/
 
 # Get script directory
@@ -10,8 +10,24 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Parse arguments
 if [ $# -eq 0 ]; then
-  # No arguments: use default project relative to script location
-  PROJECT_DIR="$SCRIPT_DIR/Documents/LlmAndVibeCoding"
+  # No arguments: read from config.yml
+  CONFIG_FILE="$SCRIPT_DIR/config.yml"
+
+  if [ -f "$CONFIG_FILE" ]; then
+    # Read current_project from config.yml
+    CURRENT_PROJECT=$(grep "^current_project:" "$CONFIG_FILE" | sed 's/current_project:[[:space:]]*//')
+
+    if [ -z "$CURRENT_PROJECT" ]; then
+      echo "⚠️  Warning: current_project not found in config.yml, using default"
+      CURRENT_PROJECT="LlmAndVibeCoding"
+    fi
+  else
+    echo "⚠️  Warning: config.yml not found, using default project"
+    CURRENT_PROJECT="LlmAndVibeCoding"
+  fi
+
+  PROJECT_DIR="$SCRIPT_DIR/Projects/$CURRENT_PROJECT"
+  echo "Using project from config.yml: $CURRENT_PROJECT"
 else
   # One argument: project directory
   PROJECT_DIR="$1"

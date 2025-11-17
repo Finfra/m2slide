@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
   <style>
+    * {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    }
     .reveal h1 { font-size: 2.5em; }
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
@@ -53,6 +56,7 @@
       color: inherit;
     }
     #toc-mindmap text {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif !important;
       font-size: 16px !important;
       font-weight: 500;
     }
@@ -193,7 +197,7 @@
 <h2>사례 1: Express API 서버 (계속)</h2>
 
 <p><strong>작업 과정</strong></p>
-<pre><code>$ claude-code
+<pre><code class="language-bash">$ claude-code
 
 > Express로 블로그 API 서버 만들어줘.
   - 게시글 CRUD
@@ -211,7 +215,7 @@
       <section>
 <h2>사례 1: Express API 서버 (계속)</h2>
 
-<pre><code>> 테스트 코드도 작성해줘
+<pre><code class="language-bash">> 테스트 코드도 작성해줘
 
 ✓ __tests__/posts.test.js
 ✓ __tests__/auth.test.js
@@ -252,7 +256,7 @@ Server running on port 3000</code></pre>
 <h2>사례 2: AWS 인프라 구성 (계속)</h2>
 
 <p><strong>작업 과정</strong></p>
-<pre><code>$ gemini-cli
+<pre><code class="language-bash">$ gemini-cli
 
 > AWS에 프로덕션 환경 인프라 구성해줘:
   - VPC, 서브넷, 인터넷 게이트웨이
@@ -269,7 +273,7 @@ Server running on port 3000</code></pre>
       <section>
 <h2>사례 2: AWS 인프라 구성 (계속)</h2>
 
-<pre><code>> terraform init하고 plan 보여줘
+<pre><code class="language-bash">> terraform init하고 plan 보여줘
 
 [terraform init 실행]
 [terraform plan 실행 및 결과 표시]
@@ -317,7 +321,7 @@ Apply complete! Resources: 15 added</code></pre>
 <h2>비교: 사용자 인증 기능 추가 (계속)</h2>
 
 <p><strong>2세대 (Claude Code) 접근</strong></p>
-<pre><code>$ claude-code
+<pre><code class="language-bash">$ claude-code
 
 > 사용자 인증 기능 추가해줘:
   - JWT 토큰 발급
@@ -406,7 +410,7 @@ Apply complete! Resources: 15 added</code></pre>
 
 <p><strong>명확한 작업 단위</strong></p>
 
-<pre><code># 작은 단위로 분할
+<pre><code class="language-bash"># 작은 단위로 분할
 ❌ "전체 애플리케이션 만들어줘"
 
 ✅ "먼저 데이터 모델 만들어줘"
@@ -418,7 +422,7 @@ Apply complete! Resources: 15 added</code></pre>
 <h2>실전 팁: 2세대 (계속)</h2>
 
 <p><strong>Git 커밋 자주 하기</strong></p>
-<pre><code># AI 작업 후 바로 커밋
+<pre><code class="language-bash"># AI 작업 후 바로 커밋
 $ git add .
 $ git commit -m "feat: Add user authentication"
 
@@ -426,7 +430,7 @@ $ git commit -m "feat: Add user authentication"
 $ git reset --hard HEAD^</code></pre>
 
 <p><strong>자동화 스크립트 활용</strong></p>
-<pre><code>#!/bin/bash
+<pre><code class="language-bash">#!/bin/bash
 claude-code << EOF
 프로젝트 분석해서 README.md 업데이트해줘
 테스트 실행해줘
@@ -438,7 +442,7 @@ EOF</code></pre>
 <h2>복합 사례: 실시간 채팅 앱</h2>
 
 <p><strong>1단계: 백엔드 (Claude Code) - 10분</strong></p>
-<pre><code>> Socket.IO 기반 채팅 서버 만들어줘:
+<pre><code class="language-bash">> Socket.IO 기반 채팅 서버 만들어줘:
   - 실시간 메시지 전송
   - 채팅방 관리
   - MongoDB에 메시지 저장</code></pre>
@@ -447,7 +451,7 @@ EOF</code></pre>
 <pre><code>Cmd+K: "Socket.IO 클라이언트로 채팅 UI 만들어줘"</code></pre>
 
 <p><strong>3단계: 배포 (Claude Code) - 10분</strong></p>
-<pre><code>> Docker Compose로 컨테이너화해줘
+<pre><code class="language-bash">> Docker Compose로 컨테이너화해줘
 > AWS ECS 배포 설정해줘</code></pre>
       </section>
 
@@ -502,6 +506,7 @@ EOF</code></pre>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
   <script>
     Reveal.initialize({
       hash: true,
@@ -512,6 +517,13 @@ EOF</code></pre>
       slideNumber: 'c/t',
       transition: 'slide',
       backgroundTransition: 'fade'
+    });
+
+    // Initialize mermaid for diagrams
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose'
     });
 
     // Initialize markmap for table of contents

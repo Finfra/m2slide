@@ -3,11 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2. LLM 코딩 툴의 진화 과정</title>
+  <title>2.2 전환점: IDE 통합의 시작 (2023-2024)</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
   <style>
+    * {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    }
     .reveal h1 { font-size: 2.5em; }
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
@@ -53,6 +56,7 @@
       color: inherit;
     }
     #toc-mindmap text {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif !important;
       font-size: 16px !important;
       font-weight: 500;
     }
@@ -87,7 +91,7 @@
   </style>
 </head>
 <body>
-  <a href="index.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
+  <a href="02-llm-tool-evolution.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
     <svg viewBox="0 0 24 24">
       <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
     </svg>
@@ -97,94 +101,86 @@
     <div class="slides">
 
       <section>
-        <h1>2. LLM 코딩 툴의 진화 과정</h1>
+        <h1>2.2 전환점: IDE 통합의 시작 (2023-2024)</h1>
         <svg id="toc-mindmap" style="width: 100%; height: 500px;"></svg>
       </section>
 
       <section>
-<h2>진화 타임라인</h2>
+<h2>1세대: IDE 통합의 시작 (2023-2024)</h2>
 
-<pre><code>2022-2023        2023-2024           2024-현재
-채팅 기반    →    IDE 통합      →    CLI 기반
-(0세대)          (1세대)            (2세대)</code></pre>
-      </section>
-
-      <section>
-<h2>진화의 핵심 동인</h2>
-
-<p><strong>기술적 발전</strong></p>
-
-<p><strong>LLM 성능 향상</strong></p>
+<p><strong>개발 환경과의 융합</strong></p>
 <ul>
-<li>GPT-3.5 → GPT-4 → Claude 3.5 Sonnet</li>
-<li>코드 이해 및 생성 능력 비약적 향상</li>
+<li>IDE에 AI를 직접 통합하는 시도</li>
 </ul>
 
-<p><strong>컨텍스트 윈도우 확대</strong></p>
+<p><strong>대표 툴</strong></p>
+
+<p><strong>GitHub Copilot</strong> (2023년 초)</p>
 <ul>
-<li>4K 토큰 → 32K → 200K 토큰</li>
-<li>전체 코드베이스를 한 번에 이해 가능</li>
+<li>Microsoft와 OpenAI 협력</li>
+<li>VSCode, JetBrains IDE 지원</li>
+<li>인라인 코드 자동완성</li>
 </ul>
       </section>
 
       <section>
-<h2>진화의 핵심 동인 (계속)</h2>
+<h2>1세대: 대표 툴 (계속)</h2>
 
-<p><strong>도구 사용 능력 (Function Calling)</strong></p>
+<p><strong>Cursor</strong> (2023년 중반)</p>
 <ul>
-<li>AI가 직접 API 호출</li>
-<li>파일 시스템 조작</li>
-<li>명령어 실행</li>
+<li>VSCode 포크 기반 AI 네이티브 IDE</li>
+<li>GPT-4 기반 코드 생성</li>
+<li>프로젝트 전체 컨텍스트 이해</li>
 </ul>
 
-<p><strong>사용자 니즈 변화</strong></p>
+<p><strong>Cline</strong> (2023년 후반)</p>
 <ul>
-<li>더 빠른 개발 속도 요구</li>
-<li>더 적은 반복 작업 원함</li>
-<li>더 높은 코드 품질 기대</li>
+<li>VSCode 확장 형태</li>
+<li>다양한 LLM 모델 선택 가능</li>
+<li>채팅 기반 코드 수정</li>
+</ul>
+      </section>
+
+      <section>
+<h2>1세대: 핵심 특징</h2>
+
+<p><strong>IDE 네이티브 통합</strong></p>
+<ul>
+<li>코드 에디터 내에서 직접 AI 활용</li>
+<li>실시간 코드 제안 및 자동완성</li>
+<li>파일 탐색기와 연동</li>
+</ul>
+
+<p><strong>프로젝트 컨텍스트 인식</strong></p>
+<ul>
+<li>현재 작업 중인 파일 내용 이해</li>
+<li>프로젝트 구조 파악 (제한적)</li>
+<li>관련 파일 참조 가능</li>
 </ul>
       </section>
 
       <section data-markdown>
         <textarea data-template>
-## 세대별 비교 요약
+## 1세대: 개선점
 
-| 특징 | 0세대<br/>(채팅) | 1세대<br/>(IDE) | 2세대<br/>(CLI) |
-|------|----------------|----------------|----------------|
-| **시기** | 2022-2023 | 2023-2024 | 2024-현재 |
-| **환경** | 웹 브라우저 | IDE 통합 | CLI/서버 |
-| **컨텍스트** | 대화 내용 | 현재 파일 | 프로젝트 전체 |
-| **작업 범위** | 코드 조각 | 단일 파일 | 멀티파일 |
-| **자동화** | 없음 | 부분적 | 전면적 |
-| **생산성** | 낮음 | 중간 | 높음 |
+| 항목 | 0세대 (채팅) | 1세대 (IDE) |
+|------|-------------|------------|
+| 작업 환경 | 브라우저 ↔ IDE | IDE 통합 |
+| 컨텍스트 | 대화 내용만 | 프로젝트 파일 |
+| 워크플로우 | 복사-붙여넣기 | 직접 편집 |
+| 생산성 | 낮음 | 중간 |
 </textarea>
       </section>
 
       <section>
-<h2>미래 전망</h2>
+<h2>1세대: 한계</h2>
 
-<p><strong>다음 진화 단계</strong></p>
-
+<p><strong>여전한 제약</strong></p>
 <ul>
-<li><strong>완전 자율 개발</strong>: 요구사항만으로 전체 애플리케이션 생성</li>
-<li><strong>팀 협업 에이전트</strong>: 여러 AI 에이전트가 역할 분담하여 협업</li>
-<li><strong>지속적 학습</strong>: 프로젝트별 코딩 스타일 학습 및 적응</li>
-<li><strong>실시간 코드 리뷰</strong>: AI가 실시간으로 코드 품질 검증</li>
+<li>단일 파일 중심 작업 (멀티파일 제한적)</li>
+<li>수동 개입 필요 (파일 생성/삭제)</li>
+<li>로컬 리소스 의존 (메모리 사용 증가)</li>
 </ul>
-      </section>
-
-      <section data-markdown>
-        <textarea data-template>
-## 개발자 역할의 변화
-
-기술의 진화와 함께 개발자의 역할도 진화:
-
-| 기존 | 새로운 역할 |
-|------|----------|
-| 코드 작성자 | 시스템 설계자 |
-| 구현 전문가 | 품질 관리자 |
-| 타이핑 중심 | 의도 전달 중심 |
-</textarea>
       </section>
 
     </div>
@@ -196,6 +192,7 @@
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
   <script>
     Reveal.initialize({
       hash: true,
@@ -208,6 +205,13 @@
       backgroundTransition: 'fade'
     });
 
+    // Initialize mermaid for diagrams
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'default',
+      securityLevel: 'loose'
+    });
+
     // Initialize markmap for table of contents
     setTimeout(() => {
       const { markmap } = window;
@@ -215,40 +219,28 @@
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">진화 타임라인</a>",
+                  "content": "<a href=\"#/1\">1세대: IDE 통합의 시작 (2023-2024)</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/2\">진화의 핵심 동인</a>",
+                  "content": "<a href=\"#/2\">1세대: 대표 툴 (계속)</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">진화의 핵심 동인 (계속)</a>",
+                  "content": "<a href=\"#/3\">1세대: 핵심 특징</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/4\">세대별 비교 요약</a>",
+                  "content": "<a href=\"#/4\">1세대: 개선점</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/5\">미래 전망</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/6\">개발자 역할의 변화</a>",
+                  "content": "<a href=\"#/5\">1세대: 한계</a>",
                   "children": []
             },
             {
                   "content": "하위 챕터",
                   "children": [
-                        {
-                              "content": "<a href=\"02.1.chat-based.html\">2.1 초기: 채팅 기반 시대 (2022-2023)</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"02.2.ide-integration.html\">2.2 전환점: IDE 통합의 시작 (2023-2024)</a>",
-                              "children": []
-                        },
                         {
                               "content": "<a href=\"02.3.cli-based.html\">2.3 현재: CLI 기반 시대 (2024-현재)</a>",
                               "children": []
