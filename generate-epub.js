@@ -242,11 +242,17 @@ function processInline(text) {
     return `<img src="${src}" alt="${alt}" style="max-width: 100%;"/>`;
   });
 
-  // Escape HTML entities (but preserve our <img> tags)
-  const imgPlaceholders = [];
-  text = text.replace(/<img[^>]+>/g, (match) => {
-    const placeholder = `___IMG_PLACEHOLDER_${imgPlaceholders.length}___`;
-    imgPlaceholders.push(match);
+  // Process links (after images, before HTML escaping)
+  // [link text](url)
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, linkText, url) => {
+    return `<a href="${url}">${linkText}</a>`;
+  });
+
+  // Escape HTML entities (but preserve our tags)
+  const htmlPlaceholders = [];
+  text = text.replace(/<(img|a)[^>]+>|<\/a>/g, (match) => {
+    const placeholder = `___HTML_PLACEHOLDER_${htmlPlaceholders.length}___`;
+    htmlPlaceholders.push(match);
     return placeholder;
   });
 
@@ -255,9 +261,9 @@ function processInline(text) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 
-  // Restore img tags
-  imgPlaceholders.forEach((img, index) => {
-    text = text.replace(`___IMG_PLACEHOLDER_${index}___`, img);
+  // Restore HTML tags
+  htmlPlaceholders.forEach((html, index) => {
+    text = text.replace(`___HTML_PLACEHOLDER_${index}___`, html);
   });
 
   // Bold

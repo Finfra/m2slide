@@ -6,8 +6,7 @@
 </div>
 
 ## 본 자료의 구성
-
-- 작성자 : 남중구 (nowage@gmail.com, [https://finfra.kr/nowage/](https://finfra.kr/nowage/))
+- 작성자 : 남중구 ( [https://finfra.kr/nowage/](https://finfra.kr/nowage/) )
 - 본 발표자료의 컨텐츠와 시각화 도구는 100% VibeCoding 도구로 작성되었습니다.
 - 발표 자료 : https://finfra.kr/go/vibe2025
 - ePub : https://finfra.kr/go/vibe2025e
@@ -31,7 +30,6 @@ graph TD;
 - 개발자가 코드를 한 줄 한 줄 직접 타이핑
 - Stack Overflow와 문서 검색에 의존
 - 반복적인 코딩 작업에 많은 시간 소요
-<!-- ![test](img/test.png) -->
 **2022년 ChatGPT 등장**
 - 자연어로 질문하고 코드 조각을 얻는 방식 시작
 - 개발 보조 도구로서 LLM 활용 증가
@@ -44,9 +42,7 @@ graph TD;
 - GitHub Copilot, Cursor 등 IDE 내 실시간 코드 제안
 - 개발 흐름을 끊지 않는 인라인 자동완성
 - 프로젝트 컨텍스트를 일부 이해하기 시작
-<!-- <div style="margin:0px auto; max-width:400px;">
-![test](img/test.png)
-</div> -->
+
 
 **2024년부터 CLI 기반 코딩 본격화**
 - 터미널에서 실행되는 AI 도구 등장 (2024: Claude Code, 2025: Gemini CLI)

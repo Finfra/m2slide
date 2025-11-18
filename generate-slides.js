@@ -129,12 +129,15 @@ function convertMarkdownToHTML(markdown) {
 
 // Process inline elements (bold, images, code, etc.)
 function processInline(text) {
-  // Bold
-  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-
-  // Images
+  // Images FIRST (before links, because images also use [] syntax)
   // Images - keep relative path from markdown file
   text = text.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1">');
+
+  // Links
+  text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+
+  // Bold
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 
   // Inline code
   text = text.replace(/`([^`]+)`/g, '<code>$1</code>');

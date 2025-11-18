@@ -139,8 +139,14 @@ graph TD;
 
 * cf)
 ```
+<div style="margin:15px auto; max-width:400px;">
 <div style="float:right; margin-left:15px; max-width:400px;">
 <div style="float:right; margin-left:15px; width:50%;">
+
+![test](img/test.png) 
+<div style="margin:0px auto; max-width:400px;">
+![test](img/test.png)
+</div> 
 ```
 ## 개발 방식의 변화
 
