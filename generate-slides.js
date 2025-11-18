@@ -345,6 +345,7 @@ function generateHTML(filePath, agendaPath) {
   <meta charset="UTF-8">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:,">
   <title>${title}</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
@@ -496,9 +497,9 @@ ${slidesHTML}
       backgroundTransition: 'fade'
     });
 
-    // Initialize mermaid for diagrams
+    // Initialize mermaid for diagrams (manual rendering)
     mermaid.initialize({
-      startOnLoad: true,
+      startOnLoad: false,  // Disable auto-render, we'll render manually
       theme: 'default',
       securityLevel: 'loose',
       themeVariables: {
@@ -527,37 +528,39 @@ ${slidesHTML}
       }
     });
 
-    // Re-render mermaid diagrams when slide changes
-    Reveal.on('slidechanged', function() {
-      const currentSlide = Reveal.getCurrentSlide();
-      const mermaidElements = currentSlide.querySelectorAll('.mermaid');
+    // Render all Mermaid diagrams when Reveal.js is ready
+    Reveal.on('ready', function() {
+      // Find all mermaid elements in all slides
+      const allMermaidElements = document.querySelectorAll('.mermaid');
 
-      if (mermaidElements.length > 0) {
-        mermaidElements.forEach((element, index) => {
-          // Skip if already rendered (has svg child)
+      if (allMermaidElements && allMermaidElements.length > 0) {
+        allMermaidElements.forEach(function(element, index) {
+          // Skip if already rendered
           if (element.querySelector('svg')) {
             return;
           }
 
-          // Render mermaid diagram
           const graphDefinition = element.textContent;
-          const graphId = 'mermaid-' + Date.now() + '-' + index;
+          if (!graphDefinition || !graphDefinition.trim()) {
+            return;
+          }
+
+          const graphId = 'mermaid-diagram-' + index;
 
           try {
-            mermaid.render(graphId, graphDefinition).then(({ svg }) => {
-              element.innerHTML = svg;
+            mermaid.render(graphId, graphDefinition).then(function(result) {
+              if (result && result.svg) {
+                element.innerHTML = result.svg;
+              }
+            }).catch(function(error) {
+              console.error('Mermaid rendering error for diagram ' + index + ':', error);
             });
           } catch (e) {
-            console.error('Mermaid rendering error:', e);
+            console.error('Mermaid rendering error for diagram ' + index + ':', e);
           }
         });
       }
     });
-
-    // Trigger initial render for first slide
-    setTimeout(() => {
-      Reveal.slide(0);
-    }, 100);
 
     // Initialize markmap for table of contents
     setTimeout(() => {
@@ -637,13 +640,19 @@ function parseAgenda(agendaPath) {
 }
 
 // Generate index.html with markmap navigation
-function generateIndexHTML(agendaPath) {
+function generateIndexHTML(agendaPath, projectDir) {
   const markmapData = parseAgenda(agendaPath);
 
   // Read title from AGENDA.md
   const content = fs.readFileSync(agendaPath, 'utf-8');
   const titleMatch = content.match(/^# (.+)$/m);
   const title = titleMatch ? titleMatch[1] : 'LLM 툴 진화와 바이브 코딩 세대 구분';
+
+  // Check if EPUB file exists
+  const projectName = path.basename(projectDir);
+  const epubFileName = `${projectName}.epub`;
+  const epubPath = path.join(projectDir, 'slide', epubFileName);
+  const hasEpub = fs.existsSync(epubPath);
 
   const html = `<!doctype html>
 <html lang="ko">
@@ -652,6 +661,7 @@ function generateIndexHTML(agendaPath) {
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<link rel="icon" href="data:,">
 <title>${title}</title>
 <style>
 * {
@@ -702,6 +712,7 @@ svg text {
 <div class="header">
   <h1>${title}</h1>
   <p>각 노드를 클릭하면 상세 페이지로 이동합니다</p>
+  ${hasEpub ? `<p style="margin-top: 15px;"><a href="${epubFileName}" download style="color: white; background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 5px; text-decoration: none; display: inline-block; font-size: 14px;">📚 EPUB 다운로드</a></p>` : ''}
 </div>
 <svg id="mindmap"></svg>
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script><script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script><script src="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.18.12/dist/index.js"></script><script>((r) => {
@@ -819,7 +830,7 @@ function main() {
   // Generate index.html from AGENDA.md
   console.log('\nGenerating index.html...');
   if (fs.existsSync(agendaPath)) {
-    const indexHTML = generateIndexHTML(agendaPath);
+    const indexHTML = generateIndexHTML(agendaPath, projectDir);
     const indexPath = path.join(outputDir, 'index.html');
     fs.writeFileSync(indexPath, indexHTML, 'utf-8');
     console.log(`✅ Generated: ${indexPath}`);

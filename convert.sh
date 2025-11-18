@@ -76,3 +76,14 @@ if [ "$GENERATE_EPUB" = true ]; then
   echo ""
   node "$SCRIPT_DIR/generate-epub.js" "$PROJECT_DIR"
 fi
+
+# Copy EPUB file to slide directory if it exists
+PROJECT_NAME=$(basename "$PROJECT_DIR")
+EPUB_FILE="$PROJECT_DIR/$PROJECT_NAME.epub"
+
+if [ -f "$EPUB_FILE" ]; then
+  echo ""
+  echo "📚 Copying EPUB file to slide directory..."
+  cp "$EPUB_FILE" "$OUTPUT_DIR/"
+  echo "  ✅ Copied: $PROJECT_NAME.epub → slide/"
+fi

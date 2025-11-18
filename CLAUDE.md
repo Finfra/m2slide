@@ -159,6 +159,8 @@ node generate-slides.js Projects/[ProjectName]
 **출력물**:
 - `slide/*.html`: 각 챕터별 Reveal.js 프레젠테이션
 - `slide/index.html`: Markmap 기반 전체 목차 (클릭 가능한 마인드맵)
+  - EPUB 파일이 있으면 다운로드 링크 자동 표시
+- `slide/*.epub`: EPUB 파일 (존재하는 경우 자동 복사)
 - 계층적 네비게이션 (↑ 키 또는 우측 하단 버튼으로 상위 페이지 이동)
 
 ### EPUB 전자책 생성
