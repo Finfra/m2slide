@@ -15,7 +15,10 @@
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
     .reveal { font-size: 32px; }
-    .reveal table { font-size: 0.7em; }
+    .reveal table {
+      font-size: 0.7em;
+      width: 100% !important;
+    }
     .reveal pre { font-size: 0.6em; }
     .reveal code { font-size: 0.9em; }
     .reveal blockquote {
@@ -35,6 +38,7 @@
       display: block;
       text-align: left;
       margin: 1em 0;
+      padding-left: 40px;
     }
     .reveal li {
       font-size: 0.9em;
@@ -49,7 +53,33 @@
     .reveal img {
       max-width: 400px;
       max-height: 300px;
+      min-height: 200px;
       margin: 0.5em 0;
+      display: block;
+    }
+    /* 슬라이드 스크롤 기능 추가 */
+    .reveal .slides section,
+    .reveal .slides section.present,
+    .reveal .slides section.past,
+    .reveal .slides section.future {
+      overflow-y: auto !important;
+      max-height: 100vh !important;
+      padding: 20px 60px 200px 60px !important;
+      box-sizing: border-box !important;
+    }
+    .reveal .slides section::-webkit-scrollbar {
+      width: 8px;
+    }
+    .reveal .slides section::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.5);
     }
     #toc-mindmap a {
       text-decoration: none;
@@ -106,10 +136,19 @@
       </section>
 
       <section>
+<h2>본 자료의 구성</h2>
+<ul>
+<li>작성자 : 남중구 (nowage@gmail.com)</li>
+<li>본 발표자료의 컨텐츠와 시각화 도구는 100% VibeCoding 도구로 작성되었습니다.</li>
+<li>발표 자료 : https://finfra.kr/go/vibe2025</li>
+<li>Source Code : https://finfra.github.io/m2slide</li>
+</ul>
+      </section>
+
+      <section>
 <h2>개발 방식의 변화</h2>
 
 <p><div style="float:right; margin-left:15px; max-width:400px;"></p>
-
 <div class="mermaid">
 graph TD;
     A[2022 이전] --> B[ChatGPT];
@@ -117,7 +156,6 @@ graph TD;
     B --> D[CLI 시대];
     C --> D;
 </div>
-
 <p></div></p>
 
 <p><strong>2022년 이전</strong></p>
@@ -126,7 +164,7 @@ graph TD;
 <li>Stack Overflow와 문서 검색에 의존</li>
 <li>반복적인 코딩 작업에 많은 시간 소요</li>
 </ul>
-
+<p><!-- <img src="img/test.png" alt="test"> --></p>
 <p><strong>2022년 ChatGPT 등장</strong></p>
 <ul>
 <li>자연어로 질문하고 코드 조각을 얻는 방식 시작</li>
@@ -143,9 +181,9 @@ graph TD;
 <li>프로젝트 컨텍스트를 일부 이해하기 시작</li>
 </ul>
 
-<p><strong>2024년 CLI 기반 코딩 시대</strong></p>
+<p><strong>2024년부터 CLI 기반 코딩 본격화</strong></p>
 <ul>
-<li>터미널에서 실행되는 AI 도구 등장 (Claude Code, Gemini CLI)</li>
+<li>터미널에서 실행되는 AI 도구 등장 (2024: Claude Code, 2025: Gemini CLI)</li>
 <li>AI가 전체 프로젝트를 이해하고 파일을 직접 수정</li>
 <li>에이전트처럼 자율적으로 멀티파일 작업 수행</li>
 </ul>
@@ -186,19 +224,50 @@ graph TD;
       <section>
 <h2>패러다임 전환: Code-First → Intent-First</h2>
 
-<p><strong>전통적 개발 방식</strong></p>
-<pre><code>개발자 아이디어 → 코드 작성 → 실행 → 디버깅 → 수정 → 반복</code></pre>
+<p><strong>전통적 개발 방식 (Code-First)</strong></p>
+<p><div style="float:right; margin-left:15px; width:50%;"></p>
+<div class="mermaid">
+graph TB
+    subgraph traditional["전통적 개발 방식 (Code-First)"]
+        T1[💡 개발자 아이디어] --> T2[⌨️ 코드 작성]
+        T2 --> T3[▶️ 실행]
+        T3 --> T4[🐛 디버깅]
+        T4 --> T5{수정 필요?}
+        T5 -->|Yes| T2
+        T5 -->|No| T6[✅ 완료]
+    end
+
+    style traditional fill:#fff5f5,stroke:#e53e3e,stroke-width:2px
+    style T2 fill:#fed7d7
+    style T4 fill:#fed7d7
+</div>
+<p></div></p>
 <ul>
 <li>모든 코드를 개발자가 직접 작성</li>
 <li>문법과 API 세부사항 암기 필요</li>
 <li>반복적인 보일러플레이트 코드 작성</li>
+<li>디버깅 사이클이 길고 반복적</li>
 </ul>
 
-<p><strong>AI 시대 개발 방식</strong></p>
-<pre><code>개발자 의도 → 자연어 설명 → AI 코드 생성 → 검토 및 수정 → 완료</code></pre>
+<p><strong>AI 시대 개발 방식 (Intent-First)</strong></p>
+<p><div style="float:right; margin-left:15px; width:50%;"></p>
+<div class="mermaid">
+graph TB
+    subgraph ai["AI 시대 개발 방식 (Intent-First)"]
+        A1[💡 개발자 의도] --> A2[💬 자연어 설명]
+        A2 --> A3[🤖 AI 코드 생성]
+        A3 --> A4[👀 검토 및 수정]
+        A4 --> A5[✅ 완료]
+    end
+    style ai fill:#f0fff4,stroke:#38a169,stroke-width:2px
+    style A3 fill:#c6f6d5
+</div>
+<p></div></p>
 <ul>
 <li>"무엇을" 만들지 설명하면 AI가 "어떻게" 구현</li>
 <li>고수준 설계와 비즈니스 로직에 집중</li>
+<li>반복 작업 자동화로 생산성 향상</li>
+<li>검토와 품질 관리에 집중</li>
 </ul>
       </section>
 
@@ -228,19 +297,6 @@ graph TD;
 <li><strong>창의성 증대</strong>: 비즈니스 로직과 사용자 경험 개선에 집중</li>
 <li><strong>생산성 향상</strong>: 같은 시간에 더 많은 가치 창출</li>
 </ul>
-      </section>
-
-      <section>
-<h2>본 자료의 구성</h2>
-
-<ol>
-<li><strong>LLM 코딩 툴의 진화 과정</strong> (2022-2024)</li>
-<li><strong>바이브 코딩(VibeCoding)</strong> 개념과 철학</li>
-<li><strong>세대 구분</strong>: IDE 기반(1세대) vs CLI 기반(2세대)</li>
-<li><strong>세대별 비교</strong> 및 선택 가이드</li>
-<li><strong>실전 사례</strong>와 활용법</li>
-<li><strong>도입 로드맵</strong>과 실천 전략</li>
-</ol>
       </section>
 
     </div>
@@ -279,35 +335,31 @@ graph TD;
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">개발 방식의 변화</a>",
+                  "content": "<a href=\"#/1\">본 자료의 구성</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/2\">개발 방식의 변화 (계속)</a>",
+                  "content": "<a href=\"#/2\">개발 방식의 변화</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">변화의 속도</a>",
+                  "content": "<a href=\"#/4\">변화의 속도</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/4\">기술적 배경</a>",
+                  "content": "<a href=\"#/5\">기술적 배경</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/5\">패러다임 전환: Code-First → Intent-First</a>",
+                  "content": "<a href=\"#/6\">패러다임 전환: Code-First → Intent-First</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/6\">개발자 역할의 변화</a>",
+                  "content": "<a href=\"#/7\">개발자 역할의 변화</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/7\">핵심 인사이트</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/8\">본 자료의 구성</a>",
+                  "content": "<a href=\"#/8\">핵심 인사이트</a>",
                   "children": []
             }
       ]

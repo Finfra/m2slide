@@ -15,7 +15,10 @@
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
     .reveal { font-size: 32px; }
-    .reveal table { font-size: 0.7em; }
+    .reveal table {
+      font-size: 0.7em;
+      width: 100% !important;
+    }
     .reveal pre { font-size: 0.6em; }
     .reveal code { font-size: 0.9em; }
     .reveal blockquote {
@@ -35,6 +38,7 @@
       display: block;
       text-align: left;
       margin: 1em 0;
+      padding-left: 40px;
     }
     .reveal li {
       font-size: 0.9em;
@@ -49,7 +53,33 @@
     .reveal img {
       max-width: 400px;
       max-height: 300px;
+      min-height: 200px;
       margin: 0.5em 0;
+      display: block;
+    }
+    /* 슬라이드 스크롤 기능 추가 */
+    .reveal .slides section,
+    .reveal .slides section.present,
+    .reveal .slides section.past,
+    .reveal .slides section.future {
+      overflow-y: auto !important;
+      max-height: 100vh !important;
+      padding: 20px 60px 200px 60px !important;
+      box-sizing: border-box !important;
+    }
+    .reveal .slides section::-webkit-scrollbar {
+      width: 8px;
+    }
+    .reveal .slides section::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.5);
     }
     #toc-mindmap a {
       text-decoration: none;
@@ -134,11 +164,11 @@
 <li>클라우드 기반 실행</li>
 </ul>
 
-<p><strong>Aider</strong></p>
+<p><strong>Codex CLI</strong></p>
 <ul>
-<li>Git 친화적 AI 코딩 도구</li>
-<li>터미널 기반 페어 프로그래밍</li>
-<li>자동 커밋 메시지 생성</li>
+<li>OpenAI 기반 CLI 도구</li>
+<li>터미널 기반 코드 생성</li>
+<li>Git 통합 및 자동화</li>
 </ul>
       </section>
 
@@ -250,15 +280,7 @@ AI: "어떻게(How)" 구현할지 결정
                   "children": []
             },
             {
-                  "content": "<a href=\"#/2\">2세대: 대표 툴 (계속)</a>",
-                  "children": []
-            },
-            {
                   "content": "<a href=\"#/3\">2세대: 핵심 특징</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/4\">2세대: 핵심 특징 (계속)</a>",
                   "children": []
             },
             {

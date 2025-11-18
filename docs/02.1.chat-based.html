@@ -15,7 +15,10 @@
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
     .reveal { font-size: 32px; }
-    .reveal table { font-size: 0.7em; }
+    .reveal table {
+      font-size: 0.7em;
+      width: 100% !important;
+    }
     .reveal pre { font-size: 0.6em; }
     .reveal code { font-size: 0.9em; }
     .reveal blockquote {
@@ -35,6 +38,7 @@
       display: block;
       text-align: left;
       margin: 1em 0;
+      padding-left: 40px;
     }
     .reveal li {
       font-size: 0.9em;
@@ -49,7 +53,33 @@
     .reveal img {
       max-width: 400px;
       max-height: 300px;
+      min-height: 200px;
       margin: 0.5em 0;
+      display: block;
+    }
+    /* 슬라이드 스크롤 기능 추가 */
+    .reveal .slides section,
+    .reveal .slides section.present,
+    .reveal .slides section.past,
+    .reveal .slides section.future {
+      overflow-y: auto !important;
+      max-height: 100vh !important;
+      padding: 20px 60px 200px 60px !important;
+      box-sizing: border-box !important;
+    }
+    .reveal .slides section::-webkit-scrollbar {
+      width: 8px;
+    }
+    .reveal .slides section::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.5);
     }
     #toc-mindmap a {
       text-decoration: none;
@@ -125,10 +155,18 @@
 <h2>0세대: 작동 방식</h2>
 
 <p><strong>워크플로우</strong></p>
-<pre><code>1. 개발자 → 자연어로 질문
-2. LLM → 코드 스니펫 생성
-3. 개발자 → 복사하여 IDE에 붙여넣기
-4. 수정 필요 → 다시 채팅으로 질문</code></pre>
+
+<div class="mermaid">
+graph LR
+    A[👨‍💻 개발자] -->|자연어 질문| B[🤖 ChatGPT/LLM]
+    B -->|코드 스니펫 생성| C[📋 복사]
+    C -->|붙여넣기| D[💻 IDE]
+    D -->|수정 필요| A
+
+    style A fill:#e1f5ff
+    style B fill:#fff4e1
+    style D fill:#e8f5e9
+</div>
       </section>
 
       <section>

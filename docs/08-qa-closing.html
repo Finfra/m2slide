@@ -15,7 +15,10 @@
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
     .reveal { font-size: 32px; }
-    .reveal table { font-size: 0.7em; }
+    .reveal table {
+      font-size: 0.7em;
+      width: 100% !important;
+    }
     .reveal pre { font-size: 0.6em; }
     .reveal code { font-size: 0.9em; }
     .reveal blockquote {
@@ -35,6 +38,7 @@
       display: block;
       text-align: left;
       margin: 1em 0;
+      padding-left: 40px;
     }
     .reveal li {
       font-size: 0.9em;
@@ -49,7 +53,33 @@
     .reveal img {
       max-width: 400px;
       max-height: 300px;
+      min-height: 200px;
       margin: 0.5em 0;
+      display: block;
+    }
+    /* 슬라이드 스크롤 기능 추가 */
+    .reveal .slides section,
+    .reveal .slides section.present,
+    .reveal .slides section.past,
+    .reveal .slides section.future {
+      overflow-y: auto !important;
+      max-height: 100vh !important;
+      padding: 20px 60px 200px 60px !important;
+      box-sizing: border-box !important;
+    }
+    .reveal .slides section::-webkit-scrollbar {
+      width: 8px;
+    }
+    .reveal .slides section::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.5);
     }
     #toc-mindmap a {
       text-decoration: none;
@@ -118,24 +148,8 @@
 <li>시각적 피드백으로 변경사항을 즉시 확인 가능</li>
 <li>VSCode와 유사한 인터페이스로 친숙함</li>
 </ul>
-      </section>
 
-      <section>
-<h2>Q1: 학습 경로</h2>
-
-<p><strong>Week 1-2</strong>: Cursor 기본 기능 익히기</p>
-<ul>
-<li>Cmd/Ctrl + K로 간단한 요청</li>
-<li>diff 모드로 변경사항 확인</li>
-<li>작은 컴포넌트 생성 연습</li>
-</ul>
-
-<p><strong>Week 3-4</strong>: 실전 프로젝트 적용</p>
-<ul>
-<li>사이드 프로젝트에 활용</li>
-<li>코드 리뷰 습관 형성</li>
-<li>베스트 프랙티스 학습</li>
-</ul>
+<p><strong>상세 학습 경로는 5장 참조</strong></p>
       </section>
 
       <section data-markdown>
@@ -197,66 +211,21 @@
 
 <p><strong>Q4: 월 $20가 비싸지 않나요?</strong></p>
 
-<p><strong>ROI 분석 (중급 개발자 기준)</strong></p>
+<p><strong>결론</strong>: 첫 달부터 비용 대비 효과가 압도적입니다.</p>
 
-<pre><code>시간 절감: 주 15시간 (월 60시간)
-개발자 시급: $50 (평균)
-절감 비용: 60시간 × $50 = $3,000/월
-
-도구 비용: $20/월
-순이익: $2,980/월
-
-ROI: 14,900%</code></pre>
-      </section>
-
-      <section data-markdown>
-        <textarea data-template>
-## Q4: 실제 사례
-
-| 작업 유형 | 기존 시간 | 도구 사용 후 | 절감률 |
-|----------|----------|-------------|--------|
-| CRUD API 구현 | 4시간 | 30분 | 87.5% |
-| 컴포넌트 생성 | 1시간 | 10분 | 83% |
-| 테스트 작성 | 3시간 | 30분 | 83% |
-| 버그 수정 | 2시간 | 30분 | 75% |
-
-**결론**: 첫 달부터 비용 대비 효과가 압도적
-</textarea>
-      </section>
-
-      <section>
-<h2>Q5: 회사 단체 도입 시 비용 절감</h2>
-
-<p><strong>라이선스 협상 전략</strong></p>
-
-<p><strong>소규모 팀 (5-10명)</strong></p>
 <ul>
-<li>개별 구독으로 시작</li>
-<li>성과 측정 후 협상</li>
-<li>예상 비용: $100-200/월</li>
+<li>평균 생산성 향상: 30-50%</li>
+<li>시간 절감: 주당 10-20시간</li>
+<li>ROI: 첫 달 내 회수 가능</li>
 </ul>
 
-<p><strong>중형 팀 (10-20명)</strong></p>
-<ul>
-<li>단체 할인 문의 (10-15% 할인)</li>
-<li>연간 계약으로 추가 할인</li>
-<li>예상 비용: $200-350/월</li>
-</ul>
-      </section>
-
-      <section>
-<h2>Q5: 협상 팁</h2>
-
-<pre><code>✅ 파일럿 결과 데이터 준비
-✅ 생산성 향상 수치 제시
-✅ 장기 계약 제안
-✅ 경쟁 도구 견적 비교</code></pre>
+<p><strong>상세 ROI 분석 및 팀 도입 비용은 5장 참조</strong></p>
       </section>
 
       <section>
 <h2>보안 및 데이터 관련</h2>
 
-<p><strong>Q6: 코드를 AI에게 보내도 안전한가요?</strong></p>
+<p><strong>Q5: 코드를 AI에게 보내도 안전한가요?</strong></p>
 
 <p><strong>안전 사용 원칙</strong></p>
 
@@ -274,7 +243,7 @@ ROI: 14,900%</code></pre>
       </section>
 
       <section>
-<h2>Q6: 기업용 솔루션</h2>
+<h2>Q5: 기업용 솔루션 (계속)</h2>
 
 <p><strong>보안 강화 옵션</strong></p>
 <ul>
@@ -291,7 +260,7 @@ ROI: 14,900%</code></pre>
       </section>
 
       <section>
-<h2>Q7: AI 생성 코드의 저작권</h2>
+<h2>Q6: AI 생성 코드의 저작권</h2>
 
 <p><strong>저작권 현황 (2024년 기준)</strong></p>
 
@@ -312,7 +281,7 @@ ROI: 14,900%</code></pre>
       <section>
 <h2>학습 및 실무 적용</h2>
 
-<p><strong>Q8: AI 도구 사용으로 개발 실력이 떨어지지 않을까요?</strong></p>
+<p><strong>Q7: AI 도구 사용으로 개발 실력이 떨어지지 않을까요?</strong></p>
 
 <p><strong>올바른 사용 (실력 향상)</strong>:</p>
 <pre><code>✅ AI 코드를 학습 자료로 활용
@@ -329,7 +298,7 @@ ROI: 14,900%</code></pre>
 
       <section data-markdown>
         <textarea data-template>
-## Q8: 역량 변화
+## Q7: 역량 변화
 
 | 기존 역량 | 새로운 역량 |
 |----------|-----------|
@@ -341,67 +310,20 @@ ROI: 14,900%</code></pre>
       </section>
 
       <section>
-<h2>Q9: 팀 전체 도입 방법</h2>
+<h2>Q8: 팀 전체 도입 방법</h2>
 
-<p><strong>Phase 1: 파일럿 프로그램 (2주)</strong></p>
-<pre><code>목표: 효과 검증 및 학습
+<p><strong>단계별 접근 권장</strong>:</p>
+<ol>
+<li>파일럿 프로그램 (2-4주)</li>
+<li>점진적 확대 (1-2개월)</li>
+<li>전사 표준화 (3-6개월)</li>
+</ol>
 
-1. 파일럿 그룹 선정 (2-3명)
-   - 오픈 마인드를 가진 개발자
-   - 다양한 경력 수준 포함
-
-2. 작은 프로젝트 선택
-   - 위험도 낮은 작업
-   - 명확한 성공 지표
-   - 2주 내 완료 가능
-
-3. 데이터 수집
-   - 작업 시간 측정
-   - 코드 품질 평가
-   - 팀원 만족도 조사</code></pre>
+<p><strong>상세 팀 도입 로드맵은 7장 참조</strong></p>
       </section>
 
       <section>
-<h2>Q9: Phase 2-3</h2>
-
-<p><strong>Phase 2: 확대 적용 (4주)</strong></p>
-<pre><code>1. 성과 공유
-   - 파일럿 결과 발표
-   - 구체적인 수치 제시
-
-2. 교육 프로그램
-   - 기본 사용법 워크샵
-   - 베스트 프랙티스 가이드
-   - 내부 Q&A 세션
-
-3. 지원 체계
-   - Slack 채널 개설
-   - 주간 팁 공유
-   - 문제 해결 도움</code></pre>
-      </section>
-
-      <section>
-<h2>Q9: Phase 3</h2>
-
-<p><strong>Phase 3: 표준화 (2개월)</strong></p>
-<pre><code>1. 가이드라인 수립
-   - 코드 리뷰 절차
-   - 보안 체크리스트
-   - 프롬프트 템플릿
-
-2. 측정 및 개선
-   - KPI 모니터링
-   - 정기 회고
-   - 프로세스 개선
-
-3. 문화 정착
-   - 성공 사례 축하
-   - 지식 공유 문화
-   - 지속적 학습</code></pre>
-      </section>
-
-      <section>
-<h2>Q10: 기존 프로젝트 적용</h2>
+<h2>Q9: 기존 프로젝트 적용</h2>
 
 <p><strong>❌ 피해야 할 상황</strong>:</p>
 <pre><code>- 프로덕션 환경 직접 적용
@@ -417,7 +339,7 @@ ROI: 14,900%</code></pre>
       </section>
 
       <section>
-<h2>Q10: 단계별 확대</h2>
+<h2>Q9: 단계별 확대 (계속)</h2>
 
 <pre><code>Week 1-2: 사이드 프로젝트
   → 기본 사용법 익히기
@@ -435,7 +357,7 @@ Month 3+: 핵심 기능
       <section>
 <h2>기술적 질문</h2>
 
-<p><strong>Q11: 지원하는 언어와 프레임워크</strong></p>
+<p><strong>Q10: 지원하는 언어와 프레임워크</strong></p>
 
 <p><strong>완벽 지원 언어</strong>:</p>
 <ul>
@@ -447,7 +369,7 @@ Month 3+: 핵심 기능
       </section>
 
       <section>
-<h2>Q11: 프레임워크 지원</h2>
+<h2>Q10: 프레임워크 지원</h2>
 
 <p><strong>웹 프론트엔드</strong>:</p>
 <pre><code>✅ React, Next.js
@@ -462,7 +384,7 @@ Month 3+: 핵심 기능
       </section>
 
       <section>
-<h2>Q12: 레거시 코드베이스 활용</h2>
+<h2>Q11: 레거시 코드베이스 활용</h2>
 
 <p><strong>✅ 효과적인 작업</strong>:</p>
 <pre><code>1. 코드 이해 및 분석
@@ -484,7 +406,7 @@ Month 3+: 핵심 기능
       </section>
 
       <section>
-<h2>Q12: 성공 사례</h2>
+<h2>Q11: 성공 사례 (계속)</h2>
 
 <p><strong>시나리오</strong>: 10년 된 jQuery 코드를 React로 마이그레이션</p>
 
@@ -507,7 +429,7 @@ Month 2-3: 점진적 확대
       <section>
 <h2>트러블슈팅</h2>
 
-<p><strong>Q13: AI가 잘못된 코드를 생성하면?</strong></p>
+<p><strong>Q12: AI가 잘못된 코드를 생성하면?</strong></p>
 
 <p><strong>즉시 조치</strong>:</p>
 <pre><code>❌ 맹목적 수용
@@ -524,7 +446,7 @@ Month 2-3: 점진적 확대
       </section>
 
       <section>
-<h2>Q13: Git 안전망</h2>
+<h2>Q12: Git 안전망</h2>
 
 <pre><code class="language-bash"># AI 작업 전 커밋
 git add .
@@ -536,7 +458,7 @@ git reset --hard HEAD  # 되돌리기</code></pre>
       </section>
 
       <section>
-<h2>Q14: 원하는 결과를 못 얻을 때</h2>
+<h2>Q13: 원하는 결과를 못 얻을 때</h2>
 
 <p><strong>프롬프트 구성 요소</strong>:</p>
 <pre><code>1. 명확한 목표
@@ -557,7 +479,7 @@ git reset --hard HEAD  # 되돌리기</code></pre>
       </section>
 
       <section>
-<h2>Q15: 성능/속도 문제</h2>
+<h2>Q14: 성능/속도 문제</h2>
 
 <p><strong>느린 응답 시간 해결</strong>:</p>
 <pre><code>원인:
@@ -569,57 +491,6 @@ git reset --hard HEAD  # 되돌리기</code></pre>
 ✅ 요청을 작은 단위로 분할
 ✅ 관련 파일만 컨텍스트에 포함
 ✅ 점진적 작업 진행</code></pre>
-      </section>
-
-      <section>
-<h2>핵심 메시지 요약</h2>
-
-<p><strong>패러다임의 전환</strong></p>
-<pre><code>기존: "어떻게(How)" 구현할까?
-새로운: "무엇을(What)" 만들까?
-
-개발자의 역할 변화:
-타이핑 속도 → 문제 정의 능력
-코드 암기 → 아키텍처 설계
-반복 작업 → 품질 검증</code></pre>
-      </section>
-
-      <section>
-<h2>성공적인 도입 원칙</h2>
-
-<p><strong>1. 점진적 시작</strong></p>
-<pre><code>Day 1: 간단한 컴포넌트 생성
-Week 1: 작은 기능 구현
-Month 1: 실제 프로젝트 적용
-Month 3: 팀 전체 확대</code></pre>
-
-<p><strong>2. 검증 문화</strong></p>
-<pre><code>AI 생성 → 개발자 리뷰 → 테스트 → 배포</code></pre>
-      </section>
-
-      <section>
-<h2>측정 가능한 목표</h2>
-
-<p><strong>1개월 후</strong>:</p>
-<ul>
-<li>[ ] 기본 기능 숙달</li>
-<li>[ ] 생산성 20% 향상</li>
-<li>[ ] 작업 시간 단축 체감</li>
-</ul>
-
-<p><strong>3개월 후</strong>:</p>
-<ul>
-<li>[ ] 고급 기능 활용</li>
-<li>[ ] 생산성 40% 향상</li>
-<li>[ ] 팀원 1명 이상 동참</li>
-</ul>
-
-<p><strong>6개월 후</strong>:</p>
-<ul>
-<li>[ ] 워크플로우 최적화</li>
-<li>[ ] 생산성 50%+ 향상</li>
-<li>[ ] ROI 명확히 입증</li>
-</ul>
       </section>
 
       <section>
@@ -638,24 +509,6 @@ Month 3: 팀 전체 확대</code></pre>
 <li>Reddit: r/ai_coding</li>
 <li>Twitter: #VibeCoding</li>
 </ul>
-      </section>
-
-      <section>
-<h2>다음 단계</h2>
-
-<p><strong>지금 바로 시작하기</strong></p>
-
-<p><strong>오늘 할 수 있는 일</strong>:</p>
-<pre><code>1. 도구 선택 (Cursor 추천)
-2. 계정 생성 및 설치
-3. 첫 번째 프롬프트 실행
-4. "Hello World" 생성해보기</code></pre>
-
-<p><strong>이번 주 계획</strong>:</p>
-<pre><code>1. 기본 기능 익히기
-2. 간단한 컴포넌트 만들기
-3. 코드 리뷰 습관 들이기
-4. 성공 경험 기록하기</code></pre>
       </section>
 
       <section>
@@ -730,143 +583,87 @@ Month 3: 팀 전체 확대</code></pre>
                   "children": []
             },
             {
-                  "content": "<a href=\"#/2\">Q1: 학습 경로</a>",
+                  "content": "<a href=\"#/2\">Q2: Cursor와 Claude Code 중 선택</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">Q2: Cursor와 Claude Code 중 선택</a>",
+                  "content": "<a href=\"#/3\">Q2: 권장사항</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/4\">Q2: 권장사항</a>",
+                  "content": "<a href=\"#/4\">Q3: 무료로 시작할 수 있는 도구</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/5\">Q3: 무료로 시작할 수 있는 도구</a>",
+                  "content": "<a href=\"#/5\">Q3: 추천 전략</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/6\">Q3: 추천 전략</a>",
+                  "content": "<a href=\"#/6\">비용 및 ROI 관련</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/7\">비용 및 ROI 관련</a>",
+                  "content": "<a href=\"#/7\">보안 및 데이터 관련</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/8\">Q4: 실제 사례</a>",
+                  "content": "<a href=\"#/9\">Q6: AI 생성 코드의 저작권</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/9\">Q5: 회사 단체 도입 시 비용 절감</a>",
+                  "content": "<a href=\"#/10\">학습 및 실무 적용</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/10\">Q5: 협상 팁</a>",
+                  "content": "<a href=\"#/11\">Q7: 역량 변화</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/11\">보안 및 데이터 관련</a>",
+                  "content": "<a href=\"#/12\">Q8: 팀 전체 도입 방법</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/12\">Q6: 기업용 솔루션</a>",
+                  "content": "<a href=\"#/13\">Q9: 기존 프로젝트 적용</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/13\">Q7: AI 생성 코드의 저작권</a>",
+                  "content": "<a href=\"#/15\">기술적 질문</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/14\">학습 및 실무 적용</a>",
+                  "content": "<a href=\"#/16\">Q10: 프레임워크 지원</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/15\">Q8: 역량 변화</a>",
+                  "content": "<a href=\"#/17\">Q11: 레거시 코드베이스 활용</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/16\">Q9: 팀 전체 도입 방법</a>",
+                  "content": "<a href=\"#/19\">트러블슈팅</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/17\">Q9: Phase 2-3</a>",
+                  "content": "<a href=\"#/20\">Q12: Git 안전망</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/18\">Q9: Phase 3</a>",
+                  "content": "<a href=\"#/21\">Q13: 원하는 결과를 못 얻을 때</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/19\">Q10: 기존 프로젝트 적용</a>",
+                  "content": "<a href=\"#/22\">Q14: 성능/속도 문제</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/20\">Q10: 단계별 확대</a>",
+                  "content": "<a href=\"#/23\">학습 리소스</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/21\">기술적 질문</a>",
+                  "content": "<a href=\"#/24\">마무리</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/22\">Q11: 프레임워크 지원</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/23\">Q12: 레거시 코드베이스 활용</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/24\">Q12: 성공 사례</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/25\">트러블슈팅</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/26\">Q13: Git 안전망</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/27\">Q14: 원하는 결과를 못 얻을 때</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/28\">Q15: 성능/속도 문제</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/29\">핵심 메시지 요약</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/30\">성공적인 도입 원칙</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/31\">측정 가능한 목표</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/32\">학습 리소스</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/33\">다음 단계</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/34\">마무리</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/35\">마무리 (계속)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/36\">감사합니다</a>",
+                  "content": "<a href=\"#/26\">감사합니다</a>",
                   "children": []
             }
       ]

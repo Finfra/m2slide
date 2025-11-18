@@ -15,7 +15,10 @@
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
     .reveal { font-size: 32px; }
-    .reveal table { font-size: 0.7em; }
+    .reveal table {
+      font-size: 0.7em;
+      width: 100% !important;
+    }
     .reveal pre { font-size: 0.6em; }
     .reveal code { font-size: 0.9em; }
     .reveal blockquote {
@@ -35,6 +38,7 @@
       display: block;
       text-align: left;
       margin: 1em 0;
+      padding-left: 40px;
     }
     .reveal li {
       font-size: 0.9em;
@@ -49,7 +53,33 @@
     .reveal img {
       max-width: 400px;
       max-height: 300px;
+      min-height: 200px;
       margin: 0.5em 0;
+      display: block;
+    }
+    /* 슬라이드 스크롤 기능 추가 */
+    .reveal .slides section,
+    .reveal .slides section.present,
+    .reveal .slides section.past,
+    .reveal .slides section.future {
+      overflow-y: auto !important;
+      max-height: 100vh !important;
+      padding: 20px 60px 200px 60px !important;
+      box-sizing: border-box !important;
+    }
+    .reveal .slides section::-webkit-scrollbar {
+      width: 8px;
+    }
+    .reveal .slides section::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.5);
     }
     #toc-mindmap a {
       text-decoration: none;
@@ -197,7 +227,7 @@
 <h2>사례 1: Express API 서버 (계속)</h2>
 
 <p><strong>작업 과정</strong></p>
-<pre><code class="language-bash">$ claude-code
+<pre><code class="language-bash">$ claude
 
 > Express로 블로그 API 서버 만들어줘.
   - 게시글 CRUD
@@ -321,7 +351,7 @@ Apply complete! Resources: 15 added</code></pre>
 <h2>비교: 사용자 인증 기능 추가 (계속)</h2>
 
 <p><strong>2세대 (Claude Code) 접근</strong></p>
-<pre><code class="language-bash">$ claude-code
+<pre><code class="language-bash">$ claude
 
 > 사용자 인증 기능 추가해줘:
   - JWT 토큰 발급
@@ -431,7 +461,7 @@ $ git reset --hard HEAD^</code></pre>
 
 <p><strong>자동화 스크립트 활용</strong></p>
 <pre><code class="language-bash">#!/bin/bash
-claude-code << EOF
+claude << EOF
 프로젝트 분석해서 README.md 업데이트해줘
 테스트 실행해줘
 커버리지 리포트 생성해줘
@@ -488,12 +518,12 @@ EOF</code></pre>
       <section>
 <h2>다음 단계</h2>
 
-<p><strong>작은 프로젝트부터 시작</strong></p>
+<p><strong>상세 도입 로드맵은 7장 참조</strong></p>
+
 <ol>
-<li>Todo 앱, 블로그 등</li>
+<li>작은 프로젝트부터 시작</li>
 <li>점진적 확대</li>
-<li>팀에 공유</li>
-<li>베스트 프랙티스 문서화</li>
+<li>팀 협업 및 베스트 프랙티스 구축</li>
 </ol>
       </section>
 
@@ -537,10 +567,6 @@ EOF</code></pre>
                   "children": []
             },
             {
-                  "content": "<a href=\"#/2\">사례 1: React Todo 앱 (계속)</a>",
-                  "children": []
-            },
-            {
                   "content": "<a href=\"#/3\">사례 1: 성과</a>",
                   "children": []
             },
@@ -557,14 +583,6 @@ EOF</code></pre>
                   "children": []
             },
             {
-                  "content": "<a href=\"#/7\">사례 1: Express API 서버 (계속)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/8\">사례 1: Express API 서버 (계속)</a>",
-                  "children": []
-            },
-            {
                   "content": "<a href=\"#/9\">사례 1: 성과</a>",
                   "children": []
             },
@@ -573,23 +591,11 @@ EOF</code></pre>
                   "children": []
             },
             {
-                  "content": "<a href=\"#/11\">사례 2: AWS 인프라 구성 (계속)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/12\">사례 2: AWS 인프라 구성 (계속)</a>",
-                  "children": []
-            },
-            {
                   "content": "<a href=\"#/13\">사례 2: 성과</a>",
                   "children": []
             },
             {
                   "content": "<a href=\"#/14\">비교: 사용자 인증 기능 추가</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/15\">비교: 사용자 인증 기능 추가 (계속)</a>",
                   "children": []
             },
             {
@@ -605,15 +611,7 @@ EOF</code></pre>
                   "children": []
             },
             {
-                  "content": "<a href=\"#/19\">실전 팁: 1세대 (계속)</a>",
-                  "children": []
-            },
-            {
                   "content": "<a href=\"#/20\">실전 팁: 2세대 (CLI)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/21\">실전 팁: 2세대 (계속)</a>",
                   "children": []
             },
             {
