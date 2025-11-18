@@ -15,7 +15,10 @@
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
     .reveal { font-size: 32px; }
-    .reveal table { font-size: 0.7em; }
+    .reveal table {
+      font-size: 0.7em;
+      width: 100% !important;
+    }
     .reveal pre { font-size: 0.6em; }
     .reveal code { font-size: 0.9em; }
     .reveal blockquote {
@@ -35,6 +38,7 @@
       display: block;
       text-align: left;
       margin: 1em 0;
+      padding-left: 40px;
     }
     .reveal li {
       font-size: 0.9em;
@@ -49,7 +53,33 @@
     .reveal img {
       max-width: 400px;
       max-height: 300px;
+      min-height: 200px;
       margin: 0.5em 0;
+      display: block;
+    }
+    /* 슬라이드 스크롤 기능 추가 */
+    .reveal .slides section,
+    .reveal .slides section.present,
+    .reveal .slides section.past,
+    .reveal .slides section.future {
+      overflow-y: auto !important;
+      max-height: 100vh !important;
+      padding: 20px 60px 200px 60px !important;
+      box-sizing: border-box !important;
+    }
+    .reveal .slides section::-webkit-scrollbar {
+      width: 8px;
+    }
+    .reveal .slides section::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.5);
     }
     #toc-mindmap a {
       text-decoration: none;
@@ -275,7 +305,31 @@
     mermaid.initialize({
       startOnLoad: true,
       theme: 'default',
-      securityLevel: 'loose'
+      securityLevel: 'loose',
+      themeVariables: {
+        fontFamily: '"Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif'
+      },
+      flowchart: {
+        htmlLabels: true,
+        curve: 'basis',
+        useMaxWidth: true
+      },
+      sequence: {
+        diagramMarginX: 50,
+        diagramMarginY: 10,
+        actorMargin: 50,
+        width: 150,
+        height: 65,
+        boxMargin: 10,
+        boxTextMargin: 5,
+        noteMargin: 10,
+        messageMargin: 35,
+        mirrorActors: true,
+        useMaxWidth: true
+      },
+      timeline: {
+        useMaxWidth: true
+      }
     });
 
     // Initialize markmap for table of contents
@@ -293,23 +347,11 @@
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">1세대: 대표 툴 (계속)</a>",
-                  "children": []
-            },
-            {
                   "content": "<a href=\"#/4\">1세대: 장점</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/5\">1세대: 장점 (계속)</a>",
-                  "children": []
-            },
-            {
                   "content": "<a href=\"#/6\">1세대: 단점</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/7\">1세대: 단점 (계속)</a>",
                   "children": []
             },
             {

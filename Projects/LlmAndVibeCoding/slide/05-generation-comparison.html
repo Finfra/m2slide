@@ -15,7 +15,10 @@
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
     .reveal { font-size: 32px; }
-    .reveal table { font-size: 0.7em; }
+    .reveal table {
+      font-size: 0.7em;
+      width: 100% !important;
+    }
     .reveal pre { font-size: 0.6em; }
     .reveal code { font-size: 0.9em; }
     .reveal blockquote {
@@ -35,6 +38,7 @@
       display: block;
       text-align: left;
       margin: 1em 0;
+      padding-left: 40px;
     }
     .reveal li {
       font-size: 0.9em;
@@ -49,7 +53,33 @@
     .reveal img {
       max-width: 400px;
       max-height: 300px;
+      min-height: 200px;
       margin: 0.5em 0;
+      display: block;
+    }
+    /* 슬라이드 스크롤 기능 추가 */
+    .reveal .slides section,
+    .reveal .slides section.present,
+    .reveal .slides section.past,
+    .reveal .slides section.future {
+      overflow-y: auto !important;
+      max-height: 100vh !important;
+      padding: 20px 60px 200px 60px !important;
+      box-sizing: border-box !important;
+    }
+    .reveal .slides section::-webkit-scrollbar {
+      width: 8px;
+    }
+    .reveal .slides section::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.5);
     }
     #toc-mindmap a {
       text-decoration: none;
@@ -115,15 +145,6 @@
 | **코드 제안** | 복사-붙여넣기 | 실시간 자동완성 | 멀티라인 | 멀티파일 |
 | **파일 편집** | 불가 | 단일 파일 | 멀티파일 (제한적) | 멀티파일 (완전) |
 | **프로젝트 이해** | 없음 | 현재 파일만 | 프로젝트 전체 | 프로젝트 + 히스토리 |
-</textarea>
-      </section>
-
-      <section data-markdown>
-        <textarea data-template>
-## 종합 비교 테이블 (계속)
-
-| 기능 | ChatGPT | Copilot | Cursor/Cline | Claude Code/CLI |
-|------|---------|---------|-------------|-----------------|
 | **명령 실행** | 불가 | 불가 | 제한적 | 완전 가능 |
 | **자동화** | 없음 | 코드 제안만 | 제한적 | 완전 자동화 |
 | **Git 통합** | 없음 | 기본 | IDE 통합 | 완전 통합 |
@@ -231,24 +252,27 @@
       <section>
 <h2>의사결정 트리</h2>
 
-<pre><code>시작
-  ↓
-Q1: 터미널 사용이 익숙한가?
-  ├─ 예 → Q2로
-  └─ 아니오 → 1세대 (Cursor) 추천
-        ↓
-Q2: 여러 프로젝트를 동시에 관리하는가?
-  ├─ 예 → 2세대 (Claude Code) 추천
-  └─ 아니오 → Q3로</code></pre>
-      </section>
+<div class="mermaid">
+graph TD
+    Start([🚀 시작]) --> Q1{터미널<br/>사용 익숙?}
 
-      <section>
-<h2>의사결정 트리 (계속)</h2>
+    Q1 -->|아니오| R1[💻 1세대<br/>Cursor 추천]
+    Q1 -->|예| Q2{여러 프로젝트<br/>동시 관리?}
 
-<pre><code>Q3: 주로 작업하는 영역은?
-  ├─ 프론트엔드 → 1세대 (Cursor)
-  ├─ 백엔드/풀스택 → 2세대 (Claude Code)
-  └─ DevOps/인프라 → 2세대 (Gemini CLI)</code></pre>
+    Q2 -->|예| R2[⌨️ 2세대<br/>Claude Code]
+    Q2 -->|아니오| Q3{주 작업<br/>영역은?}
+
+    Q3 -->|프론트엔드| R3[💻 1세대<br/>Cursor]
+    Q3 -->|백엔드/풀스택| R4[⌨️ 2세대<br/>Claude Code]
+    Q3 -->|DevOps/인프라| R5[⌨️ 2세대<br/>Gemini CLI]
+
+    style Start fill:#e8f5e9
+    style R1 fill:#e3f2fd
+    style R2 fill:#f3e5f5
+    style R3 fill:#e3f2fd
+    style R4 fill:#f3e5f5
+    style R5 fill:#f3e5f5
+</div>
       </section>
 
       <section data-markdown>
@@ -299,159 +323,65 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
       <section>
 <h2>팀 도입 전략</h2>
 
-<p><strong>소규모 팀 (1-5명)</strong></p>
+<p><strong>상세 팀 규모별 도입 전략은 7장 참조</strong></p>
 
-<p><strong>전략</strong>: 개인 선택 존중</p>
-<pre><code>1. 각자 선호하는 도구 사용
-2. 월 1회 경험 공유 세션
-3. 점진적으로 표준화</code></pre>
-
-<p><strong>추천 조합</strong>:</p>
+<p><strong>빠른 가이드</strong>:</p>
 <ul>
-<li>프론트 2명: Cursor</li>
-<li>백엔드 2명: Claude Code</li>
-<li>풀스택 1명: 둘 다</li>
+<li>소규모 (1-5명): 개인 선택 존중, 경험 공유</li>
+<li>중형 (6-20명): 역할별 표준화</li>
+<li>대형 (20명+): 공식 도구 선정, 전담 교육</li>
 </ul>
       </section>
 
       <section>
-<h2>팀 도입 전략 (계속)</h2>
+<h2>시작 가이드</h2>
 
-<p><strong>중형 팀 (6-20명)</strong></p>
+<p><strong>상세 학습 로드맵은 7장 참조</strong></p>
 
-<p><strong>전략</strong>: 역할별 표준화</p>
-<pre><code>1. 포지션별 도구 가이드 작성
-2. 온보딩에 도구 교육 포함
-3. 내부 베스트 프랙티스 문서화</code></pre>
-
-<p><strong>추천 조합</strong>:</p>
-<ul>
-<li>주니어: Cursor (통일)</li>
-<li>시니어: 자유 선택</li>
-<li>DevOps: Claude Code (통일)</li>
-</ul>
-      </section>
-
-      <section>
-<h2>팀 도입 전략 (계속)</h2>
-
-<p><strong>대형 팀 (20명+)</strong></p>
-
-<p><strong>전략</strong>: 공식 도구 선정</p>
-<pre><code>1. 2-3개 도구로 표준화
-2. 라이선스 대량 구매
-3. 전담 교육 프로그램
-4. 내부 Slack 채널 운영</code></pre>
-      </section>
-
-      <section>
-<h2>처음 시작하는 경우</h2>
-
-<p><strong>Week 1-2: 기본 익히기</strong></p>
-<pre><code>1. Cursor로 시작 (진입 장벽 낮음)
-2. 간단한 컴포넌트 만들어보기
-3. 코드 리뷰 습관 들이기</code></pre>
-
-<p><strong>Week 3-4: 고급 기능</strong></p>
-<pre><code>1. Composer 모드 활용
-2. 멀티파일 작업 시도
-3. 프로젝트 전체 리팩토링</code></pre>
-      </section>
-
-      <section>
-<h2>처음 시작하는 경우 (계속)</h2>
-
-<p><strong>Month 2: 2세대 시도</strong></p>
-<pre><code>1. Claude Code 설치
-2. 백엔드 작업부터 시작
-3. 1세대와 병행 사용</code></pre>
+<p><strong>Week 1-2</strong>: Cursor로 시작</p>
+<p><strong>Month 1</strong>: 실전 프로젝트 적용</p>
+<p><strong>Month 2+</strong>: 고급 기능 및 2세대 도구 시도</p>
       </section>
 
       <section>
 <h2>생산성 극대화 팁</h2>
 
-<p><strong>1세대 사용 시</strong></p>
-<ul>
-<li>단축키 마스터하기</li>
-<li>Composer 모드 적극 활용</li>
-<li>diff 모드로 변경사항 항상 확인</li>
-</ul>
+<p><strong>상세 실전 팁은 6장 참조</strong></p>
 
-<p><strong>2세대 사용 시</strong></p>
-<ul>
-<li>명확한 요구사항 전달</li>
-<li>작업을 작은 단위로 분할</li>
-<li>Git 커밋 자주 하기</li>
-</ul>
+<p><strong>1세대</strong>: 단축키, Composer 모드, diff 확인</p>
+<p><strong>2세대</strong>: 명확한 요구사항, 작은 단위 분할, Git 커밋</p>
       </section>
 
       <section>
 <h2>마이그레이션 가이드</h2>
 
 <p><strong>ChatGPT → Cursor</strong></p>
-
-<p><strong>준비물</strong></p>
 <ul>
-<li>VSCode 사용 경험</li>
-<li>기본적인 Git 지식</li>
+<li>준비: VSCode 경험, Git 기초</li>
+<li>적응 기간: 1-2일</li>
 </ul>
-
-<p><strong>마이그레이션 단계</strong></p>
-<ol>
-<li>Cursor 설치</li>
-<li>기존 프로젝트 열기</li>
-<li>Cmd/Ctrl + K로 시작</li>
-<li>간단한 요청부터 시작</li>
-</ol>
-
-<p><strong>예상 적응 기간</strong>: 1-2일</p>
-      </section>
-
-      <section>
-<h2>마이그레이션 가이드 (계속)</h2>
 
 <p><strong>Cursor → Claude Code</strong></p>
-
-<p><strong>준비물</strong></p>
 <ul>
-<li>터미널 기본 명령어</li>
-<li>Git 중급 이상 지식</li>
-<li>API 키 발급</li>
+<li>준비: 터미널 명령어, Git 중급, API 키</li>
+<li>적응 기간: 1주일</li>
 </ul>
 
-<p><strong>마이그레이션 단계</strong></p>
-<ol>
-<li>Claude Code 설치</li>
-<li>환경 변수 설정</li>
-<li>터미널에서 실행</li>
-<li>작은 프로젝트부터 시작</li>
-</ol>
-
-<p><strong>예상 적응 기간</strong>: 1주일</p>
+<p><strong>상세 도입 가이드는 7장 참조</strong></p>
       </section>
 
       <section>
 <h2>자주 묻는 질문</h2>
 
-<p><strong>Q: 두 가지를 동시에 사용해도 되나요?</strong></p>
+<p><strong>상세 Q&A는 8장 참조</strong></p>
 
-<p>A: 네, 오히려 권장합니다. 상황에 맞게 적절한 도구를 선택하세요.</p>
-
-<p><strong>Q: 비용이 부담됩니다. 무료 대안은?</strong></p>
-
-<p>A: ChatGPT 무료 버전으로 시작하거나, Claude Code의 무료 티어를 활용하세요.</p>
-      </section>
-
-      <section>
-<h2>자주 묻는 질문 (계속)</h2>
-
-<p><strong>Q: 회사에서 도입하려면?</strong></p>
-
-<p>A: 소규모 파일럿 프로젝트로 시작하고, 성과를 측정한 후 확대하세요.</p>
-
-<p><strong>Q: 보안은 괜찮나요?</strong></p>
-
-<p>A: 민감한 정보는 절대 공유하지 말고, 기업용 라이선스를 고려하세요.</p>
+<p><strong>핵심 질문</strong>:</p>
+<ul>
+<li>두 도구 동시 사용 가능? → 권장</li>
+<li>무료 대안? → ChatGPT, Cline</li>
+<li>회사 도입? → 파일럿 프로젝트부터</li>
+<li>보안? → 민감 정보 공유 금지, 기업용 라이선스 고려</li>
+</ul>
       </section>
 
     </div>
@@ -480,7 +410,31 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
     mermaid.initialize({
       startOnLoad: true,
       theme: 'default',
-      securityLevel: 'loose'
+      securityLevel: 'loose',
+      themeVariables: {
+        fontFamily: '"Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif'
+      },
+      flowchart: {
+        htmlLabels: true,
+        curve: 'basis',
+        useMaxWidth: true
+      },
+      sequence: {
+        diagramMarginX: 50,
+        diagramMarginY: 10,
+        actorMargin: 50,
+        width: 150,
+        height: 65,
+        boxMargin: 10,
+        boxTextMargin: 5,
+        noteMargin: 10,
+        messageMargin: 35,
+        mirrorActors: true,
+        useMaxWidth: true
+      },
+      timeline: {
+        useMaxWidth: true
+      }
     });
 
     // Initialize markmap for table of contents
@@ -494,95 +448,51 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
                   "children": []
             },
             {
-                  "content": "<a href=\"#/2\">종합 비교 테이블 (계속)</a>",
+                  "content": "<a href=\"#/2\">사용 시나리오별 비교: 웹 개발</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">사용 시나리오별 비교: 웹 개발</a>",
+                  "content": "<a href=\"#/3\">사용 시나리오별 비교: DevOps/인프라</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/4\">사용 시나리오별 비교: DevOps/인프라</a>",
+                  "content": "<a href=\"#/4\">프로필별 추천</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/5\">프로필별 추천</a>",
+                  "content": "<a href=\"#/9\">의사결정 트리</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/6\">프로필별 추천 (계속)</a>",
+                  "content": "<a href=\"#/10\">비용 vs 효과 분석</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/7\">프로필별 추천 (계속)</a>",
+                  "content": "<a href=\"#/11\">ROI 분석</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/8\">프로필별 추천 (계속)</a>",
+                  "content": "<a href=\"#/12\">전환 비용</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/9\">프로필별 추천 (계속)</a>",
+                  "content": "<a href=\"#/13\">팀 도입 전략</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/10\">의사결정 트리</a>",
+                  "content": "<a href=\"#/14\">시작 가이드</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/11\">의사결정 트리 (계속)</a>",
+                  "content": "<a href=\"#/15\">생산성 극대화 팁</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/12\">비용 vs 효과 분석</a>",
+                  "content": "<a href=\"#/16\">마이그레이션 가이드</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/13\">ROI 분석</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/14\">전환 비용</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/15\">팀 도입 전략</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/16\">팀 도입 전략 (계속)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/17\">팀 도입 전략 (계속)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/18\">처음 시작하는 경우</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/19\">처음 시작하는 경우 (계속)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/20\">생산성 극대화 팁</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/21\">마이그레이션 가이드</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/22\">마이그레이션 가이드 (계속)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/23\">자주 묻는 질문</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/24\">자주 묻는 질문 (계속)</a>",
+                  "content": "<a href=\"#/17\">자주 묻는 질문</a>",
                   "children": []
             }
       ]

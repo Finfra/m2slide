@@ -15,7 +15,10 @@
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
     .reveal { font-size: 32px; }
-    .reveal table { font-size: 0.7em; }
+    .reveal table {
+      font-size: 0.7em;
+      width: 100% !important;
+    }
     .reveal pre { font-size: 0.6em; }
     .reveal code { font-size: 0.9em; }
     .reveal blockquote {
@@ -35,6 +38,7 @@
       display: block;
       text-align: left;
       margin: 1em 0;
+      padding-left: 40px;
     }
     .reveal li {
       font-size: 0.9em;
@@ -49,7 +53,33 @@
     .reveal img {
       max-width: 400px;
       max-height: 300px;
+      min-height: 200px;
       margin: 0.5em 0;
+      display: block;
+    }
+    /* 슬라이드 스크롤 기능 추가 */
+    .reveal .slides section,
+    .reveal .slides section.present,
+    .reveal .slides section.past,
+    .reveal .slides section.future {
+      overflow-y: auto !important;
+      max-height: 100vh !important;
+      padding: 20px 60px 200px 60px !important;
+      box-sizing: border-box !important;
+    }
+    .reveal .slides section::-webkit-scrollbar {
+      width: 8px;
+    }
+    .reveal .slides section::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.5);
     }
     #toc-mindmap a {
       text-decoration: none;
@@ -192,23 +222,19 @@
 
       <section>
 <h2>바이브 코딩 워크플로우</h2>
+<div class="mermaid">
+sequenceDiagram
+    participant Dev as 👨‍💻 개발자
+    participant AI as 🤖 AI
 
-<pre><code>1. 개발자: 의도 전달 (자연어)
-   "사용자 인증 기능 추가해줘"
-
-2. AI: 요구사항 파악 및 질문
-   "JWT 토큰 방식으로 하시겠어요?"
-
-3. 개발자: 세부 사항 확인
-   "응, JWT로 하고 localStorage에 저장해"
-
-4. AI: 코드 생성 및 파일 수정
-   - auth.service.ts 생성
-   - API 엔드포인트 추가
-   - 컴포넌트 수정
-
-5. 개발자: 검토 및 승인
-   "좋아, 이제 로그인 페이지도 만들어줘"</code></pre>
+    Dev->>AI: 💬 의도 전달<br/>"사용자 인증 기능 추가해줘"
+    AI->>Dev: ❓ 요구사항 파악<br/>"JWT 토큰 방식으로 할까요?"
+    Dev->>AI: ✅ 세부 사항 확인<br/>"응, localStorage에 저장해"
+    AI->>AI: ⚙️ 코드 생성<br/>auth.service.ts 생성<br/>API 엔드포인트 추가
+    AI->>Dev: 📄 결과 제시
+    Dev->>Dev: 👀 검토 및 승인
+    Dev->>AI: 🔄 다음 요청<br/>"로그인 페이지도 만들어줘"
+</div>
       </section>
 
       <section>
@@ -444,7 +470,31 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
     mermaid.initialize({
       startOnLoad: true,
       theme: 'default',
-      securityLevel: 'loose'
+      securityLevel: 'loose',
+      themeVariables: {
+        fontFamily: '"Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif'
+      },
+      flowchart: {
+        htmlLabels: true,
+        curve: 'basis',
+        useMaxWidth: true
+      },
+      sequence: {
+        diagramMarginX: 50,
+        diagramMarginY: 10,
+        actorMargin: 50,
+        width: 150,
+        height: 65,
+        boxMargin: 10,
+        boxTextMargin: 5,
+        noteMargin: 10,
+        messageMargin: 35,
+        mirrorActors: true,
+        useMaxWidth: true
+      },
+      timeline: {
+        useMaxWidth: true
+      }
     });
 
     // Initialize markmap for table of contents
@@ -466,14 +516,6 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
                   "children": []
             },
             {
-                  "content": "<a href=\"#/4\">바이브 코딩의 핵심 원칙 (계속)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/5\">바이브 코딩의 핵심 원칙 (계속)</a>",
-                  "children": []
-            },
-            {
                   "content": "<a href=\"#/6\">철학</a>",
                   "children": []
             },
@@ -490,15 +532,7 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
                   "children": []
             },
             {
-                  "content": "<a href=\"#/10\">바이브 코딩의 핵심 가치 (계속)</a>",
-                  "children": []
-            },
-            {
                   "content": "<a href=\"#/11\">바이브 코딩 vs 전통 코딩</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/12\">바이브 코딩 vs 전통 코딩 (계속)</a>",
                   "children": []
             },
             {
@@ -510,23 +544,7 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
                   "children": []
             },
             {
-                  "content": "<a href=\"#/15\">바이브 코딩의 성공 조건 (계속)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/16\">바이브 코딩의 성공 조건 (계속)</a>",
-                  "children": []
-            },
-            {
                   "content": "<a href=\"#/17\">바이브 코딩이 가져온 변화</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/18\">바이브 코딩이 가져온 변화 (계속)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/19\">바이브 코딩이 가져온 변화 (계속)</a>",
                   "children": []
             },
             {

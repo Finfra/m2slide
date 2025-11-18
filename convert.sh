@@ -1,16 +1,28 @@
 #!/bin/bash
 
 # Markdown to Reveal.js HTML converter
-# Usage: ./convert.sh [project_dir]
+# Usage: ./convert.sh [project_dir] [--epub]
 #   project_dir: Path to project folder (default: from config.yml)
 #                Expects project_dir/markdown/ and generates project_dir/slide/
+#   --epub: Also generate EPUB file
 
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Parse arguments
-if [ $# -eq 0 ]; then
-  # No arguments: read from config.yml
+# Parse options
+GENERATE_EPUB=false
+PROJECT_DIR=""
+
+for arg in "$@"; do
+  if [ "$arg" = "--epub" ]; then
+    GENERATE_EPUB=true
+  else
+    PROJECT_DIR="$arg"
+  fi
+done
+
+# If no project directory specified, read from config.yml
+if [ -z "$PROJECT_DIR" ]; then
   CONFIG_FILE="$SCRIPT_DIR/config.yml"
 
   if [ -f "$CONFIG_FILE" ]; then
@@ -29,8 +41,8 @@ if [ $# -eq 0 ]; then
   PROJECT_DIR="$SCRIPT_DIR/Projects/$CURRENT_PROJECT"
   echo "Using project from config.yml: $CURRENT_PROJECT"
 else
-  # One argument: project directory
-  PROJECT_DIR="$1"
+  # Resolve to absolute path
+  PROJECT_DIR=$(cd "$PROJECT_DIR" 2>/dev/null && pwd || echo "$PROJECT_DIR")
 fi
 
 echo "Project directory: $PROJECT_DIR"
@@ -56,5 +68,11 @@ if [ -d "$OUTPUT_DIR" ]; then
   rm -f "$OUTPUT_DIR"/*.html
 fi
 
-# Run the generator
+# Run the HTML generator
 node "$SCRIPT_DIR/generate-slides.js" "$PROJECT_DIR"
+
+# Generate EPUB if requested
+if [ "$GENERATE_EPUB" = true ]; then
+  echo ""
+  node "$SCRIPT_DIR/generate-epub.js" "$PROJECT_DIR"
+fi

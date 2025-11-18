@@ -252,21 +252,30 @@ function getParentPage(fileName, agendaPath) {
 
 // Generate table of contents data for markmap
 function generateTOC(slides, fileName, agendaPath) {
-  const tocItems = slides.slice(1).map((slide, index) => {
-    const slideNum = index + 1;
-    let label = `슬라이드 ${slideNum}`;
+  const tocItems = slides.slice(1)
+    .map((slide, index) => {
+      const slideNum = index + 1;
+      let label = `슬라이드 ${slideNum}`;
 
-    // Extract header from slide
-    const headerMatch = slide.content.match(/^## (.+)$/m);
-    if (headerMatch) {
-      label = headerMatch[1];
-    }
+      // Extract header from slide
+      const headerMatch = slide.content.match(/^## (.+)$/m);
+      if (headerMatch) {
+        const originalLabel = headerMatch[1];
 
-    return {
-      content: `<a href="#/${slideNum}">${label}</a>`,
-      children: []
-    };
-  });
+        // Skip slides with "(계속)", "(예속)" etc. in their titles
+        if (/\([^)]*계속[^)]*\)|\([^)]*예속[^)]*\)/.test(originalLabel)) {
+          return null;
+        }
+
+        label = originalLabel;
+      }
+
+      return {
+        content: `<a href="#/${slideNum}">${label}</a>`,
+        children: []
+      };
+    })
+    .filter(item => item !== null); // Remove null items
 
   // Add subsections if they exist
   const subsections = getSubsections(fileName, agendaPath);
@@ -344,7 +353,10 @@ function generateHTML(filePath, agendaPath) {
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
     .reveal { font-size: 32px; }
-    .reveal table { font-size: 0.7em; }
+    .reveal table {
+      font-size: 0.7em;
+      width: 100% !important;
+    }
     .reveal pre { font-size: 0.6em; }
     .reveal code { font-size: 0.9em; }
     .reveal blockquote {
@@ -364,6 +376,7 @@ function generateHTML(filePath, agendaPath) {
       display: block;
       text-align: left;
       margin: 1em 0;
+      padding-left: 40px;
     }
     .reveal li {
       font-size: 0.9em;
@@ -378,7 +391,33 @@ function generateHTML(filePath, agendaPath) {
     .reveal img {
       max-width: 400px;
       max-height: 300px;
+      min-height: 200px;
       margin: 0.5em 0;
+      display: block;
+    }
+    /* 슬라이드 스크롤 기능 추가 */
+    .reveal .slides section,
+    .reveal .slides section.present,
+    .reveal .slides section.past,
+    .reveal .slides section.future {
+      overflow-y: auto !important;
+      max-height: 100vh !important;
+      padding: 20px 60px 200px 60px !important;
+      box-sizing: border-box !important;
+    }
+    .reveal .slides section::-webkit-scrollbar {
+      width: 8px;
+    }
+    .reveal .slides section::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.5);
     }
     #toc-mindmap a {
       text-decoration: none;
@@ -457,7 +496,31 @@ ${slidesHTML}
     mermaid.initialize({
       startOnLoad: true,
       theme: 'default',
-      securityLevel: 'loose'
+      securityLevel: 'loose',
+      themeVariables: {
+        fontFamily: '"Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif'
+      },
+      flowchart: {
+        htmlLabels: true,
+        curve: 'basis',
+        useMaxWidth: true
+      },
+      sequence: {
+        diagramMarginX: 50,
+        diagramMarginY: 10,
+        actorMargin: 50,
+        width: 150,
+        height: 65,
+        boxMargin: 10,
+        boxTextMargin: 5,
+        noteMargin: 10,
+        messageMargin: 35,
+        mirrorActors: true,
+        useMaxWidth: true
+      },
+      timeline: {
+        useMaxWidth: true
+      }
     });
 
     // Initialize markmap for table of contents

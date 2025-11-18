@@ -125,7 +125,7 @@ sequenceDiagram
 Mermaid 다이어그램을 오른쪽에 배치하려면 HTML div로 감싸서 float 스타일을 적용합니다:
 
 ````markdown
-<div style="float:right; margin-left:15px; max-width:400px;">
+<div style="margin-left:15px; max-width:100%;">
 
 ```mermaid
 graph TD;
@@ -137,6 +137,11 @@ graph TD;
 
 </div>
 
+* cf)
+```
+<div style="float:right; margin-left:15px; max-width:400px;">
+<div style="float:right; margin-left:15px; width:50%;">
+```
 ## 개발 방식의 변화
 
 Mermaid 다이어그램이 오른쪽에 표시되고, 텍스트는 왼쪽에 배치됩니다.

@@ -1,13 +1,31 @@
-# 7. 바이브 코딩 도입 로드맵
+# 7. (참고) 바이브 코딩 도입 로드맵
 
 ---
 
 ## 도입 단계별 가이드
 
-**1단계**: 평가 및 준비 (1-2주)
-**2단계**: 시작하기 (2-4주)
-**3단계**: 숙련도 향상 (1-2개월)
-**4단계**: 고급 활용 (2-3개월)
+```mermaid
+timeline
+    title 바이브 코딩 도입 로드맵
+    section 1단계
+        1-2주 : 평가 및 준비
+              : 현황 분석
+              : 목표 설정
+              : 도구 선택
+    section 2단계
+        2-4주 : 시작하기
+              : 개인 학습
+              : 기본 기능 익히기
+              : 팀 파일럿
+    section 3단계
+        1-2개월 : 숙련도 향상
+                : 고급 기능
+                : 베스트 프랙티스
+    section 4단계
+        2-3개월 : 고급 활용
+                : 워크플로우 최적화
+                : 팀 협업 패턴
+```
 
 ---
 
@@ -173,7 +191,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: AI Code Review
         run: |
-          claude-code << EOF
+          claude << EOF
           코드 품질 분석해줘
           보안 취약점 찾아줘
           테스트 커버리지 확인해줘
@@ -184,24 +202,22 @@ jobs:
 
 ## 4단계: 팀 협업 패턴
 
-**패턴 1: AI 페어 프로그래밍**
-```
-주니어 개발자 + Claude Code
-  ↓
-시니어 개발자 리뷰
-  ↓
-배포
-```
+```mermaid
+graph TB
+    subgraph pattern1["패턴 1: AI 페어 프로그래밍"]
+        P1A[👶 주니어 개발자] --> P1B[🤖 Claude Code 협업]
+        P1B --> P1C[👨‍🏫 시니어 리뷰]
+        P1C --> P1D[🚀 배포]
+    end
 
-**패턴 2: AI 코드 리뷰**
-```
-개발자 코드 작성
-  ↓
-AI 1차 리뷰 (Claude Code)
-  ↓
-동료 2차 리뷰
-  ↓
-배포
+    subgraph pattern2["패턴 2: AI 코드 리뷰"]
+        P2A[👨‍💻 개발자 작성] --> P2B[🤖 AI 1차 리뷰]
+        P2B --> P2C[👥 동료 2차 리뷰]
+        P2C --> P2D[🚀 배포]
+    end
+
+    style pattern1 fill:#e3f2fd
+    style pattern2 fill:#f3e5f5
 ```
 
 ---
@@ -209,41 +225,41 @@ AI 1차 리뷰 (Claude Code)
 ## 4단계: 협업 패턴 (계속)
 
 **패턴 3: AI 테스트 생성**
-```
-개발자 기능 구현
-  ↓
-AI 테스트 코드 자동 생성
-  ↓
-개발자 테스트 검증
-  ↓
-배포
+
+```mermaid
+graph LR
+    T1[👨‍💻 개발자<br/>기능 구현] --> T2[🤖 AI<br/>테스트 자동 생성]
+    T2 --> T3[👀 개발자<br/>테스트 검증]
+    T3 --> T4[🚀 배포]
+
+    style T1 fill:#e1f5ff
+    style T2 fill:#fff4e1
+    style T3 fill:#e8f5e9
+    style T4 fill:#f3e5f5
 ```
 
 ---
 
 ## 개인 개발자 도입 전략
 
-**추천 경로**
-```
-Week 1-2: Cursor로 시작
-  - 간단한 프로젝트
-  - 기본 기능 학습
-
-Week 3-4: 프로젝트 적용
-  - 실제 작업에 사용
-  - 생산성 측정
-
-Month 2: 고급 기능
-  - Composer 모드
-  - 복잡한 리팩토링
-
-Month 3: CLI 도전
-  - Claude Code 시도
-  - 자동화 구축
+```mermaid
+timeline
+    title 개인 개발자 도입 경로
+    section Week 1-2
+        Cursor 시작 : 간단한 프로젝트
+                    : 기본 기능 학습
+    section Week 3-4
+        프로젝트 적용 : 실제 작업 사용
+                     : 생산성 측정
+    section Month 2
+        고급 기능 : Composer 모드
+                 : 복잡한 리팩토링
+    section Month 3
+        CLI 도전 : Claude Code 시도
+                : 자동화 구축
 ```
 
-**예산**: $20/월
-**예상 ROI**: 첫 달부터 시간 절약
+**예산**: $20/월 | **예상 ROI**: 첫 달부터 시간 절약
 
 ---
 

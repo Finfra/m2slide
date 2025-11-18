@@ -84,24 +84,18 @@ AI가 프로젝트 전체를 이해하고 작업:
 ---
 
 ## 바이브 코딩 워크플로우
+```mermaid
+sequenceDiagram
+    participant Dev as 👨‍💻 개발자
+    participant AI as 🤖 AI
 
-```
-1. 개발자: 의도 전달 (자연어)
-   "사용자 인증 기능 추가해줘"
-
-2. AI: 요구사항 파악 및 질문
-   "JWT 토큰 방식으로 하시겠어요?"
-
-3. 개발자: 세부 사항 확인
-   "응, JWT로 하고 localStorage에 저장해"
-
-4. AI: 코드 생성 및 파일 수정
-   - auth.service.ts 생성
-   - API 엔드포인트 추가
-   - 컴포넌트 수정
-
-5. 개발자: 검토 및 승인
-   "좋아, 이제 로그인 페이지도 만들어줘"
+    Dev->>AI: 💬 의도 전달<br/>"사용자 인증 기능 추가해줘"
+    AI->>Dev: ❓ 요구사항 파악<br/>"JWT 토큰 방식으로 할까요?"
+    Dev->>AI: ✅ 세부 사항 확인<br/>"응, localStorage에 저장해"
+    AI->>AI: ⚙️ 코드 생성<br/>auth.service.ts 생성<br/>API 엔드포인트 추가
+    AI->>Dev: 📄 결과 제시
+    Dev->>Dev: 👀 검토 및 승인
+    Dev->>AI: 🔄 다음 요청<br/>"로그인 페이지도 만들어줘"
 ```
 
 ---

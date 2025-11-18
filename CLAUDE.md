@@ -16,6 +16,68 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - 순수 Node.js 표준 라이브러리만 사용 (외부 dependencies 없음)
 - **Pandoc** (선택): PowerPoint 변환용
 
+## ⚠️ CSS 수정 시 주의사항 (generate-slides.js)
+
+### 제목이 날아가는 원인
+
+Reveal.js는 복잡한 레이아웃 시스템을 사용하여 슬라이드를 중앙 정렬하고 표시합니다. 핵심 레이아웃 속성을 변경하면 **제목이 사라지거나 슬라이드가 깨집니다**.
+
+### 절대 건드리면 안 되는 것
+
+❌ **위험한 CSS 속성** (Reveal.js 레이아웃 파괴):
+- `display: flex` 또는 다른 display 값 변경
+- `height: 100%` 또는 고정 height 값
+- `position` 관련 속성
+- `transform`, `translate` 관련
+- `justify-content`, `align-items` 등 flexbox/grid 레이아웃
+- `.reveal .slides` 컨테이너 자체 수정
+
+❌ **절대 금지 패턴**:
+```css
+/* 이런 코드는 제목을 날려버립니다! */
+.reveal .slides {
+  height: 100vh !important;  /* ❌ 슬라이드 컨테이너 건드림 */
+}
+.reveal .slides section {
+  display: flex !important;       /* ❌ 레이아웃 파괴 */
+  height: 100% !important;        /* ❌ 높이 강제 변경 */
+  justify-content: flex-start !important;  /* ❌ 제목이 사라짐 */
+}
+```
+
+### 안전하게 수정 가능한 것
+
+✅ **안전한 CSS 속성**:
+- `overflow`, `overflow-y`, `overflow-x`: 스크롤 제어
+- `padding`, `margin`: 여백 조정
+- `max-height`, `max-width`: 최대 크기 제한 (height, width는 금지!)
+- `font-size`, `color`, `background`: 스타일링
+- `border`, `box-shadow`: 장식
+
+✅ **권장 패턴** (스크롤 추가 시):
+```css
+/* 이런 방식으로만 수정하세요 */
+.reveal .slides section,
+.reveal .slides section.present,
+.reveal .slides section.past,
+.reveal .slides section.future {
+  overflow-y: auto !important;        /* ✅ 스크롤만 추가 */
+  max-height: 100vh !important;       /* ✅ 최대 높이만 제한 */
+  padding: 20px 60px !important;      /* ✅ 여백 조정 */
+  box-sizing: border-box !important;  /* ✅ 박스 모델 */
+}
+```
+
+### 테스트 필수 항목
+
+CSS 수정 후 **반드시 확인**:
+1. 첫 슬라이드(`#/0`) 제목이 정상 표시되는가?
+2. 다음 슬라이드(`#/1`, `#/2`)도 제목이 보이는가?
+3. 스크롤이 모든 슬라이드에서 작동하는가?
+4. 브라우저 창 크기를 변경해도 레이아웃이 유지되는가?
+
+문제 발생 시 즉시 원복하고 안전한 속성만 사용할 것!
+
 ## 핵심 아키텍처
 
 ### 프로젝트 폴더 구조
@@ -34,6 +96,8 @@ Projects/
 
 ### 변환 프로세스
 
+#### HTML 프레젠테이션 생성
+
 1. **입력**: `Projects/[Project]/markdown/*.md` → 각 파일에 `---` 슬라이드 구분자 사용
 2. **변환**: `./convert.sh` 또는 `node generate-slides.js Projects/[Project]`
 3. **출력**: `Projects/[Project]/slide/*.html` → Reveal.js 프레젠테이션
@@ -46,6 +110,26 @@ Projects/
   - 각 HTML 페이지의 첫 슬라이드에 해당 챕터 목차를 Markmap으로 렌더링
   - 하위 챕터가 있으면 자동으로 목차에 링크 추가
 - 이미지 자동 복사 (`markdown/img/` → `slide/img/`)
+
+#### EPUB 전자책 생성
+
+1. **입력**: `Projects/[Project]/markdown/*.md`
+2. **변환**: `./convert.sh --epub` 또는 `node generate-epub.js Projects/[Project]`
+3. **출력**: `Projects/[Project]/[ProjectName].epub` → EPUB 3.0 전자책
+
+**핵심 메커니즘**:
+- `generate-epub.js`: 마크다운을 EPUB 형식으로 변환
+  - EPUB 3.0 표준 준수 (mimetype, META-INF/container.xml, OEBPS/content.opf, toc.ncx)
+  - 각 마크다운 파일을 XHTML 챕터로 변환
+  - AGENDA.md에서 책 제목 추출
+  - 목차(TOC) 자동 생성
+  - **Mermaid 다이어그램 자동 변환**:
+    - Mermaid CLI가 설치되어 있으면 SVG 이미지로 자동 변환
+    - 시스템 Chrome을 사용 (PUPPETEER_EXECUTABLE_PATH 환경변수)
+    - 변환 실패 시 placeholder SVG 생성
+  - 이미지 자동 복사 (`markdown/img/` → EPUB 내부)
+  - 순수 Node.js 표준 라이브러리만 사용 (외부 dependencies 없음)
+  - Mermaid 변환은 선택적 의존성 (mmdc 없어도 EPUB 생성 가능)
 
 ### 파일명 규칙
 
@@ -76,6 +160,29 @@ node generate-slides.js Projects/[ProjectName]
 - `slide/*.html`: 각 챕터별 Reveal.js 프레젠테이션
 - `slide/index.html`: Markmap 기반 전체 목차 (클릭 가능한 마인드맵)
 - 계층적 네비게이션 (↑ 키 또는 우측 하단 버튼으로 상위 페이지 이동)
+
+### EPUB 전자책 생성
+
+```bash
+# 기본 프로젝트 (HTML + EPUB 동시 생성)
+./convert.sh --epub
+
+# 특정 프로젝트
+./convert.sh Projects/[ProjectName] --epub
+
+# EPUB만 생성 (HTML 스킵)
+node generate-epub.js Projects/[ProjectName]
+```
+
+**출력물**:
+- `Projects/[ProjectName]/[ProjectName].epub`: EPUB 3.0 전자책 파일
+- iBooks, Calibre, Google Play Books 등 모든 EPUB 리더에서 읽기 가능
+- Mermaid 다이어그램은 SVG 이미지로 포함 (mmdc 설치 시)
+
+**Mermaid 다이어그램 렌더링 요구사항**:
+- **필수**: Mermaid CLI (`npm install -g @mermaid-js/mermaid-cli`)
+- **필수**: 시스템에 Google Chrome 설치 (`/Applications/Google Chrome.app/`)
+- mmdc가 없으면 placeholder SVG로 대체 (안내 메시지 표시)
 
 ### PowerPoint 변환 (옵션)
 

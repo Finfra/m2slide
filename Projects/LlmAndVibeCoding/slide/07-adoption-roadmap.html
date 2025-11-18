@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>7. 바이브 코딩 도입 로드맵</title>
+  <title>7. (참고) 바이브 코딩 도입 로드맵</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
@@ -15,7 +15,10 @@
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
     .reveal { font-size: 32px; }
-    .reveal table { font-size: 0.7em; }
+    .reveal table {
+      font-size: 0.7em;
+      width: 100% !important;
+    }
     .reveal pre { font-size: 0.6em; }
     .reveal code { font-size: 0.9em; }
     .reveal blockquote {
@@ -35,6 +38,7 @@
       display: block;
       text-align: left;
       margin: 1em 0;
+      padding-left: 40px;
     }
     .reveal li {
       font-size: 0.9em;
@@ -49,7 +53,33 @@
     .reveal img {
       max-width: 400px;
       max-height: 300px;
+      min-height: 200px;
       margin: 0.5em 0;
+      display: block;
+    }
+    /* 슬라이드 스크롤 기능 추가 */
+    .reveal .slides section,
+    .reveal .slides section.present,
+    .reveal .slides section.past,
+    .reveal .slides section.future {
+      overflow-y: auto !important;
+      max-height: 100vh !important;
+      padding: 20px 60px 200px 60px !important;
+      box-sizing: border-box !important;
+    }
+    .reveal .slides section::-webkit-scrollbar {
+      width: 8px;
+    }
+    .reveal .slides section::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.5);
     }
     #toc-mindmap a {
       text-decoration: none;
@@ -101,17 +131,35 @@
     <div class="slides">
 
       <section>
-        <h1>7. 바이브 코딩 도입 로드맵</h1>
+        <h1>7. (참고) 바이브 코딩 도입 로드맵</h1>
         <svg id="toc-mindmap" style="width: 100%; height: 500px;"></svg>
       </section>
 
       <section>
 <h2>도입 단계별 가이드</h2>
 
-<p><strong>1단계</strong>: 평가 및 준비 (1-2주)</p>
-<p><strong>2단계</strong>: 시작하기 (2-4주)</p>
-<p><strong>3단계</strong>: 숙련도 향상 (1-2개월)</p>
-<p><strong>4단계</strong>: 고급 활용 (2-3개월)</p>
+<div class="mermaid">
+timeline
+    title 바이브 코딩 도입 로드맵
+    section 1단계
+        1-2주 : 평가 및 준비
+              : 현황 분석
+              : 목표 설정
+              : 도구 선택
+    section 2단계
+        2-4주 : 시작하기
+              : 개인 학습
+              : 기본 기능 익히기
+              : 팀 파일럿
+    section 3단계
+        1-2개월 : 숙련도 향상
+                : 고급 기능
+                : 베스트 프랙티스
+    section 4단계
+        2-3개월 : 고급 활용
+                : 워크플로우 최적화
+                : 팀 협업 패턴
+</div>
       </section>
 
       <section>
@@ -274,7 +322,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: AI Code Review
         run: |
-          claude-code << EOF
+          claude << EOF
           코드 품질 분석해줘
           보안 취약점 찾아줘
           테스트 커버리지 확인해줘
@@ -284,58 +332,64 @@ jobs:
       <section>
 <h2>4단계: 팀 협업 패턴</h2>
 
-<p><strong>패턴 1: AI 페어 프로그래밍</strong></p>
-<pre><code>주니어 개발자 + Claude Code
-  ↓
-시니어 개발자 리뷰
-  ↓
-배포</code></pre>
+<div class="mermaid">
+graph TB
+    subgraph pattern1["패턴 1: AI 페어 프로그래밍"]
+        P1A[👶 주니어 개발자] --> P1B[🤖 Claude Code 협업]
+        P1B --> P1C[👨‍🏫 시니어 리뷰]
+        P1C --> P1D[🚀 배포]
+    end
 
-<p><strong>패턴 2: AI 코드 리뷰</strong></p>
-<pre><code>개발자 코드 작성
-  ↓
-AI 1차 리뷰 (Claude Code)
-  ↓
-동료 2차 리뷰
-  ↓
-배포</code></pre>
+    subgraph pattern2["패턴 2: AI 코드 리뷰"]
+        P2A[👨‍💻 개발자 작성] --> P2B[🤖 AI 1차 리뷰]
+        P2B --> P2C[👥 동료 2차 리뷰]
+        P2C --> P2D[🚀 배포]
+    end
+
+    style pattern1 fill:#e3f2fd
+    style pattern2 fill:#f3e5f5
+</div>
       </section>
 
       <section>
 <h2>4단계: 협업 패턴 (계속)</h2>
 
 <p><strong>패턴 3: AI 테스트 생성</strong></p>
-<pre><code>개발자 기능 구현
-  ↓
-AI 테스트 코드 자동 생성
-  ↓
-개발자 테스트 검증
-  ↓
-배포</code></pre>
+
+<div class="mermaid">
+graph LR
+    T1[👨‍💻 개발자<br/>기능 구현] --> T2[🤖 AI<br/>테스트 자동 생성]
+    T2 --> T3[👀 개발자<br/>테스트 검증]
+    T3 --> T4[🚀 배포]
+
+    style T1 fill:#e1f5ff
+    style T2 fill:#fff4e1
+    style T3 fill:#e8f5e9
+    style T4 fill:#f3e5f5
+</div>
       </section>
 
       <section>
 <h2>개인 개발자 도입 전략</h2>
 
-<p><strong>추천 경로</strong></p>
-<pre><code>Week 1-2: Cursor로 시작
-  - 간단한 프로젝트
-  - 기본 기능 학습
+<div class="mermaid">
+timeline
+    title 개인 개발자 도입 경로
+    section Week 1-2
+        Cursor 시작 : 간단한 프로젝트
+                    : 기본 기능 학습
+    section Week 3-4
+        프로젝트 적용 : 실제 작업 사용
+                     : 생산성 측정
+    section Month 2
+        고급 기능 : Composer 모드
+                 : 복잡한 리팩토링
+    section Month 3
+        CLI 도전 : Claude Code 시도
+                : 자동화 구축
+</div>
 
-Week 3-4: 프로젝트 적용
-  - 실제 작업에 사용
-  - 생산성 측정
-
-Month 2: 고급 기능
-  - Composer 모드
-  - 복잡한 리팩토링
-
-Month 3: CLI 도전
-  - Claude Code 시도
-  - 자동화 구축</code></pre>
-
-<p><strong>예산</strong>: $20/월</p>
-<p><strong>예상 ROI</strong>: 첫 달부터 시간 절약</p>
+<p><strong>예산</strong>: $20/월 | <strong>예상 ROI</strong>: 첫 달부터 시간 절약</p>
       </section>
 
       <section>
@@ -581,7 +635,31 @@ Month 3: CLI 도전
     mermaid.initialize({
       startOnLoad: true,
       theme: 'default',
-      securityLevel: 'loose'
+      securityLevel: 'loose',
+      themeVariables: {
+        fontFamily: '"Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif'
+      },
+      flowchart: {
+        htmlLabels: true,
+        curve: 'basis',
+        useMaxWidth: true
+      },
+      sequence: {
+        diagramMarginX: 50,
+        diagramMarginY: 10,
+        actorMargin: 50,
+        width: 150,
+        height: 65,
+        boxMargin: 10,
+        boxTextMargin: 5,
+        noteMargin: 10,
+        messageMargin: 35,
+        mirrorActors: true,
+        useMaxWidth: true
+      },
+      timeline: {
+        useMaxWidth: true
+      }
     });
 
     // Initialize markmap for table of contents
@@ -623,10 +701,6 @@ Month 3: CLI 도전
                   "children": []
             },
             {
-                  "content": "<a href=\"#/9\">3단계: 고급 기능 (계속)</a>",
-                  "children": []
-            },
-            {
                   "content": "<a href=\"#/10\">3단계: 팀 베스트 프랙티스</a>",
                   "children": []
             },
@@ -643,10 +717,6 @@ Month 3: CLI 도전
                   "children": []
             },
             {
-                  "content": "<a href=\"#/14\">4단계: 협업 패턴 (계속)</a>",
-                  "children": []
-            },
-            {
                   "content": "<a href=\"#/15\">개인 개발자 도입 전략</a>",
                   "children": []
             },
@@ -655,15 +725,7 @@ Month 3: CLI 도전
                   "children": []
             },
             {
-                  "content": "<a href=\"#/17\">소규모 팀 (계속)</a>",
-                  "children": []
-            },
-            {
                   "content": "<a href=\"#/18\">중형 팀 (6-20명) 도입</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/19\">중형 팀 (계속)</a>",
                   "children": []
             },
             {
@@ -671,15 +733,7 @@ Month 3: CLI 도전
                   "children": []
             },
             {
-                  "content": "<a href=\"#/21\">대규모 조직 (계속)</a>",
-                  "children": []
-            },
-            {
                   "content": "<a href=\"#/22\">주의사항</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/23\">주의사항 (계속)</a>",
                   "children": []
             },
             {
@@ -687,15 +741,7 @@ Month 3: CLI 도전
                   "children": []
             },
             {
-                  "content": "<a href=\"#/25\">권장사항 (계속)</a>",
-                  "children": []
-            },
-            {
                   "content": "<a href=\"#/26\">성공 체크리스트</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/27\">성공 체크리스트 (계속)</a>",
                   "children": []
             },
             {
