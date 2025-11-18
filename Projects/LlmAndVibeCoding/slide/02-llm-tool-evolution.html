@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:,">
   <title>2. LLM 코딩 툴의 진화 과정</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
@@ -262,9 +263,9 @@ timeline
       backgroundTransition: 'fade'
     });
 
-    // Initialize mermaid for diagrams
+    // Initialize mermaid for diagrams (manual rendering)
     mermaid.initialize({
-      startOnLoad: true,
+      startOnLoad: false,  // Disable auto-render, we'll render manually
       theme: 'default',
       securityLevel: 'loose',
       themeVariables: {
@@ -293,37 +294,39 @@ timeline
       }
     });
 
-    // Re-render mermaid diagrams when slide changes
-    Reveal.on('slidechanged', function() {
-      const currentSlide = Reveal.getCurrentSlide();
-      const mermaidElements = currentSlide.querySelectorAll('.mermaid');
+    // Render all Mermaid diagrams when Reveal.js is ready
+    Reveal.on('ready', function() {
+      // Find all mermaid elements in all slides
+      const allMermaidElements = document.querySelectorAll('.mermaid');
 
-      if (mermaidElements.length > 0) {
-        mermaidElements.forEach((element, index) => {
-          // Skip if already rendered (has svg child)
+      if (allMermaidElements && allMermaidElements.length > 0) {
+        allMermaidElements.forEach(function(element, index) {
+          // Skip if already rendered
           if (element.querySelector('svg')) {
             return;
           }
 
-          // Render mermaid diagram
           const graphDefinition = element.textContent;
-          const graphId = 'mermaid-' + Date.now() + '-' + index;
+          if (!graphDefinition || !graphDefinition.trim()) {
+            return;
+          }
+
+          const graphId = 'mermaid-diagram-' + index;
 
           try {
-            mermaid.render(graphId, graphDefinition).then(({ svg }) => {
-              element.innerHTML = svg;
+            mermaid.render(graphId, graphDefinition).then(function(result) {
+              if (result && result.svg) {
+                element.innerHTML = result.svg;
+              }
+            }).catch(function(error) {
+              console.error('Mermaid rendering error for diagram ' + index + ':', error);
             });
           } catch (e) {
-            console.error('Mermaid rendering error:', e);
+            console.error('Mermaid rendering error for diagram ' + index + ':', e);
           }
         });
       }
     });
-
-    // Trigger initial render for first slide
-    setTimeout(() => {
-      Reveal.slide(0);
-    }, 100);
 
     // Initialize markmap for table of contents
     setTimeout(() => {
