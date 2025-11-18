@@ -94,7 +94,7 @@
 
 **작업 과정**
 ```bash
-$ claude-code
+$ claude
 
 > Express로 블로그 API 서버 만들어줘.
   - 게시글 CRUD
@@ -224,7 +224,7 @@ Apply complete! Resources: 15 added
 
 **2세대 (Claude Code) 접근**
 ```bash
-$ claude-code
+$ claude
 
 > 사용자 인증 기능 추가해줘:
   - JWT 토큰 발급
@@ -332,7 +332,7 @@ $ git reset --hard HEAD^
 **자동화 스크립트 활용**
 ```bash
 #!/bin/bash
-claude-code << EOF
+claude << EOF
 프로젝트 분석해서 README.md 업데이트해줘
 테스트 실행해줘
 커버리지 리포트 생성해줘
@@ -392,8 +392,8 @@ Cmd+K: "Socket.IO 클라이언트로 채팅 UI 만들어줘"
 
 ## 다음 단계
 
-**작은 프로젝트부터 시작**
-1. Todo 앱, 블로그 등
+**상세 도입 로드맵은 7장 참조**
+
+1. 작은 프로젝트부터 시작
 2. 점진적 확대
-3. 팀에 공유
-4. 베스트 프랙티스 문서화
+3. 팀 협업 및 베스트 프랙티스 구축

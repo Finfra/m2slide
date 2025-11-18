@@ -1,11 +1,18 @@
 # 1. AI 코딩의 패러다임 전환
 
 ---
+<div style="float:right; margin-left:15px; max-width:400px;">
+![alt text](img/01-opening.png)
+</div>
+
 ## 본 자료의 구성
-- 작성자 : 남중구 (nowage@gmail.com)
+
+- 작성자 : 남중구 (nowage@gmail.com, [https://finfra.kr/nowage/](https://finfra.kr/nowage/))
 - 본 발표자료의 컨텐츠와 시각화 도구는 100% VibeCoding 도구로 작성되었습니다.
 - 발표 자료 : https://finfra.kr/go/vibe2025
-- Source Code : https://finfra.github.io/m2slide 
+- ePub : https://finfra.kr/go/vibe2025e
+- Source Code : https://finfra.github.io/m2slide
+
 ---
 
 ## 개발 방식의 변화
@@ -24,7 +31,7 @@ graph TD;
 - 개발자가 코드를 한 줄 한 줄 직접 타이핑
 - Stack Overflow와 문서 검색에 의존
 - 반복적인 코딩 작업에 많은 시간 소요
-![test](img/test.png)
+<!-- ![test](img/test.png) -->
 **2022년 ChatGPT 등장**
 - 자연어로 질문하고 코드 조각을 얻는 방식 시작
 - 개발 보조 도구로서 LLM 활용 증가
@@ -37,6 +44,9 @@ graph TD;
 - GitHub Copilot, Cursor 등 IDE 내 실시간 코드 제안
 - 개발 흐름을 끊지 않는 인라인 자동완성
 - 프로젝트 컨텍스트를 일부 이해하기 시작
+<!-- <div style="margin:0px auto; max-width:400px;">
+![test](img/test.png)
+</div> -->
 
 **2024년부터 CLI 기반 코딩 본격화**
 - 터미널에서 실행되는 AI 도구 등장 (2024: Claude Code, 2025: Gemini CLI)
@@ -71,6 +81,8 @@ graph TD;
 
 ## 패러다임 전환: Code-First → Intent-First
 
+**전통적 개발 방식 (Code-First)**
+<div style="float:right; margin-left:15px; width:50%;">
 ```mermaid
 graph TB
     subgraph traditional["전통적 개발 방식 (Code-First)"]
@@ -82,27 +94,30 @@ graph TB
         T5 -->|No| T6[✅ 완료]
     end
 
-    subgraph ai["AI 시대 개발 방식 (Intent-First)"]
-        A1[💡 개발자 의도] --> A2[💬 자연어 설명]
-        A2 --> A3[🤖 AI 코드 생성]
-        A3 --> A4[👀 검토 및 수정]
-        A4 --> A5[✅ 완료]
-    end
-
     style traditional fill:#fff5f5,stroke:#e53e3e,stroke-width:2px
-    style ai fill:#f0fff4,stroke:#38a169,stroke-width:2px
     style T2 fill:#fed7d7
     style T4 fill:#fed7d7
-    style A3 fill:#c6f6d5
 ```
-
-**전통적 개발 방식 (Code-First)**
+</div>
 - 모든 코드를 개발자가 직접 작성
 - 문법과 API 세부사항 암기 필요
 - 반복적인 보일러플레이트 코드 작성
 - 디버깅 사이클이 길고 반복적
 
 **AI 시대 개발 방식 (Intent-First)**
+<div style="float:right; margin-left:15px; width:50%;">
+```mermaid
+graph TB
+    subgraph ai["AI 시대 개발 방식 (Intent-First)"]
+        A1[💡 개발자 의도] --> A2[💬 자연어 설명]
+        A2 --> A3[🤖 AI 코드 생성]
+        A3 --> A4[👀 검토 및 수정]
+        A4 --> A5[✅ 완료]
+    end
+    style ai fill:#f0fff4,stroke:#38a169,stroke-width:2px
+    style A3 fill:#c6f6d5
+```
+</div>
 - "무엇을" 만들지 설명하면 AI가 "어떻게" 구현
 - 고수준 설계와 비즈니스 로직에 집중
 - 반복 작업 자동화로 생산성 향상

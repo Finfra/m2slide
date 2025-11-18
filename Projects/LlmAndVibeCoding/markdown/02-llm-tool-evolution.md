@@ -4,10 +4,24 @@
 
 ## 진화 타임라인
 
-```
-2022-2023        2023-2024           2024-현재
-채팅 기반    →    IDE 통합      →    CLI 기반
-(0세대)          (1세대)            (2세대)
+```mermaid
+timeline
+    title LLM 코딩 툴의 진화 과정
+    section 0세대
+        2022-2023 : 채팅 기반
+                  : ChatGPT
+                  : Claude
+                  : Bard
+    section 1세대
+        2023-2024 : IDE 통합
+                  : Cursor
+                  : Cline
+                  : Windsurf
+    section 2세대
+        2024-현재 : CLI 기반
+                  : Claude Code
+                  : Gemini CLI
+                  : Codex CLI
 ```
 
 ---
@@ -21,7 +35,9 @@
 - 코드 이해 및 생성 능력 비약적 향상
 
 **컨텍스트 윈도우 확대**
-- 4K 토큰 → 32K → 200K 토큰
+- 초기 (GPT-3.5): 4K 토큰
+- 중기 (GPT-4): 32K → 128K 토큰
+- 현재 (Claude 3.5): 200K 토큰 이상
 - 전체 코드베이스를 한 번에 이해 가능
 
 ---

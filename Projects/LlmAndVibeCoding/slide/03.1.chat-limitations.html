@@ -15,7 +15,10 @@
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
     .reveal { font-size: 32px; }
-    .reveal table { font-size: 0.7em; }
+    .reveal table {
+      font-size: 0.7em;
+      width: 100% !important;
+    }
     .reveal pre { font-size: 0.6em; }
     .reveal code { font-size: 0.9em; }
     .reveal blockquote {
@@ -35,6 +38,7 @@
       display: block;
       text-align: left;
       margin: 1em 0;
+      padding-left: 40px;
     }
     .reveal li {
       font-size: 0.9em;
@@ -49,7 +53,33 @@
     .reveal img {
       max-width: 400px;
       max-height: 300px;
+      min-height: 200px;
       margin: 0.5em 0;
+      display: block;
+    }
+    /* 슬라이드 스크롤 기능 추가 */
+    .reveal .slides section,
+    .reveal .slides section.present,
+    .reveal .slides section.past,
+    .reveal .slides section.future {
+      overflow-y: auto !important;
+      max-height: 100vh !important;
+      padding: 20px 60px 200px 60px !important;
+      box-sizing: border-box !important;
+    }
+    .reveal .slides section::-webkit-scrollbar {
+      width: 8px;
+    }
+    .reveal .slides section::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 4px;
+    }
+    .reveal .slides section::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.5);
     }
     #toc-mindmap a {
       text-decoration: none;
@@ -110,17 +140,19 @@
 
 <p><strong>전통적인 ChatGPT 방식의 워크플로우</strong></p>
 
-<pre><code>1. ChatGPT에 질문
-   ↓
-2. 코드 복사
-   ↓
-3. IDE에 붙여넣기
-   ↓
-4. 오류 발생
-   ↓
-5. 다시 ChatGPT에 질문
-   ↓
-6. 반복...</code></pre>
+<div class="mermaid">
+graph TD
+    A[💬 ChatGPT에 질문] --> B[📋 코드 복사]
+    B --> C[💻 IDE에 붙여넣기]
+    C --> D[❌ 오류 발생]
+    D --> E{해결됨?}
+    E -->|아니오| A
+    E -->|예| F[✅ 완료]
+
+    style A fill:#fff4e1
+    style D fill:#ffebee
+    style F fill:#e8f5e9
+</div>
       </section>
 
       <section>
@@ -144,15 +176,23 @@
 <h2>구체적 사례: React 컴포넌트</h2>
 
 <p><strong>ChatGPT 방식</strong></p>
-<pre><code>1. "로그인 폼 컴포넌트 만들어줘"
-2. 코드 복사
-3. LoginForm.tsx 파일 생성
-4. 붙여넣기
-5. 오류: useState가 import 안됨
-6. import 추가
-7. 오류: 기존 스타일 컴포넌트와 충돌
-8. 다시 ChatGPT: "styled-components 사용하도록 수정해줘"
-9. 반복...</code></pre>
+
+<div class="mermaid">
+graph TB
+    S1[💬 로그인 폼<br/>컴포넌트 만들어줘] --> S2[📋 코드 복사]
+    S2 --> S3[📄 LoginForm.tsx<br/>파일 생성]
+    S3 --> S4[📝 붙여넣기]
+    S4 --> E1[❌ useState<br/>import 안됨]
+    E1 --> S5[➕ import 추가]
+    S5 --> E2[❌ 스타일<br/>컴포넌트 충돌]
+    E2 --> S6[💬 다시 ChatGPT<br/>styled-components로 수정]
+    S6 --> S7[🔄 반복...]
+
+    style S1 fill:#fff4e1
+    style E1 fill:#ffebee
+    style E2 fill:#ffebee
+    style S7 fill:#fce4ec
+</div>
 
 <p><strong>소요 시간</strong>: 약 15-20분</p>
       </section>
@@ -196,7 +236,31 @@
     mermaid.initialize({
       startOnLoad: true,
       theme: 'default',
-      securityLevel: 'loose'
+      securityLevel: 'loose',
+      themeVariables: {
+        fontFamily: '"Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif'
+      },
+      flowchart: {
+        htmlLabels: true,
+        curve: 'basis',
+        useMaxWidth: true
+      },
+      sequence: {
+        diagramMarginX: 50,
+        diagramMarginY: 10,
+        actorMargin: 50,
+        width: 150,
+        height: 65,
+        boxMargin: 10,
+        boxTextMargin: 5,
+        noteMargin: 10,
+        messageMargin: 35,
+        mirrorActors: true,
+        useMaxWidth: true
+      },
+      timeline: {
+        useMaxWidth: true
+      }
     });
 
     // Initialize markmap for table of contents
