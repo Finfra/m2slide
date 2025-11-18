@@ -1,11 +1,16 @@
 # 1. AI 코딩의 패러다임 전환
 
 ---
+## 본 자료의 구성
+- 작성자 : 남중구 (nowage@gmail.com)
+- 본 발표자료의 컨텐츠와 시각화 도구는 100% VibeCoding 도구로 작성되었습니다.
+- 발표 자료 : https://finfra.kr/go/vibe2025
+- Source Code : https://finfra.github.io/m2slide 
+---
 
 ## 개발 방식의 변화
 
 <div style="float:right; margin-left:15px; max-width:400px;">
-
 ```mermaid
 graph TD;
     A[2022 이전] --> B[ChatGPT];
@@ -13,35 +18,28 @@ graph TD;
     B --> D[CLI 시대];
     C --> D;
 ```
-
 </div>
 
 **2022년 이전**
 - 개발자가 코드를 한 줄 한 줄 직접 타이핑
 - Stack Overflow와 문서 검색에 의존
 - 반복적인 코딩 작업에 많은 시간 소요
-
+![test](img/test.png)
 **2022년 ChatGPT 등장**
 - 자연어로 질문하고 코드 조각을 얻는 방식 시작
 - 개발 보조 도구로서 LLM 활용 증가
 
 ---
-<div style="float:right; margin-left:15px; text-align:right;">
-  <img src="img/test.png" width="200" />
-  <br>
-  <img src="img/test.png" width="200" />
-</div>
 
 
 ## 개발 방식의 변화 (계속)
-![test](img/test.png)
 **2023년 IDE 통합**
 - GitHub Copilot, Cursor 등 IDE 내 실시간 코드 제안
 - 개발 흐름을 끊지 않는 인라인 자동완성
 - 프로젝트 컨텍스트를 일부 이해하기 시작
 
-**2024년 CLI 기반 코딩 시대**
-- 터미널에서 실행되는 AI 도구 등장 (Claude Code, Gemini CLI)
+**2024년부터 CLI 기반 코딩 본격화**
+- 터미널에서 실행되는 AI 도구 등장 (2024: Claude Code, 2025: Gemini CLI)
 - AI가 전체 프로젝트를 이해하고 파일을 직접 수정
 - 에이전트처럼 자율적으로 멀티파일 작업 수행
 
@@ -73,20 +71,42 @@ graph TD;
 
 ## 패러다임 전환: Code-First → Intent-First
 
-**전통적 개발 방식**
+```mermaid
+graph TB
+    subgraph traditional["전통적 개발 방식 (Code-First)"]
+        T1[💡 개발자 아이디어] --> T2[⌨️ 코드 작성]
+        T2 --> T3[▶️ 실행]
+        T3 --> T4[🐛 디버깅]
+        T4 --> T5{수정 필요?}
+        T5 -->|Yes| T2
+        T5 -->|No| T6[✅ 완료]
+    end
+
+    subgraph ai["AI 시대 개발 방식 (Intent-First)"]
+        A1[💡 개발자 의도] --> A2[💬 자연어 설명]
+        A2 --> A3[🤖 AI 코드 생성]
+        A3 --> A4[👀 검토 및 수정]
+        A4 --> A5[✅ 완료]
+    end
+
+    style traditional fill:#fff5f5,stroke:#e53e3e,stroke-width:2px
+    style ai fill:#f0fff4,stroke:#38a169,stroke-width:2px
+    style T2 fill:#fed7d7
+    style T4 fill:#fed7d7
+    style A3 fill:#c6f6d5
 ```
-개발자 아이디어 → 코드 작성 → 실행 → 디버깅 → 수정 → 반복
-```
+
+**전통적 개발 방식 (Code-First)**
 - 모든 코드를 개발자가 직접 작성
 - 문법과 API 세부사항 암기 필요
 - 반복적인 보일러플레이트 코드 작성
+- 디버깅 사이클이 길고 반복적
 
-**AI 시대 개발 방식**
-```
-개발자 의도 → 자연어 설명 → AI 코드 생성 → 검토 및 수정 → 완료
-```
+**AI 시대 개발 방식 (Intent-First)**
 - "무엇을" 만들지 설명하면 AI가 "어떻게" 구현
 - 고수준 설계와 비즈니스 로직에 집중
+- 반복 작업 자동화로 생산성 향상
+- 검토와 품질 관리에 집중
 
 ---
 
@@ -110,13 +130,3 @@ graph TD;
 - **창의성 증대**: 비즈니스 로직과 사용자 경험 개선에 집중
 - **생산성 향상**: 같은 시간에 더 많은 가치 창출
 
----
-
-## 본 자료의 구성
-
-1. **LLM 코딩 툴의 진화 과정** (2022-2024)
-2. **바이브 코딩(VibeCoding)** 개념과 철학
-3. **세대 구분**: IDE 기반(1세대) vs CLI 기반(2세대)
-4. **세대별 비교** 및 선택 가이드
-5. **실전 사례**와 활용법
-6. **도입 로드맵**과 실천 전략
