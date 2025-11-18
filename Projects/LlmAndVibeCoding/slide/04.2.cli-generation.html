@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>4.2 2세대: CLI 기반 코딩</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
@@ -353,6 +354,38 @@ $ claude
         useMaxWidth: true
       }
     });
+
+    // Re-render mermaid diagrams when slide changes
+    Reveal.on('slidechanged', function() {
+      const currentSlide = Reveal.getCurrentSlide();
+      const mermaidElements = currentSlide.querySelectorAll('.mermaid');
+
+      if (mermaidElements.length > 0) {
+        mermaidElements.forEach((element, index) => {
+          // Skip if already rendered (has svg child)
+          if (element.querySelector('svg')) {
+            return;
+          }
+
+          // Render mermaid diagram
+          const graphDefinition = element.textContent;
+          const graphId = 'mermaid-' + Date.now() + '-' + index;
+
+          try {
+            mermaid.render(graphId, graphDefinition).then(({ svg }) => {
+              element.innerHTML = svg;
+            });
+          } catch (e) {
+            console.error('Mermaid rendering error:', e);
+          }
+        });
+      }
+    });
+
+    // Trigger initial render for first slide
+    setTimeout(() => {
+      Reveal.slide(0);
+    }, 100);
 
     // Initialize markmap for table of contents
     setTimeout(() => {
