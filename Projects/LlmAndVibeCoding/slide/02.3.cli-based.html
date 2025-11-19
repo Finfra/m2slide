@@ -465,9 +465,10 @@ AI: "어떻게(How)" 구현할지 결정
         // Check if on last slide
         if (currentSlideNumber >= totalSlides) {
           if (lastSlideMessageShown) {
-            // Second press: hide message (next chapter navigation will be in issue #3)
+            // Second press: navigate to next chapter
             lastSlideMessage.style.display = 'none';
             lastSlideMessageShown = false;
+            window.location.href = '03-vibecoding-concept.html';
           } else {
             // First press: show message
             event.preventDefault();
