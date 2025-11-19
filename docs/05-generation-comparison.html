@@ -88,7 +88,7 @@
       height: 500px !important;
       max-width: 100% !important;
       max-height: 500px !important;
-      overflow: visible !important;
+      overflow: hidden !important;
       display: block !important;
     }
     #toc-mindmap a {
@@ -99,6 +99,32 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif !important;
       font-size: 16px !important;
       font-weight: 500;
+    }
+    /* TOC container outside Reveal.js for Safari compatibility */
+    #toc-container {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(#f7fbfc, #add9e4);
+      z-index: 100;
+      box-sizing: border-box;
+    }
+    #toc-container h1 {
+      text-align: center;
+      color: #333;
+      font-size: 80px;
+      margin: 0;
+      padding-top: 60px;
+    }
+    #toc-container #toc-mindmap {
+      width: 100%;
+      height: calc(100% - 120px);
+    }
+    #toc-container a {
+      text-decoration: none;
     }
     .nav-up-btn {
       position: fixed;
@@ -137,13 +163,17 @@
     </svg>
     <span>상위</span>
   </a>
+
+  <!-- TOC container outside Reveal.js for Safari compatibility -->
+  <div id="toc-container">
+    <h1>5. 세대별 비교 및 선택 가이드</h1>
+    <svg id="toc-mindmap"></svg>
+  </div>
+
   <div class="reveal">
     <div class="slides">
 
-      <section>
-        <h1>5. 세대별 비교 및 선택 가이드</h1>
-        <svg id="toc-mindmap" style="width: 100%; height: 500px;"></svg>
-      </section>
+      <section id="toc-placeholder"></section>
 
       <section data-markdown>
         <textarea data-template>
@@ -481,10 +511,9 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
       }
     });
 
-    // Initialize markmap for table of contents (Safari compatible)
-    setTimeout(function() {
-      if (window.markmap) {
-        var tocData = {
+    // Initialize markmap for table of contents (outside Reveal.js for Safari compatibility)
+    var tocContainer = document.getElementById('toc-container');
+    var tocData = {
       "content": "",
       "children": [
             {
@@ -541,26 +570,45 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
             }
       ]
 };
-        var mm = window.markmap.Markmap.create('#toc-mindmap', {
-          autoFit: true,
-          duration: 0
-        }, tocData);
-        if (mm && mm.fit) {
-          mm.fit();
-        }
+
+    setTimeout(function() {
+      if (window.markmap && tocContainer) {
+        window.markmap.Markmap.create('#toc-mindmap', {}, tocData);
       }
     }, 200);
+
+    // Function to toggle TOC visibility based on current slide
+    function updateTocVisibility() {
+      var currentSlide = Reveal.getIndices();
+      if (currentSlide.h === 0 && currentSlide.v === 0) {
+        // First slide: show TOC container
+        tocContainer.style.display = 'block';
+      } else {
+        // Other slides: hide TOC container
+        tocContainer.style.display = 'none';
+      }
+    }
+
+    // Initial state check
+    Reveal.on('ready', function() {
+      updateTocVisibility();
+    });
+
+    // Update on slide change
+    Reveal.on('slidechanged', function() {
+      updateTocVisibility();
+    });
 
     // Connect up arrow key to parent page navigation
     document.addEventListener('keydown', function(event) {
       // Check if up arrow key is pressed
       if (event.key === 'ArrowUp' || event.keyCode === 38) {
-        const currentSlide = Reveal.getIndices();
+        var currentSlide = Reveal.getIndices();
         // Only navigate to parent if there are no vertical slides
         if (currentSlide.v === 0) {
           event.preventDefault();
           // Navigate to parent page
-          const navLink = document.getElementById('nav-up-link');
+          var navLink = document.getElementById('nav-up-link');
           if (navLink) {
             window.location.href = navLink.href;
           }
