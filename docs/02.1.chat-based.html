@@ -88,7 +88,7 @@
       height: 500px !important;
       max-width: 100% !important;
       max-height: 500px !important;
-      overflow: hidden !important;
+      overflow: visible !important;
       display: block !important;
     }
     #toc-mindmap a {
@@ -336,7 +336,13 @@ AI가 코드를 작성할 수 있다는 개념을 대중화시킨<br>
             }
       ]
 };
-        window.markmap.Markmap.create('#toc-mindmap', {}, tocData);
+        var mm = window.markmap.Markmap.create('#toc-mindmap', {
+          autoFit: true,
+          duration: 0
+        }, tocData);
+        if (mm && mm.fit) {
+          mm.fit();
+        }
       }
     }, 200);
 

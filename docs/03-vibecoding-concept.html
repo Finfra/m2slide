@@ -88,7 +88,7 @@
       height: 500px !important;
       max-width: 100% !important;
       max-height: 500px !important;
-      overflow: hidden !important;
+      overflow: visible !important;
       display: block !important;
     }
     #toc-mindmap a {
@@ -606,7 +606,13 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
             }
       ]
 };
-        window.markmap.Markmap.create('#toc-mindmap', {}, tocData);
+        var mm = window.markmap.Markmap.create('#toc-mindmap', {
+          autoFit: true,
+          duration: 0
+        }, tocData);
+        if (mm && mm.fit) {
+          mm.fit();
+        }
       }
     }, 200);
 
