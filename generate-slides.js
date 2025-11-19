@@ -302,15 +302,9 @@ function generateTOC(slides, fileName, agendaPath) {
 
 // Generate HTML slide from parsed slide
 function generateSlideHTML(slide) {
-  // Title slide with markmap
+  // Title slide - empty placeholder (markmap is outside Reveal.js)
   if (slide.isTitle) {
-    const titleMatch = slide.content.match(/^# (.+)$/m);
-    const title = titleMatch ? titleMatch[1] : 'Presentation';
-
-    return `      <section>
-        <h1>${title}</h1>
-        <svg id="toc-mindmap" style="width: 100%; height: 500px;"></svg>
-      </section>`;
+    return `      <section id="toc-placeholder"></section>`;
   }
 
   // Table slide - keep markdown for Reveal.js to parse
@@ -441,6 +435,32 @@ function generateHTML(filePath, agendaPath) {
       font-size: 16px !important;
       font-weight: 500;
     }
+    /* TOC container outside Reveal.js for Safari compatibility */
+    #toc-container {
+      display: none;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(#f7fbfc, #add9e4);
+      z-index: 100;
+      box-sizing: border-box;
+    }
+    #toc-container h1 {
+      text-align: center;
+      color: #333;
+      font-size: 80px;
+      margin: 0;
+      padding-top: 60px;
+    }
+    #toc-container #toc-mindmap {
+      width: 100%;
+      height: calc(100% - 120px);
+    }
+    #toc-container a {
+      text-decoration: none;
+    }
     .nav-up-btn {
       position: fixed;
       bottom: 14px;
@@ -478,6 +498,13 @@ function generateHTML(filePath, agendaPath) {
     </svg>
     <span>상위</span>
   </a>
+
+  <!-- TOC container outside Reveal.js for Safari compatibility -->
+  <div id="toc-container">
+    <h1>${title}</h1>
+    <svg id="toc-mindmap"></svg>
+  </div>
+
   <div class="reveal">
     <div class="slides">
 
@@ -570,24 +597,48 @@ ${slidesHTML}
       }
     });
 
-    // Initialize markmap for table of contents (Safari compatible)
+    // Initialize markmap for table of contents (outside Reveal.js for Safari compatibility)
+    var tocContainer = document.getElementById('toc-container');
+    var tocData = ${JSON.stringify(tocData, null, 6)};
+
     setTimeout(function() {
-      if (window.markmap) {
-        var tocData = ${JSON.stringify(tocData, null, 6)};
+      if (window.markmap && tocContainer) {
         window.markmap.Markmap.create('#toc-mindmap', {}, tocData);
       }
     }, 200);
+
+    // Function to toggle TOC visibility based on current slide
+    function updateTocVisibility() {
+      var currentSlide = Reveal.getIndices();
+      if (currentSlide.h === 0 && currentSlide.v === 0) {
+        // First slide: show TOC container
+        tocContainer.style.display = 'block';
+      } else {
+        // Other slides: hide TOC container
+        tocContainer.style.display = 'none';
+      }
+    }
+
+    // Initial state check
+    Reveal.on('ready', function() {
+      updateTocVisibility();
+    });
+
+    // Update on slide change
+    Reveal.on('slidechanged', function() {
+      updateTocVisibility();
+    });
 
     // Connect up arrow key to parent page navigation
     document.addEventListener('keydown', function(event) {
       // Check if up arrow key is pressed
       if (event.key === 'ArrowUp' || event.keyCode === 38) {
-        const currentSlide = Reveal.getIndices();
+        var currentSlide = Reveal.getIndices();
         // Only navigate to parent if there are no vertical slides
         if (currentSlide.v === 0) {
           event.preventDefault();
           // Navigate to parent page
-          const navLink = document.getElementById('nav-up-link');
+          var navLink = document.getElementById('nav-up-link');
           if (navLink) {
             window.location.href = navLink.href;
           }
