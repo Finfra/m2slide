@@ -794,6 +794,15 @@ svg text {
                 document.documentElement.classList.add("markmap-dark");
               }
             })(() => window.markmap,null,${JSON.stringify(markmapData)},null)</script>
+<script>
+// Keyboard navigation: right arrow to first chapter
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'ArrowRight' || event.keyCode === 39) {
+    // Navigate to first chapter
+    window.location.href = '${markmapData.children && markmapData.children.length > 0 ? markmapData.children[0].content.match(/href="([^"]+)"/)?.[1] || '01-opening.html' : '01-opening.html'}';
+  }
+});
+</script>
 </body>
 </html>
 `;
