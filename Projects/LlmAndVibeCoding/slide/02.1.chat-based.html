@@ -440,9 +440,10 @@ AI가 코드를 작성할 수 있다는 개념을 대중화시킨<br>
         // Check if on last slide
         if (currentSlideNumber >= totalSlides) {
           if (lastSlideMessageShown) {
-            // Second press: hide message (next chapter navigation will be in issue #3)
+            // Second press: navigate to next chapter
             lastSlideMessage.style.display = 'none';
             lastSlideMessageShown = false;
+            window.location.href = '02.2.ide-integration.html';
           } else {
             // First press: show message
             event.preventDefault();

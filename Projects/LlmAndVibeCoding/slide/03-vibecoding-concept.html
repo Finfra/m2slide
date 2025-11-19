@@ -710,9 +710,10 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
         // Check if on last slide
         if (currentSlideNumber >= totalSlides) {
           if (lastSlideMessageShown) {
-            // Second press: hide message (next chapter navigation will be in issue #3)
+            // Second press: navigate to next chapter
             lastSlideMessage.style.display = 'none';
             lastSlideMessageShown = false;
+            window.location.href = '03.1.chat-limitations.html';
           } else {
             // First press: show message
             event.preventDefault();

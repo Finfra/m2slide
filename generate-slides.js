@@ -253,6 +253,45 @@ function getParentPage(fileName, agendaPath) {
   }
 }
 
+// Get the next chapter file from AGENDA.md
+function getNextChapter(fileName, agendaPath) {
+  try {
+    if (!agendaPath || !fs.existsSync(agendaPath)) {
+      return 'index.html';
+    }
+    const content = fs.readFileSync(agendaPath, 'utf-8');
+    const lines = content.split('\n');
+
+    // Collect all chapter files in order
+    const chapters = [];
+    for (const line of lines) {
+      const mainMatch = line.match(/^## \[(.+?)\]\((.+?)\)$/);
+      if (mainMatch) {
+        const mdPath = mainMatch[2];
+        chapters.push(path.basename(mdPath, '.md') + '.html');
+        continue;
+      }
+      const subMatch = line.match(/^### \[(.+?)\]\((.+?)\)$/);
+      if (subMatch) {
+        const mdPath = subMatch[2];
+        chapters.push(path.basename(mdPath, '.md') + '.html');
+      }
+    }
+
+    // Find current file and return next
+    const currentHtml = path.basename(fileName, '.md') + '.html';
+    const currentIndex = chapters.indexOf(currentHtml);
+    if (currentIndex !== -1 && currentIndex < chapters.length - 1) {
+      return chapters[currentIndex + 1];
+    }
+
+    // If last chapter or not found, return index.html
+    return 'index.html';
+  } catch (err) {
+    return 'index.html';
+  }
+}
+
 // Generate table of contents data for markmap
 function generateTOC(slides, fileName, agendaPath) {
   const tocItems = slides.slice(1)
@@ -329,6 +368,7 @@ function generateHTML(filePath, agendaPath) {
   const fileName = path.basename(filePath);
   const tocData = generateTOC(slides, fileName, agendaPath);
   const parentPage = getParentPage(fileName, agendaPath);
+  const nextChapter = getNextChapter(fileName, agendaPath);
   const title = slides[0].title || path.basename(filePath, '.md');
 
   const slidesHTML = slides.map(generateSlideHTML).join('\n\n');
@@ -675,9 +715,10 @@ ${slidesHTML}
         // Check if on last slide
         if (currentSlideNumber >= totalSlides) {
           if (lastSlideMessageShown) {
-            // Second press: hide message (next chapter navigation will be in issue #3)
+            // Second press: navigate to next chapter
             lastSlideMessage.style.display = 'none';
             lastSlideMessageShown = false;
+            window.location.href = '${nextChapter}';
           } else {
             // First press: show message
             event.preventDefault();
