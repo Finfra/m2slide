@@ -83,6 +83,14 @@
     .reveal .slides section::-webkit-scrollbar-thumb:hover {
       background: rgba(0, 0, 0, 0.5);
     }
+    #toc-mindmap {
+      width: 100% !important;
+      height: 500px !important;
+      max-width: 100% !important;
+      max-height: 500px !important;
+      overflow: hidden !important;
+      display: block !important;
+    }
     #toc-mindmap a {
       text-decoration: none;
       color: inherit;
@@ -390,10 +398,10 @@ $ claude
       }
     });
 
-    // Initialize markmap for table of contents
-    setTimeout(() => {
-      const { markmap } = window;
-      const tocData = {
+    // Initialize markmap for table of contents (Safari compatible)
+    setTimeout(function() {
+      if (window.markmap) {
+        var tocData = {
       "content": "",
       "children": [
             {
@@ -426,9 +434,9 @@ $ claude
             }
       ]
 };
-
-      markmap.Markmap.create('#toc-mindmap', {}, tocData);
-    }, 100);
+        window.markmap.Markmap.create('#toc-mindmap', {}, tocData);
+      }
+    }, 200);
 
     // Connect up arrow key to parent page navigation
     document.addEventListener('keydown', function(event) {

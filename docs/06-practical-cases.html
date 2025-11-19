@@ -83,6 +83,14 @@
     .reveal .slides section::-webkit-scrollbar-thumb:hover {
       background: rgba(0, 0, 0, 0.5);
     }
+    #toc-mindmap {
+      width: 100% !important;
+      height: 500px !important;
+      max-width: 100% !important;
+      max-height: 500px !important;
+      overflow: hidden !important;
+      display: block !important;
+    }
     #toc-mindmap a {
       text-decoration: none;
       color: inherit;
@@ -288,7 +296,7 @@ Server running on port 3000</code></pre>
 <h2>사례 2: AWS 인프라 구성 (계속)</h2>
 
 <p><strong>작업 과정</strong></p>
-<pre><code class="language-bash">$ gemini-cli
+<pre><code class="language-bash">$ gemini
 
 > AWS에 프로덕션 환경 인프라 구성해줘:
   - VPC, 서브넷, 인터넷 게이트웨이
@@ -616,10 +624,10 @@ EOF</code></pre>
       }
     });
 
-    // Initialize markmap for table of contents
-    setTimeout(() => {
-      const { markmap } = window;
-      const tocData = {
+    // Initialize markmap for table of contents (Safari compatible)
+    setTimeout(function() {
+      if (window.markmap) {
+        var tocData = {
       "content": "",
       "children": [
             {
@@ -692,9 +700,9 @@ EOF</code></pre>
             }
       ]
 };
-
-      markmap.Markmap.create('#toc-mindmap', {}, tocData);
-    }, 100);
+        window.markmap.Markmap.create('#toc-mindmap', {}, tocData);
+      }
+    }, 200);
 
     // Connect up arrow key to parent page navigation
     document.addEventListener('keydown', function(event) {
