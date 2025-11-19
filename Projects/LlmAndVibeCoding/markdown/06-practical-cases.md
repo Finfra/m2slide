@@ -4,10 +4,11 @@
 
 ## 1세대 (IDE 기반) 활용 사례
 
-### 사례 1: React Todo 앱 개발 (Cursor)
+### 사례 1: React Todo 앱 개발 (Cursor) 
 
 **시나리오**: React와 TypeScript로 간단한 Todo 앱 만들기
-
+<br><br><br><br>
+![Cursor](img/cursor-logo.png)
 ---
 
 ## 사례 1: React Todo 앱 (계속)
@@ -46,7 +47,7 @@
 
 ---
 
-## 사례 2: API 통합 (Cline)
+## 사례 2: API 통합 (Cline) ![Cline](img/cline-logo.png)
 
 **시나리오**: 기존 React 앱에 REST API 연동 추가
 
@@ -84,7 +85,7 @@
 
 ## 2세대 (CLI 기반) 활용 사례
 
-### 사례 1: Express API 서버 (Claude Code)
+### 사례 1: Express API 서버 (Claude Code) ![Claude](img/claude-logo.png)
 
 **시나리오**: Node.js Express로 RESTful API 서버 개발
 
@@ -145,17 +146,17 @@ Server running on port 3000
 
 ---
 
-## 사례 2: AWS 인프라 구성 (Gemini CLI)
+## 사례 2: AWS 인프라 구성 (Gemini CLI) ![Gemini](img/gemini-logo.png)
 
 **시나리오**: Terraform으로 AWS EC2 + RDS 인프라 구성
-
+* cf) [2세대 Vibe Coding : AI 도구를 활용한 클라우드 인프라 자동화](https://finfra.kr/jg/2025/08/12/2%ec%84%b8%eb%8c%80-vibe-coding-ai-%eb%8f%84%ea%b5%ac%eb%a5%bc-%ed%99%9c%ec%9a%a9%ed%95%9c-%ed%81%b4%eb%9d%bc%ec%9a%b0%eb%93%9c-%ec%9d%b8%ed%94%84%eb%9d%bc-%ec%9e%90%eb%8f%99%ed%99%94/)
 ---
 
 ## 사례 2: AWS 인프라 구성 (계속)
 
 **작업 과정**
 ```bash
-$ gemini-cli
+$ gemini
 
 > AWS에 프로덕션 환경 인프라 구성해줘:
   - VPC, 서브넷, 인터넷 게이트웨이
@@ -190,10 +191,10 @@ Apply complete! Resources: 15 added
 
 ## 사례 2: 성과
 
-| 항목 | 결과 |
-|------|------|
-| 소요 시간 | 약 15분 |
-| 기존 방식 | 약 3-4시간 |
+| 항목        | 결과        |
+| ----------- | ----------- |
+| 소요 시간   | 약 15분     |
+| 기존 방식   | 약 3-4시간  |
 | 생산성 향상 | **12-16배** |
 
 **핵심 포인트**
