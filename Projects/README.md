@@ -235,7 +235,6 @@ pie title 사용 비율
 **2세대 (CLI 기반)**
 
 ```
-![alt text](img/README-1.png)
 
 ### 너비우선
 ```markdown
@@ -257,7 +256,6 @@ pie title 사용 비율
   </div>
 </div>
 ```
-![alt text](img/README.png)
 
 # 레이아웃 팁
 ## 2단 레이아웃
