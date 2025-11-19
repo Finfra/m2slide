@@ -735,6 +735,7 @@ html {
   color: white;
   padding: 30px 20px;
   text-align: center;
+  position: relative;
 }
 .header h1 {
   margin: 0;
@@ -770,8 +771,7 @@ svg text {
 <body>
 <div class="header">
   <h1>${title}</h1>
-  <p>각 노드를 클릭하면 상세 페이지로 이동합니다</p>
-  ${hasEpub ? `<p style="margin-top: 15px;"><a href="${epubFileName}" download style="color: white; background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 5px; text-decoration: none; display: inline-block; font-size: 14px;">📚 EPUB 다운로드</a></p>` : ''}
+  ${hasEpub ? `<p style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%);"><a href="${epubFileName}" download style="color: white; background: rgba(255,255,255,0.2); padding: 10px 20px; border-radius: 5px; text-decoration: none; display: inline-block; font-size: 14px;">📚 EPUB 다운로드</a></p>` : ''}
 </div>
 <svg id="mindmap"></svg>
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script><script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script><script src="https://cdn.jsdelivr.net/npm/markmap-toolbar@0.18.12/dist/index.js"></script><script>((r) => {
