@@ -83,6 +83,14 @@
     .reveal .slides section::-webkit-scrollbar-thumb:hover {
       background: rgba(0, 0, 0, 0.5);
     }
+    #toc-mindmap {
+      width: 100% !important;
+      height: 500px !important;
+      max-width: 100% !important;
+      max-height: 500px !important;
+      overflow: hidden !important;
+      display: block !important;
+    }
     #toc-mindmap a {
       text-decoration: none;
       color: inherit;
@@ -197,6 +205,28 @@ timeline
 <li>더 적은 반복 작업 원함</li>
 <li>더 높은 코드 품질 기대</li>
 </ul>
+      </section>
+
+      <section>
+<h2>세대별 대표 도구</h2>
+
+<p><strong>0세대 (채팅 기반)</strong></p>
+<p><div style="float:left; margin-left:15px; width:10%;"></p>
+<p><img src="img/chatgpt-logo.png" alt="ChatGPT"> </p>
+<p></div></p>
+
+<p><strong>1세대 (IDE 통합)</strong></p>
+<p><div style="float:right; margin-right:50px; width:10%;"></p>
+<p><img src="img/cline-logo.png" alt="Cline"> </p>
+<p></div></p>
+
+<p><strong>2세대 (CLI 기반)</strong></p>
+<p><div style="width:10%;"></p>
+<p><img src="img/claude-logo.png" alt="Claude"> </p>
+<p></div></p>
+<p><div style="width:10%;"></p>
+<p><img src="img/gemini-logo.png" alt="Gemini"></p>
+<p></div></p>
       </section>
 
       <section data-markdown>
@@ -328,10 +358,10 @@ timeline
       }
     });
 
-    // Initialize markmap for table of contents
-    setTimeout(() => {
-      const { markmap } = window;
-      const tocData = {
+    // Initialize markmap for table of contents (Safari compatible)
+    setTimeout(function() {
+      if (window.markmap) {
+        var tocData = {
       "content": "",
       "children": [
             {
@@ -343,15 +373,19 @@ timeline
                   "children": []
             },
             {
-                  "content": "<a href=\"#/4\">세대별 비교 요약</a>",
+                  "content": "<a href=\"#/4\">세대별 대표 도구</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/5\">미래 전망</a>",
+                  "content": "<a href=\"#/5\">세대별 비교 요약</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/6\">개발자 역할의 변화</a>",
+                  "content": "<a href=\"#/6\">미래 전망</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/7\">개발자 역할의 변화</a>",
                   "children": []
             },
             {
@@ -373,9 +407,9 @@ timeline
             }
       ]
 };
-
-      markmap.Markmap.create('#toc-mindmap', {}, tocData);
-    }, 100);
+        window.markmap.Markmap.create('#toc-mindmap', {}, tocData);
+      }
+    }, 200);
 
     // Connect up arrow key to parent page navigation
     document.addEventListener('keydown', function(event) {

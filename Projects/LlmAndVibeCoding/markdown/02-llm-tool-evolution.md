@@ -56,6 +56,28 @@ timeline
 
 ---
 
+## 세대별 대표 도구
+
+**0세대 (채팅 기반)**
+<div style="float:left; margin-left:15px; width:10%;">
+![ChatGPT](img/chatgpt-logo.png) 
+</div>
+
+**1세대 (IDE 통합)**
+<div style="float:right; margin-right:50px; width:10%;">
+![Cline](img/cline-logo.png) 
+</div>
+
+**2세대 (CLI 기반)**
+<div style="width:10%;">
+![Claude](img/claude-logo.png) 
+</div>
+<div style="width:10%;">
+![Gemini](img/gemini-logo.png)
+</div>
+
+---
+
 ## 세대별 비교 요약
 
 | 특징 | 0세대<br/>(채팅) | 1세대<br/>(IDE) | 2세대<br/>(CLI) |

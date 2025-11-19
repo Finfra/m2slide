@@ -83,6 +83,14 @@
     .reveal .slides section::-webkit-scrollbar-thumb:hover {
       background: rgba(0, 0, 0, 0.5);
     }
+    #toc-mindmap {
+      width: 100% !important;
+      height: 500px !important;
+      max-width: 100% !important;
+      max-height: 500px !important;
+      overflow: hidden !important;
+      display: block !important;
+    }
     #toc-mindmap a {
       text-decoration: none;
       color: inherit;
@@ -149,19 +157,25 @@
       <section>
 <h2>1세대: 대표 툴</h2>
 
-<p><strong>Cursor</strong></p>
+<p><strong>Cursor</strong> </p>
 <ul>
 <li>VSCode 포크 기반 AI 네이티브 IDE</li>
 <li>GPT-4 기반 코드 생성 및 편집</li>
 <li>Composer 모드로 멀티파일 작업</li>
 </ul>
+<p><div style="float:left; margin-left:15px; width:50%;"></p>
+<p><img src="img/cursor-logo.png" alt="Cursor"></p>
+<p></div></p>
 
-<p><strong>Cline (구 Claude Dev)</strong></p>
+<p><strong>Cline (구 Claude Dev)</strong> </p>
 <ul>
 <li>VSCode 확장 프로그램</li>
 <li>다양한 LLM 모델 선택 가능</li>
 <li>채팅 인터페이스 기반</li>
 </ul>
+<p><div style="float:right; margin-left:15px; width:50%;"></p>
+<p><img src="img/cline-logo.png" alt="Cline"></p>
+<p></div></p>
       </section>
 
       <section>
@@ -368,10 +382,10 @@
       }
     });
 
-    // Initialize markmap for table of contents
-    setTimeout(() => {
-      const { markmap } = window;
-      const tocData = {
+    // Initialize markmap for table of contents (Safari compatible)
+    setTimeout(function() {
+      if (window.markmap) {
+        var tocData = {
       "content": "",
       "children": [
             {
@@ -413,9 +427,9 @@
             }
       ]
 };
-
-      markmap.Markmap.create('#toc-mindmap', {}, tocData);
-    }, 100);
+        window.markmap.Markmap.create('#toc-mindmap', {}, tocData);
+      }
+    }, 200);
 
     // Connect up arrow key to parent page navigation
     document.addEventListener('keydown', function(event) {

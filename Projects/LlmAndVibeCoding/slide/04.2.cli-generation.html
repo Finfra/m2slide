@@ -83,6 +83,14 @@
     .reveal .slides section::-webkit-scrollbar-thumb:hover {
       background: rgba(0, 0, 0, 0.5);
     }
+    #toc-mindmap {
+      width: 100% !important;
+      height: 500px !important;
+      max-width: 100% !important;
+      max-height: 500px !important;
+      overflow: hidden !important;
+      display: block !important;
+    }
     #toc-mindmap a {
       text-decoration: none;
       color: inherit;
@@ -149,7 +157,7 @@
       <section>
 <h2>2세대: 대표 툴</h2>
 
-<p><strong>Claude Code</strong></p>
+<p><strong>Claude Code</strong> <img src="img/claude-logo.png" alt="Claude"></p>
 <ul>
 <li>Anthropic 공식 CLI 도구</li>
 <li>터미널에서 Claude와 직접 대화</li>
@@ -157,7 +165,7 @@
 <li>자동 파일 수정 및 명령 실행</li>
 </ul>
 
-<p><strong>Gemini CLI</strong></p>
+<p><strong>Gemini CLI</strong> <img src="img/gemini-logo.png" alt="Gemini"></p>
 <ul>
 <li>Google Gemini 기반</li>
 <li>빠른 응답 속도</li>
@@ -390,10 +398,10 @@ $ claude
       }
     });
 
-    // Initialize markmap for table of contents
-    setTimeout(() => {
-      const { markmap } = window;
-      const tocData = {
+    // Initialize markmap for table of contents (Safari compatible)
+    setTimeout(function() {
+      if (window.markmap) {
+        var tocData = {
       "content": "",
       "children": [
             {
@@ -426,9 +434,9 @@ $ claude
             }
       ]
 };
-
-      markmap.Markmap.create('#toc-mindmap', {}, tocData);
-    }, 100);
+        window.markmap.Markmap.create('#toc-mindmap', {}, tocData);
+      }
+    }, 200);
 
     // Connect up arrow key to parent page navigation
     document.addEventListener('keydown', function(event) {

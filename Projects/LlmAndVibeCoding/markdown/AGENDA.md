@@ -24,8 +24,8 @@
 
 ## [5. 세대별 비교 및 선택 가이드](./05-generation-comparison.md)
 
-## [6. 실전 사례: 세대별 활용법](./06-practical-cases.md)
+## [6. (참고) 실전 사례: 세대별 활용법](./06-practical-cases.md)
 
-## [7. 바이브 코딩 도입 로드맵](./07-adoption-roadmap.md)
+## [7. (참고) 바이브 코딩 도입 로드맵](./07-adoption-roadmap.md)
 
 ## [8. Q&A 및 클로징](./08-qa-closing.md)
