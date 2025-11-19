@@ -5,12 +5,16 @@
 - aaaa
   - a-1
   - a-2
-- bbb
+* bbb
   - b-1
   - b-2
-- ccc
-  - c-1
-  - c-2
+* ccc
+  * c-1
+    - cc-2
+    - cc-2
+  * c-2
+    - cc-2
+    - cc-2
 ---
 <div style="float:right; margin-left:15px; max-width:400px;">
 ![alt text](img/01-opening.png)

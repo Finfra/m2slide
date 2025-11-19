@@ -12,6 +12,7 @@ function convertMarkdownToHTML(markdown) {
   let inOrderedList = false;
   let inBlockquote = false;
   let blockquoteLines = [];
+  let listLevel = 0;
 
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i];
@@ -47,15 +48,40 @@ function convertMarkdownToHTML(markdown) {
       blockquoteLines = [];
     }
 
-    // Unordered list
-    if (line.match(/^- /)) {
+    // Unordered list (supports - and *, with nesting)
+    const bulletMatch = line.match(/^(\s*)([-*])\s+(.*)$/);
+    if (bulletMatch) {
+      const indent = bulletMatch[1].length;
+      const bulletChar = bulletMatch[2];
+      const content = bulletMatch[3];
+      const level = Math.floor(indent / 2); // 2 spaces = 1 level
+
       if (!inList) {
         html.push('<ul>');
         inList = true;
+        listLevel = 0;
       }
-      html.push(`<li>${processInline(line.replace(/^- /, ''))}</li>`);
+
+      // Handle nesting
+      while (listLevel < level) {
+        html.push('<ul>');
+        listLevel++;
+      }
+      while (listLevel > level) {
+        html.push('</ul>');
+        listLevel--;
+      }
+
+      // Apply different class based on bullet character
+      const bulletClass = bulletChar === '*' ? ' class="bullet-dot"' : '';
+      html.push(`<li${bulletClass}>${processInline(content)}</li>`);
       continue;
-    } else if (inList && !line.match(/^- /)) {
+    } else if (inList && !line.match(/^\s*[-*]\s/)) {
+      // Close all nested lists
+      while (listLevel > 0) {
+        html.push('</ul>');
+        listLevel--;
+      }
       html.push('</ul>');
       inList = false;
     }
@@ -116,7 +142,14 @@ function convertMarkdownToHTML(markdown) {
   }
 
   // Close any open lists or blockquotes
-  if (inList) html.push('</ul>');
+  // Close any remaining nested lists
+  if (inList) {
+    while (listLevel > 0) {
+      html.push('</ul>');
+      listLevel--;
+    }
+    html.push('</ul>');
+  }
   if (inOrderedList) html.push('</ol>');
   if (inBlockquote) {
     html.push('<blockquote>');
@@ -422,6 +455,13 @@ function generateHTML(filePath, agendaPath) {
       line-height: 1.6;
       margin: 0.3em 0;
       color: #333;
+      list-style-type: '- ';
+    }
+    .reveal li.bullet-dot {
+      list-style-type: '· ';
+    }
+    .reveal ul ul {
+      margin: 0.3em 0;
     }
     .reveal strong {
       color: #222;
