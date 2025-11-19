@@ -47,6 +47,13 @@
       line-height: 1.6;
       margin: 0.3em 0;
       color: #333;
+      list-style-type: '- ';
+    }
+    .reveal li.bullet-dot {
+      list-style-type: '· ';
+    }
+    .reveal ul ul {
+      margin: 0.3em 0;
     }
     .reveal strong {
       color: #222;
@@ -154,6 +161,21 @@
     .nav-up-btn span {
       font-family: inherit;
     }
+    /* Last slide message */
+    #last-slide-message {
+      display: none;
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-size: 16px;
+      z-index: 1000;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -169,6 +191,8 @@
     <h1>2. LLM 코딩 툴의 진화 과정</h1>
     <svg id="toc-mindmap"></svg>
   </div>
+
+  <div id="last-slide-message">마지막 페이지입니다. 다음 챕터로 이동하려면 다시 →를 누르세요.</div>
 
   <div class="reveal">
     <div class="slides">
@@ -206,16 +230,16 @@ timeline
 
 <p><strong>LLM 성능 향상</strong></p>
 <ul>
-<li>GPT-3.5 → GPT-4 → Claude 3.5 Sonnet</li>
-<li>코드 이해 및 생성 능력 비약적 향상</li>
+<li class="bullet-dot">GPT-3.5 → GPT-4 → Claude 3.5 Sonnet</li>
+<li class="bullet-dot">코드 이해 및 생성 능력 비약적 향상</li>
 </ul>
 
 <p><strong>컨텍스트 윈도우 확대</strong></p>
 <ul>
-<li>초기 (GPT-3.5): 4K 토큰</li>
-<li>중기 (GPT-4): 32K → 128K 토큰</li>
-<li>현재 (Claude 3.5): 200K 토큰 이상</li>
-<li>전체 코드베이스를 한 번에 이해 가능</li>
+<li class="bullet-dot">초기 (GPT-3.5): 4K 토큰</li>
+<li class="bullet-dot">중기 (GPT-4): 32K → 128K 토큰</li>
+<li class="bullet-dot">현재 (Claude 3.5): 200K 토큰 이상</li>
+<li class="bullet-dot">전체 코드베이스를 한 번에 이해 가능</li>
 </ul>
       </section>
 
@@ -224,53 +248,47 @@ timeline
 
 <p><strong>도구 사용 능력 (Function Calling)</strong></p>
 <ul>
-<li>AI가 직접 API 호출</li>
-<li>파일 시스템 조작</li>
-<li>명령어 실행</li>
+<li class="bullet-dot">AI가 직접 API 호출</li>
+<li class="bullet-dot">파일 시스템 조작</li>
+<li class="bullet-dot">명령어 실행</li>
 </ul>
 
 <p><strong>사용자 니즈 변화</strong></p>
 <ul>
-<li>더 빠른 개발 속도 요구</li>
-<li>더 적은 반복 작업 원함</li>
-<li>더 높은 코드 품질 기대</li>
+<li class="bullet-dot">더 빠른 개발 속도 요구</li>
+<li class="bullet-dot">더 적은 반복 작업 원함</li>
+<li class="bullet-dot">더 높은 코드 품질 기대</li>
 </ul>
       </section>
 
       <section>
 <h2>세대별 대표 도구</h2>
+<p><div style="float:left; width:35%;"></p>
+<p>  <img src="img/chatgpt-logo.png" alt="alt text"></p>
+<p>  <img src="img/gemini-logo.png" alt="alt text"></p>
+<p></div></p>
 
+<p><div style="float:right; width:35%;"></p>
+<p>  <img src="img/cline-logo.png" alt="alt text"></p>
+<p>  <img src="img/claude-logo.png" alt="alt text"></p>
+<p></div></p>
 <p><strong>0세대 (채팅 기반)</strong></p>
-<p><div style="float:left; margin-left:15px; width:10%;"></p>
-<p><img src="img/chatgpt-logo.png" alt="ChatGPT"> </p>
-<p></div></p>
-
 <p><strong>1세대 (IDE 통합)</strong></p>
-<p><div style="float:right; margin-right:50px; width:10%;"></p>
-<p><img src="img/cline-logo.png" alt="Cline"> </p>
-<p></div></p>
-
 <p><strong>2세대 (CLI 기반)</strong></p>
-<p><div style="width:10%;"></p>
-<p><img src="img/claude-logo.png" alt="Claude"> </p>
-<p></div></p>
-<p><div style="width:10%;"></p>
-<p><img src="img/gemini-logo.png" alt="Gemini"></p>
-<p></div></p>
       </section>
 
       <section data-markdown>
         <textarea data-template>
 ## 세대별 비교 요약
 
-| 특징 | 0세대<br/>(채팅) | 1세대<br/>(IDE) | 2세대<br/>(CLI) |
-|------|----------------|----------------|----------------|
-| **시기** | 2022-2023 | 2023-2024 | 2024-현재 |
-| **환경** | 웹 브라우저 | IDE 통합 | CLI/서버 |
-| **컨텍스트** | 대화 내용 | 현재 파일 | 프로젝트 전체 |
-| **작업 범위** | 코드 조각 | 단일 파일 | 멀티파일 |
-| **자동화** | 없음 | 부분적 | 전면적 |
-| **생산성** | 낮음 | 중간 | 높음 |
+| 특징          | 0세대<br/>(채팅) | 1세대<br/>(IDE) | 2세대<br/>(CLI) |
+| ------------- | ---------------- | --------------- | --------------- |
+| **시기**      | 2022-2023        | 2023-2024       | 2024-현재       |
+| **환경**      | 웹 브라우저      | IDE 통합        | CLI/서버        |
+| **컨텍스트**  | 대화 내용        | 현재 파일       | 프로젝트 전체   |
+| **작업 범위** | 코드 조각        | 단일 파일       | 멀티파일        |
+| **자동화**    | 없음             | 부분적          | 전면적          |
+| **생산성**    | 낮음             | 중간            | 높음            |
 </textarea>
       </section>
 
@@ -280,10 +298,10 @@ timeline
 <p><strong>다음 진화 단계</strong></p>
 
 <ul>
-<li><strong>완전 자율 개발</strong>: 요구사항만으로 전체 애플리케이션 생성</li>
-<li><strong>팀 협업 에이전트</strong>: 여러 AI 에이전트가 역할 분담하여 협업</li>
-<li><strong>지속적 학습</strong>: 프로젝트별 코딩 스타일 학습 및 적응</li>
-<li><strong>실시간 코드 리뷰</strong>: AI가 실시간으로 코드 품질 검증</li>
+<li class="bullet-dot"><strong>완전 자율 개발</strong>: 요구사항만으로 전체 애플리케이션 생성</li>
+<li class="bullet-dot"><strong>팀 협업 에이전트</strong>: 여러 AI 에이전트가 역할 분담하여 협업</li>
+<li class="bullet-dot"><strong>지속적 학습</strong>: 프로젝트별 코딩 스타일 학습 및 적응</li>
+<li class="bullet-dot"><strong>실시간 코드 리뷰</strong>: AI가 실시간으로 코드 품질 검증</li>
 </ul>
       </section>
 
@@ -293,10 +311,10 @@ timeline
 
 기술의 진화와 함께 개발자의 역할도 진화:
 
-| 기존 | 새로운 역할 |
-|------|----------|
-| 코드 작성자 | 시스템 설계자 |
-| 구현 전문가 | 품질 관리자 |
+| 기존        | 새로운 역할    |
+| ----------- | -------------- |
+| 코드 작성자 | 시스템 설계자  |
+| 구현 전문가 | 품질 관리자    |
 | 타이핑 중심 | 의도 전달 중심 |
 </textarea>
       </section>
@@ -465,7 +483,11 @@ timeline
       updateTocVisibility();
     });
 
-    // Connect up arrow key to parent page navigation
+    // Last slide message state
+    var lastSlideMessageShown = false;
+    var lastSlideMessage = document.getElementById('last-slide-message');
+
+    // Connect keyboard navigation
     document.addEventListener('keydown', function(event) {
       // Check if up arrow key is pressed
       if (event.key === 'ArrowUp' || event.keyCode === 38) {
@@ -480,6 +502,34 @@ timeline
           }
         }
       }
+
+      // Check if right arrow key is pressed
+      if (event.key === 'ArrowRight' || event.keyCode === 39) {
+        var totalSlides = Reveal.getTotalSlides();
+        var currentSlide = Reveal.getIndices();
+        var currentSlideNumber = Reveal.getSlidePastCount() + 1;
+
+        // Check if on last slide
+        if (currentSlideNumber >= totalSlides) {
+          if (lastSlideMessageShown) {
+            // Second press: navigate to next chapter
+            lastSlideMessage.style.display = 'none';
+            lastSlideMessageShown = false;
+            window.location.href = '02.1.chat-based.html';
+          } else {
+            // First press: show message
+            event.preventDefault();
+            lastSlideMessage.style.display = 'block';
+            lastSlideMessageShown = true;
+          }
+        }
+      }
+    });
+
+    // Hide message when slide changes
+    Reveal.on('slidechanged', function() {
+      lastSlideMessage.style.display = 'none';
+      lastSlideMessageShown = false;
     });
   </script>
 </body>

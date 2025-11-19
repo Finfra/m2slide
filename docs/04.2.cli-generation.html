@@ -47,6 +47,13 @@
       line-height: 1.6;
       margin: 0.3em 0;
       color: #333;
+      list-style-type: '- ';
+    }
+    .reveal li.bullet-dot {
+      list-style-type: '· ';
+    }
+    .reveal ul ul {
+      margin: 0.3em 0;
     }
     .reveal strong {
       color: #222;
@@ -154,6 +161,21 @@
     .nav-up-btn span {
       font-family: inherit;
     }
+    /* Last slide message */
+    #last-slide-message {
+      display: none;
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-size: 16px;
+      z-index: 1000;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -170,6 +192,8 @@
     <svg id="toc-mindmap"></svg>
   </div>
 
+  <div id="last-slide-message">마지막 페이지입니다. 다음 챕터로 이동하려면 다시 →를 누르세요.</div>
+
   <div class="reveal">
     <div class="slides">
 
@@ -180,7 +204,7 @@
 
 <p><strong>터미널(CLI)</strong>에서 AI와 대화하며 작업</p>
 <ul>
-<li>IDE 없이도 프로젝트 전체를 자동화</li>
+<li class="bullet-dot">IDE 없이도 프로젝트 전체를 자동화</li>
 </ul>
       </section>
 
@@ -189,18 +213,18 @@
 
 <p><strong>Claude Code</strong> <img src="img/claude-logo.png" alt="Claude"></p>
 <ul>
-<li>Anthropic 공식 CLI 도구</li>
-<li>터미널에서 Claude와 직접 대화</li>
-<li>프로젝트 전체 컨텍스트 이해</li>
-<li>자동 파일 수정 및 명령 실행</li>
+<li class="bullet-dot">Anthropic 공식 CLI 도구</li>
+<li class="bullet-dot">터미널에서 Claude와 직접 대화</li>
+<li class="bullet-dot">프로젝트 전체 컨텍스트 이해</li>
+<li class="bullet-dot">자동 파일 수정 및 명령 실행</li>
 </ul>
 
 <p><strong>Gemini CLI</strong> <img src="img/gemini-logo.png" alt="Gemini"></p>
 <ul>
-<li>Google Gemini 기반</li>
-<li>빠른 응답 속도</li>
-<li>클라우드 기반 실행</li>
-<li>DevOps 작업에 최적화</li>
+<li class="bullet-dot">Google Gemini 기반</li>
+<li class="bullet-dot">빠른 응답 속도</li>
+<li class="bullet-dot">클라우드 기반 실행</li>
+<li class="bullet-dot">DevOps 작업에 최적화</li>
 </ul>
       </section>
 
@@ -209,9 +233,9 @@
 
 <p><strong>Codex CLI</strong></p>
 <ul>
-<li>OpenAI 기반 CLI 도구</li>
-<li>터미널 기반 코드 생성</li>
-<li>Git 통합 및 자동화</li>
+<li class="bullet-dot">OpenAI 기반 CLI 도구</li>
+<li class="bullet-dot">터미널 기반 코드 생성</li>
+<li class="bullet-dot">Git 통합 및 자동화</li>
 </ul>
       </section>
 
@@ -220,16 +244,16 @@
 
 <p><strong>서버/클라우드 기반</strong></p>
 <ul>
-<li>로컬 리소스 거의 사용 안 함</li>
-<li>노트북 배터리 절약</li>
-<li>원격 서버에서 작업 가능</li>
+<li class="bullet-dot">로컬 리소스 거의 사용 안 함</li>
+<li class="bullet-dot">노트북 배터리 절약</li>
+<li class="bullet-dot">원격 서버에서 작업 가능</li>
 </ul>
 
 <p><strong>무제한 병렬 처리</strong></p>
 <ul>
-<li>여러 터미널에서 동시 작업</li>
-<li>멀티 프로젝트 동시 관리</li>
-<li>백그라운드 실행 가능</li>
+<li class="bullet-dot">여러 터미널에서 동시 작업</li>
+<li class="bullet-dot">멀티 프로젝트 동시 관리</li>
+<li class="bullet-dot">백그라운드 실행 가능</li>
 </ul>
       </section>
 
@@ -238,16 +262,16 @@
 
 <p><strong>스크립트 자동화</strong></p>
 <ul>
-<li>쉘 스크립트와 결합</li>
-<li>CI/CD 파이프라인 통합</li>
-<li>DevOps 워크플로우 자동화</li>
+<li class="bullet-dot">쉘 스크립트와 결합</li>
+<li class="bullet-dot">CI/CD 파이프라인 통합</li>
+<li class="bullet-dot">DevOps 워크플로우 자동화</li>
 </ul>
 
 <p><strong>빠른 실행 속도</strong></p>
 <ul>
-<li>GUI 오버헤드 없음</li>
-<li>텍스트 기반으로 빠른 응답</li>
-<li>네트워크 대역폭 효율적</li>
+<li class="bullet-dot">GUI 오버헤드 없음</li>
+<li class="bullet-dot">텍스트 기반으로 빠른 응답</li>
+<li class="bullet-dot">네트워크 대역폭 효율적</li>
 </ul>
       </section>
 
@@ -256,15 +280,15 @@
 
 <p><strong>학습 곡선</strong></p>
 <ul>
-<li>터미널 명령어 숙지 필요</li>
-<li>GUI 없이 작업해야 함</li>
-<li>코드 변경 사항 시각화 제한적</li>
+<li class="bullet-dot">터미널 명령어 숙지 필요</li>
+<li class="bullet-dot">GUI 없이 작업해야 함</li>
+<li class="bullet-dot">코드 변경 사항 시각화 제한적</li>
 </ul>
 
 <p><strong>시각적 피드백 부족</strong></p>
 <ul>
-<li>diff 확인이 텍스트 기반</li>
-<li>그래픽 UI 프리뷰 불가</li>
+<li class="bullet-dot">diff 확인이 텍스트 기반</li>
+<li class="bullet-dot">그래픽 UI 프리뷰 불가</li>
 </ul>
       </section>
 
@@ -273,8 +297,8 @@
 
 <p><strong>초기 설정</strong></p>
 <ul>
-<li>환경 변수 설정 필요</li>
-<li>API 키 설정 필수</li>
+<li class="bullet-dot">환경 변수 설정 필요</li>
+<li class="bullet-dot">API 키 설정 필수</li>
 </ul>
       </section>
 
@@ -300,11 +324,11 @@ $ claude
 <h2>2세대: 적합한 사용자</h2>
 
 <ul>
-<li><strong>시니어 개발자</strong>: 터미널에 익숙한 사용자</li>
-<li><strong>백엔드/DevOps 개발자</strong>: 서버 관리 및 자동화 작업</li>
-<li><strong>멀티 프로젝트 관리</strong>: 여러 프로젝트를 동시에 진행</li>
-<li><strong>리눅스 사용자</strong>: CLI 환경 선호</li>
-<li><strong>원격 개발</strong>: SSH로 원격 서버 작업</li>
+<li class="bullet-dot"><strong>시니어 개발자</strong>: 터미널에 익숙한 사용자</li>
+<li class="bullet-dot"><strong>백엔드/DevOps 개발자</strong>: 서버 관리 및 자동화 작업</li>
+<li class="bullet-dot"><strong>멀티 프로젝트 관리</strong>: 여러 프로젝트를 동시에 진행</li>
+<li class="bullet-dot"><strong>리눅스 사용자</strong>: CLI 환경 선호</li>
+<li class="bullet-dot"><strong>원격 개발</strong>: SSH로 원격 서버 작업</li>
 </ul>
       </section>
 
@@ -492,7 +516,11 @@ $ claude
       updateTocVisibility();
     });
 
-    // Connect up arrow key to parent page navigation
+    // Last slide message state
+    var lastSlideMessageShown = false;
+    var lastSlideMessage = document.getElementById('last-slide-message');
+
+    // Connect keyboard navigation
     document.addEventListener('keydown', function(event) {
       // Check if up arrow key is pressed
       if (event.key === 'ArrowUp' || event.keyCode === 38) {
@@ -507,6 +535,34 @@ $ claude
           }
         }
       }
+
+      // Check if right arrow key is pressed
+      if (event.key === 'ArrowRight' || event.keyCode === 39) {
+        var totalSlides = Reveal.getTotalSlides();
+        var currentSlide = Reveal.getIndices();
+        var currentSlideNumber = Reveal.getSlidePastCount() + 1;
+
+        // Check if on last slide
+        if (currentSlideNumber >= totalSlides) {
+          if (lastSlideMessageShown) {
+            // Second press: navigate to next chapter
+            lastSlideMessage.style.display = 'none';
+            lastSlideMessageShown = false;
+            window.location.href = '05-generation-comparison.html';
+          } else {
+            // First press: show message
+            event.preventDefault();
+            lastSlideMessage.style.display = 'block';
+            lastSlideMessageShown = true;
+          }
+        }
+      }
+    });
+
+    // Hide message when slide changes
+    Reveal.on('slidechanged', function() {
+      lastSlideMessage.style.display = 'none';
+      lastSlideMessageShown = false;
     });
   </script>
 </body>

@@ -47,6 +47,13 @@
       line-height: 1.6;
       margin: 0.3em 0;
       color: #333;
+      list-style-type: '- ';
+    }
+    .reveal li.bullet-dot {
+      list-style-type: '· ';
+    }
+    .reveal ul ul {
+      margin: 0.3em 0;
     }
     .reveal strong {
       color: #222;
@@ -154,6 +161,21 @@
     .nav-up-btn span {
       font-family: inherit;
     }
+    /* Last slide message */
+    #last-slide-message {
+      display: none;
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-size: 16px;
+      z-index: 1000;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -170,6 +192,8 @@
     <svg id="toc-mindmap"></svg>
   </div>
 
+  <div id="last-slide-message">마지막 페이지입니다. 다음 챕터로 이동하려면 다시 →를 누르세요.</div>
+
   <div class="reveal">
     <div class="slides">
 
@@ -180,7 +204,7 @@
 
 <p><strong>IDE(통합 개발 환경) 내부</strong>에서 AI와 협업</p>
 <ul>
-<li>친숙한 GUI 환경에서 시각적으로 AI와 상호작용</li>
+<li class="bullet-dot">친숙한 GUI 환경에서 시각적으로 AI와 상호작용</li>
 </ul>
       </section>
 
@@ -189,9 +213,9 @@
 
 <p><strong>Cursor</strong> </p>
 <ul>
-<li>VSCode 포크 기반 AI 네이티브 IDE</li>
-<li>GPT-4 기반 코드 생성 및 편집</li>
-<li>Composer 모드로 멀티파일 작업</li>
+<li class="bullet-dot">VSCode 포크 기반 AI 네이티브 IDE</li>
+<li class="bullet-dot">GPT-4 기반 코드 생성 및 편집</li>
+<li class="bullet-dot">Composer 모드로 멀티파일 작업</li>
 </ul>
 <p><div style="float:left; margin-left:15px; width:50%;"></p>
 <p><img src="img/cursor-logo.png" alt="Cursor"></p>
@@ -199,9 +223,9 @@
 
 <p><strong>Cline (구 Claude Dev)</strong> </p>
 <ul>
-<li>VSCode 확장 프로그램</li>
-<li>다양한 LLM 모델 선택 가능</li>
-<li>채팅 인터페이스 기반</li>
+<li class="bullet-dot">VSCode 확장 프로그램</li>
+<li class="bullet-dot">다양한 LLM 모델 선택 가능</li>
+<li class="bullet-dot">채팅 인터페이스 기반</li>
 </ul>
 <p><div style="float:right; margin-left:15px; width:50%;"></p>
 <p><img src="img/cline-logo.png" alt="Cline"></p>
@@ -213,16 +237,16 @@
 
 <p><strong>Windsurf</strong></p>
 <ul>
-<li>Codeium 개발</li>
-<li>Cascade 모드로 자율 작업</li>
-<li>컨텍스트 인식 코드 생성</li>
+<li class="bullet-dot">Codeium 개발</li>
+<li class="bullet-dot">Cascade 모드로 자율 작업</li>
+<li class="bullet-dot">컨텍스트 인식 코드 생성</li>
 </ul>
 
 <p><strong>Continue</strong></p>
 <ul>
-<li>VSCode/JetBrains 확장</li>
-<li>로컬 모델 연동 가능</li>
-<li>실시간 코드 편집</li>
+<li class="bullet-dot">VSCode/JetBrains 확장</li>
+<li class="bullet-dot">로컬 모델 연동 가능</li>
+<li class="bullet-dot">실시간 코드 편집</li>
 </ul>
       </section>
 
@@ -231,16 +255,16 @@
 
 <p><strong>직관적인 GUI</strong></p>
 <ul>
-<li>시각적 인터페이스로 진입 장벽 낮음</li>
-<li>마우스 클릭으로 쉽게 작업</li>
-<li>코드 변경 사항을 diff 모드로 확인</li>
+<li class="bullet-dot">시각적 인터페이스로 진입 장벽 낮음</li>
+<li class="bullet-dot">마우스 클릭으로 쉽게 작업</li>
+<li class="bullet-dot">코드 변경 사항을 diff 모드로 확인</li>
 </ul>
 
 <p><strong>IDE 기능 활용</strong></p>
 <ul>
-<li>디버거, 터미널, Git 통합</li>
-<li>익숙한 단축키 사용</li>
-<li>파일 탐색기 활용</li>
+<li class="bullet-dot">디버거, 터미널, Git 통합</li>
+<li class="bullet-dot">익숙한 단축키 사용</li>
+<li class="bullet-dot">파일 탐색기 활용</li>
 </ul>
       </section>
 
@@ -249,9 +273,9 @@
 
 <p><strong>실시간 피드백</strong></p>
 <ul>
-<li>코드 작성 중 즉시 제안</li>
-<li>인라인 자동완성</li>
-<li>오류 즉시 확인</li>
+<li class="bullet-dot">코드 작성 중 즉시 제안</li>
+<li class="bullet-dot">인라인 자동완성</li>
+<li class="bullet-dot">오류 즉시 확인</li>
 </ul>
       </section>
 
@@ -260,15 +284,15 @@
 
 <p><strong>로컬 리소스 의존</strong></p>
 <ul>
-<li>IDE 실행으로 메모리 8GB+ 필요</li>
-<li>CPU 사용량 높음</li>
-<li>배터리 소모 증가</li>
+<li class="bullet-dot">IDE 실행으로 메모리 8GB+ 필요</li>
+<li class="bullet-dot">CPU 사용량 높음</li>
+<li class="bullet-dot">배터리 소모 증가</li>
 </ul>
 
 <p><strong>단일 프로젝트 제한</strong></p>
 <ul>
-<li>한 번에 하나의 프로젝트만 집중</li>
-<li>멀티 프로젝트 작업 시 IDE 여러 개 실행 필요</li>
+<li class="bullet-dot">한 번에 하나의 프로젝트만 집중</li>
+<li class="bullet-dot">멀티 프로젝트 작업 시 IDE 여러 개 실행 필요</li>
 </ul>
       </section>
 
@@ -277,8 +301,8 @@
 
 <p><strong>GUI 오버헤드</strong></p>
 <ul>
-<li>그래픽 렌더링으로 인한 성능 저하</li>
-<li>원격 서버 작업 시 불편</li>
+<li class="bullet-dot">그래픽 렌더링으로 인한 성능 저하</li>
+<li class="bullet-dot">원격 서버 작업 시 불편</li>
 </ul>
       </section>
 
@@ -302,10 +326,10 @@
 <h2>1세대: 적합한 사용자</h2>
 
 <ul>
-<li><strong>초보 개발자</strong>: GUI 환경이 익숙한 사용자</li>
-<li><strong>프론트엔드 개발자</strong>: 시각적 피드백이 중요한 작업</li>
-<li><strong>단일 프로젝트 집중</strong>: 하나의 프로젝트에 깊이 파고드는 경우</li>
-<li><strong>윈도우/맥 사용자</strong>: 로컬 환경 개발 선호</li>
+<li class="bullet-dot"><strong>초보 개발자</strong>: GUI 환경이 익숙한 사용자</li>
+<li class="bullet-dot"><strong>프론트엔드 개발자</strong>: 시각적 피드백이 중요한 작업</li>
+<li class="bullet-dot"><strong>단일 프로젝트 집중</strong>: 하나의 프로젝트에 깊이 파고드는 경우</li>
+<li class="bullet-dot"><strong>윈도우/맥 사용자</strong>: 로컬 환경 개발 선호</li>
 </ul>
       </section>
 
@@ -485,7 +509,11 @@
       updateTocVisibility();
     });
 
-    // Connect up arrow key to parent page navigation
+    // Last slide message state
+    var lastSlideMessageShown = false;
+    var lastSlideMessage = document.getElementById('last-slide-message');
+
+    // Connect keyboard navigation
     document.addEventListener('keydown', function(event) {
       // Check if up arrow key is pressed
       if (event.key === 'ArrowUp' || event.keyCode === 38) {
@@ -500,6 +528,34 @@
           }
         }
       }
+
+      // Check if right arrow key is pressed
+      if (event.key === 'ArrowRight' || event.keyCode === 39) {
+        var totalSlides = Reveal.getTotalSlides();
+        var currentSlide = Reveal.getIndices();
+        var currentSlideNumber = Reveal.getSlidePastCount() + 1;
+
+        // Check if on last slide
+        if (currentSlideNumber >= totalSlides) {
+          if (lastSlideMessageShown) {
+            // Second press: navigate to next chapter
+            lastSlideMessage.style.display = 'none';
+            lastSlideMessageShown = false;
+            window.location.href = '04.2.cli-generation.html';
+          } else {
+            // First press: show message
+            event.preventDefault();
+            lastSlideMessage.style.display = 'block';
+            lastSlideMessageShown = true;
+          }
+        }
+      }
+    });
+
+    // Hide message when slide changes
+    Reveal.on('slidechanged', function() {
+      lastSlideMessage.style.display = 'none';
+      lastSlideMessageShown = false;
     });
   </script>
 </body>
