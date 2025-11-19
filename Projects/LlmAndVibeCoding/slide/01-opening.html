@@ -47,6 +47,13 @@
       line-height: 1.6;
       margin: 0.3em 0;
       color: #333;
+      list-style-type: '- ';
+    }
+    .reveal li.bullet-dot {
+      list-style-type: '· ';
+    }
+    .reveal ul ul {
+      margin: 0.3em 0;
     }
     .reveal strong {
       color: #222;
@@ -196,19 +203,29 @@
 <h2>Test</h2>
 <ul>
 <li>aaaa</li>
-</ul>
-<p>  - a-1</p>
-<p>  - a-2</p>
 <ul>
-<li>bbb</li>
+<li>a-1</li>
+<li>a-2</li>
 </ul>
-<p>  - b-1</p>
-<p>  - b-2</p>
+<li class="bullet-dot">bbb</li>
 <ul>
-<li>ccc</li>
+<li>b-1</li>
+<li>b-2</li>
 </ul>
-<p>  - c-1</p>
-<p>  - c-2</p>
+<li class="bullet-dot">ccc</li>
+<ul>
+<li class="bullet-dot">c-1</li>
+<ul>
+<li>cc-2</li>
+<li>cc-2</li>
+</ul>
+<li class="bullet-dot">c-2</li>
+<ul>
+<li>cc-2</li>
+<li>cc-2</li>
+</ul>
+</ul>
+</ul>
       </section>
 
       <section>
