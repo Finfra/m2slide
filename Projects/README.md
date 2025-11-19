@@ -1,91 +1,35 @@
-# 마크다운 작성 가이드라인
-
-프레젠테이션용 마크다운 파일 작성 시 참고할 가이드입니다.
-
-## 기본 구조
-
-### 슬라이드 구분
-
+---
+title: 마크다운 작성 가이드라인
+description: 프레젠테이션용 마크다운 파일 작성 시 참고할 가이드입니다.
+date: Nov 20, 2025
+tags: []
+---
+# 기본 구조
+## 슬라이드 구분
 `---`로 슬라이드를 구분합니다:
 
 ```markdown
 # 제목 슬라이드
-
 첫 번째 슬라이드 내용
 
 ---
 
-## 두 번째 슬라이드
-
+# 두 번째 슬라이드
 두 번째 슬라이드 내용
 
 ---
 
-## 세 번째 슬라이드
+# 세 번째 슬라이드
 
 세 번째 슬라이드 내용
 ```
 
-### 파일명 규칙
-
+## 파일명 규칙
 - **메인 섹션**: `XX-title.md` (예: `01-opening.md`, `02-main-topic.md`)
 - **하위 섹션**: `XX.Y-title.md` (예: `02.1-subtopic.md`, `03.2-details.md`)
 
-## 마크다운 문법
 
-### 제목
-
-```markdown
-# H1 제목
-## H2 제목
-### H3 제목
-```
-
-### 강조
-
-```markdown
-**굵게** 또는 __굵게__
-*기울임* 또는 _기울임_
-`코드`
-```
-
-### 리스트
-
-```markdown
-- 순서 없는 리스트 항목 1
-- 순서 없는 리스트 항목 2
-  - 중첩된 항목
-
-1. 순서 있는 리스트 항목 1
-2. 순서 있는 리스트 항목 2
-   - 혼합 가능
-```
-
-### 테이블
-
-```markdown
-| 헤더1 | 헤더2 | 헤더3 |
-|-------|-------|-------|
-| 내용1 | 내용2 | 내용3 |
-| 내용4 | 내용5 | 내용6 |
-```
-
-### 코드 블록
-
-````markdown
-```javascript
-function hello() {
-  console.log("Hello World!");
-}
-```
-
-```python
-def hello():
-    print("Hello World!")
-```
-````
-
-### Mermaid 다이어그램
+## Mermaid 다이어그램
 
 Mermaid를 사용하여 다이어그램을 그릴 수 있습니다:
 
@@ -137,18 +81,9 @@ graph TD;
 
 </div>
 
-* cf)
-```
-<div style="margin:15px auto; max-width:400px;">
-<div style="float:right; margin-left:15px; max-width:400px;">
-<div style="float:right; margin-left:15px; width:50%;">
 
-![test](img/test.png) 
-<div style="margin:0px auto; max-width:400px;">
-![test](img/test.png)
-</div> 
-```
-## 개발 방식의 변화
+
+# 개발 방식의 변화
 
 Mermaid 다이어그램이 오른쪽에 표시되고, 텍스트는 왼쪽에 배치됩니다.
 
@@ -177,16 +112,16 @@ pie title 사용 비율
 </div>
 ````
 
-### 인용구
+## 인용구
 
 ```markdown
 > 인용문은 이렇게 작성합니다.
 > 여러 줄에 걸쳐서 작성할 수 있습니다.
 ```
 
-## 이미지 활용
+# 이미지 활용
 
-### 기본 이미지
+## 기본 이미지
 
 ```markdown
 ![이미지 설명](img/test.png)
@@ -194,14 +129,14 @@ pie title 사용 비율
 
 이미지 파일은 `markdown/img/` 폴더에 저장하면 자동으로 `slide/img/`로 복사됩니다.
 
-### 오른쪽에 이미지 1장 추가
+## 오른쪽에 이미지 1장 추가
 
 텍스트와 함께 이미지를 오른쪽에 배치:
 
 ```markdown
 <img src="img/test.png" style="float:right; margin-left:15px;" width="200" />
 
-## 제목
+# 제목
 
 이미지가 오른쪽에 표시되고, 텍스트는 왼쪽에 배치됩니다.
 
@@ -210,7 +145,7 @@ pie title 사용 비율
 - 리스트 항목 3
 ```
 
-### 오른쪽에 이미지 2장 추가 (세로 배치)
+## 오른쪽에 이미지 2장 추가 (세로 배치)
 
 여러 이미지를 오른쪽에 세로로 배치:
 
@@ -221,7 +156,7 @@ pie title 사용 비율
   <img src="img/test.png" width="200" />
 </div>
 
-## 제목
+# 제목
 
 두 개의 이미지가 오른쪽에 세로로 표시됩니다.
 
@@ -231,7 +166,7 @@ pie title 사용 비율
 - 포인트 3
 ```
 
-### 중앙 정렬 이미지
+## 중앙 정렬 이미지
 
 ```markdown
 <div style="text-align:center;">
@@ -239,7 +174,7 @@ pie title 사용 비율
 </div>
 ```
 
-### 이미지 크기 조절
+## 이미지 크기 조절
 
 ```markdown
 <!-- 너비 지정 -->
@@ -252,22 +187,92 @@ pie title 사용 비율
 <img src="img/test.png" style="width:50%;" />
 ```
 
-## 레이아웃 팁
+## 이미지 한개 (안정적 렌더링 버전)
 
-### 2단 레이아웃
+### Flex 기반(추천)
 
+```html
+<div style="display:flex; justify-content:center; margin:20px 0;">
+  ![alt text](img/01-opening.png)
+</div>
+```
+
+## 이미지 두개(좌우 정렬)
+
+```html
+<div style="display:flex; justify-content:space-between; gap:20px; margin:20px 0;">
+  ![alt text](img/01-opening.png)
+  ![alt text](img/01-opening.png)
+</div>
+```
+
+## 이미지 여러개(정중앙)
+
+```html
+<div style="text-align:center; margin:20px 0;">
+  ![alt text](img/01-opening.png)
+</div>
+```
+
+
+
+
+## 양쪽 이미지 배치
+### 이미너비 살리기
+```markdown
+---
+<div style="float:left; width:35%;">
+  ![alt text](img/chatgpt-logo.png)
+  ![alt text](img/gemini-logo.png)
+</div>
+
+<div style="float:right; width:35%;">
+  ![alt text](img/cline-logo.png)
+  ![alt text](img/claude-logo.png)
+</div>
+**0세대 (채팅 기반)**
+**1세대 (IDE 통합)**
+**2세대 (CLI 기반)**
+
+```
+![alt text](img/README-1.png)
+
+### 너비우선
+```markdown
+---
+# 세대별 대표 도구2
+<div style="display:flex; justify-content:space-between; align-items:center;">
+  <div style="width:150px;">
+    <img src="img/chatgpt-logo.png" style="width:100%;">
+    <img src="img/gemini-logo.png" style="width:100%; margin-top:10px;">
+  </div>
+  <div>
+    **0세대 (채팅 기반)**  
+    **1세대 (IDE 통합)**  
+    **2세대 (CLI 기반)**
+  </div>
+  <div style="width:150px; text-align:right;">
+    <img src="img/cline-logo.png" style="width:100%;">
+    <img src="img/claude-logo.png" style="width:100%; margin-top:10px;">
+  </div>
+</div>
+```
+![alt text](img/README.png)
+
+# 레이아웃 팁
+## 2단 레이아웃
 ```markdown
 <div style="display:flex; gap:20px;">
   <div style="flex:1;">
 
-### 왼쪽 내용
+## 왼쪽 내용
 - 항목 1
 - 항목 2
 
   </div>
   <div style="flex:1;">
 
-### 오른쪽 내용
+## 오른쪽 내용
 - 항목 A
 - 항목 B
 
@@ -275,8 +280,7 @@ pie title 사용 비율
 </div>
 ```
 
-### 텍스트와 이미지 나란히
-
+## 텍스트와 이미지 나란히
 ```markdown
 <div style="display:flex; align-items:center; gap:20px;">
   <div style="flex:1;">
@@ -292,10 +296,8 @@ pie title 사용 비율
 </div>
 ```
 
-## 작성 원칙
-
-### 청중 배포용 문서
-
+# 작성 원칙
+## 청중 배포용 문서
 md 파일은 **청중 배포용 참고 자료**이므로:
 
 ❌ **사용하지 말 것**:
@@ -308,11 +310,11 @@ md 파일은 **청중 배포용 참고 자료**이므로:
 - 완결된 정보 제공 (독립적으로 읽을 수 있도록)
 - 명확하고 구조화된 내용
 
-### 예시
+## 예시
 
 **❌ 잘못된 예**:
 ```markdown
-## 여러분과 함께 알아볼 내용
+# 여러분과 함께 알아볼 내용
 
 오늘은 AI 코딩에 대해 알아보겠습니다.
 Let's dive in!
@@ -320,35 +322,34 @@ Let's dive in!
 
 **✅ 올바른 예**:
 ```markdown
-## AI 코딩 도구의 발전
+# AI 코딩 도구의 발전
 
 AI 코딩 도구는 2022년부터 급격히 발전했습니다.
 ```
 
-## AGENDA.md 작성
+# AGENDA.md 작성
 
 목차 파일은 인라인 링크 형식을 사용합니다:
 
 ```markdown
 # 프레젠테이션 제목
 
-## [1. 오프닝](./01-opening.md)
+# [1. 오프닝](./01-opening.md)
 
-## [2. 주요 내용](./02-main-topic.md)
-### [2.1 세부 항목](./02.1-subtopic.md)
-### [2.2 추가 항목](./02.2-details.md)
+# [2. 주요 내용](./02-main-topic.md)
+## [2.1 세부 항목](./02.1-subtopic.md)
+## [2.2 추가 항목](./02.2-details.md)
 
-## [3. 마무리](./03-closing.md)
+# [3. 마무리](./03-closing.md)
 ```
 
 **규칙**:
-- 메인 섹션: `## [제목](./파일명.md)`
-- 하위 섹션: `### [제목](./파일명.md)` (메인 섹션 바로 아래)
+ 메인 섹션: `## [제목](./파일명.md)`
+ 하위 섹션: `### [제목](./파일명.md)` (메인 섹션 바로 아래)
 - 상대 경로는 `./` 사용
 
-## 스타일 가이드
-
-### 폰트 크기 조정
+# 스타일 가이드
+## 폰트 크기 조정
 
 ```markdown
 <div style="font-size:0.8em;">
@@ -360,7 +361,7 @@ AI 코딩 도구는 2022년부터 급격히 발전했습니다.
 </div>
 ```
 
-### 색상 강조
+## 색상 강조
 
 ```markdown
 <span style="color:#e74c3c;">중요한 내용</span>
@@ -368,7 +369,7 @@ AI 코딩 도구는 2022년부터 급격히 발전했습니다.
 <span style="color:#2ecc71;">성공 메시지</span>
 ```
 
-### 박스 스타일
+## 박스 스타일
 
 ```markdown
 <div style="border:2px solid #3498db; padding:15px; border-radius:5px; background:#f0f8ff;">
@@ -380,7 +381,7 @@ AI 코딩 도구는 2022년부터 급격히 발전했습니다.
 </div>
 ```
 
-## 체크리스트
+# 체크리스트
 
 파일 작성 전:
 - [ ] 파일명이 규칙에 맞는지 확인 (`XX-title.md` 또는 `XX.Y-title.md`)
@@ -395,7 +396,7 @@ AI 코딩 도구는 2022년부터 급격히 발전했습니다.
 - [ ] 이미지가 정상 표시되는지 확인
 - [ ] 네비게이션(화살표 키)이 정상 작동하는지 확인
 
-## 참고 자료
+# 참고 자료
 
 - [Reveal.js 공식 문서](https://revealjs.com/)
 - [Markdown 기본 문법](https://www.markdownguide.org/basic-syntax/)
