@@ -47,6 +47,13 @@
       line-height: 1.6;
       margin: 0.3em 0;
       color: #333;
+      list-style-type: '- ';
+    }
+    .reveal li.bullet-dot {
+      list-style-type: '· ';
+    }
+    .reveal ul ul {
+      margin: 0.3em 0;
     }
     .reveal strong {
       color: #222;
@@ -154,6 +161,21 @@
     .nav-up-btn span {
       font-family: inherit;
     }
+    /* Last slide message */
+    #last-slide-message {
+      display: none;
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-size: 16px;
+      z-index: 1000;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -169,6 +191,8 @@
     <h1>5. 세대별 비교 및 선택 가이드</h1>
     <svg id="toc-mindmap"></svg>
   </div>
+
+  <div id="last-slide-message">마지막 페이지입니다. 다음 챕터로 이동하려면 다시 →를 누르세요.</div>
 
   <div class="reveal">
     <div class="slides">
@@ -228,9 +252,9 @@
 <pre><code>추천: 1세대 (Cursor)
 
 이유:
-- GUI 환경이 직관적
-- 시각적 피드백으로 학습 효과
-- 코드 변경사항 쉽게 확인</code></pre>
+* GUI 환경이 직관적
+* 시각적 피드백으로 학습 효과
+* 코드 변경사항 쉽게 확인</code></pre>
       </section>
 
       <section>
@@ -252,9 +276,9 @@
 <pre><code>추천: 2세대 (Claude Code) 주력
 
 이유:
-- 생산성 극대화
-- 멀티 프로젝트 관리
-- 자동화 워크플로우 구축</code></pre>
+* 생산성 극대화
+* 멀티 프로젝트 관리
+* 자동화 워크플로우 구축</code></pre>
       </section>
 
       <section>
@@ -264,9 +288,9 @@
 <pre><code>추천: 2세대 + 1세대 보조
 
 전략:
-- Claude Code로 대부분 작업
-- 복잡한 UI는 Cursor로 시각 확인
-- 팀 전체의 워크플로우 최적화</code></pre>
+* Claude Code로 대부분 작업
+* 복잡한 UI는 Cursor로 시각 확인
+* 팀 전체의 워크플로우 최적화</code></pre>
       </section>
 
       <section>
@@ -276,17 +300,17 @@
 <pre><code>추천: 2세대 (Gemini CLI/Claude Code)
 
 이유:
-- 인프라 자동화 필수
-- 서버 환경 작업
-- 스크립트 기반 작업</code></pre>
+* 인프라 자동화 필수
+* 서버 환경 작업
+* 스크립트 기반 작업</code></pre>
 
 <p><strong>프론트엔드 전문가</strong></p>
 <pre><code>추천: 1세대 (Cursor) 주력
 
 이유:
-- UI 프리뷰 필수
-- 디자인 시스템 작업
-- 브라우저 DevTools 활용</code></pre>
+* UI 프리뷰 필수
+* 디자인 시스템 작업
+* 브라우저 DevTools 활용</code></pre>
       </section>
 
       <section>
@@ -352,9 +376,9 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
 
 <p><strong>1세대 → 2세대 전환</strong></p>
 <ul>
-<li>학습 시간: 약 1주일</li>
-<li>생산성 회복: 2-3주</li>
-<li>총 전환 비용: 약 20-30시간</li>
+<li class="bullet-dot">학습 시간: 약 1주일</li>
+<li class="bullet-dot">생산성 회복: 2-3주</li>
+<li class="bullet-dot">총 전환 비용: 약 20-30시간</li>
 </ul>
 
 <p><strong>예상 회수 기간</strong>: 첫 달 내 회수 가능</p>
@@ -367,9 +391,9 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
 
 <p><strong>빠른 가이드</strong>:</p>
 <ul>
-<li>소규모 (1-5명): 개인 선택 존중, 경험 공유</li>
-<li>중형 (6-20명): 역할별 표준화</li>
-<li>대형 (20명+): 공식 도구 선정, 전담 교육</li>
+<li class="bullet-dot">소규모 (1-5명): 개인 선택 존중, 경험 공유</li>
+<li class="bullet-dot">중형 (6-20명): 역할별 표준화</li>
+<li class="bullet-dot">대형 (20명+): 공식 도구 선정, 전담 교육</li>
 </ul>
       </section>
 
@@ -397,14 +421,14 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
 
 <p><strong>ChatGPT → Cursor</strong></p>
 <ul>
-<li>준비: VSCode 경험, Git 기초</li>
-<li>적응 기간: 1-2일</li>
+<li class="bullet-dot">준비: VSCode 경험, Git 기초</li>
+<li class="bullet-dot">적응 기간: 1-2일</li>
 </ul>
 
 <p><strong>Cursor → Claude Code</strong></p>
 <ul>
-<li>준비: 터미널 명령어, Git 중급, API 키</li>
-<li>적응 기간: 1주일</li>
+<li class="bullet-dot">준비: 터미널 명령어, Git 중급, API 키</li>
+<li class="bullet-dot">적응 기간: 1주일</li>
 </ul>
 
 <p><strong>상세 도입 가이드는 7장 참조</strong></p>
@@ -417,10 +441,10 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
 
 <p><strong>핵심 질문</strong>:</p>
 <ul>
-<li>두 도구 동시 사용 가능? → 권장</li>
-<li>무료 대안? → ChatGPT, Cline</li>
-<li>회사 도입? → 파일럿 프로젝트부터</li>
-<li>보안? → 민감 정보 공유 금지, 기업용 라이선스 고려</li>
+<li class="bullet-dot">두 도구 동시 사용 가능? → 권장</li>
+<li class="bullet-dot">무료 대안? → ChatGPT, Cline</li>
+<li class="bullet-dot">회사 도입? → 파일럿 프로젝트부터</li>
+<li class="bullet-dot">보안? → 민감 정보 공유 금지, 기업용 라이선스 고려</li>
 </ul>
       </section>
 
@@ -599,7 +623,11 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
       updateTocVisibility();
     });
 
-    // Connect up arrow key to parent page navigation
+    // Last slide message state
+    var lastSlideMessageShown = false;
+    var lastSlideMessage = document.getElementById('last-slide-message');
+
+    // Connect keyboard navigation
     document.addEventListener('keydown', function(event) {
       // Check if up arrow key is pressed
       if (event.key === 'ArrowUp' || event.keyCode === 38) {
@@ -614,6 +642,34 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
           }
         }
       }
+
+      // Check if right arrow key is pressed
+      if (event.key === 'ArrowRight' || event.keyCode === 39) {
+        var totalSlides = Reveal.getTotalSlides();
+        var currentSlide = Reveal.getIndices();
+        var currentSlideNumber = Reveal.getSlidePastCount() + 1;
+
+        // Check if on last slide
+        if (currentSlideNumber >= totalSlides) {
+          if (lastSlideMessageShown) {
+            // Second press: navigate to next chapter
+            lastSlideMessage.style.display = 'none';
+            lastSlideMessageShown = false;
+            window.location.href = '06-practical-cases.html';
+          } else {
+            // First press: show message
+            event.preventDefault();
+            lastSlideMessage.style.display = 'block';
+            lastSlideMessageShown = true;
+          }
+        }
+      }
+    });
+
+    // Hide message when slide changes
+    Reveal.on('slidechanged', function() {
+      lastSlideMessage.style.display = 'none';
+      lastSlideMessageShown = false;
     });
   </script>
 </body>

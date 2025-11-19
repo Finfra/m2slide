@@ -47,6 +47,13 @@
       line-height: 1.6;
       margin: 0.3em 0;
       color: #333;
+      list-style-type: '- ';
+    }
+    .reveal li.bullet-dot {
+      list-style-type: '· ';
+    }
+    .reveal ul ul {
+      margin: 0.3em 0;
     }
     .reveal strong {
       color: #222;
@@ -154,6 +161,21 @@
     .nav-up-btn span {
       font-family: inherit;
     }
+    /* Last slide message */
+    #last-slide-message {
+      display: none;
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-size: 16px;
+      z-index: 1000;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -170,6 +192,8 @@
     <svg id="toc-mindmap"></svg>
   </div>
 
+  <div id="last-slide-message">마지막 페이지입니다. 다음 챕터로 이동하려면 다시 →를 누르세요.</div>
+
   <div class="reveal">
     <div class="slides">
 
@@ -180,14 +204,14 @@
 
 <p><strong>2022년 11월 ChatGPT 출시</strong></p>
 <ul>
-<li>개발자들이 AI와 상호작용하는 방식의 근본적 변화</li>
+<li class="bullet-dot">개발자들이 AI와 상호작용하는 방식의 근본적 변화</li>
 </ul>
 
 <p><strong>대표 툴</strong></p>
 <ul>
-<li>ChatGPT (OpenAI)</li>
-<li>Bard (Google)</li>
-<li>Claude (Anthropic)</li>
+<li class="bullet-dot">ChatGPT (OpenAI)</li>
+<li class="bullet-dot">Bard (Google)</li>
+<li class="bullet-dot">Claude (Anthropic)</li>
 </ul>
       </section>
 
@@ -214,16 +238,16 @@ graph LR
 
 <p><strong>장점</strong></p>
 <ul>
-<li>순수 대화형 인터페이스</li>
-<li>웹 브라우저 기반으로 접근 용이</li>
+<li class="bullet-dot">순수 대화형 인터페이스</li>
+<li class="bullet-dot">웹 브라우저 기반으로 접근 용이</li>
 </ul>
 
 <p><strong>한계</strong></p>
 <ul>
-<li>프로젝트 컨텍스트 단절</li>
-<li>복사-붙여넣기 반복 작업</li>
-<li>파일 간 의존성 파악 불가</li>
-<li>멀티파일 작업 불가능</li>
+<li class="bullet-dot">프로젝트 컨텍스트 단절</li>
+<li class="bullet-dot">복사-붙여넣기 반복 작업</li>
+<li class="bullet-dot">파일 간 의존성 파악 불가</li>
+<li class="bullet-dot">멀티파일 작업 불가능</li>
 </ul>
       </section>
 
@@ -236,9 +260,9 @@ AI가 코드를 작성할 수 있다는 개념을 대중화시킨<br>
 </blockquote>
 
 <ul>
-<li>코드 조각 중심의 도움</li>
-<li>학습 도구로서의 가치</li>
-<li>다음 세대를 위한 토대</li>
+<li class="bullet-dot">코드 조각 중심의 도움</li>
+<li class="bullet-dot">학습 도구로서의 가치</li>
+<li class="bullet-dot">다음 세대를 위한 토대</li>
 </ul>
       </section>
 
@@ -394,7 +418,11 @@ AI가 코드를 작성할 수 있다는 개념을 대중화시킨<br>
       updateTocVisibility();
     });
 
-    // Connect up arrow key to parent page navigation
+    // Last slide message state
+    var lastSlideMessageShown = false;
+    var lastSlideMessage = document.getElementById('last-slide-message');
+
+    // Connect keyboard navigation
     document.addEventListener('keydown', function(event) {
       // Check if up arrow key is pressed
       if (event.key === 'ArrowUp' || event.keyCode === 38) {
@@ -409,6 +437,34 @@ AI가 코드를 작성할 수 있다는 개념을 대중화시킨<br>
           }
         }
       }
+
+      // Check if right arrow key is pressed
+      if (event.key === 'ArrowRight' || event.keyCode === 39) {
+        var totalSlides = Reveal.getTotalSlides();
+        var currentSlide = Reveal.getIndices();
+        var currentSlideNumber = Reveal.getSlidePastCount() + 1;
+
+        // Check if on last slide
+        if (currentSlideNumber >= totalSlides) {
+          if (lastSlideMessageShown) {
+            // Second press: navigate to next chapter
+            lastSlideMessage.style.display = 'none';
+            lastSlideMessageShown = false;
+            window.location.href = '02.2.ide-integration.html';
+          } else {
+            // First press: show message
+            event.preventDefault();
+            lastSlideMessage.style.display = 'block';
+            lastSlideMessageShown = true;
+          }
+        }
+      }
+    });
+
+    // Hide message when slide changes
+    Reveal.on('slidechanged', function() {
+      lastSlideMessage.style.display = 'none';
+      lastSlideMessageShown = false;
     });
   </script>
 </body>
