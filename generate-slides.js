@@ -569,8 +569,15 @@ function generateHTML(filePath, agendaPath) {
     }
     .reveal .kroki svg {
       max-width: 100%;
-      max-height: 500px;
       height: auto;
+      max-height: none; /* allow full height; wrapper will scroll if needed */
+    }
+    /* Scroll wrapper for tall diagrams */
+    .graph-scroll {
+      overflow-y: auto;
+      max-height: calc(100vh - 160px);
+      box-sizing: border-box;
+      padding-right: 6px; /* preserve content when scrollbar overlays */
     }
     /* TOC container outside Reveal.js for Safari compatibility */
     #toc-container {
@@ -739,7 +746,7 @@ ${slidesHTML}
           try {
             mermaid.render(graphId, graphDefinition).then(function(result) {
               if (result && result.svg) {
-                element.innerHTML = result.svg;
+                element.innerHTML = '<div class="graph-scroll">' + result.svg + '</div>';
               }
             }).catch(function(error) {
               console.error('Mermaid rendering error for diagram ' + index + ':', error);
@@ -783,7 +790,7 @@ ${slidesHTML}
             return response.text();
           })
           .then(function(svg) {
-            element.innerHTML = svg;
+            element.innerHTML = '<div class="graph-scroll">' + svg + '</div>';
           })
           .catch(function(error) {
             console.error('Kroki rendering error for ' + diagramType + ' diagram ' + index + ':', error);
