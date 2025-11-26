@@ -350,59 +350,67 @@ function getNextChapter(fileName, agendaPath) {
   }
 }
 
-// Generate table of contents data for markmap
-function generateTOC(slides, fileName, agendaPath) {
-  const tocItems = slides.slice(1)
-    .map((slide, index) => {
-      const slideNum = index + 1;
-      let label = `슬라이드 ${slideNum}`;
+// Generate table of contents data for markmap (root → H1 → H2)
+function generateTOCFromFile(filePath, agendaPath) {
+  const content = fs.readFileSync(filePath, 'utf-8');
+  const lines = content.split('\n');
 
-      // Extract header from slide
-      const headerMatch = slide.content.match(/^## (.+)$/m);
-      if (headerMatch) {
-        const originalLabel = headerMatch[1];
+  const sections = [];
+  let currentSection = null;
+  let inCode = false;
+  let slideIndex = 0;
 
-        // Skip slides with "(계속)", "(예속)" etc. in their titles
-        if (/\([^)]*계속[^)]*\)|\([^)]*예속[^)]*\)/.test(originalLabel)) {
-          return null;
-        }
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
 
-        label = originalLabel;
+    // Toggle code fence state
+    if (line.trim().startsWith('```')) {
+      inCode = !inCode;
+      continue;
+    }
+    if (inCode) continue;
+
+    // Count slide separators to map headings → slide index
+    if (/^---\s*$/.test(line)) {
+      slideIndex += 1;
+      continue;
+    }
+
+    // H1 becomes a branch
+    const h1 = line.match(/^# (.+)$/);
+    if (h1) {
+      currentSection = { content: h1[1], children: [] };
+      sections.push(currentSection);
+      continue;
+    }
+
+    // H2 becomes a child pointing to that slide
+    const h2 = line.match(/^## (.+)$/);
+    if (h2) {
+      if (!currentSection) {
+        currentSection = { content: '', children: [] };
+        sections.push(currentSection);
       }
-
-      return {
-        content: `<a href="#/${slideNum}">${label}</a>`,
+      const title = h2[1];
+      currentSection.children.push({
+        content: `<a href="#/${slideIndex}">${title}</a>`,
         children: []
-      };
-    })
-    .filter(item => item !== null); // Remove null items
+      });
+      continue;
+    }
+  }
 
-  // Add subsections if they exist
+  // Include subsections from AGENDA (if any)
+  const fileName = path.basename(filePath);
   const subsections = getSubsections(fileName, agendaPath);
   if (subsections.length > 0) {
-    const subsectionNodes = subsections.map(sub => ({
-      content: `<a href="${sub.htmlFile}">${sub.title}</a>`,
-      children: []
-    }));
-
-    tocItems.push({
-      content: "하위 챕터",
-      children: subsectionNodes
+    sections.push({
+      content: '하위 챕터',
+      children: subsections.map(sub => ({ content: `<a href="${sub.htmlFile}">${sub.title}</a>`, children: [] }))
     });
   }
 
-  // Use the document title (first slide title) as a grouping node
-  const title = (slides[0] && slides[0].title) ? slides[0].title : fileName.replace(/\.md$/, '');
-
-  return {
-    content: "",
-    children: [
-      {
-        content: title,
-        children: tocItems
-      }
-    ]
-  };
+  return { content: '', children: sections };
 }
 
 // Generate HTML slide from parsed slide
@@ -432,7 +440,7 @@ ${html}
 function generateHTML(filePath, agendaPath) {
   const slides = parseMarkdownFile(filePath);
   const fileName = path.basename(filePath);
-  const tocData = generateTOC(slides, fileName, agendaPath);
+  const tocData = generateTOCFromFile(filePath, agendaPath);
 
   // Check if AGENDA.md exists
   const hasAgenda = agendaPath && fs.existsSync(agendaPath);
