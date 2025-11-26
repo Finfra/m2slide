@@ -4,3 +4,7 @@
 # Default project name (used by convert.sh and deploy.sh)
 # Project path will be: Projects/{current_project}
 current_project: LlmAndVibeCoding
+\n+# Optional: force top alignment of slide content
+# When true, generated HTML adds a 'top-align-mode' class which overrides
+# Reveal's vertical centering for the current slide. Use with care.
+top_align: false
