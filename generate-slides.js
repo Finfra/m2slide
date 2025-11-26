@@ -526,13 +526,14 @@ function generateHTML(filePath, agendaPath) {
     .reveal .slides section::-webkit-scrollbar-thumb:hover {
       background: rgba(0, 0, 0, 0.5);
     }
+    /* Markmap SVG baseline (allow container to control size) */
     #toc-mindmap {
-      width: 100% !important;
-      height: 500px !important;
-      max-width: 100% !important;
-      max-height: 500px !important;
-      overflow: hidden !important;
-      display: block !important;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      overflow: hidden;
+      display: block;
     }
     #toc-mindmap a {
       text-decoration: none;
@@ -576,7 +577,7 @@ function generateHTML(filePath, agendaPath) {
     }
     #toc-container #toc-mindmap {
       width: 100%;
-      height: calc(100% - 120px);
+      height: calc(100% - 120px); /* fill under the title */
     }
     #toc-container a {
       text-decoration: none;
@@ -780,6 +781,7 @@ ${slidesHTML}
     var tocContainer = document.getElementById('toc-container');
     var tocData = ${JSON.stringify(tocData, null, 6)};
     var markmapInitialized = false;
+    var markmapInstance = null;
 
     // Function to toggle TOC visibility based on current slide
     function updateTocVisibility() {
@@ -790,8 +792,17 @@ ${slidesHTML}
 
         // Initialize markmap on first show
         if (!markmapInitialized && window.markmap && tocContainer) {
-          window.markmap.Markmap.create('#toc-mindmap', {}, tocData);
+          // Create with autoFit so it fills available space
+          markmapInstance = window.markmap.Markmap.create('#toc-mindmap', { autoFit: true, fitRatio: 1 }, tocData);
           markmapInitialized = true;
+          // Ensure fit after layout settles
+          requestAnimationFrame(function () {
+            if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
+          });
+          setTimeout(function(){ if (markmapInstance && markmapInstance.fit) markmapInstance.fit(); }, 50);
+        } else if (markmapInitialized && markmapInstance && markmapInstance.fit) {
+          // Re-fit when returning to the first slide
+          requestAnimationFrame(function () { markmapInstance.fit(); });
         }
       } else {
         // Other slides: hide TOC container
@@ -807,6 +818,11 @@ ${slidesHTML}
     // Update on slide change
     Reveal.on('slidechanged', function() {
       updateTocVisibility();
+    });
+
+    // Keep Markmap fitted on window resize
+    window.addEventListener('resize', function(){
+      if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
     });
 
     // Last slide message state
