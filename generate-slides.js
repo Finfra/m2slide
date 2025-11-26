@@ -779,12 +779,7 @@ ${slidesHTML}
     // Initialize markmap for table of contents (outside Reveal.js for Safari compatibility)
     var tocContainer = document.getElementById('toc-container');
     var tocData = ${JSON.stringify(tocData, null, 6)};
-
-    setTimeout(function() {
-      if (window.markmap && tocContainer) {
-        window.markmap.Markmap.create('#toc-mindmap', {}, tocData);
-      }
-    }, 200);
+    var markmapInitialized = false;
 
     // Function to toggle TOC visibility based on current slide
     function updateTocVisibility() {
@@ -792,6 +787,12 @@ ${slidesHTML}
       if (currentSlide.h === 0 && currentSlide.v === 0) {
         // First slide: show TOC container
         tocContainer.style.display = 'block';
+
+        // Initialize markmap on first show
+        if (!markmapInitialized && window.markmap && tocContainer) {
+          window.markmap.Markmap.create('#toc-mindmap', {}, tocData);
+          markmapInitialized = true;
+        }
       } else {
         // Other slides: hide TOC container
         tocContainer.style.display = 'none';
