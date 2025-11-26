@@ -23,10 +23,9 @@
 .reveal .slides section.present,
 .reveal .slides section.past,
 .reveal .slides section.future {
-  overflow-y: auto !important;
-  max-height: 100vh !important;
-  /* 오른쪽 패딩을 0으로 하여 스크롤바가 화면 우측 끝에 위치 */
-  padding: 20px 0 80px 60px !important;
+  /* 섹션 자체에는 스크롤을 주지 않고, 콘텐츠 래퍼(.graph-scroll)만 스크롤 */
+  overflow-y: visible !important;
+  padding: 20px 60px 80px 60px !important;
   box-sizing: border-box !important;
 }
 .reveal .slides section::-webkit-scrollbar { width: 8px; }
