@@ -117,7 +117,15 @@ function convertMarkdownToHTML(markdown) {
         html.push('<div class="mermaid">');
         html.push(codeLines.join('\n'));
         html.push('</div>');
-      } else {
+      }
+      // Special handling for Kroki diagrams
+      else if (['blockdiag', 'seqdiag', 'actdiag', 'nwdiag', 'packetdiag', 'rackdiag',
+                'ditaa', 'dot', 'graphviz', 'vega', 'vegalite', 'plantuml'].includes(lang)) {
+        html.push(`<div class="kroki" data-type="${lang}">`);
+        html.push(codeLines.join('\n'));
+        html.push('</div>');
+      }
+      else {
         // Regular code block
         const langClass = lang ? ` class="language-${lang}"` : '';
         html.push(`<pre><code${langClass}>` + codeLines.join('\n') + '</code></pre>');
@@ -178,9 +186,26 @@ function processInline(text) {
   return text;
 }
 
-// Check if content is a table
+// Check if content is a table (excluding pipes inside code blocks)
 function isTable(content) {
-  return content.includes('|') && content.includes('---');
+  // Remove code blocks first
+  const withoutCodeBlocks = content.replace(/```[\s\S]*?```/g, '');
+
+  // Check if there are pipes outside code blocks
+  if (!withoutCodeBlocks.includes('|')) {
+    return false;
+  }
+
+  // Check for markdown table structure (pipes + header separator)
+  const lines = withoutCodeBlocks.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    // Table header separator line: |---|---|
+    if (lines[i].match(/^\s*\|?[\s\-:|]+\|\s*$/)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 // Parse markdown file into slides
@@ -400,8 +425,11 @@ function generateHTML(filePath, agendaPath) {
   const slides = parseMarkdownFile(filePath);
   const fileName = path.basename(filePath);
   const tocData = generateTOC(slides, fileName, agendaPath);
-  const parentPage = getParentPage(fileName, agendaPath);
-  const nextChapter = getNextChapter(fileName, agendaPath);
+
+  // Check if AGENDA.md exists
+  const hasAgenda = agendaPath && fs.existsSync(agendaPath);
+  const parentPage = hasAgenda ? getParentPage(fileName, agendaPath) : '';
+  const nextChapter = hasAgenda ? getNextChapter(fileName, agendaPath) : '';
   const title = slides[0].title || path.basename(filePath, '.md');
 
   const slidesHTML = slides.map(generateSlideHTML).join('\n\n');
@@ -515,6 +543,18 @@ function generateHTML(filePath, agendaPath) {
       font-size: 16px !important;
       font-weight: 500;
     }
+    /* Kroki diagrams */
+    .reveal .kroki {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 1em 0;
+    }
+    .reveal .kroki svg {
+      max-width: 100%;
+      max-height: 500px;
+      height: auto;
+    }
     /* TOC container outside Reveal.js for Safari compatibility */
     #toc-container {
       display: none;
@@ -587,12 +627,12 @@ function generateHTML(filePath, agendaPath) {
   </style>
 </head>
 <body>
-  <a href="${parentPage}" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
+  ${parentPage ? `<a href="${parentPage}" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
     <svg viewBox="0 0 24 24">
       <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
     </svg>
     <span>상위</span>
-  </a>
+  </a>` : ''}
 
   <!-- TOC container outside Reveal.js for Safari compatibility -->
   <div id="toc-container">
@@ -616,7 +656,7 @@ ${slidesHTML}
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>
     Reveal.initialize({
       hash: true,
@@ -692,6 +732,48 @@ ${slidesHTML}
           }
         });
       }
+
+      // Render all Kroki diagrams
+      const allKrokiElements = document.querySelectorAll('.kroki');
+      if (allKrokiElements && allKrokiElements.length > 0) {
+        allKrokiElements.forEach(function(element, index) {
+          // Skip if already rendered
+          if (element.querySelector('svg') || element.querySelector('img')) {
+            return;
+          }
+
+          const diagramType = element.getAttribute('data-type');
+          const diagramSource = element.textContent.trim();
+
+          if (!diagramType || !diagramSource) {
+            return;
+          }
+
+          // Use Kroki API with POST to specific endpoint
+          const apiUrl = 'https://kroki.io/' + diagramType + '/svg';
+
+          fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'text/plain',
+            },
+            body: diagramSource
+          })
+          .then(function(response) {
+            if (!response.ok) {
+              throw new Error('Kroki API error: ' + response.status);
+            }
+            return response.text();
+          })
+          .then(function(svg) {
+            element.innerHTML = svg;
+          })
+          .catch(function(error) {
+            console.error('Kroki rendering error for ' + diagramType + ' diagram ' + index + ':', error);
+            element.innerHTML = '<p style="color: red;">Failed to render ' + diagramType + ' diagram. Error: ' + error.message + '</p>';
+          });
+        });
+      }
     });
 
     // Initialize markmap for table of contents (outside Reveal.js for Safari compatibility)
@@ -735,12 +817,11 @@ ${slidesHTML}
       // Check if up arrow key is pressed
       if (event.key === 'ArrowUp' || event.keyCode === 38) {
         var currentSlide = Reveal.getIndices();
-        // Only navigate to parent if there are no vertical slides
+        // Only navigate to parent if there are no vertical slides and parent exists
         if (currentSlide.v === 0) {
-          event.preventDefault();
-          // Navigate to parent page
           var navLink = document.getElementById('nav-up-link');
           if (navLink) {
+            event.preventDefault();
             window.location.href = navLink.href;
           }
         }
@@ -751,19 +832,25 @@ ${slidesHTML}
         var totalSlides = Reveal.getTotalSlides();
         var currentSlide = Reveal.getIndices();
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
+        var hasNextChapter = '${nextChapter}' !== '';
 
         // Check if on last slide
         if (currentSlideNumber >= totalSlides) {
-          if (lastSlideMessageShown) {
-            // Second press: navigate to next chapter
-            lastSlideMessage.style.display = 'none';
-            lastSlideMessageShown = false;
-            window.location.href = '${nextChapter}';
+          if (hasNextChapter) {
+            if (lastSlideMessageShown) {
+              // Second press: navigate to next chapter
+              lastSlideMessage.style.display = 'none';
+              lastSlideMessageShown = false;
+              window.location.href = '${nextChapter}';
+            } else {
+              // First press: show message
+              event.preventDefault();
+              lastSlideMessage.style.display = 'block';
+              lastSlideMessageShown = true;
+            }
           } else {
-            // First press: show message
+            // No next chapter - do nothing or show different message
             event.preventDefault();
-            lastSlideMessage.style.display = 'block';
-            lastSlideMessageShown = true;
           }
         }
       }

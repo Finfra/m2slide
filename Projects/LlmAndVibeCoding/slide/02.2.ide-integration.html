@@ -107,6 +107,18 @@
       font-size: 16px !important;
       font-weight: 500;
     }
+    /* Kroki diagrams */
+    .reveal .kroki {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 1em 0;
+    }
+    .reveal .kroki svg {
+      max-width: 100%;
+      max-height: 500px;
+      height: auto;
+    }
     /* TOC container outside Reveal.js for Safari compatibility */
     #toc-container {
       display: none;
@@ -286,7 +298,7 @@
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>
     Reveal.initialize({
       hash: true,
@@ -362,6 +374,48 @@
           }
         });
       }
+
+      // Render all Kroki diagrams
+      const allKrokiElements = document.querySelectorAll('.kroki');
+      if (allKrokiElements && allKrokiElements.length > 0) {
+        allKrokiElements.forEach(function(element, index) {
+          // Skip if already rendered
+          if (element.querySelector('svg') || element.querySelector('img')) {
+            return;
+          }
+
+          const diagramType = element.getAttribute('data-type');
+          const diagramSource = element.textContent.trim();
+
+          if (!diagramType || !diagramSource) {
+            return;
+          }
+
+          // Use Kroki API with POST to specific endpoint
+          const apiUrl = 'https://kroki.io/' + diagramType + '/svg';
+
+          fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'text/plain',
+            },
+            body: diagramSource
+          })
+          .then(function(response) {
+            if (!response.ok) {
+              throw new Error('Kroki API error: ' + response.status);
+            }
+            return response.text();
+          })
+          .then(function(svg) {
+            element.innerHTML = svg;
+          })
+          .catch(function(error) {
+            console.error('Kroki rendering error for ' + diagramType + ' diagram ' + index + ':', error);
+            element.innerHTML = '<p style="color: red;">Failed to render ' + diagramType + ' diagram. Error: ' + error.message + '</p>';
+          });
+        });
+      }
     });
 
     // Initialize markmap for table of contents (outside Reveal.js for Safari compatibility)
@@ -434,12 +488,11 @@
       // Check if up arrow key is pressed
       if (event.key === 'ArrowUp' || event.keyCode === 38) {
         var currentSlide = Reveal.getIndices();
-        // Only navigate to parent if there are no vertical slides
+        // Only navigate to parent if there are no vertical slides and parent exists
         if (currentSlide.v === 0) {
-          event.preventDefault();
-          // Navigate to parent page
           var navLink = document.getElementById('nav-up-link');
           if (navLink) {
+            event.preventDefault();
             window.location.href = navLink.href;
           }
         }
@@ -450,19 +503,25 @@
         var totalSlides = Reveal.getTotalSlides();
         var currentSlide = Reveal.getIndices();
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
+        var hasNextChapter = '02.3.cli-based.html' !== '';
 
         // Check if on last slide
         if (currentSlideNumber >= totalSlides) {
-          if (lastSlideMessageShown) {
-            // Second press: navigate to next chapter
-            lastSlideMessage.style.display = 'none';
-            lastSlideMessageShown = false;
-            window.location.href = '02.3.cli-based.html';
+          if (hasNextChapter) {
+            if (lastSlideMessageShown) {
+              // Second press: navigate to next chapter
+              lastSlideMessage.style.display = 'none';
+              lastSlideMessageShown = false;
+              window.location.href = '02.3.cli-based.html';
+            } else {
+              // First press: show message
+              event.preventDefault();
+              lastSlideMessage.style.display = 'block';
+              lastSlideMessageShown = true;
+            }
           } else {
-            // First press: show message
+            // No next chapter - do nothing or show different message
             event.preventDefault();
-            lastSlideMessage.style.display = 'block';
-            lastSlideMessageShown = true;
           }
         }
       }
