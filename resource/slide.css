@@ -25,7 +25,8 @@
 .reveal .slides section.future {
   overflow-y: auto !important;
   max-height: 100vh !important;
-  padding: 20px 60px 200px 60px !important;
+  /* 오른쪽 패딩을 0으로 하여 스크롤바가 화면 우측 끝에 위치 */
+  padding: 20px 0 200px 60px !important;
   box-sizing: border-box !important;
 }
 .reveal .slides section::-webkit-scrollbar { width: 8px; }
@@ -34,7 +35,17 @@
 .reveal .slides section::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.5); }
 
 .reveal .kroki { display: flex; justify-content: center; align-items: center; margin: 1em 0; }
-.reveal .kroki svg, .reveal .kroki img { max-width: 100%; height: auto; max-height: none; }
+.reveal .kroki svg, .reveal .kroki img,
+.reveal .mermaid svg {
+  display: block;
+  margin: 0 auto;
+  width: auto;
+  height: auto;
+  /* 화면 너비-패딩만큼만 확장 */
+  max-width: calc(100vw - 120px);
+  /* 세로는 (화면 높이-여유)와 3:2 캡 중 더 작은 값으로 제한 */
+  max-height: min(calc(100vh - 160px), calc((100vw - 120px) * 2 / 3));
+}
 .reveal .mermaid { display: block; margin: 0 auto; }
 .reveal .mermaid svg { display: block; margin: 0 auto; }
-.graph-scroll { overflow-y: auto; max-height: calc(100vh - 160px); width: 100%; box-sizing: border-box; padding-right: 6px; }
+.graph-scroll { overflow-y: auto; max-height: calc(100vh - 160px); width: 100%; box-sizing: border-box; padding-right: 0; }
