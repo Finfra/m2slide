@@ -8,6 +8,6 @@ current_project: LlmAndVibeCoding
 # When true, generated HTML adds a 'top-align-mode' class which overrides
 # Reveal's vertical centering for the current slide. Use with care.
 top_align: true
-\n+# Project-relative CSS for slide output (linked into each chapter HTML)
+# Project-relative CSS for slide output (linked into each chapter HTML)
 # Example: resource/slide.css
 slide_css: resource/slide.css
