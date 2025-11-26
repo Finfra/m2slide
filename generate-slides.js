@@ -350,67 +350,51 @@ function getNextChapter(fileName, agendaPath) {
   }
 }
 
-// Generate table of contents data for markmap (root → H1 → H2)
-function generateTOCFromFile(filePath, agendaPath) {
-  const content = fs.readFileSync(filePath, 'utf-8');
-  const lines = content.split('\n');
+// Generate table of contents data for markmap
+function generateTOC(slides, fileName, agendaPath) {
+  const tocItems = slides.slice(1)
+    .map((slide, index) => {
+      const slideNum = index + 1;
+      let label = `슬라이드 ${slideNum}`;
 
-  const sections = [];
-  let currentSection = null;
-  let inCode = false;
-  let slideIndex = 0;
+      // Extract header from slide
+      const headerMatch = slide.content.match(/^## (.+)$/m);
+      if (headerMatch) {
+        const originalLabel = headerMatch[1];
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
+        // Skip slides with "(계속)", "(예속)" etc. in their titles
+        if (/\([^)]*계속[^)]*\)|\([^)]*예속[^)]*\)/.test(originalLabel)) {
+          return null;
+        }
 
-    // Toggle code fence state
-    if (line.trim().startsWith('```')) {
-      inCode = !inCode;
-      continue;
-    }
-    if (inCode) continue;
-
-    // Count slide separators to map headings → slide index
-    if (/^---\s*$/.test(line)) {
-      slideIndex += 1;
-      continue;
-    }
-
-    // H1 becomes a branch
-    const h1 = line.match(/^# (.+)$/);
-    if (h1) {
-      currentSection = { content: h1[1], children: [] };
-      sections.push(currentSection);
-      continue;
-    }
-
-    // H2 becomes a child pointing to that slide
-    const h2 = line.match(/^## (.+)$/);
-    if (h2) {
-      if (!currentSection) {
-        currentSection = { content: '', children: [] };
-        sections.push(currentSection);
+        label = originalLabel;
       }
-      const title = h2[1];
-      currentSection.children.push({
-        content: `<a href="#/${slideIndex}">${title}</a>`,
-        children: []
-      });
-      continue;
-    }
-  }
 
-  // Include subsections from AGENDA (if any)
-  const fileName = path.basename(filePath);
+      return {
+        content: `<a href="#/${slideNum}">${label}</a>`,
+        children: []
+      };
+    })
+    .filter(item => item !== null); // Remove null items
+
+  // Add subsections if they exist
   const subsections = getSubsections(fileName, agendaPath);
   if (subsections.length > 0) {
-    sections.push({
-      content: '하위 챕터',
-      children: subsections.map(sub => ({ content: `<a href="${sub.htmlFile}">${sub.title}</a>`, children: [] }))
+    const subsectionNodes = subsections.map(sub => ({
+      content: `<a href="${sub.htmlFile}">${sub.title}</a>`,
+      children: []
+    }));
+
+    tocItems.push({
+      content: "하위 챕터",
+      children: subsectionNodes
     });
   }
 
-  return { content: '', children: sections };
+  return {
+    content: "",
+    children: tocItems
+  };
 }
 
 // Generate HTML slide from parsed slide
@@ -440,7 +424,7 @@ ${html}
 function generateHTML(filePath, agendaPath) {
   const slides = parseMarkdownFile(filePath);
   const fileName = path.basename(filePath);
-  const tocData = generateTOCFromFile(filePath, agendaPath);
+  const tocData = generateTOC(slides, fileName, agendaPath);
 
   // Check if AGENDA.md exists
   const hasAgenda = agendaPath && fs.existsSync(agendaPath);
@@ -542,14 +526,13 @@ function generateHTML(filePath, agendaPath) {
     .reveal .slides section::-webkit-scrollbar-thumb:hover {
       background: rgba(0, 0, 0, 0.5);
     }
-    /* Markmap SVG baseline (allow container to control size) */
     #toc-mindmap {
-      width: 100%;
-      height: 100%;
-      max-width: 100%;
-      max-height: 100%;
-      overflow: hidden;
-      display: block;
+      width: 100% !important;
+      height: 500px !important;
+      max-width: 100% !important;
+      max-height: 500px !important;
+      overflow: hidden !important;
+      display: block !important;
     }
     #toc-mindmap a {
       text-decoration: none;
@@ -593,7 +576,7 @@ function generateHTML(filePath, agendaPath) {
     }
     #toc-container #toc-mindmap {
       width: 100%;
-      height: calc(100% - 120px); /* fill under the title */
+      height: calc(100% - 120px);
     }
     #toc-container a {
       text-decoration: none;
@@ -797,7 +780,6 @@ ${slidesHTML}
     var tocContainer = document.getElementById('toc-container');
     var tocData = ${JSON.stringify(tocData, null, 6)};
     var markmapInitialized = false;
-    var markmapInstance = null;
 
     // Function to toggle TOC visibility based on current slide
     function updateTocVisibility() {
@@ -808,24 +790,8 @@ ${slidesHTML}
 
         // Initialize markmap on first show
         if (!markmapInitialized && window.markmap && tocContainer) {
-          // Create with layout options so the tree breathes horizontally
-          markmapInstance = window.markmap.Markmap.create('#toc-mindmap', {
-            autoFit: true,
-            fitRatio: 1,
-            spacingHorizontal: 160,
-            spacingVertical: 12,
-            paddingX: 80,
-            initialExpandLevel: 3
-          }, tocData);
+          window.markmap.Markmap.create('#toc-mindmap', {}, tocData);
           markmapInitialized = true;
-          // Ensure fit after layout settles
-          requestAnimationFrame(function () {
-            if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
-          });
-          setTimeout(function(){ if (markmapInstance && markmapInstance.fit) markmapInstance.fit(); }, 50);
-        } else if (markmapInitialized && markmapInstance && markmapInstance.fit) {
-          // Re-fit when returning to the first slide
-          requestAnimationFrame(function () { markmapInstance.fit(); });
         }
       } else {
         // Other slides: hide TOC container
@@ -841,11 +807,6 @@ ${slidesHTML}
     // Update on slide change
     Reveal.on('slidechanged', function() {
       updateTocVisibility();
-    });
-
-    // Keep Markmap fitted on window resize
-    window.addEventListener('resize', function(){
-      if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
     });
 
     // Last slide message state
