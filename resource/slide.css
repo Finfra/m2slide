@@ -26,7 +26,7 @@
   overflow-y: auto !important;
   max-height: 100vh !important;
   /* 오른쪽 패딩을 0으로 하여 스크롤바가 화면 우측 끝에 위치 */
-  padding: 20px 0 200px 60px !important;
+  padding: 20px 0 80px 60px !important;
   box-sizing: border-box !important;
 }
 .reveal .slides section::-webkit-scrollbar { width: 8px; }
@@ -39,19 +39,18 @@
 .reveal .mermaid svg {
   display: block;
   margin: 0 auto;
-  /* SVG 내부의 max-width 인라인 스타일(작은 값)을 무력화하고 100%로 확장 */
-  width: 100% !important;
-  max-width: none !important;
+  width: auto !important;
+  max-width: 100% !important;
   height: auto !important;
   /* 세로는 (화면 높이-여유)와 3:2 캡 중 더 작은 값으로 제한 */
-  max-height: min(calc(100vh - 160px), calc((100vw - 120px) * 2 / 3));
+  max-height: min(calc(100vh - 140px), calc((100vw - 120px) * 2 / 3));
 }
 .reveal .kroki img {
   display: block;
   margin: 0 auto;
-  width: 100% !important;
+  width: auto !important;
   height: auto !important;
-  max-height: min(calc(100vh - 160px), calc((100vw - 120px) * 2 / 3));
+  max-height: min(calc(100vh - 140px), calc((100vw - 120px) * 2 / 3));
 }
 .reveal .mermaid { display: block; margin: 0 auto; }
 .reveal .mermaid svg { display: block; margin: 0 auto; }
