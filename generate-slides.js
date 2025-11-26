@@ -481,7 +481,7 @@ function generateHTML(filePath, agendaPath) {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
     }
     /* Optional: force top alignment (use with care) */
-    .top-align-mode .reveal .slides section { top: 0 !important; }
+    .top-align-mode .reveal .slides section { top: 0 !important; left: 50% !important; }
     .top-align-mode .reveal .slides section.present { transform: translate(-50%, 0) !important; }
     .reveal h1 { font-size: 2.5em; }
     .reveal h2 { font-size: 1.8em; }
