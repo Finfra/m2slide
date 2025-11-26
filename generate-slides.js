@@ -894,6 +894,29 @@ ${slidesHTML}
       });
     }
 
+    // Enlarge small diagrams up to slide width, capping height to 3:2
+    function fitSmallDiagrams() {
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { width: 1280, height: 720 };
+      var contentW = (cfg && cfg.width ? cfg.width : 1280) - 120; // padding (60px each side)
+      if (contentW < 320) contentW = 320;
+      var capH = Math.floor(contentW * 2 / 3);
+
+      document.querySelectorAll('.graph-scroll > svg, .graph-scroll > img').forEach(function(el){
+        var rect = el.getBoundingClientRect();
+        var curW = rect && rect.width ? rect.width : 0;
+        // Only upscale when clearly smaller than container
+        if (curW > 0 && curW < contentW * 0.7) {
+          el.style.width = contentW + 'px';
+          el.style.maxHeight = capH + 'px';
+          el.style.height = 'auto';
+        } else {
+          // Do not force width for already large diagrams
+          el.style.removeProperty('width');
+          el.style.removeProperty('max-height');
+        }
+      });
+    }
+
     Reveal.on('ready', function(){
       // Enforce top alignment in case theme defaults differ
       if (typeof Reveal.configure === 'function') { Reveal.configure({ center: false }); }
@@ -903,9 +926,10 @@ ${slidesHTML}
         if (cur) cur.style.paddingTop = '10px';
       }
       adjustGraphScrollHeights();
+      fitSmallDiagrams();
     });
-    Reveal.on('slidechanged', adjustGraphScrollHeights);
-    window.addEventListener('resize', adjustGraphScrollHeights);
+    Reveal.on('slidechanged', function(){ adjustGraphScrollHeights(); fitSmallDiagrams(); });
+    window.addEventListener('resize', function(){ adjustGraphScrollHeights(); fitSmallDiagrams(); });
 
     // Last slide message state
     var lastSlideMessageShown = false;
