@@ -17,7 +17,7 @@
 .reveal li.bullet-dot { list-style-type: '· '; }
 .reveal ul ul { margin: 0.3em 0; }
 .reveal strong { color: #222; font-weight: bold; }
-.reveal img { max-width: 400px; max-height: 300px; min-height: 200px; margin: 0.5em 0; display: block; }
+/* .reveal img { max-width: 400px; max-height: 300px; min-height: 200px; margin: 0.5em 0; display: block; } */
 
 .reveal .slides section,
 .reveal .slides section.present,
@@ -35,15 +35,22 @@
 .reveal .slides section::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.5); }
 
 .reveal .kroki { display: flex; justify-content: center; align-items: center; margin: 1em 0; }
-.reveal .kroki svg, .reveal .kroki img,
+.reveal .kroki svg,
 .reveal .mermaid svg {
   display: block;
   margin: 0 auto;
-  width: auto;
-  height: auto;
-  /* 화면 너비-패딩만큼만 확장 */
-  max-width: calc(100vw - 120px);
+  /* SVG 내부의 max-width 인라인 스타일(작은 값)을 무력화하고 100%로 확장 */
+  width: 100% !important;
+  max-width: none !important;
+  height: auto !important;
   /* 세로는 (화면 높이-여유)와 3:2 캡 중 더 작은 값으로 제한 */
+  max-height: min(calc(100vh - 160px), calc((100vw - 120px) * 2 / 3));
+}
+.reveal .kroki img {
+  display: block;
+  margin: 0 auto;
+  width: 100% !important;
+  height: auto !important;
   max-height: min(calc(100vh - 160px), calc((100vw - 120px) * 2 / 3));
 }
 .reveal .mermaid { display: block; margin: 0 auto; }
