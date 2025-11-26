@@ -557,7 +557,7 @@ function generateHTML(filePath, agendaPath) {
     }
     /* TOC container outside Reveal.js for Safari compatibility */
     #toc-container {
-      display: none;
+      display: block;
       position: absolute;
       top: 0;
       left: 0;
