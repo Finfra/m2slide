@@ -687,7 +687,8 @@ ${slidesHTML}
       plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
       width: 1280,
       height: 720,
-      margin: 0.1,
+      margin: 0.05,
+      center: false,
       slideNumber: 'c/t',
       transition: 'slide',
       backgroundTransition: 'fade'
@@ -854,6 +855,21 @@ ${slidesHTML}
     window.addEventListener('resize', function(){
       if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
     });
+
+    // Adjust scroll height for tall diagrams based on Reveal scale
+    function adjustGraphScrollHeights() {
+      var scale = (typeof Reveal.getScale === 'function') ? Reveal.getScale() : 1;
+      var available = window.innerHeight / scale - 160; // title+padding reserve
+      if (available < 200) available = 200;
+      document.querySelectorAll('.graph-scroll').forEach(function(el){
+        el.style.maxHeight = available + 'px';
+        el.style.overflowY = 'auto';
+      });
+    }
+
+    Reveal.on('ready', adjustGraphScrollHeights);
+    Reveal.on('slidechanged', adjustGraphScrollHeights);
+    window.addEventListener('resize', adjustGraphScrollHeights);
 
     // Last slide message state
     var lastSlideMessageShown = false;
