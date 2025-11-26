@@ -858,8 +858,10 @@ ${slidesHTML}
 
     // Adjust scroll height for tall diagrams based on Reveal scale
     function adjustGraphScrollHeights() {
-      var scale = (typeof Reveal.getScale === 'function') ? Reveal.getScale() : 1;
-      var available = window.innerHeight / scale - 160; // title+padding reserve
+      // Use Reveal's logical slide height, not viewport, to avoid mis-scaling
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { height: 720 };
+      var base = cfg && cfg.height ? cfg.height : 720;
+      var available = base - 160; // reserve space for title/margins
       if (available < 200) available = 200;
       document.querySelectorAll('.graph-scroll').forEach(function(el){
         el.style.maxHeight = available + 'px';
@@ -867,7 +869,13 @@ ${slidesHTML}
       });
     }
 
-    Reveal.on('ready', adjustGraphScrollHeights);
+    Reveal.on('ready', function(){
+      // Enforce top alignment in case theme defaults differ
+      if (typeof Reveal.configure === 'function') {
+        Reveal.configure({ center: false });
+      }
+      adjustGraphScrollHeights();
+    });
     Reveal.on('slidechanged', adjustGraphScrollHeights);
     window.addEventListener('resize', adjustGraphScrollHeights);
 
