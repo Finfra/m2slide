@@ -585,7 +585,8 @@ function generateHTML(filePath, agendaPath) {
       align-items: center;
       margin: 1em 0;
     }
-    .reveal .kroki svg {
+    .reveal .kroki svg,
+    .reveal .kroki img {
       max-width: 100%;
       height: auto;
       max-height: none; /* allow full height; wrapper will scroll if needed */
@@ -798,29 +799,14 @@ ${slidesHTML}
             return;
           }
 
-          // Use Kroki API with POST to specific endpoint
-          const apiUrl = 'https://kroki.io/' + diagramType + '/svg';
-
-          fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'text/plain',
-            },
-            body: diagramSource
-          })
-          .then(function(response) {
-            if (!response.ok) {
-              throw new Error('Kroki API error: ' + response.status);
-            }
-            return response.text();
-          })
-          .then(function(svg) {
-            element.innerHTML = '<div class="graph-scroll">' + svg + '</div>';
-          })
-          .catch(function(error) {
-            console.error('Kroki rendering error for ' + diagramType + ' diagram ' + index + ':', error);
-            element.innerHTML = '<p style="color: red;">Failed to render ' + diagramType + ' diagram. Error: ' + error.message + '</p>';
-          });
+          // Prefer GET image to avoid CORS issues on file:// origins
+          try {
+            const imgUrl = 'https://kroki.io/' + diagramType + '/svg?source=' + encodeURIComponent(diagramSource);
+            element.innerHTML = '<div class="graph-scroll"><img alt="' + diagramType + ' diagram" src="' + imgUrl + '"/></div>';
+          } catch (error) {
+            console.error('Kroki rendering setup error for ' + diagramType + ' diagram ' + index + ':', error);
+            element.innerHTML = '<p style="color: red;">Failed to prepare ' + diagramType + ' diagram.</p>';
+          }
         });
       }
     });
