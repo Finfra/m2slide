@@ -69,12 +69,12 @@ if [ -d "$OUTPUT_DIR" ]; then
 fi
 
 # Run the HTML generator
-node "$SCRIPT_DIR/generate-slides.js" "$PROJECT_DIR"
+node "$SCRIPT_DIR/lib/generate-slides.js" "$PROJECT_DIR"
 
 # Generate EPUB if requested
 if [ "$GENERATE_EPUB" = true ]; then
   echo ""
-  node "$SCRIPT_DIR/generate-epub.js" "$PROJECT_DIR"
+  node "$SCRIPT_DIR/lib/generate-epub.js" "$PROJECT_DIR"
 fi
 
 # Copy EPUB file to slide directory if it exists
