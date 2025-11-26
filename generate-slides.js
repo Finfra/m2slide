@@ -391,9 +391,17 @@ function generateTOC(slides, fileName, agendaPath) {
     });
   }
 
+  // Use the document title (first slide title) as a grouping node
+  const title = (slides[0] && slides[0].title) ? slides[0].title : fileName.replace(/\.md$/, '');
+
   return {
     content: "",
-    children: tocItems
+    children: [
+      {
+        content: title,
+        children: tocItems
+      }
+    ]
   };
 }
 
