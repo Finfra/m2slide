@@ -3,6 +3,21 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+let TOP_ALIGN = false; // optional hard top-align mode
+
+// Read minimal config (YAML subset) from config.yml next to this script
+function loadConfig() {
+  try {
+    const cfgPath = path.join(__dirname, 'config.yml');
+    if (!fs.existsSync(cfgPath)) return;
+    const raw = fs.readFileSync(cfgPath, 'utf-8');
+    const m = raw.match(/^top_align:\s*(.+)$/m);
+    if (m) {
+      const val = m[1].trim().toLowerCase();
+      TOP_ALIGN = (val === 'true' || val === 'yes' || val === '1');
+    }
+  } catch (_) {}
+}
 
 // Markdown to HTML converter
 function convertMarkdownToHTML(markdown) {
@@ -465,6 +480,9 @@ function generateHTML(filePath, agendaPath) {
     * {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
     }
+    /* Optional: force top alignment (use with care) */
+    .top-align-mode .reveal .slides section { top: 0 !important; }
+    .top-align-mode .reveal .slides section.present { transform: translate(-50%, 0) !important; }
     .reveal h1 { font-size: 2.5em; }
     .reveal h2 { font-size: 1.8em; }
     .reveal h3 { font-size: 1.4em; }
@@ -650,7 +668,7 @@ function generateHTML(filePath, agendaPath) {
     }
   </style>
 </head>
-<body>
+<body${TOP_ALIGN ? ' class="top-align-mode"' : ''}>
   ${parentPage ? `<a href="${parentPage}" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
     <svg viewBox="0 0 24 24">
       <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
@@ -682,6 +700,12 @@ ${slidesHTML}
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>
+    // Allow URL toggle: ?top=1 to enable top-align-mode regardless of config
+    try {
+      var qs = new URLSearchParams(window.location.search);
+      if (qs.get('top') === '1') document.body.classList.add('top-align-mode');
+    } catch (e) {}
+
     Reveal.initialize({
       hash: true,
       plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
@@ -871,8 +895,11 @@ ${slidesHTML}
 
     Reveal.on('ready', function(){
       // Enforce top alignment in case theme defaults differ
-      if (typeof Reveal.configure === 'function') {
-        Reveal.configure({ center: false });
+      if (typeof Reveal.configure === 'function') { Reveal.configure({ center: false }); }
+      if (document.body.classList.contains('top-align-mode')) {
+        // Remove extra top padding on current slide to keep content tight to top
+        var cur = Reveal.getCurrentSlide();
+        if (cur) cur.style.paddingTop = '10px';
       }
       adjustGraphScrollHeights();
     });
@@ -1099,6 +1126,8 @@ document.addEventListener('keydown', function(event) {
 
 // Main execution
 function main() {
+  // Load optional config
+  loadConfig();
   const args = process.argv.slice(2);
 
   // Parse arguments
