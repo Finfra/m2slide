@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const zlib = require('zlib');
 let TOP_ALIGN = false; // optional hard top-align mode
 
 // Read minimal config (YAML subset) from config.yml next to this script
@@ -136,9 +137,23 @@ function convertMarkdownToHTML(markdown) {
       // Special handling for Kroki diagrams
       else if (['blockdiag', 'seqdiag', 'actdiag', 'nwdiag', 'packetdiag', 'rackdiag',
                 'ditaa', 'dot', 'graphviz', 'vega', 'vegalite', 'plantuml'].includes(lang)) {
-        html.push(`<div class="kroki" data-type="${lang}">`);
-        html.push(codeLines.join('\n'));
-        html.push('</div>');
+        const source = codeLines.join('\n');
+        try {
+          const deflated = zlib.deflateSync(Buffer.from(source, 'utf-8'));
+          const b64 = deflated.toString('base64')
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=+$/g, '');
+          const url = `https://kroki.io/${lang}/svg/${b64}`;
+          html.push('<div class="kroki">');
+          html.push(`<div class="graph-scroll"><img src="${url}" alt="${lang} diagram"/></div>`);
+          html.push('</div>');
+        } catch (e) {
+          // Fallback to runtime rendering container if deflate fails
+          html.push(`<div class=\"kroki\" data-type=\"${lang}\">`);
+          html.push(source);
+          html.push('</div>');
+        }
       }
       else {
         // Regular code block
