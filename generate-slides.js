@@ -800,8 +800,15 @@ ${slidesHTML}
 
         // Initialize markmap on first show
         if (!markmapInitialized && window.markmap && tocContainer) {
-          // Create with autoFit so it fills available space
-          markmapInstance = window.markmap.Markmap.create('#toc-mindmap', { autoFit: true, fitRatio: 1 }, tocData);
+          // Create with layout options so the tree breathes horizontally
+          markmapInstance = window.markmap.Markmap.create('#toc-mindmap', {
+            autoFit: true,
+            fitRatio: 1,
+            spacingHorizontal: 160,
+            spacingVertical: 12,
+            paddingX: 80,
+            initialExpandLevel: 3
+          }, tocData);
           markmapInitialized = true;
           // Ensure fit after layout settles
           requestAnimationFrame(function () {
