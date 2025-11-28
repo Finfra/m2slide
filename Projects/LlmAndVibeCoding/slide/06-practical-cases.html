@@ -9,94 +9,16 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
+  <link rel="stylesheet" href="../../../resource/slide.css?v=1764315186318">
   <style>
-    * {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-    }
-    .reveal h1 { font-size: 2.5em; }
-    .reveal h2 { font-size: 1.8em; }
-    .reveal h3 { font-size: 1.4em; }
-    .reveal { font-size: 32px; }
-    .reveal table {
-      font-size: 0.7em;
-      width: 100% !important;
-    }
-    .reveal pre { font-size: 0.6em; }
-    .reveal code { font-size: 0.9em; }
-    .reveal blockquote {
-      font-size: 1.1em;
-      font-style: italic;
-      background: rgba(255,255,255,0.1);
-      padding: 20px;
-      border-left: 5px solid #42affa;
-    }
-    .reveal p {
-      font-size: 1em;
-      line-height: 1.6;
-      margin: 0.5em 0;
-      color: #333;
-    }
-    .reveal ul, .reveal ol {
-      display: block;
-      text-align: left;
-      margin: 1em 0;
-      padding-left: 40px;
-    }
-    .reveal li {
-      font-size: 0.9em;
-      line-height: 1.6;
-      margin: 0.3em 0;
-      color: #333;
-      list-style-type: '- ';
-    }
-    .reveal li.bullet-dot {
-      list-style-type: '· ';
-    }
-    .reveal ul ul {
-      margin: 0.3em 0;
-    }
-    .reveal strong {
-      color: #222;
-      font-weight: bold;
-    }
-    .reveal img {
-      max-width: 400px;
-      max-height: 300px;
-      min-height: 200px;
-      margin: 0.5em 0;
-      display: block;
-    }
-    /* 슬라이드 스크롤 기능 추가 */
-    .reveal .slides section,
-    .reveal .slides section.present,
-    .reveal .slides section.past,
-    .reveal .slides section.future {
-      overflow-y: auto !important;
-      max-height: 100vh !important;
-      padding: 20px 60px 200px 60px !important;
-      box-sizing: border-box !important;
-    }
-    .reveal .slides section::-webkit-scrollbar {
-      width: 8px;
-    }
-    .reveal .slides section::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.1);
-      border-radius: 4px;
-    }
-    .reveal .slides section::-webkit-scrollbar-thumb {
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 4px;
-    }
-    .reveal .slides section::-webkit-scrollbar-thumb:hover {
-      background: rgba(0, 0, 0, 0.5);
-    }
+    /* Markmap SVG baseline (allow container to control size) */
     #toc-mindmap {
-      width: 100% !important;
-      height: 500px !important;
-      max-width: 100% !important;
-      max-height: 500px !important;
-      overflow: hidden !important;
-      display: block !important;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      overflow: hidden;
+      display: block;
     }
     #toc-mindmap a {
       text-decoration: none;
@@ -107,18 +29,7 @@
       font-size: 16px !important;
       font-weight: 500;
     }
-    /* Kroki diagrams */
-    .reveal .kroki {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 1em 0;
-    }
-    .reveal .kroki svg {
-      max-width: 100%;
-      max-height: 500px;
-      height: auto;
-    }
+    /* Minimal elements left inline to avoid FOUC */
     /* TOC container outside Reveal.js for Safari compatibility */
     #toc-container {
       display: block;
@@ -140,7 +51,7 @@
     }
     #toc-container #toc-mindmap {
       width: 100%;
-      height: calc(100% - 120px);
+      height: calc(100% - 120px); /* fill under the title */
     }
     #toc-container a {
       text-decoration: none;
@@ -190,7 +101,7 @@
     }
   </style>
 </head>
-<body>
+<body class="top-align-mode">
   <a href="index.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
     <svg viewBox="0 0 24 24">
       <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
@@ -206,24 +117,25 @@
 
   <div id="last-slide-message">마지막 페이지입니다. 다음 챕터로 이동하려면 다시 →를 누르세요.</div>
 
-  <div class="reveal">
+  <div class="reveal ratio-none">
     <div class="slides">
 
       <section id="toc-placeholder"></section>
 
       <section>
 <h2>1세대 (IDE 기반) 활용 사례</h2>
-
+<div class="theContents">
 <h3>사례 1: React Todo 앱 개발 (Cursor) </h3>
 
 <p><strong>시나리오</strong>: React와 TypeScript로 간단한 Todo 앱 만들기</p>
 <p><br><br><br><br></p>
 <p><img src="img/cursor-logo.png" alt="Cursor"></p>
+</div>
       </section>
 
       <section>
 <h2>사례 1: React Todo 앱 (계속)</h2>
-
+<div class="theContents">
 <p><strong>작업 과정</strong></p>
 <pre><code>1. Cursor에서 새 프로젝트 생성
 2. Cmd+K 누르고 요청:
@@ -238,6 +150,7 @@
 
 4. diff 모드로 확인 후 승인
 5. npm start로 즉시 실행</code></pre>
+</div>
       </section>
 
       <section data-markdown>
@@ -259,7 +172,7 @@
 
       <section>
 <h2>사례 2: API 통합 (Cline) ![Cline](img/cline-logo.png)</h2>
-
+<div class="theContents">
 <p><strong>시나리오</strong>: 기존 React 앱에 REST API 연동 추가</p>
 
 <p><strong>작업 과정</strong></p>
@@ -274,6 +187,7 @@
    - hooks/useRepositories.ts 생성
    - RepositoryList.tsx 컴포넌트 생성
    - package.json에 의존성 추가 제안</code></pre>
+</div>
       </section>
 
       <section data-markdown>
@@ -295,15 +209,16 @@
 
       <section>
 <h2>2세대 (CLI 기반) 활용 사례</h2>
-
+<div class="theContents">
 <h3>사례 1: Express API 서버 (Claude Code) ![Claude](img/claude-logo.png)</h3>
 
 <p><strong>시나리오</strong>: Node.js Express로 RESTful API 서버 개발</p>
+</div>
       </section>
 
       <section>
 <h2>사례 1: Express API 서버 (계속)</h2>
-
+<div class="theContents">
 <p><strong>작업 과정</strong></p>
 <pre><code class="language-bash">$ claude
 
@@ -318,11 +233,12 @@
 ✓ server.js, routes/posts.js, routes/auth.js
 ✓ middleware/auth.js, models/Post.js, models/User.js
 ✓ .env.example, package.json, README.md</code></pre>
+</div>
       </section>
 
       <section>
 <h2>사례 1: Express API 서버 (계속)</h2>
-
+<div class="theContents">
 <pre><code class="language-bash">> 테스트 코드도 작성해줘
 
 ✓ __tests__/posts.test.js
@@ -334,6 +250,7 @@
 [npm install 실행]
 [서버 시작됨]
 Server running on port 3000</code></pre>
+</div>
       </section>
 
       <section data-markdown>
@@ -356,16 +273,17 @@ Server running on port 3000</code></pre>
 
       <section>
 <h2>사례 2: AWS 인프라 구성 (Gemini CLI) ![Gemini](img/gemini-logo.png)</h2>
-
+<div class="theContents">
 <p><strong>시나리오</strong>: Terraform으로 AWS EC2 + RDS 인프라 구성</p>
 <ul>
 <li class="bullet-dot">cf) <a href="https://finfra.kr/jg/2025/08/12/2%ec%84%b8%eb%8c%80-vibe-coding-ai-%eb%8f%84%ea%b5%ac%eb%a5%bc-%ed%99%9c%ec%9a%a9%ed%95%9c-%ed%81%b4%eb%9d%bc%ec%9a%b0%eb%93%9c-%ec%9d%b8%ed%94%84%eb%9d%bc-%ec%9e%90%eb%8f%99%ed%99%94/">2세대 Vibe Coding : AI 도구를 활용한 클라우드 인프라 자동화</a></li>
 </ul>
+</div>
       </section>
 
       <section>
 <h2>사례 2: AWS 인프라 구성 (계속)</h2>
-
+<div class="theContents">
 <p><strong>작업 과정</strong></p>
 <pre><code class="language-bash">$ gemini
 
@@ -379,11 +297,12 @@ Server running on port 3000</code></pre>
 [Gemini가 Terraform 코드 생성]
 ✓ main.tf, variables.tf, outputs.tf
 ✓ vpc.tf, ec2.tf, rds.tf, security-groups.tf</code></pre>
+</div>
       </section>
 
       <section>
 <h2>사례 2: AWS 인프라 구성 (계속)</h2>
-
+<div class="theContents">
 <pre><code class="language-bash">> terraform init하고 plan 보여줘
 
 [terraform init 실행]
@@ -394,6 +313,7 @@ Plan: 15 to add, 0 to change, 0 to destroy.
 
 [terraform apply 실행]
 Apply complete! Resources: 15 added</code></pre>
+</div>
       </section>
 
       <section data-markdown>
@@ -415,7 +335,7 @@ Apply complete! Resources: 15 added</code></pre>
 
       <section>
 <h2>비교: 사용자 인증 기능 추가</h2>
-
+<div class="theContents">
 <p><strong>1세대 (Cursor) 접근</strong></p>
 <pre><code>1. IDE에서 프로젝트 열기
 2. Cmd+K: "JWT 기반 사용자 인증 추가"
@@ -426,11 +346,12 @@ Apply complete! Resources: 15 added</code></pre>
 5. 브라우저에서 로그인 폼 확인</code></pre>
 
 <p><strong>적합</strong>: 프론트엔드 중심 작업, UI 피드백 필요</p>
+</div>
       </section>
 
       <section>
 <h2>비교: 사용자 인증 기능 추가 (계속)</h2>
-
+<div class="theContents">
 <p><strong>2세대 (Claude Code) 접근</strong></p>
 <pre><code class="language-bash">$ claude
 
@@ -446,6 +367,7 @@ Apply complete! Resources: 15 added</code></pre>
 [npm test 자동 실행]</code></pre>
 
 <p><strong>적합</strong>: 백엔드 전체 로직, 테스트 자동화</p>
+</div>
       </section>
 
       <section data-markdown>
@@ -467,7 +389,7 @@ Apply complete! Resources: 15 added</code></pre>
 
       <section>
 <h2>생산성 향상 분석</h2>
-
+<div class="theContents">
 <p><strong>Cursor (1세대)</strong></p>
 <ul>
 <li class="bullet-dot">약 <strong>3.4배</strong> 빠름</li>
@@ -481,11 +403,12 @@ Apply complete! Resources: 15 added</code></pre>
 <li class="bullet-dot">완전 자동화 가능</li>
 <li class="bullet-dot">백엔드/인프라에 최적</li>
 </ul>
+</div>
       </section>
 
       <section>
 <h2>실전 팁: 1세대 (IDE)</h2>
-
+<div class="theContents">
 <p><strong>효율적인 프롬프트</strong></p>
 
 <p>❌ 나쁜 예: "컴포넌트 만들어줘"</p>
@@ -496,11 +419,12 @@ Apply complete! Resources: 15 added</code></pre>
  - Tailwind CSS 사용
  - 클릭 시 상세 페이지로 이동
  - 반응형 디자인"</code></pre>
+</div>
       </section>
 
       <section>
 <h2>실전 팁: 1세대 (계속)</h2>
-
+<div class="theContents">
 <p><strong>Composer 모드 활용</strong></p>
 <ul>
 <li class="bullet-dot">여러 파일을 한번에 수정</li>
@@ -514,11 +438,12 @@ Apply complete! Resources: 15 added</code></pre>
 <li class="bullet-dot"><code>Cmd/Ctrl + L</code>: 전체 프로젝트 검색</li>
 <li class="bullet-dot"><code>Cmd/Ctrl + Shift + P</code>: 명령 팔레트</li>
 </ul>
+</div>
       </section>
 
       <section>
 <h2>실전 팁: 2세대 (CLI)</h2>
-
+<div class="theContents">
 <p><strong>명확한 작업 단위</strong></p>
 
 <pre><code class="language-bash"># 작은 단위로 분할
@@ -527,11 +452,12 @@ Apply complete! Resources: 15 added</code></pre>
 ✅ "먼저 데이터 모델 만들어줘"
 ✅ "이제 CRUD API 만들어줘"
 ✅ "테스트 코드 추가해줘"</code></pre>
+</div>
       </section>
 
       <section>
 <h2>실전 팁: 2세대 (계속)</h2>
-
+<div class="theContents">
 <p><strong>Git 커밋 자주 하기</strong></p>
 <pre><code class="language-bash"># AI 작업 후 바로 커밋
 $ git add .
@@ -547,11 +473,12 @@ claude << EOF
 테스트 실행해줘
 커버리지 리포트 생성해줘
 EOF</code></pre>
+</div>
       </section>
 
       <section>
 <h2>복합 사례: 실시간 채팅 앱</h2>
-
+<div class="theContents">
 <p><strong>1단계: 백엔드 (Claude Code) - 10분</strong></p>
 <pre><code class="language-bash">> Socket.IO 기반 채팅 서버 만들어줘:
   - 실시간 메시지 전송
@@ -564,19 +491,21 @@ EOF</code></pre>
 <p><strong>3단계: 배포 (Claude Code) - 10분</strong></p>
 <pre><code class="language-bash">> Docker Compose로 컨테이너화해줘
 > AWS ECS 배포 설정해줘</code></pre>
+</div>
       </section>
 
       <section>
 <h2>복합 사례: 성과</h2>
-
+<div class="theContents">
 <p><strong>총 소요 시간</strong>: 약 35분</p>
 <p><strong>전통 방식</strong>: 약 10-15시간</p>
 <p><strong>생산성 향상</strong>: <strong>17-25배</strong></p>
+</div>
       </section>
 
       <section>
 <h2>주의사항</h2>
-
+<div class="theContents">
 <p><strong>보안 체크리스트</strong></p>
 <ul>
 <li class="bullet-dot">SQL Injection 방어 확인</li>
@@ -594,11 +523,12 @@ EOF</code></pre>
 <li class="bullet-dot">성능 최적화 여부</li>
 <li class="bullet-dot">문서화 완성도</li>
 </ul>
+</div>
       </section>
 
       <section>
 <h2>다음 단계</h2>
-
+<div class="theContents">
 <p><strong>상세 도입 로드맵은 7장 참조</strong></p>
 
 <ol>
@@ -606,6 +536,7 @@ EOF</code></pre>
 <li>점진적 확대</li>
 <li>팀 협업 및 베스트 프랙티스 구축</li>
 </ol>
+</div>
       </section>
 
     </div>
@@ -619,12 +550,19 @@ EOF</code></pre>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>
+    // Allow URL toggle: ?top=1 to enable top-align-mode regardless of config
+    try {
+      var qs = new URLSearchParams(window.location.search);
+      if (qs.get('top') === '1') document.body.classList.add('top-align-mode');
+    } catch (e) {}
+
     Reveal.initialize({
       hash: true,
       plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
-      width: 1280,
-      height: 720,
-      margin: 0.1,
+      width: '100%',
+      height: '100%',
+      margin: 0.0,
+      center: false,
       slideNumber: 'c/t',
       transition: 'slide',
       backgroundTransition: 'fade'
@@ -683,7 +621,7 @@ EOF</code></pre>
           try {
             mermaid.render(graphId, graphDefinition).then(function(result) {
               if (result && result.svg) {
-                element.innerHTML = result.svg;
+                element.innerHTML = '<div class="graph-scroll">' + result.svg + '</div>';
               }
             }).catch(function(error) {
               console.error('Mermaid rendering error for diagram ' + index + ':', error);
@@ -693,8 +631,10 @@ EOF</code></pre>
           }
         });
       }
+    });
 
-      // Render all Kroki diagrams
+    // Render all Kroki diagrams (runtime fallback)
+    Reveal.on('ready', function() {
       const allKrokiElements = document.querySelectorAll('.kroki');
       if (allKrokiElements && allKrokiElements.length > 0) {
         allKrokiElements.forEach(function(element, index) {
@@ -710,29 +650,14 @@ EOF</code></pre>
             return;
           }
 
-          // Use Kroki API with POST to specific endpoint
-          const apiUrl = 'https://kroki.io/' + diagramType + '/svg';
-
-          fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'text/plain',
-            },
-            body: diagramSource
-          })
-          .then(function(response) {
-            if (!response.ok) {
-              throw new Error('Kroki API error: ' + response.status);
-            }
-            return response.text();
-          })
-          .then(function(svg) {
-            element.innerHTML = svg;
-          })
-          .catch(function(error) {
-            console.error('Kroki rendering error for ' + diagramType + ' diagram ' + index + ':', error);
-            element.innerHTML = '<p style="color: red;">Failed to render ' + diagramType + ' diagram. Error: ' + error.message + '</p>';
-          });
+          // Prefer GET image to avoid CORS issues on file:// origins
+          try {
+            const imgUrl = 'https://kroki.io/' + diagramType + '/svg?source=' + encodeURIComponent(diagramSource);
+            element.innerHTML = '<div class="graph-scroll"><img alt="' + diagramType + ' diagram" src="' + imgUrl + '"/></div>';
+          } catch (error) {
+            console.error('Kroki rendering setup error for ' + diagramType + ' diagram ' + index + ':', error);
+            element.innerHTML = '<p style="color: red;">Failed to prepare ' + diagramType + ' diagram.</p>';
+          }
         });
       }
     });
@@ -743,76 +668,114 @@ EOF</code></pre>
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">1세대 (IDE 기반) 활용 사례</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/3\">사례 1: 성과</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/4\">사례 2: API 통합 (Cline) ![Cline](img/cline-logo.png)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/5\">사례 2: 성과</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/6\">2세대 (CLI 기반) 활용 사례</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/9\">사례 1: 성과</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/10\">사례 2: AWS 인프라 구성 (Gemini CLI) ![Gemini](img/gemini-logo.png)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/13\">사례 2: 성과</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/14\">비교: 사용자 인증 기능 추가</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/16\">생산성 비교: 블로그 플랫폼</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/17\">생산성 향상 분석</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/18\">실전 팁: 1세대 (IDE)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/20\">실전 팁: 2세대 (CLI)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/22\">복합 사례: 실시간 채팅 앱</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/23\">복합 사례: 성과</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/24\">주의사항</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/25\">다음 단계</a>",
-                  "children": []
+                  "content": "6. 실전 사례: 세대별 활용법",
+                  "children": [
+                        {
+                              "content": "<a href=\"#/1\">1세대 (IDE 기반) 활용 사례</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/2\">사례 1: React Todo 앱 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/3\">사례 1: 성과</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/4\">사례 2: API 통합 (Cline) ![Cline](img/cline-logo.png)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/5\">사례 2: 성과</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/6\">2세대 (CLI 기반) 활용 사례</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/7\">사례 1: Express API 서버 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/8\">사례 1: Express API 서버 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/9\">사례 1: 성과</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/10\">사례 2: AWS 인프라 구성 (Gemini CLI) ![Gemini](img/gemini-logo.png)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/11\">사례 2: AWS 인프라 구성 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/12\">사례 2: AWS 인프라 구성 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/13\">사례 2: 성과</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/14\">비교: 사용자 인증 기능 추가</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/15\">비교: 사용자 인증 기능 추가 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/16\">생산성 비교: 블로그 플랫폼</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/17\">생산성 향상 분석</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/18\">실전 팁: 1세대 (IDE)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/19\">실전 팁: 1세대 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/20\">실전 팁: 2세대 (CLI)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/21\">실전 팁: 2세대 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/22\">복합 사례: 실시간 채팅 앱</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/23\">복합 사례: 성과</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/24\">주의사항</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/25\">다음 단계</a>",
+                              "children": []
+                        }
+                  ]
             }
       ]
 };
     var markmapInitialized = false;
+    var markmapInstance = null;
 
     // Function to toggle TOC visibility based on current slide
     function updateTocVisibility() {
@@ -823,8 +786,24 @@ EOF</code></pre>
 
         // Initialize markmap on first show
         if (!markmapInitialized && window.markmap && tocContainer) {
-          window.markmap.Markmap.create('#toc-mindmap', {}, tocData);
+          // Create with layout options so the tree breathes horizontally
+          markmapInstance = window.markmap.Markmap.create('#toc-mindmap', {
+            autoFit: true,
+            fitRatio: 1,
+            spacingHorizontal: 160,
+            spacingVertical: 12,
+            paddingX: 80,
+            initialExpandLevel: 3
+          }, tocData);
           markmapInitialized = true;
+          // Ensure fit after layout settles
+          requestAnimationFrame(function () {
+            if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
+          });
+          setTimeout(function(){ if (markmapInstance && markmapInstance.fit) markmapInstance.fit(); }, 50);
+        } else if (markmapInitialized && markmapInstance && markmapInstance.fit) {
+          // Re-fit when returning to the first slide
+          requestAnimationFrame(function () { markmapInstance.fit(); });
         }
       } else {
         // Other slides: hide TOC container
@@ -841,6 +820,114 @@ EOF</code></pre>
     Reveal.on('slidechanged', function() {
       updateTocVisibility();
     });
+
+    // Keep Markmap fitted on window resize
+    window.addEventListener('resize', function(){
+      if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
+    });
+
+    // Adjust scroll height for tall diagrams based on Reveal scale
+    function adjustGraphScrollHeights() {
+      // Use Reveal logical size and subtract actual header height on current slide
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { width: 1280, height: 720 };
+      var baseH = cfg && cfg.height ? cfg.height : 720;
+
+      var cur = (typeof Reveal.getCurrentSlide === 'function') ? Reveal.getCurrentSlide() : null;
+      var headerSpace = 0;
+      if (cur) {
+        // Sum heights of visible H1/H2 in current slide
+        var heads = cur.querySelectorAll('h1, h2');
+        heads.forEach(function(h){
+          var cs = window.getComputedStyle(h);
+          var mh = parseFloat(cs.marginTop) + parseFloat(cs.marginBottom);
+          headerSpace += h.offsetHeight + mh;
+        });
+        // Add a small buffer below titles
+        headerSpace += 40;
+      }
+
+      var available = baseH - headerSpace - 40; // smaller buffer to allow larger content
+      if (available < 200) available = 200;
+
+      // Only adjust graph-scroll inside current slide to avoid layout thrash
+      var apply = function(scope){
+        scope.querySelectorAll('.graph-scroll').forEach(function(el){
+          el.style.maxHeight = available + 'px';
+          el.style.overflowY = 'auto';
+          // Prefer height-based fit for diagrams
+          el.querySelectorAll('svg, img').forEach(function(di){
+            di.style.maxHeight = available + 'px';
+            di.style.height = 'auto';
+            di.style.width = 'auto';
+            di.style.maxWidth = '100%';
+          });
+        });
+      };
+      if (cur) apply(cur); else apply(document);
+    }
+
+    // Vertically bias content to top by reducing extra center spacing using margin
+    var lastAdjustedSlide = null;
+    function topBiasCurrentSlide() {
+      if (typeof Reveal.getCurrentSlide !== 'function') return;
+      var slide = Reveal.getCurrentSlide();
+      if (!slide) return;
+      // reset previous
+      if (lastAdjustedSlide && lastAdjustedSlide !== slide) {
+        lastAdjustedSlide.style.marginTop = '';
+      }
+      // compute extra space when content is short (Reveal may center it)
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { height: 720 };
+      var logicalH = cfg && cfg.height ? cfg.height : 720;
+      var contentH = slide.scrollHeight;
+      var extra = (logicalH - contentH) / 2; // space added by vertical centering
+      if (extra > 10) {
+        // leave a small 10px top padding, pull the rest up via negative margin
+        var offset = Math.min(extra - 10, logicalH * 0.25); // cap shift to 25% of slide height
+        slide.style.marginTop = '-' + Math.round(offset) + 'px';
+        lastAdjustedSlide = slide;
+      } else {
+        slide.style.marginTop = '';
+      }
+    }
+
+    // Enlarge small diagrams up to slide width, capping height to 3:2
+    function fitSmallDiagrams() {
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { width: 1280, height: 720 };
+      var contentW = (cfg && cfg.width ? cfg.width : 1280) - 120; // padding (60px each side)
+      if (contentW < 320) contentW = 320;
+      var capH = Math.floor(contentW * 2 / 3);
+
+      document.querySelectorAll('.graph-scroll > svg, .graph-scroll > img').forEach(function(el){
+        var rect = el.getBoundingClientRect();
+        var curW = rect && rect.width ? rect.width : 0;
+        // Only upscale when clearly smaller than container
+        if (curW > 0 && curW < contentW * 0.7) {
+          el.style.width = contentW + 'px';
+          el.style.maxHeight = capH + 'px';
+          el.style.height = 'auto';
+        } else {
+          // Do not force width for already large diagrams
+          el.style.removeProperty('width');
+          el.style.removeProperty('max-height');
+        }
+      });
+    }
+
+    Reveal.on('ready', function(){
+      // Enforce top alignment in case theme defaults differ
+      if (typeof Reveal.configure === 'function') { Reveal.configure({ center: false }); }
+      if (document.body.classList.contains('top-align-mode')) {
+        // Remove extra top padding on current slide to keep content tight to top
+        var cur = Reveal.getCurrentSlide();
+        if (cur) cur.style.paddingTop = '10px';
+      }
+      adjustGraphScrollHeights();
+      fitSmallDiagrams();
+      topBiasCurrentSlide();
+    });
+    Reveal.on('slidechanged', function(){ adjustGraphScrollHeights(); fitSmallDiagrams(); topBiasCurrentSlide(); });
+    window.addEventListener('resize', function(){ adjustGraphScrollHeights(); fitSmallDiagrams(); topBiasCurrentSlide(); });
 
     // Last slide message state
     var lastSlideMessageShown = false;

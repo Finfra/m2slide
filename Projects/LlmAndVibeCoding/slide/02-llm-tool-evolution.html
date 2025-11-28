@@ -9,94 +9,16 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
+  <link rel="stylesheet" href="../../../resource/slide.css?v=1764315186311">
   <style>
-    * {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-    }
-    .reveal h1 { font-size: 2.5em; }
-    .reveal h2 { font-size: 1.8em; }
-    .reveal h3 { font-size: 1.4em; }
-    .reveal { font-size: 32px; }
-    .reveal table {
-      font-size: 0.7em;
-      width: 100% !important;
-    }
-    .reveal pre { font-size: 0.6em; }
-    .reveal code { font-size: 0.9em; }
-    .reveal blockquote {
-      font-size: 1.1em;
-      font-style: italic;
-      background: rgba(255,255,255,0.1);
-      padding: 20px;
-      border-left: 5px solid #42affa;
-    }
-    .reveal p {
-      font-size: 1em;
-      line-height: 1.6;
-      margin: 0.5em 0;
-      color: #333;
-    }
-    .reveal ul, .reveal ol {
-      display: block;
-      text-align: left;
-      margin: 1em 0;
-      padding-left: 40px;
-    }
-    .reveal li {
-      font-size: 0.9em;
-      line-height: 1.6;
-      margin: 0.3em 0;
-      color: #333;
-      list-style-type: '- ';
-    }
-    .reveal li.bullet-dot {
-      list-style-type: '· ';
-    }
-    .reveal ul ul {
-      margin: 0.3em 0;
-    }
-    .reveal strong {
-      color: #222;
-      font-weight: bold;
-    }
-    .reveal img {
-      max-width: 400px;
-      max-height: 300px;
-      min-height: 200px;
-      margin: 0.5em 0;
-      display: block;
-    }
-    /* 슬라이드 스크롤 기능 추가 */
-    .reveal .slides section,
-    .reveal .slides section.present,
-    .reveal .slides section.past,
-    .reveal .slides section.future {
-      overflow-y: auto !important;
-      max-height: 100vh !important;
-      padding: 20px 60px 200px 60px !important;
-      box-sizing: border-box !important;
-    }
-    .reveal .slides section::-webkit-scrollbar {
-      width: 8px;
-    }
-    .reveal .slides section::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.1);
-      border-radius: 4px;
-    }
-    .reveal .slides section::-webkit-scrollbar-thumb {
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 4px;
-    }
-    .reveal .slides section::-webkit-scrollbar-thumb:hover {
-      background: rgba(0, 0, 0, 0.5);
-    }
+    /* Markmap SVG baseline (allow container to control size) */
     #toc-mindmap {
-      width: 100% !important;
-      height: 500px !important;
-      max-width: 100% !important;
-      max-height: 500px !important;
-      overflow: hidden !important;
-      display: block !important;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      overflow: hidden;
+      display: block;
     }
     #toc-mindmap a {
       text-decoration: none;
@@ -107,18 +29,7 @@
       font-size: 16px !important;
       font-weight: 500;
     }
-    /* Kroki diagrams */
-    .reveal .kroki {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 1em 0;
-    }
-    .reveal .kroki svg {
-      max-width: 100%;
-      max-height: 500px;
-      height: auto;
-    }
+    /* Minimal elements left inline to avoid FOUC */
     /* TOC container outside Reveal.js for Safari compatibility */
     #toc-container {
       display: block;
@@ -140,7 +51,7 @@
     }
     #toc-container #toc-mindmap {
       width: 100%;
-      height: calc(100% - 120px);
+      height: calc(100% - 120px); /* fill under the title */
     }
     #toc-container a {
       text-decoration: none;
@@ -190,7 +101,7 @@
     }
   </style>
 </head>
-<body>
+<body class="top-align-mode">
   <a href="index.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
     <svg viewBox="0 0 24 24">
       <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
@@ -206,14 +117,14 @@
 
   <div id="last-slide-message">마지막 페이지입니다. 다음 챕터로 이동하려면 다시 →를 누르세요.</div>
 
-  <div class="reveal">
+  <div class="reveal ratio-none">
     <div class="slides">
 
       <section id="toc-placeholder"></section>
 
       <section>
 <h2>진화 타임라인</h2>
-
+<div class="theContents">
 <div class="mermaid">
 timeline
     title LLM 코딩 툴의 진화 과정
@@ -233,11 +144,12 @@ timeline
                   : Gemini CLI
                   : Codex CLI
 </div>
+</div>
       </section>
 
       <section>
 <h2>진화의 핵심 동인</h2>
-
+<div class="theContents">
 <p><strong>기술적 발전</strong></p>
 
 <p><strong>LLM 성능 향상</strong></p>
@@ -253,11 +165,12 @@ timeline
 <li class="bullet-dot">현재 (Claude 3.5): 200K 토큰 이상</li>
 <li class="bullet-dot">전체 코드베이스를 한 번에 이해 가능</li>
 </ul>
+</div>
       </section>
 
       <section>
 <h2>진화의 핵심 동인 (계속)</h2>
-
+<div class="theContents">
 <p><strong>도구 사용 능력 (Function Calling)</strong></p>
 <ul>
 <li class="bullet-dot">AI가 직접 API 호출</li>
@@ -271,10 +184,12 @@ timeline
 <li class="bullet-dot">더 적은 반복 작업 원함</li>
 <li class="bullet-dot">더 높은 코드 품질 기대</li>
 </ul>
+</div>
       </section>
 
       <section>
 <h2>세대별 대표 도구</h2>
+<div class="theContents">
 <p><div style="float:left; width:35%;"></p>
 <p>  <img src="img/chatgpt-logo.png" alt="alt text"></p>
 <p>  <img src="img/gemini-logo.png" alt="alt text"></p>
@@ -287,6 +202,7 @@ timeline
 <p><strong>0세대 (채팅 기반)</strong></p>
 <p><strong>1세대 (IDE 통합)</strong></p>
 <p><strong>2세대 (CLI 기반)</strong></p>
+</div>
       </section>
 
       <section data-markdown>
@@ -306,7 +222,7 @@ timeline
 
       <section>
 <h2>미래 전망</h2>
-
+<div class="theContents">
 <p><strong>다음 진화 단계</strong></p>
 
 <ul>
@@ -315,6 +231,7 @@ timeline
 <li class="bullet-dot"><strong>지속적 학습</strong>: 프로젝트별 코딩 스타일 학습 및 적응</li>
 <li class="bullet-dot"><strong>실시간 코드 리뷰</strong>: AI가 실시간으로 코드 품질 검증</li>
 </ul>
+</div>
       </section>
 
       <section data-markdown>
@@ -342,12 +259,19 @@ timeline
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>
+    // Allow URL toggle: ?top=1 to enable top-align-mode regardless of config
+    try {
+      var qs = new URLSearchParams(window.location.search);
+      if (qs.get('top') === '1') document.body.classList.add('top-align-mode');
+    } catch (e) {}
+
     Reveal.initialize({
       hash: true,
       plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
-      width: 1280,
-      height: 720,
-      margin: 0.1,
+      width: '100%',
+      height: '100%',
+      margin: 0.0,
+      center: false,
       slideNumber: 'c/t',
       transition: 'slide',
       backgroundTransition: 'fade'
@@ -406,7 +330,7 @@ timeline
           try {
             mermaid.render(graphId, graphDefinition).then(function(result) {
               if (result && result.svg) {
-                element.innerHTML = result.svg;
+                element.innerHTML = '<div class="graph-scroll">' + result.svg + '</div>';
               }
             }).catch(function(error) {
               console.error('Mermaid rendering error for diagram ' + index + ':', error);
@@ -416,8 +340,10 @@ timeline
           }
         });
       }
+    });
 
-      // Render all Kroki diagrams
+    // Render all Kroki diagrams (runtime fallback)
+    Reveal.on('ready', function() {
       const allKrokiElements = document.querySelectorAll('.kroki');
       if (allKrokiElements && allKrokiElements.length > 0) {
         allKrokiElements.forEach(function(element, index) {
@@ -433,29 +359,14 @@ timeline
             return;
           }
 
-          // Use Kroki API with POST to specific endpoint
-          const apiUrl = 'https://kroki.io/' + diagramType + '/svg';
-
-          fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'text/plain',
-            },
-            body: diagramSource
-          })
-          .then(function(response) {
-            if (!response.ok) {
-              throw new Error('Kroki API error: ' + response.status);
-            }
-            return response.text();
-          })
-          .then(function(svg) {
-            element.innerHTML = svg;
-          })
-          .catch(function(error) {
-            console.error('Kroki rendering error for ' + diagramType + ' diagram ' + index + ':', error);
-            element.innerHTML = '<p style="color: red;">Failed to render ' + diagramType + ' diagram. Error: ' + error.message + '</p>';
-          });
+          // Prefer GET image to avoid CORS issues on file:// origins
+          try {
+            const imgUrl = 'https://kroki.io/' + diagramType + '/svg?source=' + encodeURIComponent(diagramSource);
+            element.innerHTML = '<div class="graph-scroll"><img alt="' + diagramType + ' diagram" src="' + imgUrl + '"/></div>';
+          } catch (error) {
+            console.error('Kroki rendering setup error for ' + diagramType + ' diagram ' + index + ':', error);
+            element.innerHTML = '<p style="color: red;">Failed to prepare ' + diagramType + ' diagram.</p>';
+          }
         });
       }
     });
@@ -466,28 +377,37 @@ timeline
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">진화 타임라인</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/2\">진화의 핵심 동인</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/4\">세대별 대표 도구</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/5\">세대별 비교 요약</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/6\">미래 전망</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/7\">개발자 역할의 변화</a>",
-                  "children": []
+                  "content": "2. LLM 코딩 툴의 진화 과정",
+                  "children": [
+                        {
+                              "content": "<a href=\"#/1\">진화 타임라인</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/2\">진화의 핵심 동인</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/3\">진화의 핵심 동인 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/4\">세대별 대표 도구</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/5\">세대별 비교 요약</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/6\">미래 전망</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/7\">개발자 역할의 변화</a>",
+                              "children": []
+                        }
+                  ]
             },
             {
                   "content": "하위 챕터",
@@ -509,6 +429,7 @@ timeline
       ]
 };
     var markmapInitialized = false;
+    var markmapInstance = null;
 
     // Function to toggle TOC visibility based on current slide
     function updateTocVisibility() {
@@ -519,8 +440,24 @@ timeline
 
         // Initialize markmap on first show
         if (!markmapInitialized && window.markmap && tocContainer) {
-          window.markmap.Markmap.create('#toc-mindmap', {}, tocData);
+          // Create with layout options so the tree breathes horizontally
+          markmapInstance = window.markmap.Markmap.create('#toc-mindmap', {
+            autoFit: true,
+            fitRatio: 1,
+            spacingHorizontal: 160,
+            spacingVertical: 12,
+            paddingX: 80,
+            initialExpandLevel: 3
+          }, tocData);
           markmapInitialized = true;
+          // Ensure fit after layout settles
+          requestAnimationFrame(function () {
+            if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
+          });
+          setTimeout(function(){ if (markmapInstance && markmapInstance.fit) markmapInstance.fit(); }, 50);
+        } else if (markmapInitialized && markmapInstance && markmapInstance.fit) {
+          // Re-fit when returning to the first slide
+          requestAnimationFrame(function () { markmapInstance.fit(); });
         }
       } else {
         // Other slides: hide TOC container
@@ -537,6 +474,114 @@ timeline
     Reveal.on('slidechanged', function() {
       updateTocVisibility();
     });
+
+    // Keep Markmap fitted on window resize
+    window.addEventListener('resize', function(){
+      if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
+    });
+
+    // Adjust scroll height for tall diagrams based on Reveal scale
+    function adjustGraphScrollHeights() {
+      // Use Reveal logical size and subtract actual header height on current slide
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { width: 1280, height: 720 };
+      var baseH = cfg && cfg.height ? cfg.height : 720;
+
+      var cur = (typeof Reveal.getCurrentSlide === 'function') ? Reveal.getCurrentSlide() : null;
+      var headerSpace = 0;
+      if (cur) {
+        // Sum heights of visible H1/H2 in current slide
+        var heads = cur.querySelectorAll('h1, h2');
+        heads.forEach(function(h){
+          var cs = window.getComputedStyle(h);
+          var mh = parseFloat(cs.marginTop) + parseFloat(cs.marginBottom);
+          headerSpace += h.offsetHeight + mh;
+        });
+        // Add a small buffer below titles
+        headerSpace += 40;
+      }
+
+      var available = baseH - headerSpace - 40; // smaller buffer to allow larger content
+      if (available < 200) available = 200;
+
+      // Only adjust graph-scroll inside current slide to avoid layout thrash
+      var apply = function(scope){
+        scope.querySelectorAll('.graph-scroll').forEach(function(el){
+          el.style.maxHeight = available + 'px';
+          el.style.overflowY = 'auto';
+          // Prefer height-based fit for diagrams
+          el.querySelectorAll('svg, img').forEach(function(di){
+            di.style.maxHeight = available + 'px';
+            di.style.height = 'auto';
+            di.style.width = 'auto';
+            di.style.maxWidth = '100%';
+          });
+        });
+      };
+      if (cur) apply(cur); else apply(document);
+    }
+
+    // Vertically bias content to top by reducing extra center spacing using margin
+    var lastAdjustedSlide = null;
+    function topBiasCurrentSlide() {
+      if (typeof Reveal.getCurrentSlide !== 'function') return;
+      var slide = Reveal.getCurrentSlide();
+      if (!slide) return;
+      // reset previous
+      if (lastAdjustedSlide && lastAdjustedSlide !== slide) {
+        lastAdjustedSlide.style.marginTop = '';
+      }
+      // compute extra space when content is short (Reveal may center it)
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { height: 720 };
+      var logicalH = cfg && cfg.height ? cfg.height : 720;
+      var contentH = slide.scrollHeight;
+      var extra = (logicalH - contentH) / 2; // space added by vertical centering
+      if (extra > 10) {
+        // leave a small 10px top padding, pull the rest up via negative margin
+        var offset = Math.min(extra - 10, logicalH * 0.25); // cap shift to 25% of slide height
+        slide.style.marginTop = '-' + Math.round(offset) + 'px';
+        lastAdjustedSlide = slide;
+      } else {
+        slide.style.marginTop = '';
+      }
+    }
+
+    // Enlarge small diagrams up to slide width, capping height to 3:2
+    function fitSmallDiagrams() {
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { width: 1280, height: 720 };
+      var contentW = (cfg && cfg.width ? cfg.width : 1280) - 120; // padding (60px each side)
+      if (contentW < 320) contentW = 320;
+      var capH = Math.floor(contentW * 2 / 3);
+
+      document.querySelectorAll('.graph-scroll > svg, .graph-scroll > img').forEach(function(el){
+        var rect = el.getBoundingClientRect();
+        var curW = rect && rect.width ? rect.width : 0;
+        // Only upscale when clearly smaller than container
+        if (curW > 0 && curW < contentW * 0.7) {
+          el.style.width = contentW + 'px';
+          el.style.maxHeight = capH + 'px';
+          el.style.height = 'auto';
+        } else {
+          // Do not force width for already large diagrams
+          el.style.removeProperty('width');
+          el.style.removeProperty('max-height');
+        }
+      });
+    }
+
+    Reveal.on('ready', function(){
+      // Enforce top alignment in case theme defaults differ
+      if (typeof Reveal.configure === 'function') { Reveal.configure({ center: false }); }
+      if (document.body.classList.contains('top-align-mode')) {
+        // Remove extra top padding on current slide to keep content tight to top
+        var cur = Reveal.getCurrentSlide();
+        if (cur) cur.style.paddingTop = '10px';
+      }
+      adjustGraphScrollHeights();
+      fitSmallDiagrams();
+      topBiasCurrentSlide();
+    });
+    Reveal.on('slidechanged', function(){ adjustGraphScrollHeights(); fitSmallDiagrams(); topBiasCurrentSlide(); });
+    window.addEventListener('resize', function(){ adjustGraphScrollHeights(); fitSmallDiagrams(); topBiasCurrentSlide(); });
 
     // Last slide message state
     var lastSlideMessageShown = false;
