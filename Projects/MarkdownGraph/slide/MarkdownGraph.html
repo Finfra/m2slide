@@ -9,7 +9,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
-  <link rel="stylesheet" href="../../../resource/slide.css?v=1764341517001">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
+  <link rel="stylesheet" href="../../../resource/slide.css?v=1764344385894">
   <style>
     /* Markmap SVG baseline (allow container to control size) */
     #toc-mindmap {
@@ -829,36 +830,23 @@ xychart-beta
 <ul>
 <li class="bullet-dot">test area</li>
 </ul>
-<pre><code></code></pre>
+<pre class="code-wrapper"><code></code></pre>
       </section>
 
       <section>
 <h2>ZenUML</h2>
 <div class="theContents">
-<pre><code>zenuml
-    title Order Service
-    @Actor Client #FFEBE6
-    @Boundary OrderController #0747A6
-    @EC2 <<BFF>> OrderService #E3FCEF
-    group BusinessService {
-      @Lambda PurchaseService
-      @AzureFunction InvoiceService
-    }
-
-    @Starter(Client)
-    // `POST /orders`
-    OrderController.post(payload) {
-      OrderService.create(payload) {
-        order = new Order(payload)
-        if(order != null) {
-          par {
-            PurchaseService.createPO(order)
-            InvoiceService.createInvoice(order)      
-          }      
-        }
-      }
-    }
-    </code></pre>
+<ul>
+<li class="bullet-dot">요거는 Python. </li>
+</ul>
+<pre class="code-wrapper"><code class="language-python">for i in range(10):
+  print(i)</code></pre>
+<ul>
+<li class="bullet-dot">요거는 java</li>
+</ul>
+<pre class="code-wrapper"><code class="language-java">for (int i = 0; i < 10; i++) {
+  System.out.println(i);
+}</code></pre>
 </div>
       </section>
 
@@ -902,7 +890,7 @@ xychart-beta
       flowchart: {
         htmlLabels: true,
         curve: 'basis',
-        useMaxWidth: true
+        useMaxWidth: false
       },
       sequence: {
         diagramMarginX: 50,
@@ -915,10 +903,10 @@ xychart-beta
         noteMargin: 10,
         messageMargin: 35,
         mirrorActors: true,
-        useMaxWidth: true
+        useMaxWidth: false
       },
       timeline: {
-        useMaxWidth: true
+        useMaxWidth: false
       }
     });
 
