@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:,">
+  <title>Mermaid Samples</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
+  <link rel="stylesheet" href="../../../resource/slide.css?v=1764341517001">
+  <style>
+    /* Markmap SVG baseline (allow container to control size) */
+    #toc-mindmap {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      overflow: hidden;
+      display: block;
+    }
+    #toc-mindmap a {
+      text-decoration: none;
+      color: inherit;
+    }
+    #toc-mindmap text {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif !important;
+      font-size: 16px !important;
+      font-weight: 500;
+    }
+    /* Minimal elements left inline to avoid FOUC */
+    /* TOC container outside Reveal.js for Safari compatibility */
+    #toc-container {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(#f7fbfc, #add9e4);
+      z-index: 100;
+      box-sizing: border-box;
+    }
+    #toc-container h1 {
+      text-align: center;
+      color: #333;
+      font-size: 80px;
+      margin: 0;
+      padding-top: 60px;
+    }
+    #toc-container #toc-mindmap {
+      width: 100%;
+      height: calc(100% - 120px); /* fill under the title */
+    }
+    #toc-container a {
+      text-decoration: none;
+    }
+    .nav-up-btn {
+      position: fixed;
+      bottom: 14px;
+      right: 70px;
+      z-index: 31;
+      background-color: transparent;
+      border: none;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.5);
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+    .nav-up-btn:hover {
+      color: rgba(0, 0, 0, 0.8);
+    }
+    .nav-up-btn svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+    .nav-up-btn span {
+      font-family: inherit;
+    }
+    /* Last slide message */
+    #last-slide-message {
+      display: none;
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-size: 16px;
+      z-index: 1000;
+      text-align: center;
+    }
+  </style>
+</head>
+<body class="top-align-mode">
+  
+
+  <!-- TOC container outside Reveal.js for Safari compatibility -->
+  <div id="toc-container">
+    <h1>Mermaid Samples</h1>
+    <svg id="toc-mindmap"></svg>
+  </div>
+
+  <div id="last-slide-message">마지막 페이지입니다. 다음 챕터로 이동하려면 다시 →를 누르세요.</div>
+
+  <div class="reveal ratio-none">
+    <div class="slides">
+
+      <section id="toc-placeholder"></section>
+
+      <section>
+<h2>짧은글</h2>
+<div class="theContents">
+<ul>
+<li class="bullet-dot">hi</li>
+<li class="bullet-dot">hello
+<ul>
+<li>hi</li>
+</ul>
+</ul>
+</div>
+      </section>
+
+      <section>
+<h2>긴글</h2>
+<div class="theContents">
+<ul>
+<li class="bullet-dot">hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi </li>
+<li class="bullet-dot">hello
+<ul>
+<li>hihihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi </li>
+</ul>
+</li>
+</ul>
+<p>  hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi </p>
+<p>  hihihihihihihihihihihihihihihi</p>
+</div>
+      </section>
+
+      <section>
+<h2>graph TD </h2>
+<div class="theContents">
+<ul>
+<li class="bullet-dot">내용이 있는..</li>
+</ul>
+<div class="media-container mermaid">
+graph TD;
+    A[2022 이전] --> B[ChatGPT];
+    A --> C[IDE 통합];
+    B --> D[CLI 시대];
+    C --> D;
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Flowchart</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+flowchart TD
+    A[Christmas] -->|Get money| B(Go shopping)
+    B --> C{Let me think}
+    C -->|One| D[Laptop]
+    C -->|Two| E[iPhone]
+    C -->|Three| F[fa:fa-car Car]
+  
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Class</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+classDiagram
+    Animal <|-- Duck
+    Animal <|-- Fish
+    Animal <|-- Zebra
+    Animal : +int age
+    Animal : +String gender
+    Animal: +isMammal()
+    Animal: +mate()
+    class Duck{
+      +String beakColor
+      +swim()
+      +quack()
+    }
+    class Fish{
+      -int sizeInFeet
+      -canEat()
+    }
+    class Zebra{
+      +bool is_wild
+      +run()
+    }
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Sequence</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+sequenceDiagram
+    Alice->>+John: Hello John, how are you?
+    Alice->>+John: John, can you hear me?
+    John-->>-Alice: Hi Alice, I can hear you!
+    John-->>-Alice: I feel great!
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Entity Relationship</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ ORDER_ITEM : contains
+    PRODUCT ||--o{ ORDER_ITEM : includes
+    CUSTOMER {
+        string id
+        string name
+        string email
+    }
+    ORDER {
+        string id
+        date orderDate
+        string status
+    }
+    PRODUCT {
+        string id
+        string name
+        float price
+    }
+    ORDER_ITEM {
+        int quantity
+        float price
+    }
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>State</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+stateDiagram-v2
+    [*] --> Still
+    Still --> [*]
+    Still --> Moving
+    Moving --> Still
+    Moving --> Crash
+    Crash --> [*]
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Mindmap</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+mindmap
+  root((mindmap))
+    Origins
+      Long history
+      ::icon(fa fa-book)
+      Popularisation
+        British popular psychology author Tony Buzan
+    Research
+      On effectiveness<br/>and features
+      On Automatic creation
+        Uses
+            Creative techniques
+            Strategic planning
+            Argument mapping
+    Tools
+      Pen and paper
+      Mermaid
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Architecture</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+architecture-beta
+    group api(cloud)[API]
+
+    service db(database)[Database] in api
+    service disk1(disk)[Storage] in api
+    service disk2(disk)[Storage] in api
+    service server(server)[Server] in api
+
+    db:L -- R:server
+    disk1:T -- B:server
+    disk2:T -- B:db
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Block</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+block-beta
+columns 1
+  db(("DB"))
+  blockArrowId6<["&nbsp;&nbsp;&nbsp;"]>(down)
+  block:ID
+    A
+    B["A wide one in the middle"]
+    C
+  end
+  space
+  D
+  ID --> D
+  C --> D
+  style B fill:#969,stroke:#333,stroke-width:4px
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>C4</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+C4Context
+    title System Context diagram for Internet Banking System
+    Enterprise_Boundary(b0, "BankBoundary0") {
+        Person(customerA, "Banking Customer A", "A customer of the bank, with personal bank accounts.")
+        Person(customerB, "Banking Customer B")
+        Person_Ext(customerC, "Banking Customer C", "desc")
+
+        Person(customerD, "Banking Customer D", "A customer of the bank, <br/> with personal bank accounts.")
+
+        System(SystemAA, "Internet Banking System", "Allows customers to view information about their bank accounts, and make payments.")
+
+        Enterprise_Boundary(b1, "BankBoundary") {
+            SystemDb_Ext(SystemE, "Mainframe Banking System", "Stores all of the core banking information about customers, accounts, transactions, etc.")
+
+            System_Boundary(b2, "BankBoundary2") {
+                System(SystemA, "Banking System A")
+                System(SystemB, "Banking System B", "A system of the bank, with personal bank accounts. next line.")
+            }
+
+            System_Ext(SystemC, "E-mail system", "The internal Microsoft Exchange e-mail system.")
+            SystemDb(SystemD, "Banking System D Database", "A system of the bank, with personal bank accounts.")
+
+            Boundary(b3, "BankBoundary3", "boundary") {
+                SystemQueue(SystemF, "Banking System F Queue", "A system of the bank.")
+                SystemQueue_Ext(SystemG, "Banking System G Queue", "A system of the bank, with personal bank accounts.")
+            }
+        }
+    }
+
+    BiRel(customerA, SystemAA, "Uses")
+    BiRel(SystemAA, SystemE, "Uses")
+    Rel(SystemAA, SystemC, "Sends e-mails", "SMTP")
+    Rel(SystemC, customerA, "Sends e-mails to")
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Gantt</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+gantt
+    title A Gantt Diagram
+    dateFormat  YYYY-MM-DD
+    section Section
+    A task           :a1, 2014-01-01, 30d
+    Another task     :after a1  , 20d
+    section Another
+    Task in sec      :2014-01-12  , 12d
+    another task      : 24d
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Git</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+gitGraph
+    commit
+    branch develop
+    checkout develop
+    commit
+    commit
+    checkout main
+    merge develop
+    commit
+    branch feature
+    checkout feature
+    commit
+    commit
+    checkout main
+    merge feature
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Kanban</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+%% Mermaid config removed for slide compatibility
+kanban
+  Todo
+    [Create Documentation]
+    docs[Create Blog about the new diagram]
+  [In progress]
+    id6[Create renderer so that it works in all cases. We also add some extra text here for testing purposes. And some more just for the extra flare.]
+  id9[Ready for deploy]
+    id8[Design grammar]@{ assigned: 'knsv' }
+  id10[Ready for test]
+    id4[Create parsing tests]@{ ticket: 2038, assigned: 'K.Sveidqvist', priority: 'High' }
+    id66[last item]@{ priority: 'Very Low', assigned: 'knsv' }
+  id11[Done]
+    id5[define getData]
+    id2[Title of diagram is more than 100 chars when user duplicates diagram with 100 char]@{ ticket: 2036, priority: 'Very High'}
+    id3[Update DB function]@{ ticket: 2037, assigned: knsv, priority: 'High' }
+
+  id12[Can't reproduce]
+    id3[Weird flickering in Firefox]
+
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Packet</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+%% title: "TCP Packet"
+packet
+0-15: "Source Port"
+16-31: "Destination Port"
+32-63: "Sequence Number"
+64-95: "Acknowledgment Number"
+96-99: "Data Offset"
+100-105: "Reserved"
+106: "URG"
+107: "ACK"
+108: "PSH"
+109: "RST"
+110: "SYN"
+111: "FIN"
+112-127: "Window"
+128-143: "Checksum"
+144-159: "Urgent Pointer"
+160-191: "(Options and Padding)"
+192-255: "Data (variable length)"
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Pie</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+pie title Pets adopted by volunteers
+    "Dogs" : 386
+    "Cats" : 85
+    "Rats" : 15
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Quadrant</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+quadrantChart
+    title Reach and engagement of campaigns
+    x-axis Low Reach --> High Reach
+    y-axis Low Engagement --> High Engagement
+    quadrant-1 We should expand
+    quadrant-2 Need to promote
+    quadrant-3 Re-evaluate
+    quadrant-4 May be improved
+    Campaign A: [0.3, 0.6]
+    Campaign B: [0.45, 0.23]
+    Campaign C: [0.57, 0.69]
+    Campaign D: [0.78, 0.34]
+    Campaign E: [0.40, 0.34]
+    Campaign F: [0.35, 0.78]
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Radar</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+%% title: "Grades"
+radar-beta
+  axis m["Math"], s["Science"], e["English"]
+  axis h["History"], g["Geography"], a["Art"]
+  curve a["Alice"]{85, 90, 80, 70, 75, 90}
+  curve b["Bob"]{70, 75, 85, 80, 90, 85}
+
+  max 100
+  min 0
+
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Requirement</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+requirementDiagram
+
+    requirement test_req {
+    id: 1
+    text: the test text.
+    risk: high
+    verifymethod: test
+    }
+
+    element test_entity {
+    type: simulation
+    }
+
+    test_entity - satisfies -> test_req
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Sankey</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+%% sankey config removed for slide compatibility
+sankey-beta
+
+Agricultural 'waste',Bio-conversion,124.729
+Bio-conversion,Liquid,0.597
+Bio-conversion,Losses,26.862
+Bio-conversion,Solid,280.322
+Bio-conversion,Gas,81.144
+Biofuel imports,Liquid,35
+Biomass imports,Solid,35
+Coal imports,Coal,11.606
+Coal reserves,Coal,63.965
+Coal,Solid,75.571
+District heating,Industry,10.639
+District heating,Heating and cooling - commercial,22.505
+District heating,Heating and cooling - homes,46.184
+Electricity grid,Over generation / exports,104.453
+Electricity grid,Heating and cooling - homes,113.726
+Electricity grid,H2 conversion,27.14
+Electricity grid,Industry,342.165
+Electricity grid,Road transport,37.797
+Electricity grid,Agriculture,4.412
+Electricity grid,Heating and cooling - commercial,40.858
+Electricity grid,Losses,56.691
+Electricity grid,Rail transport,7.863
+Electricity grid,Lighting & appliances - commercial,90.008
+Electricity grid,Lighting & appliances - homes,93.494
+Gas imports,NGas,40.719
+Gas reserves,NGas,82.233
+Gas,Heating and cooling - commercial,0.129
+Gas,Losses,1.401
+Gas,Thermal generation,151.891
+Gas,Agriculture,2.096
+Gas,Industry,48.58
+Geothermal,Electricity grid,7.013
+H2 conversion,H2,20.897
+H2 conversion,Losses,6.242
+H2,Road transport,20.897
+Hydro,Electricity grid,6.995
+Liquid,Industry,121.066
+Liquid,International shipping,128.69
+Liquid,Road transport,135.835
+Liquid,Domestic aviation,14.458
+Liquid,International aviation,206.267
+Liquid,Agriculture,3.64
+Liquid,National navigation,33.218
+Liquid,Rail transport,4.413
+Marine algae,Bio-conversion,4.375
+NGas,Gas,122.952
+Nuclear,Thermal generation,839.978
+Oil imports,Oil,504.287
+Oil reserves,Oil,107.703
+Oil,Liquid,611.99
+Other waste,Solid,56.587
+Other waste,Bio-conversion,77.81
+Pumped heat,Heating and cooling - homes,193.026
+Pumped heat,Heating and cooling - commercial,70.672
+Solar PV,Electricity grid,59.901
+Solar Thermal,Heating and cooling - homes,19.263
+Solar,Solar Thermal,19.263
+Solar,Solar PV,59.901
+Solid,Agriculture,0.882
+Solid,Thermal generation,400.12
+Solid,Industry,46.477
+Thermal generation,Electricity grid,525.531
+Thermal generation,Losses,787.129
+Thermal generation,District heating,79.329
+Tidal,Electricity grid,9.452
+UK land based bioenergy,Bio-conversion,182.01
+Wave,Electricity grid,19.013
+Wind,Electricity grid,289.366
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>StateDiagram </h2>
+<div class="theContents">
+<div class="media-container mermaid">
+stateDiagram
+    [*] --> S1
+    S1 --> S2
+    S2 --> [*]
+
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Timeline</h2>
+<div class="theContents">
+<ul>
+<li class="bullet-dot">base</li>
+</ul>
+<div class="media-container mermaid">
+timeline
+    title History of Social Media Platform
+    2002 : LinkedIn
+    2004 : Facebook
+         : Google
+    2005 : YouTube
+    2006 : Twitter
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Timeline (계속)</h2>
+<div class="theContents">
+<ul>
+<li class="bullet-dot">beta</li>
+</ul>
+<div class="media-container mermaid">
+timeline-beta
+    section Projects
+      2023 : Start
+      2024 : Release
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Treemap</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+treemap-beta
+"Section 1"
+    "Leaf 1.1": 12
+    "Section 1.2"
+      "Leaf 1.2.1": 12
+"Section 2"
+    "Leaf 2.1": 20
+    "Leaf 2.2": 25
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>User Journey</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+journey
+    title My working day
+    section Go to work
+      Make tea: 5: Me
+      Go upstairs: 3: Me
+      Do work: 1: Me, Cat
+    section Go home
+      Go downstairs: 5: Me
+      Sit down: 5: Me
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>XY</h2>
+<div class="theContents">
+<div class="media-container mermaid">
+xychart-beta
+    title "Sales Revenue"
+    x-axis [jan, feb, mar, apr, may, jun, jul, aug, sep, oct, nov, dec]
+    y-axis "Revenue (in $)" 4000 --> 11000
+    bar [5000, 6000, 7500, 8200, 9500, 10500, 11000, 10200, 9200, 8500, 7000, 6000]
+    line [5000, 6000, 7500, 8200, 9500, 10500, 11000, 10200, 9200, 8500, 7000, 6000]
+</div>
+</div>
+      </section>
+
+      <section>
+<h1>Kroki Example</h1>
+
+<h2>blockdiag</h2>
+<div class="theContents">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="https://kroki.io/blockdiag/svg/eJxdzEEKgzAQheG9p5jO3hNIvYh0MdpHCKaZMhFLKL27REtJXT7exz8Gnea7F0fvhmj8rbYnhwiTBakM3q-2fCaPxN1Z-4OtsEyQlC_cNX9mmDSo0ZXYGRAzQtAX30roHK_s08f5i6p0BdQkOhTy2QBZ7UER" alt="blockdiag diagram"/></div>
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>seqdiag</h2>
+<div class="theContents">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="https://kroki.io/seqdiag/svg/eJwrTi1MyUxMV6jmUlBIKsovL04tUlDQtVMoT00qTi0qSy1SiM5JTErNUbBVUHJ3DVHQz8xLSa3QyyjJzVGKtUbSZKOri9BkzUWEcQH-wSEK-kk5-en6yfm5ual5JRATEWp17RRSEksSkxKLU5H0efoFuwaFKODQA3IHTBOy-9AdWAsAskRQvA" alt="seqdiag diagram"/></div>
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>actdiag</h2>
+<div class="theContents">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="https://kroki.io/actdiag/svg/eJxNjssKwjAQRff5imv2fkFREJHShSsVF-JirEMItClMR11I_12SaOxuHodzL7V69-TwNsBLvDKWa7RDeLJoHH1PjitjgI4C4zGyJDbuN-6wgj2NLLZKt2zApfzO4tUHB-HD0V4zlJRzqGZFLCHUo9lv6t0io1OJpVlLlHp_w_Z7iTHQAU2M-EmmD2ryQ-A" alt="actdiag diagram"/></div>
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>nwdiag</h2>
+<div class="theContents">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="https://kroki.io/nwdiag/svg/eJzLK0_JTExXqOZSUMhLLSnPL8pWSMmtAvMVFBJTUopSi4sVbBWUjAwN9CpAUN_IRMmaCyxdnppkYKgQjUWVoVKsNVyJEVYlRhAltVxINmfmlaQW5SXmYFpvaGmkZ2hmoWegZ4DXAQh1eJyAUGQEU5QCMgiXSQYwp9YCADppTfQ" alt="nwdiag diagram"/></div>
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>`ditaa` (ASCII → 그림 변환)</h2>
+<div class="theContents">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="https://kroki.io/ditaa/svg/eJzT1oUCbQUFBQVtGIerRkHBOSBUQUGhRkHXTqFGIcjRF8Th0sauHgDcMw02" alt="ditaa diagram"/></div>
+</div>
+</div>
+      </section>
+
+      <section>
+<h1>Graphviz (DOT)</h1>
+
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="https://kroki.io/dot/svg/eJxLyUwvSizIUHBXqOZSUFBQKErMy07JLLINcbLmAgs4KkTnJCal5tgqGRkYGSm8mbvlzYIWpVhrsKQTXNI5I7HEPSAEJuEMl_B0cVV427b17dSVMDkXhCYfT4U33XNe9zSA5KDW6dopOFkj2M4wm3TtFFxghkPYtVwAEC00RQ" alt="dot diagram"/></div>
+</div>
+      </section>
+
+      <section>
+<h1>Vega</h1>
+<h2>Vega-lite</h2>
+<div class="theContents">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="https://kroki.io/vegalite/svg/eJxlkN1OhEAMhe95iqbxksAqkqxz5-9LGC_Kzsh0ZQeEgm4I725mAOPiXU-_k562YwQAgFfdwZoToQK0Ik2n0nQwJSUli-2LhOt0NoRuOuTJsasdxhEAfrEWiwqy3S5oa7i0ggpulkZDWrMrUUEetCbxQeOcPFDVmw4VvAYNMGJY4x5jwMKP2U_xJXpYUZ5v0eOKbrMtelrR3fUWPa9o_w-9_GZlUyBvEUAw4YnaD28pqJ0_YdyhXi5djvv2Jb6zqbR3kh8m58Z4UbeaHVW4JOL50lv89X725ISFhAeDfo8pmn4A-SRrww" alt="vegalite diagram"/></div>
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Vega</h2>
+<div class="theContents">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="https://kroki.io/vega/svg/eJyVU9uOmzAQfecrRqM-oiS7KdKWt91efqLaB4Mn4BbsyDhpUMS_Vx6uzkKlvgA-Osdz5sxwjwDwU5OXVAtMAUvnzk2631-pELtCufKS7ZTZ9wRG99dk96sxGmMv_aOkKzGF4-HA55JUUTpM4XkAzkJKpQtMIYkjD0jhfKWfEQDAnZ8AqEVNvr4TWUV8NcNXUV2omegswVw4KoxtPf8VY0BRm4vmoi9dvEF8C4hJskn8GhA_HzeJ3wLil6dN4veA-LJN_BF6PHYD753f_vTeZ9jkolrE8iHFGxPmGF17ZjwTWs6oNLVQGlO4j0MZ4wc8KaqkRyZ_k2u0Qhd8XT_8CZ9Hfdgdkt5zvG6w3TBYKU3C_qfFIbEVg8M2PsYnbsvw0FhFnDhmxjlT-8t7f3OUYyMLckUnF1CHphaFamF_r4xp7NZS7uZeT9bUK53ObZHOjfTC-7Q_SNqRDSAAvPE1jy38e6osHP_mVTEvTwpPoaQN6e3HWo_j6WXPWzr-5f0OdRN_IcXLWQrHIeBJVRV_jBJsHFGV-UO31JTm2oe0IrEksRtLdfOmRF30FwKOUcE" alt="vega diagram"/></div>
+</div>
+</div>
+      </section>
+
+      <section>
+<h1>PlantUML</h1>
+<h2>Class Diagram</h2>
+<div class="theContents">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="https://kroki.io/plantuml/svg/eJxzKC5JLCopzc3hclSwUjAyMDJSeDN3y5sFLdZcTgpWCs4ZiSXuASHWXM4KVgqeLq4Kb9u2vp260prLBSTp46nwpnvO654Gay4uRwVdXTsFJyjtzOUEpl24nKG0Q2peSmluDgAfjCId" alt="plantuml diagram"/></div>
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Component Diagram</h2>
+<div class="theContents">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="https://kroki.io/plantuml/svg/eJxzKC5JLCopzc3hSs7PLcjPS80rUXAM8ETiuThxOQZ4Kujq2oGYDql5KaW5OQAdkhIo" alt="plantuml diagram"/></div>
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Activity Diagram</h2>
+<div class="theContents">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="https://kroki.io/plantuml/svg/eJwdyTEOgCAMAMC9r-iIX5BBBkcnfQGGKiTYGlo1_t7E7ZILarHZdVT4Af0ke2EPZUN3x1rS0KFlYnQvaQeI_ZLlwTFqXiW25IGqEjqWP2ey9nogTmUDNTkhEKfrqB8PFCIk" alt="plantuml diagram"/></div>
+</div>
+</div>
+      </section>
+
+      <section>
+<h2>Use Case Diagram</h2>
+<div class="theContents">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="https://kroki.io/plantuml/svg/eJxzKC5JLCopzc3hSkwuyS9SCC1OLeICEQq6unYKGj756Zl5mkgCAaVFyRmJxamaXA6peSmluTkAza4VRg" alt="plantuml diagram"/></div>
+</div>
+</div>
+      </section>
+
+      <section>
+<h1>try </h1>
+<ul>
+<li class="bullet-dot">test area</li>
+</ul>
+<pre><code></code></pre>
+      </section>
+
+      <section>
+<h2>ZenUML</h2>
+<div class="theContents">
+<pre><code>zenuml
+    title Order Service
+    @Actor Client #FFEBE6
+    @Boundary OrderController #0747A6
+    @EC2 <<BFF>> OrderService #E3FCEF
+    group BusinessService {
+      @Lambda PurchaseService
+      @AzureFunction InvoiceService
+    }
+
+    @Starter(Client)
+    // `POST /orders`
+    OrderController.post(payload) {
+      OrderService.create(payload) {
+        order = new Order(payload)
+        if(order != null) {
+          par {
+            PurchaseService.createPO(order)
+            InvoiceService.createInvoice(order)      
+          }      
+        }
+      }
+    }
+    </code></pre>
+</div>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>
+    // Allow URL toggle: ?top=1 to enable top-align-mode regardless of config
+    try {
+      var qs = new URLSearchParams(window.location.search);
+      if (qs.get('top') === '1') document.body.classList.add('top-align-mode');
+    } catch (e) {}
+
+    Reveal.initialize({
+      hash: true,
+      plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
+      width: '100%',
+      height: '100%',
+      margin: 0.0,
+      center: false,
+      slideNumber: 'c/t',
+      transition: 'slide',
+      backgroundTransition: 'fade'
+    });
+
+    // Initialize mermaid for diagrams (manual rendering)
+    mermaid.initialize({
+      startOnLoad: false,  // Disable auto-render, we'll render manually
+      theme: 'default',
+      securityLevel: 'loose',
+      themeVariables: {
+        fontFamily: '"Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif'
+      },
+      flowchart: {
+        htmlLabels: true,
+        curve: 'basis',
+        useMaxWidth: true
+      },
+      sequence: {
+        diagramMarginX: 50,
+        diagramMarginY: 10,
+        actorMargin: 50,
+        width: 150,
+        height: 65,
+        boxMargin: 10,
+        boxTextMargin: 5,
+        noteMargin: 10,
+        messageMargin: 35,
+        mirrorActors: true,
+        useMaxWidth: true
+      },
+      timeline: {
+        useMaxWidth: true
+      }
+    });
+
+    // Render all Mermaid diagrams when Reveal.js is ready
+    Reveal.on('ready', function() {
+      // Find all mermaid elements in all slides
+      const allMermaidElements = document.querySelectorAll('.mermaid');
+
+      if (allMermaidElements && allMermaidElements.length > 0) {
+        allMermaidElements.forEach(function(element, index) {
+          // Skip if already rendered
+          if (element.querySelector('svg')) {
+            return;
+          }
+
+          const graphDefinition = element.textContent;
+          if (!graphDefinition || !graphDefinition.trim()) {
+            return;
+          }
+
+          const graphId = 'mermaid-diagram-' + index;
+
+          try {
+            mermaid.render(graphId, graphDefinition).then(function(result) {
+              if (result && result.svg) {
+                element.innerHTML = '<div class="graph-scroll">' + result.svg + '</div>';
+              }
+            }).catch(function(error) {
+              console.error('Mermaid rendering error for diagram ' + index + ':', error);
+            });
+          } catch (e) {
+            console.error('Mermaid rendering error for diagram ' + index + ':', e);
+          }
+        });
+      }
+    });
+
+    // Render all Kroki diagrams (runtime fallback)
+    Reveal.on('ready', function() {
+      const allKrokiElements = document.querySelectorAll('.kroki');
+      if (allKrokiElements && allKrokiElements.length > 0) {
+        allKrokiElements.forEach(function(element, index) {
+          // Skip if already rendered
+          if (element.querySelector('svg') || element.querySelector('img')) {
+            return;
+          }
+
+          const diagramType = element.getAttribute('data-type');
+          const diagramSource = element.textContent.trim();
+
+          if (!diagramType || !diagramSource) {
+            return;
+          }
+
+          // Prefer GET image to avoid CORS issues on file:// origins
+          try {
+            const imgUrl = 'https://kroki.io/' + diagramType + '/svg?source=' + encodeURIComponent(diagramSource);
+            element.innerHTML = '<div class="graph-scroll"><img alt="' + diagramType + ' diagram" src="' + imgUrl + '"/></div>';
+          } catch (error) {
+            console.error('Kroki rendering setup error for ' + diagramType + ' diagram ' + index + ':', error);
+            element.innerHTML = '<p style="color: red;">Failed to prepare ' + diagramType + ' diagram.</p>';
+          }
+        });
+      }
+    });
+
+    // Initialize markmap for table of contents (outside Reveal.js for Safari compatibility)
+    var tocContainer = document.getElementById('toc-container');
+    var tocData = {
+      "content": "",
+      "children": [
+            {
+                  "content": "Mermaid Samples",
+                  "children": [
+                        {
+                              "content": "<a href=\"#/1\">짧은글</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/2\">긴글</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/3\">graph TD </a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/4\">Flowchart</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/5\">Class</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/6\">Sequence</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/7\">Entity Relationship</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/8\">State</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/9\">Mindmap</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/10\">Architecture</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/11\">Block</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/12\">C4</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/13\">Gantt</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/14\">Git</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/15\">Kanban</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/16\">Packet</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/17\">Pie</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/18\">Quadrant</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/19\">Radar</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/20\">Requirement</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/21\">Sankey</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/22\">StateDiagram </a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/23\">Timeline</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/24\">Timeline (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/25\">Treemap</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/26\">User Journey</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/27\">XY</a>",
+                              "children": []
+                        }
+                  ]
+            },
+            {
+                  "content": "Kroki Example",
+                  "children": [
+                        {
+                              "content": "<a href=\"#/28\">blockdiag</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/29\">seqdiag</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/30\">actdiag</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/31\">nwdiag</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/32\">`ditaa` (ASCII → 그림 변환)</a>",
+                              "children": []
+                        }
+                  ]
+            },
+            {
+                  "content": "Graphviz (DOT)",
+                  "children": []
+            },
+            {
+                  "content": "Vega",
+                  "children": [
+                        {
+                              "content": "<a href=\"#/34\">Vega-lite</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/35\">Vega</a>",
+                              "children": []
+                        }
+                  ]
+            },
+            {
+                  "content": "PlantUML",
+                  "children": [
+                        {
+                              "content": "<a href=\"#/36\">Class Diagram</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/37\">Component Diagram</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/38\">Activity Diagram</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/39\">Use Case Diagram</a>",
+                              "children": []
+                        }
+                  ]
+            },
+            {
+                  "content": "try ",
+                  "children": [
+                        {
+                              "content": "<a href=\"#/41\">ZenUML</a>",
+                              "children": []
+                        }
+                  ]
+            }
+      ]
+};
+    var markmapInitialized = false;
+    var markmapInstance = null;
+
+    // Function to toggle TOC visibility based on current slide
+    function updateTocVisibility() {
+      var currentSlide = Reveal.getIndices();
+      if (currentSlide.h === 0 && currentSlide.v === 0) {
+        // First slide: show TOC container
+        tocContainer.style.display = 'block';
+
+        // Initialize markmap on first show
+        if (!markmapInitialized && window.markmap && tocContainer) {
+          // Create with layout options so the tree breathes horizontally
+          markmapInstance = window.markmap.Markmap.create('#toc-mindmap', {
+            autoFit: true,
+            fitRatio: 1,
+            spacingHorizontal: 160,
+            spacingVertical: 12,
+            paddingX: 80,
+            initialExpandLevel: 3
+          }, tocData);
+          markmapInitialized = true;
+          // Ensure fit after layout settles
+          requestAnimationFrame(function () {
+            if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
+          });
+          setTimeout(function(){ if (markmapInstance && markmapInstance.fit) markmapInstance.fit(); }, 50);
+        } else if (markmapInitialized && markmapInstance && markmapInstance.fit) {
+          // Re-fit when returning to the first slide
+          requestAnimationFrame(function () { markmapInstance.fit(); });
+        }
+      } else {
+        // Other slides: hide TOC container
+        tocContainer.style.display = 'none';
+      }
+    }
+
+    // Initial state check
+    Reveal.on('ready', function() {
+      updateTocVisibility();
+    });
+
+    // Update on slide change
+    Reveal.on('slidechanged', function() {
+      updateTocVisibility();
+    });
+
+    // Keep Markmap fitted on window resize
+    window.addEventListener('resize', function(){
+      if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
+    });
+
+    // Adjust scroll height for tall diagrams based on Reveal scale
+    function adjustGraphScrollHeights() {
+      // Use Reveal logical size and subtract actual header height on current slide
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { width: 1280, height: 720 };
+      var baseH = cfg && cfg.height ? cfg.height : 720;
+
+      var cur = (typeof Reveal.getCurrentSlide === 'function') ? Reveal.getCurrentSlide() : null;
+      var headerSpace = 0;
+      if (cur) {
+        // Sum heights of visible H1/H2 in current slide
+        var heads = cur.querySelectorAll('h1, h2');
+        heads.forEach(function(h){
+          var cs = window.getComputedStyle(h);
+          var mh = parseFloat(cs.marginTop) + parseFloat(cs.marginBottom);
+          headerSpace += h.offsetHeight + mh;
+        });
+        // Add a small buffer below titles
+        headerSpace += 40;
+      }
+
+      var available = baseH - headerSpace - 40; // smaller buffer to allow larger content
+      if (available < 200) available = 200;
+
+      // Only adjust graph-scroll inside current slide to avoid layout thrash
+      var apply = function(scope){
+        scope.querySelectorAll('.graph-scroll').forEach(function(el){
+          el.style.maxHeight = available + 'px';
+          el.style.overflowY = 'auto';
+          // Prefer height-based fit for diagrams
+          el.querySelectorAll('svg, img').forEach(function(di){
+            di.style.maxHeight = available + 'px';
+            di.style.height = 'auto';
+            di.style.width = 'auto';
+            di.style.maxWidth = '100%';
+          });
+        });
+      };
+      if (cur) apply(cur); else apply(document);
+    }
+
+    // Vertically bias content to top by reducing extra center spacing using margin
+    var lastAdjustedSlide = null;
+    function topBiasCurrentSlide() {
+      if (typeof Reveal.getCurrentSlide !== 'function') return;
+      var slide = Reveal.getCurrentSlide();
+      if (!slide) return;
+      // reset previous
+      if (lastAdjustedSlide && lastAdjustedSlide !== slide) {
+        lastAdjustedSlide.style.marginTop = '';
+      }
+      // compute extra space when content is short (Reveal may center it)
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { height: 720 };
+      var logicalH = cfg && cfg.height ? cfg.height : 720;
+      var contentH = slide.scrollHeight;
+      var extra = (logicalH - contentH) / 2; // space added by vertical centering
+      if (extra > 10) {
+        // leave a small 10px top padding, pull the rest up via negative margin
+        var offset = Math.min(extra - 10, logicalH * 0.25); // cap shift to 25% of slide height
+        slide.style.marginTop = '-' + Math.round(offset) + 'px';
+        lastAdjustedSlide = slide;
+      } else {
+        slide.style.marginTop = '';
+      }
+    }
+
+    // Enlarge small diagrams up to slide width, capping height to 3:2
+    function fitSmallDiagrams() {
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { width: 1280, height: 720 };
+      var contentW = (cfg && cfg.width ? cfg.width : 1280) - 120; // padding (60px each side)
+      if (contentW < 320) contentW = 320;
+      var capH = Math.floor(contentW * 2 / 3);
+
+      document.querySelectorAll('.graph-scroll > svg, .graph-scroll > img').forEach(function(el){
+        var rect = el.getBoundingClientRect();
+        var curW = rect && rect.width ? rect.width : 0;
+        // Only upscale when clearly smaller than container
+        if (curW > 0 && curW < contentW * 0.7) {
+          el.style.width = contentW + 'px';
+          el.style.maxHeight = capH + 'px';
+          el.style.height = 'auto';
+        } else {
+          // Do not force width for already large diagrams
+          el.style.removeProperty('width');
+          el.style.removeProperty('max-height');
+        }
+      });
+    }
+
+    Reveal.on('ready', function(){
+      // Enforce top alignment in case theme defaults differ
+      if (typeof Reveal.configure === 'function') { Reveal.configure({ center: false }); }
+      if (document.body.classList.contains('top-align-mode')) {
+        // Remove extra top padding on current slide to keep content tight to top
+        var cur = Reveal.getCurrentSlide();
+        if (cur) cur.style.paddingTop = '10px';
+      }
+      adjustGraphScrollHeights();
+      fitSmallDiagrams();
+      topBiasCurrentSlide();
+    });
+    Reveal.on('slidechanged', function(){ adjustGraphScrollHeights(); fitSmallDiagrams(); topBiasCurrentSlide(); });
+    window.addEventListener('resize', function(){ adjustGraphScrollHeights(); fitSmallDiagrams(); topBiasCurrentSlide(); });
+
+    // Last slide message state
+    var lastSlideMessageShown = false;
+    var lastSlideMessage = document.getElementById('last-slide-message');
+
+    // Connect keyboard navigation
+    document.addEventListener('keydown', function(event) {
+      // Check if up arrow key is pressed
+      if (event.key === 'ArrowUp' || event.keyCode === 38) {
+        var currentSlide = Reveal.getIndices();
+        // Only navigate to parent if there are no vertical slides and parent exists
+        if (currentSlide.v === 0) {
+          var navLink = document.getElementById('nav-up-link');
+          if (navLink) {
+            event.preventDefault();
+            window.location.href = navLink.href;
+          }
+        }
+      }
+
+      // Check if right arrow key is pressed
+      if (event.key === 'ArrowRight' || event.keyCode === 39) {
+        var totalSlides = Reveal.getTotalSlides();
+        var currentSlide = Reveal.getIndices();
+        var currentSlideNumber = Reveal.getSlidePastCount() + 1;
+        var hasNextChapter = '' !== '';
+
+        // Check if on last slide
+        if (currentSlideNumber >= totalSlides) {
+          if (hasNextChapter) {
+            if (lastSlideMessageShown) {
+              // Second press: navigate to next chapter
+              lastSlideMessage.style.display = 'none';
+              lastSlideMessageShown = false;
+              window.location.href = '';
+            } else {
+              // First press: show message
+              event.preventDefault();
+              lastSlideMessage.style.display = 'block';
+              lastSlideMessageShown = true;
+            }
+          } else {
+            // No next chapter - do nothing or show different message
+            event.preventDefault();
+          }
+        }
+      }
+    });
+
+    // Hide message when slide changes
+    Reveal.on('slidechanged', function() {
+      lastSlideMessage.style.display = 'none';
+      lastSlideMessageShown = false;
+    });
+  </script>
+</body>
+</html>
