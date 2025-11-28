@@ -58,12 +58,39 @@
   border-left: 5px solid #42affa;
 }
 
-.reveal code {
+.reveal code,
+.reveal .code-wrapper {
   font-size: 0.9em;
+  /* Match li font size */
 }
 
 .reveal pre {
-  font-size: 0.6em;
+  font-size: 1.0em;
+  /* Increased from 0.6em */
+  display: flex !important;
+  flex-direction: column !important;
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  margin: 0 auto !important;
+  box-shadow: none !important;
+  padding: 0.5em !important;
+  /* Outer padding as requested */
+  box-sizing: border-box !important;
+  /* Include padding in width/height */
+}
+
+.reveal pre code {
+  flex-grow: 1 !important;
+  height: auto !important;
+  max-height: none !important;
+  width: 100% !important;
+  overflow: auto !important;
+  box-sizing: border-box !important;
+  line-height: 1.4;
+  /* Better readability */
+  padding: 0.5em !important;
+  /* Padding as requested */
 }
 
 .reveal table {
@@ -145,7 +172,6 @@ html body .reveal .slides section.present {
   min-height: 0 !important;
   display: flex !important;
   flex-direction: column;
-  border: 1px solid red;
 }
 
 .graph-scroll {
@@ -160,7 +186,6 @@ html body .reveal .slides section.present {
   justify-content: center;
   box-sizing: border-box;
   padding-right: 0;
-  border: 1px solid green;
 }
 
 /* Unified Visual Elements (Images, Diagrams) */
