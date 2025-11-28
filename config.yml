@@ -3,7 +3,7 @@
 
 # Default project name (used by convert.sh and deploy.sh)
 # Project path will be: Projects/{current_project}
-current_project: LlmAndVibeCoding
+current_project: MarkdownGraph
 # Optional: force top alignment of slide content
 # When true, generated HTML adds a 'top-align-mode' class which overrides
 # Reveal's vertical centering for the current slide. Use with care.
@@ -11,3 +11,4 @@ top_align: true
 # Project-relative CSS for slide output (linked into each chapter HTML)
 # Example: resource/slide.css
 slide_css: resource/slide.css
+slide_ratio: none # 3:2 # 16:9 # none

@@ -9,94 +9,16 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
+  <link rel="stylesheet" href="../../../resource/slide.css?v=1764315186314">
   <style>
-    * {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-    }
-    .reveal h1 { font-size: 2.5em; }
-    .reveal h2 { font-size: 1.8em; }
-    .reveal h3 { font-size: 1.4em; }
-    .reveal { font-size: 32px; }
-    .reveal table {
-      font-size: 0.7em;
-      width: 100% !important;
-    }
-    .reveal pre { font-size: 0.6em; }
-    .reveal code { font-size: 0.9em; }
-    .reveal blockquote {
-      font-size: 1.1em;
-      font-style: italic;
-      background: rgba(255,255,255,0.1);
-      padding: 20px;
-      border-left: 5px solid #42affa;
-    }
-    .reveal p {
-      font-size: 1em;
-      line-height: 1.6;
-      margin: 0.5em 0;
-      color: #333;
-    }
-    .reveal ul, .reveal ol {
-      display: block;
-      text-align: left;
-      margin: 1em 0;
-      padding-left: 40px;
-    }
-    .reveal li {
-      font-size: 0.9em;
-      line-height: 1.6;
-      margin: 0.3em 0;
-      color: #333;
-      list-style-type: '- ';
-    }
-    .reveal li.bullet-dot {
-      list-style-type: '· ';
-    }
-    .reveal ul ul {
-      margin: 0.3em 0;
-    }
-    .reveal strong {
-      color: #222;
-      font-weight: bold;
-    }
-    .reveal img {
-      max-width: 400px;
-      max-height: 300px;
-      min-height: 200px;
-      margin: 0.5em 0;
-      display: block;
-    }
-    /* 슬라이드 스크롤 기능 추가 */
-    .reveal .slides section,
-    .reveal .slides section.present,
-    .reveal .slides section.past,
-    .reveal .slides section.future {
-      overflow-y: auto !important;
-      max-height: 100vh !important;
-      padding: 20px 60px 200px 60px !important;
-      box-sizing: border-box !important;
-    }
-    .reveal .slides section::-webkit-scrollbar {
-      width: 8px;
-    }
-    .reveal .slides section::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.1);
-      border-radius: 4px;
-    }
-    .reveal .slides section::-webkit-scrollbar-thumb {
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 4px;
-    }
-    .reveal .slides section::-webkit-scrollbar-thumb:hover {
-      background: rgba(0, 0, 0, 0.5);
-    }
+    /* Markmap SVG baseline (allow container to control size) */
     #toc-mindmap {
-      width: 100% !important;
-      height: 500px !important;
-      max-width: 100% !important;
-      max-height: 500px !important;
-      overflow: hidden !important;
-      display: block !important;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      overflow: hidden;
+      display: block;
     }
     #toc-mindmap a {
       text-decoration: none;
@@ -107,18 +29,7 @@
       font-size: 16px !important;
       font-weight: 500;
     }
-    /* Kroki diagrams */
-    .reveal .kroki {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 1em 0;
-    }
-    .reveal .kroki svg {
-      max-width: 100%;
-      max-height: 500px;
-      height: auto;
-    }
+    /* Minimal elements left inline to avoid FOUC */
     /* TOC container outside Reveal.js for Safari compatibility */
     #toc-container {
       display: block;
@@ -140,7 +51,7 @@
     }
     #toc-container #toc-mindmap {
       width: 100%;
-      height: calc(100% - 120px);
+      height: calc(100% - 120px); /* fill under the title */
     }
     #toc-container a {
       text-decoration: none;
@@ -190,7 +101,7 @@
     }
   </style>
 </head>
-<body>
+<body class="top-align-mode">
   <a href="index.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
     <svg viewBox="0 0 24 24">
       <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
@@ -206,22 +117,23 @@
 
   <div id="last-slide-message">마지막 페이지입니다. 다음 챕터로 이동하려면 다시 →를 누르세요.</div>
 
-  <div class="reveal">
+  <div class="reveal ratio-none">
     <div class="slides">
 
       <section id="toc-placeholder"></section>
 
       <section>
 <h2>바이브 코딩이란?</h2>
-
+<div class="theContents">
 <p><strong>자연어로 의도를 전달</strong>하면</p>
 <p>AI가 <strong>실제 개발 환경에서 직접 코드를 작성하고 수정</strong>하는</p>
 <p>새로운 개발 방식</p>
+</div>
       </section>
 
       <section>
 <h2>핵심 개념</h2>
-
+<div class="theContents">
 <blockquote>
 "느낌(Vibe)만 전달하면 AI가 알아서 코딩한다"
 </blockquote>
@@ -232,11 +144,12 @@
 <p>단순 코드 생성을 넘어</p>
 <p><strong>개발 환경 전체와 통합</strong>되어</p>
 <p>파일을 직접 수정하고, 테스트를 실행하며, 오류를 수정</p>
+</div>
       </section>
 
       <section>
 <h2>바이브 코딩의 핵심 원칙</h2>
-
+<div class="theContents">
 <p><strong>Intent-First Programming (의도 우선 프로그래밍)</strong></p>
 
 <pre><code>전통적 개발: "어떻게(How)" 구현할지 고민
@@ -245,11 +158,12 @@
 <p><strong>예시</strong></p>
 <pre><code>❌ "useState를 사용해서 counter 변수를 만들고..."
 ✅ "카운터 기능이 있는 컴포넌트 만들어줘"</code></pre>
+</div>
       </section>
 
       <section>
 <h2>바이브 코딩의 핵심 원칙 (계속)</h2>
-
+<div class="theContents">
 <p><strong>Human-in-the-Loop Verification (인간 검증 루프)</strong></p>
 
 <pre><code>AI 코드 생성 → 개발자 검토 → 승인/수정 → 다음 단계</code></pre>
@@ -259,11 +173,12 @@
 <li class="bullet-dot">개발자가 품질 검증</li>
 <li class="bullet-dot">안전하고 신뢰할 수 있는 결과</li>
 </ul>
+</div>
       </section>
 
       <section>
 <h2>바이브 코딩의 핵심 원칙 (계속)</h2>
-
+<div class="theContents">
 <p><strong>Context-Aware Development (컨텍스트 인식 개발)</strong></p>
 
 <p>AI가 프로젝트 전체를 이해하고 작업:</p>
@@ -272,11 +187,12 @@
 <li class="bullet-dot">파일 간 의존성 파악</li>
 <li class="bullet-dot">프로젝트 규칙 준수</li>
 </ul>
+</div>
       </section>
 
       <section>
 <h2>철학</h2>
-
+<div class="theContents">
 <p><strong>"개발자는 창조자, AI는 실행자"</strong></p>
 
 <p><strong>개발자의 역할</strong></p>
@@ -294,10 +210,12 @@
 <li class="bullet-dot">테스트 코드 작성</li>
 <li class="bullet-dot">문서화</li>
 </ul>
+</div>
       </section>
 
       <section>
 <h2>바이브 코딩 워크플로우</h2>
+<div class="theContents">
 <div class="mermaid">
 sequenceDiagram
     participant Dev as 👨‍💻 개발자
@@ -311,11 +229,12 @@ sequenceDiagram
     Dev->>Dev: 👀 검토 및 승인
     Dev->>AI: 🔄 다음 요청<br/>"로그인 페이지도 만들어줘"
 </div>
+</div>
       </section>
 
       <section>
 <h2>왜 "바이브"인가?</h2>
-
+<div class="theContents">
 <p><strong>직관성</strong></p>
 <ul>
 <li class="bullet-dot">정확한 문법이 아닌 <strong>느낌</strong>만 전달</li>
@@ -333,11 +252,12 @@ sequenceDiagram
 <li class="bullet-dot">완벽한 명세가 아니어도 작동</li>
 <li class="bullet-dot">AI가 불명확한 부분은 질문하며 보완</li>
 </ul>
+</div>
       </section>
 
       <section>
 <h2>바이브 코딩의 핵심 가치</h2>
-
+<div class="theContents">
 <p><strong>생산성 향상</strong></p>
 <ul>
 <li class="bullet-dot">반복 작업 제거</li>
@@ -351,11 +271,12 @@ sequenceDiagram
 <li class="bullet-dot">비즈니스 로직에 집중</li>
 <li class="bullet-dot">더 많은 실험 가능</li>
 </ul>
+</div>
       </section>
 
       <section>
 <h2>바이브 코딩의 핵심 가치 (계속)</h2>
-
+<div class="theContents">
 <p><strong>진입 장벽 낮춤</strong></p>
 <ul>
 <li class="bullet-dot">초보 개발자도 복잡한 기능 구현 가능</li>
@@ -369,11 +290,12 @@ sequenceDiagram
 <li class="bullet-dot">자동 테스트 생성</li>
 <li class="bullet-dot">보안 모범 사례 적용</li>
 </ul>
+</div>
       </section>
 
       <section>
 <h2>바이브 코딩 vs 전통 코딩</h2>
-
+<div class="theContents">
 <p><strong>개발 프로세스 비교</strong></p>
 
 <p><strong>전통 코딩</strong></p>
@@ -386,11 +308,12 @@ sequenceDiagram
 문서화 (2시간)
 ───────────────
 총 27시간</code></pre>
+</div>
       </section>
 
       <section>
 <h2>바이브 코딩 vs 전통 코딩 (계속)</h2>
-
+<div class="theContents">
 <p><strong>바이브 코딩</strong></p>
 <pre><code>요구사항 분석 (1시간)
 AI와 대화하며 구현 (3시간)
@@ -401,11 +324,12 @@ AI와 대화하며 구현 (3시간)
 총 7.5시간</code></pre>
 
 <p><strong>시간 절감</strong>: 약 <strong>70%</strong></p>
+</div>
       </section>
 
       <section>
 <h2>주의사항</h2>
-
+<div class="theContents">
 <p><strong>AI가 못하는 것</strong></p>
 <ul>
 <li class="bullet-dot">비즈니스 요구사항 파악</li>
@@ -421,11 +345,12 @@ AI와 대화하며 구현 (3시간)
 <li class="bullet-dot">아키텍처 의사결정</li>
 <li class="bullet-dot">최종 품질 책임</li>
 </ul>
+</div>
       </section>
 
       <section>
 <h2>바이브 코딩의 성공 조건</h2>
-
+<div class="theContents">
 <p><strong>명확한 의도 전달</strong></p>
 
 <p>❌ 나쁜 예: "뭔가 좋은 거 만들어줘"</p>
@@ -435,11 +360,12 @@ AI와 대화하며 구현 (3시간)
 결제할 수 있는 기능을 만들어줘.
 결제는 토스페이먼츠 API를 사용하고,
 주문 내역은 데이터베이스에 저장해줘."</code></pre>
+</div>
       </section>
 
       <section>
 <h2>바이브 코딩의 성공 조건 (계속)</h2>
-
+<div class="theContents">
 <p><strong>적절한 검증</strong></p>
 <ul>
 <li class="bullet-dot">생성된 코드를 <strong>반드시 읽고 이해</strong></li>
@@ -452,21 +378,23 @@ AI와 대화하며 구현 (3시간)
 작은 단위로 나누어 요청 (O)
 각 단계마다 검증
 다음 단계 진행</code></pre>
+</div>
       </section>
 
       <section>
 <h2>바이브 코딩의 성공 조건 (계속)</h2>
-
+<div class="theContents">
 <p><strong>Git 활용</strong></p>
 
 <pre><code class="language-bash"># 자주 커밋하여 롤백 가능성 확보
 git add .
 git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
+</div>
       </section>
 
       <section>
 <h2>바이브 코딩이 가져온 변화</h2>
-
+<div class="theContents">
 <p><strong>개발 문화의 변화</strong></p>
 
 <p><strong>Before</strong></p>
@@ -482,11 +410,12 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
 <li class="bullet-dot">문제 정의 능력이 중요</li>
 <li class="bullet-dot">"무엇을" 만들지 고민</li>
 </ul>
+</div>
       </section>
 
       <section>
 <h2>바이브 코딩이 가져온 변화 (계속)</h2>
-
+<div class="theContents">
 <p><strong>학습 방식의 변화</strong></p>
 
 <p><strong>Before</strong></p>
@@ -500,11 +429,12 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
 <li class="bullet-dot">AI에게 질문 → 즉시 구현 → 코드 이해</li>
 <li class="bullet-dot">수일의 학습 곡선</li>
 </ul>
+</div>
       </section>
 
       <section>
 <h2>바이브 코딩이 가져온 변화 (계속)</h2>
-
+<div class="theContents">
 <p><strong>팀 협업의 변화</strong></p>
 
 <p><strong>Before</strong></p>
@@ -518,6 +448,7 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
 <li class="bullet-dot">AI가 1차 구현 → 시니어가 설계 검토</li>
 <li class="bullet-dot">비즈니스 로직에 집중한 논의</li>
 </ul>
+</div>
       </section>
 
     </div>
@@ -531,12 +462,19 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>
+    // Allow URL toggle: ?top=1 to enable top-align-mode regardless of config
+    try {
+      var qs = new URLSearchParams(window.location.search);
+      if (qs.get('top') === '1') document.body.classList.add('top-align-mode');
+    } catch (e) {}
+
     Reveal.initialize({
       hash: true,
       plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
-      width: 1280,
-      height: 720,
-      margin: 0.1,
+      width: '100%',
+      height: '100%',
+      margin: 0.0,
+      center: false,
       slideNumber: 'c/t',
       transition: 'slide',
       backgroundTransition: 'fade'
@@ -595,7 +533,7 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
           try {
             mermaid.render(graphId, graphDefinition).then(function(result) {
               if (result && result.svg) {
-                element.innerHTML = result.svg;
+                element.innerHTML = '<div class="graph-scroll">' + result.svg + '</div>';
               }
             }).catch(function(error) {
               console.error('Mermaid rendering error for diagram ' + index + ':', error);
@@ -605,8 +543,10 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
           }
         });
       }
+    });
 
-      // Render all Kroki diagrams
+    // Render all Kroki diagrams (runtime fallback)
+    Reveal.on('ready', function() {
       const allKrokiElements = document.querySelectorAll('.kroki');
       if (allKrokiElements && allKrokiElements.length > 0) {
         allKrokiElements.forEach(function(element, index) {
@@ -622,29 +562,14 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
             return;
           }
 
-          // Use Kroki API with POST to specific endpoint
-          const apiUrl = 'https://kroki.io/' + diagramType + '/svg';
-
-          fetch(apiUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'text/plain',
-            },
-            body: diagramSource
-          })
-          .then(function(response) {
-            if (!response.ok) {
-              throw new Error('Kroki API error: ' + response.status);
-            }
-            return response.text();
-          })
-          .then(function(svg) {
-            element.innerHTML = svg;
-          })
-          .catch(function(error) {
-            console.error('Kroki rendering error for ' + diagramType + ' diagram ' + index + ':', error);
-            element.innerHTML = '<p style="color: red;">Failed to render ' + diagramType + ' diagram. Error: ' + error.message + '</p>';
-          });
+          // Prefer GET image to avoid CORS issues on file:// origins
+          try {
+            const imgUrl = 'https://kroki.io/' + diagramType + '/svg?source=' + encodeURIComponent(diagramSource);
+            element.innerHTML = '<div class="graph-scroll"><img alt="' + diagramType + ' diagram" src="' + imgUrl + '"/></div>';
+          } catch (error) {
+            console.error('Kroki rendering setup error for ' + diagramType + ' diagram ' + index + ':', error);
+            element.innerHTML = '<p style="color: red;">Failed to prepare ' + diagramType + ' diagram.</p>';
+          }
         });
       }
     });
@@ -655,48 +580,85 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">바이브 코딩이란?</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/2\">핵심 개념</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/3\">바이브 코딩의 핵심 원칙</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/6\">철학</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/7\">바이브 코딩 워크플로우</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/8\">왜 \"바이브\"인가?</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/9\">바이브 코딩의 핵심 가치</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/11\">바이브 코딩 vs 전통 코딩</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/13\">주의사항</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/14\">바이브 코딩의 성공 조건</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/17\">바이브 코딩이 가져온 변화</a>",
-                  "children": []
+                  "content": "3. 바이브 코딩(VibeCoding) 개념과 철학",
+                  "children": [
+                        {
+                              "content": "<a href=\"#/1\">바이브 코딩이란?</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/2\">핵심 개념</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/3\">바이브 코딩의 핵심 원칙</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/4\">바이브 코딩의 핵심 원칙 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/5\">바이브 코딩의 핵심 원칙 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/6\">철학</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/7\">바이브 코딩 워크플로우</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/8\">왜 \"바이브\"인가?</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/9\">바이브 코딩의 핵심 가치</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/10\">바이브 코딩의 핵심 가치 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/11\">바이브 코딩 vs 전통 코딩</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/12\">바이브 코딩 vs 전통 코딩 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/13\">주의사항</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/14\">바이브 코딩의 성공 조건</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/15\">바이브 코딩의 성공 조건 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/16\">바이브 코딩의 성공 조건 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/17\">바이브 코딩이 가져온 변화</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/18\">바이브 코딩이 가져온 변화 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/19\">바이브 코딩이 가져온 변화 (계속)</a>",
+                              "children": []
+                        }
+                  ]
             },
             {
                   "content": "하위 챕터",
@@ -714,6 +676,7 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
       ]
 };
     var markmapInitialized = false;
+    var markmapInstance = null;
 
     // Function to toggle TOC visibility based on current slide
     function updateTocVisibility() {
@@ -724,8 +687,24 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
 
         // Initialize markmap on first show
         if (!markmapInitialized && window.markmap && tocContainer) {
-          window.markmap.Markmap.create('#toc-mindmap', {}, tocData);
+          // Create with layout options so the tree breathes horizontally
+          markmapInstance = window.markmap.Markmap.create('#toc-mindmap', {
+            autoFit: true,
+            fitRatio: 1,
+            spacingHorizontal: 160,
+            spacingVertical: 12,
+            paddingX: 80,
+            initialExpandLevel: 3
+          }, tocData);
           markmapInitialized = true;
+          // Ensure fit after layout settles
+          requestAnimationFrame(function () {
+            if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
+          });
+          setTimeout(function(){ if (markmapInstance && markmapInstance.fit) markmapInstance.fit(); }, 50);
+        } else if (markmapInitialized && markmapInstance && markmapInstance.fit) {
+          // Re-fit when returning to the first slide
+          requestAnimationFrame(function () { markmapInstance.fit(); });
         }
       } else {
         // Other slides: hide TOC container
@@ -742,6 +721,114 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
     Reveal.on('slidechanged', function() {
       updateTocVisibility();
     });
+
+    // Keep Markmap fitted on window resize
+    window.addEventListener('resize', function(){
+      if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
+    });
+
+    // Adjust scroll height for tall diagrams based on Reveal scale
+    function adjustGraphScrollHeights() {
+      // Use Reveal logical size and subtract actual header height on current slide
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { width: 1280, height: 720 };
+      var baseH = cfg && cfg.height ? cfg.height : 720;
+
+      var cur = (typeof Reveal.getCurrentSlide === 'function') ? Reveal.getCurrentSlide() : null;
+      var headerSpace = 0;
+      if (cur) {
+        // Sum heights of visible H1/H2 in current slide
+        var heads = cur.querySelectorAll('h1, h2');
+        heads.forEach(function(h){
+          var cs = window.getComputedStyle(h);
+          var mh = parseFloat(cs.marginTop) + parseFloat(cs.marginBottom);
+          headerSpace += h.offsetHeight + mh;
+        });
+        // Add a small buffer below titles
+        headerSpace += 40;
+      }
+
+      var available = baseH - headerSpace - 40; // smaller buffer to allow larger content
+      if (available < 200) available = 200;
+
+      // Only adjust graph-scroll inside current slide to avoid layout thrash
+      var apply = function(scope){
+        scope.querySelectorAll('.graph-scroll').forEach(function(el){
+          el.style.maxHeight = available + 'px';
+          el.style.overflowY = 'auto';
+          // Prefer height-based fit for diagrams
+          el.querySelectorAll('svg, img').forEach(function(di){
+            di.style.maxHeight = available + 'px';
+            di.style.height = 'auto';
+            di.style.width = 'auto';
+            di.style.maxWidth = '100%';
+          });
+        });
+      };
+      if (cur) apply(cur); else apply(document);
+    }
+
+    // Vertically bias content to top by reducing extra center spacing using margin
+    var lastAdjustedSlide = null;
+    function topBiasCurrentSlide() {
+      if (typeof Reveal.getCurrentSlide !== 'function') return;
+      var slide = Reveal.getCurrentSlide();
+      if (!slide) return;
+      // reset previous
+      if (lastAdjustedSlide && lastAdjustedSlide !== slide) {
+        lastAdjustedSlide.style.marginTop = '';
+      }
+      // compute extra space when content is short (Reveal may center it)
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { height: 720 };
+      var logicalH = cfg && cfg.height ? cfg.height : 720;
+      var contentH = slide.scrollHeight;
+      var extra = (logicalH - contentH) / 2; // space added by vertical centering
+      if (extra > 10) {
+        // leave a small 10px top padding, pull the rest up via negative margin
+        var offset = Math.min(extra - 10, logicalH * 0.25); // cap shift to 25% of slide height
+        slide.style.marginTop = '-' + Math.round(offset) + 'px';
+        lastAdjustedSlide = slide;
+      } else {
+        slide.style.marginTop = '';
+      }
+    }
+
+    // Enlarge small diagrams up to slide width, capping height to 3:2
+    function fitSmallDiagrams() {
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { width: 1280, height: 720 };
+      var contentW = (cfg && cfg.width ? cfg.width : 1280) - 120; // padding (60px each side)
+      if (contentW < 320) contentW = 320;
+      var capH = Math.floor(contentW * 2 / 3);
+
+      document.querySelectorAll('.graph-scroll > svg, .graph-scroll > img').forEach(function(el){
+        var rect = el.getBoundingClientRect();
+        var curW = rect && rect.width ? rect.width : 0;
+        // Only upscale when clearly smaller than container
+        if (curW > 0 && curW < contentW * 0.7) {
+          el.style.width = contentW + 'px';
+          el.style.maxHeight = capH + 'px';
+          el.style.height = 'auto';
+        } else {
+          // Do not force width for already large diagrams
+          el.style.removeProperty('width');
+          el.style.removeProperty('max-height');
+        }
+      });
+    }
+
+    Reveal.on('ready', function(){
+      // Enforce top alignment in case theme defaults differ
+      if (typeof Reveal.configure === 'function') { Reveal.configure({ center: false }); }
+      if (document.body.classList.contains('top-align-mode')) {
+        // Remove extra top padding on current slide to keep content tight to top
+        var cur = Reveal.getCurrentSlide();
+        if (cur) cur.style.paddingTop = '10px';
+      }
+      adjustGraphScrollHeights();
+      fitSmallDiagrams();
+      topBiasCurrentSlide();
+    });
+    Reveal.on('slidechanged', function(){ adjustGraphScrollHeights(); fitSmallDiagrams(); topBiasCurrentSlide(); });
+    window.addEventListener('resize', function(){ adjustGraphScrollHeights(); fitSmallDiagrams(); topBiasCurrentSlide(); });
 
     // Last slide message state
     var lastSlideMessageShown = false;
