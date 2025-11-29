@@ -1,266 +1,161 @@
-/* Global Settings */
+/* =========================================
+   [Table of Contents]
+   1. 전역 설정 (Global)
+   2. 레이아웃 유틸리티 (Layout Utilities)
+   3. 컴포넌트 (Components)
+   4. 특수 슬라이드 (Special Slides)
+   5. 유틸리티 (Utilities)
+   ========================================= */
+
+/* =========================================
+   1. 전역 설정 (Global)
+   ========================================= */
 * {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-}
-
-.reveal {
-  font-size: 32px;
-}
-
-/* Slide Container */
-.reveal .slides {
-  display: block;
-}
-
-.reveal.ratio-none .slides {
-  width: 100% !important;
-  height: 100% !important;
-  inset: 0 !important;
-  transform: none !important;
-}
-
-/* Typography */
-.reveal h1,
-.reveal h2,
-.reveal h3 {
-  margin: 0 0 0.2em 0 !important;
+  box-sizing: border-box;
 }
 
 .reveal h1 {
   font-size: 2.5em;
 }
 
-.reveal h2 {
-  font-size: 1.8em;
+/* =========================================
+   2. 레이아웃 유틸리티 (Layout Utilities)
+   ========================================= */
+/* 공통 Flex Column 패턴 */
+.reveal pre,
+.reveal .slides section,
+.reveal .theContents,
+.reveal .media-container,
+.graph-scroll,
+.reveal section.title-slide {
+  display: flex;
+  flex-direction: column;
 }
 
-.reveal h3 {
-  font-size: 1.4em;
+/* 전체 크기 헬퍼 */
+.reveal.ratio-none .slides,
+.reveal .slides section,
+.reveal .media-container,
+.reveal .media-container img,
+.reveal .media-container svg {
+  width: 100%;
+  height: 100%;
 }
 
-.reveal p {
-  font-size: 1em;
-  line-height: 1.6;
-  margin: 0.5em 0;
-  color: #333;
+/* 슬라이드 컨테이너 */
+.reveal .slides {
+  display: block;
 }
 
-.reveal strong {
-  color: #222;
-  font-weight: bold;
+.reveal.ratio-none .slides {
+  inset: 0;
+  transform: none;
 }
 
-.reveal blockquote {
-  font-size: 1.1em;
-  font-style: italic;
-  background: rgba(255, 255, 255, 0.1);
-  padding: 20px;
-  border-left: 5px solid #42affa;
+/* 개별 슬라이드 섹션 */
+.reveal .slides section {
+  min-height: 100%;
+  padding: 0;
+  margin: 0;
+  top: 0;
+  left: 0;
+  align-items: stretch;
+  justify-content: flex-start;
+  overflow-y: visible;
 }
 
-.reveal code,
-.reveal .code-wrapper {
-  font-size: 0.9em;
-  /* Match li font size */
+/* 콘텐츠 컨테이너 */
+.reveal .theContents {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
+/* Preformatted Text */
 .reveal pre {
-  font-size: 1.0em;
-  /* Increased from 0.6em */
-  display: flex !important;
-  flex-direction: column !important;
-  width: 100% !important;
-  height: auto !important;
-  max-height: none !important;
-  margin: 0 auto !important;
-  box-shadow: none !important;
-  padding: 0.5em !important;
-  /* Outer padding as requested */
-  box-sizing: border-box !important;
-  /* Include padding in width/height */
+  width: 100%;
+  margin: 0 auto;
+  /* padding removed */
 }
 
 .reveal pre code {
-  flex-grow: 1 !important;
-  height: auto !important;
-  max-height: none !important;
-  width: 100% !important;
-  overflow: auto !important;
-  box-sizing: border-box !important;
-  line-height: 1.4;
-  /* Better readability */
-  padding: 0.5em !important;
-  /* Padding as requested */
+  /* padding removed */
+  overflow: auto;
+  max-height: none;
 }
 
-.reveal table {
-  font-size: 0.7em;
-  width: 100% !important;
-}
-
-/* Lists */
+/* =========================================
+   3. 컴포넌트 (Components)
+   ========================================= */
+/* 리스트 */
 .reveal ul,
 .reveal ol {
   display: block;
   text-align: left;
-  margin: 1em 0;
-  padding-left: 40px;
+  /* margin/padding removed or minimal */
+  padding-left: 1.5em;
+  /* Indentation is structural */
 }
 
-.reveal li {
-  font-size: 0.9em;
-  line-height: 1.6;
-  margin: 0.3em 0;
-  color: #333;
-  list-style-type: '- ';
-}
-
-.reveal li.bullet-dot {
-  list-style-type: '· ';
-}
-
-.reveal ul ul {
-  margin: 0.3em 0;
-}
-
-/* Slide Section Layout (Full Screen & Flex) */
-html body .reveal .slides section,
-html body .reveal .slides section.present {
-  top: 0 !important;
-  left: 0 !important;
-  margin: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  min-height: 100% !important;
-  padding: 0 !important;
-  box-sizing: border-box !important;
-  border-radius: 12px;
-  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.1);
-  transform: none !important;
-  overflow-y: visible !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: stretch !important;
-  justify-content: flex-start !important;
-}
-
-/* Scrollbars */
-.reveal .slides section::-webkit-scrollbar {
-  width: 8px;
-}
-
-.reveal .slides section::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-}
-
-.reveal .slides section::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 4px;
-}
-
-.reveal .slides section::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.5);
-}
-
-/* Content Wrappers */
-.reveal .theContents {
-  flex-grow: 1;
-  overflow-y: auto !important;
-  max-height: none !important;
-  height: auto !important;
-  min-height: 0 !important;
-  display: flex !important;
-  flex-direction: column;
-}
-
-/* Force user's flex layout divs to fill the space */
-.reveal .theContents>div[style*="display:flex"],
-.reveal .theContents>div[style*="display: flex"] {
-  flex-grow: 1;
-  min-height: 0;
-  height: 100%;
-}
-
-.graph-scroll {
-  flex-grow: 1;
-  overflow-y: auto !important;
-  max-height: none !important;
-  height: auto !important;
-  min-height: 0 !important;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  padding-right: 0;
-}
-
-/* Unified Visual Elements (Images, Diagrams) */
-.reveal .media-container {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  margin: 1em 0;
-  flex-grow: 1;
+/* 표 */
+.reveal table {
   width: 100%;
-  height: 100% !important;
-  /* Changed from auto to 100% to fill flex parent */
-  min-height: 0 !important;
+  border-collapse: collapse;
+}
+
+/* 이미지 및 다이어그램 */
+.reveal .media-container {
+  flex-grow: 1;
+  justify-content: center;
+  align-items: center;
+  min-height: 0;
 }
 
 .reveal .media-container img,
 .reveal .media-container svg {
   display: block;
-  margin: 0 auto;
-  width: 100% !important;
-  height: 100% !important;
-  max-width: none !important;
-  max-height: 100% !important;
+  max-height: 100%;
   object-fit: contain;
+  margin: 0 auto;
 }
 
-/* Title Only Slide */
+.graph-scroll {
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  min-height: 0;
+  width: 100%;
+}
+
+/* =========================================
+   4. 특수 슬라이드 (Special Slides)
+   ========================================= */
+/* 제목 슬라이드 (개요) */
 .reveal section.title-slide {
-  display: flex !important;
-  flex-direction: column;
-  justify-content: center !important;
-  align-items: center !important;
-  height: 100% !important;
+  justify-content: center;
+  align-items: center;
   text-align: center;
 }
 
-.reveal section.title-slide h1,
-.reveal section.title-slide h2 {
-  font-size: 3.5em !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  width: 100%;
-  line-height: 1.2;
-}
-
-/* Chapter Title Overlay */
+/* 챕터 제목 오버레이 */
 .reveal section[data-chapter-title]::after {
   content: attr(data-chapter-title);
   position: absolute;
-  top: 0;
-  right: 0;
-  font-size: 0.5em;
-  /* Small text */
-  color: rgba(0, 0, 0, 0.4);
+  top: 20px;
+  right: 20px;
+  /* Font size/weight/color removed to inherit or be set by theme */
   pointer-events: none;
-  font-weight: bold;
   z-index: 10;
 }
 
-/* Chapter Overview List */
+/* 챕터 목록 */
 .chapter-list {
-  margin-top: 1.5em;
-  font-size: 40px;
-  text-align: left;
-  list-style-type: disc;
   display: inline-block;
-  line-height: 1.6;
-  color: #333;
+  text-align: left;
 }
+
+/* =========================================
+   5. 유틸리티 (Utilities)
+   ========================================= */
+/* No custom utilities */

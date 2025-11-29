@@ -1,23 +1,24 @@
-# m2slide Configuration
-# Current project configuration
+# m2slide 설정
+# 현재 프로젝트 설정
 
-# Default project name (used by convert.sh and deploy.sh)
-# Project path will be: Projects/{current_project}
+# 기본 프로젝트 이름 (convert.sh 및 deploy.sh에서 사용)
+# 프로젝트 경로: Projects/{current_project}
 current_project: MarkdownGraph
-# Optional: force top alignment of slide content
-# When true, generated HTML adds a 'top-align-mode' class which overrides
-# Reveal's vertical centering for the current slide. Use with care.
+
+# 선택 사항: 슬라이드 내용 상단 정렬 강제
+# true일 경우, 생성된 HTML에 'top-align-mode' 클래스가 추가되어
+# Reveal.js의 수직 중앙 정렬을 덮어씁니다. 주의해서 사용하세요.
 top_align: true
-# Project-relative CSS for slide output (linked into each chapter HTML)
-# Example: resource/slide.css
+
+# 슬라이드 출력용 프로젝트 상대 경로 CSS (각 챕터 HTML에 연결됨)
+# 예시: resource/slide.css
 slide_css: resource/slide.css
 slide_ratio: none # 3:2 # 16:9 # none
+# Open Props 사용 여부 (true: CDN 로드, false: 기본값 사용)
+use_open_props: true
 
-# Style Configuration
+# 스타일 설정
 style:
-  title:
-    font_size_scale: 2.0
-    top_padding: 1.0em
   list:
     font_size_min: 20px
     font_size_max_ratio: 0.66
