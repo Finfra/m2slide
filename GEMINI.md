@@ -2,6 +2,10 @@
 
 This file provides guidance to Gemini CLI when working with code in this repository.
 
+## 사용자 설정 (User Preferences)
+
+- **Language**: Korean (한국어) - 모든 대화와 주석, 커밋 메시지는 한국어로 진행합니다.
+
 ## 프로젝트 개요
 
 마크다운 기반 프레젠테-이셔 자료 생성 도구. 프로젝트별 독립 폴더 구조로 여러 강연 자료를 관리하며, Reveal.js와 Markmap을 활용한 인터랙티브 HTML 프레젠테-이셔을 자동 생성합니다.
