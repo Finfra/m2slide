@@ -1,4 +1,10 @@
-# Mermaid Samples
+---
+title: Examples for MarkdownGraph
+description: 
+date: Nov 29, 2025
+tags: []
+---
+# Text Samples
 ---
 ## 짧은글
 * hi
@@ -12,6 +18,7 @@
   hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi 
   hihihihihihihihihihihihihihihi 
 ---
+# Mermaid Samples
 ## graph TD 
 * 내용이 있는..
 ```mermaid
@@ -512,7 +519,6 @@ xychart-beta
 ```
 
 ---
-# Kroki Example
 
 ## blockdiag
 
@@ -616,6 +622,8 @@ digraph G {
 
 ---
 # Vega
+---
+
 ## Vega-lite
 ```vegalite
 {
@@ -706,6 +714,8 @@ digraph G {
 
 ---
 # PlantUML
+---
+
 ## Class Diagram
 ```plantuml
 @startuml
@@ -733,7 +743,8 @@ API --> DB
 
 ---
 ## Activity Diagram
-
+<div style="display:flex; gap:20px;">
+  <div style="flex:1;">
 ```plantuml
 @startuml
 start
@@ -746,6 +757,14 @@ endif
 stop
 @enduml
 ```
+  </div>
+  <div style="flex:1;">
+* 항목 1
+* 항목 2
+
+  </div>
+</div>
+
 
 ---
 ## Use Case Diagram
@@ -761,11 +780,6 @@ User --> (Purchase)
 
 ---
 # try 
-* test area
-```
-
-```
-
 ---
 ## ZenUML
 * 요거는 Python. 
