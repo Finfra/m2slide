@@ -12,3 +12,12 @@ top_align: true
 # Example: resource/slide.css
 slide_css: resource/slide.css
 slide_ratio: none # 3:2 # 16:9 # none
+
+# Style Configuration
+style:
+  title:
+    font_size_scale: 2.0
+    top_padding: 1.0em
+  list:
+    font_size_min: 20px
+    font_size_max_ratio: 0.66
