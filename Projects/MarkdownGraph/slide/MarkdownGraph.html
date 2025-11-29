@@ -1,16 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="data:,">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Examples for MarkdownGraph</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
-  <link rel="stylesheet" href="../../../resource/slide.css?v=1764410867256">
+  <link rel="stylesheet" href="https://unpkg.com/open-props"/>
+  <link rel="stylesheet" href="../../../resource/slide.css?v=1764422946843">
   <style>
     /* Markmap SVG baseline (allow container to control size) */
     #toc-mindmap {
@@ -33,7 +32,8 @@
     /* Minimal elements left inline to avoid FOUC */
     /* TOC container outside Reveal.js for Safari compatibility */
     #toc-container {
-      display: block;
+      display: flex;
+      flex-direction: column;
       position: absolute;
       top: 0;
       left: 0;
@@ -42,17 +42,22 @@
       background: radial-gradient(#f7fbfc, #add9e4);
       z-index: 100;
       box-sizing: border-box;
+      overflow: hidden; /* Prevent scrollbars if title is huge */
     }
     #toc-container h1 {
       text-align: center;
       color: #333;
       font-size: 80px;
       margin: 0;
-      padding-top: 60px;
+      padding-top: 40px;
+      padding-bottom: 20px;
+      flex-shrink: 0; /* Title should not shrink */
     }
     #toc-container #toc-mindmap {
       width: 100%;
-      height: calc(100% - 120px); /* fill under the title */
+      flex: 1; /* Grow to fill space, basis 0 */
+      min-height: 0; /* Allow shrinking */
+      display: block;
     }
     #toc-container a {
       text-decoration: none;
@@ -1006,6 +1011,99 @@ xychart-beta
       }
     });
 
+
+    // Inject configuration
+    window.slideConfig = {"list":{"fontSizeMin":"20px","fontSizeMaxRatio":0.66}};
+
+    // Dynamic Styling and Resizing Script
+    function applyDynamicStyles() {
+      const config = window.slideConfig;
+      if (!config) return;
+
+      // 1. Apply Title Styles - REMOVED (Migrated to CSS)
+      
+      const allSlides = document.querySelectorAll('.reveal .slides section');
+      // No dynamic title styling anymore
+
+      // 2. Resize Lists in current slide
+
+      // 2. Resize Lists in current slide
+      const currentSlide = Reveal.getCurrentSlide();
+      if (!currentSlide) return;
+
+      const lists = currentSlide.querySelectorAll('.theContents ul, .theContents ol');
+      if (lists.length === 0) return;
+
+      // We only handle the first list if multiple? Or all?
+      // Usually one main list.
+      lists.forEach(list => {
+        const container = list.closest('.theContents');
+        if (!container) return;
+
+        // Get title size for reference (from current slide or config)
+        let titleSizePx = 60; // fallback
+        const h1 = currentSlide.querySelector('h1');
+        if (h1) {
+          titleSizePx = parseFloat(window.getComputedStyle(h1).fontSize);
+        } else {
+           // Try to find h1 in title slide if this is not one?
+           // Or just use config base.
+           // If config.title.fontSizeScale is 2.0, base is ~2.5em * 40px base? ~100px.
+        }
+
+        const maxFontSize = titleSizePx * (config.list.fontSizeMaxRatio || 0.66);
+        const minFontSize = parseFloat(config.list.fontSizeMin || '20px');
+
+        // Binary search or iterative approach to find best fit
+        // Range: [minFontSize, maxFontSize]
+        
+        let low = minFontSize;
+        let high = maxFontSize;
+        let bestFit = minFontSize;
+
+        // Reset styles for measurement
+        list.style.fontSize = maxFontSize + 'px';
+        list.style.lineHeight = '1.2'; // Tighter line height for large text
+        list.style.height = 'auto';
+        list.style.overflowY = 'visible';
+
+        // Check if it fits at max
+        if (list.scrollHeight <= container.clientHeight) {
+           bestFit = maxFontSize;
+        } else {
+           // Binary search
+           for (let i = 0; i < 10; i++) { // 10 iterations is enough precision
+              const mid = (low + high) / 2;
+              list.style.fontSize = mid + 'px';
+              if (list.scrollHeight <= container.clientHeight) {
+                 bestFit = mid;
+                 low = mid;
+              } else {
+                 high = mid;
+              }
+           }
+        }
+
+        // Apply best fit
+        list.style.fontSize = bestFit + 'px';
+        
+        // If even at min size it overflows, enable scroll
+        if (bestFit <= minFontSize + 1) {
+           // Check overflow at min size
+           list.style.fontSize = minFontSize + 'px';
+           if (list.scrollHeight > container.clientHeight) {
+              list.style.height = '100%';
+              list.style.overflowY = 'auto';
+           }
+        }
+      });
+    }
+
+    Reveal.on('ready', applyDynamicStyles);
+    Reveal.on('slidechanged', applyDynamicStyles);
+    // Also re-apply on resize
+    window.addEventListener('resize', applyDynamicStyles);
+
     // Initialize markmap for table of contents (outside Reveal.js for Safari compatibility)
     var tocContainer = document.getElementById('toc-container');
     var tocData = {
@@ -1206,17 +1304,17 @@ xychart-beta
       var currentSlide = Reveal.getIndices();
       if (currentSlide.h === 0 && currentSlide.v === 0) {
         // First slide: show TOC container
-        tocContainer.style.display = 'block';
+        tocContainer.style.display = 'flex';
 
         // Initialize markmap on first show
         if (!markmapInitialized && window.markmap && tocContainer) {
           // Create with layout options so the tree breathes horizontally
           markmapInstance = window.markmap.Markmap.create('#toc-mindmap', {
             autoFit: true,
-            fitRatio: 1,
-            spacingHorizontal: 160,
+            fitRatio: 0.95,
+            spacingHorizontal: 80,
             spacingVertical: 12,
-            paddingX: 80,
+            paddingX: 40,
             initialExpandLevel: 3
           }, tocData);
           markmapInitialized = true;
