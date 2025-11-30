@@ -23,7 +23,7 @@
   padding: var(--outline-title-padding, 0);
   text-transform: none;
   font-weight: 700;
-  text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000;
+  /* text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000; */
 }
 
 .reveal .title {
@@ -34,7 +34,7 @@
   padding: var(--title-padding, 0);
   text-transform: none;
   font-weight: 700;
-  text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000;
+  /* text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000; */
 }
 
 /* =========================================
@@ -256,6 +256,33 @@
   display: none !important;
 }
 
+/* Override for slides with text content in fit mode */
+.media-enlarge-fit .reveal .slides section.has-text {
+  height: auto !important;
+  max-height: 100vh !important;
+  overflow-y: auto !important;
+  display: block !important;
+  /* Reset to block to allow normal flow */
+}
+
+.media-enlarge-fit .reveal .slides section.has-text .media-container,
+.media-enlarge-fit .reveal .slides section.has-text .graph-scroll {
+  height: auto !important;
+  flex-grow: 0 !important;
+  overflow: visible !important;
+}
+
+.media-enlarge-fit .reveal .slides section.has-text .media-container img,
+.media-enlarge-fit .reveal .slides section.has-text .media-container svg,
+.media-enlarge-fit .reveal .slides section.has-text .graph-scroll img,
+.media-enlarge-fit .reveal .slides section.has-text .graph-scroll svg {
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: contain !important;
+}
+
 .graph-scroll {
   flex-grow: 1;
   align-items: center;
@@ -298,7 +325,7 @@
   z-index: 10;
   text-transform: none;
   font-weight: 500;
-  /* text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000; */
+  text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000;
 }
 
 /* 챕터 목록 */
