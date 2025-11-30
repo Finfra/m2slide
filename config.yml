@@ -22,7 +22,23 @@ use_open_props: true
 
 # 스타일 설정 (컨텐츠 조절 관련)
 style:
+  title:
+    max_font_size: 1em
+    max_font_color: '#000000'
+    align: center
+    outerpadding: 1%
+
+  sub_title:
+    max_font_size: 1em
+    max_font_color: '#666666'
+    align: right
+    outerpadding: 5px
+
   theContents:
+    max_font_size: 1em
+    max_font_color: '#000000'
+    align: left
+    outerpadding: 5px
     # 폰트 크기 자동 조절 활성화 여부 (true: 자동 조절, false: 원래 크기 유지)
     font_size_auto: false
 

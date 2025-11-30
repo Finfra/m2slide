@@ -16,7 +16,17 @@
 }
 
 .reveal h1 {
-  font-size: 2.5em;
+  font-size: var(--title-max-font-size, 2.5em);
+  color: var(--title-color, inherit);
+  text-align: var(--title-align, center);
+  padding: var(--title-padding, 0);
+}
+
+.reveal h2 {
+  font-size: var(--subtitle-max-font-size, 1.6em);
+  color: var(--subtitle-color, inherit);
+  text-align: var(--subtitle-align, center);
+  padding: var(--subtitle-padding, 0);
 }
 
 /* =========================================
@@ -83,6 +93,10 @@
   overflow-wrap: break-word;
   /* Prevent horizontal scroll for long words */
   word-wrap: break-word;
+  font-size: var(--content-max-font-size, 1em);
+  color: var(--content-color, inherit);
+  text-align: var(--content-align, left);
+  padding: var(--content-padding, 0);
 }
 
 /* Preformatted Text */
