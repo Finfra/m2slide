@@ -1,7 +1,9 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Max Issue Num: 9
+* Max Issue Num: 10
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
+
+
 
 # 🌱이슈 후보
 
@@ -9,6 +11,9 @@
 
 
 # 🏁 완료된 이슈
+## Issue 10. 개요 페이지 컬럼 수 제한 (2025-11-30 해결, commit: 2982855)
+* 반응형 다단 레이아웃(Issue 7) 적용 시, 컬럼 수가 리스트 항목 수를 넘지 않도록 제한
+* 예: 리스트 항목이 2개면 최대 2단까지만 표시 (화면이 넓어도 3단이 되지 않게 함)
 ## Issue 7. 개요1 페이지 반응형 다단 레이아웃 (2025-11-30 해결, commit: a0f7f03)
 * 개요1 페이지(Overview)의 리스트를 화면 너비에 따라 반응형으로 다단 처리
 * `column-width: 300px` 활용하여 너비가 좁으면 1단, 넓으면 2단 이상으로 자동 조절
