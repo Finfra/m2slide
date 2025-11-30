@@ -12,6 +12,12 @@
 
 
 # 🏁 완료된 이슈
+## Issue 12. font_size_auto 미작동 수정 (2025-11-30 해결)
+* `font_size_auto`가 H2(소제목)가 있는 슬라이드에서만 작동하던 문제 수정
+* H2가 없으면 H1(대제목) 이후의 모든 내용을 `.theContents`로 감싸도록 로직 개선
+* `ResizeObserver`를 도입하여 이미지 로딩 등 컨텐츠 크기 변화를 실시간으로 감지하고 폰트 크기를 자동 재조정하도록 개선 (브라우저 네이티브 API 활용)
+* `config.yml`에서 `font_size_auto` 설정 지원 (기본값: false)
+
 ## Issue 11. 스타일 상세 설정 (config.yml) (2025-11-30 해결, commit: 84ddacb)
 * `config.yml`에 `title`, `sub_title`, `theContents`에 대한 상세 스타일 설정 추가
 * 지원 항목: `max_font_size`, `max_font_color`, `align`, `outer_padding`
