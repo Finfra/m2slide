@@ -16,7 +16,7 @@
 }
 
 .reveal .outline-title {
-  font-family: var(--global-font-family, inherit);
+  font-family: var(--outline-title-font-family, var(--global-font-family, inherit));
   font-size: var(--outline-title-max-font-size, 2.5em);
   color: var(--outline-title-color, inherit);
   text-align: var(--outline-title-align, center);
@@ -25,7 +25,7 @@
 }
 
 .reveal .title {
-  font-family: var(--global-font-family, inherit);
+  font-family: var(--title-font-family, var(--global-font-family, inherit));
   font-size: var(--title-max-font-size, 1.6em);
   color: var(--title-color, inherit);
   text-align: var(--title-align, center);
@@ -97,6 +97,8 @@
   overflow-wrap: break-word;
   /* Prevent horizontal scroll for long words */
   word-wrap: break-word;
+  word-wrap: break-word;
+  font-family: var(--content-font-family, inherit);
   font-size: var(--content-max-font-size, 1em);
   color: var(--content-color, inherit);
   text-align: var(--content-align, left);
@@ -285,7 +287,7 @@
   top: 20px;
   right: 20px;
   /* Apply subtitle styles to overlay */
-  font-family: var(--global-font-family, inherit);
+  font-family: var(--outline-title-sub-font-family, var(--global-font-family, inherit));
   font-size: var(--outline-title-sub-max-font-size, 1em);
   color: var(--outline-title-sub-color, inherit);
   pointer-events: none;

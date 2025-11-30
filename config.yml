@@ -23,33 +23,41 @@ use_open_props: true
 # 스타일 설정 (컨텐츠 조절 관련)
 style:
   global:
+    font_import:
+      - 'https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css'
+      - 'https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap'
     font_family: 'Pretendard, sans-serif' # Default: 'Pretendard, sans-serif'
 
   title:
+    font_family: 'GmarketSansBold'
     max_font_size: 2em       # Default: 1em
     max_font_color: '#000000' # Default: '#000000'
     align: center            # Default: center
     outer_padding: 1%        # Default: 1%
 
   main_title:
+    font_family: 'GmarketSansBold'
     max_font_size: 80px      # Default: 80px
     max_font_color: '#333333' # Default: '#333333'
     align: center            # Default: center
     outer_padding: 40px 0 20px 0 # Default: 40px 0 20px 0
 
   outline_title:
+    font_family: 'GmarketSansBold'
     max_font_size: 2.5em     # Default: 2.5em
     max_font_color: '#000000' # Default: '#000000'
     align: center            # Default: center
     outer_padding: 0         # Default: 0
 
   outline_title_sub:
+    font_family: 'GmarketSansBold'
     max_font_size: 0.5em       # Default: 1em
     max_font_color: '#666666' # Default: '#666666'
     align: right             # Default: right
     outer_padding: 5px       # Default: 5px
 
   theContents:
+    font_family: 'Nanum Gothic Coding'
     max_font_size: 1em       # Default: 1em
     max_font_color: '#000000' # Default: '#000000'
     align: left              # Default: left
