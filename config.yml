@@ -40,10 +40,10 @@ style:
     align: center            # Default: center
     outer_padding: 0         # Default: 0
 
-  sub_title:
+  outline_title_sub:
     max_font_size: 1em       # Default: 1em
     max_font_color: '#666666' # Default: '#666666'
-    align: center            # Default: right
+    align: right             # Default: right
     outer_padding: 5px       # Default: 5px
 
   theContents:
