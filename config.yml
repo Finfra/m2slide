@@ -23,7 +23,7 @@ use_open_props: true
 # 스타일 설정 (컨텐츠 조절 관련)
 style:
   title:
-    max_font_size: 1em       # Default: 1em
+    max_font_size: 2em       # Default: 1em
     max_font_color: '#000000' # Default: '#000000'
     align: center            # Default: center
     outer_padding: 1%        # Default: 1%
@@ -31,7 +31,7 @@ style:
   sub_title:
     max_font_size: 1em       # Default: 1em
     max_font_color: '#666666' # Default: '#666666'
-    align: right             # Default: right
+    align: center            # Default: right
     outer_padding: 5px       # Default: 5px
 
   theContents:
