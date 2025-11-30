@@ -273,10 +273,9 @@
 
 /* 챕터 목록 */
 .chapter-list {
-  display: block;
-  text-align: left;
-  columns: 2;
-  column-gap: 40px;
+  font-size: 0.8em;
+  column-width: 300px;
+  column-gap: 24px;
   width: 100%;
 }
 
