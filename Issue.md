@@ -14,7 +14,7 @@
 # 🏁 완료된 이슈
 ## Issue 11. 스타일 상세 설정 (config.yml) (2025-11-30 해결, commit: 84ddacb)
 * `config.yml`에 `title`, `sub_title`, `theContents`에 대한 상세 스타일 설정 추가
-* 지원 항목: `max_font_size`, `max_font_color`, `align`, `outerpadding`
+* 지원 항목: `max_font_size`, `max_font_color`, `align`, `outer_padding`
 * `generate-slides.js`에서 해당 설정을 파싱하여 CSS 변수 또는 스타일로 적용
 
 ## Issue 10. 개요 페이지 컬럼 수 제한 (2025-11-30 해결, commit: 2982855)
