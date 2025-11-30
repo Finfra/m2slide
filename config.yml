@@ -22,6 +22,9 @@ use_open_props: true
 
 # 스타일 설정 (컨텐츠 조절 관련)
 style:
+  global:
+    font_family: 'Pretendard, sans-serif' # Default: 'Pretendard, sans-serif'
+
   title:
     max_font_size: 2em       # Default: 1em
     max_font_color: '#000000' # Default: '#000000'
