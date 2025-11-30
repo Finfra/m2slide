@@ -5,6 +5,7 @@
    3. 컴포넌트 (Components)
    4. 특수 슬라이드 (Special Slides)
    5. 유틸리티 (Utilities)
+   6. 디버깅 (Debugging)
    ========================================= */
 
 /* =========================================
@@ -35,9 +36,7 @@
 /* 전체 크기 헬퍼 */
 .reveal.ratio-none .slides,
 .reveal .slides section,
-.reveal .media-container,
-.reveal .media-container img,
-.reveal .media-container svg {
+.reveal .media-container {
   width: 100%;
   height: 100%;
 }
@@ -52,23 +51,38 @@
   transform: none;
 }
 
-/* 개별 슬라이드 섹션 */
+/* 개별 슬라이드 섹션
+   - Flexbox Column 레이아웃 사용
+   - height: 100%로 슬라이드 전체 높이 확보 (min-height 대신 height 사용)
+   - overflow: hidden으로 섹션 자체의 스크롤 방지 (내부 .theContents가 스크롤)
+*/
 .reveal .slides section {
-  min-height: 100%;
+  height: auto !important;
+  /* Allow height to grow */
+  max-height: 100vh !important;
+  /* Cap at viewport height */
   padding: 0;
   margin: 0;
   top: 0;
   left: 0;
   align-items: stretch;
   justify-content: flex-start;
-  overflow-y: visible;
+  overflow-y: auto !important;
+  /* Enable vertical scroll */
+  box-sizing: border-box;
 }
 
-/* 콘텐츠 컨테이너 */
+/* 콘텐츠 컨테이너
+   - 남은 세로 공간을 모두 차지 (flex-grow: 1)
+   - 내용이 넘치면 스크롤 (overflow-y: auto)
+   - min-height: 0은 flex item이 내용물 크기보다 작아질 수 있게 함 (스크롤 동작 필수)
+   - max-height: 100% 추가로 부모 높이를 넘지 않도록 제한
+*/
 .reveal .theContents {
-  flex-grow: 1;
-  overflow-y: auto;
-  min-height: 0;
+  /* flex properties removed to allow natural flow */
+  overflow-wrap: break-word;
+  /* Prevent horizontal scroll for long words */
+  word-wrap: break-word;
 }
 
 /* Preformatted Text */
@@ -111,12 +125,111 @@
   min-height: 0;
 }
 
+/* Default (Original) Mode - controlled by body class */
 .reveal .media-container img,
 .reveal .media-container svg {
   display: block;
-  max-height: 100%;
-  object-fit: contain;
   margin: 0 auto;
+}
+
+/* 1. Original: 원본 크기 유지 (단, 화면 넘지 않음) */
+.media-enlarge-original .reveal .media-container img,
+.media-enlarge-original .reveal .media-container svg {
+  max-width: 100% !important;
+  max-height: 100% !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
+}
+
+/* 2. Width: 너비 최대화 */
+.media-enlarge-width .reveal .media-container img,
+.media-enlarge-width .reveal .media-container svg {
+  width: 100% !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain !important;
+}
+
+/* 3. Height: 높이 최대화 */
+/* 3. Height: 높이 최대화 */
+.media-enlarge-height .reveal .slides section {
+  height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow-y: hidden !important;
+  overflow-x: auto !important;
+}
+
+.media-enlarge-height .reveal .theContents {
+  flex-grow: 1 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.media-enlarge-height .reveal .media-container,
+.media-enlarge-height .graph-scroll {
+  height: 100% !important;
+  flex-grow: 1 !important;
+}
+
+.media-enlarge-height .reveal .media-container img,
+.media-enlarge-height .reveal .media-container svg,
+.media-enlarge-height .graph-scroll img,
+.media-enlarge-height .graph-scroll svg {
+  height: 100% !important;
+  width: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain !important;
+}
+
+/* 4. Fit: 화면에 꽉 차게 맞춤 (스크롤 없음) */
+.media-enlarge-fit .reveal .slides section {
+  height: 100vh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.media-enlarge-fit .reveal .theContents {
+  flex-grow: 1 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.media-enlarge-fit .reveal .media-container,
+.media-enlarge-fit .graph-scroll {
+  height: 100% !important;
+  flex-grow: 1 !important;
+  overflow: hidden !important;
+}
+
+.media-enlarge-fit .reveal .media-container img,
+.media-enlarge-fit .reveal .media-container svg,
+.media-enlarge-fit .graph-scroll img,
+.media-enlarge-fit .graph-scroll svg {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain !important;
+}
+
+/* Handle nested flex layouts (e.g. columns) in fit mode */
+.media-enlarge-fit .reveal .theContents>div {
+  flex-grow: 1 !important;
+  min-height: 0 !important;
+}
+
+/* Hide empty paragraphs that might interfere with flex layout */
+.media-enlarge-fit .reveal .theContents>p:empty {
+  display: none !important;
 }
 
 .graph-scroll {
@@ -126,6 +239,11 @@
   overflow-y: auto;
   min-height: 0;
   width: 100%;
+}
+
+.graph-scroll svg {
+  max-width: 100%;
+  height: auto;
 }
 
 /* =========================================
@@ -138,7 +256,11 @@
   text-align: center;
 }
 
-/* 챕터 제목 오버레이 */
+/* 챕터 제목 오버레이
+   - 슬라이드 우측 상단에 현재 챕터 제목을 고정 표시
+   - data-chapter-title 속성 값을 content로 사용
+   - pointer-events: none으로 클릭 이벤트가 뒤쪽 슬라이드에 전달되도록 함
+*/
 .reveal section[data-chapter-title]::after {
   content: attr(data-chapter-title);
   position: absolute;
@@ -151,11 +273,39 @@
 
 /* 챕터 목록 */
 .chapter-list {
-  display: inline-block;
+  display: block;
   text-align: left;
+  columns: 2;
+  column-gap: 40px;
+  width: 100%;
+}
+
+.chapter-list li {
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 
 /* =========================================
    5. 유틸리티 (Utilities)
    ========================================= */
 /* No custom utilities */
+
+/* =========================================
+   6. 디버깅 (Debugging)
+   ========================================= */
+/* Guide Line Mode */
+.guide-line-mode .reveal .slides section {
+  border: 5px solid rgba(255, 0, 0, 0.5) !important;
+  background-color: rgba(255, 0, 0, 0.05) !important;
+}
+
+.guide-line-mode .reveal h1,
+.guide-line-mode .reveal h2 {
+  border: 3px solid rgba(0, 255, 0, 0.5) !important;
+  background-color: rgba(0, 255, 0, 0.05) !important;
+}
+
+.guide-line-mode .reveal .theContents {
+  border: 3px solid rgba(0, 0, 255, 0.5) !important;
+  background-color: rgba(0, 0, 255, 0.05) !important;
+}
