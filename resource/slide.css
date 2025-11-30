@@ -17,23 +17,23 @@
 
 .reveal .outline-title {
   font-family: var(--outline-title-font-family, var(--global-font-family, inherit));
-  font-size: var(--outline-title-max-font-size, 2.5em);
+  font-size: var(--outline-title-font-size, 2.5em);
   color: var(--outline-title-color, inherit);
   text-align: var(--outline-title-align, center);
   padding: var(--outline-title-padding, 0);
   text-transform: none;
-  font-weight: 700;
+  font-weight: var(--outline-title-font-weight, 700);
   /* text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000; */
 }
 
 .reveal .title {
   font-family: var(--title-font-family, var(--global-font-family, inherit));
-  font-size: var(--title-max-font-size, 1.6em);
+  font-size: var(--title-font-size, 1.6em);
   color: var(--title-color, inherit);
   text-align: var(--title-align, center);
   padding: var(--title-padding, 0);
   text-transform: none;
-  font-weight: 700;
+  font-weight: var(--title-font-weight, 700);
   /* text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000; */
 }
 
@@ -103,7 +103,7 @@
   word-wrap: break-word;
   word-wrap: break-word;
   font-family: var(--content-font-family, inherit);
-  font-size: var(--content-max-font-size, 1em);
+  font-size: var(--content-font-size, 1em);
   color: var(--content-color, inherit);
   text-align: var(--content-align, left);
   padding: var(--content-padding, 0);
@@ -196,7 +196,8 @@
 
 .media-enlarge-height .reveal .media-container,
 .media-enlarge-height .graph-scroll {
-  height: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
   flex-grow: 1 !important;
 }
 
@@ -229,7 +230,8 @@
 
 .media-enlarge-fit .reveal .media-container,
 .media-enlarge-fit .graph-scroll {
-  height: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
   flex-grow: 1 !important;
   overflow: hidden !important;
 }
@@ -319,12 +321,12 @@
   right: 20px;
   /* Apply subtitle styles to overlay */
   font-family: var(--outline-title-sub-font-family, var(--global-font-family, inherit));
-  font-size: var(--outline-title-sub-max-font-size, 1em);
+  font-size: var(--outline-title-sub-font-size, 1em);
   color: var(--outline-title-sub-color, inherit);
   pointer-events: none;
   z-index: 10;
   text-transform: none;
-  font-weight: 500;
+  font-weight: var(--outline-title-sub-font-weight, 500);
   text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000;
 }
 

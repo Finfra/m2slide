@@ -9,7 +9,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
   <link rel="stylesheet" href="https://unpkg.com/open-props"/>
-  <link rel="stylesheet" href="../../../resource/slide.css?v=1764476905291">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"/>
+  <link rel="stylesheet" href="../../../resource/slide.css?v=1764488949835">
   <style>
     /* Markmap SVG baseline (allow container to control size) */
     #toc-mindmap {
@@ -44,14 +46,17 @@
       box-sizing: border-box;
       overflow: hidden; /* Prevent scrollbars if title is huge */
     }
-    #toc-container h1 {
-      text-align: center;
-      color: #333;
-      font-size: 80px;
+    #toc-container h1.main-title {
+      font-family: var(--main-title-font-family, var(--global-font-family, inherit));
+      text-align: var(--main-title-align, center);
+      color: var(--main-title-color, #333);
+      font-size: var(--main-title-max-font-size, 80px);
       margin: 0;
-      padding-top: 40px;
-      padding-bottom: 20px;
+      padding: var(--main-title-padding, 40px 0 20px 0);
       flex-shrink: 0; /* Title should not shrink */
+      text-transform: none;
+      font-weight: 700;
+      text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000;
     }
     #toc-container #toc-mindmap {
       width: 100%;
@@ -107,12 +112,43 @@
     }
   </style>
 </head>
-<body class="top-align-mode guide-line-mode media-enlarge-fit">
+<body class="top-align-mode guide-line-mode media-enlarge-fit" style="
+  --global-font-family: Pretendard, sans-serif;
+  --title-font-family: inherit;
+  --title-font-weight: 700;
+  --title-font-size: 3em;
+  --title-color: #000000;
+  --title-align: center;
+  --title-padding: 1%;
+  --main-title-font-family: GmarketSansBold;
+  --main-title-font-weight: 700;
+  --main-title-font-size: 80px;
+  --main-title-color: #333333;
+  --main-title-align: center;
+  --main-title-padding: 40px 0 20px 0;
+  --outline-title-font-family: inherit;
+  --outline-title-font-weight: 700;
+  --outline-title-font-size: 2.5em;
+  --outline-title-color: #000000;
+  --outline-title-align: center;
+  --outline-title-padding: 0;
+  --outline-title-sub-font-family: inherit;
+  --outline-title-sub-font-weight: 500;
+  --outline-title-sub-font-size: 0.5em;
+  --outline-title-sub-color: #666666;
+  --outline-title-sub-align: right;
+  --outline-title-sub-padding: 5px;
+  --content-font-family: Nanum Gothic Coding;
+  --content-font-size: 1em;
+  --content-color: #000000;
+  --content-align: left;
+  --content-padding: 5px;
+">
   
 
   <!-- TOC container outside Reveal.js for Safari compatibility -->
   <div id="toc-container">
-    <h1>Examples for MarkdownGraph</h1>
+    <h1 class="main-title">Examples for MarkdownGraph</h1>
     <svg id="toc-mindmap"></svg>
   </div>
 
@@ -124,15 +160,15 @@
       <section id="toc-placeholder"></section>
 
       <section class="title-slide" data-chapter-title="Text Samples">
-<h1>Text Samples</h1>
-<ul class="chapter-list">
-<li><a href="#/2">짧은글</a></li>
+<h1 class="outline-title">Text Samples</h1>
+<ul class="chapter-list" style="column-count: 2">
+<li><a href="#/2">짧은글 ABC abc</a></li>
 <li><a href="#/3">긴글</a></li>
 </ul>
       </section>
 
-      <section data-chapter-title="Text Samples">
-<h2>짧은글</h2>
+      <section class="has-text" data-chapter-title="Text Samples">
+<h2 class="title">짧은글 ABC abc</h2>
 <div class="theContents">
 <ul>
 <li class="bullet-dot">hi</li>
@@ -145,14 +181,14 @@
 </div>
       </section>
 
-      <section data-chapter-title="Text Samples">
-<h2>긴글</h2>
+      <section class="has-text" data-chapter-title="Text Samples">
+<h2 class="title">긴글</h2>
 <div class="theContents">
 <ul>
 <li class="bullet-dot">hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi </li>
 <li class="bullet-dot">hello
 <ul>
-<li>hihihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi  hihi hihihih ihihihihihi hihihihi</li>
+<li>hihihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi  hihi hihihih ihihihihihi hihihi hello</li>
 </ul>
 </li>
 </ul>
@@ -160,9 +196,9 @@
       </section>
 
       <section class="title-slide" data-chapter-title="Mermaid Samples">
-<h1>Mermaid Samples</h1>
-<ul class="chapter-list">
-<li><a href="#/5">Paragraph Only</a></li>
+<h1 class="outline-title">Mermaid Samples</h1>
+<ul class="chapter-list" style="column-count: 30">
+<li><a href="#/5">Paragraph and Diagram</a></li>
 <li><a href="#/6">Flowchart</a></li>
 <li><a href="#/7">Class</a></li>
 <li><a href="#/8">Sequence</a></li>
@@ -195,8 +231,8 @@
 </ul>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Paragraph Only</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Paragraph and Diagram</h2>
 <div class="theContents">
 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
 
@@ -212,8 +248,8 @@ graph TD;
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Flowchart</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Flowchart</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 flowchart TD
@@ -227,8 +263,8 @@ flowchart TD
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Class</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Class</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 classDiagram
@@ -256,8 +292,8 @@ classDiagram
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Sequence</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Sequence</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 sequenceDiagram
@@ -269,8 +305,8 @@ sequenceDiagram
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Entity Relationship</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Entity Relationship</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 erDiagram
@@ -300,8 +336,8 @@ erDiagram
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>State</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">State</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 stateDiagram-v2
@@ -315,8 +351,8 @@ stateDiagram-v2
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Mindmap</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Mindmap</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 mindmap
@@ -340,8 +376,8 @@ mindmap
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Architecture</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Architecture</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 architecture-beta
@@ -359,8 +395,8 @@ architecture-beta
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Block</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Block</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 block-beta
@@ -381,8 +417,8 @@ columns 1
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>C4</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">C4</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 C4Context
@@ -422,8 +458,8 @@ C4Context
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Gantt</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Gantt</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 gantt
@@ -439,8 +475,8 @@ gantt
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Git</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Git</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 gitGraph
@@ -462,8 +498,8 @@ gitGraph
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Kanban</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Kanban</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 %% Mermaid config removed for slide compatibility
@@ -490,8 +526,8 @@ kanban
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Packet</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Packet</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 %% title: "TCP Packet"
@@ -517,8 +553,8 @@ packet
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Pie</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Pie</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 pie title Pets adopted by volunteers
@@ -529,8 +565,8 @@ pie title Pets adopted by volunteers
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Quadrant</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Quadrant</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 quadrantChart
@@ -551,8 +587,8 @@ quadrantChart
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Radar</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Radar</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 %% title: "Grades"
@@ -569,8 +605,8 @@ radar-beta
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Requirement</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Requirement</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 requirementDiagram
@@ -591,8 +627,8 @@ requirementDiagram
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Sankey</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Sankey</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 %% sankey config removed for slide compatibility
@@ -670,8 +706,8 @@ Wind,Electricity grid,289.366
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>StateDiagram </h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">StateDiagram </h2>
 <div class="theContents">
 <div class="media-container mermaid">
 stateDiagram
@@ -683,8 +719,8 @@ stateDiagram
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Timeline</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Timeline</h2>
 <div class="theContents">
 <ul>
 <li class="bullet-dot">base</li>
@@ -701,8 +737,8 @@ timeline
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Timeline (계속)</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Timeline (계속)</h2>
 <div class="theContents">
 <ul>
 <li class="bullet-dot">beta</li>
@@ -716,8 +752,8 @@ timeline-beta
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>Treemap</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">Treemap</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 treemap-beta
@@ -732,8 +768,8 @@ treemap-beta
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>User Journey</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">User Journey</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 journey
@@ -749,8 +785,8 @@ journey
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>XY</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">XY</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 xychart-beta
@@ -763,8 +799,8 @@ xychart-beta
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>blockdiag</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">blockdiag</h2>
 <div class="theContents">
 <div class="media-container kroki">
 <div class="graph-scroll"><img src="https://kroki.io/blockdiag/svg/eJxdzEEKgzAQheG9p5jO3hNIvYh0MdpHCKaZMhFLKL27REtJXT7exz8Gnea7F0fvhmj8rbYnhwiTBakM3q-2fCaPxN1Z-4OtsEyQlC_cNX9mmDSo0ZXYGRAzQtAX30roHK_s08f5i6p0BdQkOhTy2QBZ7UER" alt="blockdiag diagram"/></div>
@@ -772,8 +808,8 @@ xychart-beta
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>seqdiag</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">seqdiag</h2>
 <div class="theContents">
 <div class="media-container kroki">
 <div class="graph-scroll"><img src="https://kroki.io/seqdiag/svg/eJwrTi1MyUxMV6jmUlBIKsovL04tUlDQtVMoT00qTi0qSy1SiM5JTErNUbBVUHJ3DVHQz8xLSa3QyyjJzVGKtUbSZKOri9BkzUWEcQH-wSEK-kk5-en6yfm5ual5JRATEWp17RRSEksSkxKLU5H0efoFuwaFKODQA3IHTBOy-9AdWAsAskRQvA" alt="seqdiag diagram"/></div>
@@ -781,8 +817,8 @@ xychart-beta
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>actdiag</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">actdiag</h2>
 <div class="theContents">
 <div class="media-container kroki">
 <div class="graph-scroll"><img src="https://kroki.io/actdiag/svg/eJxNjssKwjAQRff5imv2fkFREJHShSsVF-JirEMItClMR11I_12SaOxuHodzL7V69-TwNsBLvDKWa7RDeLJoHH1PjitjgI4C4zGyJDbuN-6wgj2NLLZKt2zApfzO4tUHB-HD0V4zlJRzqGZFLCHUo9lv6t0io1OJpVlLlHp_w_Z7iTHQAU2M-EmmD2ryQ-A" alt="actdiag diagram"/></div>
@@ -790,8 +826,8 @@ xychart-beta
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>nwdiag</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">nwdiag</h2>
 <div class="theContents">
 <div class="media-container kroki">
 <div class="graph-scroll"><img src="https://kroki.io/nwdiag/svg/eJzLK0_JTExXqOZSUMhLLSnPL8pWSMmtAvMVFBJTUopSi4sVbBWUjAwN9CpAUN_IRMmaCyxdnppkYKgQjUWVoVKsNVyJEVYlRhAltVxINmfmlaQW5SXmYFpvaGmkZ2hmoWegZ4DXAQh1eJyAUGQEU5QCMgiXSQYwp9YCADppTfQ" alt="nwdiag diagram"/></div>
@@ -799,8 +835,8 @@ xychart-beta
 </div>
       </section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2>`ditaa` (ASCII → 그림 변환)</h2>
+      <section class="has-text" data-chapter-title="Mermaid Samples">
+<h2 class="title">`ditaa` (ASCII → 그림 변환)</h2>
 <div class="theContents">
 <div class="media-container kroki">
 <div class="graph-scroll"><img src="https://kroki.io/ditaa/svg/eJzT1oUCbQUFBQVtGIerRkHBOSBUQUGhRkHXTqFGIcjRF8Th0sauHgDcMw02" alt="ditaa diagram"/></div>
@@ -808,24 +844,25 @@ xychart-beta
 </div>
       </section>
 
-      <section data-chapter-title="Graphviz (DOT)">
-<h1>Graphviz (DOT)</h1>
-
+      <section class="has-text" data-chapter-title="Graphviz (DOT)">
+<h1 class="outline-title">Graphviz (DOT)</h1>
+<div class="theContents">
 <div class="media-container kroki">
 <div class="graph-scroll"><img src="https://kroki.io/dot/svg/eJxLyUwvSizIUHBXqOZSUFBQKErMy07JLLINcbLmAgs4KkTnJCal5tgqGRkYGSm8mbvlzYIWpVhrsKQTXNI5I7HEPSAEJuEMl_B0cVV427b17dSVMDkXhCYfT4U33XNe9zSA5KDW6dopOFkj2M4wm3TtFFxghkPYtVwAEC00RQ" alt="dot diagram"/></div>
+</div>
 </div>
       </section>
 
       <section class="title-slide" data-chapter-title="Vega">
-<h1>Vega</h1>
-<ul class="chapter-list">
+<h1 class="outline-title">Vega</h1>
+<ul class="chapter-list" style="column-count: 2">
 <li><a href="#/37">Vega-lite</a></li>
 <li><a href="#/38">Vega</a></li>
 </ul>
       </section>
 
-      <section data-chapter-title="Vega">
-<h2>Vega-lite</h2>
+      <section class="has-text" data-chapter-title="Vega">
+<h2 class="title">Vega-lite</h2>
 <div class="theContents">
 <div class="media-container kroki">
 <div class="graph-scroll"><img src="https://kroki.io/vegalite/svg/eJxlkN1OhEAMhe95iqbxksAqkqxz5-9LGC_Kzsh0ZQeEgm4I725mAOPiXU-_k562YwQAgFfdwZoToQK0Ik2n0nQwJSUli-2LhOt0NoRuOuTJsasdxhEAfrEWiwqy3S5oa7i0ggpulkZDWrMrUUEetCbxQeOcPFDVmw4VvAYNMGJY4x5jwMKP2U_xJXpYUZ5v0eOKbrMtelrR3fUWPa9o_w-9_GZlUyBvEUAw4YnaD28pqJ0_YdyhXi5djvv2Jb6zqbR3kh8m58Z4UbeaHVW4JOL50lv89X725ISFhAeDfo8pmn4A-SRrww" alt="vegalite diagram"/></div>
@@ -833,8 +870,8 @@ xychart-beta
 </div>
       </section>
 
-      <section data-chapter-title="Vega">
-<h2>Vega</h2>
+      <section class="has-text" data-chapter-title="Vega">
+<h2 class="title">Vega</h2>
 <div class="theContents">
 <div class="media-container kroki">
 <div class="graph-scroll"><img src="https://kroki.io/vega/svg/eJyVU9uOmzAQfecrRqM-oiS7KdKWt91efqLaB4Mn4BbsyDhpUMS_Vx6uzkKlvgA-Osdz5sxwjwDwU5OXVAtMAUvnzk2631-pELtCufKS7ZTZ9wRG99dk96sxGmMv_aOkKzGF4-HA55JUUTpM4XkAzkJKpQtMIYkjD0jhfKWfEQDAnZ8AqEVNvr4TWUV8NcNXUV2omegswVw4KoxtPf8VY0BRm4vmoi9dvEF8C4hJskn8GhA_HzeJ3wLil6dN4veA-LJN_BF6PHYD753f_vTeZ9jkolrE8iHFGxPmGF17ZjwTWs6oNLVQGlO4j0MZ4wc8KaqkRyZ_k2u0Qhd8XT_8CZ9Hfdgdkt5zvG6w3TBYKU3C_qfFIbEVg8M2PsYnbsvw0FhFnDhmxjlT-8t7f3OUYyMLckUnF1CHphaFamF_r4xp7NZS7uZeT9bUK53ObZHOjfTC-7Q_SNqRDSAAvPE1jy38e6osHP_mVTEvTwpPoaQN6e3HWo_j6WXPWzr-5f0OdRN_IcXLWQrHIeBJVRV_jBJsHFGV-UO31JTm2oe0IrEksRtLdfOmRF30FwKOUcE" alt="vega diagram"/></div>
@@ -843,8 +880,8 @@ xychart-beta
       </section>
 
       <section class="title-slide" data-chapter-title="PlantUML">
-<h1>PlantUML</h1>
-<ul class="chapter-list">
+<h1 class="outline-title">PlantUML</h1>
+<ul class="chapter-list" style="column-count: 4">
 <li><a href="#/40">Class Diagram</a></li>
 <li><a href="#/41">Component Diagram</a></li>
 <li><a href="#/42">Activity Diagram</a></li>
@@ -852,8 +889,8 @@ xychart-beta
 </ul>
       </section>
 
-      <section data-chapter-title="PlantUML">
-<h2>Class Diagram</h2>
+      <section class="has-text" data-chapter-title="PlantUML">
+<h2 class="title">Class Diagram</h2>
 <div class="theContents">
 <div class="media-container kroki">
 <div class="graph-scroll"><img src="https://kroki.io/plantuml/svg/eJxzKC5JLCopzc3hclSwUjAyMDJSeDN3y5sFLdZcTgpWCs4ZiSXuASHWXM4KVgqeLq4Kb9u2vp260prLBSTp46nwpnvO654Gay4uRwVdXTsFJyjtzOUEpl24nKG0Q2peSmluDgAfjCId" alt="plantuml diagram"/></div>
@@ -861,8 +898,8 @@ xychart-beta
 </div>
       </section>
 
-      <section data-chapter-title="PlantUML">
-<h2>Component Diagram</h2>
+      <section class="has-text" data-chapter-title="PlantUML">
+<h2 class="title">Component Diagram</h2>
 <div class="theContents">
 <div class="media-container kroki">
 <div class="graph-scroll"><img src="https://kroki.io/plantuml/svg/eJxzKC5JLCopzc3hSs7PLcjPS80rUXAM8ETiuThxOQZ4Kujq2oGYDql5KaW5OQAdkhIo" alt="plantuml diagram"/></div>
@@ -870,8 +907,8 @@ xychart-beta
 </div>
       </section>
 
-      <section data-chapter-title="PlantUML">
-<h2>Activity Diagram</h2>
+      <section class="has-text" data-chapter-title="PlantUML">
+<h2 class="title">Activity Diagram</h2>
 <div class="theContents">
 <p><div style="display:flex; gap:20px;"></p>
 <p>  <div style="flex:1;"></p>
@@ -890,8 +927,8 @@ xychart-beta
 </div>
       </section>
 
-      <section data-chapter-title="PlantUML">
-<h2>Use Case Diagram</h2>
+      <section class="has-text" data-chapter-title="PlantUML">
+<h2 class="title">Use Case Diagram</h2>
 <div class="theContents">
 <div class="media-container kroki">
 <div class="graph-scroll"><img src="https://kroki.io/plantuml/svg/eJxzKC5JLCopzc3hSkwuyS9SCC1OLeICEQq6unYKGj756Zl5mkgCAaVFyRmJxamaXA6peSmluTkAza4VRg" alt="plantuml diagram"/></div>
@@ -900,14 +937,14 @@ xychart-beta
       </section>
 
       <section class="title-slide" data-chapter-title="try">
-<h1>try</h1>
-<ul class="chapter-list">
+<h1 class="outline-title">try</h1>
+<ul class="chapter-list" style="column-count: 1">
 <li><a href="#/45">ZenUML</a></li>
 </ul>
       </section>
 
-      <section data-chapter-title="try">
-<h2>ZenUML</h2>
+      <section class="has-text" data-chapter-title="try">
+<h2 class="title">ZenUML</h2>
 <div class="theContents">
 <ul>
 <li class="bullet-dot">요거는 Python. </li>
@@ -1048,7 +1085,7 @@ xychart-beta
 
 
     // Inject configuration
-    window.slideConfig = {"style":{"theContents":{"fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":false,"media_container_enlarge":"fit"}}};
+    window.slideConfig = {"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":["https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css","https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"]},"title":{"font_size":"3em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"","font_weight":"700","fontFamily":"GmarketSansBold"},"main_title":{"font_size":"80px","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"","font_weight":"700","fontFamily":"GmarketSansBold"},"outline_title":{"font_size":"2.5em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"","font_weight":"700","fontFamily":"GmarketSansBold"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"","font_weight":"500","fontFamily":"GmarketSansBold"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"5px","font_family":"","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit","fontFamily":"Nanum Gothic Coding"}}};
 
     // Dynamic Styling and Resizing Script
     function applyDynamicStyles() {
@@ -1081,9 +1118,9 @@ xychart-beta
 
         // Get title size for reference (from current slide or config)
         let titleSizePx = 60; // fallback
-        const h1 = currentSlide.querySelector('h1');
-        if (h1) {
-          titleSizePx = parseFloat(window.getComputedStyle(h1).fontSize);
+        const titleEl = currentSlide.querySelector('h1, h2');
+        if (titleEl) {
+          titleSizePx = parseFloat(window.getComputedStyle(titleEl).fontSize);
         }
 
         const maxFontSize = titleSizePx * (config.style.theContents.fontSizeMaxRatio || 0.66);
@@ -1099,19 +1136,18 @@ xychart-beta
         // Reset styles for measurement
         content.style.fontSize = maxFontSize + 'px';
         content.style.lineHeight = '1.2'; // Tighter line height for large text
-        // content.style.height = 'auto'; // Don't reset height, it's flex-grow
-        // content.style.overflowY = 'visible'; // Keep it auto/scroll
 
         // Check if it fits at max
-        // We compare scrollHeight (content size) with clientHeight (available visible size)
-        if (content.scrollHeight <= content.clientHeight) {
+        // We compare slide scrollHeight with slide clientHeight to detect overflow
+        if (currentSlide.scrollHeight <= currentSlide.clientHeight) {
            bestFit = maxFontSize;
         } else {
            // Binary search
            for (let i = 0; i < 10; i++) { // 10 iterations is enough precision
               const mid = (low + high) / 2;
               content.style.fontSize = mid + 'px';
-              if (content.scrollHeight <= content.clientHeight) {
+              // Check if slide overflows
+              if (currentSlide.scrollHeight <= currentSlide.clientHeight) {
                  bestFit = mid;
                  low = mid;
               } else {
@@ -1130,7 +1166,24 @@ xychart-beta
       });
     }
 
-    Reveal.on('ready', applyDynamicStyles);
+    Reveal.on('ready', () => {
+      applyDynamicStyles();
+      
+      // Use ResizeObserver to handle dynamic content changes (images loading, etc.)
+      const observer = new ResizeObserver(entries => {
+        // Debounce or throttle could be added if needed, but for now direct call
+        // Check if the resized element is the current slide
+        const currentSlide = Reveal.getCurrentSlide();
+        if (currentSlide && entries.some(entry => entry.target === currentSlide || currentSlide.contains(entry.target))) {
+           applyDynamicStyles();
+        }
+      });
+
+      // Observe all slides (or just the active one? All is safer for transitions)
+      document.querySelectorAll('.reveal .slides section').forEach(section => {
+        observer.observe(section);
+      });
+    });
     Reveal.on('slidechanged', applyDynamicStyles);
     // Also re-apply on resize
     window.addEventListener('resize', applyDynamicStyles);
@@ -1144,7 +1197,7 @@ xychart-beta
                   "content": "<a href=\"#/1\">Text Samples</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/2\">짧은글</a>",
+                              "content": "<a href=\"#/2\">짧은글 ABC abc</a>",
                               "children": []
                         },
                         {
@@ -1157,7 +1210,7 @@ xychart-beta
                   "content": "<a href=\"#/4\">Mermaid Samples</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/5\">Paragraph Only</a>",
+                              "content": "<a href=\"#/5\">Paragraph and Diagram</a>",
                               "children": []
                         },
                         {
