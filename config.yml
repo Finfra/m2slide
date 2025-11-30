@@ -26,19 +26,19 @@ style:
     max_font_size: 1em       # Default: 1em
     max_font_color: '#000000' # Default: '#000000'
     align: center            # Default: center
-    outerpadding: 1%         # Default: 1%
+    outer_padding: 1%        # Default: 1%
 
   sub_title:
     max_font_size: 1em       # Default: 1em
     max_font_color: '#666666' # Default: '#666666'
     align: right             # Default: right
-    outerpadding: 5px        # Default: 5px
+    outer_padding: 5px       # Default: 5px
 
   theContents:
     max_font_size: 1em       # Default: 1em
     max_font_color: '#000000' # Default: '#000000'
     align: left              # Default: left
-    outerpadding: 5px        # Default: 5px
+    outer_padding: 5px       # Default: 5px
     # 폰트 크기 자동 조절 활성화 여부 (true: 자동 조절, false: 원래 크기 유지)
     font_size_auto: false
 
