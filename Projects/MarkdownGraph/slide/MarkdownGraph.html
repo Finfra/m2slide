@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://unpkg.com/open-props"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"/>
-  <link rel="stylesheet" href="../../../resource/slide.css?v=1764488949835">
+  <link rel="stylesheet" href="../../../resource/slide.css?v=1764601891265">
   <style>
     /* Markmap SVG baseline (allow container to control size) */
     #toc-mindmap {
@@ -50,12 +50,12 @@
       font-family: var(--main-title-font-family, var(--global-font-family, inherit));
       text-align: var(--main-title-align, center);
       color: var(--main-title-color, #333);
-      font-size: var(--main-title-max-font-size, 80px);
+      font-size: var(--main-title-font-size, 80px);
       margin: 0;
       padding: var(--main-title-padding, 40px 0 20px 0);
       flex-shrink: 0; /* Title should not shrink */
       text-transform: none;
-      font-weight: 700;
+      font-weight: var(--main-title-font-weight, 700);
       text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000;
     }
     #toc-container #toc-mindmap {
@@ -114,26 +114,26 @@
 </head>
 <body class="top-align-mode guide-line-mode media-enlarge-fit" style="
   --global-font-family: Pretendard, sans-serif;
-  --title-font-family: inherit;
-  --title-font-weight: 700;
-  --title-font-size: 3em;
+  --title-font-family: GmarketSansBold;
+  --title-font-weight: 50;
+  --title-font-size: 1.5em;
   --title-color: #000000;
   --title-align: center;
   --title-padding: 1%;
   --main-title-font-family: GmarketSansBold;
-  --main-title-font-weight: 700;
-  --main-title-font-size: 80px;
+  --main-title-font-weight: 400;
+  --main-title-font-size: 2em;
   --main-title-color: #333333;
   --main-title-align: center;
   --main-title-padding: 40px 0 20px 0;
-  --outline-title-font-family: inherit;
-  --outline-title-font-weight: 700;
-  --outline-title-font-size: 2.5em;
+  --outline-title-font-family: GmarketSansBold;
+  --outline-title-font-weight: 600;
+  --outline-title-font-size: 2.0em;
   --outline-title-color: #000000;
   --outline-title-align: center;
   --outline-title-padding: 0;
-  --outline-title-sub-font-family: inherit;
-  --outline-title-sub-font-weight: 500;
+  --outline-title-sub-font-family: GmarketSansBold;
+  --outline-title-sub-font-weight: 100;
   --outline-title-sub-font-size: 0.5em;
   --outline-title-sub-color: #666666;
   --outline-title-sub-align: right;
@@ -142,7 +142,7 @@
   --content-font-size: 1em;
   --content-color: #000000;
   --content-align: left;
-  --content-padding: 5px;
+  --content-padding: 1%;
 ">
   
 
@@ -248,7 +248,7 @@ graph TD;
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">Flowchart</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -263,7 +263,7 @@ flowchart TD
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">Class</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -292,7 +292,7 @@ classDiagram
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">Sequence</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -305,7 +305,7 @@ sequenceDiagram
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">Entity Relationship</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -336,7 +336,7 @@ erDiagram
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">State</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -351,7 +351,7 @@ stateDiagram-v2
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">Mindmap</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -376,7 +376,7 @@ mindmap
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">Architecture</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -395,7 +395,7 @@ architecture-beta
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">Block</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -417,7 +417,7 @@ columns 1
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">C4</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -458,7 +458,7 @@ C4Context
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">Gantt</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -475,7 +475,7 @@ gantt
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">Git</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -498,7 +498,7 @@ gitGraph
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">Kanban</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -526,7 +526,7 @@ kanban
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">Packet</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -553,7 +553,7 @@ packet
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">Pie</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -565,7 +565,7 @@ pie title Pets adopted by volunteers
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">Quadrant</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -587,7 +587,7 @@ quadrantChart
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">Radar</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -605,7 +605,7 @@ radar-beta
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">Requirement</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -627,7 +627,7 @@ requirementDiagram
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">Sankey</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -706,7 +706,7 @@ Wind,Electricity grid,289.366
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">StateDiagram </h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -752,7 +752,7 @@ timeline-beta
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">Treemap</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -768,7 +768,7 @@ treemap-beta
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">User Journey</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -785,7 +785,7 @@ journey
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">XY</h2>
 <div class="theContents">
 <div class="media-container mermaid">
@@ -799,7 +799,7 @@ xychart-beta
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">blockdiag</h2>
 <div class="theContents">
 <div class="media-container kroki">
@@ -808,7 +808,7 @@ xychart-beta
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">seqdiag</h2>
 <div class="theContents">
 <div class="media-container kroki">
@@ -817,7 +817,7 @@ xychart-beta
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">actdiag</h2>
 <div class="theContents">
 <div class="media-container kroki">
@@ -826,7 +826,7 @@ xychart-beta
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">nwdiag</h2>
 <div class="theContents">
 <div class="media-container kroki">
@@ -835,7 +835,7 @@ xychart-beta
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
+      <section data-chapter-title="Mermaid Samples">
 <h2 class="title">`ditaa` (ASCII → 그림 변환)</h2>
 <div class="theContents">
 <div class="media-container kroki">
@@ -844,7 +844,7 @@ xychart-beta
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Graphviz (DOT)">
+      <section data-chapter-title="Graphviz (DOT)">
 <h1 class="outline-title">Graphviz (DOT)</h1>
 <div class="theContents">
 <div class="media-container kroki">
@@ -861,7 +861,7 @@ xychart-beta
 </ul>
       </section>
 
-      <section class="has-text" data-chapter-title="Vega">
+      <section data-chapter-title="Vega">
 <h2 class="title">Vega-lite</h2>
 <div class="theContents">
 <div class="media-container kroki">
@@ -870,7 +870,7 @@ xychart-beta
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="Vega">
+      <section data-chapter-title="Vega">
 <h2 class="title">Vega</h2>
 <div class="theContents">
 <div class="media-container kroki">
@@ -889,7 +889,7 @@ xychart-beta
 </ul>
       </section>
 
-      <section class="has-text" data-chapter-title="PlantUML">
+      <section data-chapter-title="PlantUML">
 <h2 class="title">Class Diagram</h2>
 <div class="theContents">
 <div class="media-container kroki">
@@ -898,7 +898,7 @@ xychart-beta
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="PlantUML">
+      <section data-chapter-title="PlantUML">
 <h2 class="title">Component Diagram</h2>
 <div class="theContents">
 <div class="media-container kroki">
@@ -927,7 +927,7 @@ xychart-beta
 </div>
       </section>
 
-      <section class="has-text" data-chapter-title="PlantUML">
+      <section data-chapter-title="PlantUML">
 <h2 class="title">Use Case Diagram</h2>
 <div class="theContents">
 <div class="media-container kroki">
@@ -1085,9 +1085,11 @@ xychart-beta
 
 
     // Inject configuration
-    window.slideConfig = {"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":["https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css","https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"]},"title":{"font_size":"3em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"","font_weight":"700","fontFamily":"GmarketSansBold"},"main_title":{"font_size":"80px","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"","font_weight":"700","fontFamily":"GmarketSansBold"},"outline_title":{"font_size":"2.5em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"","font_weight":"700","fontFamily":"GmarketSansBold"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"","font_weight":"500","fontFamily":"GmarketSansBold"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"5px","font_family":"","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit","fontFamily":"Nanum Gothic Coding"}}};
+    window.slideConfig = {"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":["https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css","https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"","font_weight":"400","fontFamily":"GmarketSansBold"},"outline_title":{"font_size":"2.0em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit","fontFamily":"Nanum Gothic Coding"}}};
 
     // Dynamic Styling and Resizing Script
+    let observer; // Define observer at top level
+
     function applyDynamicStyles() {
       const config = window.slideConfig;
       if (!config) return;
@@ -1156,12 +1158,22 @@ xychart-beta
            }
         }
 
+        // Unobserve to prevent infinite loop (style change -> resize -> observer -> style change)
+        if (observer) observer.unobserve(content);
+
         // Apply best fit
         content.style.fontSize = bestFit + 'px';
         
         // If even at min size it overflows, enable scroll (already auto in CSS)
         if (bestFit <= minFontSize + 1) {
            content.style.fontSize = minFontSize + 'px';
+        }
+
+        // Re-observe after a delay to skip the immediate resize caused by our change
+        if (observer) {
+          requestAnimationFrame(() => {
+            observer.observe(content);
+          });
         }
       });
     }
@@ -1170,7 +1182,7 @@ xychart-beta
       applyDynamicStyles();
       
       // Use ResizeObserver to handle dynamic content changes (images loading, etc.)
-      const observer = new ResizeObserver(entries => {
+      observer = new ResizeObserver(entries => {
         // Debounce or throttle could be added if needed, but for now direct call
         // Check if the resized element is the current slide
         const currentSlide = Reveal.getCurrentSlide();
@@ -1179,9 +1191,9 @@ xychart-beta
         }
       });
 
-      // Observe all slides (or just the active one? All is safer for transitions)
-      document.querySelectorAll('.reveal .slides section').forEach(section => {
-        observer.observe(section);
+      // Observe all content containers to detect changes (e.g. images/diagrams loading)
+      document.querySelectorAll('.reveal .slides section .theContents').forEach(content => {
+        observer.observe(content);
       });
     });
     Reveal.on('slidechanged', applyDynamicStyles);
