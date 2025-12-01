@@ -28,37 +28,37 @@ style:
       - 'https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap'
     font_family: 'Pretendard, sans-serif' # Default: 'Pretendard, sans-serif'
 
-  title:
-    font_family: 'GmarketSansBold'
-    font_weight: 700         # Default: 700
-    font_size: 3em           # Default: 1em
-    font_color: '#000000'    # Default: '#000000'
-    align: center            # Default: center
-    outer_padding: 1%        # Default: 1%
-
   main_title:
     font_family: 'GmarketSansBold'
-    font_weight: 700         # Default: 700
-    font_size: 80px          # Default: 80px
+    font_size: 2em           # Default: 80px
+    font_weight: 400         # Default: 700
     font_color: '#333333'    # Default: '#333333'
     align: center            # Default: center
     outer_padding: 40px 0 20px 0 # Default: 40px 0 20px 0
 
   outline_title:
     font_family: 'GmarketSansBold'
-    font_weight: 700         # Default: 700
-    font_size: 2.5em         # Default: 2.5em
+    font_size: 3em         # Default: 2.5em
+    font_weight: 600         # Default: 700
     font_color: '#000000'    # Default: '#000000'
     align: center            # Default: center
     outer_padding: 0         # Default: 0
 
   outline_title_sub:
     font_family: 'GmarketSansBold'
-    font_weight: 500         # Default: 500
     font_size: 0.5em         # Default: 1em
+    font_weight: 100         # Default: 500
     font_color: '#666666'    # Default: '#666666'
     align: right             # Default: right
     outer_padding: 5px       # Default: 5px
+
+  title:
+    font_family: 'GmarketSansBold'
+    font_size: 1.5em           # Default: 1em
+    font_weight: 50         # Default: 700
+    font_color: '#000000'      # Default: '#000000'
+    align: center            # Default: center
+    outer_padding: 1%        # Default: 1%
 
   theContents:
     font_family: 'Nanum Gothic Coding'
