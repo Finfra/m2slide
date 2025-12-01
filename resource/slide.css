@@ -222,15 +222,16 @@
 
 .media-enlarge-fit .reveal .theContents {
   flex-grow: 1 !important;
-  height: auto !important;
+  height: 100% !important;
   min-height: 0 !important;
   display: flex !important;
   flex-direction: column !important;
+  overflow: hidden !important;
 }
 
 .media-enlarge-fit .reveal .media-container,
 .media-enlarge-fit .graph-scroll {
-  height: auto !important;
+  height: 100% !important;
   min-height: 0 !important;
   flex-grow: 1 !important;
   overflow: hidden !important;
@@ -248,9 +249,10 @@
 }
 
 /* Handle nested flex layouts (e.g. columns) in fit mode */
-.media-enlarge-fit .reveal .theContents>div {
+.media-enlarge-fit .reveal .theContents div {
   flex-grow: 1 !important;
   min-height: 0 !important;
+  box-sizing: border-box !important;
 }
 
 /* Hide empty paragraphs that might interfere with flex layout */
@@ -258,13 +260,13 @@
   display: none !important;
 }
 
-/* Override for slides with text content in fit mode */
+/* Override for slides with text content in fit mode - REMOVED to enforce fit */
+/*
 .media-enlarge-fit .reveal .slides section.has-text {
   height: auto !important;
   max-height: 100vh !important;
   overflow-y: auto !important;
   display: block !important;
-  /* Reset to block to allow normal flow */
 }
 
 .media-enlarge-fit .reveal .slides section.has-text .media-container,
@@ -284,6 +286,7 @@
   max-height: 100% !important;
   object-fit: contain !important;
 }
+*/
 
 .graph-scroll {
   flex-grow: 1;
