@@ -38,7 +38,7 @@ style:
 
   outline_title:
     font_family: 'GmarketSansBold'
-    font_size: 3em         # Default: 2.5em
+    font_size: 2.0em         # Default: 2.5em
     font_weight: 600         # Default: 700
     font_color: '#000000'    # Default: '#000000'
     align: center            # Default: center
@@ -65,7 +65,7 @@ style:
     font_size: 1em           # Default: 1em
     font_color: '#000000'    # Default: '#000000'
     align: left              # Default: left
-    outer_padding: 5px       # Default: 5px
+    outer_padding: 1%       # Default: 5px
     # 폰트 크기 자동 조절 활성화 여부 (true: 자동 조절, false: 원래 크기 유지)
     font_size_auto: true
     
