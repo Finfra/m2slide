@@ -22,26 +22,53 @@ use_open_props: true
 
 # 스타일 설정 (컨텐츠 조절 관련)
 style:
-  title:
-    max_font_size: 1em
-    max_font_color: '#000000'
-    align: center
-    outerpadding: 1%
+  global:
+    font_import:
+      - 'https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css'
+      - 'https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap'
+    font_family: 'Pretendard, sans-serif' # Default: 'Pretendard, sans-serif'
 
-  sub_title:
-    max_font_size: 1em
-    max_font_color: '#666666'
-    align: right
-    outerpadding: 5px
+  title:
+    font_family: 'GmarketSansBold'
+    font_weight: 300         # Default: 700
+    font_size: 3em           # Default: 1em
+    font_color: '#000000'    # Default: '#000000'
+    align: center            # Default: center
+    outer_padding: 1%        # Default: 1%
+
+  main_title:
+    font_family: 'GmarketSansBold'
+    font_weight: 500         # Default: 700
+    font_size: 80px          # Default: 80px
+    font_color: '#333333'    # Default: '#333333'
+    align: center            # Default: center
+    outer_padding: 40px 0 20px 0 # Default: 40px 0 20px 0
+
+  outline_title:
+    font_family: 'GmarketSansBold'
+    font_weight: 500         # Default: 700
+    font_size: 2.5em         # Default: 2.5em
+    font_color: '#000000'    # Default: '#000000'
+    align: center            # Default: center
+    outer_padding: 0         # Default: 0
+
+  outline_title_sub:
+    font_family: 'GmarketSansBold'
+    font_weight: 500         # Default: 500
+    font_size: 0.5em         # Default: 1em
+    font_color: '#666666'    # Default: '#666666'
+    align: right             # Default: right
+    outer_padding: 5px       # Default: 5px
 
   theContents:
-    max_font_size: 1em
-    max_font_color: '#000000'
-    align: left
-    outerpadding: 5px
+    font_family: 'Nanum Gothic Coding'
+    font_size: 1em           # Default: 1em
+    font_color: '#000000'    # Default: '#000000'
+    align: left              # Default: left
+    outer_padding: 5px       # Default: 5px
     # 폰트 크기 자동 조절 활성화 여부 (true: 자동 조절, false: 원래 크기 유지)
-    font_size_auto: false
-
+    font_size_auto: true
+    
     # 리스트 폰트의 최소 크기 (px 단위)
     # 내용이 아무리 많아도 이 크기보다 작아지면 스크롤이 생깁니다.
     font_size_min: 20px
