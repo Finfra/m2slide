@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Max Issue Num: 10
+* Max Issue Num: 13
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 
 
