@@ -4,7 +4,7 @@ This file provides guidance to Gemini CLI when working with code in this reposit
 
 ## 사용자 설정 (User Preferences)
 
-- **Language**: Korean (한국어) - 모든 대화와 주석, 커밋 메시지는 한국어로 진행합니다.
+- **Language**: Korean (한국어) - 모든 대화와 주석, 커밋 메시지는 한국어로 진행합니다. 가급적 Thinking까지도 한국어로 진행. 
 - **Notification**: 작업이 완료되면 터미널에서 `say 'Complished'` 명령어를 실행합니다.
 
 ## 프로젝트 개요
