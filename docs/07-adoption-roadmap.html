@@ -1,102 +1,26 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="data:,">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>7. (참고) 바이브 코딩 도입 로드맵</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
+  <link rel="stylesheet" href="https://unpkg.com/open-props"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"/>
+  <link rel="stylesheet" href="../../../resource/slide.css?v=1765012470186">
   <style>
-    * {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-    }
-    .reveal h1 { font-size: 2.5em; }
-    .reveal h2 { font-size: 1.8em; }
-    .reveal h3 { font-size: 1.4em; }
-    .reveal { font-size: 32px; }
-    .reveal table {
-      font-size: 0.7em;
-      width: 100% !important;
-    }
-    .reveal pre { font-size: 0.6em; }
-    .reveal code { font-size: 0.9em; }
-    .reveal blockquote {
-      font-size: 1.1em;
-      font-style: italic;
-      background: rgba(255,255,255,0.1);
-      padding: 20px;
-      border-left: 5px solid #42affa;
-    }
-    .reveal p {
-      font-size: 1em;
-      line-height: 1.6;
-      margin: 0.5em 0;
-      color: #333;
-    }
-    .reveal ul, .reveal ol {
-      display: block;
-      text-align: left;
-      margin: 1em 0;
-      padding-left: 40px;
-    }
-    .reveal li {
-      font-size: 0.9em;
-      line-height: 1.6;
-      margin: 0.3em 0;
-      color: #333;
-      list-style-type: '- ';
-    }
-    .reveal li.bullet-dot {
-      list-style-type: '· ';
-    }
-    .reveal ul ul {
-      margin: 0.3em 0;
-    }
-    .reveal strong {
-      color: #222;
-      font-weight: bold;
-    }
-    .reveal img {
-      max-width: 400px;
-      max-height: 300px;
-      min-height: 200px;
-      margin: 0.5em 0;
-      display: block;
-    }
-    /* 슬라이드 스크롤 기능 추가 */
-    .reveal .slides section,
-    .reveal .slides section.present,
-    .reveal .slides section.past,
-    .reveal .slides section.future {
-      overflow-y: auto !important;
-      max-height: 100vh !important;
-      padding: 20px 60px 200px 60px !important;
-      box-sizing: border-box !important;
-    }
-    .reveal .slides section::-webkit-scrollbar {
-      width: 8px;
-    }
-    .reveal .slides section::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.1);
-      border-radius: 4px;
-    }
-    .reveal .slides section::-webkit-scrollbar-thumb {
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 4px;
-    }
-    .reveal .slides section::-webkit-scrollbar-thumb:hover {
-      background: rgba(0, 0, 0, 0.5);
-    }
+    /* Markmap SVG baseline (allow container to control size) */
     #toc-mindmap {
-      width: 100% !important;
-      height: 500px !important;
-      max-width: 100% !important;
-      max-height: 500px !important;
-      overflow: hidden !important;
-      display: block !important;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      overflow: hidden;
+      display: block;
     }
     #toc-mindmap a {
       text-decoration: none;
@@ -107,9 +31,11 @@
       font-size: 16px !important;
       font-weight: 500;
     }
+    /* Minimal elements left inline to avoid FOUC */
     /* TOC container outside Reveal.js for Safari compatibility */
     #toc-container {
-      display: none;
+      display: flex;
+      flex-direction: column;
       position: absolute;
       top: 0;
       left: 0;
@@ -118,17 +44,25 @@
       background: radial-gradient(#f7fbfc, #add9e4);
       z-index: 100;
       box-sizing: border-box;
+      overflow: hidden; /* Prevent scrollbars if title is huge */
     }
-    #toc-container h1 {
-      text-align: center;
-      color: #333;
-      font-size: 80px;
+    #toc-container h1.main-title {
+      font-family: var(--main-title-font-family, var(--global-font-family, inherit));
+      text-align: var(--main-title-align, center);
+      color: var(--main-title-color, #333);
+      font-size: var(--main-title-font-size, 80px);
       margin: 0;
-      padding-top: 60px;
+      padding: var(--main-title-padding, 40px 0 20px 0);
+      flex-shrink: 0; /* Title should not shrink */
+      text-transform: none;
+      font-weight: var(--main-title-font-weight, 700);
+      text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000;
     }
     #toc-container #toc-mindmap {
       width: 100%;
-      height: calc(100% - 120px);
+      flex: 1; /* Grow to fill space, basis 0 */
+      min-height: 0; /* Allow shrinking */
+      display: block;
     }
     #toc-container a {
       text-decoration: none;
@@ -178,7 +112,38 @@
     }
   </style>
 </head>
-<body>
+<body class="top-align-mode  media-enlarge-fit" style="
+  --global-font-family: Pretendard, sans-serif;
+  --title-font-family: GmarketSansBold;
+  --title-font-weight: 50;
+  --title-font-size: 1.5em;
+  --title-color: #000000;
+  --title-align: center;
+  --title-padding: 1%;
+  --main-title-font-family: GmarketSansBold;
+  --main-title-font-weight: 400;
+  --main-title-font-size: 2em;
+  --main-title-color: #333333;
+  --main-title-align: center;
+  --main-title-padding: 40px 0 20px 0;
+  --outline-title-font-family: GmarketSansBold;
+  --outline-title-font-weight: 600;
+  --outline-title-font-size: 2.0em;
+  --outline-title-color: #000000;
+  --outline-title-align: center;
+  --outline-title-padding: 0;
+  --outline-title-sub-font-family: GmarketSansBold;
+  --outline-title-sub-font-weight: 100;
+  --outline-title-sub-font-size: 0.5em;
+  --outline-title-sub-color: #666666;
+  --outline-title-sub-align: right;
+  --outline-title-sub-padding: 5px;
+  --content-font-family: Nanum Gothic Coding;
+  --content-font-size: 1em;
+  --content-color: #000000;
+  --content-align: left;
+  --content-padding: 1%;
+">
   <a href="index.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
     <svg viewBox="0 0 24 24">
       <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
@@ -188,21 +153,21 @@
 
   <!-- TOC container outside Reveal.js for Safari compatibility -->
   <div id="toc-container">
-    <h1>7. (참고) 바이브 코딩 도입 로드맵</h1>
+    <h1 class="main-title">Examples for MarkdownGraph</h1>
     <svg id="toc-mindmap"></svg>
   </div>
 
   <div id="last-slide-message">마지막 페이지입니다. 다음 챕터로 이동하려면 다시 →를 누르세요.</div>
 
-  <div class="reveal">
+  <div class="reveal ratio-none">
     <div class="slides">
 
       <section id="toc-placeholder"></section>
 
-      <section>
-<h2>도입 단계별 가이드</h2>
-
-<div class="mermaid">
+      <section data-chapter-title="7. (참고) 바이브 코딩 도입 로드맵">
+<h2 class="title">도입 단계별 가이드</h2>
+<div class="theContents">
+<div class="media-container mermaid">
 timeline
     title 바이브 코딩 도입 로드맵
     section 1단계
@@ -224,22 +189,24 @@ timeline
                 : 워크플로우 최적화
                 : 팀 협업 패턴
 </div>
+</div>
       </section>
 
-      <section>
-<h2>1단계: 평가 및 준비 (1-2주)</h2>
-
+      <section class="has-text" data-chapter-title="7. (참고) 바이브 코딩 도입 로드맵">
+<h2 class="title">1단계: 평가 및 준비 (1-2주)</h2>
+<div class="theContents">
 <p><strong>현황 분석 체크리스트</strong></p>
-<pre><code>□ 현재 개발 프로세스 파악
+<pre class="code-wrapper"><code>□ 현재 개발 프로세스 파악
 □ 팀원 기술 스택 확인
 □ 예산 및 리소스 검토
 □ 보안 정책 확인
 □ 법적 검토 (필요시)</code></pre>
+</div>
       </section>
 
-      <section>
-<h2>1단계: 목표 설정</h2>
-
+      <section class="has-text" data-chapter-title="7. (참고) 바이브 코딩 도입 로드맵">
+<h2 class="title">1단계: 목표 설정</h2>
+<div class="theContents">
 <p><strong>단기 목표 (1-3개월)</strong></p>
 <ul>
 <li class="bullet-dot">개인 생산성 향상</li>
@@ -254,6 +221,7 @@ timeline
 <ul>
 <li class="bullet-dot">워크플로우 최적화</li>
 </ul>
+</div>
       </section>
 
       <section data-markdown>
@@ -270,39 +238,41 @@ timeline
 </textarea>
       </section>
 
-      <section>
-<h2>2단계: 시작하기 (2-4주)</h2>
-
+      <section class="has-text" data-chapter-title="7. (참고) 바이브 코딩 도입 로드맵">
+<h2 class="title">2단계: 시작하기 (2-4주)</h2>
+<div class="theContents">
 <p><strong>개인 학습 (Week 1-2)</strong></p>
 
 <p><strong>Day 1-3: 기본 설정</strong></p>
-<pre><code>□ 도구 설치 및 설정
+<pre class="code-wrapper"><code>□ 도구 설치 및 설정
 □ API 키 발급
 □ 첫 번째 프롬프트 실행
 □ 간단한 Hello World 생성</code></pre>
+</div>
       </section>
 
-      <section>
-<h2>2단계: 기본 기능 익히기</h2>
-
+      <section class="has-text" data-chapter-title="7. (참고) 바이브 코딩 도입 로드맵">
+<h2 class="title">2단계: 기본 기능 익히기</h2>
+<div class="theContents">
 <p><strong>Day 4-7: 기본 기능</strong></p>
-<pre><code>□ 코드 생성 요청 연습
+<pre class="code-wrapper"><code>□ 코드 생성 요청 연습
 □ 파일 수정 요청
 □ 오류 수정 요청
 □ Git 통합 사용</code></pre>
 
 <p><strong>Day 8-14: 실전 적용</strong></p>
-<pre><code>□ 사이드 프로젝트에 적용
+<pre class="code-wrapper"><code>□ 사이드 프로젝트에 적용
 □ 작은 기능 구현
 □ 코드 리뷰 습관 형성
 □ 베스트 프랙티스 학습</code></pre>
+</div>
       </section>
 
-      <section>
-<h2>2단계: 팀 파일럿 (Week 3-4)</h2>
-
+      <section class="has-text" data-chapter-title="7. (참고) 바이브 코딩 도입 로드맵">
+<h2 class="title">2단계: 팀 파일럿 (Week 3-4)</h2>
+<div class="theContents">
 <p><strong>파일럿 프로그램</strong></p>
-<pre><code>1. 파일럿 그룹 선정 (2-3명)
+<pre class="code-wrapper"><code>1. 파일럿 그룹 선정 (2-3명)
 2. 작은 프로젝트/기능 선택
 3. 1주일 집중 사용
 4. 결과 측정 및 공유</code></pre>
@@ -314,33 +284,36 @@ timeline
 <li class="bullet-dot">버그 발생률</li>
 <li class="bullet-dot">팀원 만족도</li>
 </ul>
+</div>
       </section>
 
-      <section>
-<h2>3단계: 숙련도 향상 (1-2개월)</h2>
-
+      <section class="has-text" data-chapter-title="7. (참고) 바이브 코딩 도입 로드맵">
+<h2 class="title">3단계: 숙련도 향상 (1-2개월)</h2>
+<div class="theContents">
 <p><strong>1세대 (IDE) 고급 기법</strong></p>
-<pre><code>□ Composer 모드 마스터
+<pre class="code-wrapper"><code>□ Composer 모드 마스터
 □ @mentions 활용
 □ 멀티파일 리팩토링
 □ 커스텀 프롬프트 템플릿
 □ IDE 단축키 최적화</code></pre>
+</div>
       </section>
 
-      <section>
-<h2>3단계: 고급 기능 (계속)</h2>
-
+      <section class="has-text" data-chapter-title="7. (참고) 바이브 코딩 도입 로드맵">
+<h2 class="title">3단계: 고급 기능 (계속)</h2>
+<div class="theContents">
 <p><strong>2세대 (CLI) 고급 기법</strong></p>
-<pre><code>□ 복잡한 프롬프트 작성
+<pre class="code-wrapper"><code>□ 복잡한 프롬프트 작성
 □ 쉘 스크립트 통합
 □ CI/CD 파이프라인 연동
 □ 자동화 워크플로우 구축
 □ 멀티 프로젝트 관리</code></pre>
+</div>
       </section>
 
-      <section>
-<h2>3단계: 팀 베스트 프랙티스</h2>
-
+      <section class="has-text" data-chapter-title="7. (참고) 바이브 코딩 도입 로드맵">
+<h2 class="title">3단계: 팀 베스트 프랙티스</h2>
+<div class="theContents">
 <p><strong>가이드라인 수립</strong></p>
 
 <p><strong>프롬프트 작성 규칙</strong></p>
@@ -356,26 +329,28 @@ timeline
 <li class="bullet-dot">보안 체크리스트 적용</li>
 <li class="bullet-dot">테스트 코드 필수</li>
 </ul>
+</div>
       </section>
 
-      <section>
-<h2>3단계: Git 커밋 규칙</h2>
-
-<pre><code class="language-bash"># AI 작업 후 즉시 커밋
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">3단계: Git 커밋 규칙</h2>
+<div class="theContents">
+<pre class="code-wrapper"><code class="language-bash"># AI 작업 후 즉시 커밋
 git add .
 git commit -m "AI: 사용자 인증 기능 추가"
 
 # 커밋 메시지에 "AI:" 접두사
 # 정기적인 푸시</code></pre>
+</div>
       </section>
 
-      <section>
-<h2>4단계: 고급 활용 (2-3개월)</h2>
-
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">4단계: 고급 활용 (2-3개월)</h2>
+<div class="theContents">
 <p><strong>워크플로우 최적화</strong></p>
 
 <p><strong>자동화 파이프라인</strong></p>
-<pre><code class="language-yaml">name: AI-Powered CI
+<pre class="code-wrapper"><code class="language-yaml">name: AI-Powered CI
 
 on: [push]
 
@@ -391,12 +366,13 @@ jobs:
           보안 취약점 찾아줘
           테스트 커버리지 확인해줘
           EOF</code></pre>
+</div>
       </section>
 
-      <section>
-<h2>4단계: 팀 협업 패턴</h2>
-
-<div class="mermaid">
+      <section data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">4단계: 팀 협업 패턴</h2>
+<div class="theContents">
+<div class="media-container mermaid">
 graph TB
     subgraph pattern1["패턴 1: AI 페어 프로그래밍"]
         P1A[👶 주니어 개발자] --> P1B[🤖 Claude Code 협업]
@@ -413,14 +389,15 @@ graph TB
     style pattern1 fill:#e3f2fd
     style pattern2 fill:#f3e5f5
 </div>
+</div>
       </section>
 
-      <section>
-<h2>4단계: 협업 패턴 (계속)</h2>
-
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">4단계: 협업 패턴 (계속)</h2>
+<div class="theContents">
 <p><strong>패턴 3: AI 테스트 생성</strong></p>
 
-<div class="mermaid">
+<div class="media-container mermaid">
 graph LR
     T1[👨‍💻 개발자<br/>기능 구현] --> T2[🤖 AI<br/>테스트 자동 생성]
     T2 --> T3[👀 개발자<br/>테스트 검증]
@@ -431,12 +408,13 @@ graph LR
     style T3 fill:#e8f5e9
     style T4 fill:#f3e5f5
 </div>
+</div>
       </section>
 
-      <section>
-<h2>개인 개발자 도입 전략</h2>
-
-<div class="mermaid">
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">개인 개발자 도입 전략</h2>
+<div class="theContents">
+<div class="media-container mermaid">
 timeline
     title 개인 개발자 도입 경로
     section Week 1-2
@@ -454,110 +432,117 @@ timeline
 </div>
 
 <p><strong>예산</strong>: $20/월 | <strong>예상 ROI</strong>: 첫 달부터 시간 절약</p>
+</div>
       </section>
 
-      <section>
-<h2>소규모 팀 (2-5명) 도입</h2>
-
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">소규모 팀 (2-5명) 도입</h2>
+<div class="theContents">
 <p><strong>Phase 1: 파일럿 (2주)</strong></p>
-<pre><code>* 1-2명 선발
+<pre class="code-wrapper"><code>* 1-2명 선발
 * Cursor로 시작
 * 작은 기능 구현
 * 성과 측정</code></pre>
 
 <p><strong>Phase 2: 확대 (4주)</strong></p>
-<pre><code>* 전체 팀 적용
+<pre class="code-wrapper"><code>* 전체 팀 적용
 * 내부 가이드 작성
 * 주간 공유 세션
 * 문제 해결 협력</code></pre>
+</div>
       </section>
 
-      <section>
-<h2>소규모 팀 (계속)</h2>
-
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">소규모 팀 (계속)</h2>
+<div class="theContents">
 <p><strong>Phase 3: 최적화 (2개월)</strong></p>
-<pre><code>* 팀 워크플로우 정립
+<pre class="code-wrapper"><code>* 팀 워크플로우 정립
 * 베스트 프랙티스 문서화
 * CLI 도구 도입 검토
 * 자동화 구축</code></pre>
 
 <p><strong>예산</strong>: $20/월 × 5명 = $100/월</p>
 <p><strong>예상 ROI</strong>: 2-3개월 내 회수</p>
+</div>
       </section>
 
-      <section>
-<h2>중형 팀 (6-20명) 도입</h2>
-
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">중형 팀 (6-20명) 도입</h2>
+<div class="theContents">
 <p><strong>Q1: 파일럿 프로그램</strong></p>
-<pre><code>* 부서별 1-2명 선발 (총 3-5명)
+<pre class="code-wrapper"><code>* 부서별 1-2명 선발 (총 3-5명)
 * 2개월 집중 사용
 * 상세 데이터 수집
 * 성과 발표</code></pre>
 
 <p><strong>Q2: 부서별 확대</strong></p>
-<pre><code>* 각 부서 50% 도입
+<pre class="code-wrapper"><code>* 각 부서 50% 도입
 * 부서별 챔피언 지정
 * 내부 교육 프로그램
 * Slack 채널 운영</code></pre>
+</div>
       </section>
 
-      <section>
-<h2>중형 팀 (계속)</h2>
-
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">중형 팀 (계속)</h2>
+<div class="theContents">
 <p><strong>Q3: 전사 확대</strong></p>
-<pre><code>* 전체 개발팀 적용
+<pre class="code-wrapper"><code>* 전체 개발팀 적용
 * 공식 가이드라인 수립
 * 라이선스 협상
 * KPI 모니터링</code></pre>
 
 <p><strong>Q4: 고도화</strong></p>
-<pre><code>* CI/CD 통합
+<pre class="code-wrapper"><code>* CI/CD 통합
 * 자동화 파이프라인
 * 커스텀 워크플로우
 * 지속적 개선</code></pre>
 
 <p><strong>예산</strong>: $20/월 × 20명 = $400/월</p>
 <p><strong>협상 팁</strong>: 10명 이상은 단체 할인 문의</p>
+</div>
       </section>
 
-      <section>
-<h2>대규모 조직 (20명+) 도입</h2>
-
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">대규모 조직 (20명+) 도입</h2>
+<div class="theContents">
 <p><strong>준비 단계 (1-2개월)</strong></p>
-<pre><code>□ 경영진 승인
+<pre class="code-wrapper"><code>□ 경영진 승인
 □ 법무/보안 검토
 □ 예산 확보
 □ 전담 TF 구성
 □ 벤더 협상</code></pre>
 
 <p><strong>파일럿 (3개월)</strong></p>
-<pre><code>□ 3개 팀 선정
+<pre class="code-wrapper"><code>□ 3개 팀 선정
 □ 각 팀 다른 도구 테스트
 □ 상세 데이터 수집
 □ ROI 분석
 □ 보안 감사</code></pre>
+</div>
       </section>
 
-      <section>
-<h2>대규모 조직 (계속)</h2>
-
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">대규모 조직 (계속)</h2>
+<div class="theContents">
 <p><strong>확대 (6개월)</strong></p>
-<pre><code>□ 우선순위 부서부터
+<pre class="code-wrapper"><code>□ 우선순위 부서부터
 □ 단계적 롤아웃
 □ 전담 교육팀 운영
 □ 내부 지원 체계
 □ 정기 피드백</code></pre>
 
 <p><strong>안정화 (6-12개월)</strong></p>
-<pre><code>□ 전사 표준화
+<pre class="code-wrapper"><code>□ 전사 표준화
 □ 자동화 고도화
 □ 성과 측정 체계
 □ 지속적 개선</code></pre>
+</div>
       </section>
 
-      <section>
-<h2>주의사항</h2>
-
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">주의사항</h2>
+<div class="theContents">
 <p><strong>피해야 할 것</strong></p>
 
 <p>❌ <strong>맹신하지 않기</strong></p>
@@ -573,11 +558,12 @@ timeline
 <li class="bullet-dot">알고리즘 이해도 중요</li>
 <li class="bullet-dot">문제 해결 능력 계속 연마</li>
 </ul>
+</div>
       </section>
 
-      <section>
-<h2>주의사항 (계속)</h2>
-
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">주의사항 (계속)</h2>
+<div class="theContents">
 <p>❌ <strong>민감 정보 공유</strong></p>
 <ul>
 <li class="bullet-dot">API 키, 비밀번호 절대 입력 금지</li>
@@ -591,11 +577,12 @@ timeline
 <li class="bullet-dot">작은 성공부터 쌓기</li>
 <li class="bullet-dot">팀원 속도 맞추기</li>
 </ul>
+</div>
       </section>
 
-      <section>
-<h2>권장사항</h2>
-
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">권장사항</h2>
+<div class="theContents">
 <p>✅ <strong>코드 리뷰 문화</strong></p>
 <ul>
 <li class="bullet-dot">모든 AI 생성 코드 리뷰</li>
@@ -609,11 +596,12 @@ timeline
 <li class="bullet-dot">새로운 기법 실험</li>
 <li class="bullet-dot">팀 내 지식 공유</li>
 </ul>
+</div>
       </section>
 
-      <section>
-<h2>권장사항 (계속)</h2>
-
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">권장사항 (계속)</h2>
+<div class="theContents">
 <p>✅ <strong>데이터 기반 의사결정</strong></p>
 <ul>
 <li class="bullet-dot">생산성 지표 측정</li>
@@ -627,11 +615,12 @@ timeline
 <li class="bullet-dot">민감 정보 보호 규칙</li>
 <li class="bullet-dot">접근 권한 관리</li>
 </ul>
+</div>
       </section>
 
-      <section>
-<h2>성공 체크리스트</h2>
-
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">성공 체크리스트</h2>
+<div class="theContents">
 <p><strong>1개월 후</strong></p>
 <ul>
 <li class="bullet-dot">[ ] 기본 기능 숙달</li>
@@ -647,11 +636,12 @@ timeline
 <li class="bullet-dot">[ ] 팀 워크플로우 정립</li>
 <li class="bullet-dot">[ ] 베스트 프랙티스 문서화</li>
 </ul>
+</div>
       </section>
 
-      <section>
-<h2>성공 체크리스트 (계속)</h2>
-
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">성공 체크리스트 (계속)</h2>
+<div class="theContents">
 <p><strong>6개월 후</strong></p>
 <ul>
 <li class="bullet-dot">[ ] 전체 팀 적용</li>
@@ -659,11 +649,12 @@ timeline
 <li class="bullet-dot">[ ] 생산성 50%+ 향상</li>
 <li class="bullet-dot">[ ] ROI 명확히 입증</li>
 </ul>
+</div>
       </section>
 
-      <section>
-<h2>다음 단계</h2>
-
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">다음 단계</h2>
+<div class="theContents">
 <p><strong>지금 바로 시작</strong></p>
 <ol>
 <li>오늘부터 작은 프로젝트에 적용</li>
@@ -671,6 +662,7 @@ timeline
 <li>지속적 개선: 계속해서 새로운 방법 탐색</li>
 <li>커뮤니티 참여: 다른 개발자들과 경험 교류</li>
 </ol>
+</div>
       </section>
 
     </div>
@@ -682,14 +674,21 @@ timeline
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>
+    // Allow URL toggle: ?top=1 to enable top-align-mode regardless of config
+    try {
+      var qs = new URLSearchParams(window.location.search);
+      if (qs.get('top') === '1') document.body.classList.add('top-align-mode');
+    } catch (e) {}
+
     Reveal.initialize({
       hash: true,
       plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
-      width: 1280,
-      height: 720,
-      margin: 0.1,
+      width: '100%',
+      height: '100%',
+      margin: 0.0,
+      center: false,
       slideNumber: 'c/t',
       transition: 'slide',
       backgroundTransition: 'fade'
@@ -706,7 +705,7 @@ timeline
       flowchart: {
         htmlLabels: true,
         curve: 'basis',
-        useMaxWidth: true
+        useMaxWidth: false
       },
       sequence: {
         diagramMarginX: 50,
@@ -719,10 +718,10 @@ timeline
         noteMargin: 10,
         messageMargin: 35,
         mirrorActors: true,
-        useMaxWidth: true
+        useMaxWidth: false
       },
       timeline: {
-        useMaxWidth: true
+        useMaxWidth: false
       }
     });
 
@@ -748,7 +747,7 @@ timeline
           try {
             mermaid.render(graphId, graphDefinition).then(function(result) {
               if (result && result.svg) {
-                element.innerHTML = result.svg;
+                element.innerHTML = '<div class="graph-scroll">' + result.svg + '</div>';
               }
             }).catch(function(error) {
               console.error('Mermaid rendering error for diagram ' + index + ':', error);
@@ -760,106 +759,307 @@ timeline
       }
     });
 
+    // Render all Kroki diagrams (runtime fallback)
+    Reveal.on('ready', function() {
+      const allKrokiElements = document.querySelectorAll('.kroki');
+      if (allKrokiElements && allKrokiElements.length > 0) {
+        allKrokiElements.forEach(function(element, index) {
+          // Skip if already rendered
+          if (element.querySelector('svg') || element.querySelector('img')) {
+            return;
+          }
+
+          const diagramType = element.getAttribute('data-type');
+          const diagramSource = element.textContent.trim();
+
+          if (!diagramType || !diagramSource) {
+            return;
+          }
+
+          // Prefer GET image to avoid CORS issues on file:// origins
+          try {
+            const imgUrl = 'https://kroki.io/' + diagramType + '/svg?source=' + encodeURIComponent(diagramSource);
+            element.innerHTML = '<div class="graph-scroll"><img alt="' + diagramType + ' diagram" src="' + imgUrl + '"/></div>';
+          } catch (error) {
+            console.error('Kroki rendering setup error for ' + diagramType + ' diagram ' + index + ':', error);
+            element.innerHTML = '<p style="color: red;">Failed to prepare ' + diagramType + ' diagram.</p>';
+          }
+        });
+      }
+    });
+
+
+    // Inject configuration
+    window.slideConfig = {"markmap_depth":2,"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":["https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css","https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"","font_weight":"400","fontFamily":"GmarketSansBold"},"outline_title":{"font_size":"2.0em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit","fontFamily":"Nanum Gothic Coding"}},"chapter_markmap_depth":3};
+
+    // Dynamic Styling and Resizing Script
+    let observer; // Define observer at top level
+
+    function applyDynamicStyles() {
+      const config = window.slideConfig;
+      if (!config) return;
+
+      // 1. Apply Title Styles - REMOVED (Migrated to CSS)
+      
+      const allSlides = document.querySelectorAll('.reveal .slides section');
+      // No dynamic title styling anymore
+
+      // 2. Resize Lists in current slide
+
+      // 2. Resize Lists in current slide
+      const currentSlide = Reveal.getCurrentSlide();
+      if (!currentSlide) return;
+
+      // 1. Fit lists (ul/ol)
+      // Only target top-level lists to avoid double-sizing nested ones
+      // 1. Fit content (theContents)
+      // Target the container itself
+      const contents = currentSlide.querySelectorAll('.theContents');
+      if (contents.length === 0) return;
+      
+      contents.forEach(content => {
+        // Check if auto font size is enabled
+        if (config.style.theContents.font_size_auto === false) {
+            return;
+        }
+
+        // Get title size for reference (from current slide or config)
+        let titleSizePx = 60; // fallback
+        const titleEl = currentSlide.querySelector('h1, h2');
+        if (titleEl) {
+          titleSizePx = parseFloat(window.getComputedStyle(titleEl).fontSize);
+        }
+
+        const maxFontSize = titleSizePx * (config.style.theContents.fontSizeMaxRatio || 0.66);
+        const minFontSize = parseFloat(config.style.theContents.fontSizeMin || '20px');
+
+        // Binary search or iterative approach to find best fit
+        // Range: [minFontSize, maxFontSize]
+        
+        let low = minFontSize;
+        let high = maxFontSize;
+        let bestFit = minFontSize;
+
+        // Reset styles for measurement
+        content.style.fontSize = maxFontSize + 'px';
+        content.style.lineHeight = '1.2'; // Tighter line height for large text
+
+        // Check if it fits at max
+        // We compare slide scrollHeight with slide clientHeight to detect overflow
+        if (currentSlide.scrollHeight <= currentSlide.clientHeight) {
+           bestFit = maxFontSize;
+        } else {
+           // Binary search
+           for (let i = 0; i < 10; i++) { // 10 iterations is enough precision
+              const mid = (low + high) / 2;
+              content.style.fontSize = mid + 'px';
+              // Check if slide overflows
+              if (currentSlide.scrollHeight <= currentSlide.clientHeight) {
+                 bestFit = mid;
+                 low = mid;
+              } else {
+                 high = mid;
+              }
+           }
+        }
+
+        // Unobserve to prevent infinite loop (style change -> resize -> observer -> style change)
+        if (observer) observer.unobserve(content);
+
+        // Apply best fit
+        content.style.fontSize = bestFit + 'px';
+        
+        // If even at min size it overflows, enable scroll (already auto in CSS)
+        if (bestFit <= minFontSize + 1) {
+           content.style.fontSize = minFontSize + 'px';
+        }
+
+        // Re-observe after a delay to skip the immediate resize caused by our change
+        if (observer) {
+          requestAnimationFrame(() => {
+            observer.observe(content);
+          });
+        }
+      });
+    }
+
+    Reveal.on('ready', () => {
+      applyDynamicStyles();
+      
+      // Use ResizeObserver to handle dynamic content changes (images loading, etc.)
+      observer = new ResizeObserver(entries => {
+        // Debounce or throttle could be added if needed, but for now direct call
+        // Check if the resized element is the current slide
+        const currentSlide = Reveal.getCurrentSlide();
+        if (currentSlide && entries.some(entry => entry.target === currentSlide || currentSlide.contains(entry.target))) {
+           applyDynamicStyles();
+        }
+      });
+
+      // Observe all content containers to detect changes (e.g. images/diagrams loading)
+      document.querySelectorAll('.reveal .slides section .theContents').forEach(content => {
+        observer.observe(content);
+      });
+    });
+    Reveal.on('slidechanged', applyDynamicStyles);
+    // Also re-apply on resize
+    window.addEventListener('resize', applyDynamicStyles);
+
     // Initialize markmap for table of contents (outside Reveal.js for Safari compatibility)
     var tocContainer = document.getElementById('toc-container');
     var tocData = {
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">도입 단계별 가이드</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/2\">1단계: 평가 및 준비 (1-2주)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/3\">1단계: 목표 설정</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/4\">1단계: 도구 선택</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/5\">2단계: 시작하기 (2-4주)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/6\">2단계: 기본 기능 익히기</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/7\">2단계: 팀 파일럿 (Week 3-4)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/8\">3단계: 숙련도 향상 (1-2개월)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/10\">3단계: 팀 베스트 프랙티스</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/11\">3단계: Git 커밋 규칙</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/12\">4단계: 고급 활용 (2-3개월)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/13\">4단계: 팀 협업 패턴</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/15\">개인 개발자 도입 전략</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/16\">소규모 팀 (2-5명) 도입</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/18\">중형 팀 (6-20명) 도입</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/20\">대규모 조직 (20명+) 도입</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/22\">주의사항</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/24\">권장사항</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/26\">성공 체크리스트</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/28\">다음 단계</a>",
-                  "children": []
+                  "content": "<a href=\"#/0\">7. (참고) 바이브 코딩 도입 로드맵</a>",
+                  "children": [
+                        {
+                              "content": "<a href=\"#/1\">도입 단계별 가이드</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/2\">1단계: 평가 및 준비 (1-2주)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/3\">1단계: 목표 설정</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/4\">1단계: 도구 선택</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/5\">2단계: 시작하기 (2-4주)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/6\">2단계: 기본 기능 익히기</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/7\">2단계: 팀 파일럿 (Week 3-4)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/8\">3단계: 숙련도 향상 (1-2개월)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/9\">3단계: 고급 기능 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/10\">3단계: 팀 베스트 프랙티스</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/11\">3단계: Git 커밋 규칙</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/12\">4단계: 고급 활용 (2-3개월)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/13\">4단계: 팀 협업 패턴</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/14\">4단계: 협업 패턴 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/15\">개인 개발자 도입 전략</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/16\">소규모 팀 (2-5명) 도입</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/17\">소규모 팀 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/18\">중형 팀 (6-20명) 도입</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/19\">중형 팀 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/20\">대규모 조직 (20명+) 도입</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/21\">대규모 조직 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/22\">주의사항</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/23\">주의사항 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/24\">권장사항</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/25\">권장사항 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/26\">성공 체크리스트</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/27\">성공 체크리스트 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/28\">다음 단계</a>",
+                              "children": []
+                        }
+                  ]
             }
       ]
 };
-
-    setTimeout(function() {
-      if (window.markmap && tocContainer) {
-        window.markmap.Markmap.create('#toc-mindmap', {}, tocData);
-      }
-    }, 200);
+    var markmapInitialized = false;
+    var markmapInstance = null;
 
     // Function to toggle TOC visibility based on current slide
     function updateTocVisibility() {
       var currentSlide = Reveal.getIndices();
       if (currentSlide.h === 0 && currentSlide.v === 0) {
         // First slide: show TOC container
-        tocContainer.style.display = 'block';
+        tocContainer.style.display = 'flex';
+
+        // Initialize markmap on first show
+        if (!markmapInitialized && window.markmap && tocContainer) {
+          // Create with layout options so the tree breathes horizontally
+          markmapInstance = window.markmap.Markmap.create('#toc-mindmap', {
+            autoFit: true,
+            fitRatio: 0.95,
+            spacingHorizontal: 80,
+            spacingVertical: 12,
+            paddingX: 40,
+            initialExpandLevel: 3
+          }, tocData);
+          markmapInitialized = true;
+          // Ensure fit after layout settles
+          requestAnimationFrame(function () {
+            if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
+          });
+          setTimeout(function(){ if (markmapInstance && markmapInstance.fit) markmapInstance.fit(); }, 50);
+        } else if (markmapInitialized && markmapInstance && markmapInstance.fit) {
+          // Re-fit when returning to the first slide
+          requestAnimationFrame(function () { markmapInstance.fit(); });
+        }
       } else {
         // Other slides: hide TOC container
         tocContainer.style.display = 'none';
@@ -876,6 +1076,121 @@ timeline
       updateTocVisibility();
     });
 
+    // Keep Markmap fitted on window resize
+    var resizeTimeout;
+    window.addEventListener('resize', function(){
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(function() {
+        if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
+        adjustGraphScrollHeights();
+        fitSmallDiagrams();
+        topBiasCurrentSlide();
+      }, 100);
+    });
+
+    // Adjust scroll height for tall diagrams based on Reveal scale
+    function adjustGraphScrollHeights() {
+      // Use Reveal logical size and subtract actual header height on current slide
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { width: 1280, height: 720 };
+      var baseH = cfg && cfg.height ? cfg.height : 720;
+
+      var cur = (typeof Reveal.getCurrentSlide === 'function') ? Reveal.getCurrentSlide() : null;
+      var headerSpace = 0;
+      if (cur) {
+        // Sum heights of visible H1/H2 in current slide
+        var heads = cur.querySelectorAll('h1, h2');
+        heads.forEach(function(h){
+          var cs = window.getComputedStyle(h);
+          var mh = parseFloat(cs.marginTop) + parseFloat(cs.marginBottom);
+          headerSpace += h.offsetHeight + mh;
+        });
+        // Add a small buffer below titles
+        headerSpace += 40;
+      }
+
+      var available = baseH - headerSpace - 40; // smaller buffer to allow larger content
+      if (available < 200) available = 200;
+
+      // Only adjust graph-scroll inside current slide to avoid layout thrash
+      var apply = function(scope){
+        scope.querySelectorAll('.graph-scroll').forEach(function(el){
+          el.style.maxHeight = available + 'px';
+          el.style.overflowY = 'auto';
+          // Prefer height-based fit for diagrams
+          el.querySelectorAll('svg, img').forEach(function(di){
+            di.style.maxHeight = available + 'px';
+            di.style.height = 'auto';
+            di.style.width = 'auto';
+            di.style.maxWidth = '100%';
+          });
+        });
+      };
+      if (cur) apply(cur); else apply(document);
+    }
+
+    // Vertically bias content to top by reducing extra center spacing using margin
+    var lastAdjustedSlide = null;
+    function topBiasCurrentSlide() {
+      if (typeof Reveal.getCurrentSlide !== 'function') return;
+      var slide = Reveal.getCurrentSlide();
+      if (!slide) return;
+      // reset previous
+      if (lastAdjustedSlide && lastAdjustedSlide !== slide) {
+        lastAdjustedSlide.style.marginTop = '';
+      }
+      // compute extra space when content is short (Reveal may center it)
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { height: 720 };
+      var logicalH = cfg && cfg.height ? cfg.height : 720;
+      var contentH = slide.scrollHeight;
+      var extra = (logicalH - contentH) / 2; // space added by vertical centering
+      if (extra > 10) {
+        // leave a small 10px top padding, pull the rest up via negative margin
+        var offset = Math.min(extra - 10, logicalH * 0.25); // cap shift to 25% of slide height
+        slide.style.marginTop = '-' + Math.round(offset) + 'px';
+        lastAdjustedSlide = slide;
+      } else {
+        slide.style.marginTop = '';
+      }
+    }
+
+    // Enlarge small diagrams up to slide width, capping height to 3:2
+    function fitSmallDiagrams() {
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { width: 1280, height: 720 };
+      var contentW = (cfg && cfg.width ? cfg.width : 1280) - 120; // padding (60px each side)
+      if (contentW < 320) contentW = 320;
+      var capH = Math.floor(contentW * 2 / 3);
+
+      document.querySelectorAll('.graph-scroll > svg, .graph-scroll > img').forEach(function(el){
+        var rect = el.getBoundingClientRect();
+        var curW = rect && rect.width ? rect.width : 0;
+        // Only upscale when clearly smaller than container
+        if (curW > 0 && curW < contentW * 0.7) {
+          el.style.width = contentW + 'px';
+          el.style.maxHeight = capH + 'px';
+          el.style.height = 'auto';
+        } else {
+          // Do not force width for already large diagrams
+          el.style.removeProperty('width');
+          el.style.removeProperty('max-height');
+        }
+      });
+    }
+
+    Reveal.on('ready', function(){
+      // Enforce top alignment in case theme defaults differ
+      if (typeof Reveal.configure === 'function') { Reveal.configure({ center: false }); }
+      if (document.body.classList.contains('top-align-mode')) {
+        // Remove extra top padding on current slide to keep content tight to top
+        var cur = Reveal.getCurrentSlide();
+        if (cur) cur.style.paddingTop = '10px';
+      }
+      adjustGraphScrollHeights();
+      fitSmallDiagrams();
+      topBiasCurrentSlide();
+    });
+    Reveal.on('slidechanged', function(){ adjustGraphScrollHeights(); fitSmallDiagrams(); topBiasCurrentSlide(); });
+    window.addEventListener('resize', function(){ adjustGraphScrollHeights(); fitSmallDiagrams(); topBiasCurrentSlide(); });
+
     // Last slide message state
     var lastSlideMessageShown = false;
     var lastSlideMessage = document.getElementById('last-slide-message');
@@ -885,13 +1200,16 @@ timeline
       // Check if up arrow key is pressed
       if (event.key === 'ArrowUp' || event.keyCode === 38) {
         var currentSlide = Reveal.getIndices();
-        // Only navigate to parent if there are no vertical slides
+        // Only navigate to parent if there are no vertical slides and parent exists
         if (currentSlide.v === 0) {
-          event.preventDefault();
-          // Navigate to parent page
           var navLink = document.getElementById('nav-up-link');
           if (navLink) {
+            event.preventDefault();
             window.location.href = navLink.href;
+          } else {
+            // Single page mode: go to first slide
+            event.preventDefault();
+            Reveal.slide(0, 0);
           }
         }
       }
@@ -901,19 +1219,25 @@ timeline
         var totalSlides = Reveal.getTotalSlides();
         var currentSlide = Reveal.getIndices();
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
+        var hasNextChapter = '08-qa-closing.html' !== '';
 
         // Check if on last slide
         if (currentSlideNumber >= totalSlides) {
-          if (lastSlideMessageShown) {
-            // Second press: navigate to next chapter
-            lastSlideMessage.style.display = 'none';
-            lastSlideMessageShown = false;
-            window.location.href = '08-qa-closing.html';
+          if (hasNextChapter) {
+            if (lastSlideMessageShown) {
+              // Second press: navigate to next chapter
+              lastSlideMessage.style.display = 'none';
+              lastSlideMessageShown = false;
+              window.location.href = '08-qa-closing.html';
+            } else {
+              // First press: show message
+              event.preventDefault();
+              lastSlideMessage.style.display = 'block';
+              lastSlideMessageShown = true;
+            }
           } else {
-            // First press: show message
+            // No next chapter - do nothing or show different message
             event.preventDefault();
-            lastSlideMessage.style.display = 'block';
-            lastSlideMessageShown = true;
           }
         }
       }
