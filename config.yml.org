@@ -3,9 +3,10 @@
 
 # 기본 프로젝트 이름 (convert.sh 및 deploy.sh에서 사용)
 # 프로젝트 경로: Projects/{current_project} 
-## MarkdownGraph
-## LlmAndVibeCoding
-current_project: LlmAndVibeCoding
+## MarkdownGraph       : 단일 페이지 모드 (Single Page Mode)
+## LlmAndVibeCoding    : 챕터 모드 (Chapter Mode)
+current_project: MarkdownGraph
+#current_project: LlmAndVibeCoding
 
 # 선택 사항: 슬라이드 내용 상단 정렬 강제
 # true일 경우, 생성된 HTML에 'top-align-mode' 클래스가 추가되어
@@ -19,6 +20,10 @@ guide_line: false
 # 1: 루트와 1단계 자식만 표시
 # 2: 2단계 자식까지 표시
 markmap_depth: 2
+
+# 챕터별 페이지용 Markmap 펼침 깊이 (기본값: markmap_depth + 1 권장)
+# 챕터 상세 페이지에서는 전체 개요보다 한 단계 더 깊이 보여주는 것이 좋음
+chapter_markmap_depth: 3
 
 
 # 슬라이드 출력용 프로젝트 상대 경로 CSS (각 챕터 HTML에 연결됨)
