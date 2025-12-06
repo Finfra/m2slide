@@ -56,18 +56,22 @@ timeline
 
 ---
 ## 세대별 대표 도구
-<div style="float:left; width:35%;">
-  ![alt text](img/chatgpt-logo.png)
-  ![alt text](img/gemini-logo.png)
+<div style="display:flex; gap:20px;">
+  <div style="flex:1;">
+    ![alt text](img/chatgpt-logo.png)
+    ![alt text](img/gemini-logo.png)
+  </div>
+  <div style="flex:1;">
+    **0세대 (채팅 기반)**
+    **1세대 (IDE 통합)**
+    **2세대 (CLI 기반)**
+  </div>
+  <div style="flex:1;">
+    ![alt text](img/cline-logo.png)
+    ![alt text](img/claude-logo.png)
+  </div>
 </div>
 
-<div style="float:right; width:35%;">
-  ![alt text](img/cline-logo.png)
-  ![alt text](img/claude-logo.png)
-</div>
-**0세대 (채팅 기반)**
-**1세대 (IDE 통합)**
-**2세대 (CLI 기반)**
 
 
 
