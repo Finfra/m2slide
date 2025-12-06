@@ -12,6 +12,11 @@
 
 
 # 🏁 완료된 이슈
+## Issue 13. Markmap Depth 설정 및 표시 오류 수정 (2025-12-06 해결)
+* `generate-slides.js`에서 `config.yml`의 `markmap_depth` 설정을 제대로 읽지 못하는 문제 수정
+* `config.yml`의 `markmap_depth` 기본값을 1에서 2로 변경하여 초기 로드 시 노드가 보이도록 개선
+
+
 ## Issue 12. font_size_auto 미작동 수정 (2025-11-30 해결)
 * `font_size_auto`가 H2(소제목)가 있는 슬라이드에서만 작동하던 문제 수정
 * H2가 없으면 H1(대제목) 이후의 모든 내용을 `.theContents`로 감싸도록 로직 개선
