@@ -5,8 +5,8 @@
 # 프로젝트 경로: Projects/{current_project} 
 ## MarkdownGraph       : 단일 페이지 모드 (Single Page Mode)
 ## LlmAndVibeCoding    : 챕터 모드 (Chapter Mode)
-#current_project: MarkdownGraph
-current_project: LlmAndVibeCoding
+current_project: MarkdownGraph
+#current_project: LlmAndVibeCoding
 
 # 선택 사항: 슬라이드 내용 상단 정렬 강제
 # true일 경우, 생성된 HTML에 'top-align-mode' 클래스가 추가되어
