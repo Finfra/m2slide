@@ -11,7 +11,26 @@
 # 🔥 진행 중
 
 
+
+
+
+
+
+
 # 🏁 완료된 이슈
+## Issue 16. 단일 페이지 프로젝트(MarkdownGraph) markmap depth 미적용 수정 (2025-12-06 해결)
+* `generate-slides.js`에서 `markmapDepth` 결정 로직 개선: `AGENDA.md` 유무(`hasAgenda`)를 확인하여 분기 처리
+* 다중 페이지 프로젝트(챕터): `config.chapter_markmap_depth` 우선 적용
+* 단일 페이지 프로젝트: `config.markmap_depth` 적용
+
+## Issue 15. 챕터별 페이지 markmap depth 별도 설정 (상대적 깊이 적용) (2025-12-06 해결)
+* `config.yml`에 `chapter_markmap_depth` (기본값: 3) 추가
+* `generate-slides.js`에서 챕터별 페이지 생성 시 `chapter_markmap_depth`를 우선 적용하도록 수정하여 챕터 상세 페이지에서 더 깊은 레벨(3차)까지 표시되도록 개선
+
+## Issue 14. 챕터별 프로젝트(LlmAndVibeCoding) markmap 미출력 수정 (2025-12-06 해결)
+* `generate-slides.js`의 `generateIndexHTML` 함수에서 `initialExpandLevel`이 1로 하드코딩되어 있던 문제 수정
+* `config.yml`의 `markmap_depth` 설정을 따르도록 변경하여 `markmap_depth: 2`일 경우 하위 챕터까지 바로 보이도록 개선
+
 ## Issue 13. Markmap Depth 설정 및 표시 오류 수정 (2025-12-06 해결)
 * `generate-slides.js`에서 `config.yml`의 `markmap_depth` 설정을 제대로 읽지 못하는 문제 수정
 * `config.yml`의 `markmap_depth` 기본값을 1에서 2로 변경하여 초기 로드 시 노드가 보이도록 개선

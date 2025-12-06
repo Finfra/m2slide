@@ -1,15 +1,17 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="data:,">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>7. (참고) 바이브 코딩 도입 로드맵</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
-  <link rel="stylesheet" href="../../../resource/slide.css?v=1764317512165">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
+  <link rel="stylesheet" href="https://unpkg.com/open-props"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"/>
+  <link rel="stylesheet" href="../../../resource/slide.css?v=1764994322801">
   <style>
     /* Markmap SVG baseline (allow container to control size) */
     #toc-mindmap {
@@ -32,7 +34,8 @@
     /* Minimal elements left inline to avoid FOUC */
     /* TOC container outside Reveal.js for Safari compatibility */
     #toc-container {
-      display: block;
+      display: flex;
+      flex-direction: column;
       position: absolute;
       top: 0;
       left: 0;
@@ -41,17 +44,25 @@
       background: radial-gradient(#f7fbfc, #add9e4);
       z-index: 100;
       box-sizing: border-box;
+      overflow: hidden; /* Prevent scrollbars if title is huge */
     }
-    #toc-container h1 {
-      text-align: center;
-      color: #333;
-      font-size: 80px;
+    #toc-container h1.main-title {
+      font-family: var(--main-title-font-family, var(--global-font-family, inherit));
+      text-align: var(--main-title-align, center);
+      color: var(--main-title-color, #333);
+      font-size: var(--main-title-font-size, 80px);
       margin: 0;
-      padding-top: 60px;
+      padding: var(--main-title-padding, 40px 0 20px 0);
+      flex-shrink: 0; /* Title should not shrink */
+      text-transform: none;
+      font-weight: var(--main-title-font-weight, 700);
+      text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000;
     }
     #toc-container #toc-mindmap {
       width: 100%;
-      height: calc(100% - 120px); /* fill under the title */
+      flex: 1; /* Grow to fill space, basis 0 */
+      min-height: 0; /* Allow shrinking */
+      display: block;
     }
     #toc-container a {
       text-decoration: none;
@@ -101,7 +112,38 @@
     }
   </style>
 </head>
-<body class="top-align-mode">
+<body class="top-align-mode  media-enlarge-fit" style="
+  --global-font-family: Pretendard, sans-serif;
+  --title-font-family: GmarketSansBold;
+  --title-font-weight: 50;
+  --title-font-size: 1.5em;
+  --title-color: #000000;
+  --title-align: center;
+  --title-padding: 1%;
+  --main-title-font-family: GmarketSansBold;
+  --main-title-font-weight: 400;
+  --main-title-font-size: 2em;
+  --main-title-color: #333333;
+  --main-title-align: center;
+  --main-title-padding: 40px 0 20px 0;
+  --outline-title-font-family: GmarketSansBold;
+  --outline-title-font-weight: 600;
+  --outline-title-font-size: 2.0em;
+  --outline-title-color: #000000;
+  --outline-title-align: center;
+  --outline-title-padding: 0;
+  --outline-title-sub-font-family: GmarketSansBold;
+  --outline-title-sub-font-weight: 100;
+  --outline-title-sub-font-size: 0.5em;
+  --outline-title-sub-color: #666666;
+  --outline-title-sub-align: right;
+  --outline-title-sub-padding: 5px;
+  --content-font-family: Nanum Gothic Coding;
+  --content-font-size: 1em;
+  --content-color: #000000;
+  --content-align: left;
+  --content-padding: 1%;
+">
   <a href="index.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
     <svg viewBox="0 0 24 24">
       <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
@@ -111,7 +153,7 @@
 
   <!-- TOC container outside Reveal.js for Safari compatibility -->
   <div id="toc-container">
-    <h1>7. (참고) 바이브 코딩 도입 로드맵</h1>
+    <h1 class="main-title">Examples for MarkdownGraph</h1>
     <svg id="toc-mindmap"></svg>
   </div>
 
@@ -122,8 +164,8 @@
 
       <section id="toc-placeholder"></section>
 
-      <section>
-<h2>도입 단계별 가이드</h2>
+      <section data-chapter-title="7. (참고) 바이브 코딩 도입 로드맵">
+<h2 class="title">도입 단계별 가이드</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 timeline
@@ -150,11 +192,11 @@ timeline
 </div>
       </section>
 
-      <section>
-<h2>1단계: 평가 및 준비 (1-2주)</h2>
+      <section class="has-text" data-chapter-title="7. (참고) 바이브 코딩 도입 로드맵">
+<h2 class="title">1단계: 평가 및 준비 (1-2주)</h2>
 <div class="theContents">
 <p><strong>현황 분석 체크리스트</strong></p>
-<pre><code>□ 현재 개발 프로세스 파악
+<pre class="code-wrapper"><code>□ 현재 개발 프로세스 파악
 □ 팀원 기술 스택 확인
 □ 예산 및 리소스 검토
 □ 보안 정책 확인
@@ -162,8 +204,8 @@ timeline
 </div>
       </section>
 
-      <section>
-<h2>1단계: 목표 설정</h2>
+      <section class="has-text" data-chapter-title="7. (참고) 바이브 코딩 도입 로드맵">
+<h2 class="title">1단계: 목표 설정</h2>
 <div class="theContents">
 <p><strong>단기 목표 (1-3개월)</strong></p>
 <ul>
@@ -196,41 +238,41 @@ timeline
 </textarea>
       </section>
 
-      <section>
-<h2>2단계: 시작하기 (2-4주)</h2>
+      <section class="has-text" data-chapter-title="7. (참고) 바이브 코딩 도입 로드맵">
+<h2 class="title">2단계: 시작하기 (2-4주)</h2>
 <div class="theContents">
 <p><strong>개인 학습 (Week 1-2)</strong></p>
 
 <p><strong>Day 1-3: 기본 설정</strong></p>
-<pre><code>□ 도구 설치 및 설정
+<pre class="code-wrapper"><code>□ 도구 설치 및 설정
 □ API 키 발급
 □ 첫 번째 프롬프트 실행
 □ 간단한 Hello World 생성</code></pre>
 </div>
       </section>
 
-      <section>
-<h2>2단계: 기본 기능 익히기</h2>
+      <section class="has-text" data-chapter-title="7. (참고) 바이브 코딩 도입 로드맵">
+<h2 class="title">2단계: 기본 기능 익히기</h2>
 <div class="theContents">
 <p><strong>Day 4-7: 기본 기능</strong></p>
-<pre><code>□ 코드 생성 요청 연습
+<pre class="code-wrapper"><code>□ 코드 생성 요청 연습
 □ 파일 수정 요청
 □ 오류 수정 요청
 □ Git 통합 사용</code></pre>
 
 <p><strong>Day 8-14: 실전 적용</strong></p>
-<pre><code>□ 사이드 프로젝트에 적용
+<pre class="code-wrapper"><code>□ 사이드 프로젝트에 적용
 □ 작은 기능 구현
 □ 코드 리뷰 습관 형성
 □ 베스트 프랙티스 학습</code></pre>
 </div>
       </section>
 
-      <section>
-<h2>2단계: 팀 파일럿 (Week 3-4)</h2>
+      <section class="has-text" data-chapter-title="7. (참고) 바이브 코딩 도입 로드맵">
+<h2 class="title">2단계: 팀 파일럿 (Week 3-4)</h2>
 <div class="theContents">
 <p><strong>파일럿 프로그램</strong></p>
-<pre><code>1. 파일럿 그룹 선정 (2-3명)
+<pre class="code-wrapper"><code>1. 파일럿 그룹 선정 (2-3명)
 2. 작은 프로젝트/기능 선택
 3. 1주일 집중 사용
 4. 결과 측정 및 공유</code></pre>
@@ -245,11 +287,11 @@ timeline
 </div>
       </section>
 
-      <section>
-<h2>3단계: 숙련도 향상 (1-2개월)</h2>
+      <section class="has-text" data-chapter-title="7. (참고) 바이브 코딩 도입 로드맵">
+<h2 class="title">3단계: 숙련도 향상 (1-2개월)</h2>
 <div class="theContents">
 <p><strong>1세대 (IDE) 고급 기법</strong></p>
-<pre><code>□ Composer 모드 마스터
+<pre class="code-wrapper"><code>□ Composer 모드 마스터
 □ @mentions 활용
 □ 멀티파일 리팩토링
 □ 커스텀 프롬프트 템플릿
@@ -257,11 +299,11 @@ timeline
 </div>
       </section>
 
-      <section>
-<h2>3단계: 고급 기능 (계속)</h2>
+      <section class="has-text" data-chapter-title="7. (참고) 바이브 코딩 도입 로드맵">
+<h2 class="title">3단계: 고급 기능 (계속)</h2>
 <div class="theContents">
 <p><strong>2세대 (CLI) 고급 기법</strong></p>
-<pre><code>□ 복잡한 프롬프트 작성
+<pre class="code-wrapper"><code>□ 복잡한 프롬프트 작성
 □ 쉘 스크립트 통합
 □ CI/CD 파이프라인 연동
 □ 자동화 워크플로우 구축
@@ -269,8 +311,8 @@ timeline
 </div>
       </section>
 
-      <section>
-<h2>3단계: 팀 베스트 프랙티스</h2>
+      <section class="has-text" data-chapter-title="7. (참고) 바이브 코딩 도입 로드맵">
+<h2 class="title">3단계: 팀 베스트 프랙티스</h2>
 <div class="theContents">
 <p><strong>가이드라인 수립</strong></p>
 
@@ -290,10 +332,10 @@ timeline
 </div>
       </section>
 
-      <section>
-<h2>3단계: Git 커밋 규칙</h2>
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">3단계: Git 커밋 규칙</h2>
 <div class="theContents">
-<pre><code class="language-bash"># AI 작업 후 즉시 커밋
+<pre class="code-wrapper"><code class="language-bash"># AI 작업 후 즉시 커밋
 git add .
 git commit -m "AI: 사용자 인증 기능 추가"
 
@@ -302,13 +344,13 @@ git commit -m "AI: 사용자 인증 기능 추가"
 </div>
       </section>
 
-      <section>
-<h2>4단계: 고급 활용 (2-3개월)</h2>
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">4단계: 고급 활용 (2-3개월)</h2>
 <div class="theContents">
 <p><strong>워크플로우 최적화</strong></p>
 
 <p><strong>자동화 파이프라인</strong></p>
-<pre><code class="language-yaml">name: AI-Powered CI
+<pre class="code-wrapper"><code class="language-yaml">name: AI-Powered CI
 
 on: [push]
 
@@ -327,8 +369,8 @@ jobs:
 </div>
       </section>
 
-      <section>
-<h2>4단계: 팀 협업 패턴</h2>
+      <section data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">4단계: 팀 협업 패턴</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 graph TB
@@ -350,8 +392,8 @@ graph TB
 </div>
       </section>
 
-      <section>
-<h2>4단계: 협업 패턴 (계속)</h2>
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">4단계: 협업 패턴 (계속)</h2>
 <div class="theContents">
 <p><strong>패턴 3: AI 테스트 생성</strong></p>
 
@@ -369,8 +411,8 @@ graph LR
 </div>
       </section>
 
-      <section>
-<h2>개인 개발자 도입 전략</h2>
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">개인 개발자 도입 전략</h2>
 <div class="theContents">
 <div class="media-container mermaid">
 timeline
@@ -393,28 +435,28 @@ timeline
 </div>
       </section>
 
-      <section>
-<h2>소규모 팀 (2-5명) 도입</h2>
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">소규모 팀 (2-5명) 도입</h2>
 <div class="theContents">
 <p><strong>Phase 1: 파일럿 (2주)</strong></p>
-<pre><code>* 1-2명 선발
+<pre class="code-wrapper"><code>* 1-2명 선발
 * Cursor로 시작
 * 작은 기능 구현
 * 성과 측정</code></pre>
 
 <p><strong>Phase 2: 확대 (4주)</strong></p>
-<pre><code>* 전체 팀 적용
+<pre class="code-wrapper"><code>* 전체 팀 적용
 * 내부 가이드 작성
 * 주간 공유 세션
 * 문제 해결 협력</code></pre>
 </div>
       </section>
 
-      <section>
-<h2>소규모 팀 (계속)</h2>
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">소규모 팀 (계속)</h2>
 <div class="theContents">
 <p><strong>Phase 3: 최적화 (2개월)</strong></p>
-<pre><code>* 팀 워크플로우 정립
+<pre class="code-wrapper"><code>* 팀 워크플로우 정립
 * 베스트 프랙티스 문서화
 * CLI 도구 도입 검토
 * 자동화 구축</code></pre>
@@ -424,34 +466,34 @@ timeline
 </div>
       </section>
 
-      <section>
-<h2>중형 팀 (6-20명) 도입</h2>
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">중형 팀 (6-20명) 도입</h2>
 <div class="theContents">
 <p><strong>Q1: 파일럿 프로그램</strong></p>
-<pre><code>* 부서별 1-2명 선발 (총 3-5명)
+<pre class="code-wrapper"><code>* 부서별 1-2명 선발 (총 3-5명)
 * 2개월 집중 사용
 * 상세 데이터 수집
 * 성과 발표</code></pre>
 
 <p><strong>Q2: 부서별 확대</strong></p>
-<pre><code>* 각 부서 50% 도입
+<pre class="code-wrapper"><code>* 각 부서 50% 도입
 * 부서별 챔피언 지정
 * 내부 교육 프로그램
 * Slack 채널 운영</code></pre>
 </div>
       </section>
 
-      <section>
-<h2>중형 팀 (계속)</h2>
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">중형 팀 (계속)</h2>
 <div class="theContents">
 <p><strong>Q3: 전사 확대</strong></p>
-<pre><code>* 전체 개발팀 적용
+<pre class="code-wrapper"><code>* 전체 개발팀 적용
 * 공식 가이드라인 수립
 * 라이선스 협상
 * KPI 모니터링</code></pre>
 
 <p><strong>Q4: 고도화</strong></p>
-<pre><code>* CI/CD 통합
+<pre class="code-wrapper"><code>* CI/CD 통합
 * 자동화 파이프라인
 * 커스텀 워크플로우
 * 지속적 개선</code></pre>
@@ -461,18 +503,18 @@ timeline
 </div>
       </section>
 
-      <section>
-<h2>대규모 조직 (20명+) 도입</h2>
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">대규모 조직 (20명+) 도입</h2>
 <div class="theContents">
 <p><strong>준비 단계 (1-2개월)</strong></p>
-<pre><code>□ 경영진 승인
+<pre class="code-wrapper"><code>□ 경영진 승인
 □ 법무/보안 검토
 □ 예산 확보
 □ 전담 TF 구성
 □ 벤더 협상</code></pre>
 
 <p><strong>파일럿 (3개월)</strong></p>
-<pre><code>□ 3개 팀 선정
+<pre class="code-wrapper"><code>□ 3개 팀 선정
 □ 각 팀 다른 도구 테스트
 □ 상세 데이터 수집
 □ ROI 분석
@@ -480,26 +522,26 @@ timeline
 </div>
       </section>
 
-      <section>
-<h2>대규모 조직 (계속)</h2>
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">대규모 조직 (계속)</h2>
 <div class="theContents">
 <p><strong>확대 (6개월)</strong></p>
-<pre><code>□ 우선순위 부서부터
+<pre class="code-wrapper"><code>□ 우선순위 부서부터
 □ 단계적 롤아웃
 □ 전담 교육팀 운영
 □ 내부 지원 체계
 □ 정기 피드백</code></pre>
 
 <p><strong>안정화 (6-12개월)</strong></p>
-<pre><code>□ 전사 표준화
+<pre class="code-wrapper"><code>□ 전사 표준화
 □ 자동화 고도화
 □ 성과 측정 체계
 □ 지속적 개선</code></pre>
 </div>
       </section>
 
-      <section>
-<h2>주의사항</h2>
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">주의사항</h2>
 <div class="theContents">
 <p><strong>피해야 할 것</strong></p>
 
@@ -519,8 +561,8 @@ timeline
 </div>
       </section>
 
-      <section>
-<h2>주의사항 (계속)</h2>
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">주의사항 (계속)</h2>
 <div class="theContents">
 <p>❌ <strong>민감 정보 공유</strong></p>
 <ul>
@@ -538,8 +580,8 @@ timeline
 </div>
       </section>
 
-      <section>
-<h2>권장사항</h2>
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">권장사항</h2>
 <div class="theContents">
 <p>✅ <strong>코드 리뷰 문화</strong></p>
 <ul>
@@ -557,8 +599,8 @@ timeline
 </div>
       </section>
 
-      <section>
-<h2>권장사항 (계속)</h2>
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">권장사항 (계속)</h2>
 <div class="theContents">
 <p>✅ <strong>데이터 기반 의사결정</strong></p>
 <ul>
@@ -576,8 +618,8 @@ timeline
 </div>
       </section>
 
-      <section>
-<h2>성공 체크리스트</h2>
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">성공 체크리스트</h2>
 <div class="theContents">
 <p><strong>1개월 후</strong></p>
 <ul>
@@ -597,8 +639,8 @@ timeline
 </div>
       </section>
 
-      <section>
-<h2>성공 체크리스트 (계속)</h2>
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">성공 체크리스트 (계속)</h2>
 <div class="theContents">
 <p><strong>6개월 후</strong></p>
 <ul>
@@ -610,8 +652,8 @@ timeline
 </div>
       </section>
 
-      <section>
-<h2>다음 단계</h2>
+      <section class="has-text" data-chapter-title="AI 작업 후 즉시 커밋">
+<h2 class="title">다음 단계</h2>
 <div class="theContents">
 <p><strong>지금 바로 시작</strong></p>
 <ol>
@@ -663,7 +705,7 @@ timeline
       flowchart: {
         htmlLabels: true,
         curve: 'basis',
-        useMaxWidth: true
+        useMaxWidth: false
       },
       sequence: {
         diagramMarginX: 50,
@@ -676,10 +718,10 @@ timeline
         noteMargin: 10,
         messageMargin: 35,
         mirrorActors: true,
-        useMaxWidth: true
+        useMaxWidth: false
       },
       timeline: {
-        useMaxWidth: true
+        useMaxWidth: false
       }
     });
 
@@ -746,13 +788,130 @@ timeline
       }
     });
 
+
+    // Inject configuration
+    window.slideConfig = {"markmap_depth":2,"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":["https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css","https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"","font_weight":"400","fontFamily":"GmarketSansBold"},"outline_title":{"font_size":"2.0em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit","fontFamily":"Nanum Gothic Coding"}},"chapter_markmap_depth":3};
+
+    // Dynamic Styling and Resizing Script
+    let observer; // Define observer at top level
+
+    function applyDynamicStyles() {
+      const config = window.slideConfig;
+      if (!config) return;
+
+      // 1. Apply Title Styles - REMOVED (Migrated to CSS)
+      
+      const allSlides = document.querySelectorAll('.reveal .slides section');
+      // No dynamic title styling anymore
+
+      // 2. Resize Lists in current slide
+
+      // 2. Resize Lists in current slide
+      const currentSlide = Reveal.getCurrentSlide();
+      if (!currentSlide) return;
+
+      // 1. Fit lists (ul/ol)
+      // Only target top-level lists to avoid double-sizing nested ones
+      // 1. Fit content (theContents)
+      // Target the container itself
+      const contents = currentSlide.querySelectorAll('.theContents');
+      if (contents.length === 0) return;
+      
+      contents.forEach(content => {
+        // Check if auto font size is enabled
+        if (config.style.theContents.font_size_auto === false) {
+            return;
+        }
+
+        // Get title size for reference (from current slide or config)
+        let titleSizePx = 60; // fallback
+        const titleEl = currentSlide.querySelector('h1, h2');
+        if (titleEl) {
+          titleSizePx = parseFloat(window.getComputedStyle(titleEl).fontSize);
+        }
+
+        const maxFontSize = titleSizePx * (config.style.theContents.fontSizeMaxRatio || 0.66);
+        const minFontSize = parseFloat(config.style.theContents.fontSizeMin || '20px');
+
+        // Binary search or iterative approach to find best fit
+        // Range: [minFontSize, maxFontSize]
+        
+        let low = minFontSize;
+        let high = maxFontSize;
+        let bestFit = minFontSize;
+
+        // Reset styles for measurement
+        content.style.fontSize = maxFontSize + 'px';
+        content.style.lineHeight = '1.2'; // Tighter line height for large text
+
+        // Check if it fits at max
+        // We compare slide scrollHeight with slide clientHeight to detect overflow
+        if (currentSlide.scrollHeight <= currentSlide.clientHeight) {
+           bestFit = maxFontSize;
+        } else {
+           // Binary search
+           for (let i = 0; i < 10; i++) { // 10 iterations is enough precision
+              const mid = (low + high) / 2;
+              content.style.fontSize = mid + 'px';
+              // Check if slide overflows
+              if (currentSlide.scrollHeight <= currentSlide.clientHeight) {
+                 bestFit = mid;
+                 low = mid;
+              } else {
+                 high = mid;
+              }
+           }
+        }
+
+        // Unobserve to prevent infinite loop (style change -> resize -> observer -> style change)
+        if (observer) observer.unobserve(content);
+
+        // Apply best fit
+        content.style.fontSize = bestFit + 'px';
+        
+        // If even at min size it overflows, enable scroll (already auto in CSS)
+        if (bestFit <= minFontSize + 1) {
+           content.style.fontSize = minFontSize + 'px';
+        }
+
+        // Re-observe after a delay to skip the immediate resize caused by our change
+        if (observer) {
+          requestAnimationFrame(() => {
+            observer.observe(content);
+          });
+        }
+      });
+    }
+
+    Reveal.on('ready', () => {
+      applyDynamicStyles();
+      
+      // Use ResizeObserver to handle dynamic content changes (images loading, etc.)
+      observer = new ResizeObserver(entries => {
+        // Debounce or throttle could be added if needed, but for now direct call
+        // Check if the resized element is the current slide
+        const currentSlide = Reveal.getCurrentSlide();
+        if (currentSlide && entries.some(entry => entry.target === currentSlide || currentSlide.contains(entry.target))) {
+           applyDynamicStyles();
+        }
+      });
+
+      // Observe all content containers to detect changes (e.g. images/diagrams loading)
+      document.querySelectorAll('.reveal .slides section .theContents').forEach(content => {
+        observer.observe(content);
+      });
+    });
+    Reveal.on('slidechanged', applyDynamicStyles);
+    // Also re-apply on resize
+    window.addEventListener('resize', applyDynamicStyles);
+
     // Initialize markmap for table of contents (outside Reveal.js for Safari compatibility)
     var tocContainer = document.getElementById('toc-container');
     var tocData = {
       "content": "",
       "children": [
             {
-                  "content": "7. (참고) 바이브 코딩 도입 로드맵",
+                  "content": "<a href=\"#/0\">7. (참고) 바이브 코딩 도입 로드맵</a>",
                   "children": [
                         {
                               "content": "<a href=\"#/1\">도입 단계별 가이드</a>",
@@ -878,17 +1037,17 @@ timeline
       var currentSlide = Reveal.getIndices();
       if (currentSlide.h === 0 && currentSlide.v === 0) {
         // First slide: show TOC container
-        tocContainer.style.display = 'block';
+        tocContainer.style.display = 'flex';
 
         // Initialize markmap on first show
         if (!markmapInitialized && window.markmap && tocContainer) {
           // Create with layout options so the tree breathes horizontally
           markmapInstance = window.markmap.Markmap.create('#toc-mindmap', {
             autoFit: true,
-            fitRatio: 1,
-            spacingHorizontal: 160,
+            fitRatio: 0.95,
+            spacingHorizontal: 80,
             spacingVertical: 12,
-            paddingX: 80,
+            paddingX: 40,
             initialExpandLevel: 3
           }, tocData);
           markmapInitialized = true;
@@ -918,8 +1077,15 @@ timeline
     });
 
     // Keep Markmap fitted on window resize
+    var resizeTimeout;
     window.addEventListener('resize', function(){
-      if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(function() {
+        if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
+        adjustGraphScrollHeights();
+        fitSmallDiagrams();
+        topBiasCurrentSlide();
+      }, 100);
     });
 
     // Adjust scroll height for tall diagrams based on Reveal scale
@@ -1040,6 +1206,10 @@ timeline
           if (navLink) {
             event.preventDefault();
             window.location.href = navLink.href;
+          } else {
+            // Single page mode: go to first slide
+            event.preventDefault();
+            Reveal.slide(0, 0);
           }
         }
       }

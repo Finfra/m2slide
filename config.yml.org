@@ -2,8 +2,10 @@
 # 현재 프로젝트 설정
 
 # 기본 프로젝트 이름 (convert.sh 및 deploy.sh에서 사용)
-# 프로젝트 경로: Projects/{current_project}
-current_project: MarkdownGraph
+# 프로젝트 경로: Projects/{current_project} 
+## MarkdownGraph
+## LlmAndVibeCoding
+current_project: LlmAndVibeCoding
 
 # 선택 사항: 슬라이드 내용 상단 정렬 강제
 # true일 경우, 생성된 HTML에 'top-align-mode' 클래스가 추가되어
@@ -11,7 +13,13 @@ current_project: MarkdownGraph
 top_align: true
 
 # 가이드 라인 표시 (레이아웃 디버깅용)
-guide_line: true
+guide_line: false
+
+# Markmap 초기 펼침 깊이 (기본값: 3)
+# 1: 루트와 1단계 자식만 표시
+# 2: 2단계 자식까지 표시
+markmap_depth: 2
+
 
 # 슬라이드 출력용 프로젝트 상대 경로 CSS (각 챕터 HTML에 연결됨)
 # 예시: resource/slide.css
@@ -28,44 +36,44 @@ style:
       - 'https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap'
     font_family: 'Pretendard, sans-serif' # Default: 'Pretendard, sans-serif'
 
-  title:
-    font_family: 'GmarketSansBold'
-    font_weight: 300         # Default: 700
-    font_size: 3em           # Default: 1em
-    font_color: '#000000'    # Default: '#000000'
-    align: center            # Default: center
-    outer_padding: 1%        # Default: 1%
-
   main_title:
     font_family: 'GmarketSansBold'
-    font_weight: 500         # Default: 700
-    font_size: 80px          # Default: 80px
+    font_size: 2em           # Default: 80px
+    font_weight: 400         # Default: 700
     font_color: '#333333'    # Default: '#333333'
     align: center            # Default: center
     outer_padding: 40px 0 20px 0 # Default: 40px 0 20px 0
 
   outline_title:
     font_family: 'GmarketSansBold'
-    font_weight: 500         # Default: 700
-    font_size: 2.5em         # Default: 2.5em
+    font_size: 2.0em         # Default: 2.5em
+    font_weight: 600         # Default: 700
     font_color: '#000000'    # Default: '#000000'
     align: center            # Default: center
     outer_padding: 0         # Default: 0
 
   outline_title_sub:
     font_family: 'GmarketSansBold'
-    font_weight: 500         # Default: 500
     font_size: 0.5em         # Default: 1em
+    font_weight: 100         # Default: 500
     font_color: '#666666'    # Default: '#666666'
     align: right             # Default: right
     outer_padding: 5px       # Default: 5px
+
+  title:
+    font_family: 'GmarketSansBold'
+    font_size: 1.5em           # Default: 1em
+    font_weight: 50         # Default: 700
+    font_color: '#000000'      # Default: '#000000'
+    align: center            # Default: center
+    outer_padding: 1%        # Default: 1%
 
   theContents:
     font_family: 'Nanum Gothic Coding'
     font_size: 1em           # Default: 1em
     font_color: '#000000'    # Default: '#000000'
     align: left              # Default: left
-    outer_padding: 5px       # Default: 5px
+    outer_padding: 1%       # Default: 5px
     # 폰트 크기 자동 조절 활성화 여부 (true: 자동 조절, false: 원래 크기 유지)
     font_size_auto: true
     
