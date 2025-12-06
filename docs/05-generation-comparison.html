@@ -1,102 +1,26 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="data:,">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>5. 세대별 비교 및 선택 가이드</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
+  <link rel="stylesheet" href="https://unpkg.com/open-props"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"/>
+  <link rel="stylesheet" href="../../../resource/slide.css?v=1765012470184">
   <style>
-    * {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-    }
-    .reveal h1 { font-size: 2.5em; }
-    .reveal h2 { font-size: 1.8em; }
-    .reveal h3 { font-size: 1.4em; }
-    .reveal { font-size: 32px; }
-    .reveal table {
-      font-size: 0.7em;
-      width: 100% !important;
-    }
-    .reveal pre { font-size: 0.6em; }
-    .reveal code { font-size: 0.9em; }
-    .reveal blockquote {
-      font-size: 1.1em;
-      font-style: italic;
-      background: rgba(255,255,255,0.1);
-      padding: 20px;
-      border-left: 5px solid #42affa;
-    }
-    .reveal p {
-      font-size: 1em;
-      line-height: 1.6;
-      margin: 0.5em 0;
-      color: #333;
-    }
-    .reveal ul, .reveal ol {
-      display: block;
-      text-align: left;
-      margin: 1em 0;
-      padding-left: 40px;
-    }
-    .reveal li {
-      font-size: 0.9em;
-      line-height: 1.6;
-      margin: 0.3em 0;
-      color: #333;
-      list-style-type: '- ';
-    }
-    .reveal li.bullet-dot {
-      list-style-type: '· ';
-    }
-    .reveal ul ul {
-      margin: 0.3em 0;
-    }
-    .reveal strong {
-      color: #222;
-      font-weight: bold;
-    }
-    .reveal img {
-      max-width: 400px;
-      max-height: 300px;
-      min-height: 200px;
-      margin: 0.5em 0;
-      display: block;
-    }
-    /* 슬라이드 스크롤 기능 추가 */
-    .reveal .slides section,
-    .reveal .slides section.present,
-    .reveal .slides section.past,
-    .reveal .slides section.future {
-      overflow-y: auto !important;
-      max-height: 100vh !important;
-      padding: 20px 60px 200px 60px !important;
-      box-sizing: border-box !important;
-    }
-    .reveal .slides section::-webkit-scrollbar {
-      width: 8px;
-    }
-    .reveal .slides section::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.1);
-      border-radius: 4px;
-    }
-    .reveal .slides section::-webkit-scrollbar-thumb {
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 4px;
-    }
-    .reveal .slides section::-webkit-scrollbar-thumb:hover {
-      background: rgba(0, 0, 0, 0.5);
-    }
+    /* Markmap SVG baseline (allow container to control size) */
     #toc-mindmap {
-      width: 100% !important;
-      height: 500px !important;
-      max-width: 100% !important;
-      max-height: 500px !important;
-      overflow: hidden !important;
-      display: block !important;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      overflow: hidden;
+      display: block;
     }
     #toc-mindmap a {
       text-decoration: none;
@@ -107,9 +31,11 @@
       font-size: 16px !important;
       font-weight: 500;
     }
+    /* Minimal elements left inline to avoid FOUC */
     /* TOC container outside Reveal.js for Safari compatibility */
     #toc-container {
-      display: none;
+      display: flex;
+      flex-direction: column;
       position: absolute;
       top: 0;
       left: 0;
@@ -118,17 +44,25 @@
       background: radial-gradient(#f7fbfc, #add9e4);
       z-index: 100;
       box-sizing: border-box;
+      overflow: hidden; /* Prevent scrollbars if title is huge */
     }
-    #toc-container h1 {
-      text-align: center;
-      color: #333;
-      font-size: 80px;
+    #toc-container h1.main-title {
+      font-family: var(--main-title-font-family, var(--global-font-family, inherit));
+      text-align: var(--main-title-align, center);
+      color: var(--main-title-color, #333);
+      font-size: var(--main-title-font-size, 80px);
       margin: 0;
-      padding-top: 60px;
+      padding: var(--main-title-padding, 40px 0 20px 0);
+      flex-shrink: 0; /* Title should not shrink */
+      text-transform: none;
+      font-weight: var(--main-title-font-weight, 700);
+      text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000;
     }
     #toc-container #toc-mindmap {
       width: 100%;
-      height: calc(100% - 120px);
+      flex: 1; /* Grow to fill space, basis 0 */
+      min-height: 0; /* Allow shrinking */
+      display: block;
     }
     #toc-container a {
       text-decoration: none;
@@ -178,7 +112,38 @@
     }
   </style>
 </head>
-<body>
+<body class="top-align-mode  media-enlarge-fit" style="
+  --global-font-family: Pretendard, sans-serif;
+  --title-font-family: GmarketSansBold;
+  --title-font-weight: 50;
+  --title-font-size: 1.5em;
+  --title-color: #000000;
+  --title-align: center;
+  --title-padding: 1%;
+  --main-title-font-family: GmarketSansBold;
+  --main-title-font-weight: 400;
+  --main-title-font-size: 2em;
+  --main-title-color: #333333;
+  --main-title-align: center;
+  --main-title-padding: 40px 0 20px 0;
+  --outline-title-font-family: GmarketSansBold;
+  --outline-title-font-weight: 600;
+  --outline-title-font-size: 2.0em;
+  --outline-title-color: #000000;
+  --outline-title-align: center;
+  --outline-title-padding: 0;
+  --outline-title-sub-font-family: GmarketSansBold;
+  --outline-title-sub-font-weight: 100;
+  --outline-title-sub-font-size: 0.5em;
+  --outline-title-sub-color: #666666;
+  --outline-title-sub-align: right;
+  --outline-title-sub-padding: 5px;
+  --content-font-family: Nanum Gothic Coding;
+  --content-font-size: 1em;
+  --content-color: #000000;
+  --content-align: left;
+  --content-padding: 1%;
+">
   <a href="index.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
     <svg viewBox="0 0 24 24">
       <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
@@ -188,13 +153,13 @@
 
   <!-- TOC container outside Reveal.js for Safari compatibility -->
   <div id="toc-container">
-    <h1>5. 세대별 비교 및 선택 가이드</h1>
+    <h1 class="main-title">Examples for MarkdownGraph</h1>
     <svg id="toc-mindmap"></svg>
   </div>
 
   <div id="last-slide-message">마지막 페이지입니다. 다음 챕터로 이동하려면 다시 →를 누르세요.</div>
 
-  <div class="reveal">
+  <div class="reveal ratio-none">
     <div class="slides">
 
       <section id="toc-placeholder"></section>
@@ -245,59 +210,63 @@
 </textarea>
       </section>
 
-      <section>
-<h2>프로필별 추천</h2>
-
+      <section class="has-text" data-chapter-title="5. 세대별 비교 및 선택 가이드">
+<h2 class="title">프로필별 추천</h2>
+<div class="theContents">
 <p><strong>초보 개발자 (경력 < 1년)</strong></p>
-<pre><code>추천: 1세대 (Cursor)
+<pre class="code-wrapper"><code>추천: 1세대 (Cursor)
 
 이유:
 * GUI 환경이 직관적
 * 시각적 피드백으로 학습 효과
 * 코드 변경사항 쉽게 확인</code></pre>
+</div>
       </section>
 
-      <section>
-<h2>프로필별 추천 (계속)</h2>
-
+      <section class="has-text" data-chapter-title="5. 세대별 비교 및 선택 가이드">
+<h2 class="title">프로필별 추천 (계속)</h2>
+<div class="theContents">
 <p><strong>주니어 개발자 (경력 1-3년)</strong></p>
-<pre><code>추천: 1세대 → 1+2세대 병행
+<pre class="code-wrapper"><code>추천: 1세대 → 1+2세대 병행
 
 경로:
 1. Cursor로 시작
 2. 터미널 익숙해지면 Claude Code 추가
 3. 프론트는 Cursor, 백엔드는 Claude Code</code></pre>
+</div>
       </section>
 
-      <section>
-<h2>프로필별 추천 (계속)</h2>
-
+      <section class="has-text" data-chapter-title="5. 세대별 비교 및 선택 가이드">
+<h2 class="title">프로필별 추천 (계속)</h2>
+<div class="theContents">
 <p><strong>중급 개발자 (경력 3-5년)</strong></p>
-<pre><code>추천: 2세대 (Claude Code) 주력
+<pre class="code-wrapper"><code>추천: 2세대 (Claude Code) 주력
 
 이유:
 * 생산성 극대화
 * 멀티 프로젝트 관리
 * 자동화 워크플로우 구축</code></pre>
+</div>
       </section>
 
-      <section>
-<h2>프로필별 추천 (계속)</h2>
-
+      <section class="has-text" data-chapter-title="5. 세대별 비교 및 선택 가이드">
+<h2 class="title">프로필별 추천 (계속)</h2>
+<div class="theContents">
 <p><strong>시니어 개발자 (경력 5년+)</strong></p>
-<pre><code>추천: 2세대 + 1세대 보조
+<pre class="code-wrapper"><code>추천: 2세대 + 1세대 보조
 
 전략:
 * Claude Code로 대부분 작업
 * 복잡한 UI는 Cursor로 시각 확인
 * 팀 전체의 워크플로우 최적화</code></pre>
+</div>
       </section>
 
-      <section>
-<h2>프로필별 추천 (계속)</h2>
-
+      <section class="has-text" data-chapter-title="5. 세대별 비교 및 선택 가이드">
+<h2 class="title">프로필별 추천 (계속)</h2>
+<div class="theContents">
 <p><strong>DevOps 엔지니어</strong></p>
-<pre><code>추천: 2세대 (Gemini CLI/Claude Code)
+<pre class="code-wrapper"><code>추천: 2세대 (Gemini CLI/Claude Code)
 
 이유:
 * 인프라 자동화 필수
@@ -305,18 +274,19 @@
 * 스크립트 기반 작업</code></pre>
 
 <p><strong>프론트엔드 전문가</strong></p>
-<pre><code>추천: 1세대 (Cursor) 주력
+<pre class="code-wrapper"><code>추천: 1세대 (Cursor) 주력
 
 이유:
 * UI 프리뷰 필수
 * 디자인 시스템 작업
 * 브라우저 DevTools 활용</code></pre>
+</div>
       </section>
 
-      <section>
-<h2>의사결정 트리</h2>
-
-<div class="mermaid">
+      <section data-chapter-title="5. 세대별 비교 및 선택 가이드">
+<h2 class="title">의사결정 트리</h2>
+<div class="theContents">
+<div class="media-container mermaid">
 graph LR
     Start([🚀 시작]) --> Q1{터미널<br/>사용 익숙?}
 
@@ -337,6 +307,7 @@ graph LR
     style R4 fill:#f3e5f5
     style R5 fill:#f3e5f5
 </div>
+</div>
       </section>
 
       <section data-markdown>
@@ -355,12 +326,12 @@ graph LR
 </textarea>
       </section>
 
-      <section>
-<h2>ROI 분석</h2>
-
+      <section class="has-text" data-chapter-title="5. 세대별 비교 및 선택 가이드">
+<h2 class="title">ROI 분석</h2>
+<div class="theContents">
 <p><strong>예시: 중급 개발자 (월 기준)</strong></p>
 
-<pre><code>기존 작업 시간: 160시간/월
+<pre class="code-wrapper"><code>기존 작업 시간: 160시간/월
 바이브 코딩 도입 후: 100시간/월 (37% 절감)
 절감 시간: 60시간/월
 
@@ -369,11 +340,12 @@ graph LR
 도구 비용: $20/월
 
 ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
+</div>
       </section>
 
-      <section>
-<h2>전환 비용</h2>
-
+      <section class="has-text" data-chapter-title="5. 세대별 비교 및 선택 가이드">
+<h2 class="title">전환 비용</h2>
+<div class="theContents">
 <p><strong>1세대 → 2세대 전환</strong></p>
 <ul>
 <li class="bullet-dot">학습 시간: 약 1주일</li>
@@ -382,11 +354,12 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
 </ul>
 
 <p><strong>예상 회수 기간</strong>: 첫 달 내 회수 가능</p>
+</div>
       </section>
 
-      <section>
-<h2>팀 도입 전략</h2>
-
+      <section class="has-text" data-chapter-title="5. 세대별 비교 및 선택 가이드">
+<h2 class="title">팀 도입 전략</h2>
+<div class="theContents">
 <p><strong>상세 팀 규모별 도입 전략은 7장 참조</strong></p>
 
 <p><strong>빠른 가이드</strong>:</p>
@@ -395,30 +368,33 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
 <li class="bullet-dot">중형 (6-20명): 역할별 표준화</li>
 <li class="bullet-dot">대형 (20명+): 공식 도구 선정, 전담 교육</li>
 </ul>
+</div>
       </section>
 
-      <section>
-<h2>시작 가이드</h2>
-
+      <section class="has-text" data-chapter-title="5. 세대별 비교 및 선택 가이드">
+<h2 class="title">시작 가이드</h2>
+<div class="theContents">
 <p><strong>상세 학습 로드맵은 7장 참조</strong></p>
 
 <p><strong>Week 1-2</strong>: Cursor로 시작</p>
 <p><strong>Month 1</strong>: 실전 프로젝트 적용</p>
 <p><strong>Month 2+</strong>: 고급 기능 및 2세대 도구 시도</p>
+</div>
       </section>
 
-      <section>
-<h2>생산성 극대화 팁</h2>
-
+      <section class="has-text" data-chapter-title="5. 세대별 비교 및 선택 가이드">
+<h2 class="title">생산성 극대화 팁</h2>
+<div class="theContents">
 <p><strong>상세 실전 팁은 6장 참조</strong></p>
 
 <p><strong>1세대</strong>: 단축키, Composer 모드, diff 확인</p>
 <p><strong>2세대</strong>: 명확한 요구사항, 작은 단위 분할, Git 커밋</p>
+</div>
       </section>
 
-      <section>
-<h2>마이그레이션 가이드</h2>
-
+      <section class="has-text" data-chapter-title="5. 세대별 비교 및 선택 가이드">
+<h2 class="title">마이그레이션 가이드</h2>
+<div class="theContents">
 <p><strong>ChatGPT → Cursor</strong></p>
 <ul>
 <li class="bullet-dot">준비: VSCode 경험, Git 기초</li>
@@ -432,11 +408,12 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
 </ul>
 
 <p><strong>상세 도입 가이드는 7장 참조</strong></p>
+</div>
       </section>
 
-      <section>
-<h2>자주 묻는 질문</h2>
-
+      <section class="has-text" data-chapter-title="5. 세대별 비교 및 선택 가이드">
+<h2 class="title">자주 묻는 질문</h2>
+<div class="theContents">
 <p><strong>상세 Q&A는 8장 참조</strong></p>
 
 <p><strong>핵심 질문</strong>:</p>
@@ -446,6 +423,7 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
 <li class="bullet-dot">회사 도입? → 파일럿 프로젝트부터</li>
 <li class="bullet-dot">보안? → 민감 정보 공유 금지, 기업용 라이선스 고려</li>
 </ul>
+</div>
       </section>
 
     </div>
@@ -457,14 +435,21 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>
+    // Allow URL toggle: ?top=1 to enable top-align-mode regardless of config
+    try {
+      var qs = new URLSearchParams(window.location.search);
+      if (qs.get('top') === '1') document.body.classList.add('top-align-mode');
+    } catch (e) {}
+
     Reveal.initialize({
       hash: true,
       plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
-      width: 1280,
-      height: 720,
-      margin: 0.1,
+      width: '100%',
+      height: '100%',
+      margin: 0.0,
+      center: false,
       slideNumber: 'c/t',
       transition: 'slide',
       backgroundTransition: 'fade'
@@ -481,7 +466,7 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
       flowchart: {
         htmlLabels: true,
         curve: 'basis',
-        useMaxWidth: true
+        useMaxWidth: false
       },
       sequence: {
         diagramMarginX: 50,
@@ -494,10 +479,10 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
         noteMargin: 10,
         messageMargin: 35,
         mirrorActors: true,
-        useMaxWidth: true
+        useMaxWidth: false
       },
       timeline: {
-        useMaxWidth: true
+        useMaxWidth: false
       }
     });
 
@@ -523,7 +508,7 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
           try {
             mermaid.render(graphId, graphDefinition).then(function(result) {
               if (result && result.svg) {
-                element.innerHTML = result.svg;
+                element.innerHTML = '<div class="graph-scroll">' + result.svg + '</div>';
               }
             }).catch(function(error) {
               console.error('Mermaid rendering error for diagram ' + index + ':', error);
@@ -535,78 +520,263 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
       }
     });
 
+    // Render all Kroki diagrams (runtime fallback)
+    Reveal.on('ready', function() {
+      const allKrokiElements = document.querySelectorAll('.kroki');
+      if (allKrokiElements && allKrokiElements.length > 0) {
+        allKrokiElements.forEach(function(element, index) {
+          // Skip if already rendered
+          if (element.querySelector('svg') || element.querySelector('img')) {
+            return;
+          }
+
+          const diagramType = element.getAttribute('data-type');
+          const diagramSource = element.textContent.trim();
+
+          if (!diagramType || !diagramSource) {
+            return;
+          }
+
+          // Prefer GET image to avoid CORS issues on file:// origins
+          try {
+            const imgUrl = 'https://kroki.io/' + diagramType + '/svg?source=' + encodeURIComponent(diagramSource);
+            element.innerHTML = '<div class="graph-scroll"><img alt="' + diagramType + ' diagram" src="' + imgUrl + '"/></div>';
+          } catch (error) {
+            console.error('Kroki rendering setup error for ' + diagramType + ' diagram ' + index + ':', error);
+            element.innerHTML = '<p style="color: red;">Failed to prepare ' + diagramType + ' diagram.</p>';
+          }
+        });
+      }
+    });
+
+
+    // Inject configuration
+    window.slideConfig = {"markmap_depth":2,"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":["https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css","https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"","font_weight":"400","fontFamily":"GmarketSansBold"},"outline_title":{"font_size":"2.0em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit","fontFamily":"Nanum Gothic Coding"}},"chapter_markmap_depth":3};
+
+    // Dynamic Styling and Resizing Script
+    let observer; // Define observer at top level
+
+    function applyDynamicStyles() {
+      const config = window.slideConfig;
+      if (!config) return;
+
+      // 1. Apply Title Styles - REMOVED (Migrated to CSS)
+      
+      const allSlides = document.querySelectorAll('.reveal .slides section');
+      // No dynamic title styling anymore
+
+      // 2. Resize Lists in current slide
+
+      // 2. Resize Lists in current slide
+      const currentSlide = Reveal.getCurrentSlide();
+      if (!currentSlide) return;
+
+      // 1. Fit lists (ul/ol)
+      // Only target top-level lists to avoid double-sizing nested ones
+      // 1. Fit content (theContents)
+      // Target the container itself
+      const contents = currentSlide.querySelectorAll('.theContents');
+      if (contents.length === 0) return;
+      
+      contents.forEach(content => {
+        // Check if auto font size is enabled
+        if (config.style.theContents.font_size_auto === false) {
+            return;
+        }
+
+        // Get title size for reference (from current slide or config)
+        let titleSizePx = 60; // fallback
+        const titleEl = currentSlide.querySelector('h1, h2');
+        if (titleEl) {
+          titleSizePx = parseFloat(window.getComputedStyle(titleEl).fontSize);
+        }
+
+        const maxFontSize = titleSizePx * (config.style.theContents.fontSizeMaxRatio || 0.66);
+        const minFontSize = parseFloat(config.style.theContents.fontSizeMin || '20px');
+
+        // Binary search or iterative approach to find best fit
+        // Range: [minFontSize, maxFontSize]
+        
+        let low = minFontSize;
+        let high = maxFontSize;
+        let bestFit = minFontSize;
+
+        // Reset styles for measurement
+        content.style.fontSize = maxFontSize + 'px';
+        content.style.lineHeight = '1.2'; // Tighter line height for large text
+
+        // Check if it fits at max
+        // We compare slide scrollHeight with slide clientHeight to detect overflow
+        if (currentSlide.scrollHeight <= currentSlide.clientHeight) {
+           bestFit = maxFontSize;
+        } else {
+           // Binary search
+           for (let i = 0; i < 10; i++) { // 10 iterations is enough precision
+              const mid = (low + high) / 2;
+              content.style.fontSize = mid + 'px';
+              // Check if slide overflows
+              if (currentSlide.scrollHeight <= currentSlide.clientHeight) {
+                 bestFit = mid;
+                 low = mid;
+              } else {
+                 high = mid;
+              }
+           }
+        }
+
+        // Unobserve to prevent infinite loop (style change -> resize -> observer -> style change)
+        if (observer) observer.unobserve(content);
+
+        // Apply best fit
+        content.style.fontSize = bestFit + 'px';
+        
+        // If even at min size it overflows, enable scroll (already auto in CSS)
+        if (bestFit <= minFontSize + 1) {
+           content.style.fontSize = minFontSize + 'px';
+        }
+
+        // Re-observe after a delay to skip the immediate resize caused by our change
+        if (observer) {
+          requestAnimationFrame(() => {
+            observer.observe(content);
+          });
+        }
+      });
+    }
+
+    Reveal.on('ready', () => {
+      applyDynamicStyles();
+      
+      // Use ResizeObserver to handle dynamic content changes (images loading, etc.)
+      observer = new ResizeObserver(entries => {
+        // Debounce or throttle could be added if needed, but for now direct call
+        // Check if the resized element is the current slide
+        const currentSlide = Reveal.getCurrentSlide();
+        if (currentSlide && entries.some(entry => entry.target === currentSlide || currentSlide.contains(entry.target))) {
+           applyDynamicStyles();
+        }
+      });
+
+      // Observe all content containers to detect changes (e.g. images/diagrams loading)
+      document.querySelectorAll('.reveal .slides section .theContents').forEach(content => {
+        observer.observe(content);
+      });
+    });
+    Reveal.on('slidechanged', applyDynamicStyles);
+    // Also re-apply on resize
+    window.addEventListener('resize', applyDynamicStyles);
+
     // Initialize markmap for table of contents (outside Reveal.js for Safari compatibility)
     var tocContainer = document.getElementById('toc-container');
     var tocData = {
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">종합 비교 테이블</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/2\">사용 시나리오별 비교: 웹 개발</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/3\">사용 시나리오별 비교: DevOps/인프라</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/4\">프로필별 추천</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/9\">의사결정 트리</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/10\">비용 vs 효과 분석</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/11\">ROI 분석</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/12\">전환 비용</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/13\">팀 도입 전략</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/14\">시작 가이드</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/15\">생산성 극대화 팁</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/16\">마이그레이션 가이드</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/17\">자주 묻는 질문</a>",
-                  "children": []
+                  "content": "<a href=\"#/0\">5. 세대별 비교 및 선택 가이드</a>",
+                  "children": [
+                        {
+                              "content": "<a href=\"#/1\">종합 비교 테이블</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/2\">사용 시나리오별 비교: 웹 개발</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/3\">사용 시나리오별 비교: DevOps/인프라</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/4\">프로필별 추천</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/5\">프로필별 추천 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/6\">프로필별 추천 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/7\">프로필별 추천 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/8\">프로필별 추천 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/9\">의사결정 트리</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/10\">비용 vs 효과 분석</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/11\">ROI 분석</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/12\">전환 비용</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/13\">팀 도입 전략</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/14\">시작 가이드</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/15\">생산성 극대화 팁</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/16\">마이그레이션 가이드</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/17\">자주 묻는 질문</a>",
+                              "children": []
+                        }
+                  ]
             }
       ]
 };
-
-    setTimeout(function() {
-      if (window.markmap && tocContainer) {
-        window.markmap.Markmap.create('#toc-mindmap', {}, tocData);
-      }
-    }, 200);
+    var markmapInitialized = false;
+    var markmapInstance = null;
 
     // Function to toggle TOC visibility based on current slide
     function updateTocVisibility() {
       var currentSlide = Reveal.getIndices();
       if (currentSlide.h === 0 && currentSlide.v === 0) {
         // First slide: show TOC container
-        tocContainer.style.display = 'block';
+        tocContainer.style.display = 'flex';
+
+        // Initialize markmap on first show
+        if (!markmapInitialized && window.markmap && tocContainer) {
+          // Create with layout options so the tree breathes horizontally
+          markmapInstance = window.markmap.Markmap.create('#toc-mindmap', {
+            autoFit: true,
+            fitRatio: 0.95,
+            spacingHorizontal: 80,
+            spacingVertical: 12,
+            paddingX: 40,
+            initialExpandLevel: 3
+          }, tocData);
+          markmapInitialized = true;
+          // Ensure fit after layout settles
+          requestAnimationFrame(function () {
+            if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
+          });
+          setTimeout(function(){ if (markmapInstance && markmapInstance.fit) markmapInstance.fit(); }, 50);
+        } else if (markmapInitialized && markmapInstance && markmapInstance.fit) {
+          // Re-fit when returning to the first slide
+          requestAnimationFrame(function () { markmapInstance.fit(); });
+        }
       } else {
         // Other slides: hide TOC container
         tocContainer.style.display = 'none';
@@ -623,6 +793,121 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
       updateTocVisibility();
     });
 
+    // Keep Markmap fitted on window resize
+    var resizeTimeout;
+    window.addEventListener('resize', function(){
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(function() {
+        if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
+        adjustGraphScrollHeights();
+        fitSmallDiagrams();
+        topBiasCurrentSlide();
+      }, 100);
+    });
+
+    // Adjust scroll height for tall diagrams based on Reveal scale
+    function adjustGraphScrollHeights() {
+      // Use Reveal logical size and subtract actual header height on current slide
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { width: 1280, height: 720 };
+      var baseH = cfg && cfg.height ? cfg.height : 720;
+
+      var cur = (typeof Reveal.getCurrentSlide === 'function') ? Reveal.getCurrentSlide() : null;
+      var headerSpace = 0;
+      if (cur) {
+        // Sum heights of visible H1/H2 in current slide
+        var heads = cur.querySelectorAll('h1, h2');
+        heads.forEach(function(h){
+          var cs = window.getComputedStyle(h);
+          var mh = parseFloat(cs.marginTop) + parseFloat(cs.marginBottom);
+          headerSpace += h.offsetHeight + mh;
+        });
+        // Add a small buffer below titles
+        headerSpace += 40;
+      }
+
+      var available = baseH - headerSpace - 40; // smaller buffer to allow larger content
+      if (available < 200) available = 200;
+
+      // Only adjust graph-scroll inside current slide to avoid layout thrash
+      var apply = function(scope){
+        scope.querySelectorAll('.graph-scroll').forEach(function(el){
+          el.style.maxHeight = available + 'px';
+          el.style.overflowY = 'auto';
+          // Prefer height-based fit for diagrams
+          el.querySelectorAll('svg, img').forEach(function(di){
+            di.style.maxHeight = available + 'px';
+            di.style.height = 'auto';
+            di.style.width = 'auto';
+            di.style.maxWidth = '100%';
+          });
+        });
+      };
+      if (cur) apply(cur); else apply(document);
+    }
+
+    // Vertically bias content to top by reducing extra center spacing using margin
+    var lastAdjustedSlide = null;
+    function topBiasCurrentSlide() {
+      if (typeof Reveal.getCurrentSlide !== 'function') return;
+      var slide = Reveal.getCurrentSlide();
+      if (!slide) return;
+      // reset previous
+      if (lastAdjustedSlide && lastAdjustedSlide !== slide) {
+        lastAdjustedSlide.style.marginTop = '';
+      }
+      // compute extra space when content is short (Reveal may center it)
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { height: 720 };
+      var logicalH = cfg && cfg.height ? cfg.height : 720;
+      var contentH = slide.scrollHeight;
+      var extra = (logicalH - contentH) / 2; // space added by vertical centering
+      if (extra > 10) {
+        // leave a small 10px top padding, pull the rest up via negative margin
+        var offset = Math.min(extra - 10, logicalH * 0.25); // cap shift to 25% of slide height
+        slide.style.marginTop = '-' + Math.round(offset) + 'px';
+        lastAdjustedSlide = slide;
+      } else {
+        slide.style.marginTop = '';
+      }
+    }
+
+    // Enlarge small diagrams up to slide width, capping height to 3:2
+    function fitSmallDiagrams() {
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { width: 1280, height: 720 };
+      var contentW = (cfg && cfg.width ? cfg.width : 1280) - 120; // padding (60px each side)
+      if (contentW < 320) contentW = 320;
+      var capH = Math.floor(contentW * 2 / 3);
+
+      document.querySelectorAll('.graph-scroll > svg, .graph-scroll > img').forEach(function(el){
+        var rect = el.getBoundingClientRect();
+        var curW = rect && rect.width ? rect.width : 0;
+        // Only upscale when clearly smaller than container
+        if (curW > 0 && curW < contentW * 0.7) {
+          el.style.width = contentW + 'px';
+          el.style.maxHeight = capH + 'px';
+          el.style.height = 'auto';
+        } else {
+          // Do not force width for already large diagrams
+          el.style.removeProperty('width');
+          el.style.removeProperty('max-height');
+        }
+      });
+    }
+
+    Reveal.on('ready', function(){
+      // Enforce top alignment in case theme defaults differ
+      if (typeof Reveal.configure === 'function') { Reveal.configure({ center: false }); }
+      if (document.body.classList.contains('top-align-mode')) {
+        // Remove extra top padding on current slide to keep content tight to top
+        var cur = Reveal.getCurrentSlide();
+        if (cur) cur.style.paddingTop = '10px';
+      }
+      adjustGraphScrollHeights();
+      fitSmallDiagrams();
+      topBiasCurrentSlide();
+    });
+    Reveal.on('slidechanged', function(){ adjustGraphScrollHeights(); fitSmallDiagrams(); topBiasCurrentSlide(); });
+    window.addEventListener('resize', function(){ adjustGraphScrollHeights(); fitSmallDiagrams(); topBiasCurrentSlide(); });
+
     // Last slide message state
     var lastSlideMessageShown = false;
     var lastSlideMessage = document.getElementById('last-slide-message');
@@ -632,13 +917,16 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
       // Check if up arrow key is pressed
       if (event.key === 'ArrowUp' || event.keyCode === 38) {
         var currentSlide = Reveal.getIndices();
-        // Only navigate to parent if there are no vertical slides
+        // Only navigate to parent if there are no vertical slides and parent exists
         if (currentSlide.v === 0) {
-          event.preventDefault();
-          // Navigate to parent page
           var navLink = document.getElementById('nav-up-link');
           if (navLink) {
+            event.preventDefault();
             window.location.href = navLink.href;
+          } else {
+            // Single page mode: go to first slide
+            event.preventDefault();
+            Reveal.slide(0, 0);
           }
         }
       }
@@ -648,19 +936,25 @@ ROI: ($3,000 - $20) / $20 × 100 = 14,900%</code></pre>
         var totalSlides = Reveal.getTotalSlides();
         var currentSlide = Reveal.getIndices();
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
+        var hasNextChapter = '06-practical-cases.html' !== '';
 
         // Check if on last slide
         if (currentSlideNumber >= totalSlides) {
-          if (lastSlideMessageShown) {
-            // Second press: navigate to next chapter
-            lastSlideMessage.style.display = 'none';
-            lastSlideMessageShown = false;
-            window.location.href = '06-practical-cases.html';
+          if (hasNextChapter) {
+            if (lastSlideMessageShown) {
+              // Second press: navigate to next chapter
+              lastSlideMessage.style.display = 'none';
+              lastSlideMessageShown = false;
+              window.location.href = '06-practical-cases.html';
+            } else {
+              // First press: show message
+              event.preventDefault();
+              lastSlideMessage.style.display = 'block';
+              lastSlideMessageShown = true;
+            }
           } else {
-            // First press: show message
+            // No next chapter - do nothing or show different message
             event.preventDefault();
-            lastSlideMessage.style.display = 'block';
-            lastSlideMessageShown = true;
           }
         }
       }
