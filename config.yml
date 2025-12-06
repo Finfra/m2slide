@@ -11,7 +11,13 @@ current_project: MarkdownGraph
 top_align: true
 
 # 가이드 라인 표시 (레이아웃 디버깅용)
-guide_line: true
+guide_line: false
+
+# Markmap 초기 펼침 깊이 (기본값: 3)
+# 1: 루트와 1단계 자식만 표시
+# 2: 2단계 자식까지 표시
+markmap_depth: 2
+
 
 # 슬라이드 출력용 프로젝트 상대 경로 CSS (각 챕터 HTML에 연결됨)
 # 예시: resource/slide.css
