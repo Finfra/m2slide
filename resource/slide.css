@@ -143,6 +143,18 @@
   display: block;
   margin-left: 1.5em !important;
   margin-top: 0.2em;
+  font-size: 90%;
+  /* Scale down 10% per nesting level */
+}
+
+/* Custom Bullet Styles */
+.reveal li.bullet-dot {
+  list-style-type: disc;
+}
+
+.reveal li.bullet-dash {
+  list-style-type: "- ";
+  /* Custom string marker */
 }
 
 /* 표 */
