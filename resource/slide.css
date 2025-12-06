@@ -135,6 +135,16 @@
   /* Indentation is structural */
 }
 
+/* Nested lists */
+.reveal ul ul,
+.reveal ul ol,
+.reveal ol ul,
+.reveal ol ol {
+  display: block;
+  margin-left: 1.5em !important;
+  margin-top: 0.2em;
+}
+
 /* 표 */
 .reveal table {
   width: 100%;
