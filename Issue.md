@@ -11,12 +11,6 @@
 # 🔥 진행 중
 
 
-
-
-
-
-
-
 # 🏁 완료된 이슈
 ## Issue 16. 단일 페이지 프로젝트(MarkdownGraph) markmap depth 미적용 수정 (2025-12-06 해결)
 * `generate-slides.js`에서 `markmapDepth` 결정 로직 개선: `AGENDA.md` 유무(`hasAgenda`)를 확인하여 분기 처리
