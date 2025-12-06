@@ -56,9 +56,13 @@ if [ ! -d "$PROJECT_DIR" ]; then
 fi
 
 # Check if markdown directory exists
-if [ ! -d "$INPUT_DIR" ]; then
-  echo "❌ Error: Markdown directory does not exist: $INPUT_DIR"
-  echo "Expected structure: $PROJECT_DIR/markdown/"
+if [ -d "$INPUT_DIR" ]; then
+  echo "Found markdown directory: $INPUT_DIR"
+elif [ -d "$PROJECT_DIR" ]; then
+  echo "Markdown directory not found, using project root as input (Single Page Mode)"
+  INPUT_DIR="$PROJECT_DIR"
+else
+  echo "❌ Error: Project directory does not exist: $PROJECT_DIR"
   exit 1
 fi
 
