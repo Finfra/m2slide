@@ -23,6 +23,11 @@
     * 코드 블록 및 Syntax Highlighting
     * m2Slide 자체 스타일 가이드 및 기능 설명 포함
 
+## Issue 20. PPTX 생성 옵션 (--pptx) 추가
+* `convert.sh`에 `--pptx` 옵션 추가
+* Pandoc을 활용하여 마크다운을 PowerPoint(.pptx)로 변환하는 자동화 스크립트 구현
+* `GEMINI.md`에 명시된 Pandoc 변환 가이드를 스크립트로 통합
+
 
 
 
