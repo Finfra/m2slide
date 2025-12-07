@@ -59,6 +59,13 @@ fi
 # Copy all files from slide to docs
 cp -r "$SLIDE_DIR" "$DOCS_DIR"
 
+# Copy EPUB file if it exists in project directory
+EPUB_FILE="$PROJECT_DIR/$CURRENT_PROJECT.epub"
+if [ -f "$EPUB_FILE" ]; then
+    cp "$EPUB_FILE" "$DOCS_DIR/"
+    echo "✅ Copied EPUB file: $CURRENT_PROJECT.epub"
+fi
+
 # Count copied files
 HTML_COUNT=$(ls "$DOCS_DIR"/*.html 2>/dev/null | wc -l)
 echo "✅ Copied $HTML_COUNT HTML files"
