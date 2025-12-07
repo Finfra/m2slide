@@ -163,6 +163,14 @@
   border-collapse: collapse;
 }
 
+/* Issue 22: 테이블 내 이미지 크기 자동 조절 */
+.reveal table img {
+  max-height: 1.5em;
+  /* 텍스트 높이보다 약간 크게 */
+  width: auto;
+  vertical-align: middle;
+}
+
 /* 이미지 및 다이어그램 */
 .reveal .media-container {
   flex-grow: 1;

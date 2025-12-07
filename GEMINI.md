@@ -115,6 +115,8 @@ Projects/
   - 각 HTML 페이지의 첫 슬라이드에 해당 챕터 목차를 Markmap으로 렌더링
   - 하위 챕터가 있으면 자동으로 목차에 링크 추가
 - 이미지 자동 복사 (`markdown/img/` → `slide/img/`)
+- CSS 및 폰트 자동 복사 (`slide/css/`로 복사 및 상대 경로 참조 수정, Portable Slide 지원)
+
 
 #### EPUB 전자책 생성
 
