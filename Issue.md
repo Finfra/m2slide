@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Max Issue Num: 22
+* Max Issue Num: 28
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -12,6 +12,23 @@
 * 
 # 🔥 진행 중
 * 
+
+## Issue25. 배경 이미지 설정 기능
+* 마크다운 메타데이터(YAML frontmatter)를 통해 전체 슬라이드의 배경 이미지를 지정하는 기능 구현
+* `background` 속성으로 이미지 경로 지정 지원
+
+## Issue26. 동영상 지원 기능
+* 슬라이드 내 동영상 삽입 및 재생 기능 지원
+* 로컬 비디오 파일 재생 확인
+
+## Issue27. 제목 없는 단독 이미지 페이지 자동 확대 (Full Image)
+* 제목 없이 이미지만 있는 슬라이드 감지 로직 구현
+* 해당 슬라이드에 대해 화면 비율을 유지하면서 화면에 꽉 차게(Contain/Cover) 표시하는 스타일 적용
+
+## Issue28. 베이스 폴더 변경(scripts -> lib) 영향 제거
+* **목표**: `scripts` 폴더가 `lib`로 변경됨에 따라, `m2slide` 내에서 상위 폴더를 참조하는 부분이 있다면 수정하여 의존성을 맞춘다.
+* **배경**: 전체 프로젝트 구조 리팩토링으로 `scripts`가 `lib`로 이름이 변경됨.
+
 
 
 # 🏁 완료된 이슈
