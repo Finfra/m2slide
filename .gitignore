@@ -1,3 +1,15 @@
+# Project 
+_doc_work
+_doc_Design
+.claude
+CLAUDE.md
+Harness.md
+Issue.md
+noteForHuman.md
+PROMPTS.md
+
+
+
 # Node.js
 node_modules/
 npm-debug.log*
