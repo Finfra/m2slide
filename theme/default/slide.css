@@ -180,15 +180,18 @@
 }
 
 /* Default (Original) Mode - controlled by body class */
+/* Issue26: video도 img/svg와 동일한 미디어 처리 */
 .reveal .media-container img,
-.reveal .media-container svg {
+.reveal .media-container svg,
+.reveal .media-container video {
   display: block;
   margin: 0 auto;
 }
 
 /* 1. Original: 원본 크기 유지 (단, 화면 넘지 않음) */
 .media-enlarge-original .reveal .media-container img,
-.media-enlarge-original .reveal .media-container svg {
+.media-enlarge-original .reveal .media-container svg,
+.media-enlarge-original .reveal .media-container video {
   max-width: 100% !important;
   max-height: 100% !important;
   width: auto !important;
@@ -198,7 +201,8 @@
 
 /* 2. Width: 너비 최대화 */
 .media-enlarge-width .reveal .media-container img,
-.media-enlarge-width .reveal .media-container svg {
+.media-enlarge-width .reveal .media-container svg,
+.media-enlarge-width .reveal .media-container video {
   width: 100% !important;
   height: auto !important;
   max-width: none !important;
@@ -233,6 +237,7 @@
 
 .media-enlarge-height .reveal .media-container img,
 .media-enlarge-height .reveal .media-container svg,
+.media-enlarge-height .reveal .media-container video,
 .media-enlarge-height .graph-scroll img,
 .media-enlarge-height .graph-scroll svg {
   height: 100% !important;
@@ -269,6 +274,7 @@
 
 .media-enlarge-fit .reveal .media-container img,
 .media-enlarge-fit .reveal .media-container svg,
+.media-enlarge-fit .reveal .media-container video,
 .media-enlarge-fit .graph-scroll img,
 .media-enlarge-fit .graph-scroll svg {
   width: 100% !important;
@@ -494,4 +500,39 @@
 .guide-line-mode .reveal .theContents {
   border: 3px solid rgba(0, 0, 255, 0.5) !important;
   background-color: rgba(0, 0, 255, 0.05) !important;
+}
+
+/* =========================================
+   8. Issue27_1: image-only 자동 감지 시 풀스크린 이미지
+   ========================================= */
+.reveal section.layout-blank.layout-blank--full-image {
+  padding: 0;
+}
+.reveal section.layout-blank.layout-blank--full-image .blank-header {
+  display: none;
+}
+.reveal section.layout-blank.layout-blank--full-image .blank-body {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.reveal section.layout-blank.layout-blank--full-image .blank-body p {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reveal section.layout-blank.layout-blank--full-image .blank-body img {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
 }

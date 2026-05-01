@@ -36,6 +36,11 @@ chapter_markmap_depth: 3
 # 파일별 개별 지정은 YAML frontmatter에 toc_placeholder: true 사용
 toc_placeholder: false
 
+# 자동 layout 감지 (Issue27_1: image-only → _blank, Issue27_2: empty-title → _contents_no_title)
+# true(기본): 제목 없이 이미지만 있는 슬라이드는 _blank 풀스크린, 빈 제목 슬라이드는 _contents_no_title 적용
+# false: 자동 감지 비활성화 (모든 슬라이드는 theme_default_layout 또는 사용자 명시 #layout-* 사용)
+auto_layout_detect: true
+
 
 # 사용할 theme 이름 (theme/{name}/slide.css + theme/{name}/layouts/ 로 해석)
 # default 외에는 .gitignore 처리됨 (사용자별 커스터마이징 영역)
