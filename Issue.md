@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 44
+* Issue HWM: 45
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -19,56 +19,11 @@
 
 # 🚧 진행중
 
-## Issue41. theme_default_layout 값 정규화 + 경고 dedup (등록: 2026-05-01)
-* 목적: `_config.yml`의 `theme_default_layout: contents` 설정이 layout lookup 실패하여 모든 슬라이드에 plain section fallback + 빌드 시 경고가 N회(슬라이드 수만큼) 반복되는 버그 수정
-* 상세:
-    - 현상: `m2SlideStyle1_single` 빌드 시 `⚠️ layout 'contents' not found in theme/nowage/layouts/ 및 theme/default/layouts/ — falling back to plain section` 26회 출력 (해당 프로젝트 슬라이드 수와 일치)
-    - 재현: `./m2slideDo.sh m2SlideStyle1_single`
-    - 원인 1 (lookup 키 불일치): `loadLayoutTemplates()`가 layout 파일명을 그대로 키로 저장 (`_contents.html` → `LAYOUT_TEMPLATES['_contents']`). 사용자가 `_config.yml`에 `theme_default_layout: contents`(underscore 없이)로 작성하면 `LAYOUT_TEMPLATES['contents']` lookup 실패
-    - 원인 2 (문서-동작 괴리): `.claude/rules/md-m2slide-rules.md` 주석은 "`_` prefix 제거 형태"라고 명시하나 실제 코드는 정규화 없음. Issue36 도입 당시 `_blank`/`_contents_no_title` 등 자동 감지 코드는 underscore 포함 형태로 호출하고 있어 우회됨
-    - 원인 3 (경고 노이즈): layout 미발견 시 슬라이드마다 동일 경고 반복 — N개 슬라이드면 N회 출력
-* 구현 명세:
-    - `lib/generate-slides.js` `loadLayoutTemplates()`: underscore prefix 제거 alias 키도 함께 등록 (`_contents.html` → `LAYOUT_TEMPLATES['_contents']` + `LAYOUT_TEMPLATES['contents']`)
-    - 동일 layoutName 미발견 경고는 빌드당 1회만 출력 (Set 기반 dedup)
-    - 회귀 검증:
-        * `m2SlideStyle1_single` 빌드 시 경고 0건 + 모든 슬라이드 `layout-contents` 클래스 적용 확인
-        * Issue27_1·27_2 자동 감지(`_blank`, `_contents_no_title`) 회귀 없음
-        * 모든 5개 프로젝트 (LlmAndVibeCoding, LlmAndVibeCoding2, m2SlideStyle1_single, m2SlideStyle2_chapter, MarkdownGraph) 재빌드 정상
-
 ## Issue26. 동영상 지원 기능
 * 슬라이드 내 동영상 삽입 및 재생 기능 지원
 * 로컬 비디오 파일 재생 확인
 * layoutTest프로젝트에서 _doc_work/_resource/mp4/Movie-1.mp4 활용하여 테스트
 
-
-## Issue43. `_config.org.yml` video 기본 옵션 정리 + `![](~.mp4)` 마크다운 비디오 임베드 (등록: 2026-05-01)
-* 목적: `_config.org.yml`에 video 관련 기본 옵션을 7가지 후보로 주석 표시한 뒤 한 개만 활성화. 추가로 마크다운에서 `![alt](path.mp4)` 표기로 작성하면 자동으로 `<video>` 태그로 렌더링되도록 지원.
-* 상세:
-    - 현재 layoutTest 프로젝트의 비디오 슬라이드(## 13~22)는 모두 raw `<video>` 태그를 직접 작성해야 함 → 사용성 저하 + 파서 버그(Issue44)와 결합 시 깨짐
-    - 마크다운 표준 이미지 문법 `![](path)`를 비디오 확장자(`.mp4`, `.webm`, `.ogg`, `.mov`)에 자동 매핑하면 작성 편의성 대폭 개선
-    - 기본 동작 옵션은 `_config.org.yml`에 SSOT로 두고 사용자가 7개 후보 중 한 개만 선택하도록 안내
-* 구현 명세:
-    - `_config.org.yml` `style.theContents` 또는 신규 `style.video` 섹션에 7가지 옵션 후보 주석 추가:
-        ```yaml
-        # 비디오 기본 동작 (한 개만 선택 활성화)
-        # video_default: controls          # ← 활성: 컨트롤 표시, 자동재생 없음 (기본 권장)
-        # video_default: autoplay-muted    # 자동재생 + 음소거 (브라우저 정책 충족)
-        # video_default: autoplay-loop     # 자동재생 + 무한반복 + 음소거
-        # video_default: loop              # 컨트롤 + 무한반복
-        # video_default: muted             # 음소거만 (사용자 클릭 재생)
-        # video_default: hidden-controls   # controls 없음 (배경 비디오용)
-        # video_default: minimal           # controls 없음 + autoplay + muted + loop (배경 영상)
-        video_default: controls
-        ```
-    - `lib/generate-slides.js` `convertMarkdownToHTML()` 인라인 이미지 처리 로직에 비디오 확장자 분기 추가:
-        - 패턴: `![alt](path.{mp4|webm|ogg|mov})` → `<video src="path" {옵션 매핑된 속성들}>...alt fallback...</video>`
-        - 옵션 매핑 테이블: `controls` → `controls`, `autoplay-muted` → `autoplay muted controls`, `autoplay-loop` → `autoplay muted loop`, `loop` → `controls loop`, `muted` → `muted controls`, `hidden-controls` → (속성 없음), `minimal` → `autoplay muted loop`
-    - layoutTest 프로젝트의 ## 13~22 중 일부를 `![](./video/Movie-1.mp4)` 형태로 변환하여 회귀 테스트
-    - `_doc_design/`에 video 옵션 정책 문서화 (영속 설계 SSOT)
-* 회귀 검증:
-    - layoutTest 빌드 후 ![](*.mp4) 슬라이드가 `<video controls>` 로 렌더링되어 재생 가능
-    - `_config.org.yml`에서 `video_default: autoplay-loop` 로 변경 후 빌드 시 옵션 반영
-    - 기존 raw `<video>` 태그 슬라이드도 정상 동작 (Issue44 수정 후)
 
 ## Issue44. raw HTML `<video>`/`<audio>` multi-line block이 `<p>` wrap으로 깨짐 (등록: 2026-05-01)
 * 목적: 마크다운 본문에 작성한 multi-line raw HTML block(`<video>...<source>...</video>`, `<audio>`, `<iframe>` 등)이 마크다운 파서에 의해 라인별로 `<p>` 태그에 감싸져 DOM 구조가 깨지는 버그 수정
@@ -98,22 +53,25 @@
 
 # 📙 일반
 
-
-* 목적: `_config.yml`의 `theme_default_layout: contents` 설정이 layout lookup 실패하여 모든 슬라이드에 plain section fallback + 빌드 시 경고가 N회(슬라이드 수만큼) 반복되는 버그 수정
+## Issue45. layout 이름 정규화 정책 문서·회귀 검증 정합성 점검 (등록: 2026-05-02)
+* 목적: Issue41(코드 수정)이 머지된 후 layout 이름 정규화 정책이 코드·룰 문서·회귀 테스트 3축에서 일관되게 유지되는지 점검 + `_doc_design/`에 영속 정책 문서화. Issue41이 단일 PR로 처리하기 어려운 정합성 차원 작업을 분리.
 * 상세:
-    - 현상: `m2SlideStyle1_single` 빌드 시 `⚠️ layout 'contents' not found in theme/nowage/layouts/ 및 theme/default/layouts/ — falling back to plain section` 26회 출력 (해당 프로젝트 슬라이드 수와 일치)
-    - 재현: `./m2slideDo.sh m2SlideStyle1_single`
-    - 원인 1 (lookup 키 불일치): `loadLayoutTemplates()`가 layout 파일명을 그대로 키로 저장 (`_contents.html` → `LAYOUT_TEMPLATES['_contents']`). 사용자가 `_config.yml`에 `theme_default_layout: contents`(underscore 없이)로 작성하면 `LAYOUT_TEMPLATES['contents']` lookup 실패
-    - 원인 2 (문서-동작 괴리): `.claude/rules/md-m2slide-rules.md` 주석은 "`_` prefix 제거 형태"라고 명시하나 실제 코드는 정규화 없음. Issue36 도입 당시 `_blank`/`_contents_no_title` 등 자동 감지 코드는 underscore 포함 형태로 호출하고 있어 우회됨
-    - 원인 3 (경고 노이즈): layout 미발견 시 슬라이드마다 동일 경고 반복 — N개 슬라이드면 N회 출력
+    - **현상 추적**: `.claude/rules/md-m2slide-rules.md` 주석은 "`_` prefix 제거 형태"라고 명시하나 Issue41 이전까지 실제 코드는 정규화 없이 underscore 포함 키만 사용 — 문서·동작 괴리 누적
+    - **회귀 누락**: 5개 프로젝트(LlmAndVibeCoding, LlmAndVibeCoding2, m2SlideStyle1_single, m2SlideStyle2_chapter, MarkdownGraph) 중 `theme_default_layout` 키 명시 사용 빈도와 underscore 사용 패턴이 자동 검증되지 않음
+    - **Issue41과 분리 이유**: Issue41은 lookup 폴백·경고 dedup 코드 변경이 핵심 — 본 이슈는 그 변경이 안착된 뒤 정책·문서·테스트 정합성을 책임지는 후속 검증 작업
 * 구현 명세:
-    - `lib/generate-slides.js` `renderLayout()` 또는 layout 결정 지점: lookup 시 `LAYOUT_TEMPLATES[name] || LAYOUT_TEMPLATES['_' + name]` 폴백 적용 (또는 `loadLayoutTemplates()`에서 underscore 제거 키도 alias로 등록)
-    - 동일 layoutName 미발견 경고는 빌드당 1회만 출력 (Set 기반 dedup)
-    - `extractLayoutMeta()`의 사용자 명시 `#layout-name`도 동일 정규화 경로 통과
-    - 회귀 검증:
-        * `m2SlideStyle1_single` 빌드 시 경고 0건 + 모든 슬라이드 `layout-contents` 클래스 적용 확인
-        * 기존 underscore 형태 명시(`#layout-_blank` 또는 `#layout-blank`) 양쪽 모두 정상 동작
-        * Issue27_1·27_2 자동 감지(`_blank`, `_contents_no_title`) 회귀 없음
+    - **정책 SSOT 문서화**: `_doc_design/layout.md`에 layout 이름 표기 정책 섹션 추가
+        * 사용자 표기: `_` prefix 없는 형태 권장 (`contents`, `blank`)
+        * 시스템 자동 감지(Issue27_1·27_2)는 underscore 포함 형태 유지 (`_blank`, `_contents_no_title`) — 사용자 영역과 시스템 영역 분리
+        * 코드는 양쪽 표기를 모두 alias로 인식 (Issue41 구현)
+    - **룰 문서 동기화**: `.claude/rules/md-m2slide-rules.md`의 layout 표기 가이드를 `_doc_design/layout.md`와 일치시키고 cross-link 추가
+    - **회귀 테스트 자동화**: `m2slideDo.sh`에 `--lint-config` (가칭) 옵션 추가하여 모든 프로젝트의 `_config.yml` `theme_default_layout` 키를 스캔, 미존재 layout 키 사용 시 경고
+    - **검증 범위**:
+        * 5개 프로젝트 빌드 후 layout 미발견 경고 0건 확인
+        * `theme_default_layout: contents` / `theme_default_layout: _contents` 양쪽 표기 모두 정상 동작
+        * `#layout-blank` / `#layout-_blank` 양쪽 명시 정상 동작
+* 선행 조건: Issue41 종결 후 진행
+* 비고: 본 이슈는 본문이 헤더 손실된 상태로 잔존했던 잔재를 별도 이슈로 분리해 재정립한 것임 (2026-05-02)
 
 # 📗 선택
 
@@ -168,6 +126,32 @@
     - `theme/default/slide.css`의 `.layout-blank--full-image .blank-body img` 블록 변경
     - `theme/nowage/slide.css` (gitignored 사용자 테마) 동일 변경 적용
 * 검증: layoutTest #/9에서 `scenery.png`가 viewport 짧은 변에 맞춰 최대화 + 양쪽 레터박스로 비율 유지
+
+## Issue43. `_config.org.yml` video 기본 옵션 정리 + `![](~.mp4)` 마크다운 비디오 임베드 (등록: 2026-05-01, 해결: 2026-05-02, commit: 2f90ee8) ✅
+* 목적: 마크다운 표준 이미지 문법 `![alt](path)`를 비디오 확장자에 자동 매핑하여 `<video>` 태그로 변환. `_config.org.yml`의 `video_default:` 키로 8개 프리셋 중 선택. 추가로 video-only 슬라이드 자동 풀스크린(Issue27_1·27_4의 video 버전).
+* 상세:
+    - 8개 옵션 프리셋: `controls`(기본) / `autoplay-muted` / `autoplay-loop` / `loop` / `muted` / `background` / `minimal` / `autoplay-nocontrols`
+    - `playsinline` 속성을 자동재생 계열 프리셋에 자동 부여 (iOS 인라인 재생)
+    - 비디오 확장자: `mp4`, `webm`, `ogv`, `ogg`, `mov`, `m4v`
+    - **공개 정책**: `_config.org.yml`은 git 추적 공개 버전 — 옵션 주석에 이슈 번호(IssueNN) 표기 금지
+* 구현 명세:
+    - `lib/generate-slides.js`:
+        * `VIDEO_DEFAULT` 전역 + `applyConfig()` 파싱 + 잘못된 값에 대한 fallback 경고
+        * `VIDEO_DEFAULT_PRESETS` 매핑 테이블 (8개 프리셋)
+        * `isVideoUrl()` 헬퍼 (확장자 검사)
+        * `convertMarkdownToHTML()` standalone `![](*.mp4)` → `<video src=... preset attrs>` 변환
+        * `processInline()` 인라인 `![](*.mp4)` 동일 변환
+        * `isVideoOnlySlide()` 헬퍼 — 본문이 단일 비디오 임베드만 있을 때 감지 (image-only와 상호 배타적)
+        * `parseMarkdownFile()` 자동 감지 분기에 video-only → `layout = '_blank'` + `autoFullVideo = true`
+        * `generateSlideHTML()` `autoFullVideo` 처리 → `layout-blank--full-video` modifier
+    - `theme/default/slide.css` (+ `theme/nowage/slide.css`): `.layout-blank--full-video .blank-body video` 셀렉터 (`width/height: 100%`, `object-fit: contain`)
+    - `_doc_design/video-default.md`: 영속 설계 SSOT (8개 프리셋 매핑 + video-only 풀스크린 정책)
+    - 우선순위: `_blank` (image-only / video-only) > `_contents_no_title` (title-empty) > 기본 layout
+    - 사용자 명시 `#layout-*` override는 항상 우선
+* 회귀 검증:
+    - layoutTest 빌드: video-only 슬라이드가 `<section class="layout-blank layout-blank--full-video">` + `<video src=... controls>` 로 렌더링 (1건 검증)
+    - image-only 자동 감지 회귀 없음 (`layout-blank--full-image` 1건 유지)
+    - MarkdownGraph, m2SlideStyle1_single 빌드 정상
 
 ## Issue40. PPT 슬라이드 마크다운 규칙 정립 — md-slide-rules + md-m2slide-rules 2계층 (등록: 2026-05-01, 해결: 2026-05-01) ✅
 * 목적: 슬라이드용 마크다운 작성 규칙을 글로벌·로컬 2계층으로 정립하여 Issue39 같은 generator-마크다운 컨벤션 충돌 재발 방지
