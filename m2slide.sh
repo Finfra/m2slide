@@ -18,7 +18,8 @@ Markdown to Reveal.js HTML converter.
 
 Arguments:
   project_dir       프로젝트 폴더 경로 또는 Projects/ 하위 이름
-                    (생략 시 _config.yml의 current_project 사용)
+                    (생략 시 CWD의 _config.yml 또는 root _config.yml의
+                    current_project 사용. 결정 실패 시 이 도움말 출력)
                     project_dir/markdown/ 입력, project_dir/slide/ 출력
 
 Options:
@@ -30,15 +31,34 @@ Options:
 Project detection priority:
   1. CLI parameter (project_dir)
   2. CWD에 _config.yml 존재 → CWD를 프로젝트로 사용
-  3. Root _config.yml의 current_project
-  4. Root _config.org.yml의 current_project (fallback)
+  3. Root _config.yml의 current_project (있을 때만)
+  결정 실패 시 이 도움말을 출력하고 종료함.
 
 Examples:
-  ./m2slide.sh                          # 기본 프로젝트 변환
   ./m2slide.sh MarkdownGraph            # Projects/MarkdownGraph 변환
   ./m2slide.sh Projects/MyProj --epub   # HTML + EPUB 생성
-  ./m2slide.sh --pdf --pptx             # 기본 프로젝트 + PDF + PPTX
+  ./m2slide.sh MarkdownGraph --pdf      # HTML + PDF 생성
+  cd Projects/MyProj && ../../m2slide.sh  # CWD가 프로젝트일 때
 EOF
+
+  # Projects/ 폴더 목록 출력
+  local projects_dir="$SCRIPT_DIR/Projects"
+  if [ -d "$projects_dir" ]; then
+    echo ""
+    echo "Available projects (Projects/):"
+    local found=0
+    while IFS= read -r d; do
+      [ -z "$d" ] && continue
+      local name
+      name=$(basename "$d")
+      case "$name" in
+        .*|_*|z_*) continue ;;
+      esac
+      printf "  - %s\n" "$name"
+      found=1
+    done < <(find "$projects_dir" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort)
+    [ "$found" -eq 0 ] && echo "  (없음)"
+  fi
 }
 
 # Parse options
@@ -79,8 +99,11 @@ done
 # Project detection priority:
 #   1. CLI parameter (already set as PROJECT_DIR)
 #   2. CWD contains _config.yml → CWD is the project folder
-#   3. Root _config.yml → read current_project
-#   4. Root _config.org.yml → read current_project (fallback)
+#   3. Root _config.yml → read current_project (있을 때만)
+#   결정 실패 시 usage 출력 후 종료
+#
+# Note: _config.org.yml은 기본값 SSOT로만 사용되며 current_project는
+#       명시적으로 주석 처리되어 있음 (사용자가 활성화하지 않는 한 사용되지 않음).
 
 _read_current_project() {
   local cfg="$1"
@@ -103,12 +126,10 @@ else
     CURRENT_PROJECT=$(_read_current_project "$SCRIPT_DIR/_config.yml")
     [ -n "$CURRENT_PROJECT" ] && echo "Using project from _config.yml: $CURRENT_PROJECT"
   fi
-  if [ -z "$CURRENT_PROJECT" ] && [ -f "$SCRIPT_DIR/_config.org.yml" ]; then
-    CURRENT_PROJECT=$(_read_current_project "$SCRIPT_DIR/_config.org.yml")
-    [ -n "$CURRENT_PROJECT" ] && echo "Using project from _config.org.yml: $CURRENT_PROJECT"
-  fi
   if [ -z "$CURRENT_PROJECT" ]; then
-    echo "❌ Error: Could not determine project. Pass a project path or set current_project in _config.yml"
+    echo "❌ Error: 프로젝트를 결정할 수 없습니다." >&2
+    echo "" >&2
+    usage >&2
     exit 1
   fi
   PROJECT_DIR="$SCRIPT_DIR/Projects/$CURRENT_PROJECT"

@@ -373,16 +373,31 @@ git push
 
 이 프로젝트는 **m2slide의 모든 기능을 시연하는 참고용 예시**입니다.
 
-## 현재 프로젝트 설정
+## 프로젝트 지정 방법
 
-`config.yml` 파일에서 기본 작업 프로젝트를 지정:
+`./m2slide.sh`는 다음 우선순위로 프로젝트를 결정합니다:
+
+1. **CLI 인자**: `./m2slide.sh MarkdownGraph` 또는 `./m2slide.sh Projects/MyProj`
+2. **CWD의 `_config.yml`**: 프로젝트 폴더에서 `cd` 후 `../../m2slide.sh` 실행
+3. **루트 `_config.yml`의 `current_project`**: (있을 때만 사용)
+
+> `_config.org.yml`은 **기본값 SSOT**로만 사용되며, `current_project`는 의도적으로
+> 주석 처리되어 있습니다. 프로젝트를 결정할 수 없으면 사용법(usage)이 출력됩니다.
+
+루트 `_config.yml`을 사용해 기본값을 두려면:
 
 ```yaml
-# 현재 작업 중인 프로젝트
+# _config.yml (루트, 사용자 로컬 설정용 — git 추적 가능)
 current_project: LlmAndVibeCoding
 ```
 
-`./m2slide.sh`와 `./lib/deploy.sh`는 이 설정을 자동으로 읽습니다.
+`./lib/deploy.sh`도 동일한 방식으로 `current_project`를 읽습니다.
+
+도움말 확인:
+
+```bash
+./m2slide.sh --help
+```
 
 ## 라이선스
 
