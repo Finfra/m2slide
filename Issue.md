@@ -19,6 +19,33 @@
 
 # 🚧 진행중
 
+## Issue46. TOC markmap 노드 클릭 시 슬라이드 인덱스 1칸 어긋남 — `_toc` 자동 prepend 미반영 (등록: 2026-05-02)
+* 목적: 단일 파일 프로젝트(layoutTest 등)의 TOC markmap에서 첫 H1 노드("분할 레이아웃")가 클릭해도 반응 없고, 후속 H1/H2 노드는 잘못된 슬라이드로 이동하는 버그 수정. 사용자 관점에서 "markmap이 안 됨"으로 인식되는 신뢰성 이슈.
+* 카테고리: Generator (markmap TOC 링크 생성)
+* 상세:
+    - **재현**: `Projects/layoutTest/slide/layoutTest.html#/0` 진입 → 좌측 markmap에서 "분할 레이아웃" H1 클릭 → 아무 변화 없음. "자동 레이아웃 감지", "동영상" H1은 동작은 하지만 의도와 다른 슬라이드로 이동.
+    - **원인 1 (자동 prepend)**: `lib/generate-slides.js:1608-1636`은 `_toc` 레이아웃 템플릿이 존재하면 `useTocPlaceholder` (=`toc_placeholder` 설정) 값과 무관하게 첫 슬라이드 앞에 TOC 슬라이드를 자동 unshift 함. layoutTest는 `toc_placeholder: false`이지만 `theme: nowage`에 `_toc.html`이 존재하므로 자동 prepend 발생.
+    - **원인 2 (오프셋 누락)**: `lib/generate-slides.js:1357-1360` `generateTOCFromFile`은 `slideIndex` 초기값 보정 조건이 `TOC_PLACEHOLDER || fileTocPlaceholder` 뿐 — 자동 prepend 케이스(`LAYOUT_TEMPLATES['_toc']` 존재 + `slides[0].isTitle === false`)를 감지하지 못함.
+    - **결과**: tocData의 모든 href가 실제 슬라이드 인덱스보다 1 작음. 첫 H1은 `#/0`을 가리키는데 그곳이 markmap이 떠있는 TOC 슬라이드 자신이라 시각적 변화가 없어 "클릭 안 됨"으로 보임.
+    - **검증**: 실제 HTML(`Projects/layoutTest/slide/layoutTest.html`) section 인덱스와 tocData href 비교 시 모두 1씩 어긋남 확인.
+        * 슬라이드 #/0 = `<section id="toc-placeholder">` (자동 prepend된 TOC)
+        * 슬라이드 #/1 = `<section class="title-slide">분할 레이아웃</section>`
+        * tocData: `<a href="#/0">분할 레이아웃</a>` ← 잘못된 인덱스
+    - **영향 범위**: `_toc` 레이아웃 템플릿이 있는 모든 theme(nowage 포함) + `toc_placeholder: false` (또는 미지정)로 빌드된 모든 단일 파일 프로젝트.
+* 구현 명세:
+    - **수정 위치**: `lib/generate-slides.js` `generateTOCFromFile` 함수 (1329~)
+    - **수정 방안 A (권장, 최소 변경)**: 호출부에서 자동 prepend 여부를 계산해 `generateTOCFromFile`에 인자로 전달. 함수 내부에서 `if (TOC_PLACEHOLDER || fileTocPlaceholder || autoTocPrepended) slideIndex = 1`로 초기값 보정.
+        * 호출부 계산 조건: `LAYOUT_TEMPLATES['_toc']` 존재 + 첫 슬라이드의 `isTitle`이 false + 사용자가 `toc_placeholder`를 명시하지 않음
+        * 또는 단순히 "최종 slides 배열의 첫 슬라이드가 `_toc` layout인가" 판정 후 전달
+    - **수정 방안 B**: `_toc` 자동 prepend 로직을 `useTocPlaceholder`와 통합하여 단일 분기로 단순화 → tocData 보정 조건도 일관됨. 회귀 폭이 더 큼.
+    - **검증 시나리오**:
+        * `Projects/layoutTest`: H1 3개("분할 레이아웃", "자동 레이아웃 감지", "동영상") 클릭 시 모두 정확한 슬라이드로 이동
+        * H2 자식 노드("휴리스틱 자동 2분할", "단독 이미지 풀스크린" 등) 클릭 시 정확한 슬라이드로 이동
+        * `Projects/MarkdownGraph` (단일 파일): markmap 회귀 없음
+        * `Projects/LlmAndVibeCoding` (다중 챕터): 영향 없음
+        * `toc_placeholder: true` 명시 프로젝트: 회귀 없음 (slideIndex=1 두 번 적용되지 않도록 OR 조건 사용)
+    - **회귀 가드**: AGENDA 모드(다중 챕터)는 `hasAgenda` 분기에서 자동 prepend 동작이 다를 수 있으므로 별도 확인 필요. Issue39(빈 wrapper section 미생성)와의 상호작용도 점검.
+
 # 📕 중요
 
 # 📙 일반
@@ -28,7 +55,7 @@
 # ✅ 완료
 
 
-## Issue45. layout 이름 정규화 정책 문서·회귀 검증 정합성 점검 (등록: 2026-05-02, 해결: 2026-05-02) ✅
+## Issue45. layout 이름 정규화 정책 문서·회귀 검증 정합성 점검 (등록: 2026-05-02, 해결: 2026-05-02, commit: ea56fa1) ✅
 * 목적: Issue41(코드 수정) 머지 후 layout 이름 정규화 정책을 코드·룰 문서·회귀 테스트 3축에서 일관 유지 + `_doc_design/`에 영속 정책 문서화
 * 구현 명세:
     - **정책 SSOT 문서화**: `_doc_design/layout.md`에 "Layout 이름 표기 정책" 섹션 신규 추가
