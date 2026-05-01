@@ -380,6 +380,49 @@
   page-break-inside: avoid;
 }
 
+/* 카드형 챕터 목록 (toc_placeholder_new 실험) */
+.chapter-list.chapter-list--cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  justify-content: center;
+}
+
+.chapter-list--cards .chapter-card {
+  flex: 0 1 calc((100% - 16px * 2) / 3);
+  min-width: 240px;
+  max-width: 360px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  list-style: none;
+}
+
+.chapter-list--cards .chapter-card::marker {
+  content: "";
+}
+
+.chapter-list--cards .chapter-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.chapter-list--cards .chapter-card a {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  font-size: 0.9em;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
 /* =========================================
    5. 유틸리티 (Utilities)
    ========================================= */
