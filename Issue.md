@@ -8,21 +8,15 @@
     * 명령어: `gh issue create --title "제목" --body "내용"`
     * 등록 후 `gh issue close {IssueNum}`으로 닫기 (완료된 경우)
 
+# 🤔 결정사항
+
 # 🌱 이슈후보
 0. meta.yml 운영(생성정보, googleDrive정보, 강의일, version+날짜, ) cf) /Users/nowage/work/AgenticCoding_lec/_doc_work/AgenticCoding_v1.1/meta.yml
 1. 제목 페이지 추가 - Markdown Yaml Front Matter (QGCode, 강사명, 강사 연락처, 부제목(part1), QRCode)
 2. Orientation slide기능(제목 페이지와 목차 사이 장표 추가 기능."강의에 들어가기 앞서..." 혹은 공지사항 ) 목차에 들어가면 않됨. "## ![오리엔테이션](./00_Orientation.md)"이런 식으로 !로 시작하는 제목은 MarkdownTreeView에 추가시키지 않음.
 3. 장표 페이지에서 드레그 지원( up,down,left,right ) 
 
-# 🔥 진행 중
-
-## Issue37. H 제목 내 특수문자 처리 버그 (등록: 2026-05-01)
-* 목적: 마크다운 H 제목 내에서 backtick으로 감싼 inline code가 HTML로 변환되지 않는 버그 수정
-* 상세:
-    - 현상: 마크다운 `## 7. \`<!-- nosplit -->\` 휴리스틱 비활성` → HTML 렌더링 시 `## 7. \`\` 휴리스틱 비활성` (backticks와 내용 누락)
-    - 재현: `Projects/layoutTest/layoutTest.md:124` 라인
-    - 원인: `generate-slides.js`의 제목 파싱 로직에서 backtick 코드 블록을 처리하지 않음
-    - 영향: 제목 내 기술 용어 강조나 특수문자 보호 목적 코드 블록이 깨짐
+# 🚧 진행중
 
 ## Issue25. 배경 이미지 설정 기능
 * 마크다운 메타데이터(YAML frontmatter)를 통해 전체 슬라이드의 배경 이미지를 지정하는 기능 구현
@@ -31,6 +25,7 @@
 ## Issue26. 동영상 지원 기능
 * 슬라이드 내 동영상 삽입 및 재생 기능 지원
 * 로컬 비디오 파일 재생 확인
+* _doc_work/_resource/mp4/Movie-1.mp4 활용하여 테스트
 
 ## Issue27. 제목 없는 단독 이미지 페이지 자동 확대 (Full Image)
 * 제목 없이 이미지만 있는 슬라이드 감지 로직 구현
@@ -42,8 +37,25 @@
 
 
 
-# 🏁 완료된 이슈
+# 📕 중요
 
+# 📙 일반
+
+# 📗 선택
+
+# ✅ 완료
+
+
+## Issue37. H 제목 내 특수문자 처리 버그 (등록: 2026-05-01, 해결: 2026-05-01, commit: 9d160e5) ✅
+* 목적: 마크다운 H 제목 내에서 backtick으로 감싼 inline code가 HTML로 변환되지 않는 버그 수정
+* 상세:
+    - 현상: 마크다운 `## 7. \`<!-- nosplit -->\` 휴리스틱 비활성` → HTML 렌더링 시 `## 7. \`\` 휴리스틱 비활성` (backticks와 내용 누락)
+    - 재현: `Projects/layoutTest/layoutTest.md:124` 라인
+    - 원인: 두 단계 결함의 결합 — (1) `<!-- nosplit -->` 전역 strip 로직이 backtick 인라인 코드 내부의 HTML 주석까지 제거함, (2) 헤더 파싱이 `processInline`을 거치지 않아 backtick code/bold/link 등이 제목에서 변환되지 않음
+* 구현 명세:
+    - `lib/generate-slides.js` `convertMarkdownToHTML()` 진입부: 인라인 코드를 `\x00CODE{n}\x00` placeholder로 stash → `<!-- nosplit -->` 제거 → placeholder 복원 (backtick 내부 HTML 주석 보호)
+    - `lib/generate-slides.js:472-487` 헤더 처리: `<h1/h2/h3>` 생성 시 캡처된 텍스트를 `processInline()`에 통과시켜 backtick/bold/link 등 인라인 마크다운 정상 변환
+    - 검증: `Projects/layoutTest/slide/layoutTest.html:400`에서 `<h2 class="title">7. <code><!-- nosplit --></code> 휴리스틱 비활성</h2>` 확인
 
 ## Issue38. layout 파일명 표준화 + default 테마 fallback 시스템 (2026-05-01 해결, commit: b58b563) ✅
 * 목적: theme layout 파일명을 underscore prefix 컨벤션으로 표준화하고, 커스텀 theme에 layout이 없을 때 default theme에서 자동 fallback 하도록 함
@@ -294,5 +306,9 @@
 * 화살표키 위를 입력하면 상위 페이지로 가게 되어 있는데, 단일 페이지일 경우는 가장 앞페이지로 오기
 
 
-# 🗑️ 보류된 이슈
+# ⏸️ 보류
+
+# 🚫 취소
+
+# 📜 참고
 
