@@ -10,6 +10,37 @@
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+usage() {
+  cat <<EOF
+Usage: $(basename "$0") [project_dir] [--epub] [--pdf] [--pptx] [-h|--help]
+
+Markdown to Reveal.js HTML converter.
+
+Arguments:
+  project_dir       프로젝트 폴더 경로 또는 Projects/ 하위 이름
+                    (생략 시 _config.yml의 current_project 사용)
+                    project_dir/markdown/ 입력, project_dir/slide/ 출력
+
+Options:
+  --epub            EPUB 파일도 함께 생성
+  --pdf             PDF 파일도 함께 생성 (decktape 사용)
+  --pptx            PowerPoint 파일도 함께 생성 (pandoc 사용)
+  -h, --help        이 도움말 출력 후 종료
+
+Project detection priority:
+  1. CLI parameter (project_dir)
+  2. CWD에 _config.yml 존재 → CWD를 프로젝트로 사용
+  3. Root _config.yml의 current_project
+  4. Root _config.org.yml의 current_project (fallback)
+
+Examples:
+  ./m2slide.sh                          # 기본 프로젝트 변환
+  ./m2slide.sh MarkdownGraph            # Projects/MarkdownGraph 변환
+  ./m2slide.sh Projects/MyProj --epub   # HTML + EPUB 생성
+  ./m2slide.sh --pdf --pptx             # 기본 프로젝트 + PDF + PPTX
+EOF
+}
+
 # Parse options
 GENERATE_EPUB=false
 GENERATE_PDF=false
@@ -18,6 +49,10 @@ PROJECT_DIR=""
 
 for arg in "$@"; do
   case $arg in
+    -h|--help)
+      usage
+      exit 0
+      ;;
     --epub)
       GENERATE_EPUB=true
       ;;
@@ -26,6 +61,12 @@ for arg in "$@"; do
       ;;
     --pptx)
       GENERATE_PPTX=true
+      ;;
+    -*)
+      echo "❌ Error: Unknown option: $arg" >&2
+      echo "" >&2
+      usage >&2
+      exit 1
       ;;
     *)
       if [ -z "$PROJECT_DIR" ]; then
