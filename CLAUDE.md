@@ -99,7 +99,7 @@ Projects/
 #### HTML 프레젠테이션 생성
 
 1. **입력**: `Projects/[Project]/markdown/*.md` → 각 파일에 `---` 슬라이드 구분자 사용
-2. **변환**: `./convert.sh` 또는 `node generate-slides.js Projects/[Project]`
+2. **변환**: `./m2slide.sh [Project]` 또는 `node generate-slides.js Projects/[Project]`
 3. **출력**: `Projects/[Project]/slide/*.html` → Reveal.js 프레젠테이션
 
 **핵심 메커니즘**:
@@ -114,7 +114,7 @@ Projects/
 #### EPUB 전자책 생성
 
 1. **입력**: `Projects/[Project]/markdown/*.md`
-2. **변환**: `./convert.sh --epub` 또는 `node generate-epub.js Projects/[Project]`
+2. **변환**: `./m2slide.sh [Project] --epub` 또는 `node generate-epub.js Projects/[Project]`
 3. **출력**: `Projects/[Project]/[ProjectName].epub` → EPUB 3.0 전자책
 
 **핵심 메커니즘**:
@@ -146,15 +146,20 @@ Projects/
 ### HTML 프레젠테이션 생성 (권장)
 
 ```bash
-# 기본 프로젝트 (Projects/LlmAndVibeCoding)
-./convert.sh
+# 도움말 (인자 없이 실행하면 동일하게 출력됨)
+./m2slide.sh --help
 
-# 특정 프로젝트
-./convert.sh Projects/[ProjectName]
+# 특정 프로젝트 (Projects/ 하위 이름 또는 경로)
+./m2slide.sh MarkdownGraph
+./m2slide.sh Projects/[ProjectName]
 
 # Node.js 직접 실행
 node generate-slides.js Projects/[ProjectName]
 ```
+
+> `_config.org.yml`의 `current_project`는 주석 처리되어 있으므로 인자 없이
+> 실행하면 사용법이 출력됩니다. 기본 프로젝트를 두려면 루트 `_config.yml`을
+> 만들어 `current_project: <name>` 을 지정하세요.
 
 **출력물**:
 - `slide/*.html`: 각 챕터별 Reveal.js 프레젠테이션
@@ -166,11 +171,9 @@ node generate-slides.js Projects/[ProjectName]
 ### EPUB 전자책 생성
 
 ```bash
-# 기본 프로젝트 (HTML + EPUB 동시 생성)
-./convert.sh --epub
-
-# 특정 프로젝트
-./convert.sh Projects/[ProjectName] --epub
+# 특정 프로젝트 (HTML + EPUB 동시 생성)
+./m2slide.sh [ProjectName] --epub
+./m2slide.sh Projects/[ProjectName] --epub
 
 # EPUB만 생성 (HTML 스킵)
 node generate-epub.js Projects/[ProjectName]
@@ -207,7 +210,7 @@ mkdir -p Projects/NewProject/markdown
 echo "!/NewProject/" >> Projects/.gitignore
 
 # 4. HTML 생성
-./convert.sh Projects/NewProject
+./m2slide.sh Projects/NewProject
 ```
 
 ## 개발 워크플로우
@@ -221,10 +224,9 @@ echo "!/NewProject/" >> Projects/.gitignore
 
 ### 2. HTML 재생성
 ```bash
-./convert.sh
-
-# 또는 특정 프로젝트 지정
-./convert.sh Projects/OtherProject
+# 프로젝트 이름 또는 경로 지정 필수
+./m2slide.sh LlmAndVibeCoding
+./m2slide.sh Projects/OtherProject
 ```
 
 ### 3. 브라우저에서 확인
