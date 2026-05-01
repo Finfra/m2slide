@@ -3,22 +3,43 @@
 # Deploy slides to GitHub Pages
 # Copies current project's slide files to docs/{project}/ folder,
 # updates docs/index.html with a project card, commits, and pushes.
-# Usage: ./lib/deploy.sh [commit_message]
+# Usage: ./lib/deploy.sh [-p|--project ProjectName] [commit_message]
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-CONFIG_FILE="$ROOT_DIR/config.yml"
+# Parse arguments
+PROJECT_ARG=""
+COMMIT_ARG=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -p|--project)
+      PROJECT_ARG="$2"
+      shift 2
+      ;;
+    *)
+      COMMIT_ARG="$1"
+      shift
+      ;;
+  esac
+done
+
+CONFIG_FILE="$ROOT_DIR/_config.yml"
 if [ ! -f "$CONFIG_FILE" ]; then
-  echo "❌ Error: config.yml not found"
+  echo "❌ Error: _config.yml not found"
   exit 1
 fi
 
-CURRENT_PROJECT=$(grep "^current_project:" "$CONFIG_FILE" | sed 's/current_project:[[:space:]]*//')
+if [ -n "$PROJECT_ARG" ]; then
+  CURRENT_PROJECT="$PROJECT_ARG"
+else
+  CURRENT_PROJECT=$(grep "^current_project:" "$CONFIG_FILE" | sed 's/current_project:[[:space:]]*//')
+fi
+
 if [ -z "$CURRENT_PROJECT" ]; then
-  echo "❌ Error: current_project not found in config.yml"
+  echo "❌ Error: project not specified (use -p ProjectName or set current_project in _config.yml)"
   exit 1
 fi
 
@@ -32,13 +53,13 @@ PROJECT_DOCS_DIR="$DOCS_DIR/$CURRENT_PROJECT"
 
 if [ ! -d "$SLIDE_DIR" ]; then
   echo "❌ Error: Slide directory does not exist: $SLIDE_DIR"
-  echo "Run ./convert.sh first to generate slides"
+  echo "Run ./m2slide.sh first to generate slides"
   exit 1
 fi
 
 if ! ls "$SLIDE_DIR"/*.html 1>/dev/null 2>&1; then
   echo "❌ Error: No HTML files found in $SLIDE_DIR"
-  echo "Run ./convert.sh first to generate slides"
+  echo "Run ./m2slide.sh first to generate slides"
   exit 1
 fi
 
@@ -138,10 +159,10 @@ echo "📝 Changes to be committed:"
 git -C "$ROOT_DIR" diff --cached --stat
 echo ""
 
-if [ $# -eq 0 ]; then
-  COMMIT_MESSAGE="deploy: $CURRENT_PROJECT slides"
+if [ -n "$COMMIT_ARG" ]; then
+  COMMIT_MESSAGE="$COMMIT_ARG"
 else
-  COMMIT_MESSAGE="$1"
+  COMMIT_MESSAGE="deploy: $CURRENT_PROJECT slides"
 fi
 
 echo "💾 Committing..."

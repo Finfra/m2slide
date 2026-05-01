@@ -144,7 +144,7 @@ vi markdown/02.1-chat-based.md
 cd ../../
 
 # 3. HTML + EPUB 재생성
-./convert.sh Projects/LlmAndVibeCoding --epub
+./m2slide.sh Projects/LlmAndVibeCoding --epub
 
 # 4. 확인
 open Projects/LlmAndVibeCoding/slide/index.html
