@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 35
+* Issue HWM: 36
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -35,6 +35,26 @@
 
 
 # 🏁 완료된 이슈
+## Issue36. theme/{name}/ + HTML 템플릿 layout 시스템 도입 (2026-05-01 해결, commit: 687ce22) ✅
+* **목적**: `resource/` 단일 CSS 구조를 `theme/{name}/` 디렉토리 기반 + HTML 템플릿 layout 시스템으로 전환
+* plan: `_doc_work/plan/theme_plan.md`
+* task: `_doc_work/tasks/theme_task.md`
+* design: `_doc_design/theme.md`
+* **상세**:
+    - `resource/slide.css` → `theme/default/slide.css` 이동
+    - `_config.yml`에 `theme:`, `theme_default_layout:` 키 신규 도입 (`slide_css:` 하위 호환 유지)
+    - 슬라이드별 layout override: 마크다운 `#layout-name` 메타 한 줄 (방어적 파서 `^#_?[a-z][a-z0-9-]*$`)
+    - 슬롯 분리: `::: slotName ... :::` (fenced div) → 템플릿 `{{slotName}}` 치환
+    - 첫 슬라이드(TOC) `_toc` 시스템 layout 자동 적용 + `{{markmap}}` 변수 주입
+    - `theme/*` gitignore (default만 추적), 사용자 커스텀 영역 분리
+    - `m2SlideStyle1_single`에 `theme: nowage` + `theme_default_layout: contents` 적용
+    - 미존재 theme/layout 시 warning + plain section fallback
+* **구현 명세**:
+    - `lib/generate-slides.js`: theme 파싱, layout 메타 추출, 슬롯 분리, 템플릿 로드+치환, `_toc` 자동 적용 (+247줄)
+    - `theme/default/{slide.css, layouts/_toc.html}` (git 추적)
+    - `theme/nowage/{slide.css, layouts/*.html 11개}` (gitignored, `.layout-*` selector 포함)
+    - `.gitignore`: `/theme/*` + `!/theme/default/`
+
 ## Issue35. chapter-list TOC 카드 블록 레이아웃 전환 (2026-05-01 해결, commit: 30181b9) ✅
 * **목적**: `toc_placeholder`로 자동 생성되는 챕터 목차의 시각 정렬 개선
 * **상세**:
