@@ -366,9 +366,13 @@
 /* 챕터 목록 */
 .chapter-list {
   font-size: 0.8em;
-  column-width: 300px;
-  column-gap: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 8px 24px;
   width: 100%;
+  align-self: stretch;
+  list-style-position: inside;
+  padding-left: 0;
 }
 
 .chapter-list li {
