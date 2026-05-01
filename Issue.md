@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 45
+* Issue HWM: 46
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -19,58 +19,44 @@
 
 # 🚧 진행중
 
-## Issue44. raw HTML `<video>`/`<audio>` multi-line block이 `<p>` wrap으로 깨짐 (등록: 2026-05-01)
-* 목적: 마크다운 본문에 작성한 multi-line raw HTML block(`<video>...<source>...</video>`, `<audio>`, `<iframe>` 등)이 마크다운 파서에 의해 라인별로 `<p>` 태그에 감싸져 DOM 구조가 깨지는 버그 수정
-* 상세:
-    - 현상: `Projects/layoutTest/slide/layoutTest.html#/23~25` (## 20~22) 슬라이드에서 video 태그가 화면에 표시되지 않음
-    - 재현: `./m2slideDo.sh layoutTest` 후 `Projects/layoutTest/slide/layoutTest.html` 의 #/23~#/25 확인
-    - 출력 결과 (`layoutTest.html:601-606`):
-        ```html
-        <p><video width="100%" height="auto" controls></p>
-        <p>  <source src="./video/Movie-1.mp4" type="video/mp4"></p>
-        <p>  Your browser does not support the video tag.</p>
-        <p></video></p>
-        ```
-    - 원인: `lib/generate-slides.js`의 `convertMarkdownToHTML()` 단락 처리 로직이 빈 줄 단위로 라인을 묶어 `<p>...</p>`로 wrap. block-level HTML 태그(`<video>`, `<audio>`, `<iframe>`, `<table>`, `<div>` 등)는 보존해야 하나 그 판별이 없음
-* 구현 명세:
-    - `lib/generate-slides.js` `convertMarkdownToHTML()`에 block-level HTML 패스스루 로직 추가:
-        - 라인이 `<(video|audio|iframe|table|figure|div|section)[\s>]` 로 시작하면 해당 닫힘 태그 만날 때까지의 모든 라인을 단일 블록으로 보존 (라인별 `<p>` wrap 금지)
-        - 닫힘 태그 매칭은 nesting depth 추적
-    - 인라인 HTML(`<span>`, `<a>`, `<strong>` 등)은 기존대로 처리 (영향 없음)
-    - 펜스드 코드 블록(```` ```html ````) 내부는 영향 없음 (이미 코드로 escape됨)
-* 회귀 검증:
-    - layoutTest #/23~25에서 video element가 정상 재생되어야 함
-    - 기존 코드 블록 표시 (#/16~22, ## 13~19) 회귀 없음
-    - LlmAndVibeCoding 등 다른 프로젝트 빌드 정상
-
 # 📕 중요
 
 # 📙 일반
-
-## Issue45. layout 이름 정규화 정책 문서·회귀 검증 정합성 점검 (등록: 2026-05-02)
-* 목적: Issue41(코드 수정)이 머지된 후 layout 이름 정규화 정책이 코드·룰 문서·회귀 테스트 3축에서 일관되게 유지되는지 점검 + `_doc_design/`에 영속 정책 문서화. Issue41이 단일 PR로 처리하기 어려운 정합성 차원 작업을 분리.
-* 상세:
-    - **현상 추적**: `.claude/rules/md-m2slide-rules.md` 주석은 "`_` prefix 제거 형태"라고 명시하나 Issue41 이전까지 실제 코드는 정규화 없이 underscore 포함 키만 사용 — 문서·동작 괴리 누적
-    - **회귀 누락**: 5개 프로젝트(LlmAndVibeCoding, LlmAndVibeCoding2, m2SlideStyle1_single, m2SlideStyle2_chapter, MarkdownGraph) 중 `theme_default_layout` 키 명시 사용 빈도와 underscore 사용 패턴이 자동 검증되지 않음
-    - **Issue41과 분리 이유**: Issue41은 lookup 폴백·경고 dedup 코드 변경이 핵심 — 본 이슈는 그 변경이 안착된 뒤 정책·문서·테스트 정합성을 책임지는 후속 검증 작업
-* 구현 명세:
-    - **정책 SSOT 문서화**: `_doc_design/layout.md`에 layout 이름 표기 정책 섹션 추가
-        * 사용자 표기: `_` prefix 없는 형태 권장 (`contents`, `blank`)
-        * 시스템 자동 감지(Issue27_1·27_2)는 underscore 포함 형태 유지 (`_blank`, `_contents_no_title`) — 사용자 영역과 시스템 영역 분리
-        * 코드는 양쪽 표기를 모두 alias로 인식 (Issue41 구현)
-    - **룰 문서 동기화**: `.claude/rules/md-m2slide-rules.md`의 layout 표기 가이드를 `_doc_design/layout.md`와 일치시키고 cross-link 추가
-    - **회귀 테스트 자동화**: `m2slideDo.sh`에 `--lint-config` (가칭) 옵션 추가하여 모든 프로젝트의 `_config.yml` `theme_default_layout` 키를 스캔, 미존재 layout 키 사용 시 경고
-    - **검증 범위**:
-        * 5개 프로젝트 빌드 후 layout 미발견 경고 0건 확인
-        * `theme_default_layout: contents` / `theme_default_layout: _contents` 양쪽 표기 모두 정상 동작
-        * `#layout-blank` / `#layout-_blank` 양쪽 명시 정상 동작
-* 선행 조건: Issue41 종결 후 진행
-* 비고: 본 이슈는 본문이 헤더 손실된 상태로 잔존했던 잔재를 별도 이슈로 분리해 재정립한 것임 (2026-05-02)
 
 # 📗 선택
 
 # ✅ 완료
 
+
+## Issue45. layout 이름 정규화 정책 문서·회귀 검증 정합성 점검 (등록: 2026-05-02, 해결: 2026-05-02) ✅
+* 목적: Issue41(코드 수정) 머지 후 layout 이름 정규화 정책을 코드·룰 문서·회귀 테스트 3축에서 일관 유지 + `_doc_design/`에 영속 정책 문서화
+* 구현 명세:
+    - **정책 SSOT 문서화**: `_doc_design/layout.md`에 "Layout 이름 표기 정책" 섹션 신규 추가
+        * 영역 분리표 (사용자 작성 / 사용자 슬라이드 / 시스템 자동 감지 / 파일 시스템)
+        * Alias 정규화 동작 명시 (Issue41 `_registerLayoutTemplate()` 헬퍼)
+        * 회귀 보장 요소 4종 명시 (코드 alias, 경고 dedup, 룰 문서, lint-config)
+    - **룰 문서 동기화**: `.claude/rules/md-m2slide-rules.md` `## 1. 슬라이드별 layout override`에 "Layout 이름 표기 규칙" 서브 섹션 추가 — `_doc_design/layout.md` cross-link
+    - **회귀 테스트 자동화**: `m2slideDo.sh`에 `--lint-config` 옵션 추가
+        * `theme/*/layouts/*.html` 파일 시스템 스캔으로 사용 가능 layout 수집 (underscore alias 포함)
+        * `Projects/*/_config.yml`의 `theme_default_layout` 값을 BSD-호환 sed로 추출
+        * 미존재 layout 사용 시 ✗ 표시 + exit 1, 정상 시 ✓ + exit 0
+    - **검증 범위 결과**:
+        * 5개 프로젝트(LlmAndVibeCoding, LlmAndVibeCoding2, m2SlideStyle1_single, m2SlideStyle2_chapter, MarkdownGraph) + layoutTest 빌드 정상, layout 미발견 경고 0건
+        * `m2SlideStyle1_single` (`theme_default_layout: contents`) 정상 동작
+        * lint-config 실증: layoutTest 사용자 로컬 config의 stale `2.1.contents` 참조를 정확히 검출 (Issue38 표준화 이전 잔재 — 사용자 로컬 영역이라 미수정)
+* 변경 파일:
+    - `_doc_design/layout.md` (Layout 이름 표기 정책 섹션 +60줄)
+    - `.claude/rules/md-m2slide-rules.md` (Layout 이름 표기 규칙 서브 섹션 +12줄)
+    - `m2slideDo.sh` (`--lint-config` 옵션 + usage 주석)
+
+## Issue44. raw HTML `<video>`/`<audio>` multi-line block이 `<p>` wrap으로 깨짐 (등록: 2026-05-01, 해결: 2026-05-02, commit: 2f90ee8) ✅
+* 목적: 마크다운 본문 multi-line raw HTML block(`<video>...<source>...</video>` 등)이 라인별 `<p>` wrap으로 DOM 구조가 깨지는 버그 수정
+* 종결 근거: Issue43(`![](*.mp4)` 마크다운 비디오 임베드, commit 2f90ee8)으로 사용 측면 완전 해결됨
+    - 사용자는 raw `<video>` 태그를 작성할 필요 없음 — `![alt](path.mp4)` 한 줄로 충분
+    - layoutTest.md #/23~25 슬라이드는 마크다운 shortcut으로 변환되어 더 이상 raw HTML 경로를 타지 않음
+    - raw HTML 예시(코드 블록)는 `<pre><code>` 안에서 그대로 보존됨 (정상)
+* 잔존 사항: raw HTML `<video>` block-level 패스스루 로직 자체는 미구현. 향후 raw HTML이 필요한 use-case가 누적되면 별도 이슈로 재등록
+* 검증: layoutTest 빌드 후 `<p><video>` / `<p></video>` 패턴 0건 확인 (`/usr/bin/grep -an '<p><video\|<p></video>' Projects/layoutTest/slide/layoutTest.html`)
 
 ## Issue26. 동영상 지원 기능 (해결: 2026-05-02, commit: 2f90ee8) ✅
 * 목적: 슬라이드 내 동영상 삽입 및 재생 기능 지원 — 비디오 임베드의 부모 이슈
