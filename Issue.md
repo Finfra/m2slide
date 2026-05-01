@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 46
+* Issue HWM: 47
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -54,6 +54,43 @@
 
 # ✅ 완료
 
+
+## Issue47. keynote-nowage-theme 시각 디자인 적용 (등록: 2026-05-02, 해결: 2026-05-02, commit: 1dc825a) ✅
+* 목적: `_doc_design/keynote-nowage-theme/` 디자인 이미지 9종(cover, contents, contents-noTopMargin, chapter-toc, chapter, exercise, exercise-small, blank, closing)에 정의된 keynote 시각 언어를 `theme/nowage`에 반영. 단순 구조 위주였던 기존 테마에 마스코트·노랑 강조선·페이지 번호·sketch 풍 타이포 등 결합.
+* 카테고리: Theme (테마 시각 디자인)
+* 상세:
+    - 디자인 SSOT: `_doc_design/keynote-nowage-theme/*.png` + `img/finfra*.png`
+    - 핵심 시각 요소: 노랑 강조색(#F5C518) 상/하단 가로선, 제목 하단 `hr.png` 브러시 밑줄, 우하단 페이지 번호, 레벨별 마커(● → ─ → ▶ → •), 마스코트(puffer/butterfly/cat) layout별 배치
+    - 자산 파이프라인 신설: `theme/{name}/img/` → `slide/theme-img/` 자동 복사 — 사용자 프로젝트의 `img/`와 충돌 없음
+* 구현 명세:
+    - **마스코트 자산 도입**: `theme/nowage/img/`에 `finfra{Butterfly,Cat,Puffer1,Puffer2,Puffer2s}.png` + `hr.png` 6종 배치 (gitignored 사용자 영역)
+    - **자산 복사 로직**: `lib/generate-slides.js` video 복사 블록 다음에 theme img 복사 추가. `THEME_NAME` 기준으로 `theme/{name}/img/` 존재 시 `slide/theme-img/`로 복사. 미존재 시 silent skip (default 테마 등 backward compatible).
+    - **CSS 시각 언어 추가** (`theme/nowage/slide.css` `## 9. Keynote Nowage Visual Language` 신규 섹션):
+        * 색상 변수 정의 (`--kn-accent: #F5C518` 외 3종)
+        * 모든 `section[class*="layout-"]`에 상/하 노랑 가로선 + padding 조정 + 페이지 번호 스타일
+        * 제목(H1·`*-title`)에 굵은 sketch 타이포 + `hr.png` 노랑 브러시 밑줄 (기존 `*-divider` 숨김)
+        * 리스트 마커 차별화: L1 ● / L2 ─ / L3 ▶ / L4·L5 •
+        * layout별 마스코트 위치:
+            - cover: puffer1 좌상단 + 노랑 박스 부제 우하단
+            - contents/contents-full: puffer2s 우상단 (작게)
+            - chapter-toc: puffer2 좌상단 + 노랑 박스 TOC 우하단
+            - chapter: puffer2 중앙-좌, 제목 하단
+            - exercise: butterfly 좌측 + cat 우하단
+            - exercise-small: butterfly 크게 좌측 + cat 우하단
+            - closing: puffer1 중앙(크게) + cat 우하단
+            - blank: 장식 없음 (상하 노랑선만)
+* 가드:
+    - CSS 수정 시 CLAUDE.md "CSS 수정 시 주의사항" 준수 — `display: flex` / `height: 100%` / `position` 등 Reveal.js 레이아웃 핵심 속성은 건드리지 않음. 신규 섹션은 layout-* 한정 영향만 적용.
+    - `theme/nowage/`는 `.gitignore`로 사용자 sandbox 영역 — 본 변경의 자산·CSS는 추적되지 않음. 추적 대상은 `lib/generate-slides.js`의 자산 복사 로직 + 본 이슈 문서뿐.
+* 검증:
+    - `node -c lib/generate-slides.js` 문법 통과
+    - `m2SlideStyle1_single` (theme: nowage) 빌드 정상, `slide/theme-img/` 6개 파일 복사 + `slide/css/custom.css`에 신규 섹션 포함 확인
+    - `layoutTest` 빌드 정상
+* 변경 파일:
+    - `lib/generate-slides.js` (theme img 복사 블록 +13줄)
+    - `theme/nowage/img/*.png` 6종 (gitignored)
+    - `theme/nowage/slide.css` (`## 9. Keynote Nowage Visual Language` 섹션 +266줄, gitignored)
+    - `Issue.md` (Issue47 등록 + 종결)
 
 ## Issue45. layout 이름 정규화 정책 문서·회귀 검증 정합성 점검 (등록: 2026-05-02, 해결: 2026-05-02, commit: ea56fa1) ✅
 * 목적: Issue41(코드 수정) 머지 후 layout 이름 정규화 정책을 코드·룰 문서·회귀 테스트 3축에서 일관 유지 + `_doc_design/`에 영속 정책 문서화
