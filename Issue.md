@@ -95,6 +95,26 @@
 # ✅ 완료
 
 
+## Issue54. 자동 layout 슬라이드 화면 밖 렌더링 — `position: relative` 가 reveal.js 스택 깨뜨림 (등록: 2026-05-02, 해결: 2026-05-02, commit: TBD) ✅
+* 목적: layoutTest 프로젝트의 11/13/15/18 페이지(자동 감지된 `layout-blank--full-image`, `layout-contents` (no_title), `layout-blank--full-video`)가 빈 화면으로 보임. 컨텐츠는 DOM에 존재하나 슬라이드가 viewport 아래(y=1085, 2165...)로 밀려나 보이지 않음.
+* 카테고리: Theme (`theme/nowage/slide.css`)
+* 복잡도: 단순 (CSS 한 줄 제거)
+* 원인:
+    - `theme/nowage/slide.css`의 `.reveal section[class*="layout-"] { position: relative; padding: ... }` 규칙이 reveal.js 기본 `position: absolute` 를 덮어쓰면서 `layout-*` 슬라이드들이 normal flow 로 진입
+    - 누적 효과: 첫 layout 슬라이드(y=5) → 두 번째(y=1085) → 세 번째(y=2165) ... 모두 viewport(1080px) 밖으로 이동
+    - 빈 페이지 4건 모두 자동 감지된 layout 슬라이드:
+        - `#/11`: `layout-blank--full-image` (image-only)
+        - `#/13`: `layout-contents` (`## ` 빈 제목)
+        - `#/15`: `layout-contents` (헤더 부재)
+        - `#/18`: `layout-blank--full-video` (video-only)
+* 해결:
+    - `theme/nowage/slide.css`의 `.reveal section[class*="layout-"]` 규칙에서 `position: relative` 제거
+    - `padding: 28px 56px 56px 56px` 유지 + 재발 방지 주석(Issue54 참조) 추가
+    - `::before` / `::after` pseudo-element는 reveal.js 기본 `position: absolute` 컨텍스트만으로 정상 동작 확인
+    - 검증: layoutTest 재빌드 후 puppeteer 회귀 테스트 — 21개 슬라이드 전부 viewport 내(y=5) 위치 확인, body 컨테이너도 가시 영역(y=10~38) 확인
+    - 비고: `theme/nowage/`는 `.gitignore` 처리되는 사용자 커스텀 영역이므로 CSS 변경분은 commit 추적 외. Issue.md 만 commit 으로 보존
+    - CSS 가드 룰의 "position 금지" 정신과 일치 (reveal.js 기본을 깨뜨린 속성을 원복)
+
 ## Issue53. 페이지 번호 링크 비활성화 — prev arrow 클릭 영역 침범 해결 (등록: 2026-05-02, 해결: 2026-05-02, commit: f67aff6) ✅
 * 목적: 우측 하단 페이지 번호("17 / 21")가 `<a href>` 링크로 렌더링되어 좌측 prev arrow(`<`) 버튼의 클릭 가능 영역을 가림. 페이지 번호는 표시만 하고 클릭은 불필요.
 * 카테고리: Frontend (Reveal.js 인터랙션)
