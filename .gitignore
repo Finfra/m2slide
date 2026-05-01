@@ -1,14 +1,19 @@
 # Project 
+GEMINI.md
+CLAUDE.md
+Issue.md
 _doc_work
 _doc_Design
 .claude
 CLAUDE.md
 Harness.md
 Issue.md
-noteForHuman.md
+noteForHuman*.md
 PROMPTS.md
+config.yml
 
-
+# vscode
+.vscode
 
 # Node.js
 node_modules/
