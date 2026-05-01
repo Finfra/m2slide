@@ -37,9 +37,15 @@ chapter_markmap_depth: 3
 toc_placeholder: false
 
 
-# 슬라이드 출력용 프로젝트 상대 경로 CSS (각 챕터 HTML에 연결됨)
-# 예시: resource/slide.css
-slide_css: resource/slide.css
+# 사용할 theme 이름 (theme/{name}/slide.css + theme/{name}/layouts/ 로 해석)
+# default 외에는 .gitignore 처리됨 (사용자별 커스터마이징 영역)
+theme: default
+
+# 프로젝트 기본 layout (theme/{name}/layouts/{layout}.html)
+# 슬라이드별로 마크다운에서 #layout-name 으로 override 가능
+# 미지정 시: layout 미적용 (plain section, 기존 동작)
+# 첫 슬라이드(TOC)는 _toc layout이 자동 적용됨
+# theme_default_layout: contents
 slide_ratio: none # 3:2 # 16:9 # none
 # Open Props 사용 여부 (true: CDN 로드, false: 기본값 사용)
 use_open_props: true

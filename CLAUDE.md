@@ -140,6 +140,38 @@ Projects/
   - 하위 섹션: `### [제목](./파일.md)` 형식 (메인 섹션 아래 들여쓰기)
   - 상위 페이지 자동 감지: 하위 섹션의 상위 페이지는 직전 메인 섹션, 메인 섹션의 상위는 index.html
 
+### Theme & Layout 시스템
+
+`_config.yml`에서 theme + layout 지정 (자세한 사용법은 `README.md` 참조).
+
+```yaml
+theme: nowage                   # theme/{name}/slide.css
+theme_default_layout: contents  # 슬라이드 기본 layout
+```
+
+폴더 구조:
+
+```
+theme/
+├── default/                # 기본 theme (git 추적)
+│   ├── slide.css           # 전역 + 모든 .layout-* selector
+│   └── layouts/
+│       └── _toc.html       # 시스템 layout (TOC 자동 적용)
+└── nowage/                 # 사용자 커스터마이징 (gitignored)
+    ├── slide.css
+    └── layouts/            # HTML 템플릿만 (CSS는 slide.css에 통합)
+        ├── _toc.html
+        ├── cover.html
+        └── ...
+```
+
+- `theme:` 미설정 시 `default` 자동 적용
+- 슬라이드별 override: 마크다운 슬라이드 첫 줄 `#layout-name` (출력에서 제거)
+- 슬롯: `::: slotName ... :::` (fenced div) → 템플릿 `{{slotName}}` 치환
+- 시스템 변수: `{{markmap}}` (`_toc` layout 전용)
+- 단일 CSS 정책: layout별 별도 CSS 없음. 모든 `.layout-*` selector는 theme의 `slide.css`에 작성
+- `slide_css:` 키는 하위 호환 유지
+
 
 ## 주요 작업 명령어
 

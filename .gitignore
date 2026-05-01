@@ -109,3 +109,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 # config.yml
+
+# theme: default만 추적, 그 외 사용자 커스텀은 추적 제외
+/theme/*
+!/theme/default/

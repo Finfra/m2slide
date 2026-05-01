@@ -50,6 +50,13 @@ m2slide/
 │   ├── generate-epub.js           # EPUB 변환 스크립트
 │   ├── deploy.sh                  # GitHub Pages 배포
 │   └── debug_yaml.js              # YAML 파싱 디버그 유틸
+├── theme/                         # 테마 (default만 git 추적, 그 외 gitignored)
+│   ├── default/
+│   │   ├── slide.css              # 전역 스타일
+│   │   └── layouts/_toc.html      # 시스템 layout (TOC 자동 적용)
+│   └── nowage/                    # 사용자 커스텀 (예시)
+│       ├── slide.css
+│       └── layouts/*.html         # cover, contents, split-image-text 등
 └── README.md
 ```
 
@@ -240,6 +247,65 @@ pandoc Projects/ProjectA/markdown/*.md -o complete.pptx
 - **이미지 자동 복사**: markdown/img/ → slide/img/, EPUB 내부
 - **상위 페이지 자동 감지**: AGENDA.md 기반 계층 구조 파악
 - **에러 복원력**: 변환 실패 시 placeholder 생성
+
+## Theme & Layout
+
+각 프로젝트는 `_config.yml`에서 theme과 기본 layout을 지정합니다.
+
+```yaml
+theme: nowage                   # theme/{name}/slide.css 적용
+theme_default_layout: contents  # theme/{name}/layouts/contents.html 자동 적용
+```
+
+특정 슬라이드만 다른 layout을 쓰려면 마크다운 슬라이드 시작 부분에:
+
+```markdown
+---
+#cover
+
+# 첫 페이지
+```
+
+좌·우 분할 등 슬롯이 필요한 layout은 fenced div 사용:
+
+```markdown
+---
+#split-image-text
+
+# 슬라이드 제목
+
+::: left
+![이미지](./img/x.png)
+:::
+
+::: right
+* 우측 텍스트
+:::
+```
+
+**시스템 layout**: 첫 슬라이드(TOC)에는 `_toc` layout이 자동 적용됨. `theme/{name}/layouts/_toc.html`에 markmap 자리는 `{{markmap}}` 변수로 표시.
+
+폴더 구조 (단일 CSS, HTML 템플릿만 layout별):
+
+```
+theme/
+├── default/                # 기본 theme (git 추적)
+│   ├── slide.css
+│   └── layouts/
+│       └── _toc.html       # 시스템 layout (TOC)
+└── nowage/                 # 사용자 커스텀 (gitignore)
+    ├── slide.css           # 모든 .layout-* selector 포함
+    └── layouts/            # HTML 템플릿만 (CSS는 slide.css에 통합)
+        ├── _toc.html
+        ├── cover.html
+        ├── contents.html
+        ├── split-image-text.html
+        └── ...
+```
+
+**표준 변수**: `{{title}}`, `{{content}}`, `{{slotName}}`, `{{markmap}}`(시스템 예약, `_toc` 전용)
+
+**하위 호환**: `slide_css:` 키는 그대로 동작. `theme:`, `theme_default_layout:` 미설정 시 기존 동작 유지.
 
 ## 마크다운 작성 규칙
 
