@@ -19,12 +19,6 @@
 
 # 🚧 진행중
 
-## Issue26. 동영상 지원 기능
-* 슬라이드 내 동영상 삽입 및 재생 기능 지원
-* 로컬 비디오 파일 재생 확인
-* layoutTest프로젝트에서 _doc_work/_resource/mp4/Movie-1.mp4 활용하여 테스트
-
-
 ## Issue44. raw HTML `<video>`/`<audio>` multi-line block이 `<p>` wrap으로 깨짐 (등록: 2026-05-01)
 * 목적: 마크다운 본문에 작성한 multi-line raw HTML block(`<video>...<source>...</video>`, `<audio>`, `<iframe>` 등)이 마크다운 파서에 의해 라인별로 `<p>` 태그에 감싸져 DOM 구조가 깨지는 버그 수정
 * 상세:
@@ -77,6 +71,19 @@
 
 # ✅ 완료
 
+
+## Issue26. 동영상 지원 기능 (해결: 2026-05-02, commit: 2f90ee8) ✅
+* 목적: 슬라이드 내 동영상 삽입 및 재생 기능 지원 — 비디오 임베드의 부모 이슈
+* 상세:
+    - 슬라이드 내 동영상 삽입 및 재생 기능 지원 → Issue43 (`![](*.mp4)` 마크다운 비디오 임베드)에서 구현
+    - 로컬 비디오 파일 재생 확인 → layoutTest의 `video/Movie-1.mp4` 사용
+    - layoutTest 프로젝트에서 Movie-1.mp4 활용 테스트 → Issue43 회귀 검증으로 확인
+* 종결 근거: Issue43 구현(`2f90ee8`)으로 모든 요구사항 충족
+    - 마크다운 `![alt](path.mp4)` 자동 `<video>` 변환
+    - 8개 video preset (`controls`/`autoplay-muted`/`autoplay-loop`/`loop`/`muted`/`background`/`minimal`/`autoplay-nocontrols`)
+    - video-only 슬라이드 자동 풀스크린 (`layout-blank--full-video`)
+    - raw `<video>` 태그 작성도 지원 (단, multi-line block 파서 버그는 Issue44에서 별도 처리)
+* 후속: Issue44 (raw `<video>` multi-line block `<p>` wrap 버그 수정)는 별개 진행
 
 ## Issue27. 제목 없는 단독 이미지 페이지 자동 확대 (Full Image) (등록: 2026-05-01, 해결: 2026-05-02, commit: bde5f69) ✅
 * 제목 없이 이미지만 있는 슬라이드 감지 로직 구현
