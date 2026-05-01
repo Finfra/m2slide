@@ -44,12 +44,47 @@ m2slide/
 │   │   └── ProjectB.epub
 │   └── LlmAndVibeCoding/          # 예시 프로젝트 (아래 참고)
 ├── config.yml                     # 현재 작업 프로젝트 설정
-├── generate-slides.js             # HTML 변환 스크립트
-├── generate-epub.js               # EPUB 변환 스크립트
 ├── convert.sh                     # 원클릭 변환 (HTML/EPUB)
-├── deploy.sh                      # GitHub Pages 배포
+├── lib/                           # 스크립트 모음
+│   ├── generate-slides.js         # HTML 변환 스크립트
+│   ├── generate-epub.js           # EPUB 변환 스크립트
+│   ├── deploy.sh                  # GitHub Pages 배포
+│   └── debug_yaml.js              # YAML 파싱 디버그 유틸
 └── README.md
 ```
+
+## 동작 모드
+
+### 모드 판정
+
+`markdown/` 폴더 안에 `AGENDA.md`가 **있으면 → 챕터 모드**, **없으면 → 단일 페이지 모드**
+
+### 단일 페이지 모드 (Single Page Mode)
+
+한 개의 마크다운 → 한 개의 HTML 슬라이드. 짧은 발표용.
+
+1. `Projects/{이름}/` 폴더 생성
+2. 그 안에 마크다운 파일 작성 (`---`로 슬라이드 구분)
+3. `./convert.sh Projects/{이름}` 실행
+4. `Projects/{이름}/slide/{이름}.html` 열어서 확인
+
+**마크다운 파일 선택 우선순위** (여러 .md 파일이 있을 때):
+
+1. `{프로젝트폴더명}.md` (ex: `MarkdownGraph/MarkdownGraph.md`)
+2. `README.md`
+3. .md 파일이 1개뿐이면 그 파일
+4. 정상 문자(영문/숫자/한글)로 시작하는 .md가 1개뿐이면 그 파일
+- 후보가 여러 개면 **에러** → 폴더명과 같은 이름으로 리네임 권장
+
+### 챕터 모드 (Chapter Mode)
+
+여러 마크다운 → 챕터별 HTML + 마인드맵 목차. 긴 강연·전자책용.
+
+1. `Projects/{이름}/markdown/` 폴더 생성
+2. 챕터 파일 작성 — 메인: `01-opening.md`, 하위: `02.1-chat.md`
+3. `markdown/AGENDA.md`에 목차 작성 (이 파일이 챕터 모드 활성화 신호)
+4. `./convert.sh Projects/{이름}` 실행
+5. `Projects/{이름}/slide/index.html` (마인드맵 목차) 열기
 
 ## 사용법
 
@@ -128,7 +163,8 @@ open Projects/ProjectA/slide/01-section.html # 개별 섹션
 
 **네비게이션**:
 - **← / →**: 이전/다음 슬라이드 이동
-- **↑**: 상위 페이지로 이동 (하위 챕터 → 메인 챕터 → 목차)
+- **↑**: 챕터 모드 — 상위 페이지로 이동 (하위 챕터 → 메인 챕터 → 목차) / 단일 페이지 모드 — 첫 슬라이드로 이동
+- **마지막 슬라이드에서 → 두 번**: 다음 챕터로 이동 (챕터 모드만)
 - **ESC**: 슬라이드 전체 보기
 - **S**: 발표자 노트 모드
 - **우측 하단 버튼**: ↑ 상위 버튼 클릭으로 상위 페이지 이동
@@ -256,10 +292,10 @@ pandoc Projects/ProjectA/markdown/*.md -o complete.pptx
 **간편한 방법 (권장)**:
 ```bash
 # config.yml의 현재 프로젝트를 자동으로 배포
-./deploy.sh
+./lib/deploy.sh
 
 # 커스텀 커밋 메시지 사용
-./deploy.sh "Add new slides"
+./lib/deploy.sh "Add new slides"
 ```
 
 **수동 배포**:
@@ -346,7 +382,7 @@ git push
 current_project: LlmAndVibeCoding
 ```
 
-`./convert.sh`와 `./deploy.sh`는 이 설정을 자동으로 읽습니다.
+`./convert.sh`와 `./lib/deploy.sh`는 이 설정을 자동으로 읽습니다.
 
 ## 라이선스
 
