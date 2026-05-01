@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 53
+* Issue HWM: 54
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -13,19 +13,6 @@
 # 🌱 이슈후보
 
 # 🚧 진행중
-
-## Issue53. 페이지 번호 링크 비활성화 — prev arrow 클릭 영역 침범 해결 (등록: 2026-05-02)
-* 목적: 우측 하단 페이지 번호("17 / 21")가 `<a href>` 링크로 렌더링되어 좌측 prev arrow(`<`) 버튼의 클릭 가능 영역을 가림. 페이지 번호는 표시만 하고 클릭은 불필요.
-* 카테고리: Frontend (Reveal.js 인터랙션)
-* 복잡도: 단순 (CSS 한 줄 추가)
-* 상세:
-    - Reveal.js `slideNumber: 'c/t'` 설정 시 페이지 번호를 `<a class="slide-number">` 앵커로 렌더링
-    - 앵커가 prev/next 버튼 위에 겹쳐 클릭 영역을 잠식
-    - 페이지 번호는 시각적 정보용일 뿐 클릭 네비게이션 불필요
-* 구현 명세:
-    - `lib/generate-slides.js`의 인라인 CSS에 `.slide-number { pointer-events: none; }` 추가
-    - 안전 속성(`pointer-events`)만 사용 — CSS 가드 위반 없음
-    - 검증: prev arrow 클릭 영역 정상 동작 확인
 
 # 📕 중요
 
@@ -107,6 +94,21 @@
 
 # ✅ 완료
 
+
+## Issue53. 페이지 번호 링크 비활성화 — prev arrow 클릭 영역 침범 해결 (등록: 2026-05-02, 해결: 2026-05-02, commit: f67aff6) ✅
+* 목적: 우측 하단 페이지 번호("17 / 21")가 `<a href>` 링크로 렌더링되어 좌측 prev arrow(`<`) 버튼의 클릭 가능 영역을 가림. 페이지 번호는 표시만 하고 클릭은 불필요.
+* 카테고리: Frontend (Reveal.js 인터랙션)
+* 상세:
+    - **재현**: Reveal.js `slideNumber: 'c/t'` 설정 시 페이지 번호가 `<a class="slide-number">` 앵커로 렌더링되어 좌측 prev/next 버튼 위에 겹쳐 클릭 영역을 잠식.
+    - **원인**: Reveal.js 기본 동작 — slideNumber 요소가 현재 슬라이드 hash 링크로 클릭 가능. 페이지 번호는 시각적 정보용일 뿐 클릭 네비게이션 불필요.
+* 구현 명세:
+    - `lib/generate-slides.js` 인라인 `<style>`에 `.reveal .slide-number, .reveal .slide-number a { pointer-events: none; }` 추가
+    - 안전 속성(`pointer-events`)만 사용 — CSS 가드 위반 없음 (display/height/position 미수정)
+* 검증:
+    - `./m2slide.sh layoutTest` 빌드 후 출력 HTML에 새 CSS 반영 확인
+    - 페이지 번호는 정상 표시되며 클릭 시 무반응, prev arrow 클릭 영역 회복
+* 변경 파일:
+    - `lib/generate-slides.js` (인라인 CSS +5줄)
 
 ## Issue46. TOC markmap 노드 클릭 시 슬라이드 인덱스 1칸 어긋남 — `_toc` 자동 prepend 미반영 (등록: 2026-05-02, 해결: 2026-05-02, commit: 1d20fdb) ✅
 * 목적: 단일 파일 프로젝트(layoutTest 등)의 TOC markmap에서 첫 H1 노드("분할 레이아웃") 클릭이 무반응이고 후속 H1/H2 노드는 1칸 어긋난 슬라이드로 이동하던 버그 수정.
