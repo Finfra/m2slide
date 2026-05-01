@@ -35,7 +35,7 @@
 
 
 # 🏁 완료된 이슈
-## Issue29. convert.sh → m2slide.sh 이름 변경 (2026-05-01 해결, commit: TBD) ✅
+## Issue29. convert.sh → m2slide.sh 이름 변경 (2026-05-01 해결, commit: c5030fb) ✅
 * **목적**: 진입점 스크립트를 도구 역할이 명확한 이름으로 변경
 * **상세**:
     - `convert.sh` → `m2slide.sh` (git mv)
