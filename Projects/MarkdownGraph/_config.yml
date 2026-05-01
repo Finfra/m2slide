@@ -26,9 +26,8 @@ markmap_depth: 2
 chapter_markmap_depth: 3
 
 
-# 슬라이드 출력용 프로젝트 상대 경로 CSS (각 챕터 HTML에 연결됨)
-# 예시: resource/slide.css
-slide_css: resource/slide.css
+# 사용할 theme (theme/{name}/slide.css + layouts)
+theme: default
 slide_ratio: none # 3:2 # 16:9 # none
 # Open Props 사용 여부 (true: CDN 로드, false: 기본값 사용)
 use_open_props: true
