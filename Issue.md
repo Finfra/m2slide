@@ -14,6 +14,28 @@
 2. Orientation slide기능(제목 페이지와 목차 사이 장표 추가 기능."강의에 들어가기 앞서..." 혹은 공지사항 ) 목차에 들어가면 않됨. "## ![오리엔테이션](./00_Orientation.md)"이런 식으로 !로 시작하는 제목은 MarkdownTreeView에 추가시키지 않음.
 3. 장표 페이지에서 드레그 지원( up,down,left,right ) 
 # 🔥 진행 중
+
+## Issue36_1. 첫 페이지 렌더링 오작동 (등록: 2026-05-01)
+* 목적: Issue36 테마 시스템 도입 후 첫 페이지(TOC/Markmap)에서 마크맵이 부분 렌더링되는 버그 수정
+* 상세:
+    - 현상: `Projects/layoutTest/layoutTest.html#/toc-placeholder`에서 마크맵이 일부만 로드되고, 나머지가 비어있음
+    - 재현: layoutTest 프로젝트에서 슬라이드 생성 후 첫 페이지 확인
+    - 추정 원인: theme 시스템 적용 중 `_toc` layout의 `{{markmap}}` 치환 또는 초기화 시점 문제
+
+## Issue36_2. nowage 테마로 재테스트 (등록: 2026-05-01)
+* 목적: 36_1 원인 분석을 위해 기본 default 테마 대신 nowage 테마로 재테스트
+* 상세:
+    - 작업: `Projects/layoutTest/_config.yml` 생성 및 `theme: nowage`, `theme_default_layout: contents` 설정
+    - 목표: 동일 버그 재현 확인 또는 테마 특화 이슈 파악
+
+## Issue37. H 제목 내 특수문자 처리 버그 (등록: 2026-05-01)
+* 목적: 마크다운 H 제목 내에서 backtick으로 감싼 inline code가 HTML로 변환되지 않는 버그 수정
+* 상세:
+    - 현상: 마크다운 `## 7. \`<!-- nosplit -->\` 휴리스틱 비활성` → HTML 렌더링 시 `## 7. \`\` 휴리스틱 비활성` (backticks와 내용 누락)
+    - 재현: `Projects/layoutTest/layoutTest.md:124` 라인
+    - 원인: `generate-slides.js`의 제목 파싱 로직에서 backtick 코드 블록을 처리하지 않음
+    - 영향: 제목 내 기술 용어 강조나 특수문자 보호 목적 코드 블록이 깨짐
+
 * 
 
 ## Issue25. 배경 이미지 설정 기능
