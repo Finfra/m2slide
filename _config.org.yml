@@ -41,6 +41,18 @@ toc_placeholder: false
 # false: 자동 감지 비활성화 (모든 슬라이드는 theme_default_layout 또는 사용자 명시 #layout-* 사용)
 auto_layout_detect: true
 
+# 마크다운 비디오 임베드 기본 동작
+# `![alt](path.mp4)` 형태로 작성하면 <video> 태그로 자동 변환됨
+# 8개 후보 중 한 개만 선택 활성화:
+# video_default: autoplay-muted        # 자동재생 + 음소거 + 컨트롤 (브라우저 정책 충족)
+# video_default: autoplay-loop         # 자동재생 + 음소거 + 무한반복 + 컨트롤
+# video_default: loop                  # 컨트롤 + 무한반복 (사용자 클릭 시 반복)
+# video_default: muted                 # 음소거 + 컨트롤
+# video_default: background            # 자동재생 + 음소거 + 무한반복 + 컨트롤 없음 (배경 영상)
+# video_default: minimal               # 자동재생 + 음소거 + 컨트롤 없음 (1회 재생)
+# video_default: autoplay-nocontrols   # 자동재생 (음소거 없음 + 컨트롤 없음) — 브라우저 차단 가능
+video_default: controls                # 컨트롤만, 자동재생 없음 (기본 권장)
+
 
 # 사용할 theme 이름 (theme/{name}/slide.css + theme/{name}/layouts/ 로 해석)
 # default 외에는 .gitignore 처리됨 (사용자별 커스터마이징 영역)
@@ -50,8 +62,10 @@ theme: default
 # 슬라이드별로 마크다운에서 #layout-name 으로 override 가능
 # 미지정 시: layout 미적용 (plain section, 기존 동작)
 # 첫 슬라이드(TOC)는 _toc layout이 자동 적용됨
-# theme_default_layout: contents
+# theme_default_layout: _contents
+
 slide_ratio: none # 3:2 # 16:9 # none
+
 # Open Props 사용 여부 (true: CDN 로드, false: 기본값 사용)
 use_open_props: true
 

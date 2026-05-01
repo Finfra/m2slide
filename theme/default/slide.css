@@ -536,3 +536,40 @@
   object-fit: contain;
   display: block;
 }
+
+/* =========================================
+   9. Issue43: video-only 자동 감지 시 풀스크린 비디오
+   (Issue27_1·27_4의 video 버전 — width/height 100% + object-fit: contain)
+   ========================================= */
+.reveal section.layout-blank.layout-blank--full-video {
+  padding: 0;
+}
+.reveal section.layout-blank.layout-blank--full-video .blank-header {
+  display: none;
+}
+.reveal section.layout-blank.layout-blank--full-video .blank-body {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.reveal section.layout-blank.layout-blank--full-video .blank-body p,
+.reveal section.layout-blank.layout-blank--full-video .blank-body .media-container {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reveal section.layout-blank.layout-blank--full-video .blank-body video {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
