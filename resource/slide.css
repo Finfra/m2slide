@@ -382,7 +382,55 @@
 /* No custom utilities */
 
 /* =========================================
-   6. 디버깅 (Debugging)
+   6. 다분할 레이아웃 (Multi-column / Multi-row)
+   - Issue34: 좌/우, 상/하, N분할, 그리드
+   - 클래스 alias: .m2-cols/.columns, .m2-col/.column, .m2-rows/.rows, .m2-row/.row
+   ========================================= */
+.reveal .m2-cols,
+.reveal .columns {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4%;
+  width: 100%;
+}
+
+.reveal .m2-col,
+.reveal .column {
+  flex: 1;
+  min-width: 0;
+}
+
+.reveal .m2-rows,
+.reveal .rows {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.reveal .m2-row,
+.reveal .row {
+  width: 100%;
+}
+
+.reveal .card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.reveal .m2-cols img,
+.reveal .columns img,
+.reveal .m2-rows img,
+.reveal .rows img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* =========================================
+   7. 디버깅 (Debugging)
    ========================================= */
 /* Guide Line Mode */
 .guide-line-mode .reveal .slides section {
