@@ -24,27 +24,6 @@
     - 원인: `generate-slides.js`의 제목 파싱 로직에서 backtick 코드 블록을 처리하지 않음
     - 영향: 제목 내 기술 용어 강조나 특수문자 보호 목적 코드 블록이 깨짐
 
-* 
-
-## Issue25. 배경 이미지 설정 기능
-* 마크다운 메타데이터(YAML frontmatter)를 통해 전체 슬라이드의 배경 이미지를 지정하는 기능 구현
-* `background` 속성으로 이미지 경로 혹은 color 지정 지원
-
-## Issue26. 동영상 지원 기능
-* 슬라이드 내 동영상 삽입 및 재생 기능 지원
-* 로컬 비디오 파일 재생 확인
-
-## Issue27. 제목 없는 단독 이미지 페이지 자동 확대 (Full Image)
-* 제목 없이 이미지만 있는 슬라이드 감지 로직 구현
-* 해당 슬라이드에 대해 화면 비율을 유지하면서 화면에 꽉 차게(Contain/Cover) 표시하는 스타일 적용
-
-## Issue28. 베이스 폴더 변경(scripts -> lib) 영향 제거
-* **목표**: `scripts` 폴더가 `lib`로 변경됨에 따라, `m2slide` 내에서 상위 폴더를 참조하는 부분이 있다면 수정하여 의존성을 맞춘다.
-* **배경**: 전체 프로젝트 구조 리팩토링으로 `scripts`가 `lib`로 이름이 변경됨.
-
-
-
-# 🏁 완료된 이슈
 ## Issue36. theme/{name}/ + HTML 템플릿 layout 시스템 도입 (2026-05-01 해결, commit: 687ce22) ✅
 * **목적**: `resource/` 단일 CSS 구조를 `theme/{name}/` 디렉토리 기반 + HTML 템플릿 layout 시스템으로 전환
 * plan: `_doc_work/plan/theme_plan.md`
@@ -78,6 +57,27 @@
     - 작업: `Projects/layoutTest/_config.yml` 생성 및 `theme: nowage`, `theme_default_layout: contents` 설정
     - 목표: 동일 버그 재현 확인 또는 테마 특화 이슈 파악
 
+
+
+## Issue25. 배경 이미지 설정 기능
+* 마크다운 메타데이터(YAML frontmatter)를 통해 전체 슬라이드의 배경 이미지를 지정하는 기능 구현
+* `background` 속성으로 이미지 경로 혹은 color 지정 지원
+
+## Issue26. 동영상 지원 기능
+* 슬라이드 내 동영상 삽입 및 재생 기능 지원
+* 로컬 비디오 파일 재생 확인
+
+## Issue27. 제목 없는 단독 이미지 페이지 자동 확대 (Full Image)
+* 제목 없이 이미지만 있는 슬라이드 감지 로직 구현
+* 해당 슬라이드에 대해 화면 비율을 유지하면서 화면에 꽉 차게(Contain/Cover) 표시하는 스타일 적용
+
+## Issue28. 베이스 폴더 변경(scripts -> lib) 영향 제거
+* **목표**: `scripts` 폴더가 `lib`로 변경됨에 따라, `m2slide` 내에서 상위 폴더를 참조하는 부분이 있다면 수정하여 의존성을 맞춘다.
+* **배경**: 전체 프로젝트 구조 리팩토링으로 `scripts`가 `lib`로 이름이 변경됨.
+
+
+
+# 🏁 완료된 이슈
 ## Issue35. chapter-list TOC 카드 블록 레이아웃 전환 (2026-05-01 해결, commit: 30181b9) ✅
 * **목적**: `toc_placeholder`로 자동 생성되는 챕터 목차의 시각 정렬 개선
 * **상세**:
