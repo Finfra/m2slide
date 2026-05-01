@@ -47,7 +47,11 @@ _read_current_project() {
 }
 
 if [ -n "$PROJECT_DIR" ]; then
-  PROJECT_DIR=$(cd "$PROJECT_DIR" 2>/dev/null && pwd || echo "$PROJECT_DIR")
+  if [ -d "$PROJECT_DIR" ]; then
+    PROJECT_DIR=$(cd "$PROJECT_DIR" && pwd)
+  elif [ -d "$SCRIPT_DIR/Projects/$PROJECT_DIR" ]; then
+    PROJECT_DIR="$SCRIPT_DIR/Projects/$PROJECT_DIR"
+  fi
   echo "Using project from parameter: $(basename "$PROJECT_DIR")"
 elif [ -f "$PWD/_config.yml" ]; then
   PROJECT_DIR="$PWD"
