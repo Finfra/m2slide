@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Examples for MarkdownGraph</title>
+  <title>MarkdownGraph</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
@@ -11,7 +11,35 @@
   <link rel="stylesheet" href="https://unpkg.com/open-props"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"/>
-  <link rel="stylesheet" href="../../../resource/slide.css?v=1765013552439">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css"/>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"/>
+  <link rel="stylesheet" href="../resource/slide.css?v=1777619052113">
+  <script>
+    // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
+    (function() {
+      const originalConsoleError = console.error;
+      console.error = function(...args) {
+        if (args.length > 0 && typeof args[0] === 'string' && 
+            (args[0].includes('attribute transform') || args[0].includes('translate(NaN'))) {
+          return;
+        }
+        originalConsoleError.apply(console, args);
+      };
+
+      // Monkey patch D3 if available to prevent NaN attributes
+      window.addEventListener('load', function() {
+        if (window.d3 && window.d3.selection) {
+          const originalAttr = window.d3.selection.prototype.attr;
+          window.d3.selection.prototype.attr = function(name, value) {
+            if (name === 'transform' && typeof value === 'string' && (value.includes('NaN') || value.includes('undefined'))) {
+              return this;
+            }
+            return originalAttr.apply(this, arguments);
+          };
+        }
+      });
+    })();
+  </script>
   <style>
     /* Markmap SVG baseline (allow container to control size) */
     #toc-mindmap {
@@ -29,7 +57,7 @@
     #toc-mindmap text {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif !important;
       font-size: 16px !important;
-      font-weight: 500;
+      font-weight: 700;
     }
     /* Minimal elements left inline to avoid FOUC */
     /* TOC container outside Reveal.js for Safari compatibility */
@@ -57,6 +85,44 @@
       text-transform: none;
       font-weight: var(--main-title-font-weight, 700);
       text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000;
+    }
+    #toc-container .title-card {
+      flex-shrink: 0;
+      text-align: var(--main-title-align, center);
+    }
+    #toc-container p.main-subtitle {
+      font-family: var(--main-title-font-family, var(--global-font-family, inherit));
+      color: var(--main-title-color, #555);
+      font-size: calc(var(--main-title-font-size, 80px) * 0.5);
+      font-weight: 400;
+      margin: 0;
+      padding: 4px 0 8px 0;
+      text-align: var(--main-title-align, center);
+      text-shadow: none;
+      opacity: 0.85;
+    }
+    #toc-container p.main-author {
+      font-family: var(--main-title-font-family, var(--global-font-family, inherit));
+      color: var(--main-title-color, #555);
+      font-size: calc(var(--main-title-font-size, 80px) * 0.35);
+      font-weight: 400;
+      margin: 0;
+      padding: 4px 0 4px 0;
+      text-align: var(--main-title-align, center);
+      text-shadow: none;
+      opacity: 0.7;
+    }
+    #toc-container p.main-slogan {
+      font-family: var(--main-title-font-family, var(--global-font-family, inherit));
+      color: var(--main-title-color, #888);
+      font-size: calc(var(--main-title-font-size, 80px) * 0.3);
+      font-weight: 300;
+      font-style: italic;
+      margin: 0;
+      padding: 4px 0 10px 0;
+      text-align: var(--main-title-align, center);
+      text-shadow: none;
+      opacity: 0.6;
     }
     #toc-container #toc-mindmap {
       width: 100%;
@@ -143,12 +209,18 @@
   --content-color: #000000;
   --content-align: left;
   --content-padding: 1%;
+  --title-contents-gap-pct: 30;
 ">
   
 
   <!-- TOC container outside Reveal.js for Safari compatibility -->
   <div id="toc-container">
-    <h1 class="main-title">Examples for MarkdownGraph</h1>
+    <div class="title-card">
+      <h1 class="main-title">MarkdownGraph</h1>
+      
+      
+      
+    </div>
     <svg id="toc-mindmap"></svg>
   </div>
 
@@ -157,13 +229,11 @@
   <div class="reveal ratio-none">
     <div class="slides">
 
-      <section id="toc-placeholder"></section>
-
       <section class="title-slide" data-chapter-title="Text Samples">
 <h1 class="outline-title">Text Samples</h1>
 <ul class="chapter-list" style="column-count: 2">
-<li><a href="#/2">짧은글 ABC abc</a></li>
-<li><a href="#/3">긴글</a></li>
+<li><a href="#/1">짧은글 ABC abc</a></li>
+<li><a href="#/2">긴글</a></li>
 </ul>
       </section>
 
@@ -199,36 +269,36 @@
       <section class="title-slide" data-chapter-title="Mermaid Samples">
 <h1 class="outline-title">Mermaid Samples</h1>
 <ul class="chapter-list" style="column-count: 30">
-<li><a href="#/5">Paragraph and Diagram</a></li>
-<li><a href="#/6">Flowchart</a></li>
-<li><a href="#/7">Class</a></li>
-<li><a href="#/8">Sequence</a></li>
-<li><a href="#/9">Entity Relationship</a></li>
-<li><a href="#/10">State</a></li>
-<li><a href="#/11">Mindmap</a></li>
-<li><a href="#/12">Architecture</a></li>
-<li><a href="#/13">Block</a></li>
-<li><a href="#/14">C4</a></li>
-<li><a href="#/15">Gantt</a></li>
-<li><a href="#/16">Git</a></li>
-<li><a href="#/17">Kanban</a></li>
-<li><a href="#/18">Packet</a></li>
-<li><a href="#/19">Pie</a></li>
-<li><a href="#/20">Quadrant</a></li>
-<li><a href="#/21">Radar</a></li>
-<li><a href="#/22">Requirement</a></li>
-<li><a href="#/23">Sankey</a></li>
-<li><a href="#/24">StateDiagram </a></li>
-<li><a href="#/25">Timeline</a></li>
-<li><a href="#/26">Timeline (계속)</a></li>
-<li><a href="#/27">Treemap</a></li>
-<li><a href="#/28">User Journey</a></li>
-<li><a href="#/29">XY</a></li>
-<li><a href="#/30">blockdiag</a></li>
-<li><a href="#/31">seqdiag</a></li>
-<li><a href="#/32">actdiag</a></li>
-<li><a href="#/33">nwdiag</a></li>
-<li><a href="#/34">`ditaa` (ASCII → 그림 변환)</a></li>
+<li><a href="#/4">Paragraph and Diagram</a></li>
+<li><a href="#/5">Flowchart</a></li>
+<li><a href="#/6">Class</a></li>
+<li><a href="#/7">Sequence</a></li>
+<li><a href="#/8">Entity Relationship</a></li>
+<li><a href="#/9">State</a></li>
+<li><a href="#/10">Mindmap</a></li>
+<li><a href="#/11">Architecture</a></li>
+<li><a href="#/12">Block</a></li>
+<li><a href="#/13">C4</a></li>
+<li><a href="#/14">Gantt</a></li>
+<li><a href="#/15">Git</a></li>
+<li><a href="#/16">Kanban</a></li>
+<li><a href="#/17">Packet</a></li>
+<li><a href="#/18">Pie</a></li>
+<li><a href="#/19">Quadrant</a></li>
+<li><a href="#/20">Radar</a></li>
+<li><a href="#/21">Requirement</a></li>
+<li><a href="#/22">Sankey</a></li>
+<li><a href="#/23">StateDiagram </a></li>
+<li><a href="#/24">Timeline</a></li>
+<li><a href="#/25">Timeline (계속)</a></li>
+<li><a href="#/26">Treemap</a></li>
+<li><a href="#/27">User Journey</a></li>
+<li><a href="#/28">XY</a></li>
+<li><a href="#/29">blockdiag</a></li>
+<li><a href="#/30">seqdiag</a></li>
+<li><a href="#/31">actdiag</a></li>
+<li><a href="#/32">nwdiag</a></li>
+<li><a href="#/33">`ditaa` (ASCII → 그림 변환)</a></li>
 </ul>
       </section>
 
@@ -804,7 +874,7 @@ xychart-beta
 <h2 class="title">blockdiag</h2>
 <div class="theContents">
 <div class="media-container kroki">
-<div class="graph-scroll"><img src="https://kroki.io/blockdiag/svg/eJxdzEEKgzAQheG9p5jO3hNIvYh0MdpHCKaZMhFLKL27REtJXT7exz8Gnea7F0fvhmj8rbYnhwiTBakM3q-2fCaPxN1Z-4OtsEyQlC_cNX9mmDSo0ZXYGRAzQtAX30roHK_s08f5i6p0BdQkOhTy2QBZ7UER" alt="blockdiag diagram"/></div>
+<div class="graph-scroll"><img src="https://kroki.io/blockdiag/svg/eJxdzEEKgzAQheF9TzHN3hNIexHpYtRHCKYZmYgSpHdvU0Wiy8f7-Fsv3dA7trTeiNpjVU-yCFCeEPMw_6vKn_I7mvqq3cZmaCJwTPcfOZmmEy9KDzJWgZDgvSzmlUPXeGFHF4YdFekCiHKwyOTzBVntQRE" alt="blockdiag diagram"/></div>
 </div>
 </div>
       </section>
@@ -813,7 +883,7 @@ xychart-beta
 <h2 class="title">seqdiag</h2>
 <div class="theContents">
 <div class="media-container kroki">
-<div class="graph-scroll"><img src="https://kroki.io/seqdiag/svg/eJwrTi1MyUxMV6jmUlBIKsovL04tUlDQtVMoT00qTi0qSy1SiM5JTErNUbBVUHJ3DVHQz8xLSa3QyyjJzVGKtUbSZKOri9BkzUWEcQH-wSEK-kk5-en6yfm5ual5JRATEWp17RRSEksSkxKLU5H0efoFuwaFKODQA3IHTBOy-9AdWAsAskRQvA" alt="seqdiag diagram"/></div>
+<div class="graph-scroll"><img src="https://kroki.io/seqdiag/svg/eJwrTi1MyUxMV6jmUlBIKsovL04tUlDQtVMoT00CMsuAvOicxKTUHAVbBSV31xAF_cy8lNQKvYyS3BylWGskTTa6ughN1lxEGBfgHww0LyknP10_OT83NzWvBGIiQi1QY0piSWJSYnEqkj5Pv2DXoBAFHHpA7oBpQnYfugNrAbJEULw" alt="seqdiag diagram"/></div>
 </div>
 </div>
       </section>
@@ -822,7 +892,7 @@ xychart-beta
 <h2 class="title">actdiag</h2>
 <div class="theContents">
 <div class="media-container kroki">
-<div class="graph-scroll"><img src="https://kroki.io/actdiag/svg/eJxNjssKwjAQRff5imv2fkFREJHShSsVF-JirEMItClMR11I_12SaOxuHodzL7V69-TwNsBLvDKWa7RDeLJoHH1PjitjgI4C4zGyJDbuN-6wgj2NLLZKt2zApfzO4tUHB-HD0V4zlJRzqGZFLCHUo9lv6t0io1OJpVlLlHp_w_Z7iTHQAU2M-EmmD2ryQ-A" alt="actdiag diagram"/></div>
+<div class="graph-scroll"><img src="https://kroki.io/actdiag/svg/eJxLTC5JyUxMV6jmUlAoL8osSVXQtVNIzs8rSy0qATEzcxPTU625gLI5iXmpCqXFqUVgtSB-UmqOgq2CUihQTMkaLAYxQSEaLhcOFMjMS1coSg0OUYqFKAIbiazIPbVEAeSIosRcBU9fR3dXRYjSWri1iUiuVIA7D2GCM1QEZI1CSb6CJ8gKmCG1AGryQ-A" alt="actdiag diagram"/></div>
 </div>
 </div>
       </section>
@@ -840,7 +910,7 @@ xychart-beta
 <h2 class="title">`ditaa` (ASCII → 그림 변환)</h2>
 <div class="theContents">
 <div class="media-container kroki">
-<div class="graph-scroll"><img src="https://kroki.io/ditaa/svg/eJzT1oUCbQUFBQVtGIerRkHBOSBUQUGhRkHXTqFGIcjRF8Th0sauHgDcMw02" alt="ditaa diagram"/></div>
+<div class="graph-scroll"><img src="https://kroki.io/ditaa/svg/eJzT1oUCbQUg0IZxuGoUFJwDQoFCNQq6dkAiyNEXxOHSxq4eANwzDTY" alt="ditaa diagram"/></div>
 </div>
 </div>
       </section>
@@ -849,7 +919,7 @@ xychart-beta
 <h1 class="outline-title">Graphviz (DOT)</h1>
 <div class="theContents">
 <div class="media-container kroki">
-<div class="graph-scroll"><img src="https://kroki.io/dot/svg/eJxLyUwvSizIUHBXqOZSUFBQKErMy07JLLINcbLmAgs4KkTnJCal5tgqGRkYGSm8mbvlzYIWpVhrsKQTXNI5I7HEPSAEJuEMl_B0cVV427b17dSVMDkXhCYfT4U33XNe9zSA5KDW6dopOFkj2M4wm3TtFFxghkPYtVwAEC00RQ" alt="dot diagram"/></div>
+<div class="graph-scroll"><img src="https://kroki.io/dot/svg/eJxLyUwvSizIUHBXqOZSAIKixLzslMwi2xAnay6wgKNCdE5iUmqOrZKRgZGRwpu5W94saFGKtQZLOsElnTMSS9wDQmASznAJTxdXhbdtW99OXQmTc0Fo8vFUeNM953VPA0gOap2unYKTNYLtDLMJyHaBGQ5h13IBABAtNEU" alt="dot diagram"/></div>
 </div>
 </div>
       </section>
@@ -857,8 +927,8 @@ xychart-beta
       <section class="title-slide" data-chapter-title="Vega">
 <h1 class="outline-title">Vega</h1>
 <ul class="chapter-list" style="column-count: 2">
-<li><a href="#/37">Vega-lite</a></li>
-<li><a href="#/38">Vega</a></li>
+<li><a href="#/36">Vega-lite</a></li>
+<li><a href="#/37">Vega</a></li>
 </ul>
       </section>
 
@@ -866,7 +936,7 @@ xychart-beta
 <h2 class="title">Vega-lite</h2>
 <div class="theContents">
 <div class="media-container kroki">
-<div class="graph-scroll"><img src="https://kroki.io/vegalite/svg/eJxlkN1OhEAMhe95iqbxksAqkqxz5-9LGC_Kzsh0ZQeEgm4I725mAOPiXU-_k562YwQAgFfdwZoToQK0Ik2n0nQwJSUli-2LhOt0NoRuOuTJsasdxhEAfrEWiwqy3S5oa7i0ggpulkZDWrMrUUEetCbxQeOcPFDVmw4VvAYNMGJY4x5jwMKP2U_xJXpYUZ5v0eOKbrMtelrR3fUWPa9o_w-9_GZlUyBvEUAw4YnaD28pqJ0_YdyhXi5djvv2Jb6zqbR3kh8m58Z4UbeaHVW4JOL50lv89X725ISFhAeDfo8pmn4A-SRrww" alt="vegalite diagram"/></div>
+<div class="graph-scroll"><img src="https://kroki.io/vegalite/svg/eJxlkMtugzAQRff5CmvUJQIaikSza14_EXUxxA52yiswkESIf69toArUC8t3zp2XuxXTB97qsxQZwoaBJCrrjee1IkE3USSb2FWFNxhs1GtD91oXOTg6Ge6Kk9SJge9bLYVKJOnAegyUyLnKEx0JreZIplE3dG4xbUSt9clqxjqwY3yBwyA2ZaLemaPthMJwiXYT-giWaD-hz_clOkwo-oeOf72C3pJvfVsTZFj9GEuM1fATIj8X46bjcg_zhIsSKTdONMXoWQojikp7MYWxIzzn3vjVe2swJ0VIqhVg5uhX_S_5JGvD" alt="vegalite diagram"/></div>
 </div>
 </div>
       </section>
@@ -875,7 +945,7 @@ xychart-beta
 <h2 class="title">Vega</h2>
 <div class="theContents">
 <div class="media-container kroki">
-<div class="graph-scroll"><img src="https://kroki.io/vega/svg/eJyVU9uOmzAQfecrRqM-oiS7KdKWt91efqLaB4Mn4BbsyDhpUMS_Vx6uzkKlvgA-Osdz5sxwjwDwU5OXVAtMAUvnzk2631-pELtCufKS7ZTZ9wRG99dk96sxGmMv_aOkKzGF4-HA55JUUTpM4XkAzkJKpQtMIYkjD0jhfKWfEQDAnZ8AqEVNvr4TWUV8NcNXUV2omegswVw4KoxtPf8VY0BRm4vmoi9dvEF8C4hJskn8GhA_HzeJ3wLil6dN4veA-LJN_BF6PHYD753f_vTeZ9jkolrE8iHFGxPmGF17ZjwTWs6oNLVQGlO4j0MZ4wc8KaqkRyZ_k2u0Qhd8XT_8CZ9Hfdgdkt5zvG6w3TBYKU3C_qfFIbEVg8M2PsYnbsvw0FhFnDhmxjlT-8t7f3OUYyMLckUnF1CHphaFamF_r4xp7NZS7uZeT9bUK53ObZHOjfTC-7Q_SNqRDSAAvPE1jy38e6osHP_mVTEvTwpPoaQN6e3HWo_j6WXPWzr-5f0OdRN_IcXLWQrHIeBJVRV_jBJsHFGV-UO31JTm2oe0IrEksRtLdfOmRF30FwKOUcE" alt="vega diagram"/></div>
+<div class="graph-scroll"><img src="https://kroki.io/vega/svg/eJyVk8tugzAQRff5CmR1ifIsUppdnz9RZWHwBNwaOzJOGhTx77WHpxOo1E0CV-d6Zu6Y6ywIyEORZJBTsgtIZsyx2C0WZ0jpPOUmO8VzrhY1gOriHM2_CiVJ6Kw_nJnMGjfLJb5nwNPMWGHdCEfKGJepVaJw5gRGjav0aZ-D4Iq_VpU0B1ff0FgAHo3ymYoTFB2OFpJQA6nSpeOfSRgQmquTxKLbKpwAXzwwiibBVw983EyCbx74tJoE3z1wOw1--D1uqobb479729cZFgkVg1juUrwg0MdoyiPqMZWsV5nKKZdWv7ZLaeMPyIGDYE7p-uu6JprKFI-rl9_p_aqX82VU9xyON1hONCi4BKr_2WKT2EiDzW28jY9ehuERpTlg4iRWxqjcHV7310fZDjKABRyMhzZDDQrlVH-PrKmdVkNi-lkP2pa-n7QfC2SimDNeu_tjNQPak6x4wWNuR_h7q2hsv-ZRM16eXbDyLaWPl_e1btdT29ZTPvzk3R2qOn5gJaejjQdDsBWEwIfWQgoDIGL3Ug09mTrXIY1YNDALN2zV35RZNfsFAo5RwQ" alt="vega diagram"/></div>
 </div>
 </div>
       </section>
@@ -883,10 +953,10 @@ xychart-beta
       <section class="title-slide" data-chapter-title="PlantUML">
 <h1 class="outline-title">PlantUML</h1>
 <ul class="chapter-list" style="column-count: 4">
-<li><a href="#/40">Class Diagram</a></li>
-<li><a href="#/41">Component Diagram</a></li>
-<li><a href="#/42">Activity Diagram</a></li>
-<li><a href="#/43">Use Case Diagram</a></li>
+<li><a href="#/39">Class Diagram</a></li>
+<li><a href="#/40">Component Diagram</a></li>
+<li><a href="#/41">Activity Diagram</a></li>
+<li><a href="#/42">Use Case Diagram</a></li>
 </ul>
       </section>
 
@@ -894,7 +964,7 @@ xychart-beta
 <h2 class="title">Class Diagram</h2>
 <div class="theContents">
 <div class="media-container kroki">
-<div class="graph-scroll"><img src="https://kroki.io/plantuml/svg/eJxzKC5JLCopzc3hclSwUjAyMDJSeDN3y5sFLdZcTgpWCs4ZiSXuASHWXM4KVgqeLq4Kb9u2vp260prLBSTp46nwpnvO654Gay4uRwVdXTsFJyjtzOUEpl24nKG0Q2peSmluDgAfjCId" alt="plantuml diagram"/></div>
+<div class="graph-scroll"><img src="https://kroki.io/plantuml/svg/eJxzKC5JLCopzc3hclSwUjAyMDJSeDN3y5sFLdZcTkAB54zEEveAEGsuZyDH08VV4W3b1rdTV1pzuYAkfTwV3nTPed3TYM0F1K6ra6fgBKWdgbpBtAtQI4R2SM1LAVoDAB-MIh0" alt="plantuml diagram"/></div>
 </div>
 </div>
       </section>
@@ -903,7 +973,7 @@ xychart-beta
 <h2 class="title">Component Diagram</h2>
 <div class="theContents">
 <div class="media-container kroki">
-<div class="graph-scroll"><img src="https://kroki.io/plantuml/svg/eJxzKC5JLCopzc3hSs7PLcjPS80rUXAM8ETiuThxOQZ4Kujq2oGYDql5KaW5OQAdkhIo" alt="plantuml diagram"/></div>
+<div class="graph-scroll"><img src="https://kroki.io/plantuml/svg/eJxzKC5JLCopzc3hSs7PLcjPS80rUXAM8ETiuThxAQUUdHXtQEyH1LwUoGoAHZISKA" alt="plantuml diagram"/></div>
 </div>
 </div>
       </section>
@@ -911,20 +981,20 @@ xychart-beta
       <section class="has-text" data-chapter-title="PlantUML">
 <h2 class="title">Activity Diagram</h2>
 <div class="theContents">
-<p><div style="display:flex; gap:20px;"></p>
-<p>  <div style="flex:1;"></p>
+<div style="display:flex; gap:20px;">
+  <div style="flex:1;">
 <div class="media-container kroki">
-<div class="graph-scroll"><img src="https://kroki.io/plantuml/svg/eJwdyTEOgCAMAMC9r-iIX5BBBkcnfQGGKiTYGlo1_t7E7ZILarHZdVT4Af0ke2EPZUN3x1rS0KFlYnQvaQeI_ZLlwTFqXiW25IGqEjqWP2ey9nogTmUDNTkhEKfrqB8PFCIk" alt="plantuml diagram"/></div>
+<div class="graph-scroll"><img src="https://kroki.io/plantuml/svg/eJwdjDEOgCAQwPZ7xY3wBRhkcHTSF2A4hAQ5A6jh9xK3pk1qarOl3WeCH0AtfMSsIXoUj03RTRJboIyiU5WAqLbAL862hp1tcRooVUKR-Y8rtdKHyy76ceQLzOCx_wAPFCIk" alt="plantuml diagram"/></div>
 </div>
-<p>  </div></p>
-<p>  <div style="flex:1;"></p>
+  </div>
+  <div style="flex:1;">
 <ul>
 <li class="bullet-dot">항목 1</li>
 <li class="bullet-dot">항목 2</li>
 </ul>
 
-<p>  </div></p>
-<p></div></p>
+  </div>
+</div>
 </div>
       </section>
 
@@ -932,7 +1002,7 @@ xychart-beta
 <h2 class="title">Use Case Diagram</h2>
 <div class="theContents">
 <div class="media-container kroki">
-<div class="graph-scroll"><img src="https://kroki.io/plantuml/svg/eJxzKC5JLCopzc3hSkwuyS9SCC1OLeICEQq6unYKGj756Zl5mkgCAaVFyRmJxamaXA6peSmluTkAza4VRg" alt="plantuml diagram"/></div>
+<div class="graph-scroll"><img src="https://kroki.io/plantuml/svg/eJxzKC5JLCopzc3hSkwuyS9SCC1OLeICEQq6unYKGj756Zl5mkgCAaVFyRmJxamaXA6peSlAfQDNrhVG" alt="plantuml diagram"/></div>
 </div>
 </div>
       </section>
@@ -940,7 +1010,7 @@ xychart-beta
       <section class="title-slide" data-chapter-title="try">
 <h1 class="outline-title">try</h1>
 <ul class="chapter-list" style="column-count: 1">
-<li><a href="#/45">CodeBlock</a></li>
+<li><a href="#/44">CodeBlock</a></li>
 </ul>
       </section>
 
@@ -977,6 +1047,8 @@ xychart-beta
       var qs = new URLSearchParams(window.location.search);
       if (qs.get('top') === '1') document.body.classList.add('top-align-mode');
     } catch (e) {}
+
+    var isPrintMode = /print-pdf/gi.test(window.location.search);
 
     Reveal.initialize({
       hash: true,
@@ -1086,7 +1158,7 @@ xychart-beta
 
 
     // Inject configuration
-    window.slideConfig = {"markmap_depth":2,"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":["https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css","https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"","font_weight":"400","fontFamily":"GmarketSansBold"},"outline_title":{"font_size":"2.0em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit","fontFamily":"Nanum Gothic Coding"}},"chapter_markmap_depth":3};
+    window.slideConfig = {"markmap_depth":2,"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":["https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css","https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap","https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css","https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"","font_weight":"400","fontFamily":"GmarketSansBold"},"outline_title":{"font_size":"2.0em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit","fontFamily":"Nanum Gothic Coding"}},"chapter_markmap_depth":3};
 
     // Dynamic Styling and Resizing Script
     let observer; // Define observer at top level
@@ -1099,8 +1171,6 @@ xychart-beta
       
       const allSlides = document.querySelectorAll('.reveal .slides section');
       // No dynamic title styling anymore
-
-      // 2. Resize Lists in current slide
 
       // 2. Resize Lists in current slide
       const currentSlide = Reveal.getCurrentSlide();
@@ -1204,189 +1274,189 @@ xychart-beta
     // Initialize markmap for table of contents (outside Reveal.js for Safari compatibility)
     var tocContainer = document.getElementById('toc-container');
     var tocData = {
-      "content": "Examples for MarkdownGraph",
+      "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">Text Samples</a>",
+                  "content": "<a href=\"#/0\">Text Samples</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/2\">짧은글 ABC abc</a>",
+                              "content": "<a href=\"#/1\">짧은글 ABC abc</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/3\">긴글</a>",
+                              "content": "<a href=\"#/2\">긴글</a>",
                               "children": []
                         }
                   ]
             },
             {
-                  "content": "<a href=\"#/4\">Mermaid Samples</a>",
+                  "content": "<a href=\"#/3\">Mermaid Samples</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/5\">Paragraph and Diagram</a>",
+                              "content": "<a href=\"#/4\">Paragraph and Diagram</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/6\">Flowchart</a>",
+                              "content": "<a href=\"#/5\">Flowchart</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/7\">Class</a>",
+                              "content": "<a href=\"#/6\">Class</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/8\">Sequence</a>",
+                              "content": "<a href=\"#/7\">Sequence</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/9\">Entity Relationship</a>",
+                              "content": "<a href=\"#/8\">Entity Relationship</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/10\">State</a>",
+                              "content": "<a href=\"#/9\">State</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/11\">Mindmap</a>",
+                              "content": "<a href=\"#/10\">Mindmap</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/12\">Architecture</a>",
+                              "content": "<a href=\"#/11\">Architecture</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/13\">Block</a>",
+                              "content": "<a href=\"#/12\">Block</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/14\">C4</a>",
+                              "content": "<a href=\"#/13\">C4</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/15\">Gantt</a>",
+                              "content": "<a href=\"#/14\">Gantt</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/16\">Git</a>",
+                              "content": "<a href=\"#/15\">Git</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/17\">Kanban</a>",
+                              "content": "<a href=\"#/16\">Kanban</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/18\">Packet</a>",
+                              "content": "<a href=\"#/17\">Packet</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/19\">Pie</a>",
+                              "content": "<a href=\"#/18\">Pie</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/20\">Quadrant</a>",
+                              "content": "<a href=\"#/19\">Quadrant</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/21\">Radar</a>",
+                              "content": "<a href=\"#/20\">Radar</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/22\">Requirement</a>",
+                              "content": "<a href=\"#/21\">Requirement</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/23\">Sankey</a>",
+                              "content": "<a href=\"#/22\">Sankey</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/24\">StateDiagram </a>",
+                              "content": "<a href=\"#/23\">StateDiagram </a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/25\">Timeline</a>",
+                              "content": "<a href=\"#/24\">Timeline</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/26\">Timeline (계속)</a>",
+                              "content": "<a href=\"#/25\">Timeline (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/27\">Treemap</a>",
+                              "content": "<a href=\"#/26\">Treemap</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/28\">User Journey</a>",
+                              "content": "<a href=\"#/27\">User Journey</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/29\">XY</a>",
+                              "content": "<a href=\"#/28\">XY</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/30\">blockdiag</a>",
+                              "content": "<a href=\"#/29\">blockdiag</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/31\">seqdiag</a>",
+                              "content": "<a href=\"#/30\">seqdiag</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/32\">actdiag</a>",
+                              "content": "<a href=\"#/31\">actdiag</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/33\">nwdiag</a>",
+                              "content": "<a href=\"#/32\">nwdiag</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/34\">`ditaa` (ASCII → 그림 변환)</a>",
+                              "content": "<a href=\"#/33\">`ditaa` (ASCII → 그림 변환)</a>",
                               "children": []
                         }
                   ]
             },
             {
-                  "content": "<a href=\"#/35\">Graphviz (DOT)</a>",
+                  "content": "<a href=\"#/34\">Graphviz (DOT)</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/36\">Vega</a>",
+                  "content": "<a href=\"#/35\">Vega</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/37\">Vega-lite</a>",
+                              "content": "<a href=\"#/36\">Vega-lite</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/38\">Vega</a>",
+                              "content": "<a href=\"#/37\">Vega</a>",
                               "children": []
                         }
                   ]
             },
             {
-                  "content": "<a href=\"#/39\">PlantUML</a>",
+                  "content": "<a href=\"#/38\">PlantUML</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/40\">Class Diagram</a>",
+                              "content": "<a href=\"#/39\">Class Diagram</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/41\">Component Diagram</a>",
+                              "content": "<a href=\"#/40\">Component Diagram</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/42\">Activity Diagram</a>",
+                              "content": "<a href=\"#/41\">Activity Diagram</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/43\">Use Case Diagram</a>",
+                              "content": "<a href=\"#/42\">Use Case Diagram</a>",
                               "children": []
                         }
                   ]
             },
             {
-                  "content": "<a href=\"#/44\">try </a>",
+                  "content": "<a href=\"#/43\">try </a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/45\">CodeBlock</a>",
+                              "content": "<a href=\"#/44\">CodeBlock</a>",
                               "children": []
                         }
                   ]
@@ -1406,23 +1476,47 @@ xychart-beta
         // Initialize markmap on first show
         if (!markmapInitialized && window.markmap && tocContainer) {
           // Create with layout options so the tree breathes horizontally
-          markmapInstance = window.markmap.Markmap.create('#toc-mindmap', {
-            autoFit: true,
-            fitRatio: 0.95,
-            spacingHorizontal: 80,
-            spacingVertical: 12,
-            paddingX: 40,
-            initialExpandLevel: 2
-          }, tocData);
-          markmapInitialized = true;
-          // Ensure fit after layout settles
-          requestAnimationFrame(function () {
-            if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
-          });
-          setTimeout(function(){ if (markmapInstance && markmapInstance.fit) markmapInstance.fit(); }, 50);
+          try {
+            markmapInstance = window.markmap.Markmap.create('#toc-mindmap', {
+              autoFit: true,
+              fitRatio: 0.95,
+              spacingHorizontal: 80,
+              spacingVertical: 12,
+              paddingX: 40,
+              initialExpandLevel: 2
+            }, tocData);
+            markmapInitialized = true;
+            
+            // Ensure fit after layout settles
+            if (!isPrintMode) {
+                requestAnimationFrame(function () {
+                  if (markmapInstance && markmapInstance.fit) {
+                    try { markmapInstance.fit(); } catch(e) {}
+                  }
+                });
+                setTimeout(function(){ 
+                  if (markmapInstance && markmapInstance.fit) {
+                    try { markmapInstance.fit(); } catch(e) {}
+                  }
+                }, 50);
+            } else {
+                // In print mode, wait longer and fit once
+                setTimeout(function(){ 
+                   if (markmapInstance && markmapInstance.fit) {
+                      try { markmapInstance.fit(); } catch(e) {}
+                   }
+                }, 1000);
+            }
+          } catch(e) {
+            console.warn('Markmap initialization failed:', e);
+          }
         } else if (markmapInitialized && markmapInstance && markmapInstance.fit) {
           // Re-fit when returning to the first slide
-          requestAnimationFrame(function () { markmapInstance.fit(); });
+          if (!isPrintMode) {
+              requestAnimationFrame(function () { 
+                try { markmapInstance.fit(); } catch(e) {} 
+              });
+          }
         }
       } else {
         // Other slides: hide TOC container
@@ -1443,9 +1537,13 @@ xychart-beta
     // Keep Markmap fitted on window resize
     var resizeTimeout;
     window.addEventListener('resize', function(){
+      if (isPrintMode) return; // Skip resize logic in print mode
+
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(function() {
-        if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
+        if (markmapInstance && markmapInstance.fit) {
+          try { markmapInstance.fit(); } catch(e) {}
+        }
         adjustGraphScrollHeights();
         fitSmallDiagrams();
         topBiasCurrentSlide();
@@ -1490,6 +1588,17 @@ xychart-beta
         });
       };
       if (cur) apply(cur); else apply(document);
+    }
+
+    // title_contents_gap: title 높이의 % 만큼 margin-bottom을 h2.title에 적용
+    function applyTitleContentsGap() {
+      var raw = getComputedStyle(document.body).getPropertyValue('--title-contents-gap-pct');
+      var pct = parseFloat(raw);
+      if (isNaN(pct)) pct = 30;
+      document.querySelectorAll('.reveal .slides section h2.title, .reveal .slides section h1.title').forEach(function(el) {
+        var h = el.offsetHeight;
+        if (h > 0) el.style.marginBottom = Math.round(h * pct / 100) + 'px';
+      });
     }
 
     // Vertically bias content to top by reducing extra center spacing using margin
@@ -1541,19 +1650,30 @@ xychart-beta
     }
 
     Reveal.on('ready', function(){
-      // Enforce top alignment in case theme defaults differ
-      if (typeof Reveal.configure === 'function') { Reveal.configure({ center: false }); }
       if (document.body.classList.contains('top-align-mode')) {
+        // Enforce top alignment in case theme defaults differ
+        if (typeof Reveal.configure === 'function') { Reveal.configure({ center: false }); }
         // Remove extra top padding on current slide to keep content tight to top
         var cur = Reveal.getCurrentSlide();
         if (cur) cur.style.paddingTop = '10px';
+        topBiasCurrentSlide();
       }
       adjustGraphScrollHeights();
       fitSmallDiagrams();
-      topBiasCurrentSlide();
+      applyTitleContentsGap();
     });
-    Reveal.on('slidechanged', function(){ adjustGraphScrollHeights(); fitSmallDiagrams(); topBiasCurrentSlide(); });
-    window.addEventListener('resize', function(){ adjustGraphScrollHeights(); fitSmallDiagrams(); topBiasCurrentSlide(); });
+    Reveal.on('slidechanged', function(){
+      adjustGraphScrollHeights();
+      fitSmallDiagrams();
+      applyTitleContentsGap();
+      if (document.body.classList.contains('top-align-mode')) { topBiasCurrentSlide(); }
+    });
+    window.addEventListener('resize', function(){
+      adjustGraphScrollHeights();
+      fitSmallDiagrams();
+      applyTitleContentsGap();
+      if (document.body.classList.contains('top-align-mode')) { topBiasCurrentSlide(); }
+    });
 
     // Last slide message state
     var lastSlideMessageShown = false;

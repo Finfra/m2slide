@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>4.2 2세대: CLI 기반 코딩</title>
+  <title>04.2.cli-generation</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/theme/sky.css">
@@ -11,7 +11,33 @@
   <link rel="stylesheet" href="https://unpkg.com/open-props"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"/>
-  <link rel="stylesheet" href="../../../resource/slide.css?v=1765081010879">
+  <link rel="stylesheet" href="css/custom.css?v=1777620307582">
+  <script>
+    // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
+    (function() {
+      const originalConsoleError = console.error;
+      console.error = function(...args) {
+        if (args.length > 0 && typeof args[0] === 'string' && 
+            (args[0].includes('attribute transform') || args[0].includes('translate(NaN'))) {
+          return;
+        }
+        originalConsoleError.apply(console, args);
+      };
+
+      // Monkey patch D3 if available to prevent NaN attributes
+      window.addEventListener('load', function() {
+        if (window.d3 && window.d3.selection) {
+          const originalAttr = window.d3.selection.prototype.attr;
+          window.d3.selection.prototype.attr = function(name, value) {
+            if (name === 'transform' && typeof value === 'string' && (value.includes('NaN') || value.includes('undefined'))) {
+              return this;
+            }
+            return originalAttr.apply(this, arguments);
+          };
+        }
+      });
+    })();
+  </script>
   <style>
     /* Markmap SVG baseline (allow container to control size) */
     #toc-mindmap {
@@ -57,6 +83,44 @@
       text-transform: none;
       font-weight: var(--main-title-font-weight, 700);
       text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000;
+    }
+    #toc-container .title-card {
+      flex-shrink: 0;
+      text-align: var(--main-title-align, center);
+    }
+    #toc-container p.main-subtitle {
+      font-family: var(--main-title-font-family, var(--global-font-family, inherit));
+      color: var(--main-title-color, #555);
+      font-size: calc(var(--main-title-font-size, 80px) * 0.5);
+      font-weight: 400;
+      margin: 0;
+      padding: 4px 0 8px 0;
+      text-align: var(--main-title-align, center);
+      text-shadow: none;
+      opacity: 0.85;
+    }
+    #toc-container p.main-author {
+      font-family: var(--main-title-font-family, var(--global-font-family, inherit));
+      color: var(--main-title-color, #555);
+      font-size: calc(var(--main-title-font-size, 80px) * 0.35);
+      font-weight: 400;
+      margin: 0;
+      padding: 4px 0 4px 0;
+      text-align: var(--main-title-align, center);
+      text-shadow: none;
+      opacity: 0.7;
+    }
+    #toc-container p.main-slogan {
+      font-family: var(--main-title-font-family, var(--global-font-family, inherit));
+      color: var(--main-title-color, #888);
+      font-size: calc(var(--main-title-font-size, 80px) * 0.3);
+      font-weight: 300;
+      font-style: italic;
+      margin: 0;
+      padding: 4px 0 10px 0;
+      text-align: var(--main-title-align, center);
+      text-shadow: none;
+      opacity: 0.6;
     }
     #toc-container #toc-mindmap {
       width: 100%;
@@ -112,7 +176,7 @@
     }
   </style>
 </head>
-<body class="top-align-mode  media-enlarge-fit" style="
+<body class=" guide-line-mode media-enlarge-fit" style="
   --global-font-family: Pretendard, sans-serif;
   --title-font-family: GmarketSansBold;
   --title-font-weight: 50;
@@ -143,6 +207,7 @@
   --content-color: #000000;
   --content-align: left;
   --content-padding: 1%;
+  --title-contents-gap-pct: 30;
 ">
   <a href="04-vibecoding-generations.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
     <svg viewBox="0 0 24 24">
@@ -153,7 +218,12 @@
 
   <!-- TOC container outside Reveal.js for Safari compatibility -->
   <div id="toc-container">
-    <h1 class="main-title">Examples for MarkdownGraph</h1>
+    <div class="title-card">
+      <h1 class="main-title">04.2.cli-generation</h1>
+      
+      
+      
+    </div>
     <svg id="toc-mindmap"></svg>
   </div>
 
@@ -162,7 +232,18 @@
   <div class="reveal ratio-none">
     <div class="slides">
 
-      <section id="toc-placeholder"></section>
+      <section class="title-slide" data-chapter-title="4.2 2세대: CLI 기반 코딩">
+<h1 class="outline-title">4.2 2세대: CLI 기반 코딩</h1>
+<ul class="chapter-list" style="column-count: 7">
+<li><a href="#/1">2세대: CLI 기반 코딩</a></li>
+<li><a href="#/2">2세대: 대표 툴</a></li>
+<li><a href="#/3">2세대: 대표 툴 (계속)</a></li>
+<li><a href="#/4">2세대: 장점</a></li>
+<li><a href="#/5">2세대: 장점 (계속)</a></li>
+<li><a href="#/6">2세대: 단점</a></li>
+<li><a href="#/7">2세대: 단점 (계속)</a></li>
+</ul>
+      </section>
 
       <section class="has-text" data-chapter-title="4.2 2세대: CLI 기반 코딩">
 <h2 class="title">2세대: CLI 기반 코딩</h2>
@@ -358,13 +439,15 @@ $ claude
       if (qs.get('top') === '1') document.body.classList.add('top-align-mode');
     } catch (e) {}
 
+    var isPrintMode = /print-pdf/gi.test(window.location.search);
+
     Reveal.initialize({
       hash: true,
       plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
       width: '100%',
       height: '100%',
       margin: 0.0,
-      center: false,
+      center: true,
       slideNumber: 'c/t',
       transition: 'slide',
       backgroundTransition: 'fade'
@@ -479,8 +562,6 @@ $ claude
       
       const allSlides = document.querySelectorAll('.reveal .slides section');
       // No dynamic title styling anymore
-
-      // 2. Resize Lists in current slide
 
       // 2. Resize Lists in current slide
       const currentSlide = Reveal.getCurrentSlide();
@@ -650,23 +731,47 @@ $ claude
         // Initialize markmap on first show
         if (!markmapInitialized && window.markmap && tocContainer) {
           // Create with layout options so the tree breathes horizontally
-          markmapInstance = window.markmap.Markmap.create('#toc-mindmap', {
-            autoFit: true,
-            fitRatio: 0.95,
-            spacingHorizontal: 80,
-            spacingVertical: 12,
-            paddingX: 40,
-            initialExpandLevel: 3
-          }, tocData);
-          markmapInitialized = true;
-          // Ensure fit after layout settles
-          requestAnimationFrame(function () {
-            if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
-          });
-          setTimeout(function(){ if (markmapInstance && markmapInstance.fit) markmapInstance.fit(); }, 50);
+          try {
+            markmapInstance = window.markmap.Markmap.create('#toc-mindmap', {
+              autoFit: true,
+              fitRatio: 0.95,
+              spacingHorizontal: 80,
+              spacingVertical: 12,
+              paddingX: 40,
+              initialExpandLevel: 3
+            }, tocData);
+            markmapInitialized = true;
+            
+            // Ensure fit after layout settles
+            if (!isPrintMode) {
+                requestAnimationFrame(function () {
+                  if (markmapInstance && markmapInstance.fit) {
+                    try { markmapInstance.fit(); } catch(e) {}
+                  }
+                });
+                setTimeout(function(){ 
+                  if (markmapInstance && markmapInstance.fit) {
+                    try { markmapInstance.fit(); } catch(e) {}
+                  }
+                }, 50);
+            } else {
+                // In print mode, wait longer and fit once
+                setTimeout(function(){ 
+                   if (markmapInstance && markmapInstance.fit) {
+                      try { markmapInstance.fit(); } catch(e) {}
+                   }
+                }, 1000);
+            }
+          } catch(e) {
+            console.warn('Markmap initialization failed:', e);
+          }
         } else if (markmapInitialized && markmapInstance && markmapInstance.fit) {
           // Re-fit when returning to the first slide
-          requestAnimationFrame(function () { markmapInstance.fit(); });
+          if (!isPrintMode) {
+              requestAnimationFrame(function () { 
+                try { markmapInstance.fit(); } catch(e) {} 
+              });
+          }
         }
       } else {
         // Other slides: hide TOC container
@@ -687,9 +792,13 @@ $ claude
     // Keep Markmap fitted on window resize
     var resizeTimeout;
     window.addEventListener('resize', function(){
+      if (isPrintMode) return; // Skip resize logic in print mode
+
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(function() {
-        if (markmapInstance && markmapInstance.fit) markmapInstance.fit();
+        if (markmapInstance && markmapInstance.fit) {
+          try { markmapInstance.fit(); } catch(e) {}
+        }
         adjustGraphScrollHeights();
         fitSmallDiagrams();
         topBiasCurrentSlide();
@@ -734,6 +843,17 @@ $ claude
         });
       };
       if (cur) apply(cur); else apply(document);
+    }
+
+    // title_contents_gap: title 높이의 % 만큼 margin-bottom을 h2.title에 적용
+    function applyTitleContentsGap() {
+      var raw = getComputedStyle(document.body).getPropertyValue('--title-contents-gap-pct');
+      var pct = parseFloat(raw);
+      if (isNaN(pct)) pct = 30;
+      document.querySelectorAll('.reveal .slides section h2.title, .reveal .slides section h1.title').forEach(function(el) {
+        var h = el.offsetHeight;
+        if (h > 0) el.style.marginBottom = Math.round(h * pct / 100) + 'px';
+      });
     }
 
     // Vertically bias content to top by reducing extra center spacing using margin
@@ -785,19 +905,30 @@ $ claude
     }
 
     Reveal.on('ready', function(){
-      // Enforce top alignment in case theme defaults differ
-      if (typeof Reveal.configure === 'function') { Reveal.configure({ center: false }); }
       if (document.body.classList.contains('top-align-mode')) {
+        // Enforce top alignment in case theme defaults differ
+        if (typeof Reveal.configure === 'function') { Reveal.configure({ center: false }); }
         // Remove extra top padding on current slide to keep content tight to top
         var cur = Reveal.getCurrentSlide();
         if (cur) cur.style.paddingTop = '10px';
+        topBiasCurrentSlide();
       }
       adjustGraphScrollHeights();
       fitSmallDiagrams();
-      topBiasCurrentSlide();
+      applyTitleContentsGap();
     });
-    Reveal.on('slidechanged', function(){ adjustGraphScrollHeights(); fitSmallDiagrams(); topBiasCurrentSlide(); });
-    window.addEventListener('resize', function(){ adjustGraphScrollHeights(); fitSmallDiagrams(); topBiasCurrentSlide(); });
+    Reveal.on('slidechanged', function(){
+      adjustGraphScrollHeights();
+      fitSmallDiagrams();
+      applyTitleContentsGap();
+      if (document.body.classList.contains('top-align-mode')) { topBiasCurrentSlide(); }
+    });
+    window.addEventListener('resize', function(){
+      adjustGraphScrollHeights();
+      fitSmallDiagrams();
+      applyTitleContentsGap();
+      if (document.body.classList.contains('top-align-mode')) { topBiasCurrentSlide(); }
+    });
 
     // Last slide message state
     var lastSlideMessageShown = false;
