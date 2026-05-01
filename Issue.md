@@ -95,7 +95,7 @@
 # ✅ 완료
 
 
-## Issue54. 자동 layout 슬라이드 화면 밖 렌더링 — `position: relative` 가 reveal.js 스택 깨뜨림 (등록: 2026-05-02, 해결: 2026-05-02, commit: TBD) ✅
+## Issue54. 자동 layout 슬라이드 화면 밖 렌더링 — `position: relative` 가 reveal.js 스택 깨뜨림 (등록: 2026-05-02, 해결: 2026-05-02, commit: 6141a6c) ✅
 * 목적: layoutTest 프로젝트의 11/13/15/18 페이지(자동 감지된 `layout-blank--full-image`, `layout-contents` (no_title), `layout-blank--full-video`)가 빈 화면으로 보임. 컨텐츠는 DOM에 존재하나 슬라이드가 viewport 아래(y=1085, 2165...)로 밀려나 보이지 않음.
 * 카테고리: Theme (`theme/nowage/slide.css`)
 * 복잡도: 단순 (CSS 한 줄 제거)
