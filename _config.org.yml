@@ -7,7 +7,8 @@
 ## LlmAndVibeCoding    : 챕터 모드 (Chapter Mode)
 # current_project: MarkdownGraph
 # current_project: LlmAndVibeCoding
-current_project: m2SlideStyle2
+# current_project: m2SlideStyle1_single
+
 # 선택 사항: 슬라이드 내용 상단 정렬 강제
 # true일 경우, 생성된 HTML에 'top-align-mode' 클래스가 추가되어
 # Reveal.js의 수직 중앙 정렬을 덮어씁니다. 주의해서 사용하세요.
@@ -19,7 +20,7 @@ top_align: false
 title_contents_gap: 30
 
 # 가이드 라인 표시 (레이아웃 디버깅용)
-guide_line: false
+guide_line: true
 
 # Markmap 초기 펼침 깊이 (기본값: 3)
 # 1: 루트와 1단계 자식만 표시
