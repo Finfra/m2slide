@@ -13,6 +13,11 @@ current_project: m2SlideStyle2
 # Reveal.js의 수직 중앙 정렬을 덮어씁니다. 주의해서 사용하세요.
 top_align: false
 
+# Title ↔ Contents 사이 갭 (title 높이의 %)
+# 기본값: 30 → title이 40px이면 갭은 12px
+# 0: 갭 없음, 50: title 높이의 절반, 100: title 높이와 동일
+title_contents_gap: 30
+
 # 가이드 라인 표시 (레이아웃 디버깅용)
 guide_line: false
 
