@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 52
+* Issue HWM: 53
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -11,17 +11,97 @@
 # 🤔 결정사항
 
 # 🌱 이슈후보
-0. meta.yml 운영(생성정보, googleDrive정보, 강의일, version+날짜, ) cf) /Users/nowage/work/AgenticCoding_lec/_doc_work/AgenticCoding_v1.1/meta.yml
-1. 제목 페이지 추가 - Markdown Yaml Front Matter (QGCode, 강사명, 강사 연락처, 부제목(part1), QRCode)
-2. Orientation slide기능(제목 페이지와 목차 사이 장표 추가 기능."강의에 들어가기 앞서..." 혹은 공지사항 ) 목차에 들어가면 않됨. "## ![오리엔테이션](./00_Orientation.md)"이런 식으로 !로 시작하는 제목은 MarkdownTreeView에 추가시키지 않음.
-3. 장표 페이지에서 드레그 지원( up,down,left,right )
-4. m2SlideStyle2_chapter 프로젝트 구조 정비 — 폴더 이름이 `_chapter`인데 markdown/ 폴더가 없어 Single Page Mode로 빌드됨. 의도가 Chapter Mode 샘플이라면 markdown/ + AGENDA.md 추가, 아니면 폴더 이름 변경 필요
 
 # 🚧 진행중
+
+## Issue53. 페이지 번호 링크 비활성화 — prev arrow 클릭 영역 침범 해결 (등록: 2026-05-02)
+* 목적: 우측 하단 페이지 번호("17 / 21")가 `<a href>` 링크로 렌더링되어 좌측 prev arrow(`<`) 버튼의 클릭 가능 영역을 가림. 페이지 번호는 표시만 하고 클릭은 불필요.
+* 카테고리: Frontend (Reveal.js 인터랙션)
+* 복잡도: 단순 (CSS 한 줄 추가)
+* 상세:
+    - Reveal.js `slideNumber: 'c/t'` 설정 시 페이지 번호를 `<a class="slide-number">` 앵커로 렌더링
+    - 앵커가 prev/next 버튼 위에 겹쳐 클릭 영역을 잠식
+    - 페이지 번호는 시각적 정보용일 뿐 클릭 네비게이션 불필요
+* 구현 명세:
+    - `lib/generate-slides.js`의 인라인 CSS에 `.slide-number { pointer-events: none; }` 추가
+    - 안전 속성(`pointer-events`)만 사용 — CSS 가드 위반 없음
+    - 검증: prev arrow 클릭 영역 정상 동작 확인
 
 # 📕 중요
 
 # 📙 일반
+
+## Issue48. meta.yml 운영 — 프로젝트 메타데이터 분리 SSOT (등록: 2026-05-02)
+* 목적: 프로젝트별 운영 메타데이터(생성정보, googleDrive 정보, 강의일, version+날짜 등)를 별도 `meta.yml`로 분리하여 `_config.yml`(렌더링 설정)과 책임을 명확히 분할
+* 카테고리: Build (config 시스템)
+* 복잡도: 중간 (plan 권장 — 스키마 설계 필요)
+* 상세:
+    - 참고 파일: `/Users/nowage/work/AgenticCoding_lec/_doc_work/AgenticCoding_v1.1/meta.yml` (스키마 출처)
+    - 후보 필드: `created_at`, `created_by`, `gdrive`(링크/ID), `lecture_date`, `version`(+release_date)
+    - `_config.yml`: 렌더링 설정 SSOT (theme, layout, markmap_depth 등) — 변경 없음
+    - `meta.yml`: 운영/배포 메타 SSOT — 신규 도입
+* 구현 명세:
+    - 참고 `meta.yml` 분석 후 m2slide 용 스키마 확정 → `_doc_design/meta-yml.md` (영속 SSOT)
+    - `lib/generate-slides.js`에서 옵셔널 로드 — 미존재 시 silent skip (backward compatible)
+    - 활용 후보: 표지/closing 슬라이드 footer, GitHub Pages 배포 메타, 버전 표기
+    - 5개 기존 프로젝트 영향도 검증
+
+## Issue49. 제목 페이지 자동 생성 — Frontmatter 기반 cover 슬라이드 (등록: 2026-05-02)
+* 목적: 마크다운 YAML Frontmatter에 강사·연락처·부제·QR 정보를 넣으면 첫 페이지(cover 슬라이드)로 자동 생성
+* 카테고리: Generator + Theme
+* 복잡도: 중간 (plan 권장)
+* 상세:
+    - 신규 frontmatter 필드: `instructor`(강사명), `contact`(연락처), `subtitle_part`(부제, ex: part1), `qr_url`(QR 대상 URL), `qr_code`(이미지 경로 또는 base64)
+    - "QGCode"는 사용자 입력 오타로 추정 → "QRCode"로 통일 (확인 필요)
+    - 기존 frontmatter 키와 공존: `title`, `subtitle`, `author`, `slogan`, `theme`, `theme_default_layout`
+* 구현 명세:
+    - 신규 layout: `theme/default/layouts/_cover.html` + `theme/nowage/layouts/_cover.html` (Issue47 keynote 디자인의 cover 시각 언어 활용)
+    - `lib/generate-slides.js` frontmatter 파서 확장 + 첫 슬라이드 위치에 cover 자동 inject (사용자 슬라이드와 충돌 안 나는 정책 결정)
+    - QR 코드: 외부 URL 이미지 직접 사용 vs client-side 생성(qrcode.js) 선택 → plan 단계 결정
+    - 룰 동기화: `.claude/rules/md-m2slide-rules.md` "Frontmatter 확장" 절에 신규 키 추가
+    - Issue50과 의존: cover → Orientation → TOC 순서 정책
+
+## Issue50. Orientation 슬라이드 + TOC 제외 메타 (`!` prefix) (등록: 2026-05-02)
+* 목적: 제목 페이지와 목차 사이에 "강의 시작 전 공지사항" 등 Orientation 슬라이드 삽입 + 해당 슬라이드는 markmap TOC에 노출 안 되게 함
+* 카테고리: Generator + Project (AGENDA 정책)
+* 복잡도: 복잡 (plan + task 필수)
+* 상세:
+    - 사용자 표기 예: AGENDA.md에 `## ![오리엔테이션](./00_Orientation.md)` — `[!제목](./파일.md)` 패턴은 빌드는 정상, TOC 트리에서 제외
+    - 슬라이드 단위 토글도 검토: frontmatter `toc_index: false` 또는 슬라이드 메타 `#noindex`
+* 구현 명세:
+    - AGENDA.md 파서(`generate-slides.js` `parseAgenda()`) `[!...](...)` 패턴 인식 분기 추가
+    - markmap 데이터 구조 빌드 시 hidden 노드 필터링
+    - 페이지 빌드는 정상 — 단 상위/다음 챕터 네비게이션에서 hidden 슬라이드 처리 정책 결정
+    - 우선순위: AGENDA `!` prefix > frontmatter `toc_index` > 기본 노출
+    - 단일 페이지 모드(`AGENDA.md` 부재)에서의 동작 정의 필요
+    - 의존: Issue49 cover 슬라이드 정책과 슬라이드 순서 충돌 검토
+
+## Issue51. 장표 드래그 네비게이션 (up/down/left/right) (등록: 2026-05-02)
+* 목적: 슬라이드 페이지에서 마우스/터치 드래그로 prev/next/up/down 슬라이드 이동 (모바일·태블릿 친화)
+* 카테고리: Frontend (reveal.js 인터랙션)
+* 복잡도: 복잡 (plan + task 필수, CSS 위험 영역 인접)
+* 상세:
+    - 좌→우 드래그: 이전, 우→좌: 다음
+    - 위→아래/아래→위: 수직 슬라이드 (chapter mode 등에서 활용)
+    - reveal.js 자체 swipe 지원 검토 후 보강 vs 신규 구현 결정
+* 구현 명세:
+    - reveal.js touch handler 분석 → m2slide 커스텀 키 핸들러(↑/→ 마지막 슬라이드 챕터 이동) 충돌 검토
+    - `theme/*/slide.css`의 `transform`/`position`/`inset` 영역 변경 **금지** ([CLAUDE.md "CSS 수정 시 주의사항"](CLAUDE.md))
+    - 회귀: 첫·중간·끝 슬라이드 + index.html + 단일/챕터 모드 + 5개 기존 프로젝트 시각 회귀
+    - 데스크톱 마우스 드래그와 텍스트 선택의 충돌 처리 정책
+
+## Issue52. m2SlideStyle2_chapter 프로젝트 구조 정비 (등록: 2026-05-02)
+* 목적: `Projects/m2SlideStyle2_chapter/` 폴더 구조와 의도 일치 — Chapter Mode 샘플인지 Single Page인지 명확화
+* 카테고리: Project
+* 복잡도: 단순
+* 상세:
+    - 현상: 폴더명에 `_chapter` 접미사 있으나 `markdown/` 디렉토리·`AGENDA.md` 부재로 Single Page Mode로 빌드됨
+    - 옵션 A (Chapter Mode 샘플 유지): `markdown/` + `AGENDA.md` + 챕터별 `*.md` 파일 추가
+    - 옵션 B (Single Page 의도): 폴더명을 `m2SlideStyle2` 등 의도에 맞게 변경
+* 구현 명세:
+    - 사용자 의도 확인 후 A/B 선택
+    - `_config.yml`·문서 참조(`README.md`, `Projects/README.md`, `lib/m2slide/CLAUDE.md`) 동기화
+    - 시간 비용 < 30분 예상 (단순 이슈)
 
 # 📗 선택
 
