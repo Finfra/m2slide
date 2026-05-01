@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 38
+* Issue HWM: 44
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -14,37 +14,195 @@
 0. meta.yml 운영(생성정보, googleDrive정보, 강의일, version+날짜, ) cf) /Users/nowage/work/AgenticCoding_lec/_doc_work/AgenticCoding_v1.1/meta.yml
 1. 제목 페이지 추가 - Markdown Yaml Front Matter (QGCode, 강사명, 강사 연락처, 부제목(part1), QRCode)
 2. Orientation slide기능(제목 페이지와 목차 사이 장표 추가 기능."강의에 들어가기 앞서..." 혹은 공지사항 ) 목차에 들어가면 않됨. "## ![오리엔테이션](./00_Orientation.md)"이런 식으로 !로 시작하는 제목은 MarkdownTreeView에 추가시키지 않음.
-3. 장표 페이지에서 드레그 지원( up,down,left,right ) 
+3. 장표 페이지에서 드레그 지원( up,down,left,right )
+4. m2SlideStyle2_chapter 프로젝트 구조 정비 — 폴더 이름이 `_chapter`인데 markdown/ 폴더가 없어 Single Page Mode로 빌드됨. 의도가 Chapter Mode 샘플이라면 markdown/ + AGENDA.md 추가, 아니면 폴더 이름 변경 필요
 
 # 🚧 진행중
 
-## Issue25. 배경 이미지 설정 기능
-* 마크다운 메타데이터(YAML frontmatter)를 통해 전체 슬라이드의 배경 이미지를 지정하는 기능 구현
-* `background` 속성으로 이미지 경로 혹은 color 지정 지원
+## Issue41. theme_default_layout 값 정규화 + 경고 dedup (등록: 2026-05-01)
+* 목적: `_config.yml`의 `theme_default_layout: contents` 설정이 layout lookup 실패하여 모든 슬라이드에 plain section fallback + 빌드 시 경고가 N회(슬라이드 수만큼) 반복되는 버그 수정
+* 상세:
+    - 현상: `m2SlideStyle1_single` 빌드 시 `⚠️ layout 'contents' not found in theme/nowage/layouts/ 및 theme/default/layouts/ — falling back to plain section` 26회 출력 (해당 프로젝트 슬라이드 수와 일치)
+    - 재현: `./m2slideDo.sh m2SlideStyle1_single`
+    - 원인 1 (lookup 키 불일치): `loadLayoutTemplates()`가 layout 파일명을 그대로 키로 저장 (`_contents.html` → `LAYOUT_TEMPLATES['_contents']`). 사용자가 `_config.yml`에 `theme_default_layout: contents`(underscore 없이)로 작성하면 `LAYOUT_TEMPLATES['contents']` lookup 실패
+    - 원인 2 (문서-동작 괴리): `.claude/rules/md-m2slide-rules.md` 주석은 "`_` prefix 제거 형태"라고 명시하나 실제 코드는 정규화 없음. Issue36 도입 당시 `_blank`/`_contents_no_title` 등 자동 감지 코드는 underscore 포함 형태로 호출하고 있어 우회됨
+    - 원인 3 (경고 노이즈): layout 미발견 시 슬라이드마다 동일 경고 반복 — N개 슬라이드면 N회 출력
+* 구현 명세:
+    - `lib/generate-slides.js` `loadLayoutTemplates()`: underscore prefix 제거 alias 키도 함께 등록 (`_contents.html` → `LAYOUT_TEMPLATES['_contents']` + `LAYOUT_TEMPLATES['contents']`)
+    - 동일 layoutName 미발견 경고는 빌드당 1회만 출력 (Set 기반 dedup)
+    - 회귀 검증:
+        * `m2SlideStyle1_single` 빌드 시 경고 0건 + 모든 슬라이드 `layout-contents` 클래스 적용 확인
+        * Issue27_1·27_2 자동 감지(`_blank`, `_contents_no_title`) 회귀 없음
+        * 모든 5개 프로젝트 (LlmAndVibeCoding, LlmAndVibeCoding2, m2SlideStyle1_single, m2SlideStyle2_chapter, MarkdownGraph) 재빌드 정상
 
 ## Issue26. 동영상 지원 기능
 * 슬라이드 내 동영상 삽입 및 재생 기능 지원
 * 로컬 비디오 파일 재생 확인
-* _doc_work/_resource/mp4/Movie-1.mp4 활용하여 테스트
-
-## Issue27. 제목 없는 단독 이미지 페이지 자동 확대 (Full Image)
-* 제목 없이 이미지만 있는 슬라이드 감지 로직 구현
-* 해당 슬라이드에 대해 화면 비율을 유지하면서 화면에 꽉 차게(Contain/Cover) 표시하는 스타일 적용
-
-## Issue28. 베이스 폴더 변경(scripts -> lib) 영향 제거
-* **목표**: `scripts` 폴더가 `lib`로 변경됨에 따라, `m2slide` 내에서 상위 폴더를 참조하는 부분이 있다면 수정하여 의존성을 맞춘다.
-* **배경**: 전체 프로젝트 구조 리팩토링으로 `scripts`가 `lib`로 이름이 변경됨.
+* layoutTest프로젝트에서 _doc_work/_resource/mp4/Movie-1.mp4 활용하여 테스트
 
 
+## Issue43. `_config.org.yml` video 기본 옵션 정리 + `![](~.mp4)` 마크다운 비디오 임베드 (등록: 2026-05-01)
+* 목적: `_config.org.yml`에 video 관련 기본 옵션을 7가지 후보로 주석 표시한 뒤 한 개만 활성화. 추가로 마크다운에서 `![alt](path.mp4)` 표기로 작성하면 자동으로 `<video>` 태그로 렌더링되도록 지원.
+* 상세:
+    - 현재 layoutTest 프로젝트의 비디오 슬라이드(## 13~22)는 모두 raw `<video>` 태그를 직접 작성해야 함 → 사용성 저하 + 파서 버그(Issue44)와 결합 시 깨짐
+    - 마크다운 표준 이미지 문법 `![](path)`를 비디오 확장자(`.mp4`, `.webm`, `.ogg`, `.mov`)에 자동 매핑하면 작성 편의성 대폭 개선
+    - 기본 동작 옵션은 `_config.org.yml`에 SSOT로 두고 사용자가 7개 후보 중 한 개만 선택하도록 안내
+* 구현 명세:
+    - `_config.org.yml` `style.theContents` 또는 신규 `style.video` 섹션에 7가지 옵션 후보 주석 추가:
+        ```yaml
+        # 비디오 기본 동작 (한 개만 선택 활성화)
+        # video_default: controls          # ← 활성: 컨트롤 표시, 자동재생 없음 (기본 권장)
+        # video_default: autoplay-muted    # 자동재생 + 음소거 (브라우저 정책 충족)
+        # video_default: autoplay-loop     # 자동재생 + 무한반복 + 음소거
+        # video_default: loop              # 컨트롤 + 무한반복
+        # video_default: muted             # 음소거만 (사용자 클릭 재생)
+        # video_default: hidden-controls   # controls 없음 (배경 비디오용)
+        # video_default: minimal           # controls 없음 + autoplay + muted + loop (배경 영상)
+        video_default: controls
+        ```
+    - `lib/generate-slides.js` `convertMarkdownToHTML()` 인라인 이미지 처리 로직에 비디오 확장자 분기 추가:
+        - 패턴: `![alt](path.{mp4|webm|ogg|mov})` → `<video src="path" {옵션 매핑된 속성들}>...alt fallback...</video>`
+        - 옵션 매핑 테이블: `controls` → `controls`, `autoplay-muted` → `autoplay muted controls`, `autoplay-loop` → `autoplay muted loop`, `loop` → `controls loop`, `muted` → `muted controls`, `hidden-controls` → (속성 없음), `minimal` → `autoplay muted loop`
+    - layoutTest 프로젝트의 ## 13~22 중 일부를 `![](./video/Movie-1.mp4)` 형태로 변환하여 회귀 테스트
+    - `_doc_design/`에 video 옵션 정책 문서화 (영속 설계 SSOT)
+* 회귀 검증:
+    - layoutTest 빌드 후 ![](*.mp4) 슬라이드가 `<video controls>` 로 렌더링되어 재생 가능
+    - `_config.org.yml`에서 `video_default: autoplay-loop` 로 변경 후 빌드 시 옵션 반영
+    - 기존 raw `<video>` 태그 슬라이드도 정상 동작 (Issue44 수정 후)
+
+## Issue44. raw HTML `<video>`/`<audio>` multi-line block이 `<p>` wrap으로 깨짐 (등록: 2026-05-01)
+* 목적: 마크다운 본문에 작성한 multi-line raw HTML block(`<video>...<source>...</video>`, `<audio>`, `<iframe>` 등)이 마크다운 파서에 의해 라인별로 `<p>` 태그에 감싸져 DOM 구조가 깨지는 버그 수정
+* 상세:
+    - 현상: `Projects/layoutTest/slide/layoutTest.html#/23~25` (## 20~22) 슬라이드에서 video 태그가 화면에 표시되지 않음
+    - 재현: `./m2slideDo.sh layoutTest` 후 `Projects/layoutTest/slide/layoutTest.html` 의 #/23~#/25 확인
+    - 출력 결과 (`layoutTest.html:601-606`):
+        ```html
+        <p><video width="100%" height="auto" controls></p>
+        <p>  <source src="./video/Movie-1.mp4" type="video/mp4"></p>
+        <p>  Your browser does not support the video tag.</p>
+        <p></video></p>
+        ```
+    - 원인: `lib/generate-slides.js`의 `convertMarkdownToHTML()` 단락 처리 로직이 빈 줄 단위로 라인을 묶어 `<p>...</p>`로 wrap. block-level HTML 태그(`<video>`, `<audio>`, `<iframe>`, `<table>`, `<div>` 등)는 보존해야 하나 그 판별이 없음
+* 구현 명세:
+    - `lib/generate-slides.js` `convertMarkdownToHTML()`에 block-level HTML 패스스루 로직 추가:
+        - 라인이 `<(video|audio|iframe|table|figure|div|section)[\s>]` 로 시작하면 해당 닫힘 태그 만날 때까지의 모든 라인을 단일 블록으로 보존 (라인별 `<p>` wrap 금지)
+        - 닫힘 태그 매칭은 nesting depth 추적
+    - 인라인 HTML(`<span>`, `<a>`, `<strong>` 등)은 기존대로 처리 (영향 없음)
+    - 펜스드 코드 블록(```` ```html ````) 내부는 영향 없음 (이미 코드로 escape됨)
+* 회귀 검증:
+    - layoutTest #/23~25에서 video element가 정상 재생되어야 함
+    - 기존 코드 블록 표시 (#/16~22, ## 13~19) 회귀 없음
+    - LlmAndVibeCoding 등 다른 프로젝트 빌드 정상
 
 # 📕 중요
 
 # 📙 일반
 
+
+* 목적: `_config.yml`의 `theme_default_layout: contents` 설정이 layout lookup 실패하여 모든 슬라이드에 plain section fallback + 빌드 시 경고가 N회(슬라이드 수만큼) 반복되는 버그 수정
+* 상세:
+    - 현상: `m2SlideStyle1_single` 빌드 시 `⚠️ layout 'contents' not found in theme/nowage/layouts/ 및 theme/default/layouts/ — falling back to plain section` 26회 출력 (해당 프로젝트 슬라이드 수와 일치)
+    - 재현: `./m2slideDo.sh m2SlideStyle1_single`
+    - 원인 1 (lookup 키 불일치): `loadLayoutTemplates()`가 layout 파일명을 그대로 키로 저장 (`_contents.html` → `LAYOUT_TEMPLATES['_contents']`). 사용자가 `_config.yml`에 `theme_default_layout: contents`(underscore 없이)로 작성하면 `LAYOUT_TEMPLATES['contents']` lookup 실패
+    - 원인 2 (문서-동작 괴리): `.claude/rules/md-m2slide-rules.md` 주석은 "`_` prefix 제거 형태"라고 명시하나 실제 코드는 정규화 없음. Issue36 도입 당시 `_blank`/`_contents_no_title` 등 자동 감지 코드는 underscore 포함 형태로 호출하고 있어 우회됨
+    - 원인 3 (경고 노이즈): layout 미발견 시 슬라이드마다 동일 경고 반복 — N개 슬라이드면 N회 출력
+* 구현 명세:
+    - `lib/generate-slides.js` `renderLayout()` 또는 layout 결정 지점: lookup 시 `LAYOUT_TEMPLATES[name] || LAYOUT_TEMPLATES['_' + name]` 폴백 적용 (또는 `loadLayoutTemplates()`에서 underscore 제거 키도 alias로 등록)
+    - 동일 layoutName 미발견 경고는 빌드당 1회만 출력 (Set 기반 dedup)
+    - `extractLayoutMeta()`의 사용자 명시 `#layout-name`도 동일 정규화 경로 통과
+    - 회귀 검증:
+        * `m2SlideStyle1_single` 빌드 시 경고 0건 + 모든 슬라이드 `layout-contents` 클래스 적용 확인
+        * 기존 underscore 형태 명시(`#layout-_blank` 또는 `#layout-blank`) 양쪽 모두 정상 동작
+        * Issue27_1·27_2 자동 감지(`_blank`, `_contents_no_title`) 회귀 없음
+
 # 📗 선택
 
 # ✅ 완료
 
+
+## Issue27. 제목 없는 단독 이미지 페이지 자동 확대 (Full Image) (등록: 2026-05-01, 해결: 2026-05-02, commit: bde5f69) ✅
+* 제목 없이 이미지만 있는 슬라이드 감지 로직 구현
+* 해당 슬라이드에 대해 화면 비율을 유지하면서 화면에 꽉 차게(Contain/Cover) 표시하는 스타일 적용
+* 두 가지 케이스로 분리하여 서브 이슈로 처리 (Issue27_1, Issue27_2)
+* 추가로 자동 감지 토글 옵션(Issue27_3)과 풀스크린 이미지 사이즈 정정(Issue27_4) 분리
+
+## Issue27_1. 전체 이미지 단독 슬라이드 → `_blank.html` 적용 (등록: 2026-05-01, 해결: 2026-05-02, commit: bde5f69) ✅
+* 목적: 슬라이드 본문이 이미지 한 개로만 구성된 경우 `_blank.html` 레이아웃을 자동 적용하여 이미지를 화면에 꽉 차게 표시
+* 상세:
+    - 감지 조건: 제목(H1/H2/H3) 없음 + 본문이 이미지 1개로만 구성 (텍스트·리스트·코드블록 등 부재)
+    - 적용 레이아웃: `_blank.html` (title 영역, contents wrapper 모두 없는 깡통 layout)
+    - 이미지 스타일: aspect ratio 유지 + viewport 풀사이즈 (`object-fit: contain` + `width/height: 100%`)
+* 구현 명세:
+    - `lib/generate-slides.js`: `isImageOnlySlide()` 헬퍼 추가, `parseMarkdownFile()`에서 매칭 시 `layout = '_blank'` + `autoFullImage = true` 마커
+    - `generateSlideHTML()`에서 `autoFullImage` 마커가 있으면 `<section>`에 `layout-blank--full-image` modifier 클래스 추가
+    - 사용자 명시 `#layout-*` override는 항상 우선
+
+## Issue27_2. 제목 비어있는 슬라이드 → `_contents_no_title.html` 적용 (등록: 2026-05-01, 해결: 2026-05-02, commit: bde5f69) ✅
+* 목적: 제목 문자열은 비어 있고 본문 콘텐츠만 있는 슬라이드에 `_contents_no_title.html` 레이아웃을 자동 적용
+* 상세:
+    - 감지 조건: 제목 헤더 자체는 존재하되 텍스트가 비어 있거나(`## ` 단독), 제목 헤더가 아예 없으면서 본문 콘텐츠가 다양함(이미지·텍스트·리스트 혼합)
+    - 적용 레이아웃: `_contents_no_title.html` (Issue38에서 추가된 title 영역 제거 변형)
+    - Issue27_1(이미지 단독)과 우선순위 분기 — 이미지 1개 단독은 27_1, 그 외는 27_2
+* 구현 명세:
+    - `lib/generate-slides.js`: `hasEmptyTitle()` + `stripEmptyLeadingHeader()` 헬퍼 추가, `parseMarkdownFile()`에서 자동 감지 + `autoBody` 분기로 빈 헤더 제거 후 body 사용
+    - 우선순위: `_blank` (image-only) > `_contents_no_title` (no-title) > 기본 layout
+    - 사용자 명시 `#layout-*` override는 항상 우선
+
+## Issue27_3. 자동 layout 감지 ON/OFF 옵션을 `_config.yml`에 추가 (등록: 2026-05-01, 해결: 2026-05-02, commit: bde5f69) ✅
+* 목적: Issue27_1·27_2의 자동 layout 감지 동작을 프로젝트별 config로 켜고 끌 수 있게 함
+* 상세:
+    - 신설 키: `auto_layout_detect: true|false` (기본값: `true`)
+    - `_config.org.yml` (SSOT 기본값) 및 프로젝트별 `_config.yml`에 키와 주석 추가
+    - false로 두면 `parseMarkdownFile()`에서 자동 감지 분기 자체를 건너뜀
+* 구현 명세:
+    - `lib/generate-slides.js`: 전역 `AUTO_LAYOUT_DETECT` 변수 + `applyConfig()`에 `auto_layout_detect` 파싱 추가
+    - `parseMarkdownFile()` 자동 감지 블록을 `if (!layout && AUTO_LAYOUT_DETECT)` 가드로 감쌈
+* 검증: layoutTest에서 `true`/`false` 토글 시 빌드된 HTML의 `layout-blank--full-image` 카운트가 1↔0으로 변함 확인
+
+## Issue27_4. `_blank` full-image 이미지 크기 확대 (등록: 2026-05-01, 해결: 2026-05-02, commit: bde5f69) ✅
+* 목적: image-only 자동 감지 슬라이드에서 이미지가 viewport에 꽉 차도록 크기 확대 (작은 원본 크기로 축소 표시되던 문제 해결)
+* 상세:
+    - 원인: 기존 CSS `width: auto; height: auto; max-*: 100%`이 원본 이미지 크기를 상한으로 사용
+    - 해결: `width: 100%; height: 100%`로 변경, `max-width/height: 100%` + `object-fit: contain` 유지로 잘림 방지·레터박스 허용
+* 구현 명세:
+    - `theme/default/slide.css`의 `.layout-blank--full-image .blank-body img` 블록 변경
+    - `theme/nowage/slide.css` (gitignored 사용자 테마) 동일 변경 적용
+* 검증: layoutTest #/9에서 `scenery.png`가 viewport 짧은 변에 맞춰 최대화 + 양쪽 레터박스로 비율 유지
+
+## Issue40. PPT 슬라이드 마크다운 규칙 정립 — md-slide-rules + md-m2slide-rules 2계층 (등록: 2026-05-01, 해결: 2026-05-01) ✅
+* 목적: 슬라이드용 마크다운 작성 규칙을 글로벌·로컬 2계층으로 정립하여 Issue39 같은 generator-마크다운 컨벤션 충돌 재발 방지
+* 상세:
+    - 글로벌 일반 규칙 신규 작성: `~/.claude/rules/md-slide-rules.md` — 슬라이드 도구 공통(Pandoc/Slidev/Marp/m2slide). Frontmatter, 구분자, 헤더 컨벤션, 멀티 컬럼(`::: columns`), md-rules 면제 항목 명시
+    - 글로벌 md-rules 갱신: `~/.claude/rules/md-rules.md`의 `type: ppt` 항목에 "→ md-slide-rules.md 따를 것" 한 줄 추가
+    - 프로젝트 로컬 m2slide 특화 신규 작성: `.claude/rules/md-m2slide-rules.md` — md-slide-rules 상속 + m2slide 고유 확장(`#layout-*`, `::: slotName`, Slidev `::right::`, `<!-- nosplit -->`, AGENDA.md, 자동 layout 감지, frontmatter 추가 키)
+    - `CLAUDE.md`에 규칙 섹션 추가: 슬라이드 마크다운 작성 시 의무 참조 순서(md-rules → md-slide-rules → md-m2slide-rules) 명시
+* 구현 명세:
+    - 2계층 상속 구조: md-rules(일반) ← md-slide-rules(슬라이드 공통) ← md-m2slide-rules(m2slide 특화)
+    - 룰 파일은 `.claude/`가 gitignored이므로 사용자 로컬 자산. 글로벌 ~/.claude/rules/md-slide-rules.md는 별도 위치
+    - Issue39 사후 회고에서 도출 — generator의 robustness만으로는 부족, 작성 규칙 명시화 필요
+
+## Issue39. TOC markmap 초기 렌더링 누락 — tocData 빈 wrapper + `#toc-mindmap` ID 중복 (등록: 2026-05-01, 해결: 2026-05-01, commit: 4567248) ✅
+* 목적: 첫 슬라이드 진입 시 markmap TOC의 항목들이 펼쳐지지 않고, 빈 중간 노드를 클릭해야 12개 항목이 표시되는 문제 해결
+* 상세:
+    - 현상: `Projects/layoutTest/slide/layoutTest.html#/toc-placeholder` 최초 로드 시 markmap이 root + 빈 중간 노드 2개만 표시되며 실제 12개 항목은 collapsed. 사용자가 노드 클릭 후에야 펼쳐짐
+    - 재현: H1 없이 H2로만 구성된 마크다운(`Projects/layoutTest/layoutTest.md`, MarkdownGraph 등)에서 발생
+* 원인 분석 (생성된 HTML 직접 분석 결과):
+    - **주 원인 (tocData 구조)**: `generateTOCFromFile()`에서 H1이 없는 마크다운의 경우 `currentSection = { content: '', children: [] }`로 빈 wrapper section을 만들고 H2들을 그 children으로 넣음. 결과적으로 markmap 데이터 깊이가 3단계가 됨 (root '' → wrapper '' → 12개 H2 항목)
+    - `_config.yml`의 `markmap_depth: 2` → `initialExpandLevel: 2`로 깊이 0~1만 펼쳐 빈 노드 2개만 보이고 실제 항목들은 collapsed
+    - **부 원인 (ID 중복)**: `<svg id="toc-mindmap">`이 2개 — `#toc-container` 오버레이(SSOT)와 `_toc` 레이아웃 슬라이드 내부(Issue36_1 추가). `querySelector` 첫 매칭에만 바인딩되어 두 번째 SVG는 영구 빈 상태 + HTML 표준 위반
+* 구현 명세:
+    - 주 수정: `lib/generate-slides.js` `generateTOCFromFile()` H2 처리 분기 — H1 없을 때 빈 wrapper 미생성, H2를 root의 직접 children으로 push. 깊이 root → 항목들 (2단계로 축소)
+    - 부 수정: `theme/default/layouts/_toc.html`, `theme/nowage/layouts/_toc.html`의 `<svg id="toc-mindmap">` 제거 (오버레이가 SSOT, Issue36_1 부분 롤백)
+    - 검증: layoutTest, MarkdownGraph(H2 only), m2SlideStyle1_single(H1+H2), LlmAndVibeCoding(AGENDA) 4종 재빌드 회귀 없음 확인
+    - 후속: Issue40에서 슬라이드 마크다운 작성 규칙(md-slide-rules + md-m2slide-rules) 정립
+
+## Issue28. 베이스 폴더 변경(scripts -> lib) 영향 제거 (등록: 2026-05-01, 해결: 2026-05-01) ✅
+* 목적: `scripts` 폴더가 `lib`로 변경됨에 따라, `m2slide` 내에서 상위 폴더를 참조하는 부분이 있다면 수정하여 의존성을 맞춘다
+* 배경: 전체 프로젝트 구조 리팩토링으로 `scripts`가 `lib`로 이름이 변경됨
+* 검증 결과:
+    - m2slide 디렉토리 전체에서 `scripts` 폴더 참조 0건 확인 (`m2slide.sh`, `m2slideDo.sh`, `lib/`, `Theme/`, `docs/`, `README.md`, `GEMINI.md`, `_config.org.yml`, `CLAUDE.md`, `noteForHuman*.md`, `PROMPTS.md`, `Harness.md`)
+    - 상위 `lib/CLAUDE.md` 및 `videoMaker/CLAUDE.md`에서도 모든 경로가 이미 `lib/` 기준으로 정리됨
+    - 코드 변경 없이 검증만으로 종결 (단순 이슈)
 
 ## Issue37. H 제목 내 특수문자 처리 버그 (등록: 2026-05-01, 해결: 2026-05-01, commit: 9d160e5) ✅
 * 목적: 마크다운 H 제목 내에서 backtick으로 감싼 inline code가 HTML로 변환되지 않는 버그 수정
@@ -308,7 +466,28 @@
 
 # ⏸️ 보류
 
+## Issue42. `slide_ratio` 옵션 완전 제거 (보류: 2026-05-01)
+* 목적: theme 시스템 도입 후 사실상 단일 분기(`none`)만 사용되는 `slide_ratio` 옵션을 코드·CSS·설정에서 완전 제거
+* 상세:
+    - 도입 배경: c0a24ef(2025-11-28)에서 Reveal.js 기본 중앙정렬을 끄기 위해 `.ratio-none`/`.ratio-16-9`/`.ratio-3-2` 클래스 + `Reveal.initialize({width,height})` 분기로 도입
+    - 현재 상태: 모든 프로젝트 `_config.yml`이 `none`만 사용. `16:9`/`3:2` 분기는 데드 코드
+    - 1차 정리(2026-05-01): `_config.org.yml`에는 옵션을 남겨두고, `Projects/{layoutTest, m2SlideStyle2_chapter, MarkdownGraph}/_config.yml`에서 라인 제거 완료
+* 보류 사유: `.reveal.ratio-none .slides { inset:0; transform:none }`이 현 레이아웃의 핵심 reset이므로 단순 제거는 불가. 셀렉터를 `.reveal .slides`로 바꾸는 css 수정이 필요한데 [`CLAUDE.md`](CLAUDE.md) "CSS 수정 시 주의사항"의 위험 속성(`transform`, `position`, `inset`)에 직접 닿는 작업이라 회귀 테스트 비용이 큼. theme 시스템 안정화 후 재개.
+* 재개 조건:
+    - default·nowage 양쪽 테마에서 `.ratio-none` 의존성을 한꺼번에 제거할 수 있는 시점
+    - 모든 프로젝트의 첫·중간·끝 슬라이드 시각 회귀 테스트 자동화 마련
+* 구현 명세 (재개 시):
+    - `lib/generate-slides.js:10,48-51,1486-1499,1738,1765-1766` `SLIDE_RATIO`/`ratioClass`/`revealWidth`/`revealHeight` 분기 삭제
+    - `theme/default/slide.css:55,67`, `theme/nowage/slide.css:57,69` 셀렉터 `.reveal.ratio-none` → `.reveal`
+    - `_config.org.yml:50` 라인 제거
+    - Reveal.initialize 호출부 width/height 인자 제거 (기본값 위임)
+
 # 🚫 취소
 
 # 📜 참고
+
+## Issue25. 배경 이미지 설정 기능 (보류: 2026-05-01)
+* 마크다운 메타데이터(YAML frontmatter)를 통해 전체 슬라이드의 배경 이미지를 지정하는 기능 구현
+* `background` 속성으로 이미지 경로 혹은 color 지정 지원
+* **보류 사유**: theme/{name}/slide.css 시스템(Issue36/38)으로 동일 목적 달성 가능 (ex: `.reveal { background: url('img/bg.png') center/cover; }`). 비기술 사용자가 마크다운만으로 슬라이드별 배경을 자주 바꾸는 use-case가 누적되면 재검토.
 
