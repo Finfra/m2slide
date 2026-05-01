@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 36
+* Issue HWM: 38
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -8,7 +8,7 @@
     * 명령어: `gh issue create --title "제목" --body "내용"`
     * 등록 후 `gh issue close {IssueNum}`으로 닫기 (완료된 경우)
 
-# 🌱이슈 후보
+# 🌱 이슈후보
 0. meta.yml 운영(생성정보, googleDrive정보, 강의일, version+날짜, ) cf) /Users/nowage/work/AgenticCoding_lec/_doc_work/AgenticCoding_v1.1/meta.yml
 1. 제목 페이지 추가 - Markdown Yaml Front Matter (QGCode, 강사명, 강사 연락처, 부제목(part1), QRCode)
 2. Orientation slide기능(제목 페이지와 목차 사이 장표 추가 기능."강의에 들어가기 앞서..." 혹은 공지사항 ) 목차에 들어가면 않됨. "## ![오리엔테이션](./00_Orientation.md)"이런 식으로 !로 시작하는 제목은 MarkdownTreeView에 추가시키지 않음.
@@ -23,6 +23,41 @@
     - 재현: `Projects/layoutTest/layoutTest.md:124` 라인
     - 원인: `generate-slides.js`의 제목 파싱 로직에서 backtick 코드 블록을 처리하지 않음
     - 영향: 제목 내 기술 용어 강조나 특수문자 보호 목적 코드 블록이 깨짐
+
+## Issue25. 배경 이미지 설정 기능
+* 마크다운 메타데이터(YAML frontmatter)를 통해 전체 슬라이드의 배경 이미지를 지정하는 기능 구현
+* `background` 속성으로 이미지 경로 혹은 color 지정 지원
+
+## Issue26. 동영상 지원 기능
+* 슬라이드 내 동영상 삽입 및 재생 기능 지원
+* 로컬 비디오 파일 재생 확인
+
+## Issue27. 제목 없는 단독 이미지 페이지 자동 확대 (Full Image)
+* 제목 없이 이미지만 있는 슬라이드 감지 로직 구현
+* 해당 슬라이드에 대해 화면 비율을 유지하면서 화면에 꽉 차게(Contain/Cover) 표시하는 스타일 적용
+
+## Issue28. 베이스 폴더 변경(scripts -> lib) 영향 제거
+* **목표**: `scripts` 폴더가 `lib`로 변경됨에 따라, `m2slide` 내에서 상위 폴더를 참조하는 부분이 있다면 수정하여 의존성을 맞춘다.
+* **배경**: 전체 프로젝트 구조 리팩토링으로 `scripts`가 `lib`로 이름이 변경됨.
+
+
+
+# 🏁 완료된 이슈
+
+
+## Issue38. layout 파일명 표준화 + default 테마 fallback 시스템 (2026-05-01 해결, commit: b58b563) ✅
+* 목적: theme layout 파일명을 underscore prefix 컨벤션으로 표준화하고, 커스텀 theme에 layout이 없을 때 default theme에서 자동 fallback 하도록 함
+* 상세:
+    - 파일명 표준화: `Theme/nowage/layouts/8.1.blank.html` → `_blank.html`, `2.1.contents.html` → `_contents.html`
+    - 신규 layout: `_contents_no_title.html` (`_contents.html`에서 title 영역 제거한 변형)
+    - `_` prefix는 시스템/기본 layout을 의미. 모든 `_`-prefix layout을 `Theme/default/layouts/`에 복사하여 SSOT 보유
+    - `generate-slides.js` 로직 변경: 커스텀 theme에 layout이 없으면 `Theme/default/layouts/`에서 자동 보충
+    - 양쪽에 모두 없을 경우 warning 출력 + plain section fallback (기존 동작 유지)
+* 구현 명세:
+    - `lib/generate-slides.js` `loadLayoutTemplates()`: 2단계 로딩 (themeName !== 'default'일 때만 default 보충, 순환 방지)
+    - warning 메시지에 검색한 모든 경로 표시 (`theme/{name}/layouts/ 및 theme/default/layouts/`)
+    - `Theme/default/layouts/`: `_blank.html`, `_contents.html`, `_contents_no_title.html`, `_toc.html` 4종 추가 (git 추적)
+    - `Theme/nowage/layouts/`: `_blank.html`, `_contents.html`, `_contents_no_title.html` 추가 (gitignored)
 
 ## Issue36. theme/{name}/ + HTML 템플릿 layout 시스템 도입 (2026-05-01 해결, commit: 687ce22) ✅
 * **목적**: `resource/` 단일 CSS 구조를 `theme/{name}/` 디렉토리 기반 + HTML 템플릿 layout 시스템으로 전환
@@ -44,32 +79,6 @@
     - `theme/nowage/{slide.css, layouts/*.html 11개}` (gitignored, `.layout-*` selector 포함)
     - `.gitignore`: `/theme/*` + `!/theme/default/`
 
-## Issue25. 배경 이미지 설정 기능
-* 마크다운 메타데이터(YAML frontmatter)를 통해 전체 슬라이드의 배경 이미지를 지정하는 기능 구현
-* `background` 속성으로 이미지 경로 혹은 color 지정 지원
-
-## Issue26. 동영상 지원 기능
-* 슬라이드 내 동영상 삽입 및 재생 기능 지원
-* 로컬 비디오 파일 재생 확인
-
-## Issue27. 제목 없는 단독 이미지 페이지 자동 확대 (Full Image)
-* 제목 없이 이미지만 있는 슬라이드 감지 로직 구현
-* 해당 슬라이드에 대해 화면 비율을 유지하면서 화면에 꽉 차게(Contain/Cover) 표시하는 스타일 적용
-
-## Issue28. 베이스 폴더 변경(scripts -> lib) 영향 제거
-* **목표**: `scripts` 폴더가 `lib`로 변경됨에 따라, `m2slide` 내에서 상위 폴더를 참조하는 부분이 있다면 수정하여 의존성을 맞춘다.
-* **배경**: 전체 프로젝트 구조 리팩토링으로 `scripts`가 `lib`로 이름이 변경됨.
-
-
-
-# 🏁 완료된 이슈
-## Issue36_2. nowage 테마로 재테스트 (등록: 2026-05-01, 해결: 2026-05-01, commit: a95cd61) ✅
-* 목적: 36_1 원인 분석을 위해 기본 default 테마 대신 nowage 테마로 재테스트
-* 상세:
-    - 작업: `theme/nowage/layouts/_toc.html`에 SVG 요소 추가 (36_1과 동일한 수정)
-    - 검증: layoutTest 프로젝트 nowage 테마로 재생성 후 마크맵 렌더링 확인 완료
-    - 결과: default와 nowage 테마 모두 마크맵 렌더링 정상 작동
-
 ## Issue36_1. 첫 페이지 렌더링 오작동 (등록: 2026-05-01, 해결: 2026-05-01, commit: a95cd61) ✅
 * 목적: Issue36 테마 시스템 도입 후 첫 페이지(TOC/Markmap)에서 마크맵이 부분 렌더링되는 버그 수정
 * 상세:
@@ -80,6 +89,13 @@
     - `theme/default/layouts/_toc.html`: `<div class="toc-markmap">` 내부에 `<svg id="toc-mindmap"></svg>` 추가
     - `theme/{name}/layouts/_toc.html` (모든 테마): 동일하게 적용
     - JavaScript tocData 주입은 정상 작동, SVG 요소 추가로 클라이언트 사이드 렌더링 가능
+
+## Issue36_2. nowage 테마로 재테스트 (등록: 2026-05-01, 해결: 2026-05-01, commit: a95cd61) ✅
+* 목적: 36_1 원인 분석을 위해 기본 default 테마 대신 nowage 테마로 재테스트
+* 상세:
+    - 작업: `theme/nowage/layouts/_toc.html`에 SVG 요소 추가 (36_1과 동일한 수정)
+    - 검증: layoutTest 프로젝트 nowage 테마로 재생성 후 마크맵 렌더링 확인 완료
+    - 결과: default와 nowage 테마 모두 마크맵 렌더링 정상 작동
 
 ## Issue35. chapter-list TOC 카드 블록 레이아웃 전환 (2026-05-01 해결, commit: 30181b9) ✅
 * **목적**: `toc_placeholder`로 자동 생성되는 챕터 목차의 시각 정렬 개선
