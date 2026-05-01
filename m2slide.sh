@@ -35,28 +35,38 @@ for arg in "$@"; do
   esac
 done
 
-# If no project directory specified, read from config.yml
-if [ -z "$PROJECT_DIR" ]; then
-  CONFIG_FILE="$SCRIPT_DIR/config.yml"
+# Project detection priority:
+#   1. CLI parameter (already set as PROJECT_DIR)
+#   2. CWD contains _config.yml → CWD is the project folder
+#   3. Root _config.yml → read current_project
+#   4. Root _config.org.yml → read current_project (fallback)
 
-  if [ -f "$CONFIG_FILE" ]; then
-    # Read current_project from config.yml
-    CURRENT_PROJECT=$(grep "^current_project:" "$CONFIG_FILE" | sed 's/current_project:[[:space:]]*//')
+_read_current_project() {
+  local cfg="$1"
+  grep "^current_project:" "$cfg" 2>/dev/null | sed 's/current_project:[[:space:]]*//'
+}
 
-    if [ -z "$CURRENT_PROJECT" ]; then
-      echo "⚠️  Warning: current_project not found in config.yml, using default"
-      CURRENT_PROJECT="LlmAndVibeCoding"
-    fi
-  else
-    echo "⚠️  Warning: config.yml not found, using default project"
-    CURRENT_PROJECT="LlmAndVibeCoding"
-  fi
-
-  PROJECT_DIR="$SCRIPT_DIR/Projects/$CURRENT_PROJECT"
-  echo "Using project from config.yml: $CURRENT_PROJECT"
-else
-  # Resolve to absolute path
+if [ -n "$PROJECT_DIR" ]; then
   PROJECT_DIR=$(cd "$PROJECT_DIR" 2>/dev/null && pwd || echo "$PROJECT_DIR")
+  echo "Using project from parameter: $(basename "$PROJECT_DIR")"
+elif [ -f "$PWD/_config.yml" ]; then
+  PROJECT_DIR="$PWD"
+  echo "Using current directory as project: $PROJECT_DIR"
+else
+  CURRENT_PROJECT=""
+  if [ -f "$SCRIPT_DIR/_config.yml" ]; then
+    CURRENT_PROJECT=$(_read_current_project "$SCRIPT_DIR/_config.yml")
+    [ -n "$CURRENT_PROJECT" ] && echo "Using project from _config.yml: $CURRENT_PROJECT"
+  fi
+  if [ -z "$CURRENT_PROJECT" ] && [ -f "$SCRIPT_DIR/_config.org.yml" ]; then
+    CURRENT_PROJECT=$(_read_current_project "$SCRIPT_DIR/_config.org.yml")
+    [ -n "$CURRENT_PROJECT" ] && echo "Using project from _config.org.yml: $CURRENT_PROJECT"
+  fi
+  if [ -z "$CURRENT_PROJECT" ]; then
+    echo "❌ Error: Could not determine project. Pass a project path or set current_project in _config.yml"
+    exit 1
+  fi
+  PROJECT_DIR="$SCRIPT_DIR/Projects/$CURRENT_PROJECT"
 fi
 
 echo "Project directory: $PROJECT_DIR"
@@ -123,10 +133,11 @@ if [ "$GENERATE_PDF" = true ]; then
       echo "  Processing $filename..."
       
       # Run decktape and filter out known non-critical SVG errors
+      # shellcheck disable=SC2086
       $DECKTAPE_CMD reveal "$file" "$PROJECT_DIR/$name.pdf" 2>&1 | grep -vE "Error: <g> attribute transform|translate\(NaN,NaN\)"
-      
+
       # Check exit code of the first command in the pipe (decktape)
-      if [ ${PIPESTATUS[0]} -eq 0 ]; then
+      if [ "${PIPESTATUS[0]}" -eq 0 ]; then
           echo "  ✅ Generated: $name.pdf"
       else
           echo "  ❌ Failed to generate PDF for $name"
@@ -165,8 +176,7 @@ if [ "$GENERATE_PPTX" = true ]; then
     fi
     
     if [ -n "$MD_FILE" ]; then
-      pandoc "$MD_FILE" -o "$PPTX_OUTPUT" --resource-path="$PROJECT_DIR"
-      if [ $? -eq 0 ]; then
+      if pandoc "$MD_FILE" -o "$PPTX_OUTPUT" --resource-path="$PROJECT_DIR"; then
          echo "  ✅ Generated: $PROJECT_NAME.pptx"
       else
          echo "  ❌ Failed to generate PPTX"
@@ -180,9 +190,7 @@ if [ "$GENERATE_PPTX" = true ]; then
     echo "  Combining markdown files from $INPUT_DIR..."
     
     # Use glob carefully
-    pandoc "$INPUT_DIR"/*.md -o "$PPTX_OUTPUT" --resource-path="$INPUT_DIR"
-    
-    if [ $? -eq 0 ]; then
+    if pandoc "$INPUT_DIR"/*.md -o "$PPTX_OUTPUT" --resource-path="$INPUT_DIR"; then
         echo "  ✅ Generated: $PROJECT_NAME.pptx"
     else
         echo "  ❌ Failed to generate PPTX"

@@ -44,7 +44,7 @@ m2slide/
 │   │   └── ProjectB.epub
 │   └── LlmAndVibeCoding/          # 예시 프로젝트 (아래 참고)
 ├── config.yml                     # 현재 작업 프로젝트 설정
-├── convert.sh                     # 원클릭 변환 (HTML/EPUB)
+├── m2slide.sh                     # 원클릭 변환 (HTML/EPUB)
 ├── lib/                           # 스크립트 모음
 │   ├── generate-slides.js         # HTML 변환 스크립트
 │   ├── generate-epub.js           # EPUB 변환 스크립트
@@ -65,7 +65,7 @@ m2slide/
 
 1. `Projects/{이름}/` 폴더 생성
 2. 그 안에 마크다운 파일 작성 (`---`로 슬라이드 구분)
-3. `./convert.sh Projects/{이름}` 실행
+3. `./m2slide.sh Projects/{이름}` 실행
 4. `Projects/{이름}/slide/{이름}.html` 열어서 확인
 
 **마크다운 파일 선택 우선순위** (여러 .md 파일이 있을 때):
@@ -83,7 +83,7 @@ m2slide/
 1. `Projects/{이름}/markdown/` 폴더 생성
 2. 챕터 파일 작성 — 메인: `01-opening.md`, 하위: `02.1-chat.md`
 3. `markdown/AGENDA.md`에 목차 작성 (이 파일이 챕터 모드 활성화 신호)
-4. `./convert.sh Projects/{이름}` 실행
+4. `./m2slide.sh Projects/{이름}` 실행
 5. `Projects/{이름}/slide/index.html` (마인드맵 목차) 열기
 
 ## 사용법
@@ -93,10 +93,10 @@ m2slide/
 **간편한 방법 (권장)**:
 ```bash
 # config.yml의 현재 프로젝트 사용
-./convert.sh
+./m2slide.sh
 
 # 특정 프로젝트 지정
-./convert.sh Projects/ProjectA
+./m2slide.sh Projects/ProjectA
 ```
 
 **상세 제어 (Node.js 직접 실행)**:
@@ -124,10 +124,10 @@ node generate-slides.js Projects/ProjectA/markdown Projects/ProjectA/slide
 **HTML + EPUB 동시 생성**:
 ```bash
 # config.yml의 현재 프로젝트
-./convert.sh --epub
+./m2slide.sh --epub
 
 # 특정 프로젝트
-./convert.sh Projects/ProjectA --epub
+./m2slide.sh Projects/ProjectA --epub
 ```
 
 **EPUB만 생성 (HTML 스킵)**:
@@ -187,7 +187,7 @@ mkdir -p Projects/NewProject/markdown
 echo "!/NewProject/" >> Projects/.gitignore
 
 # 4. HTML/EPUB 생성
-./convert.sh Projects/NewProject --epub
+./m2slide.sh Projects/NewProject --epub
 
 # 5. 확인
 open Projects/NewProject/slide/index.html
@@ -235,7 +235,7 @@ pandoc Projects/ProjectA/markdown/*.md -o complete.pptx
 - **범용 호환성**: iBooks, Calibre, Google Play Books 등 모든 EPUB 리더
 
 ### 자동 변환 스크립트
-- **원클릭 변환**: `./convert.sh` 스크립트로 HTML/EPUB 동시 생성
+- **원클릭 변환**: `./m2slide.sh` 스크립트로 HTML/EPUB 동시 생성
 - **config.yml 지원**: 현재 작업 프로젝트 자동 인식
 - **이미지 자동 복사**: markdown/img/ → slide/img/, EPUB 내부
 - **상위 페이지 자동 감지**: AGENDA.md 기반 계층 구조 파악
@@ -275,7 +275,7 @@ pandoc Projects/ProjectA/markdown/*.md -o complete.pptx
 ## 수정 워크플로우
 
 1. `Projects/[Project]/markdown/` 폴더의 마크다운 파일 수정
-2. `./convert.sh --epub` 실행 (HTML + EPUB 동시 생성)
+2. `./m2slide.sh --epub` 실행 (HTML + EPUB 동시 생성)
 3. 브라우저에서 `Projects/[Project]/slide/index.html` 확인
 4. EPUB 리더에서 `Projects/[Project]/[Project].epub` 확인
 
@@ -301,7 +301,7 @@ pandoc Projects/ProjectA/markdown/*.md -o complete.pptx
 **수동 배포**:
 ```bash
 # 1. HTML 재생성
-./convert.sh --epub
+./m2slide.sh --epub
 
 # 2. docs 폴더에 복사
 cp -r Projects/[Project]/slide/* docs/
@@ -382,7 +382,7 @@ git push
 current_project: LlmAndVibeCoding
 ```
 
-`./convert.sh`와 `./lib/deploy.sh`는 이 설정을 자동으로 읽습니다.
+`./m2slide.sh`와 `./lib/deploy.sh`는 이 설정을 자동으로 읽습니다.
 
 ## 라이선스
 
