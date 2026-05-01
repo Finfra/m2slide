@@ -44,21 +44,6 @@
     - `theme/nowage/{slide.css, layouts/*.html 11개}` (gitignored, `.layout-*` selector 포함)
     - `.gitignore`: `/theme/*` + `!/theme/default/`
 
-## Issue36_1. 첫 페이지 렌더링 오작동 (등록: 2026-05-01)
-* 목적: Issue36 테마 시스템 도입 후 첫 페이지(TOC/Markmap)에서 마크맵이 부분 렌더링되는 버그 수정
-* 상세:
-    - 현상: `Projects/layoutTest/layoutTest.html#/toc-placeholder`에서 마크맵이 일부만 로드되고, 나머지가 비어있음
-    - 재현: layoutTest 프로젝트에서 슬라이드 생성 후 첫 페이지 확인
-    - 추정 원인: theme 시스템 적용 중 `_toc` layout의 `{{markmap}}` 치환 또는 초기화 시점 문제
-
-## Issue36_2. nowage 테마로 재테스트 (등록: 2026-05-01)
-* 목적: 36_1 원인 분석을 위해 기본 default 테마 대신 nowage 테마로 재테스트
-* 상세:
-    - 작업: `Projects/layoutTest/_config.yml` 생성 및 `theme: nowage`, `theme_default_layout: contents` 설정
-    - 목표: 동일 버그 재현 확인 또는 테마 특화 이슈 파악
-
-
-
 ## Issue25. 배경 이미지 설정 기능
 * 마크다운 메타데이터(YAML frontmatter)를 통해 전체 슬라이드의 배경 이미지를 지정하는 기능 구현
 * `background` 속성으로 이미지 경로 혹은 color 지정 지원
@@ -78,6 +63,24 @@
 
 
 # 🏁 완료된 이슈
+## Issue36_2. nowage 테마로 재테스트 (등록: 2026-05-01, 해결: 2026-05-01, commit: a95cd61) ✅
+* 목적: 36_1 원인 분석을 위해 기본 default 테마 대신 nowage 테마로 재테스트
+* 상세:
+    - 작업: `theme/nowage/layouts/_toc.html`에 SVG 요소 추가 (36_1과 동일한 수정)
+    - 검증: layoutTest 프로젝트 nowage 테마로 재생성 후 마크맵 렌더링 확인 완료
+    - 결과: default와 nowage 테마 모두 마크맵 렌더링 정상 작동
+
+## Issue36_1. 첫 페이지 렌더링 오작동 (등록: 2026-05-01, 해결: 2026-05-01, commit: a95cd61) ✅
+* 목적: Issue36 테마 시스템 도입 후 첫 페이지(TOC/Markmap)에서 마크맵이 부분 렌더링되는 버그 수정
+* 상세:
+    - 현상: `Projects/layoutTest/layoutTest.html#/toc-placeholder`에서 마크맵이 전혀 렌더링되지 않음 (SVG 요소 부재)
+    - 원인: _toc layout 템플릿에 마크맵을 렌더링할 SVG 요소(`<svg id="toc-mindmap"></svg>`) 누락
+    - 클라이언트 사이드 마크맵 초기화 스크립트가 `#toc-mindmap` SVG를 찾지 못해 렌더링 불가
+* **구현 명세**:
+    - `theme/default/layouts/_toc.html`: `<div class="toc-markmap">` 내부에 `<svg id="toc-mindmap"></svg>` 추가
+    - `theme/{name}/layouts/_toc.html` (모든 테마): 동일하게 적용
+    - JavaScript tocData 주입은 정상 작동, SVG 요소 추가로 클라이언트 사이드 렌더링 가능
+
 ## Issue35. chapter-list TOC 카드 블록 레이아웃 전환 (2026-05-01 해결, commit: 30181b9) ✅
 * **목적**: `toc_placeholder`로 자동 생성되는 챕터 목차의 시각 정렬 개선
 * **상세**:
