@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 57
+* Issue HWM: 58
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -15,7 +15,7 @@
 | Cover Page  | index.html                 | _cover.html        |      |
 | Agenda Page | agenda.html                | _agenda.html       |      |
 | TOC Page    | 0X-*.html#/toc-placeholder | _toc.html          |      |
-
+| Cover Slide | 0X-*.html#/#0              | _cov               | 제거 |
 # 🌱 이슈후보
 
 # 🚧 진행중
@@ -27,6 +27,19 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue58. Cover Slide 제거 및 TOC 통합 (등록: 2026-05-02, 해결: 2026-05-02, commit: 9ed3298) ✅
+* 목적: Cover Slide를 모든 모드에서 제거하고 cover 내용을 TOC에 흡수하여 슬라이드 번호 정합성 확보
+* 상세:
+    - **single mode**: `#/0` Cover Slide 제거 → TOC Slide(`#/0`)가 title·subtitle·instructor 등 cover 내용 흡수. 기존 `#/2` 첫 콘텐츠가 `#/1`로 이동
+    - **chapter mode**: `index.html` → `agenda.html` meta refresh redirect로 대체. cards 링크 `#/1` 시작
+    - **조건부 트리뷰**: AGENDA.md에 H3 서브챕터가 있을 때만 markmap 렌더, 없으면 cards 목록만 표시
+* 해결:
+    - `lib/generate-slides.js`: `hasTocItems`(서브챕터 유무) 기반 `_toc` 조건부 렌더링, isTitle 제거 로직 연동
+    - `slideRef` 패턴: children에 객체 참조 저장 → mutation 후 실제 인덱스 재계산으로 카드 링크 정합성
+    - chapter mode `index.html` → `agenda.html` meta refresh redirect 생성
+    - `agenda.html` `ArrowUp`: `index.html` 이동 제거 → redirect 루프 방지
+    - `_toc`/`_agenda` 템플릿: `{{instructor_name}}` 흡수
 
 ## Issue57. Agenda/TOC 페이지 ArrowLeft 키 누락 (등록: 2026-05-02, 해결: 2026-05-02, commit: c730a5c) ✅
 * 목적: Agenda(agenda.html) 및 챕터 덱 TOC 슬라이드에서 ↑는 작동하나 ← 키는 아무 동작 없는 문제 수정
