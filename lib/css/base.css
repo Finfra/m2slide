@@ -152,8 +152,11 @@
   flex-direction: column;
 }
 
-/* 전체 크기 헬퍼 */
-.reveal.ratio-none .slides,
+/* 전체 크기 헬퍼
+   - Issue63: ratio-16-9/ratio-3-2는 Reveal.js fixed dimensions로 자동 비율 fit (CSS 개입 불필요)
+   - ratio-fill (기존 none 동작 계승)만 100%/100% 명시 적용
+*/
+.reveal.ratio-fill .slides,
 .reveal .slides section,
 .reveal .media-container {
   width: 100%;
@@ -165,22 +168,31 @@
   display: block;
 }
 
-.reveal.ratio-none .slides {
+.reveal.ratio-fill .slides {
   inset: 0;
   transform: none;
+}
+
+/* Issue63: outer padding (슬라이드↔뷰포트 대칭).
+   - .reveal에 inset 적용으로 Reveal.js scaling 영역 축소 → 자동 중앙 배치 + 시각적 외부 여백
+   - 0이면 효과 없음 (기존과 동일)
+*/
+.reveal {
+  inset: var(--slide-outer-padding, 0) !important;
 }
 
 /* 개별 슬라이드 섹션
    - Flexbox Column 레이아웃 사용
    - height: 100%로 슬라이드 전체 높이 확보 (min-height 대신 height 사용)
    - overflow: hidden으로 섹션 자체의 스크롤 방지 (내부 .theContents가 스크롤)
+   - Issue63: --slide-inner-padding 적용 (콘텐츠↔슬라이드 경계 대칭 패딩, 기본 0)
 */
 .reveal .slides section {
   height: auto !important;
   /* Allow height to grow */
   max-height: 100vh !important;
   /* Cap at viewport height */
-  padding: 0;
+  padding: var(--slide-inner-padding, 0);
   margin: 0;
   top: 0;
   left: 0;
