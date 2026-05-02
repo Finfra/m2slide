@@ -635,3 +635,70 @@
   display: block;
   min-height: 360px;
 }
+
+/* ========================================================================
+   _cover Layout — Issue55: Cover Page (index.html deck #/0)
+   ※ reveal.js 레이아웃 파괴 속성 사용 금지
+   ======================================================================== */
+.reveal section.layout-cover .cover-subtitle {
+  font-size: 0.9em;
+  color: #555;
+  margin-top: 0.3em;
+}
+.reveal section.layout-cover .cover-part-subtitle {
+  font-size: 0.8em;
+  color: #888;
+  margin-top: 0.2em;
+}
+.reveal section.layout-cover .cover-body {
+  margin-top: auto;
+  padding: 0.8em 0;
+  font-size: 0.8em;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+}
+.reveal section.layout-cover .cover-label {
+  font-weight: 600;
+  margin-right: 0.4em;
+  color: #444;
+}
+.reveal section.layout-cover .cover-instructor-name {
+  font-weight: 600;
+}
+.reveal section.layout-cover .cover-instructor-contact {
+  color: #666;
+  margin-left: 0.5em;
+  font-size: 0.9em;
+}
+.reveal section.layout-cover .cover-lecture-date,
+.reveal section.layout-cover .cover-version {
+  color: #777;
+  font-size: 0.9em;
+  margin-right: 1em;
+}
+.reveal section.layout-cover .cover-qr {
+  text-align: right;
+  padding-top: 0.5em;
+}
+.reveal section.layout-cover .cover-qr-image {
+  max-width: 80px;
+  max-height: 80px;
+}
+.reveal section.layout-cover .cover-qr-url {
+  font-size: 0.65em;
+  color: #888;
+}
+
+/* ========================================================================
+   _agenda Layout — Issue55: Agenda Page (standalone agenda.html)
+   ※ reveal.js 없는 독립 페이지용 — flex/height 제약 없음
+   ======================================================================== */
+.layout-_agenda {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+}

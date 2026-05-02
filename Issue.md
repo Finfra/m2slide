@@ -12,9 +12,9 @@
 ## chapter-single mode 맞추기
 | 페이지      | slide위치                  | theme의 layout위치 | 작업                             |
 | ----------- | -------------------------- | ------------------ | -------------------------------- |
-| Cover Page  | index.html                 | _cover.html        | 1.1.coverhtml에서 이럼 변경 예정 |
-| Agenda Page | agenda.html                | _agenda.html       | 신설예정                         |
-| TOC Page    | 0X-*.html#/toc-placeholder | _toc.html          |                                  |
+| Cover Page  | index.html                 | _cover.html        | ✅ Issue55 — nowage `_cover.html` 신설, `1.1.cover.html` 삭제 |
+| Agenda Page | agenda.html                | _agenda.html       | ✅ Issue55 — `_agenda.html` 신설 (default+nowage), `generateAgendaHTML` 우선 사용 |
+| TOC Page    | 0X-*.html#/toc-placeholder | _toc.html          | ✅ Issue55 Phase 1 완료          |
 
 # 🌱 이슈후보
 
