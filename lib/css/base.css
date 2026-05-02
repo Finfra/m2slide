@@ -1,9 +1,22 @@
 /* =========================================================================
-   m2slide base.css — 모든 테마 공통 기본 스타일 (Issue64)
-   - Issue64: 두 테마 slide.css 1422줄 100% 동일 → 공통 부분 추출
-   - 분리 기준 SSOT: _doc_design/css.md "리팩터링 계획" 섹션
-   - 주입 방식: html-builder.js가 inline <style>로 주입 (CSS 우선순위 4단)
-   - 우선순위: CDN(1-3) → base.css(4) → theme/{name}/slide.css(5) → <body style>(6)
+   m2slide base.css — 모든 테마 공통 기본 스타일 (Issue64 도입)
+   - 주입 방식: html-builder.js가 inline <style data-m2slide-base="true">로 주입
+   - 설계 SSOT (원칙·정책·공식·금지): _doc_design/css.md
+   - 본 파일은 모든 슬라이드의 골격(레이아웃·컴포넌트·반응형·CSS 변수 기본값) 제공
+   - 테마는 색상·이미지·시각 언어만 theme/{name}/slide.css로 추가
+
+   본 파일 목차:
+     §1  @import (외부 폰트 CDN)
+     §2  :root CSS 변수 기본값 (1.b 정책: _config.yml 명시값 전체 흡수)
+     §3  Reveal.js 변수 보정 (--r-* sky.css 의존 제거용)
+     §4  공통 레이아웃 (*, .outline-title, .title, Flex 컨테이너)
+     §5  컴포넌트 (lists, tables, media-container 4 enlarge modes, graph-scroll)
+     §6  특수 슬라이드 (title-slide, chapter-list)
+     §7  다분할 레이아웃 (m2-cols/columns, m2-rows/rows)
+     §8  디버깅 (guide-line-mode)
+     §9  Layout 골격 (cover/contents/contents-full/split-image-text/chapter-toc/chapter/exercise/exercise-small/blank/closing/toc)
+     §10 Layout-* 공통 (padding, header 정렬, list markers ●─▶•)
+     §11 반응형 (cover-title clamp 공식 — _doc_design/css.md §3 근거)
    ========================================================================= */
 
 /* =========================================================================
