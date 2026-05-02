@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 58
+* Issue HWM: 59
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -27,6 +27,17 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue59. cover_enabled=true 시 커버 페이지 복원 (등록: 2026-05-02, 해결: 2026-05-02, commit: bba0104) ✅
+* 목적: `cover_enabled: true` 설정 시 커버 페이지가 표시되지 않는 문제 수정 (Issue58에서 의도치 않게 제거됨)
+* 카테고리: Generator / Frontend
+* 복잡도: 중간
+* 해결:
+    - chapter 모드: `cover_enabled=true` → `index.html`을 Reveal.js 단일 슬라이드 커버 덱으로 생성. `false` → `agenda.html` redirect 유지
+    - single 모드: `cover_enabled=true` → `#/0`에 `_cover` layout 슬라이드 주입
+    - `generateCoverHTML`: Reveal.js CDN + theme CSS 포함, `.reveal section.layout-cover` CSS 적용 보장
+    - `agenda.html` `↑` 키: `cover_enabled=true`이면 `index.html`(커버)로, `false`이면 최상위 유지
+    - `generateTOCFromFile`: single 모드 커버 주입 시 `slideIndex +1` 오프셋 보정
 
 ## Issue58. Cover Slide 제거 및 TOC 통합 (등록: 2026-05-02, 해결: 2026-05-02, commit: 9ed3298) ✅
 * 목적: Cover Slide를 모든 모드에서 제거하고 cover 내용을 TOC에 흡수하여 슬라이드 번호 정합성 확보
