@@ -1,958 +1,14 @@
-/* theme: nowage (sandbox - 사용자 커스터마이징 영역) */
-
-/* =========================================
-   [Table of Contents]
-   1. 전역 설정 (Global)
-   2. 레이아웃 유틸리티 (Layout Utilities)
-   3. 컴포넌트 (Components)
-   4. 특수 슬라이드 (Special Slides)
-   5. 유틸리티 (Utilities)
-   6. 디버깅 (Debugging)
-   ========================================= */
-
-/* =========================================
-   1. 전역 설정 (Global)
-   ========================================= */
-* {
-  box-sizing: border-box;
-}
-
-.reveal .outline-title {
-  font-family: var(--outline-title-font-family, var(--global-font-family, inherit));
-  font-size: var(--outline-title-font-size, 2.5em);
-  color: var(--outline-title-color, inherit);
-  text-align: var(--outline-title-align, center);
-  padding: var(--outline-title-padding, 0);
-  text-transform: none;
-  font-weight: var(--outline-title-font-weight, 700);
-  /* text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000; */
-}
-
-.reveal .title {
-  font-family: var(--title-font-family, var(--global-font-family, inherit));
-  font-size: var(--title-font-size, 1.6em);
-  color: var(--title-color, inherit);
-  text-align: var(--title-align, center);
-  padding: var(--title-padding, 0);
-  text-transform: none;
-  font-weight: var(--title-font-weight, 700);
-  /* title_contents_gap: CSS 변수로 gap 적용 (JS 타이밍 독립) */
-  margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);
-  /* text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000; */
-}
-
-/* =========================================
-   2. 레이아웃 유틸리티 (Layout Utilities)
-   ========================================= */
-/* 공통 Flex Column 패턴 */
-.reveal pre,
-.reveal .slides section,
-.reveal .theContents,
-.reveal .media-container,
-.graph-scroll,
-.reveal section.title-slide {
-  display: flex;
-  flex-direction: column;
-}
-
-/* 전체 크기 헬퍼 */
-.reveal.ratio-none .slides,
-.reveal .slides section,
-.reveal .media-container {
-  width: 100%;
-  height: 100%;
-}
-
-/* 슬라이드 컨테이너 */
-.reveal .slides {
-  display: block;
-}
-
-.reveal.ratio-none .slides {
-  inset: 0;
-  transform: none;
-}
-
-/* 개별 슬라이드 섹션
-   - Flexbox Column 레이아웃 사용
-   - height: 100%로 슬라이드 전체 높이 확보 (min-height 대신 height 사용)
-   - overflow: hidden으로 섹션 자체의 스크롤 방지 (내부 .theContents가 스크롤)
-*/
-.reveal .slides section {
-  height: auto !important;
-  /* Allow height to grow */
-  max-height: 100vh !important;
-  /* Cap at viewport height */
-  padding: 0;
-  margin: 0;
-  top: 0;
-  left: 0;
-  align-items: stretch;
-  justify-content: flex-start;
-  overflow-y: auto !important;
-  /* Enable vertical scroll */
-  box-sizing: border-box;
-}
-
-/* 콘텐츠 컨테이너
-   - 남은 세로 공간을 모두 차지 (flex-grow: 1)
-   - 내용이 넘치면 스크롤 (overflow-y: auto)
-   - min-height: 0은 flex item이 내용물 크기보다 작아질 수 있게 함 (스크롤 동작 필수)
-   - max-height: 100% 추가로 부모 높이를 넘지 않도록 제한
-*/
-.reveal .theContents {
-  /* flex properties removed to allow natural flow */
-  overflow-wrap: break-word;
-  /* Prevent horizontal scroll for long words */
-  word-wrap: break-word;
-  word-wrap: break-word;
-  font-family: var(--content-font-family, inherit);
-  font-size: var(--content-font-size, 1em);
-  color: var(--content-color, inherit);
-  text-align: var(--content-align, left);
-  padding: var(--content-padding, 0);
-}
-
-/* Preformatted Text */
-.reveal pre {
-  width: 100%;
-  margin: 0 auto;
-  /* padding removed */
-}
-
-.reveal pre code {
-  /* padding removed */
-  overflow: auto;
-  max-height: none;
-}
-
-/* =========================================
-   3. 컴포넌트 (Components)
-   ========================================= */
-/* 리스트 */
-.reveal ul,
-.reveal ol {
-  display: block;
-  text-align: left;
-  /* margin/padding removed or minimal */
-  padding-left: 1.5em;
-  /* Indentation is structural */
-}
-
-/* Nested lists */
-.reveal ul ul,
-.reveal ul ol,
-.reveal ol ul,
-.reveal ol ol {
-  display: block;
-  margin-left: 1.5em !important;
-  margin-top: 0.2em;
-  font-size: 90%;
-  /* Scale down 10% per nesting level */
-}
-
-/* Custom Bullet Styles */
-.reveal li.bullet-dot {
-  list-style-type: disc;
-}
-
-.reveal li.bullet-dash {
-  list-style-type: "- ";
-  /* Custom string marker */
-}
-
-/* 표 */
-.reveal table {
-  width: auto;
-  min-width: 50%;
-  max-width: 90%;
-  border-collapse: collapse;
-  margin: 0.5em auto;
-}
-.reveal table th,
-.reveal table td {
-  padding: 0.4em 1em;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  vertical-align: middle;
-}
-.reveal table thead th {
-  font-weight: bold;
-  background-color: rgba(0, 0, 0, 0.06);
-  border-bottom: 2px solid rgba(0, 0, 0, 0.25);
-}
-.reveal table tbody tr:nth-child(even) {
-  background-color: rgba(0, 0, 0, 0.02);
-}
-
-/* Issue 22: 테이블 내 이미지 크기 자동 조절 */
-.reveal table img {
-  max-height: 1.5em;
-  /* 텍스트 높이보다 약간 크게 */
-  width: auto;
-  vertical-align: middle;
-}
-
-/* 이미지 및 다이어그램 */
-.reveal .media-container {
-  flex-grow: 1;
-  justify-content: center;
-  align-items: center;
-  min-height: 0;
-}
-
-/* Default (Original) Mode - controlled by body class */
-.reveal .media-container img,
-.reveal .media-container svg {
-  display: block;
-  margin: 0 auto;
-}
-
-/* 1. Original: 원본 크기 유지 (단, 화면 넘지 않음) */
-.media-enlarge-original .reveal .media-container img,
-.media-enlarge-original .reveal .media-container svg {
-  max-width: 100% !important;
-  max-height: 100% !important;
-  width: auto !important;
-  height: auto !important;
-  object-fit: contain !important;
-}
-
-/* 2. Width: 너비 최대화 */
-.media-enlarge-width .reveal .media-container img,
-.media-enlarge-width .reveal .media-container svg {
-  width: 100% !important;
-  height: auto !important;
-  max-width: none !important;
-  max-height: none !important;
-  object-fit: contain !important;
-}
-
-/* 3. Height: 높이 최대화 */
-/* 3. Height: 높이 최대화 */
-.media-enlarge-height .reveal .slides section {
-  height: 100vh !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow-y: hidden !important;
-  overflow-x: auto !important;
-}
-
-.media-enlarge-height .reveal .theContents {
-  flex-grow: 1 !important;
-  height: auto !important;
-  min-height: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-}
-
-.media-enlarge-height .reveal .media-container,
-.media-enlarge-height .graph-scroll {
-  height: auto !important;
-  min-height: 0 !important;
-  flex-grow: 1 !important;
-}
-
-.media-enlarge-height .reveal .media-container img,
-.media-enlarge-height .reveal .media-container svg,
-.media-enlarge-height .graph-scroll img,
-.media-enlarge-height .graph-scroll svg {
-  height: 100% !important;
-  width: auto !important;
-  max-width: none !important;
-  max-height: none !important;
-  object-fit: contain !important;
-}
-
-/* 4. Fit: 화면에 꽉 차게 맞춤 (스크롤 없음) */
-.media-enlarge-fit .reveal .slides section {
-  height: 100vh !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important;
-}
-
-.media-enlarge-fit .reveal .theContents {
-  flex-grow: 1 !important;
-  height: auto !important;
-  min-height: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important;
-}
-
-.media-enlarge-fit .reveal .media-container,
-.media-enlarge-fit .graph-scroll {
-  height: 100% !important;
-  min-height: 0 !important;
-  flex-grow: 1 !important;
-  overflow: hidden !important;
-}
-
-.media-enlarge-fit .reveal .media-container img,
-.media-enlarge-fit .reveal .media-container svg,
-.media-enlarge-fit .graph-scroll img,
-.media-enlarge-fit .graph-scroll svg {
-  width: 100% !important;
-  height: 100% !important;
-  max-width: none !important;
-  max-height: none !important;
-  object-fit: contain !important;
-}
-
-/* Handle nested flex layouts (e.g. columns) in fit mode */
-.media-enlarge-fit .reveal .theContents div {
-  flex-grow: 1 !important;
-  min-height: 0 !important;
-  box-sizing: border-box !important;
-}
-
-/* Hide empty paragraphs that might interfere with flex layout */
-.media-enlarge-fit .reveal .theContents>p:empty {
-  display: none !important;
-}
-
-/* Override for slides with text content in fit mode - REMOVED to enforce fit */
-/*
-.media-enlarge-fit .reveal .slides section.has-text {
-  height: auto !important;
-  max-height: 100vh !important;
-  overflow-y: auto !important;
-  display: block !important;
-}
-
-.media-enlarge-fit .reveal .slides section.has-text .media-container,
-.media-enlarge-fit .reveal .slides section.has-text .graph-scroll {
-  height: auto !important;
-  flex-grow: 0 !important;
-  overflow: visible !important;
-}
-
-.media-enlarge-fit .reveal .slides section.has-text .media-container img,
-.media-enlarge-fit .reveal .slides section.has-text .media-container svg,
-.media-enlarge-fit .reveal .slides section.has-text .graph-scroll img,
-.media-enlarge-fit .reveal .slides section.has-text .graph-scroll svg {
-  width: auto !important;
-  height: auto !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  object-fit: contain !important;
-}
-*/
-
-.graph-scroll {
-  flex-grow: 1;
-  align-items: center;
-  justify-content: center;
-  overflow-y: auto;
-  min-height: 0;
-  width: 100%;
-}
-
-.graph-scroll svg {
-  max-width: 100%;
-  height: auto;
-}
-
-/* =========================================
-   4. 특수 슬라이드 (Special Slides)
-   ========================================= */
-/* 제목 슬라이드 (개요) */
-.reveal section.title-slide {
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-
-/* 챕터 제목 오버레이
-   - 슬라이드 우측 상단에 현재 챕터 제목을 고정 표시
-   - data-chapter-title 속성 값을 content로 사용
-   - pointer-events: none으로 클릭 이벤트가 뒤쪽 슬라이드에 전달되도록 함
-*/
-.reveal section[data-chapter-title]::after {
-  content: attr(data-chapter-title);
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  /* Apply subtitle styles to overlay */
-  font-family: var(--outline-title-sub-font-family, var(--global-font-family, inherit));
-  font-size: var(--outline-title-sub-font-size, 1em);
-  color: var(--outline-title-sub-color, inherit);
-  pointer-events: none;
-  z-index: 10;
-  text-transform: none;
-  font-weight: var(--outline-title-sub-font-weight, 500);
-  text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000;
-}
-
-/* 챕터 목록 */
-.chapter-list {
-  font-size: 0.8em;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 8px 24px;
-  width: 100%;
-  align-self: stretch;
-  list-style-position: inside;
-  padding-left: 0;
-}
-
-.chapter-list li {
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
-
-/* 카드형 챕터 목록 (toc_placeholder_new 실험) */
-.chapter-list.chapter-list--cards {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  width: 100%;
-  list-style: none;
-  padding-left: 0;
-  margin: 0;
-  justify-content: center;
-}
-
-.chapter-list--cards .chapter-card {
-  flex: 0 1 calc((100% - 16px * 2) / 3);
-  min-width: 240px;
-  max-width: 360px;
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
-  padding: 16px 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  list-style: none;
-}
-
-.chapter-list--cards .chapter-card::marker {
-  content: "";
-}
-
-.chapter-list--cards .chapter-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-}
-
-.chapter-list--cards .chapter-card a {
-  display: block;
-  text-decoration: none;
-  color: inherit;
-  font-size: 0.9em;
-  line-height: 1.4;
-  word-break: keep-all;
-}
-
-/* =========================================
-   5. 유틸리티 (Utilities)
-   ========================================= */
-/* No custom utilities */
-
-/* =========================================
-   6. 다분할 레이아웃 (Multi-column / Multi-row)
-   - Issue34: 좌/우, 상/하, N분할, 그리드
-   - 클래스 alias: .m2-cols/.columns, .m2-col/.column, .m2-rows/.rows, .m2-row/.row
-   ========================================= */
-.reveal .m2-cols,
-.reveal .columns {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4%;
-  width: 100%;
-}
-
-.reveal .m2-col,
-.reveal .column {
-  flex: 1;
-  min-width: 0;
-}
-
-.reveal .m2-rows,
-.reveal .rows {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  width: 100%;
-}
-
-.reveal .m2-row,
-.reveal .row {
-  width: 100%;
-}
-
-.reveal .card {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 10px;
-  border-radius: 8px;
-}
-
-.reveal .m2-cols img,
-.reveal .columns img,
-.reveal .m2-rows img,
-.reveal .rows img {
-  max-width: 100%;
-  height: auto;
-}
-
-/* =========================================
-   7. 디버깅 (Debugging)
-   ========================================= */
-/* Guide Line Mode */
-.guide-line-mode .reveal .slides section {
-  border: 5px solid rgba(255, 0, 0, 0.5) !important;
-  background-color: rgba(255, 0, 0, 0.05) !important;
-}
-
-.guide-line-mode .reveal h1,
-.guide-line-mode .reveal h2,
-.guide-line-mode .reveal h3 {
-  border: 3px solid rgba(0, 255, 0, 0.5) !important;
-  background-color: rgba(0, 255, 0, 0.05) !important;
-}
-
-.guide-line-mode .reveal .theContents {
-  border: 3px solid rgba(0, 0, 255, 0.5) !important;
-  background-color: rgba(0, 0, 255, 0.05) !important;
-}
-
-/* =========================================
-   8. Layout 타입별 스타일 (Keynote Nowage Theme)
-   ========================================= */
-
-/* === 공통 header/body 구조 === */
-.reveal section[class*="layout-"] {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.reveal section[class*="layout-"] > div[class$="-header"] {
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5em;
-}
-
-.reveal section[class*="layout-"] > div[class$="-body"] {
-  flex-grow: 1;
-  overflow-y: auto;
-  min-height: 0;
-  padding: 1em 0;
-}
-
-/* === Accent line (divider) === */
-.reveal section[class*="layout-"] > div[class*="-divider"],
-.reveal section[class*="layout-"] .reveal [class*="-divider"] {
-  height: 3px;
-  background: linear-gradient(90deg, #FFD700 0%, #FFD700 100%);
-  margin: 0.5em 0;
-}
-
-/* 1. Cover Layout */
-.reveal section.layout-cover {
-  justify-content: flex-start;
-}
-
-.reveal section.layout-cover .cover-header {
-  padding: 2em 0 1em 0;
-}
-
-.reveal section.layout-cover .cover-title {
-  font-size: 3.2em;
-  font-weight: 700;
-  margin: 0;
-}
-
-.reveal section.layout-cover .cover-visual {
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  min-height: 0;
-}
-
-.reveal section.layout-cover .cover-visual img,
-.reveal section.layout-cover .cover-visual svg {
-  max-width: 90%;
-  max-height: 80%;
-  width: auto;
-  height: auto;
-}
-
-.reveal section.layout-cover .cover-meta {
-  flex-shrink: 0;
-  padding: 1em 0;
-  font-size: 1.2em;
-}
-
-/* 2. Contents Layout */
-.reveal section.layout-contents {
-  justify-content: flex-start;
-}
-
-.reveal section.layout-contents .contents-header {
-  padding: 1.5em 0;
-}
-
-.reveal section.layout-contents .contents-title {
-  font-size: 2.8em;
-  font-weight: 700;
-  margin: 0;
-}
-
-.reveal section.layout-contents .contents-divider {
-  width: 40%;
-  margin: 0.5em 0 0 0;
-}
-
-.reveal section.layout-contents .contents-body {
-  padding: 1.5em 0;
-}
-
-.reveal section.layout-contents ul,
-.reveal section.layout-contents ol {
-  text-align: left;
-  font-size: 1.1em;
-  line-height: 1.6;
-}
-
-/* 2.2 Contents-Full Layout (전체 높이 활용) */
-.reveal section.layout-contents-full {
-  justify-content: flex-start;
-}
-
-.reveal section.layout-contents-full .contents-header {
-  padding: 1.5em 0;
-}
-
-.reveal section.layout-contents-full .contents-title {
-  font-size: 2.8em;
-  font-weight: 700;
-  margin: 0;
-}
-
-.reveal section.layout-contents-full .contents-divider {
-  width: 40%;
-  margin: 0.5em 0 0 0;
-}
-
-.reveal section.layout-contents-full .contents-body {
-  flex-grow: 1;
-  overflow-y: auto;
-  min-height: 0;
-  padding: 1.5em 0;
-}
-
-.reveal section.layout-contents-full ul,
-.reveal section.layout-contents-full ol {
-  text-align: left;
-  font-size: 1.1em;
-  line-height: 1.6;
-}
-
-/* 3. Split/Image-Text Layout */
-.reveal section.layout-split-image-text {
-  justify-content: flex-start;
-}
-
-.reveal section.layout-split-image-text .split-header {
-  padding: 1.5em 0;
-}
-
-.reveal section.layout-split-image-text .split-title {
-  font-size: 2.8em;
-  font-weight: 700;
-  margin: 0;
-}
-
-.reveal section.layout-split-image-text .split-divider {
-  width: 40%;
-  margin: 0.5em 0 0 0;
-}
-
-.reveal section.layout-split-image-text .split-row {
-  display: flex;
-  gap: 2.5em;
-  align-items: flex-start;
-  flex-grow: 1;
-  min-height: 0;
-  padding: 1em 0;
-}
-
-.reveal section.layout-split-image-text .split-left,
-.reveal section.layout-split-image-text .split-right {
-  flex: 1;
-  min-width: 0;
-}
-
-.reveal section.layout-split-image-text .split-left img,
-.reveal section.layout-split-image-text .split-right img {
-  max-width: 100%;
-  height: auto;
-}
-
-/* 4. Chapter TOC Layout */
-.reveal section.layout-chapter-toc {
-  justify-content: flex-start;
-}
-
-.reveal section.layout-chapter-toc .chapter-toc-header {
-  padding: 1.5em 0;
-}
-
-.reveal section.layout-chapter-toc .chapter-toc-title {
-  font-size: 2.8em;
-  font-weight: 700;
-  margin: 0;
-}
-
-.reveal section.layout-chapter-toc .chapter-toc-divider {
-  width: 40%;
-  margin: 0.5em 0 0 0;
-}
-
-.reveal section.layout-chapter-toc .chapter-toc-body {
-  flex-grow: 1;
-  overflow-y: auto;
-  min-height: 0;
-  padding: 1.5em 0;
-}
-
-/* 5. Chapter Layout */
-.reveal section.layout-chapter {
-  justify-content: flex-start;
-}
-
-.reveal section.layout-chapter .chapter-header {
-  padding: 1.5em 0;
-}
-
-.reveal section.layout-chapter .chapter-title {
-  font-size: 2.8em;
-  font-weight: 700;
-  margin: 0;
-}
-
-.reveal section.layout-chapter .chapter-divider {
-  width: 40%;
-  margin: 0.5em 0 0 0;
-}
-
-.reveal section.layout-chapter .chapter-body {
-  flex-grow: 1;
-  overflow-y: auto;
-  min-height: 0;
-  padding: 1.5em 0;
-}
-
-/* 6. Exercise Layout */
-.reveal section.layout-exercise {
-  justify-content: flex-start;
-}
-
-.reveal section.layout-exercise .exercise-header {
-  padding: 1.5em 0;
-}
-
-.reveal section.layout-exercise .exercise-title {
-  font-size: 2.8em;
-  font-weight: 700;
-  margin: 0;
-}
-
-.reveal section.layout-exercise .exercise-divider {
-  width: 40%;
-  margin: 0.5em 0 0 0;
-}
-
-.reveal section.layout-exercise .exercise-body {
-  flex-grow: 1;
-  overflow-y: auto;
-  min-height: 0;
-  padding: 1.5em 0;
-}
-
-/* 6.2 Exercise-Small Layout */
-.reveal section.layout-exercise-small {
-  justify-content: flex-start;
-}
-
-.reveal section.layout-exercise-small .exercise-header {
-  padding: 1em 0;
-}
-
-.reveal section.layout-exercise-small .exercise-title {
-  font-size: 2.2em;
-  font-weight: 700;
-  margin: 0;
-}
-
-.reveal section.layout-exercise-small .exercise-divider {
-  width: 30%;
-  margin: 0.3em 0 0 0;
-  height: 2px;
-}
-
-.reveal section.layout-exercise-small .exercise-body {
-  flex-grow: 1;
-  overflow-y: auto;
-  min-height: 0;
-  padding: 1em 0;
-}
-
-/* 8. Blank Layout */
-.reveal section.layout-blank {
-  justify-content: flex-start;
-}
-
-.reveal section.layout-blank .blank-header {
-  padding: 1.5em 0;
-}
-
-.reveal section.layout-blank .blank-title {
-  font-size: 2.8em;
-  font-weight: 700;
-  margin: 0;
-}
-
-.reveal section.layout-blank .blank-body {
-  flex-grow: 1;
-  overflow-y: auto;
-  min-height: 0;
-  padding: 1.5em 0;
-}
-
-/* Issue27_1: image-only 자동 감지 시 풀스크린 이미지 표시 */
-.reveal section.layout-blank.layout-blank--full-image {
-  padding: 0;
-}
-.reveal section.layout-blank.layout-blank--full-image .blank-header {
-  display: none;
-}
-.reveal section.layout-blank.layout-blank--full-image .blank-body {
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-.reveal section.layout-blank.layout-blank--full-image .blank-body p {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.reveal section.layout-blank.layout-blank--full-image .blank-body img {
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  display: block;
-}
-
-/* Issue43: video-only 자동 감지 시 풀스크린 비디오 표시 (Issue27_1·27_4의 video 버전) */
-.reveal section.layout-blank.layout-blank--full-video {
-  padding: 0;
-}
-.reveal section.layout-blank.layout-blank--full-video .blank-header {
-  display: none;
-}
-.reveal section.layout-blank.layout-blank--full-video .blank-body {
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-.reveal section.layout-blank.layout-blank--full-video .blank-body p,
-.reveal section.layout-blank.layout-blank--full-video .blank-body .media-container {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.reveal section.layout-blank.layout-blank--full-video .blank-body video {
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  display: block;
-}
-
-/* 9. Closing Layout */
-.reveal section.layout-closing {
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 2em;
-}
-
-.reveal section.layout-closing .closing-header {
-  margin-bottom: 1em;
-}
-
-.reveal section.layout-closing .closing-title {
-  font-size: 3.2em;
-  font-weight: 700;
-  margin: 0;
-}
-
-.reveal section.layout-closing .closing-body {
-  flex-grow: 0;
-  padding: 1em 0;
-  font-size: 1.3em;
-}
-
-/* TOC (목차) Layout */
-.reveal section.layout-toc {
-  justify-content: flex-start;
-}
-
-.reveal section.layout-toc .toc-header {
-  padding: 1.5em 0;
-}
-
-.reveal section.layout-toc .toc-title {
-  font-size: 2.8em;
-  font-weight: 700;
-  margin: 0;
-}
-
-.reveal section.layout-toc .toc-body {
-  flex-grow: 1;
-  overflow-y: auto;
-  min-height: 0;
-  padding: 1.5em 0;
-}
-
-.reveal section.layout-toc .toc-markmap {
-  width: 100%;
-  height: auto;
-  max-height: 100%;
-}
-
-/* =========================================
-   9. Keynote Nowage Visual Language
-   - 디자인 SSOT: _doc_design/keynote-nowage-theme/*.png
-   - 마스코트: theme-img/finfra*.png (theme/nowage/img/ → slide/theme-img/)
-   - 색상: 노랑 강조선(#F5C518) + 검정 텍스트, 흰 배경
-   ========================================= */
-
-/* 9.1 공통 색상·변수 */
+/* theme: default — 테마 고유 스타일만 (Issue64 슬림화)
+ * 공통 골격은 lib/css/base.css가 inline <style>로 주입.
+ * 본 파일은 색상·배경 이미지·테마별 시각 언어만 정의.
+ *
+ * CSS 우선순위: CDN(1-3) → base.css inline(4) → 본 파일(5) → <body style>(6)
+ * 분류 SSOT: _doc_design/css.md "리팩터링 계획" 섹션 (Phase 7에서 영구 목록으로 대체 예정)
+ */
+
+/* =========================================================================
+   1. Keynote Nowage 색상 변수 (테마 브랜딩)
+   ========================================================================= */
 :root {
   --kn-accent: #F5C518;          /* keynote 노랑 */
   --kn-accent-soft: #FFE15A;     /* 보조 노랑 */
@@ -960,34 +16,20 @@
   --kn-page-num-color: #777777;
 }
 
-/* 9.2 슬라이드 본문 기본 — 흰 배경, 검정 텍스트
-   Reveal.js 기본 테마 변수: sky.css 제거 후 누락 방지 (sky.css 의존 제거) */
+/* 슬라이드 본문 색상 — 흰 배경, 검정 텍스트 (sky.css 의존 제거 후 명시) */
 .reveal {
-  --r-main-font-size: 40px;
-  --r-heading1-size: 3.77em;
-  --r-heading2-size: 2.11em;
-  --r-heading3-size: 1.55em;
-  --r-heading4-size: 1em;
-  --r-heading-text-transform: none;
-  --r-heading-font-weight: 700;
   background: #ffffff;
   color: var(--kn-text);
-  font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
-  font-size: var(--r-main-font-size);
 }
 
 .reveal .slides {
   color: var(--kn-text);
 }
 
-/* 9.3 layout-* 슬라이드의 상/하단 노랑 가로선 + 페이지 번호
-   주의: position 속성을 설정하지 말 것. reveal.js 기본 position:absolute 가
-   pseudo-element 의 positioned ancestor 역할을 이미 수행하며, 여기서 relative 로
-   덮으면 슬라이드 스택이 깨져 자동 layout 슬라이드가 viewport 밖으로 밀려남 (Issue54). */
-.reveal section[class*="layout-"] {
-  padding: 28px 56px 56px 56px;
-}
-
+/* =========================================================================
+   2. layout-* 상/하단 노랑 가로선 + 페이지 번호
+   - 공통 padding은 base.css §10 (28px 56px 56px 56px)
+   ========================================================================= */
 .reveal section[class*="layout-"]::before,
 .reveal section[class*="layout-"]::after {
   content: "";
@@ -1013,7 +55,9 @@
   right: 24px;
 }
 
-/* 9.4 제목 — 두꺼운 sketch 느낌 + 노랑 밑줄 */
+/* =========================================================================
+   3. 제목 — 두꺼운 sketch 느낌 + 노랑 밑줄 (hr.png)
+   ========================================================================= */
 .reveal section[class*="layout-"] h1,
 .reveal section[class*="layout-"] .cover-title,
 .reveal section[class*="layout-"] .contents-title,
@@ -1058,70 +102,11 @@
   display: none !important;
 }
 
-/* 9.5 본문 영역 헤더 정렬: 제목은 가운데 정렬을 기본으로 함 */
-.reveal section[class*="layout-"] > div[class$="-header"] {
-  text-align: center;
-  align-items: center;
-}
+/* =========================================================================
+   4. 마스코트 배경 — finfra* 이미지 (theme/{name}/img/ → slide/theme-img/)
+   ========================================================================= */
 
-/* 9.6 리스트 — 레벨별 마커 차별화 */
-.reveal section[class*="layout-"] ul,
-.reveal section[class*="layout-"] ol {
-  list-style: none;
-  padding-left: 0;
-}
-
-.reveal section[class*="layout-"] ul > li,
-.reveal section[class*="layout-"] ol > li {
-  position: relative;
-  padding-left: 1.4em;
-  line-height: 1.7;
-  margin: 0.18em 0;
-}
-
-/* L1: ● */
-.reveal section[class*="layout-"] ul > li::before {
-  content: "●";
-  position: absolute;
-  left: 0;
-  top: 0;
-  color: var(--kn-text);
-  font-size: 0.8em;
-}
-
-/* L2: ─ (em dash) */
-.reveal section[class*="layout-"] ul ul > li::before {
-  content: "─";
-  font-size: 0.95em;
-}
-
-/* L3: ▶ */
-.reveal section[class*="layout-"] ul ul ul > li::before {
-  content: "▶";
-  font-size: 0.7em;
-  top: 0.18em;
-}
-
-/* L4·L5: • (작은 점) */
-.reveal section[class*="layout-"] ul ul ul ul > li::before,
-.reveal section[class*="layout-"] ul ul ul ul ul > li::before {
-  content: "•";
-  font-size: 0.9em;
-}
-
-/* 들여쓰기 누적 */
-.reveal section[class*="layout-"] ul ul {
-  margin-left: 1.2em !important;
-  font-size: 100%; /* 글로벌의 90% 축소 무시 — 가독성 우선 */
-}
-
-/* 9.7 마스코트 — 공통 컨테이너 */
-.reveal section[class*="layout-"]::before,
-.reveal section[class*="layout-"]::after {
-  /* (이미 가로선용) */
-}
-
-/* 9.7.1 cover: puffer1 좌상단 + subtitle 박스 우하단 */
+/* 4.1 cover: puffer1 좌상단 + subtitle 박스 우하단 */
 .reveal section.layout-cover,
 .guide-line-mode .reveal .slides section.layout-cover {
   background-color: #ffffff !important;
@@ -1151,7 +136,7 @@
   max-width: 50%;
 }
 
-/* 9.7.2 contents: puffer2s 우상단 (작게) */
+/* 4.2 contents: puffer2s 우상단 (작게) */
 .reveal section.layout-contents,
 .reveal section.layout-contents-full {
   background-image: url('../theme-img/finfraPuffer2s.png');
@@ -1166,7 +151,7 @@
   text-align: center;
 }
 
-/* 9.7.3 chapter-toc: puffer1 좌상단 + TOC 박스 우하단 */
+/* 4.3 chapter-toc: puffer1 좌상단 + TOC 박스 우하단 */
 .reveal section.layout-chapter-toc {
   background-image: url('../theme-img/finfraPuffer2.png');
   background-repeat: no-repeat;
@@ -1190,7 +175,7 @@
   max-width: 55%;
 }
 
-/* 9.7.4 chapter: puffer2 중앙-좌측 + 제목 하단 */
+/* 4.4 chapter: puffer2 중앙-좌측 + 제목 하단 */
 .reveal section.layout-chapter {
   background-image: url('../theme-img/finfraPuffer2.png');
   background-repeat: no-repeat;
@@ -1208,7 +193,7 @@
   font-size: 3em;
 }
 
-/* 9.7.5 exercise: butterfly 좌측 + cat 우하단 */
+/* 4.5 exercise: butterfly 좌측 + cat 우하단 */
 .reveal section.layout-exercise {
   background-image:
     url('../theme-img/finfraButterfly.png'),
@@ -1223,7 +208,7 @@
   padding-right: 4%;
 }
 
-/* 9.7.6 exercise-small: butterfly 크게 좌측 + cat 우하단 (말풍선) */
+/* 4.6 exercise-small: butterfly 크게 좌측 + cat 우하단 (말풍선) */
 .reveal section.layout-exercise-small {
   background-image:
     url('../theme-img/finfraButterfly.png'),
@@ -1238,7 +223,7 @@
   padding-right: 4%;
 }
 
-/* 9.7.7 closing: puffer1 중앙 큼 + cat 우하단 */
+/* 4.7 closing: puffer1 중앙 큼 + cat 우하단 */
 .reveal section.layout-closing {
   background-image:
     url('../theme-img/finfraPuffer1.png'),
@@ -1266,16 +251,14 @@
   font-size: 1.4em;
 }
 
-/* 9.7.8 blank: 장식 없음 (상하 노랑선만) */
+/* 4.8 blank: 장식 없음 (상하 노랑선만) */
 .reveal section.layout-blank .blank-header {
   text-align: center;
 }
 
-/* ========================================================================
-   _toc Layout (Issue55) — chapter deck TOC slide + standalone agenda.html
-   nowage 톤: GmarketSans 헤더 + 노랑 강조선
-   ※ reveal.js 레이아웃 파괴 속성 사용 금지
-   ======================================================================== */
+/* =========================================================================
+   5. _toc Layout (Issue55) — chapter deck TOC slide + standalone agenda.html
+   ========================================================================= */
 .toc-page-header {
   background: linear-gradient(135deg, #1a1a2e 0%, #2d2d5f 100%);
   color: #ffffff;
@@ -1348,10 +331,9 @@
   text-decoration: none;
 }
 
-/* ========================================================================
-   _cover Layout 확장 — Issue55: nowage 커버 확장 요소 (subtitle, body, QR)
-   기본 구조 CSS(cover-header, cover-title, cover-meta)는 위에서 정의됨
-   ======================================================================== */
+/* =========================================================================
+   6. _cover Layout 확장 — Issue55: nowage 커버 확장 요소 (subtitle, body, QR)
+   ========================================================================= */
 .reveal section.layout-cover .cover-subtitle {
   font-size: 1em;
   color: rgba(255, 255, 255, 0.85);
@@ -1408,10 +390,9 @@
   margin-top: 0.2em;
 }
 
-/* ========================================================================
-   _agenda Layout — Issue55: Agenda Page (standalone agenda.html)
-   nowage 브랜딩 — 배경 그라디언트 + 강조색 적용
-   ======================================================================== */
+/* =========================================================================
+   7. _agenda Layout — Issue55: Agenda Page (standalone agenda.html)
+   ========================================================================= */
 .layout-_agenda {
   display: flex;
   flex-direction: column;

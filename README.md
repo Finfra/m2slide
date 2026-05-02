@@ -288,13 +288,16 @@ theme_default_layout: contents  # theme/{name}/layouts/contents.html 자동 적�
 폴더 구조 (단일 CSS, HTML 템플릿만 layout별):
 
 ```
+lib/css/base.css            # 모든 테마 공통 골격 (Issue64, ~1050줄)
+                            # @import + :root 기본값 + 공통 레이아웃 + 컴포넌트 + 반응형
+                            # html-builder.js가 inline <style>로 자동 주입
 theme/
-├── default/                # 기본 theme (git 추적)
-│   ├── slide.css
+├── default/                # 기본 theme (git 추적, ~400줄 슬림화)
+│   ├── slide.css           # 테마 고유: 색상·배경 이미지·시각 언어
 │   └── layouts/
 │       └── _toc.html       # 시스템 layout (TOC)
 └── nowage/                 # 사용자 커스텀 (gitignore)
-    ├── slide.css           # 모든 .layout-* selector 포함
+    ├── slide.css           # 테마 고유 selector
     └── layouts/            # HTML 템플릿만 (CSS는 slide.css에 통합)
         ├── _toc.html
         ├── cover.html
@@ -303,9 +306,16 @@ theme/
         └── ...
 ```
 
+**CSS 우선순위** (낮음 → 높음): CDN(reset/reveal/highlight/open-props) → `lib/css/base.css` (inline) → `theme/{name}/slide.css` (link) → `<body style>` (config 변수). 상세: `_doc_design/css.md`.
+
+**신규 테마 작성 가이드**:
+* 최소 요구사항: `theme/{name}/slide.css` 생성 (빈 파일도 가능). `base.css`가 cover/contents/chapter/exercise/blank/closing/toc 골격 + `:root` 변수 기본값을 제공.
+* 선택 사항: `:root --kn-*` 브랜딩 색상, `theme/{name}/img/` 배경 이미지, `theme/{name}/layouts/*.html` 템플릿 (미존재 시 default fallback).
+* `_config.yml` `style` 섹션에는 **기본값에서 벗어나는 값만** 명시 (Issue64 1.b 정책). 키 생략 시 `lib/config.js` 기본값 = base.css `:root`와 동일 결과 보장.
+
 **표준 변수**: `{{title}}`, `{{content}}`, `{{slotName}}`, `{{markmap}}`(시스템 예약, `_toc` 전용)
 
-**하위 호환**: `slide_css:` 키는 그대로 동작. `theme:`, `theme_default_layout:` 미설정 시 기존 동작 유지.
+**하위 호환**: `slide_css:` 키는 그대로 동작. `theme:`, `theme_default_layout:` 미설정 시 기존 동작 유지. `style.global.font_import[]` 명시 시 base.css `@import` **다음** 위치에 `<link>` 추가 로드 (legacy append).
 
 ## 마크다운 작성 규칙
 

@@ -1,7 +1,7 @@
 # m2slide 설정
 #      _doc_work/z_done/_config.org.yml 에 추가 설명
 
-# 프로젝트 경로: Projects/{current_project} 
+# 프로젝트 경로: Projects/{current_project}
 
 # current_project: MarkdownGraph
 theme: default                # theme/{name}/slide.css + layouts/ (default 외에는 .gitignore 처리)
@@ -10,64 +10,26 @@ toc_placeholder: false        # true 시 모든 파일에 #/0 TOC 슬라이드 �
 top_align: false              # true 시 reveal.js 중앙정렬 덮어쓰고 'top-align-mode' 클래스 적용 (주의)
 markmap_depth: 2              # Markmap 초기 펼침 깊이 (1=루트+1단계, 2=2단계까지)
 chapter_markmap_depth: 3      # 챕터별 페이지 Markmap 펼침 깊이 (markmap_depth+1 권장)
-title_contents_gap: 30        # title↔contents 갭 (title 높이의 %, 0=없음 / 50=절반 / 100=동일)
-auto_layout_detect: true      # false: 자동 감지 비활성화 (모든 슬라이드는 default layout사용)
+title_contents_gap: 30        # title↔contents 갭 (title 높이의 %)
+auto_layout_detect: true      # false: 자동 감지 비활성화 (모든 슬라이드는 default layout 사용)
 
-# `![alt](path.mp4)` 형태로 작성하면 <video> 태그로 자동 변환됨  
+# `![alt](path.mp4)` 형태로 작성하면 <video> 태그로 자동 변환됨
 # controls, autoplay-muted, autoplay-loop, loop, muted, background, minimal, autoplay-nocontrols
 video_default: controls       # 컨트롤만, 자동재생 없음 (기본 권장)
 guide_line: true              # 레이아웃 디버깅용 가이드 라인 표시
 use_open_props: true          # Open Props CDN 로드 (false=기본값 사용)
-slide_ratio: none             # 3:2 or 16:9 (제거 예정)
+slide_ratio: none             # 3:2 or 16:9
 
-# 스타일 설정 (컨텐츠 조절 관련)
+# 스타일 설정 (Issue64 1.b 정책)
+# - 기본값은 lib/css/base.css :root에 정의됨. lib/config.js styleConfig가 동일값으로 동기화됨.
+# - 본 섹션은 기본값에서 벗어나는 override만 명시.
+# - 자주 바꾸는 키(font_size, font_family)는 주석으로 가이드만 표시 (필요 시 주석 해제 후 값 변경).
+# - font_import[]는 base.css @import에 추가 로드되는 legacy 호환 (필요 시 추가).
 style:
-  global:
-    font_import:
-      - 'https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css'
-      - 'https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap'
-    font_family: 'Pretendard, sans-serif' # Default: 'Pretendard, sans-serif'
-
-  main_title:
-    font_family: 'GmarketSansBold'
-    font_size: 2em           # Default: 80px
-    font_weight: 400         # Default: 700
-    font_color: '#333333'    # Default: '#333333'
-    align: center            # Default: center
-    outer_padding: 40px 0 20px 0 # Default: 40px 0 20px 0
-
-  outline_title:
-    font_family: 'GmarketSansBold'
-    font_size: 2.0em         # Default: 2.5em
-    font_weight: 600         # Default: 700
-    font_color: '#000000'    # Default: '#000000'
-    align: center            # Default: center
-    outer_padding: 0         # Default: 0
-
-  outline_title_sub:
-    font_family: 'GmarketSansBold'
-    font_size: 0.5em         # Default: 1em
-    font_weight: 100         # Default: 500
-    font_color: '#666666'    # Default: '#666666'
-    align: right             # Default: right
-    outer_padding: 5px       # Default: 5px
-
-  title:
-    font_family: 'GmarketSansBold'
-    font_size: 1.5em           # Default: 1em
-    font_weight: 50         # Default: 700
-    font_color: '#000000'      # Default: '#000000'
-    align: center            # Default: center
-    outer_padding: 1%        # Default: 1%
-
   theContents:
-    font_family: 'Nanum Gothic Coding'
-    font_size: 1em           # Default: 1em
-    font_color: '#000000'    # Default: '#000000'
-    align: left              # Default: left
-    outer_padding: 1%       # Default: 5px
+    # font_family: 'Nanum Gothic Coding'   # 기본값 (override 시 주석 해제)
+    # font_size: 1em                       # 기본값 (override 시 주석 해제)
     font_size_auto: true              # true=자동 조절, false=원래 크기 유지
-    font_size_min: 20px               # 자동 조절 시 최소 폰트 크기 (이하 시 스크롤 발생)
-    font_size_max_ratio: 0.66         # 본문 최대 크기 = 제목 크기 × 비율 (내용 적을 때 과확대 방지)
-
-    media_container_enlarge: fit # 이미지/SVG 크기 조절 모드 (original, width, height, fit)
+    font_size_min: 20px               # 자동 조절 시 최소 폰트 크기
+    font_size_max_ratio: 0.66         # 본문 최대 = 제목 × 비율 (과확대 방지)
+    media_container_enlarge: fit      # 이미지/SVG 크기 조절 (original/width/height/fit)
