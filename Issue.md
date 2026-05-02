@@ -1,7 +1,7 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 64
-* 최근 종결: Issue63 (2026-05-03, c34d560 + 33d4cc1)
+* Issue HWM: 65
+* 최근 종결: Issue65 (2026-05-03, 9c83d87)
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -32,6 +32,36 @@
 
 
 # ✅ 완료
+
+## Issue65. slide_ratio: none 값 제거 — 유효값 단일화 (16:9 / 3:2 / fill) (등록: 2026-05-03, 해결: 2026-05-03, commit: 9c83d87) ✅
+* 목적: Issue63 이후 `none`이 `16:9`의 단순 alias로 전락. 유효값을 명확히 하기 위해 `none` 제거 + 기본값을 `16:9`로 명시. `fill`은 비율 무제약(viewport 채움) 단독 의미 유지.
+* plan: `_doc_work/plan/slide_ratio_none_removal_plan.md`
+* 카테고리: Build / Generator
+* 복잡도: 중간 (plan 필수, task/report 생략)
+* 선행 이슈: Issue63 (slide_ratio 기반 슬라이드 레이아웃 크기 체계 정립)
+* 정책 결정 (2026-05-03 확정):
+    - 테스트 매핑: `m2SlideStyle1_single`=`"16:9"`, `m2SlideStyle2_chapter`=`"3:2"` (실제 파일값 그대로)
+    - `none` 처리: **즉시 제거 (hard error)**. deprecated 경고 기간 없음
+* 결과:
+    - `lib/config.js`: `VALID_SLIDE_RATIOS = ['16:9', '3:2', 'fill']` 화이트리스트 도입. `loadConfig` try-catch **외부**에서 검증 throw (catch에 의해 silent swallow되지 않도록 분리)
+    - `lib/config.js` `createDefaultConfig` 기본값 `slideRatio: 'none'` → `'16:9'`
+    - `lib/config.js` `slideRatioNumeric()` 헬퍼: `none` 분기 제거. 사전 화이트리스트 검증으로 잘못된 값 도달 불가
+    - `lib/html-builder.js` / `lib/css/base.css`: 코드 주석에서 `none` 단독 명시 제거. Issue65 표기로 정리
+    - `_config.org.yml`: `slide_ratio` 주석을 `16:9 | 3:2 | fill`로 갱신
+    - `_doc_design/css.md`: §3.4.2 표 갱신 (4행 → 3행 + 그 외 throw), 변경 이력에 Issue65 추가
+    - 마이그레이션: `Projects/LlmAndVibeCoding_test/_config.yml` `none` → `"16:9"` (Projects/* 는 gitignored)
+* 검증:
+    - `m2SlideStyle1_single` (`"16:9"`)  → `ratio-16-9` + 1920×1080 ✅
+    - `m2SlideStyle2_chapter` (`"3:2"`) → `ratio-3-2`  + 1920×1280 ✅
+    - `layoutTest` (`fill`)             → `ratio-fill` + 100%/100% ✅
+    - `LlmAndVibeCoding_test` (마이그레이션 후 `"16:9"`) → `ratio-16-9` + 1920×1080 ✅
+    - `slide_ratio: none` 임시 입력 → `Error: Invalid slide_ratio 'none'. Allowed: 16:9 | 3:2 | fill` 빌드 실패 ✅
+    - `slide_ratio: "4:3"` 회귀 → 동일 형식 에러로 거부 ✅
+    - `node -c` 문법 검증 통과
+* 회귀 영향:
+    - 시각 변화 없음 (Issue63 이후 `none`이 이미 16:9 fallback이었음 — 이번엔 명시 강제만 추가)
+    - 마이그레이션 누락 프로젝트는 빌드 실패로 즉시 노출 → 디버깅 용이
+* 후속 이슈 후보: 없음 (정책 단일화 종결)
 
 ## Issue63. slide_ratio 기반 슬라이드 레이아웃 크기 체계 정립 (등록: 2026-05-02, 해결: 2026-05-03, commit: c34d560, 33d4cc1) ✅
 * 목적: `_config.yml`의 `slide_ratio` 값을 핵심 설계 기준으로 삼아 슬라이드 전 영역(contents 높이·너비·패딩)의 크기를 수학적으로 일관되게 결정
