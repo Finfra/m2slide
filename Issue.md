@@ -13,25 +13,11 @@
 # 🌱 이슈후보
 
 # 🚧 진행중
-
 # 📕 중요
 
 # 📙 일반
 
-## Issue48. meta.yml 운영 — 프로젝트 메타데이터 분리 SSOT (등록: 2026-05-02)
-* 목적: 프로젝트별 운영 메타데이터(생성정보, googleDrive 정보, 강의일, version+날짜 등)를 별도 `meta.yml`로 분리하여 `_config.yml`(렌더링 설정)과 책임을 명확히 분할
-* 카테고리: Build (config 시스템)
-* 복잡도: 중간 (plan 권장 — 스키마 설계 필요)
-* 상세:
-    - 참고 파일: `/Users/nowage/work/AgenticCoding_lec/_doc_work/AgenticCoding_v1.1/meta.yml` (스키마 출처)
-    - 후보 필드: `created_at`, `created_by`, `gdrive`(링크/ID), `lecture_date`, `version`(+release_date)
-    - `_config.yml`: 렌더링 설정 SSOT (theme, layout, markmap_depth 등) — 변경 없음
-    - `meta.yml`: 운영/배포 메타 SSOT — 신규 도입
-* 구현 명세:
-    - 참고 `meta.yml` 분석 후 m2slide 용 스키마 확정 → `_doc_design/meta-yml.md` (영속 SSOT)
-    - `lib/generate-slides.js`에서 옵셔널 로드 — 미존재 시 silent skip (backward compatible)
-    - 활용 후보: 표지/closing 슬라이드 footer, GitHub Pages 배포 메타, 버전 표기
-    - 5개 기존 프로젝트 영향도 검증
+
 
 ## Issue49. 제목 페이지 자동 생성 — Frontmatter 기반 cover 슬라이드 (등록: 2026-05-02)
 * 목적: 마크다운 YAML Frontmatter에 강사·연락처·부제·QR 정보를 넣으면 첫 페이지(cover 슬라이드)로 자동 생성
@@ -94,6 +80,24 @@
 
 # ✅ 완료
 
+
+## Issue48. meta.yml 운영 — 프로젝트 메타데이터 분리 SSOT (등록: 2026-05-02, 해결: 2026-05-02, commit: 0a2f75a) ✅
+* 목적: 프로젝트별 운영 메타데이터(instructor, version, lecture_date, gdrive, qr 등)를 별도 `meta.yml`로 분리하여 `_config.yml`(렌더링 설정)과 책임 명확화
+* 카테고리: Build (config 시스템)
+* 복잡도: 중간
+* 해결:
+    - **설계 SSOT**: `_doc_design/meta-yml.md` 작성 — v1 스키마 + 필드 카테고리 + 단계적 도입 계획 정의
+    - **구현**: `lib/generate-slides.js`에 `PROJECT_META` 글로벌 + `loadProjectMeta(projectDir)` 함수 추가, `loadConfig()` 직후 호출
+    - **선택적 로드**: `meta.yml` 미존재 시 silent skip — backward compatible (5개 기존 프로젝트 모두 영향 없음 확인)
+    - **명명 정정**: 참고 출처의 `QGCodePath` → `qr_code_path` (오타 보정), `part1_subtitle` → `part_subtitle` (일반화)
+    - **룰 동기화**: `.claude/rules/md-m2slide-rules.md`에 "meta.yml — 운영 메타데이터" 절 추가
+* 검증:
+    - meta.yml 미존재 시: 6개 프로젝트(MarkdownGraph, LlmAndVibeCoding, LlmAndVibeCoding2, m2SlideStyle1_single, m2SlideStyle2_chapter, layoutTest) 빌드 성공
+    - meta.yml 존재 시: `✅ meta.yml loaded: ... (7 fields: instructor_name, instructor_contact, lecture_date, part_subtitle...)` 콘솔 출력 확인
+    - 잘못된 YAML: 빌드 중단 없이 무시 또는 경고 (단순 라인 파서 — 중첩 객체 미지원, v1 한계)
+* 후속:
+    - Issue49: cover 슬라이드 자동 생성 (PROJECT_META의 `instructor_*`, `qr_*`, `part_subtitle` 활용)
+    - 미정: footer 표시 (`version`, `lecture_date`), EPUB opf 메타 매핑
 
 ## Issue54. 자동 layout 슬라이드 화면 밖 렌더링 — `position: relative` 가 reveal.js 스택 깨뜨림 (등록: 2026-05-02, 해결: 2026-05-02, commit: 6141a6c) ✅
 * 목적: layoutTest 프로젝트의 11/13/15/18 페이지(자동 감지된 `layout-blank--full-image`, `layout-contents` (no_title), `layout-blank--full-video`)가 빈 화면으로 보임. 컨텐츠는 DOM에 존재하나 슬라이드가 viewport 아래(y=1085, 2165...)로 밀려나 보이지 않음.
