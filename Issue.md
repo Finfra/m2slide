@@ -22,7 +22,13 @@
 
 # 📕 중요
 
-## Issue62. cover-title 반응형 크기 조정 및 CSS 구현 설계 문서화 (등록: 2026-05-02)
+# 📙 일반
+
+# 📗 선택
+
+# ✅ 완료
+
+## Issue62. cover-title 반응형 크기 조정 및 CSS 구현 설계 문서화 (등록: 2026-05-02, 해결: 2026-05-02, commit: b12a8db, 789947d) ✅
 * 목적: cover 슬라이드 제목이 뷰포트 너비에 따라 줄바꿈 없이 최대 크기로 표시되도록 수정. CSS 구현 형태 SSOT(`_doc_design/css.md`) 작성.
 * 카테고리: Theme / Frontend
 * 복잡도: 중간
@@ -36,12 +42,6 @@
 * 구현 명세:
     - `theme/default/slide.css`, `theme/nowage/slide.css`: clamp(1.2em, 5vw, 3.4em) + min-height: 100vh
     - `_doc_design/css.md`: 변수 체계, 5vw 공식, 섹션 높이 규칙, 금지 사항 정의
-
-# 📙 일반
-
-# 📗 선택
-
-# ✅ 완료
 
 ## Issue61. title_contents_gap이 media-enlarge-fit 모드 + H3 슬라이드에서 미적용 (등록: 2026-05-02, 해결: 2026-05-02, commit: 4e418c2, 789947d, 8db51ae) ✅
 * 목적: `title_contents_gap` 설정이 `media_container_enlarge: fit` 모드에서 시각적으로 적용되지 않는 원인 수정
