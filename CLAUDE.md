@@ -351,3 +351,14 @@ open Projects/LlmAndVibeCoding/slide/01-opening.html
 - 상위 페이지 버튼 미표시
 - ↑ 키와 → 키(마지막 슬라이드) 네비게이션 비활성화
 - 독립적인 프레젠테이션으로 동작
+## Claude Code 규칙 (`.claude/rules/`)
+
+| 규칙              | 설명                                                                     |
+| :---------------- | :----------------------------------------------------------------------- |
+| `issue-rules`     | m2slide 이슈 관리 규칙 (issue-g 기반)                                    |
+| `md-m2slide-rules`| m2slide 마크다운 작성 규칙. 글로벌 `md-slide-rules` 기반 + 고유 확장   |
+
+**슬라이드 마크다운 작성 시 의무 참조 순서**:
+1. `~/.claude/rules/md-rules.md` (일반 마크다운 기본)
+2. `~/.claude/rules/md-slide-rules.md` (슬라이드 도구 공통)
+3. `.claude/rules/md-m2slide-rules.md` (m2slide 특화)

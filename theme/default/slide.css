@@ -573,3 +573,65 @@
   object-fit: contain;
   display: block;
 }
+
+/* ========================================================================
+   _toc Layout — Issue55: 3페이지 모델의 TOC Page (chapter deck 내부)
+   + Agenda Page (standalone agenda.html)에서도 동일 layout 재사용
+   ※ reveal.js 레이아웃 파괴 속성 (display: flex, height: 100%, position 등) 사용 금지
+   ======================================================================== */
+.toc-page-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  padding: 18px 24px;
+  margin: 0 0 12px 0;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.toc-page-title {
+  margin: 0;
+  font-size: 1.6em;
+  font-weight: 700;
+  color: #ffffff;
+  text-align: left;
+  display: inline-block;
+}
+.toc-page-downloads {
+  float: right;
+  margin-top: 4px;
+}
+.toc-page-downloads:after {
+  content: "";
+  display: block;
+  clear: both;
+}
+.toc-download-btn {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.7em;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.toc-download-btn:hover {
+  background: rgba(255, 255, 255, 0.32);
+  color: #ffffff;
+}
+.toc-download-epub  { /* 변형 hook (필요 시 색상 조정) */ }
+.toc-download-pdf   { /* 변형 hook */ }
+.toc-download-pptx  { /* 변형 hook */ }
+.toc-markmap {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.toc-mindmap-svg {
+  width: 100%;
+  max-width: 100%;
+  display: block;
+  min-height: 360px;
+}

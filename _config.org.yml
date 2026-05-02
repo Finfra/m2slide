@@ -1,73 +1,24 @@
 # m2slide 설정
-# 현재 프로젝트 설정
+#      _doc_work/z_done/_config.org.yml 에 추가 설명
 
-# 기본 프로젝트 이름 (m2slide.sh 및 deploy.sh에서 사용)
 # 프로젝트 경로: Projects/{current_project} 
-## MarkdownGraph       : 단일 페이지 모드 (Single Page Mode)
-## LlmAndVibeCoding    : 챕터 모드 (Chapter Mode)
+
 # current_project: MarkdownGraph
-# current_project: LlmAndVibeCoding
-# current_project: m2SlideStyle1_single
+theme: default                # theme/{name}/slide.css + layouts/ (default 외에는 .gitignore 처리)
+cover_enabled: false          # true 시 첫 파일 첫 슬라이드 위치에 cover 자동 주입
+toc_placeholder: false        # true 시 모든 파일에 #/0 TOC 슬라이드 강제 삽입
+top_align: false              # true 시 reveal.js 중앙정렬 덮어쓰고 'top-align-mode' 클래스 적용 (주의)
+markmap_depth: 2              # Markmap 초기 펼침 깊이 (1=루트+1단계, 2=2단계까지)
+chapter_markmap_depth: 3      # 챕터별 페이지 Markmap 펼침 깊이 (markmap_depth+1 권장)
+title_contents_gap: 30        # title↔contents 갭 (title 높이의 %, 0=없음 / 50=절반 / 100=동일)
+auto_layout_detect: true      # false: 자동 감지 비활성화 (모든 슬라이드는 default layout사용)
 
-# 선택 사항: 슬라이드 내용 상단 정렬 강제
-# true일 경우, 생성된 HTML에 'top-align-mode' 클래스가 추가되어
-# Reveal.js의 수직 중앙 정렬을 덮어씁니다. 주의해서 사용하세요.
-top_align: false
-
-# Title ↔ Contents 사이 갭 (title 높이의 %)
-# 기본값: 30 → title이 40px이면 갭은 12px
-# 0: 갭 없음, 50: title 높이의 절반, 100: title 높이와 동일
-title_contents_gap: 30
-
-# 가이드 라인 표시 (레이아웃 디버깅용)
-guide_line: true
-
-# Markmap 초기 펼침 깊이 (기본값: 3)
-# 1: 루트와 1단계 자식만 표시
-# 2: 2단계 자식까지 표시
-markmap_depth: 2
-
-# 챕터별 페이지용 Markmap 펼침 깊이 (기본값: markmap_depth + 1 권장)
-# 챕터 상세 페이지에서는 전체 개요보다 한 단계 더 깊이 보여주는 것이 좋음
-chapter_markmap_depth: 3
-
-# TOC placeholder 슬라이드 강제 삽입 (기본값: false)
-# true: YAML title 유무와 관계없이 모든 파일에 #/0 TOC 슬라이드 삽입
-# 파일별 개별 지정은 YAML frontmatter에 toc_placeholder: true 사용
-toc_placeholder: false
-
-# 자동 layout 감지 (Issue27_1: image-only → _blank, Issue27_2: empty-title → _contents_no_title)
-# true(기본): 제목 없이 이미지만 있는 슬라이드는 _blank 풀스크린, 빈 제목 슬라이드는 _contents_no_title 적용
-# false: 자동 감지 비활성화 (모든 슬라이드는 theme_default_layout 또는 사용자 명시 #layout-* 사용)
-auto_layout_detect: true
-
-# 마크다운 비디오 임베드 기본 동작
-# `![alt](path.mp4)` 형태로 작성하면 <video> 태그로 자동 변환됨
-# 8개 후보 중 한 개만 선택 활성화:
-# video_default: autoplay-muted        # 자동재생 + 음소거 + 컨트롤 (브라우저 정책 충족)
-# video_default: autoplay-loop         # 자동재생 + 음소거 + 무한반복 + 컨트롤
-# video_default: loop                  # 컨트롤 + 무한반복 (사용자 클릭 시 반복)
-# video_default: muted                 # 음소거 + 컨트롤
-# video_default: background            # 자동재생 + 음소거 + 무한반복 + 컨트롤 없음 (배경 영상)
-# video_default: minimal               # 자동재생 + 음소거 + 컨트롤 없음 (1회 재생)
-# video_default: autoplay-nocontrols   # 자동재생 (음소거 없음 + 컨트롤 없음) — 브라우저 차단 가능
-video_default: controls                # 컨트롤만, 자동재생 없음 (기본 권장)
-
-
-# 사용할 theme 이름 (theme/{name}/slide.css + theme/{name}/layouts/ 로 해석)
-# default 외에는 .gitignore 처리됨 (사용자별 커스터마이징 영역)
-theme: default
-
-# 프로젝트 기본 layout (theme/{name}/layouts/{layout}.html)
-# 슬라이드별로 마크다운에서 #layout-name 으로 override 가능
-# 미지정 시: layout 미적용 (plain section, 기존 동작)
-# 첫 슬라이드(TOC)는 _toc layout이 자동 적용됨
-# theme_default_layout: _contents
-
-slide_ratio: none # 3:2 # 16:9 # none
-
-# Open Props 사용 여부 (true: CDN 로드, false: 기본값 사용)
-use_open_props: true
+# `![alt](path.mp4)` 형태로 작성하면 <video> 태그로 자동 변환됨  
+# controls, autoplay-muted, autoplay-loop, loop, muted, background, minimal, autoplay-nocontrols
+video_default: controls       # 컨트롤만, 자동재생 없음 (기본 권장)
+guide_line: true              # 레이아웃 디버깅용 가이드 라인 표시
+use_open_props: true          # Open Props CDN 로드 (false=기본값 사용)
+slide_ratio: none             # 3:2 or 16:9 (제거 예정)
 
 # 스타일 설정 (컨텐츠 조절 관련)
 style:
@@ -115,21 +66,8 @@ style:
     font_color: '#000000'    # Default: '#000000'
     align: left              # Default: left
     outer_padding: 1%       # Default: 5px
-    # 폰트 크기 자동 조절 활성화 여부 (true: 자동 조절, false: 원래 크기 유지)
-    font_size_auto: true
-    
-    # 리스트 폰트의 최소 크기 (px 단위)
-    # 내용이 아무리 많아도 이 크기보다 작아지면 스크롤이 생깁니다.
-    font_size_min: 20px
-    
-    # 리스트 폰트의 최대 크기 비율 (제목 크기 대비)
-    # 예: 제목이 60px이고 비율이 0.66이면, 본문 최대 크기는 40px로 제한됩니다.
-    # 내용이 적을 때 글자가 너무 커지는 것을 방지합니다.
-    font_size_max_ratio: 0.66
+    font_size_auto: true              # true=자동 조절, false=원래 크기 유지
+    font_size_min: 20px               # 자동 조절 시 최소 폰트 크기 (이하 시 스크롤 발생)
+    font_size_max_ratio: 0.66         # 본문 최대 크기 = 제목 크기 × 비율 (내용 적을 때 과확대 방지)
 
-    # 이미지/SVG 크기 조절 모드 (original, width, height, fit)
-    # original: 원본 크기 유지 (화면 넘지 않음)
-    # width: 너비 최대화
-    # height: 높이 최대화
-    # fit: 화면에 꽉 차게 맞춤 (스크롤 없음)
-    media_container_enlarge: fit
+    media_container_enlarge: fit # 이미지/SVG 크기 조절 모드 (original, width, height, fit)

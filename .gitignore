@@ -8,9 +8,11 @@ _doc_design
 CLAUDE.md
 Harness.md
 Issue.md
+noteForHuman.md
 noteForHuman*.md
 PROMPTS.md
 config.yml
+run.sh
 
 # vscode
 .vscode
@@ -113,3 +115,7 @@ Temporary Items
 # theme: default만 추적, 그 외 사용자 커스텀은 추적 제외
 /theme/*
 !/theme/default/
+
+# data: .gitkeep만 추적, 그 외 사용자 데이터는 추적 제외
+/data/*
+!/data/.gitkeep

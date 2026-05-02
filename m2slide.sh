@@ -165,14 +165,19 @@ fi
 # Run the HTML generator
 node "$SCRIPT_DIR/lib/generate-slides.js" "$PROJECT_DIR"
 
+# Define Project Name
+PROJECT_NAME=$(basename "$PROJECT_DIR")
+
 # Generate EPUB if requested
 if [ "$GENERATE_EPUB" = true ]; then
   echo ""
   node "$SCRIPT_DIR/lib/generate-epub.js" "$PROJECT_DIR"
+  # Move EPUB into slide/ so index.html can link to it (avoid leaving artifact at project root)
+  if [ -f "$PROJECT_DIR/$PROJECT_NAME.epub" ]; then
+    mv "$PROJECT_DIR/$PROJECT_NAME.epub" "$OUTPUT_DIR/"
+    echo "  ✅ Moved EPUB to slide/: $PROJECT_NAME.epub"
+  fi
 fi
-
-# Define Project Name
-PROJECT_NAME=$(basename "$PROJECT_DIR")
 
 # Generate PDF if requested
 if [ "$GENERATE_PDF" = true ]; then
@@ -187,20 +192,25 @@ if [ "$GENERATE_PDF" = true ]; then
   fi
 
   if ls "$OUTPUT_DIR"/*.html 1> /dev/null 2>&1; then
+    # Per-chapter PDFs are written to a temp dir under slide/ then combined
+    PDF_TMP_DIR="$OUTPUT_DIR/.pdf-tmp"
+    rm -rf "$PDF_TMP_DIR"
+    mkdir -p "$PDF_TMP_DIR"
+
     for file in "$OUTPUT_DIR"/*.html; do
       filename=$(basename "$file")
-      
+
       # Skip index.html (Markmap)
       if [ "$filename" == "index.html" ]; then
         continue
       fi
-      
+
       name="${filename%.*}"
       echo "  Processing $filename..."
-      
+
       # Run decktape and filter out known non-critical SVG errors
       # shellcheck disable=SC2086
-      $DECKTAPE_CMD reveal "$file" "$PROJECT_DIR/$name.pdf" 2>&1 | grep -vE "Error: <g> attribute transform|translate\(NaN,NaN\)"
+      $DECKTAPE_CMD reveal "$file" "$PDF_TMP_DIR/$name.pdf" 2>&1 | grep -vE "Error: <g> attribute transform|translate\(NaN,NaN\)"
 
       # Check exit code of the first command in the pipe (decktape)
       if [ "${PIPESTATUS[0]}" -eq 0 ]; then
@@ -209,6 +219,28 @@ if [ "$GENERATE_PDF" = true ]; then
           echo "  ❌ Failed to generate PDF for $name"
       fi
     done
+
+    # Combine per-chapter PDFs into a single PDF in slide/ for download button
+    echo ""
+    echo "  📚 Combining chapter PDFs..."
+    COMBINED_PDF="$OUTPUT_DIR/$PROJECT_NAME.pdf"
+    PDF_LIST=()
+    while IFS= read -r p; do
+      PDF_LIST+=("$p")
+    done < <(find "$PDF_TMP_DIR" -maxdepth 1 -name "*.pdf" | sort)
+
+    if [ "${#PDF_LIST[@]}" -gt 0 ]; then
+      if python3 "$SCRIPT_DIR/lib/combine-pdfs.py" "$COMBINED_PDF" "${PDF_LIST[@]}"; then
+        echo "  ✅ Combined PDF saved to slide/: $PROJECT_NAME.pdf"
+      else
+        echo "  ❌ Failed to combine PDFs"
+      fi
+    else
+      echo "  ⚠️  No chapter PDFs found to combine."
+    fi
+
+    # Clean up temp dir (per-chapter PDFs)
+    rm -rf "$PDF_TMP_DIR"
   else
     echo "  ⚠️  No HTML files found to convert."
   fi
@@ -225,7 +257,7 @@ if [ "$GENERATE_PPTX" = true ]; then
       exit 1
   fi
 
-  PPTX_OUTPUT="$PROJECT_DIR/$PROJECT_NAME.pptx"
+  PPTX_OUTPUT="$OUTPUT_DIR/$PROJECT_NAME.pptx"
   
   # Check if we are in Single Page Mode
   if [ "$INPUT_DIR" = "$PROJECT_DIR" ]; then
@@ -263,4 +295,13 @@ if [ "$GENERATE_PPTX" = true ]; then
         echo "  Note: Ensure markdown files do not contain syntax incompatible with Pandoc."
     fi
   fi
+
+fi
+
+# Refresh index.html so download buttons reflect newly generated artifacts in slide/
+if [ "$GENERATE_EPUB" = true ] || [ "$GENERATE_PDF" = true ] || [ "$GENERATE_PPTX" = true ]; then
+  echo ""
+  echo "🔄 Refreshing index.html with download buttons..."
+  node "$SCRIPT_DIR/lib/generate-slides.js" "$PROJECT_DIR" > /dev/null
+  echo "  ✅ index.html refreshed"
 fi
