@@ -10,11 +10,11 @@
 
 # 🤔 결정사항
 ## chapter-single mode 맞추기
-| 페이지      | slide위치                  | theme의 layout위치 | 작업                             |
-| ----------- | -------------------------- | ------------------ | -------------------------------- |
-| Cover Page  | index.html                 | _cover.html        | ✅ Issue55 — nowage `_cover.html` 신설, `1.1.cover.html` 삭제 |
-| Agenda Page | agenda.html                | _agenda.html       | ✅ Issue55 — `_agenda.html` 신설 (default+nowage), `generateAgendaHTML` 우선 사용 |
-| TOC Page    | 0X-*.html#/toc-placeholder | _toc.html          | ✅ Issue55 Phase 1 완료          |
+| 페이지      | slide위치                  | theme의 layout위치 | 작업 |
+| ----------- | -------------------------- | ------------------ | ---- |
+| Cover Page  | index.html                 | _cover.html        |      |
+| Agenda Page | agenda.html                | _agenda.html       |      |
+| TOC Page    | 0X-*.html#/toc-placeholder | _toc.html          |      |
 
 # 🌱 이슈후보
 
@@ -26,54 +26,44 @@
 
 
 
-## Issue50. Orientation 슬라이드 + TOC 제외 메타 (`!` prefix) (등록: 2026-05-02)
-* 목적: 제목 페이지와 목차 사이에 "강의 시작 전 공지사항" 등 Orientation 슬라이드 삽입 + 해당 슬라이드는 markmap TOC에 노출 안 되게 함
-* 카테고리: Generator + Project (AGENDA 정책)
-* 복잡도: 복잡 (plan + task 필수)
-* 상세:
-    - 사용자 표기 예: AGENDA.md에 `## ![오리엔테이션](./00_Orientation.md)` — `[!제목](./파일.md)` 패턴은 빌드는 정상, TOC 트리에서 제외
-    - 슬라이드 단위 토글도 검토: frontmatter `toc_index: false` 또는 슬라이드 메타 `#noindex`
-* 구현 명세:
-    - AGENDA.md 파서(`generate-slides.js` `parseAgenda()`) `[!...](...)` 패턴 인식 분기 추가
-    - markmap 데이터 구조 빌드 시 hidden 노드 필터링
-    - 페이지 빌드는 정상 — 단 상위/다음 챕터 네비게이션에서 hidden 슬라이드 처리 정책 결정
-    - 우선순위: AGENDA `!` prefix > frontmatter `toc_index` > 기본 노출
-    - 단일 페이지 모드(`AGENDA.md` 부재)에서의 동작 정의 필요
-    - 의존: Issue49 cover 슬라이드 정책과 슬라이드 순서 충돌 검토
-    - **의존: Issue55 (chapter/single 3페이지 모델 통일) 후행** — Issue55가 TOC를 `agenda.html` standalone으로 분리함. Orientation 위치는 Issue55 종결 후 재정의 필요 (후보: Single deck `#/1`, agenda 인라인 섹션, chapter 첫 deck `#/0`). 본 plan: `_doc_work/plan/chapter-single-mode-unify_plan.md` "관련 이슈" 섹션 참조
-
-## Issue51. 장표 드래그 네비게이션 (up/down/left/right) (등록: 2026-05-02)
-* 목적: 슬라이드 페이지에서 마우스/터치 드래그로 prev/next/up/down 슬라이드 이동 (모바일·태블릿 친화)
-* 카테고리: Frontend (reveal.js 인터랙션)
-* 복잡도: 복잡 (plan + task 필수, CSS 위험 영역 인접)
-* 상세:
-    - 좌→우 드래그: 이전, 우→좌: 다음
-    - 위→아래/아래→위: 수직 슬라이드 (chapter mode 등에서 활용)
-    - reveal.js 자체 swipe 지원 검토 후 보강 vs 신규 구현 결정
-* 구현 명세:
-    - reveal.js touch handler 분석 → m2slide 커스텀 키 핸들러(↑/→ 마지막 슬라이드 챕터 이동) 충돌 검토
-    - `theme/*/slide.css`의 `transform`/`position`/`inset` 영역 변경 **금지** ([CLAUDE.md "CSS 수정 시 주의사항"](CLAUDE.md))
-    - 회귀: 첫·중간·끝 슬라이드 + index.html + 단일/챕터 모드 + 5개 기존 프로젝트 시각 회귀
-    - 데스크톱 마우스 드래그와 텍스트 선택의 충돌 처리 정책
-    - **의존: Issue55 후행** — 드래그 분기는 Issue55 Phase 9 키 핸들러와 동일 시멘틱 유지. 빌드 시 주입되는 `M2SLIDE_MODE`·`TOC_SLIDE_INDEX`·`COVER_SLIDE_INDEX` JS 변수 재사용. Cover 슬라이드 →/↓ override(`agenda.html` 이동) 동일 적용
-
-## Issue52. m2SlideStyle2_chapter 프로젝트 구조 정비 (등록: 2026-05-02)
-* 목적: `Projects/m2SlideStyle2_chapter/` 폴더 구조와 의도 일치 — Chapter Mode 샘플인지 Single Page인지 명확화
-* 카테고리: Project
-* 복잡도: 단순
-* 상세:
-    - 현상: 폴더명에 `_chapter` 접미사 있으나 `markdown/` 디렉토리·`AGENDA.md` 부재로 Single Page Mode로 빌드됨
-    - 옵션 A (Chapter Mode 샘플 유지): `markdown/` + `AGENDA.md` + 챕터별 `*.md` 파일 추가
-    - 옵션 B (Single Page 의도): 폴더명을 `m2SlideStyle2` 등 의도에 맞게 변경
-* 구현 명세:
-    - 사용자 의도 확인 후 A/B 선택
-    - `_config.yml`·문서 참조(`README.md`, `Projects/README.md`, `lib/m2slide/CLAUDE.md`) 동기화
-    - 시간 비용 < 30분 예상 (단순 이슈)
-    - **선결: Issue55 Phase 10 의존** — Issue55 Phase 10 테스트 대상이 `m2SlideStyle2_chapter` chapter 모드 샘플임. **옵션 A(chapter 샘플화) 선택 권장**. Issue55 Phase 10 진입 전 본 이슈 해결 또는 Phase 10 사전 작업으로 흡수 처리
-
 # 📗 선택
 
 # ✅ 완료
+
+
+## Issue52. m2SlideStyle2_chapter 프로젝트 구조 정비 (등록: 2026-05-02, 해결: 2026-05-02, commit: c57e016) ✅
+* 목적: `Projects/m2SlideStyle2_chapter/` 폴더 구조와 의도 일치 — Chapter Mode 샘플인지 Single Page인지 명확화
+* 카테고리: Project
+* 복잡도: 단순
+* 해결:
+    - 옵션 A 선택: `markdown/` + `AGENDA.md` + 챕터별 7개 `*.md` 파일 이미 존재 확인 (이전 Issue55 Phase 10 작업에서 선행 정비됨)
+    - `./run.sh m2SlideStyle2_chapter` → `📖 Chapter Mode detected` 정상 확인
+    - `slide/` 산출물: `agenda.html`, `index.html`, `01~07-*.html` 7개 챕터 모두 생성
+
+## Issue51. 장표 드래그 네비게이션 (up/down/left/right) (등록: 2026-05-02, 해결: 2026-05-02, commit: c57e016) ✅
+* 목적: 슬라이드 페이지에서 마우스/터치 드래그로 prev/next/up/down 슬라이드 이동 (모바일·태블릿 친화)
+* 카테고리: Frontend (reveal.js 인터랙션)
+* 복잡도: 복잡
+* 해결:
+    - Reveal.initialize에 `touch: false` 추가 → 기존 reveal.js 내장 swipe 비활성, 커스텀 핸들러가 전담
+    - `simulateKey(key, keyCode)` 헬퍼로 synthetic keydown 발생 → 기존 Phase 9 `keydown` 핸들러(`isCoverSlide`, `M2SLIDE_MODE`, 마지막 슬라이드 챕터 이동) 완전 재사용
+    - touch 이벤트: `touchstart`/`touchend`, MIN 50px, MAX 700ms
+    - mouse 이벤트: `mousedown`/`mousemove`/`mouseup`, 텍스트 선택 시 무시
+    - 수평(|dx| ≥ |dy|): 우→좌 = ArrowRight, 좌→우 = ArrowLeft
+    - 수직(|dy| > |dx|): 아래→위 = ArrowDown, 위→아래 = ArrowUp
+    - CSS 변경 없음 (CSS 가드 준수)
+
+## Issue50. Orientation 슬라이드 + TOC 제외 메타 (`!` prefix) (등록: 2026-05-02, 해결: 2026-05-02, commit: c57e016) ✅
+* 목적: 제목 페이지와 목차 사이에 "강의 시작 전 공지사항" 등 Orientation 슬라이드 삽입 + 해당 슬라이드는 markmap TOC에 노출 안 되게 함
+* 카테고리: Generator + Project (AGENDA 정책)
+* 복잡도: 복잡
+* 해결:
+    - `parseAgenda()`: `## ![title](path)` 패턴 인식 — `currentSection = null` 처리로 TOC 트리 제외, 빌드는 정상
+    - `### ![title](path)` 패턴도 지원 (숨김 서브챕터)
+    - `getSubsections()`: mainPattern에 `!?` 추가 → `## !?\[...\]` 매칭. 구분자도 `/^## !?\[/` 로 수정
+    - `getParentPage()`: 역방향 부모 검색 정규식에 `!?` 추가
+    - `getNextChapter()`: main/sub 모두 `!?` 추가 — 숨김 챕터도 네비게이션 순서에는 포함
+    - 슬라이드 단위 토글(frontmatter `toc_index: false` / `#noindex`) — v2 후보
 
 
 ## Issue55. chapter/single 모드 출력 구조 통일 — 3페이지 모델 (등록: 2026-05-02, 해결: 2026-05-02, commit: 71841f5) ✅
