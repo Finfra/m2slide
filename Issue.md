@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 59
+* Issue HWM: 61
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -15,7 +15,7 @@
 | Cover Page  | index.html                 | _cover.html        |      |
 | Agenda Page | agenda.html                | _agenda.html       |      |
 | TOC Page    | 0X-*.html#/toc-placeholder | _toc.html          |      |
-| Cover Slide | 0X-*.html#/#0              | _cov               | 제거 |
+
 # 🌱 이슈후보
 
 # 🚧 진행중
@@ -24,9 +24,35 @@
 
 # 📙 일반
 
+## Issue61. title_contents_gap이 media-enlarge-fit 모드 + H3 슬라이드에서 미적용 (등록: 2026-05-02)
+* 목적: `title_contents_gap` 설정이 `media_container_enlarge: fit` 모드에서 시각적으로 적용되지 않는 원인 수정
+* 카테고리: Frontend / Generator
+* 복잡도: 중간
+* 상세:
+    - 재현 슬라이드: `Projects/m2SlideStyle1_single/slide/index.html#/14` (H3 + 이미지 슬라이드)
+    - **원인1 (결정적)**: `media-enlarge-fit` 모드에서 `theContents { flex-grow: 1 !important }` 가 h3.title 아래 공간 전체를 차지함 → `applyTitleContentsGap()`이 `h3.title`에 `marginBottom`을 추가해도 flex container가 흡수하여 시각적 gap 미발생. `section { height: 100vh !important; overflow: hidden !important }`이므로 추가 공간 확장도 불가
+    - **원인2 (JS 타이밍)**: `ready` 이벤트 시점에 비현재 슬라이드는 Reveal.js가 `display: none` → `offsetHeight = 0` → `if (h > 0)` 조건 실패 → 최초 실행 시 skip. `slidechanged`로 방문 시 적용되지만 원인1로 인해 효과 없음
+    - **원인3 (클래스 누락)**: `hasTextContent()`가 헤더·이미지를 텍스트 아님으로 처리 → H3+이미지 슬라이드에 `has-text` 클래스 미부여 → 기존 fit 예외 규칙 대상 밖
+    - **부수 버그**: `lib/generate-slides.js` L1678 `sectionClass` 생성 로직에서 `isTitleOnly=true && hasText=true` 동시 발생 시 `class` 속성이 두 번 출력되어 브라우저가 두 번째 값을 무시 (`has-text` 소실)
+* 구현 명세:
+    - `applyTitleContentsGap()`: `marginBottom` 방식을 flex gap에서도 동작하도록 section의 CSS `gap` 속성 또는 `padding-bottom` 방식으로 변경 검토
+    - `media-enlarge-fit` 모드에서 `h*.title` 아래 gap 확보 방법: `gap` 속성을 section에 추가하거나 `.title` 요소에 `flex-shrink: 0` + `padding-bottom` 방식 적용
+    - `slidechanged` 이벤트에서 현재 슬라이드만 적용하는 방식으로 타이밍 문제 해결 가능
+    - L1678 `sectionClass` 이중 class 버그: `const classes = []; if (isTitleOnly) classes.push('title-slide'); if (hasText) classes.push('has-text'); const sectionClass = classes.length ? \` class="\${classes.join(' ')}"\` : '';` 패턴으로 교체
+
 # 📗 선택
 
 # ✅ 완료
+
+## Issue60. generate-slides.js 모듈 분리 리팩터링 (등록: 2026-05-02, 해결: 2026-05-02, commit: 05c1299) ✅
+* 목적: 3202줄 단일 파일을 7개 모듈(module.exports)로 분리하여 유지보수성 향상
+* plan: `_doc_work/plan/m2slide_lib_plan.md`
+* 카테고리: Generator
+* 해결:
+    - 7개 모듈 추출: utils.js / config.js / layout.js / agenda.js / markdown.js / slide-parser.js / html-builder.js
+    - generate-slides.js: 3202줄 → 225줄 (오케스트레이션 전용)
+    - html-builder.js: `configure(cfg)` 패턴으로 전역 변수 17개 완전 제거
+    - STYLE_CONFIG → cfg.styleConfig 치환 완료, bridge 패턴 제거
 
 ## Issue59. cover_enabled=true 시 커버 페이지 복원 (등록: 2026-05-02, 해결: 2026-05-02, commit: bba0104) ✅
 * 목적: `cover_enabled: true` 설정 시 커버 페이지가 표시되지 않는 문제 수정 (Issue58에서 의도치 않게 제거됨)
