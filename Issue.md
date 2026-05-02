@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 61
+* Issue HWM: 62
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -22,13 +22,28 @@
 
 # 📕 중요
 
+## Issue62. cover-title 반응형 크기 조정 및 CSS 구현 설계 문서화 (등록: 2026-05-02)
+* 목적: cover 슬라이드 제목이 뷰포트 너비에 따라 줄바꿈 없이 최대 크기로 표시되도록 수정. CSS 구현 형태 SSOT(`_doc_design/css.md`) 작성.
+* 카테고리: Theme / Frontend
+* 복잡도: 중간
+* 상세:
+    - **선행 이슈**: Issue61 (title_contents_gap) 작업 중 발견
+    - m2SlideStyle1_single vs m2SlideStyle2_chapter에서 cover-title 줄바꿈 차이 발생
+    - 원인: `font-size: 3.4em` (136px) — 좁은 뷰포트에서 30자 제목이 줄바꿈됨
+    - 수정: `clamp(1.2em, 5vw, 3.4em)` 적용 (7vw → 5vw; 30자 × 0.6em 공식 적용)
+    - `layout-cover` section에 `min-height: 100vh !important` 추가 — flex push로 instructor 하단 고정
+    - `_doc_design/css.md` 생성: CSS 변수 체계·반응형 타이포그래피·레이아웃 패턴 SSOT
+* 구현 명세:
+    - `theme/default/slide.css`, `theme/nowage/slide.css`: clamp(1.2em, 5vw, 3.4em) + min-height: 100vh
+    - `_doc_design/css.md`: 변수 체계, 5vw 공식, 섹션 높이 규칙, 금지 사항 정의
+
 # 📙 일반
 
 # 📗 선택
 
 # ✅ 완료
 
-## Issue61. title_contents_gap이 media-enlarge-fit 모드 + H3 슬라이드에서 미적용 (등록: 2026-05-02, 해결: 2026-05-02, commit: 4e418c2) ✅
+## Issue61. title_contents_gap이 media-enlarge-fit 모드 + H3 슬라이드에서 미적용 (등록: 2026-05-02, 해결: 2026-05-02, commit: 4e418c2, 789947d, 8db51ae) ✅
 * 목적: `title_contents_gap` 설정이 `media_container_enlarge: fit` 모드에서 시각적으로 적용되지 않는 원인 수정
 * 카테고리: Frontend / Generator
 * 복잡도: 중간
@@ -36,11 +51,13 @@
     - 재현 슬라이드: `Projects/m2SlideStyle1_single/slide/index.html#/14` (H3 + 이미지 슬라이드)
     - **원인1 (JS 타이밍)**: `ready`/`slidechanged` 이벤트 시 Reveal.js 레이아웃 미완료 → `offsetHeight = 0` → `if (h > 0)` 조건 실패
     - **원인2 (비현재 슬라이드 skip)**: 전체 슬라이드 대상 querySelector → hidden slide `offsetHeight = 0` 오진
+    - **원인3 (guide_line h3 누락)**: guide-line CSS에서 h3 제외 → h3.title 배경이 section 빨간색과 동일 → gap 불가시
     - **부수 버그**: `sectionClass` 생성 로직에서 `isTitleOnly=true && hasText=true` 동시 발생 시 `class` 속성 중복 출력
-* 해결 (`lib/html-builder.js`):
-    - `applyTitleContentsGap`: 전체 슬라이드 → `.present` 셀렉터로 현재 슬라이드만 처리
-    - `ready`/`slidechanged`: `requestAnimationFrame(applyTitleContentsGap)`으로 레이아웃 완료 후 적용
-    - `sectionClass` 버그: `classes` 배열 + `join` 패턴으로 교체
+* 해결:
+    - `lib/html-builder.js`: `applyTitleContentsGap` → `.present` 셀렉터 + `requestAnimationFrame` 적용
+    - `theme/default/slide.css`: `.reveal .title` margin-bottom CSS 변수 직접 적용
+    - `theme/default/slide.css`: guide-line 셀렉터에 `h3` 추가 → 녹색↔빨간gap↔파란 대비 확보
+
 
 ## Issue60. generate-slides.js 모듈 분리 리팩터링 (등록: 2026-05-02, 해결: 2026-05-02, commit: 05c1299) ✅
 * 목적: 3202줄 단일 파일을 7개 모듈(module.exports)로 분리하여 유지보수성 향상
