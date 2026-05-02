@@ -76,6 +76,18 @@
 
   /* Layout 변수 */
   --title-contents-gap-pct: 0;
+
+  /* Slide 기하 (Issue63) — slide_ratio 기반 크기 체계
+     - --slide-ratio: width/height 무차원 비율 (16:9 → 1.7778, 3:2 → 1.5, none → 1.7778 fallback)
+     - --slide-outer-padding: 슬라이드↔뷰포트 대칭 패딩 (CSS length)
+     - --slide-inner-padding: 콘텐츠↔슬라이드 경계 대칭 패딩 (CSS length)
+     - 본 변수는 _config.yml slide_ratio/slide_outer_padding/slide_inner_padding로 override
+     - JS↔CSS 동기화 의무 (1.b 정책): lib/config.js createDefaultConfig 기본값과 동일 유지
+     - 기하 관계: contents_width = contents_height × var(--slide-ratio)
+  */
+  --slide-ratio: 1.7778;
+  --slide-outer-padding: 0;
+  --slide-inner-padding: 0;
 }
 
 /* =========================================================================
