@@ -55,8 +55,15 @@ if [ "${1:-}" = "--lint-config" ]; then
 fi
 
 # 기본 동작: 프로젝트 빌드 + 브라우저 열기
-export prj_name="${1:-m2SlideStyle1_single}"
-export prj_path=./Projects/$prj_name
+_arg="${1:-m2SlideStyle1_single}"
+# Projects/ prefix 또는 ./Projects/ prefix가 이미 포함된 경우 그대로 사용
+if [[ "$_arg" == Projects/* || "$_arg" == ./Projects/* ]]; then
+    export prj_path="./$_arg"
+    export prj_name="${_arg#Projects/}"
+else
+    export prj_name="$_arg"
+    export prj_path=./Projects/$prj_name
+fi
 
 rm -rf "$prj_path/slide"
 ./m2slide.sh "$prj_path"
