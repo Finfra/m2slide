@@ -1,3 +1,5 @@
+/* theme: nowage (sandbox - 사용자 커스터마이징 영역) */
+
 /* =========================================
    [Table of Contents]
    1. 전역 설정 (Global)
@@ -13,18 +15,6 @@
    ========================================= */
 * {
   box-sizing: border-box;
-}
-
-/* Reveal.js 기본 테마 변수 — sky.css 없이 폰트 크기 보장 */
-.reveal {
-  --r-main-font-size: 40px;
-  --r-heading1-size: 3.77em;
-  --r-heading2-size: 2.11em;
-  --r-heading3-size: 1.55em;
-  --r-heading4-size: 1em;
-  --r-heading-text-transform: none;
-  --r-heading-font-weight: 700;
-  font-size: var(--r-main-font-size);
 }
 
 .reveal .outline-title {
@@ -211,18 +201,15 @@
 }
 
 /* Default (Original) Mode - controlled by body class */
-/* Issue26: video도 img/svg와 동일한 미디어 처리 */
 .reveal .media-container img,
-.reveal .media-container svg,
-.reveal .media-container video {
+.reveal .media-container svg {
   display: block;
   margin: 0 auto;
 }
 
 /* 1. Original: 원본 크기 유지 (단, 화면 넘지 않음) */
 .media-enlarge-original .reveal .media-container img,
-.media-enlarge-original .reveal .media-container svg,
-.media-enlarge-original .reveal .media-container video {
+.media-enlarge-original .reveal .media-container svg {
   max-width: 100% !important;
   max-height: 100% !important;
   width: auto !important;
@@ -232,8 +219,7 @@
 
 /* 2. Width: 너비 최대화 */
 .media-enlarge-width .reveal .media-container img,
-.media-enlarge-width .reveal .media-container svg,
-.media-enlarge-width .reveal .media-container video {
+.media-enlarge-width .reveal .media-container svg {
   width: 100% !important;
   height: auto !important;
   max-width: none !important;
@@ -268,7 +254,6 @@
 
 .media-enlarge-height .reveal .media-container img,
 .media-enlarge-height .reveal .media-container svg,
-.media-enlarge-height .reveal .media-container video,
 .media-enlarge-height .graph-scroll img,
 .media-enlarge-height .graph-scroll svg {
   height: 100% !important;
@@ -305,7 +290,6 @@
 
 .media-enlarge-fit .reveal .media-container img,
 .media-enlarge-fit .reveal .media-container svg,
-.media-enlarge-fit .reveal .media-container video,
 .media-enlarge-fit .graph-scroll img,
 .media-enlarge-fit .graph-scroll svg {
   width: 100% !important;
@@ -523,7 +507,8 @@
 }
 
 .guide-line-mode .reveal h1,
-.guide-line-mode .reveal h2 {
+.guide-line-mode .reveal h2,
+.guide-line-mode .reveal h3 {
   border: 3px solid rgba(0, 255, 0, 0.5) !important;
   background-color: rgba(0, 255, 0, 0.05) !important;
 }
@@ -534,8 +519,314 @@
 }
 
 /* =========================================
-   8. Issue27_1: image-only 자동 감지 시 풀스크린 이미지
+   8. Layout 타입별 스타일 (Keynote Nowage Theme)
    ========================================= */
+
+/* === 공통 header/body 구조 === */
+.reveal section[class*="layout-"] {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.reveal section[class*="layout-"] > div[class$="-header"] {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.reveal section[class*="layout-"] > div[class$="-body"] {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1em 0;
+}
+
+/* === Accent line (divider) === */
+.reveal section[class*="layout-"] > div[class*="-divider"],
+.reveal section[class*="layout-"] .reveal [class*="-divider"] {
+  height: 3px;
+  background: linear-gradient(90deg, #FFD700 0%, #FFD700 100%);
+  margin: 0.5em 0;
+}
+
+/* 1. Cover Layout */
+.reveal section.layout-cover {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-cover .cover-header {
+  padding: 2em 0 1em 0;
+}
+
+.reveal section.layout-cover .cover-title {
+  font-size: 3.2em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-cover .cover-visual {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.reveal section.layout-cover .cover-visual img,
+.reveal section.layout-cover .cover-visual svg {
+  max-width: 90%;
+  max-height: 80%;
+  width: auto;
+  height: auto;
+}
+
+.reveal section.layout-cover .cover-meta {
+  flex-shrink: 0;
+  padding: 1em 0;
+  font-size: 1.2em;
+}
+
+/* 2. Contents Layout */
+.reveal section.layout-contents {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-contents .contents-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-contents .contents-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-contents .contents-divider {
+  width: 40%;
+  margin: 0.5em 0 0 0;
+}
+
+.reveal section.layout-contents .contents-body {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-contents ul,
+.reveal section.layout-contents ol {
+  text-align: left;
+  font-size: 1.1em;
+  line-height: 1.6;
+}
+
+/* 2.2 Contents-Full Layout (전체 높이 활용) */
+.reveal section.layout-contents-full {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-contents-full .contents-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-contents-full .contents-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-contents-full .contents-divider {
+  width: 40%;
+  margin: 0.5em 0 0 0;
+}
+
+.reveal section.layout-contents-full .contents-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-contents-full ul,
+.reveal section.layout-contents-full ol {
+  text-align: left;
+  font-size: 1.1em;
+  line-height: 1.6;
+}
+
+/* 3. Split/Image-Text Layout */
+.reveal section.layout-split-image-text {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-split-image-text .split-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-split-image-text .split-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-split-image-text .split-divider {
+  width: 40%;
+  margin: 0.5em 0 0 0;
+}
+
+.reveal section.layout-split-image-text .split-row {
+  display: flex;
+  gap: 2.5em;
+  align-items: flex-start;
+  flex-grow: 1;
+  min-height: 0;
+  padding: 1em 0;
+}
+
+.reveal section.layout-split-image-text .split-left,
+.reveal section.layout-split-image-text .split-right {
+  flex: 1;
+  min-width: 0;
+}
+
+.reveal section.layout-split-image-text .split-left img,
+.reveal section.layout-split-image-text .split-right img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 4. Chapter TOC Layout */
+.reveal section.layout-chapter-toc {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-chapter-toc .chapter-toc-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-chapter-toc .chapter-toc-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-chapter-toc .chapter-toc-divider {
+  width: 40%;
+  margin: 0.5em 0 0 0;
+}
+
+.reveal section.layout-chapter-toc .chapter-toc-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.5em 0;
+}
+
+/* 5. Chapter Layout */
+.reveal section.layout-chapter {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-chapter .chapter-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-chapter .chapter-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-chapter .chapter-divider {
+  width: 40%;
+  margin: 0.5em 0 0 0;
+}
+
+.reveal section.layout-chapter .chapter-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.5em 0;
+}
+
+/* 6. Exercise Layout */
+.reveal section.layout-exercise {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-exercise .exercise-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-exercise .exercise-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-exercise .exercise-divider {
+  width: 40%;
+  margin: 0.5em 0 0 0;
+}
+
+.reveal section.layout-exercise .exercise-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.5em 0;
+}
+
+/* 6.2 Exercise-Small Layout */
+.reveal section.layout-exercise-small {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-exercise-small .exercise-header {
+  padding: 1em 0;
+}
+
+.reveal section.layout-exercise-small .exercise-title {
+  font-size: 2.2em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-exercise-small .exercise-divider {
+  width: 30%;
+  margin: 0.3em 0 0 0;
+  height: 2px;
+}
+
+.reveal section.layout-exercise-small .exercise-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1em 0;
+}
+
+/* 8. Blank Layout */
+.reveal section.layout-blank {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-blank .blank-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-blank .blank-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-blank .blank-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.5em 0;
+}
+
+/* Issue27_1: image-only 자동 감지 시 풀스크린 이미지 표시 */
 .reveal section.layout-blank.layout-blank--full-image {
   padding: 0;
 }
@@ -568,10 +859,7 @@
   display: block;
 }
 
-/* =========================================
-   9. Issue43: video-only 자동 감지 시 풀스크린 비디오
-   (Issue27_1·27_4의 video 버전 — width/height 100% + object-fit: contain)
-   ========================================= */
+/* Issue43: video-only 자동 감지 시 풀스크린 비디오 표시 (Issue27_1·27_4의 video 버전) */
 .reveal section.layout-blank.layout-blank--full-video {
   padding: 0;
 }
@@ -605,30 +893,410 @@
   display: block;
 }
 
+/* 9. Closing Layout */
+.reveal section.layout-closing {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2em;
+}
+
+.reveal section.layout-closing .closing-header {
+  margin-bottom: 1em;
+}
+
+.reveal section.layout-closing .closing-title {
+  font-size: 3.2em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-closing .closing-body {
+  flex-grow: 0;
+  padding: 1em 0;
+  font-size: 1.3em;
+}
+
+/* TOC (목차) Layout */
+.reveal section.layout-toc {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-toc .toc-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-toc .toc-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-toc .toc-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-toc .toc-markmap {
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+}
+
+/* =========================================
+   9. Keynote Nowage Visual Language
+   - 디자인 SSOT: _doc_design/keynote-nowage-theme/*.png
+   - 마스코트: theme-img/finfra*.png (theme/nowage/img/ → slide/theme-img/)
+   - 색상: 노랑 강조선(#F5C518) + 검정 텍스트, 흰 배경
+   ========================================= */
+
+/* 9.1 공통 색상·변수 */
+:root {
+  --kn-accent: #F5C518;          /* keynote 노랑 */
+  --kn-accent-soft: #FFE15A;     /* 보조 노랑 */
+  --kn-text: #111111;
+  --kn-page-num-color: #777777;
+}
+
+/* 9.2 슬라이드 본문 기본 — 흰 배경, 검정 텍스트
+   Reveal.js 기본 테마 변수: sky.css 제거 후 누락 방지 (sky.css 의존 제거) */
+.reveal {
+  --r-main-font-size: 40px;
+  --r-heading1-size: 3.77em;
+  --r-heading2-size: 2.11em;
+  --r-heading3-size: 1.55em;
+  --r-heading4-size: 1em;
+  --r-heading-text-transform: none;
+  --r-heading-font-weight: 700;
+  background: #ffffff;
+  color: var(--kn-text);
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  font-size: var(--r-main-font-size);
+}
+
+.reveal .slides {
+  color: var(--kn-text);
+}
+
+/* 9.3 layout-* 슬라이드의 상/하단 노랑 가로선 + 페이지 번호
+   주의: position 속성을 설정하지 말 것. reveal.js 기본 position:absolute 가
+   pseudo-element 의 positioned ancestor 역할을 이미 수행하며, 여기서 relative 로
+   덮으면 슬라이드 스택이 깨져 자동 layout 슬라이드가 viewport 밖으로 밀려남 (Issue54). */
+.reveal section[class*="layout-"] {
+  padding: 28px 56px 56px 56px;
+}
+
+.reveal section[class*="layout-"]::before,
+.reveal section[class*="layout-"]::after {
+  content: "";
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  height: 2px;
+  background: var(--kn-accent);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.reveal section[class*="layout-"]::before { top: 12px; }
+.reveal section[class*="layout-"]::after  { bottom: 12px; }
+
+/* 페이지 번호 (Reveal.js 기본 .slide-number 활용 + 폴백) */
+.reveal .slide-number {
+  background: transparent !important;
+  color: var(--kn-page-num-color) !important;
+  font-size: 18px;
+  font-weight: 600;
+  bottom: 18px;
+  right: 24px;
+}
+
+/* 9.4 제목 — 두꺼운 sketch 느낌 + 노랑 밑줄 */
+.reveal section[class*="layout-"] h1,
+.reveal section[class*="layout-"] .cover-title,
+.reveal section[class*="layout-"] .contents-title,
+.reveal section[class*="layout-"] .chapter-title,
+.reveal section[class*="layout-"] .chapter-toc-title,
+.reveal section[class*="layout-"] .exercise-title,
+.reveal section[class*="layout-"] .blank-title,
+.reveal section[class*="layout-"] .closing-title,
+.reveal section[class*="layout-"] .toc-title {
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  color: var(--kn-text);
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.15em;
+  margin: 0 auto;
+}
+
+.reveal section[class*="layout-"] h1::after,
+.reveal section[class*="layout-"] .cover-title::after,
+.reveal section[class*="layout-"] .contents-title::after,
+.reveal section[class*="layout-"] .chapter-title::after,
+.reveal section[class*="layout-"] .chapter-toc-title::after,
+.reveal section[class*="layout-"] .exercise-title::after,
+.reveal section[class*="layout-"] .blank-title::after,
+.reveal section[class*="layout-"] .closing-title::after,
+.reveal section[class*="layout-"] .toc-title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+/* 기존 contents-divider 등은 hr.png로 대체되었으므로 숨김 */
+.reveal section[class*="layout-"] [class$="-divider"] {
+  display: none !important;
+}
+
+/* 9.5 본문 영역 헤더 정렬: 제목은 가운데 정렬을 기본으로 함 */
+.reveal section[class*="layout-"] > div[class$="-header"] {
+  text-align: center;
+  align-items: center;
+}
+
+/* 9.6 리스트 — 레벨별 마커 차별화 */
+.reveal section[class*="layout-"] ul,
+.reveal section[class*="layout-"] ol {
+  list-style: none;
+  padding-left: 0;
+}
+
+.reveal section[class*="layout-"] ul > li,
+.reveal section[class*="layout-"] ol > li {
+  position: relative;
+  padding-left: 1.4em;
+  line-height: 1.7;
+  margin: 0.18em 0;
+}
+
+/* L1: ● */
+.reveal section[class*="layout-"] ul > li::before {
+  content: "●";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--kn-text);
+  font-size: 0.8em;
+}
+
+/* L2: ─ (em dash) */
+.reveal section[class*="layout-"] ul ul > li::before {
+  content: "─";
+  font-size: 0.95em;
+}
+
+/* L3: ▶ */
+.reveal section[class*="layout-"] ul ul ul > li::before {
+  content: "▶";
+  font-size: 0.7em;
+  top: 0.18em;
+}
+
+/* L4·L5: • (작은 점) */
+.reveal section[class*="layout-"] ul ul ul ul > li::before,
+.reveal section[class*="layout-"] ul ul ul ul ul > li::before {
+  content: "•";
+  font-size: 0.9em;
+}
+
+/* 들여쓰기 누적 */
+.reveal section[class*="layout-"] ul ul {
+  margin-left: 1.2em !important;
+  font-size: 100%; /* 글로벌의 90% 축소 무시 — 가독성 우선 */
+}
+
+/* 9.7 마스코트 — 공통 컨테이너 */
+.reveal section[class*="layout-"]::before,
+.reveal section[class*="layout-"]::after {
+  /* (이미 가로선용) */
+}
+
+/* 9.7.1 cover: puffer1 좌상단 + subtitle 박스 우하단 */
+.reveal section.layout-cover,
+.guide-line-mode .reveal .slides section.layout-cover {
+  background-color: #ffffff !important;
+  background-image: url('../theme-img/finfraPuffer1.png');
+  background-repeat: no-repeat;
+  background-position: 6% 14%;
+  background-size: 18% auto;
+  min-height: 100vh !important;
+}
+
+.reveal section.layout-cover .cover-header {
+  text-align: center;
+  padding: 22% 0 6% 0;
+}
+
+.reveal section.layout-cover .cover-title {
+  font-size: clamp(1.2em, 5vw, 3.4em);
+}
+
+.reveal section.layout-cover .cover-meta {
+  align-self: flex-end;
+  font-size: 1.1em;
+  border: 2px solid var(--kn-accent);
+  padding: 0.4em 1em;
+  margin: 0 4% 4% 0;
+  background: #fff;
+  max-width: 50%;
+}
+
+/* 9.7.2 contents: puffer2s 우상단 (작게) */
+.reveal section.layout-contents,
+.reveal section.layout-contents-full {
+  background-image: url('../theme-img/finfraPuffer2s.png');
+  background-repeat: no-repeat;
+  background-position: 96% 6%;
+  background-size: 9% auto;
+}
+
+.reveal section.layout-contents .contents-header,
+.reveal section.layout-contents-full .contents-header {
+  padding: 1.2em 0 0.6em 0;
+  text-align: center;
+}
+
+/* 9.7.3 chapter-toc: puffer1 좌상단 + TOC 박스 우하단 */
+.reveal section.layout-chapter-toc {
+  background-image: url('../theme-img/finfraPuffer2.png');
+  background-repeat: no-repeat;
+  background-position: 6% 10%;
+  background-size: 16% auto;
+}
+
+.reveal section.layout-chapter-toc .chapter-toc-header {
+  padding: 18% 0 4% 0;
+  text-align: left;
+  align-items: flex-start;
+  margin-left: 8%;
+}
+
+.reveal section.layout-chapter-toc .chapter-toc-body {
+  align-self: flex-end;
+  border: 2px solid var(--kn-accent);
+  padding: 1em 1.4em;
+  margin: 0 4% 4% 0;
+  background: #fff;
+  max-width: 55%;
+}
+
+/* 9.7.4 chapter: puffer2 중앙-좌측 + 제목 하단 */
+.reveal section.layout-chapter {
+  background-image: url('../theme-img/finfraPuffer2.png');
+  background-repeat: no-repeat;
+  background-position: 18% 38%;
+  background-size: 16% auto;
+  justify-content: flex-end !important;
+}
+
+.reveal section.layout-chapter .chapter-header {
+  text-align: center;
+  padding-bottom: 12%;
+}
+
+.reveal section.layout-chapter .chapter-title {
+  font-size: 3em;
+}
+
+/* 9.7.5 exercise: butterfly 좌측 + cat 우하단 */
+.reveal section.layout-exercise {
+  background-image:
+    url('../theme-img/finfraButterfly.png'),
+    url('../theme-img/finfraCat.png');
+  background-repeat: no-repeat, no-repeat;
+  background-position: 4% 60%, 96% 92%;
+  background-size: 14% auto, 16% auto;
+}
+
+.reveal section.layout-exercise .exercise-body {
+  padding-left: 18%;
+  padding-right: 4%;
+}
+
+/* 9.7.6 exercise-small: butterfly 크게 좌측 + cat 우하단 (말풍선) */
+.reveal section.layout-exercise-small {
+  background-image:
+    url('../theme-img/finfraButterfly.png'),
+    url('../theme-img/finfraCat.png');
+  background-repeat: no-repeat, no-repeat;
+  background-position: 6% 50%, 92% 90%;
+  background-size: 22% auto, 18% auto;
+}
+
+.reveal section.layout-exercise-small .exercise-body {
+  padding-left: 30%;
+  padding-right: 4%;
+}
+
+/* 9.7.7 closing: puffer1 중앙 큼 + cat 우하단 */
+.reveal section.layout-closing {
+  background-image:
+    url('../theme-img/finfraPuffer1.png'),
+    url('../theme-img/finfraCat.png');
+  background-repeat: no-repeat, no-repeat;
+  background-position: 30% 55%, 88% 85%;
+  background-size: 32% auto, 18% auto;
+  justify-content: flex-start !important;
+  align-items: stretch !important;
+  text-align: center !important;
+}
+
+.reveal section.layout-closing .closing-header {
+  padding: 4% 0 2% 0;
+}
+
+.reveal section.layout-closing .closing-title {
+  font-size: 3.6em;
+}
+
+.reveal section.layout-closing .closing-body {
+  align-self: center;
+  margin-top: auto;
+  margin-bottom: 6%;
+  font-size: 1.4em;
+}
+
+/* 9.7.8 blank: 장식 없음 (상하 노랑선만) */
+.reveal section.layout-blank .blank-header {
+  text-align: center;
+}
+
 /* ========================================================================
-   _toc Layout — Issue55: 3페이지 모델의 TOC Page (chapter deck 내부)
-   + Agenda Page (standalone agenda.html)에서도 동일 layout 재사용
-   ※ reveal.js 레이아웃 파괴 속성 (display: flex, height: 100%, position 등) 사용 금지
+   _toc Layout (Issue55) — chapter deck TOC slide + standalone agenda.html
+   nowage 톤: GmarketSans 헤더 + 노랑 강조선
+   ※ reveal.js 레이아웃 파괴 속성 사용 금지
    ======================================================================== */
 .toc-page-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #1a1a2e 0%, #2d2d5f 100%);
   color: #ffffff;
-  padding: 18px 24px;
-  margin: 0 0 12px 0;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  padding: 22px 28px;
+  margin: 0 0 16px 0;
+  border-bottom: 4px solid #ffd54f;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 .toc-page-title {
+  font-family: var(--main-title-font-family, 'GmarketSansBold', sans-serif);
   margin: 0;
-  font-size: 1.6em;
+  font-size: 1.8em;
   font-weight: 700;
   color: #ffffff;
   text-align: left;
   display: inline-block;
+  letter-spacing: -0.02em;
 }
 .toc-page-downloads {
   float: right;
-  margin-top: 4px;
+  margin-top: 8px;
 }
 .toc-page-downloads:after {
   content: "";
@@ -637,120 +1305,112 @@
 }
 .toc-download-btn {
   display: inline-block;
-  margin-left: 8px;
-  padding: 6px 14px;
-  background: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
+  margin-left: 10px;
+  padding: 8px 16px;
+  background: rgba(255, 213, 79, 0.18);
+  color: #ffd54f;
   text-decoration: none;
+  border: 1px solid rgba(255, 213, 79, 0.5);
   border-radius: 4px;
   font-size: 0.7em;
-  font-weight: 500;
-  transition: background 0.2s;
+  font-weight: 600;
+  font-family: 'Nanum Gothic Coding', monospace;
+  letter-spacing: 0.02em;
+  transition: background 0.2s, color 0.2s;
 }
 .toc-download-btn:hover {
-  background: rgba(255, 255, 255, 0.32);
-  color: #ffffff;
+  background: #ffd54f;
+  color: #1a1a2e;
 }
-.toc-download-epub  { /* 변형 hook (필요 시 색상 조정) */ }
-.toc-download-pdf   { /* 변형 hook */ }
-.toc-download-pptx  { /* 변형 hook */ }
 .toc-markmap {
   width: 100%;
   margin: 0;
-  padding: 0;
+  padding: 0 12px;
   overflow: hidden;
 }
 .toc-mindmap-svg {
   width: 100%;
   max-width: 100%;
   display: block;
-  min-height: 360px;
+  min-height: 380px;
+}
+/* markmap 링크 밑줄 제거 (foreignObject 내 <a> 기본 브라우저 스타일 차단) */
+.toc-markmap a,
+.toc-mindmap-svg a,
+.toc-mindmap-svg foreignObject a,
+.markmap-foreign a {
+  text-decoration: none;
+}
+.toc-markmap a:hover,
+.toc-mindmap-svg a:hover,
+.toc-mindmap-svg foreignObject a:hover,
+.markmap-foreign a:hover {
+  text-decoration: none;
 }
 
 /* ========================================================================
-   _cover Layout — Issue55: Cover Page (index.html deck #/0)
-   ※ reveal.js 레이아웃 파괴 속성 사용 금지
+   _cover Layout 확장 — Issue55: nowage 커버 확장 요소 (subtitle, body, QR)
+   기본 구조 CSS(cover-header, cover-title, cover-meta)는 위에서 정의됨
    ======================================================================== */
-.reveal section.layout-cover {
-  justify-content: flex-start;
-}
-.reveal section.layout-cover .cover-header {
-  /* 제목을 슬라이드 중앙보다 약간 위에 배치 (nowage의 물고기 없는 버전) */
-  padding: 18% 0 6% 0;
-  text-align: center;
-}
-.reveal section.layout-cover .cover-title {
-  font-size: 3.2em;
-  font-weight: 700;
-  margin: 0;
-}
 .reveal section.layout-cover .cover-subtitle {
-  font-size: 0.9em;
-  color: #555;
+  font-size: 1em;
+  color: rgba(255, 255, 255, 0.85);
   margin-top: 0.3em;
+  font-weight: 300;
 }
 .reveal section.layout-cover .cover-part-subtitle {
-  font-size: 0.8em;
-  color: #888;
+  font-size: 0.75em;
+  color: rgba(255, 255, 255, 0.7);
   margin-top: 0.2em;
+  letter-spacing: 0.05em;
 }
 .reveal section.layout-cover .cover-body {
   margin-top: auto;
-  padding: 0.8em 0;
-  font-size: 0.85em;
-  text-align: left;
+  padding: 0.6em 0;
+  font-size: 0.75em;
   display: flex;
-  flex-direction: row;
-  align-items: baseline;
-  gap: 0.6em;
-  flex-wrap: wrap;
-}
-.reveal section.layout-cover .cover-instructor {
-  display: flex;
-  align-items: baseline;
-  gap: 0.4em;
-  flex: 1;
-}
-.reveal section.layout-cover .cover-meta {
-  align-self: flex-end;
-  border: 1px solid #bbb;
-  padding: 0.2em 0.8em;
-  font-size: 0.9em;
-  color: #555;
+  flex-direction: column;
+  gap: 0.3em;
 }
 .reveal section.layout-cover .cover-label {
-  font-weight: 600;
-  margin-right: 0.2em;
-  color: #444;
+  font-weight: 700;
+  margin-right: 0.4em;
+  color: var(--kn-accent, #f9a825);
 }
 .reveal section.layout-cover .cover-instructor-name {
   font-weight: 600;
 }
 .reveal section.layout-cover .cover-instructor-contact {
-  color: #666;
+  margin-left: 0.5em;
+  opacity: 0.8;
   font-size: 0.9em;
 }
 .reveal section.layout-cover .cover-lecture-date,
 .reveal section.layout-cover .cover-version {
-  color: #777;
+  opacity: 0.75;
   font-size: 0.9em;
+  margin-right: 1em;
 }
 .reveal section.layout-cover .cover-qr {
   text-align: right;
-  padding-top: 0.5em;
+  padding-top: 0.4em;
 }
 .reveal section.layout-cover .cover-qr-image {
-  max-width: 80px;
-  max-height: 80px;
+  max-width: 70px;
+  max-height: 70px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 2px;
+  background: #fff;
 }
 .reveal section.layout-cover .cover-qr-url {
-  font-size: 0.65em;
-  color: #888;
+  font-size: 0.6em;
+  opacity: 0.7;
+  margin-top: 0.2em;
 }
 
 /* ========================================================================
    _agenda Layout — Issue55: Agenda Page (standalone agenda.html)
-   ※ reveal.js 없는 독립 페이지용 — flex/height 제약 없음
+   nowage 브랜딩 — 배경 그라디언트 + 강조색 적용
    ======================================================================== */
 .layout-_agenda {
   display: flex;
@@ -758,4 +1418,5 @@
   width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
+  background: #f9f9fb;
 }
