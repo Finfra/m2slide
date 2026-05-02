@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 54
+* Issue HWM: 56
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -9,10 +9,44 @@
     * 등록 후 `gh issue close {IssueNum}`으로 닫기 (완료된 경우)
 
 # 🤔 결정사항
+## chapter-single mode 맞추기
+| 페이지      | slide위치                  | theme의 layout위치 | 작업                             |
+| ----------- | -------------------------- | ------------------ | -------------------------------- |
+| Cover Page  | index.html                 | _cover.html        | 1.1.coverhtml에서 이럼 변경 예정 |
+| Agenda Page | agenda.html                | _agenda.html       | 신설예정                         |
+| TOC Page    | 0X-*.html#/toc-placeholder | _toc.html          |                                  |
 
 # 🌱 이슈후보
 
 # 🚧 진행중
+
+## Issue55. chapter/single 모드 출력 구조 통일 — 3페이지 모델 (등록: 2026-05-02)
+* 목적: chapter/single 모드 출력 비대칭 해소 — 두 모드 모두 Cover Page (`index.html`) + Agenda Page (`agenda.html`) + (chapter 한정) TOC Page 3페이지 모델로 통일
+* 카테고리: Generator + Theme + Frontend
+* 복잡도: 복잡 (plan + task 필수, CSS 인접 영역, 키 네비게이션 재정의 포함)
+* plan: `_doc_work/plan/chapter-single-mode-unify_plan.md`
+* task: `_doc_work/tasks/chapter-single-mode-unify_task.md`
+* design: `_doc_design/chapter-single-mode.md`
+* 상세:
+    - 현재 single 모드는 `{ProjectName}.html` 단독 + `#toc-container` 오버레이로 마크맵 표시. chapter 모드는 `index.html`에 마크맵 + 다운로드 헤더(인라인 CSS).
+    - 두 모드 모두 `index.html`은 cover slide(`#/0`) 표시. cover에서 →/↓ 키로 `agenda.html` 이동
+    - `cover_enabled=false` 시 `index.html`이 meta refresh로 `agenda.html` 자동 redirect
+    - ↑ 키 계층 — Single 3단계 (Cover↑Agenda↑본문), Chapter 4단계 (Cover↑Agenda↑TOC↑본문)
+    - 선행 이슈: Issue49 (`_meta.yml` + `cover_enabled` + cover layout alias) 해결 완료
+* 구현 명세:
+    - Phase 1: `_toc.html` layout 확장 (헤더 + 다운로드 + 마크맵 SVG) + theme CSS 클래스
+    - Phase 2: 다운로드 자산 검출 헬퍼 + `{{downloadButtons}}` 변수 주입
+    - Phase 3: `generateAgendaHTML` standalone 생성기 신설 (layout 기반)
+    - Phase 4: `index.html` 출력 분기 — full deck (single) / lightweight deck (chapter) / redirect-only HTML (cover_enabled=false)
+    - Phase 5: Single deck `#/toc-placeholder` 미생성
+    - Phase 6: Chapter `0X-*.html#/toc-placeholder` 유지 + `_toc.html` layout 적용
+    - Phase 7: `#toc-container` 오버레이 HTML/CSS/JS 완전 제거
+    - Phase 8: `generateIndexHTML` 함수 제거
+    - Phase 9: 키 네비게이션 재정의 (↑·→/↓ 모드별·위치별 분기) — `M2SLIDE_MODE`·`TOC_SLIDE_INDEX`·`COVER_SLIDE_INDEX` JS 변수 주입
+    - Phase 10: m2SlideStyle1_single + m2SlideStyle2_chapter 테스트 (cover_enabled 토글 + 자산 부재 시나리오 포함)
+    - 확정 결정: D1=A · D2=B · D3=A · D4=A · D5=B · D6=B
+    - **CSS 가드**: reveal.js 레이아웃 파괴 속성(`display: flex`, `height: 100%`, `position`, `transform` 등) 사용 금지 ([CLAUDE.md "CSS 수정 시 주의사항"](CLAUDE.md))
+    - 구현 원칙: 모든 UI 변경은 theme/layout 시스템으로만 (인라인 `<style>` 추가 금지)
 
 # 📕 중요
 
@@ -34,6 +68,7 @@
     - 우선순위: AGENDA `!` prefix > frontmatter `toc_index` > 기본 노출
     - 단일 페이지 모드(`AGENDA.md` 부재)에서의 동작 정의 필요
     - 의존: Issue49 cover 슬라이드 정책과 슬라이드 순서 충돌 검토
+    - **의존: Issue55 (chapter/single 3페이지 모델 통일) 후행** — Issue55가 TOC를 `agenda.html` standalone으로 분리함. Orientation 위치는 Issue55 종결 후 재정의 필요 (후보: Single deck `#/1`, agenda 인라인 섹션, chapter 첫 deck `#/0`). 본 plan: `_doc_work/plan/chapter-single-mode-unify_plan.md` "관련 이슈" 섹션 참조
 
 ## Issue51. 장표 드래그 네비게이션 (up/down/left/right) (등록: 2026-05-02)
 * 목적: 슬라이드 페이지에서 마우스/터치 드래그로 prev/next/up/down 슬라이드 이동 (모바일·태블릿 친화)
@@ -48,6 +83,7 @@
     - `theme/*/slide.css`의 `transform`/`position`/`inset` 영역 변경 **금지** ([CLAUDE.md "CSS 수정 시 주의사항"](CLAUDE.md))
     - 회귀: 첫·중간·끝 슬라이드 + index.html + 단일/챕터 모드 + 5개 기존 프로젝트 시각 회귀
     - 데스크톱 마우스 드래그와 텍스트 선택의 충돌 처리 정책
+    - **의존: Issue55 후행** — 드래그 분기는 Issue55 Phase 9 키 핸들러와 동일 시멘틱 유지. 빌드 시 주입되는 `M2SLIDE_MODE`·`TOC_SLIDE_INDEX`·`COVER_SLIDE_INDEX` JS 변수 재사용. Cover 슬라이드 →/↓ override(`agenda.html` 이동) 동일 적용
 
 ## Issue52. m2SlideStyle2_chapter 프로젝트 구조 정비 (등록: 2026-05-02)
 * 목적: `Projects/m2SlideStyle2_chapter/` 폴더 구조와 의도 일치 — Chapter Mode 샘플인지 Single Page인지 명확화
@@ -61,11 +97,22 @@
     - 사용자 의도 확인 후 A/B 선택
     - `_config.yml`·문서 참조(`README.md`, `Projects/README.md`, `lib/m2slide/CLAUDE.md`) 동기화
     - 시간 비용 < 30분 예상 (단순 이슈)
+    - **선결: Issue55 Phase 10 의존** — Issue55 Phase 10 테스트 대상이 `m2SlideStyle2_chapter` chapter 모드 샘플임. **옵션 A(chapter 샘플화) 선택 권장**. Issue55 Phase 10 진입 전 본 이슈 해결 또는 Phase 10 사전 작업으로 흡수 처리
 
 # 📗 선택
 
 # ✅ 완료
 
+
+## Issue56. theme/nowage markmap 링크 밑줄 제거 (등록: 2026-05-02, 해결: 2026-05-02, commit: -) ✅
+* 목적: agenda.html markmap 노드 내 `<a>` 링크에 브라우저 기본 text-decoration(밑줄)이 나타나는 문제 제거
+* 카테고리: Theme (`theme/nowage/slide.css`)
+* 복잡도: 단순
+* 해결:
+    - `theme/nowage/slide.css` `.toc-markmap` 섹션 하단에 `.toc-markmap a`, `.toc-mindmap-svg foreignObject a`, `.markmap-foreign a` 셀렉터로 `text-decoration: none` 규칙 추가 (hover 포함)
+    - markmap-view는 SVG foreignObject 내부에 HTML `<a>` 렌더링 → 브라우저 기본 밑줄 적용 영역이므로 명시적 차단 필요
+    - `m2SlideStyle2_chapter` 재빌드로 `slide/css/custom.css` 갱신 확인
+* 비고: `theme/nowage/`는 `.gitignore` 처리 사용자 영역 — CSS 변경은 추적되지 않음. Issue.md만 커밋
 
 ## Issue49. 제목 페이지 자동 생성 — Frontmatter 기반 cover 슬라이드 (등록: 2026-05-02, 해결: 2026-05-02, commit: 71b5fc5, 6d42c37) ✅
 * 목적: 마크다운 YAML Frontmatter + meta.yml 정보로 첫 페이지(cover 슬라이드)를 자동 생성
