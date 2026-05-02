@@ -104,7 +104,7 @@
 # ✅ 완료
 
 
-## Issue56. theme/nowage markmap 링크 밑줄 제거 (등록: 2026-05-02, 해결: 2026-05-02, commit: -) ✅
+## Issue56. theme/nowage markmap 링크 밑줄 제거 (등록: 2026-05-02, 해결: 2026-05-02, commit: 542ed18) ✅
 * 목적: agenda.html markmap 노드 내 `<a>` 링크에 브라우저 기본 text-decoration(밑줄)이 나타나는 문제 제거
 * 카테고리: Theme (`theme/nowage/slide.css`)
 * 복잡도: 단순
