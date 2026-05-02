@@ -652,6 +652,17 @@
    _cover Layout — Issue55: Cover Page (index.html deck #/0)
    ※ reveal.js 레이아웃 파괴 속성 사용 금지
    ======================================================================== */
+.reveal section.layout-cover {
+  justify-content: flex-start;
+}
+.reveal section.layout-cover .cover-header {
+  padding: 2em 0 1em 0;
+}
+.reveal section.layout-cover .cover-title {
+  font-size: 3.2em;
+  font-weight: 700;
+  margin: 0;
+}
 .reveal section.layout-cover .cover-subtitle {
   font-size: 0.9em;
   color: #555;
