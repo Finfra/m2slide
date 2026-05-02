@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 62
+* Issue HWM: 64
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -24,9 +24,50 @@
 
 # 📙 일반
 
+## Issue63. slide_ratio 기반 슬라이드 레이아웃 크기 체계 정립 (등록: 2026-05-02)
+* 목적: `_config.yml`의 `slide_ratio` 값을 핵심 설계 기준으로 삼아 슬라이드 전 영역(contents 높이·너비·패딩)의 크기를 수학적으로 일관되게 결정
+* 카테고리: Theme / Build
+* 복잡도: 복잡
+* 선행 이슈: Issue62 (cover-title 반응형 크기 조정 및 CSS 구현 설계 문서화)
+* 상세:
+    - **[1] `_config.yml` `slide_ratio` 적극 활용**: 현재 설정값이 CSS에 반영되는 경로 명확화 및 레이아웃 계산의 단일 입력 변수로 활용
+    - **[2] 컨텐츠 높이 결정 원칙**: `contents-body` 높이 + `contents-header` 높이 + 그 사이 갭의 합이 전체 컨텐츠 영역 높이가 됨
+    - **[3] 컨텐츠 너비 결정 원칙**: `slide_ratio`와 컨텐츠 높이를 기반으로 컨텐츠 너비 역산 (`너비 = 높이 × slide_ratio`)
+    - **[4] slide 영역 중앙 배치**: 뷰포트 내에서 slide 영역이 항상 수평·수직 중앙 위치
+    - **[5] 잘림 없는 꽉 채우기**: `slide_ratio` 비율을 유지하면서 뷰포트를 최대로 채우되, 어떤 콘텐츠도 잘리지 않아야 함 (overflow hidden 금지)
+    - **[6] 대칭 패딩 정책**: outer padding(슬라이드-뷰포트 간)과 inner padding(콘텐츠-슬라이드 경계 간)이 각각 별도로 존재하며, 각각 left=right=top=bottom 동일 값 적용
+* 구현 명세:
+    - `theme/default/slide.css`: slide 영역 중앙 배치, 대칭 패딩 CSS 변수 정의
+    - `lib/html-builder.js` 또는 `generate-slides.js`: `slide_ratio` 값을 CSS 변수(`--slide-ratio`)로 주입
+    - `_doc_design/layout.md` 또는 `_doc_design/css.md` 갱신: 크기 결정 공식 SSOT 기록
+
 # 📗 선택
 
 # ✅ 완료
+
+## Issue64. lib/css/base.css 도입 — _config.yml + slide.css 슬림화 (KISS·DRY) (등록: 2026-05-02, 해결: 2026-05-03, commit: 7a10b81) ✅
+* 목적: 두 테마(`default`/`nowage`) `slide.css`가 1422줄 100% 동일한 상태를 해소. 공통 CSS를 `lib/css/base.css`로 추출하여 `_config.yml` style 섹션 + `slide.css`를 슬림화하고 KISS·DRY 원칙 회복.
+* plan: `_doc_work/plan/css_refactoring_plan.md`
+* task: `_doc_work/tasks/css_refactoring_task.md`
+* report: `_doc_work/report/css_refactoring_issue64_report.md`
+* 카테고리: Theme / Build
+* 복잡도: 복잡 (plan 필수, 7 Phase 다중 단계, 두 테마 + 세 프로젝트 회귀 검증)
+* 선행 이슈: Issue62 (cover-title clamp + min-height) — 완료됨
+* 결과:
+    - `lib/css/base.css` 신규 (1051줄): 6단 구성 (@import + :root + Reveal 보정 + 공통 레이아웃 + 컴포넌트 + 반응형)
+    - `lib/html-builder.js`: BASE_CSS 캐싱 + `generateHTML`/`generateCoverHTML` 두 함수에 inline `<style>` 주입
+    - `lib/config.js`: styleConfig 기본값을 base.css `:root`와 동기화 (1.b 정책 — JS↔CSS 기본값 동기화 영구 의무)
+    - `theme/default/slide.css`: 1422 → 403줄 (71% 감소). 이미지·색상 등 테마 고유만 보존
+    - `theme/nowage/slide.css`: default와 동일 (cp 동기화). 차별화는 후속 이슈
+    - `_config.org.yml`: 72 → 35줄 (style 50 → 8줄, 84% 감소)
+    - `_doc_design/css.md`: 임시 "리팩터링 계획" 섹션 제거 + 영구 목록 3종 (base.css/slide.css/_config.yml) + 변경 이력 행
+    - `README.md`: base.css 폴더 구조, CSS 우선순위, 신규 테마 작성 가이드 추가
+* 검증:
+    - `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest` 3개 프로젝트 빌드 성공
+    - 신규 테마 `_minimal` fallback 검증 통과 (빈 slide.css + 빈 layouts/로 cover layout 정상 렌더)
+    - base.css 이미지 자산 의존 0건 확인 (theme 자산 제거 시 base 영향 없음 보장)
+    - 시각 회귀 사용자 확인 통과
+* 후속 이슈 후보: default minimal 분화, nowage 차별화
 
 ## Issue62. cover-title 반응형 크기 조정 및 CSS 구현 설계 문서화 (등록: 2026-05-02, 해결: 2026-05-02, commit: b12a8db, 789947d) ✅
 * 목적: cover 슬라이드 제목이 뷰포트 너비에 따라 줄바꿈 없이 최대 크기로 표시되도록 수정. CSS 구현 형태 SSOT(`_doc_design/css.md`) 작성.
