@@ -46,6 +46,8 @@
   padding: var(--title-padding, 0);
   text-transform: none;
   font-weight: var(--title-font-weight, 700);
+  /* title_contents_gap: CSS 변수로 gap 적용 (JS 타이밍 독립) */
+  margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);
   /* text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000; */
 }
 
@@ -171,8 +173,25 @@
 
 /* 표 */
 .reveal table {
-  width: 100%;
+  width: auto;
+  min-width: 50%;
+  max-width: 90%;
   border-collapse: collapse;
+  margin: 0.5em auto;
+}
+.reveal table th,
+.reveal table td {
+  padding: 0.4em 1em;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  vertical-align: middle;
+}
+.reveal table thead th {
+  font-weight: bold;
+  background-color: rgba(0, 0, 0, 0.06);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.25);
+}
+.reveal table tbody tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.02);
 }
 
 /* Issue 22: 테이블 내 이미지 크기 자동 조절 */
