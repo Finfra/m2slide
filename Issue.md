@@ -1,6 +1,7 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
 * Issue HWM: 64
+* 최근 종결: Issue63 (2026-05-03, c34d560)
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -18,32 +19,39 @@
 
 # 🌱 이슈후보
 
-# 🚧 진행중
+# 🔥 진행 중
 
 # 📕 중요
 
 # 📙 일반
 
-## Issue63. slide_ratio 기반 슬라이드 레이아웃 크기 체계 정립 (등록: 2026-05-02)
-* 목적: `_config.yml`의 `slide_ratio` 값을 핵심 설계 기준으로 삼아 슬라이드 전 영역(contents 높이·너비·패딩)의 크기를 수학적으로 일관되게 결정
-* 카테고리: Theme / Build
-* 복잡도: 복잡
-* 선행 이슈: Issue62 (cover-title 반응형 크기 조정 및 CSS 구현 설계 문서화)
-* 상세:
-    - **[1] `_config.yml` `slide_ratio` 적극 활용**: 현재 설정값이 CSS에 반영되는 경로 명확화 및 레이아웃 계산의 단일 입력 변수로 활용
-    - **[2] 컨텐츠 높이 결정 원칙**: `contents-body` 높이 + `contents-header` 높이 + 그 사이 갭의 합이 전체 컨텐츠 영역 높이가 됨
-    - **[3] 컨텐츠 너비 결정 원칙**: `slide_ratio`와 컨텐츠 높이를 기반으로 컨텐츠 너비 역산 (`너비 = 높이 × slide_ratio`)
-    - **[4] slide 영역 중앙 배치**: 뷰포트 내에서 slide 영역이 항상 수평·수직 중앙 위치
-    - **[5] 잘림 없는 꽉 채우기**: `slide_ratio` 비율을 유지하면서 뷰포트를 최대로 채우되, 어떤 콘텐츠도 잘리지 않아야 함 (overflow hidden 금지)
-    - **[6] 대칭 패딩 정책**: outer padding(슬라이드-뷰포트 간)과 inner padding(콘텐츠-슬라이드 경계 간)이 각각 별도로 존재하며, 각각 left=right=top=bottom 동일 값 적용
-* 구현 명세:
-    - `theme/default/slide.css`: slide 영역 중앙 배치, 대칭 패딩 CSS 변수 정의
-    - `lib/html-builder.js` 또는 `generate-slides.js`: `slide_ratio` 값을 CSS 변수(`--slide-ratio`)로 주입
-    - `_doc_design/layout.md` 또는 `_doc_design/css.md` 갱신: 크기 결정 공식 SSOT 기록
-
 # 📗 선택
 
 # ✅ 완료
+
+## Issue63. slide_ratio 기반 슬라이드 레이아웃 크기 체계 정립 (등록: 2026-05-02, 해결: 2026-05-03, commit: c34d560) ✅
+* 목적: `_config.yml`의 `slide_ratio` 값을 핵심 설계 기준으로 삼아 슬라이드 전 영역(contents 높이·너비·패딩)의 크기를 수학적으로 일관되게 결정
+* plan: `_doc_work/plan/slide_ratio_layout_plan.md`
+* task: `_doc_work/tasks/slide_ratio_layout_task.md`
+* report: `_doc_work/report/slide_ratio_layout_issue63_report.md`
+* 카테고리: Theme / Build
+* 복잡도: 복잡
+* 선행 이슈: Issue62 (cover-title 반응형 크기 조정 및 CSS 구현 설계 문서화)
+* 결과:
+    - `lib/config.js`: `slideRatioNumeric()` 헬퍼 (`'16:9'→'1.7778'`, `'3:2'→'1.5'`, none/잘못된 값→`'1.7778'` fallback) + `slide_outer_padding`/`slide_inner_padding` 파싱 추가
+    - `lib/html-builder.js`: `<body style>`에 `--slide-ratio`/`--slide-outer-padding`/`--slide-inner-padding` 인라인 주입 (`generateHTML`/`generateCoverHTML` 두 경로)
+    - `lib/css/base.css :root`: 동일 기본값 박제 (1.b 정책 JS↔CSS 동기화 준수)
+    - `_config.org.yml`: `slide_outer_padding: 0`, `slide_inner_padding: 0` 신규 키 + 가이드 주석
+    - `_doc_design/css.md`: §3.4 "Slide_ratio 기반 기하 체계" 신규 (CSS 변수 3종·기하 관계·책임 분담·비범위 명시) + §7 변경 이력 행
+* 검증:
+    - `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest` 3개 프로젝트 빌드 성공 + 모든 산출 HTML(cover/agenda/chapter)에 인라인 변수 출력 확인
+    - 헬퍼 단위 테스트 4종 (`16:9`, `3:2`, `none`, `4:3`) 통과
+    - `node -c` 문법 검증 4개 모듈 통과
+    - 기본값 0 정책 → 시각 회귀 0 보장
+* 요구사항 충족:
+    - [1] `--slide-ratio` 수치 노출 ✅ / [2] flex 자연 분배 유지 ✅ / [3] 변수 활용 가능 ✅
+    - [4][5] Reveal.js 자동 fit ✅ (기존) / [6] outer/inner 대칭 패딩 변수 정립 ✅
+* 후속 이슈 후보: 실제 padding 적용 layout 변형 / contents-body·contents-header height 분리 / `slide_ratio: none`의 기본 비율 정책 / `auto-fit-content` 모드
 
 ## Issue64. lib/css/base.css 도입 — _config.yml + slide.css 슬림화 (KISS·DRY) (등록: 2026-05-02, 해결: 2026-05-03, commit: 7a10b81) ✅
 * 목적: 두 테마(`default`/`nowage`) `slide.css`가 1422줄 100% 동일한 상태를 해소. 공통 CSS를 `lib/css/base.css`로 추출하여 `_config.yml` style 섹션 + `slide.css`를 슬림화하고 KISS·DRY 원칙 회복.
