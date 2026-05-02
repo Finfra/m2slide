@@ -13,26 +13,12 @@
 # 🌱 이슈후보
 
 # 🚧 진행중
+
 # 📕 중요
 
 # 📙 일반
 
 
-
-## Issue49. 제목 페이지 자동 생성 — Frontmatter 기반 cover 슬라이드 (등록: 2026-05-02)
-* 목적: 마크다운 YAML Frontmatter에 강사·연락처·부제·QR 정보를 넣으면 첫 페이지(cover 슬라이드)로 자동 생성
-* 카테고리: Generator + Theme
-* 복잡도: 중간 (plan 권장)
-* 상세:
-    - 신규 frontmatter 필드: `instructor`(강사명), `contact`(연락처), `subtitle_part`(부제, ex: part1), `qr_url`(QR 대상 URL), `qr_code`(이미지 경로 또는 base64)
-    - "QGCode"는 사용자 입력 오타로 추정 → "QRCode"로 통일 (확인 필요)
-    - 기존 frontmatter 키와 공존: `title`, `subtitle`, `author`, `slogan`, `theme`, `theme_default_layout`
-* 구현 명세:
-    - 신규 layout: `theme/default/layouts/_cover.html` + `theme/nowage/layouts/_cover.html` (Issue47 keynote 디자인의 cover 시각 언어 활용)
-    - `lib/generate-slides.js` frontmatter 파서 확장 + 첫 슬라이드 위치에 cover 자동 inject (사용자 슬라이드와 충돌 안 나는 정책 결정)
-    - QR 코드: 외부 URL 이미지 직접 사용 vs client-side 생성(qrcode.js) 선택 → plan 단계 결정
-    - 룰 동기화: `.claude/rules/md-m2slide-rules.md` "Frontmatter 확장" 절에 신규 키 추가
-    - Issue50과 의존: cover → Orientation → TOC 순서 정책
 
 ## Issue50. Orientation 슬라이드 + TOC 제외 메타 (`!` prefix) (등록: 2026-05-02)
 * 목적: 제목 페이지와 목차 사이에 "강의 시작 전 공지사항" 등 Orientation 슬라이드 삽입 + 해당 슬라이드는 markmap TOC에 노출 안 되게 함
@@ -80,6 +66,33 @@
 
 # ✅ 완료
 
+
+## Issue49. 제목 페이지 자동 생성 — Frontmatter 기반 cover 슬라이드 (등록: 2026-05-02, 해결: 2026-05-02, commit: 71b5fc5, 6d42c37) ✅
+* 목적: 마크다운 YAML Frontmatter + meta.yml 정보로 첫 페이지(cover 슬라이드)를 자동 생성
+* 카테고리: Generator + Theme
+* 복잡도: 중간
+* 해결:
+    - **데이터 출처**: Issue48에서 도입한 `meta.yml` (PROJECT_META) 사용 — 별도 frontmatter 신규 키 없이 단일 SSOT 유지
+    - **옵트인 방식**: `meta.yml`에 `cover_enabled: true` 명시 시에만 자동 주입 (기본 false → backward compatible)
+    - **주입 위치**: `generateHTML(filePath, agendaPath, outputDir, isFirstFile=false)` 시그니처 확장 + 메인 루프에서 첫 파일에만 `isFirstFile=true` 전달
+        - 단일 페이지 모드: 유일한 파일에 주입
+        - 챕터 모드: 알파벳/숫자 순 첫 `.md` 파일에만 주입 (검증 완료: 01-opening.html cover=1, 그 외 0)
+    - **중복 방지**: 사용자가 이미 `#layout-cover`(또는 `#layout-_cover`) 메타로 슬라이드 수동 배치 시 자동 주입 건너뜀
+    - **PROJECT_META 변수 노출**: `generateSlideHTML` 내 `vars` 객체에 머지하여 layout template `{{instructor_name}}` 등 사용 가능 — cover 외 다른 layout에서도 활용 가능
+    - **신규 layout**: `theme/default/layouts/_cover.html` (제공) — 9개 변수: `{{title}}`, `{{subtitle}}`, `{{instructor_name}}`, `{{instructor_contact}}`, `{{part_subtitle}}`, `{{lecture_date}}`, `{{version}}`, `{{qr_code_path}}`, `{{qr_url}}`
+    - **QR 렌더링 v1**: 정적 이미지(`qr_code_path`) `<img>` + URL 텍스트(`qr_url`). `onerror` fallback으로 미존재 이미지 숨김
+    - **이름 정정**: 이슈 본문의 `QGCode` → 이슈48에서 이미 `qr_code_path`로 표준화 완료
+    - **룰 동기화**: `.claude/rules/md-m2slide-rules.md` "Cover 슬라이드 자동 주입" 절 추가
+    - **설계 SSOT 갱신**: `_doc_design/meta-yml.md`에 cover 정책·변수표·QR 렌더링 v1/v2 계획 추가
+* 검증:
+    - A. meta.yml 부재: cover 미주입 (기존 5개 프로젝트 backward compat ✓)
+    - B. meta.yml 있으나 `cover_enabled` 부재: cover 미주입 ✓
+    - C. `cover_enabled: true` (단일 페이지): cover 1개 주입, 모든 변수 정상 치환 ✓
+    - D. `cover_enabled: true` (챕터 모드): 첫 파일만 cover 1개, 나머지 14개 챕터 0개 ✓
+* 후속:
+    - QR 클라이언트 동적 생성(qrcode.js) — 후속 이슈 후보
+    - footer 표시 (`version`, `lecture_date`) — 후속 이슈 후보
+    - Issue50 Orientation 슬라이드 (cover → Orientation → TOC 순서 정책)
 
 ## Issue48. meta.yml 운영 — 프로젝트 메타데이터 분리 SSOT (등록: 2026-05-02, 해결: 2026-05-02, commit: 0a2f75a) ✅
 * 목적: 프로젝트별 운영 메타데이터(instructor, version, lecture_date, gdrive, qr 등)를 별도 `meta.yml`로 분리하여 `_config.yml`(렌더링 설정)과 책임 명확화
