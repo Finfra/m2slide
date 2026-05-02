@@ -77,8 +77,8 @@
   /* Layout 변수 */
   --title-contents-gap-pct: 0;
 
-  /* Slide 기하 (Issue63) — slide_ratio 기반 크기 체계
-     - --slide-ratio: width/height 무차원 비율 (16:9 → 1.7778, 3:2 → 1.5, none → 1.7778 fallback)
+  /* Slide 기하 (Issue63 + Issue65) — slide_ratio 기반 크기 체계
+     - --slide-ratio: width/height 무차원 비율 (16:9 → 1.7778, 3:2 → 1.5, fill → auto)
      - --slide-outer-padding: 슬라이드↔뷰포트 대칭 패딩 (CSS length)
      - --slide-inner-padding: 콘텐츠↔슬라이드 경계 대칭 패딩 (CSS length)
      - 본 변수는 _config.yml slide_ratio/slide_outer_padding/slide_inner_padding로 override
@@ -154,7 +154,7 @@
 
 /* 전체 크기 헬퍼
    - Issue63: ratio-16-9/ratio-3-2는 Reveal.js fixed dimensions로 자동 비율 fit (CSS 개입 불필요)
-   - ratio-fill (기존 none 동작 계승)만 100%/100% 명시 적용
+   - ratio-fill만 100%/100% 명시 적용 (비율 무제약)
 */
 .reveal.ratio-fill .slides,
 .reveal .slides section,
@@ -182,25 +182,27 @@
 }
 
 /* 개별 슬라이드 섹션
-   - Flexbox Column 레이아웃 사용
-   - height: 100%로 슬라이드 전체 높이 확보 (min-height 대신 height 사용)
-   - overflow: hidden으로 섹션 자체의 스크롤 방지 (내부 .theContents가 스크롤)
-   - Issue63: --slide-inner-padding 적용 (콘텐츠↔슬라이드 경계 대칭 패딩, 기본 0)
+   - Flexbox Column 레이아웃 (공통 패턴 §3에서 display:flex 적용)
+   - Issue63 후속 수정: height/max-height/overflow override를 ratio-fill 한정으로 분리.
+     Reveal.js fixed dimensions 모드(16:9/3:2)에서는 Reveal이 1080px(또는 1280px) 논리 높이를 설정해야
+     transform: scale 비율 fit이 정상 동작함. 기존 height:auto !important가 이를 깨뜨려 height-bound 시
+     슬라이드가 콘텐츠 높이로 축소되는 버그 발생 → 본 수정에서 ratio-fill로 한정.
 */
 .reveal .slides section {
-  height: auto !important;
-  /* Allow height to grow */
-  max-height: 100vh !important;
-  /* Cap at viewport height */
   padding: var(--slide-inner-padding, 0);
   margin: 0;
   top: 0;
   left: 0;
   align-items: stretch;
   justify-content: flex-start;
-  overflow-y: auto !important;
-  /* Enable vertical scroll */
   box-sizing: border-box;
+}
+
+/* ratio-fill 모드 전용: 비율 무제약 viewport 채움 + 콘텐츠 overflow 시 스크롤 */
+.reveal.ratio-fill .slides section {
+  height: auto !important;
+  max-height: 100vh !important;
+  overflow-y: auto !important;
 }
 
 /* 콘텐츠 컨테이너
@@ -330,7 +332,9 @@
 
 /* 3. Height: 높이 최대화 */
 .media-enlarge-height .reveal .slides section {
-  height: 100vh !important;
+  /* Issue63: 100vh → 100% (parent .slides는 ratio 모드에서 Reveal이 1080px 논리 높이 설정,
+     fill 모드에서는 viewport 채움). 100vh는 ratio 모드에서 transform scale 비율 fit을 깨뜨림. */
+  height: 100% !important;
   display: flex !important;
   flex-direction: column !important;
   overflow-y: hidden !important;
@@ -365,7 +369,8 @@
 
 /* 4. Fit: 화면에 꽉 차게 맞춤 (스크롤 없음) */
 .media-enlarge-fit .reveal .slides section {
-  height: 100vh !important;
+  /* Issue63: 100vh → 100% (ratio 모드 transform scale 비율 fit 보존, 동일 사유) */
+  height: 100% !important;
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
