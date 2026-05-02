@@ -656,7 +656,9 @@
   justify-content: flex-start;
 }
 .reveal section.layout-cover .cover-header {
-  padding: 2em 0 1em 0;
+  /* 제목을 슬라이드 중앙보다 약간 위에 배치 (nowage의 물고기 없는 버전) */
+  padding: 18% 0 6% 0;
+  text-align: center;
 }
 .reveal section.layout-cover .cover-title {
   font-size: 3.2em;
@@ -676,15 +678,30 @@
 .reveal section.layout-cover .cover-body {
   margin-top: auto;
   padding: 0.8em 0;
-  font-size: 0.8em;
+  font-size: 0.85em;
   text-align: left;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.6em;
+  flex-wrap: wrap;
+}
+.reveal section.layout-cover .cover-instructor {
+  display: flex;
+  align-items: baseline;
   gap: 0.4em;
+  flex: 1;
+}
+.reveal section.layout-cover .cover-meta {
+  align-self: flex-end;
+  border: 1px solid #bbb;
+  padding: 0.2em 0.8em;
+  font-size: 0.9em;
+  color: #555;
 }
 .reveal section.layout-cover .cover-label {
   font-weight: 600;
-  margin-right: 0.4em;
+  margin-right: 0.2em;
   color: #444;
 }
 .reveal section.layout-cover .cover-instructor-name {
@@ -692,14 +709,12 @@
 }
 .reveal section.layout-cover .cover-instructor-contact {
   color: #666;
-  margin-left: 0.5em;
   font-size: 0.9em;
 }
 .reveal section.layout-cover .cover-lecture-date,
 .reveal section.layout-cover .cover-version {
   color: #777;
   font-size: 0.9em;
-  margin-right: 1em;
 }
 .reveal section.layout-cover .cover-qr {
   text-align: right;
