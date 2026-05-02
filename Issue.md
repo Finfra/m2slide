@@ -20,34 +20,6 @@
 
 # 🚧 진행중
 
-## Issue55. chapter/single 모드 출력 구조 통일 — 3페이지 모델 (등록: 2026-05-02)
-* 목적: chapter/single 모드 출력 비대칭 해소 — 두 모드 모두 Cover Page (`index.html`) + Agenda Page (`agenda.html`) + (chapter 한정) TOC Page 3페이지 모델로 통일
-* 카테고리: Generator + Theme + Frontend
-* 복잡도: 복잡 (plan + task 필수, CSS 인접 영역, 키 네비게이션 재정의 포함)
-* plan: `_doc_work/plan/chapter-single-mode-unify_plan.md`
-* task: `_doc_work/tasks/chapter-single-mode-unify_task.md`
-* design: `_doc_design/chapter-single-mode.md`
-* 상세:
-    - 현재 single 모드는 `{ProjectName}.html` 단독 + `#toc-container` 오버레이로 마크맵 표시. chapter 모드는 `index.html`에 마크맵 + 다운로드 헤더(인라인 CSS).
-    - 두 모드 모두 `index.html`은 cover slide(`#/0`) 표시. cover에서 →/↓ 키로 `agenda.html` 이동
-    - `cover_enabled=false` 시 `index.html`이 meta refresh로 `agenda.html` 자동 redirect
-    - ↑ 키 계층 — Single 3단계 (Cover↑Agenda↑본문), Chapter 4단계 (Cover↑Agenda↑TOC↑본문)
-    - 선행 이슈: Issue49 (`_meta.yml` + `cover_enabled` + cover layout alias) 해결 완료
-* 구현 명세:
-    - Phase 1: `_toc.html` layout 확장 (헤더 + 다운로드 + 마크맵 SVG) + theme CSS 클래스
-    - Phase 2: 다운로드 자산 검출 헬퍼 + `{{downloadButtons}}` 변수 주입
-    - Phase 3: `generateAgendaHTML` standalone 생성기 신설 (layout 기반)
-    - Phase 4: `index.html` 출력 분기 — full deck (single) / lightweight deck (chapter) / redirect-only HTML (cover_enabled=false)
-    - Phase 5: Single deck `#/toc-placeholder` 미생성
-    - Phase 6: Chapter `0X-*.html#/toc-placeholder` 유지 + `_toc.html` layout 적용
-    - Phase 7: `#toc-container` 오버레이 HTML/CSS/JS 완전 제거
-    - Phase 8: `generateIndexHTML` 함수 제거
-    - Phase 9: 키 네비게이션 재정의 (↑·→/↓ 모드별·위치별 분기) — `M2SLIDE_MODE`·`TOC_SLIDE_INDEX`·`COVER_SLIDE_INDEX` JS 변수 주입
-    - Phase 10: m2SlideStyle1_single + m2SlideStyle2_chapter 테스트 (cover_enabled 토글 + 자산 부재 시나리오 포함)
-    - 확정 결정: D1=A · D2=B · D3=A · D4=A · D5=B · D6=B
-    - **CSS 가드**: reveal.js 레이아웃 파괴 속성(`display: flex`, `height: 100%`, `position`, `transform` 등) 사용 금지 ([CLAUDE.md "CSS 수정 시 주의사항"](CLAUDE.md))
-    - 구현 원칙: 모든 UI 변경은 theme/layout 시스템으로만 (인라인 `<style>` 추가 금지)
-
 # 📕 중요
 
 # 📙 일반
@@ -103,6 +75,32 @@
 
 # ✅ 완료
 
+
+## Issue55. chapter/single 모드 출력 구조 통일 — 3페이지 모델 (등록: 2026-05-02, 해결: 2026-05-02, commit: 71841f5) ✅
+* 목적: chapter/single 모드 출력 비대칭 해소 — 두 모드 모두 Cover Page (`index.html`) + Agenda Page (`agenda.html`) + (chapter 한정) TOC Page 3페이지 모델로 통일
+* 카테고리: Generator + Theme + Frontend
+* 복잡도: 복잡 (plan + task 필수, CSS 인접 영역, 키 네비게이션 재정의 포함)
+* plan: `_doc_work/plan/chapter-single-mode-unify_plan.md`
+* task: `_doc_work/tasks/chapter-single-mode-unify_task.md`
+* design: `_doc_design/chapter-single-mode.md`
+* 상세:
+    - 현재 single 모드는 `{ProjectName}.html` 단독 + `#toc-container` 오버레이로 마크맵 표시. chapter 모드는 `index.html`에 마크맵 + 다운로드 헤더(인라인 CSS).
+    - 두 모드 모두 `index.html`은 cover slide(`#/0`) 표시. cover에서 →/↓ 키로 `agenda.html` 이동
+    - `cover_enabled=false` 시 `index.html`이 meta refresh로 `agenda.html` 자동 redirect
+    - ↑ 키 계층 — Single 3단계 (Cover↑Agenda↑본문), Chapter 4단계 (Cover↑Agenda↑TOC↑본문)
+    - 선행 이슈: Issue49 (`_meta.yml` + `cover_enabled` + cover layout alias) 해결 완료
+* 구현 명세:
+    - Phase 1: `_toc.html` layout 확장 (헤더 + 다운로드 + 마크맵 SVG) + theme CSS 클래스
+    - Phase 2: 다운로드 자산 검출 헬퍼 + `{{downloadButtons}}` 변수 주입
+    - Phase 3: `generateAgendaHTML` standalone 생성기 신설 (layout 기반)
+    - Phase 4: `index.html` 출력 분기 — full deck (single) / lightweight deck (chapter) / redirect-only HTML (cover_enabled=false)
+    - Phase 5: Single deck `#/toc-placeholder` 미생성
+    - Phase 6: Chapter `0X-*.html#/toc-placeholder` 유지 + `_toc.html` layout 적용
+    - Phase 7: `#toc-container` 오버레이 HTML/CSS/JS 완전 제거
+    - Phase 8: `generateIndexHTML` 함수 제거
+    - Phase 9: 키 네비게이션 재정의 (↑·→/↓ 모드별·위치별 분기) + agenda.html →/↓ 키 다음 페이지 이동
+    - Phase 10: m2SlideStyle1_single + m2SlideStyle2_chapter 테스트 (cover_enabled 토글 + 자산 부재 시나리오 포함)
+    - 확정 결정: D1=A · D2=B · D3=A · D4=A · D5=B · D6=B
 
 ## Issue56. theme/nowage markmap 링크 밑줄 제거 (등록: 2026-05-02, 해결: 2026-05-02, commit: 542ed18) ✅
 * 목적: agenda.html markmap 노드 내 `<a>` 링크에 브라우저 기본 text-decoration(밑줄)이 나타나는 문제 제거
