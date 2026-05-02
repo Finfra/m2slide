@@ -15,6 +15,18 @@
   box-sizing: border-box;
 }
 
+/* Reveal.js 기본 테마 변수 — sky.css 없이 폰트 크기 보장 */
+.reveal {
+  --r-main-font-size: 40px;
+  --r-heading1-size: 3.77em;
+  --r-heading2-size: 2.11em;
+  --r-heading3-size: 1.55em;
+  --r-heading4-size: 1em;
+  --r-heading-text-transform: none;
+  --r-heading-font-weight: 700;
+  font-size: var(--r-main-font-size);
+}
+
 .reveal .outline-title {
   font-family: var(--outline-title-font-family, var(--global-font-family, inherit));
   font-size: var(--outline-title-font-size, 2.5em);
