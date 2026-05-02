@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 56
+* Issue HWM: 57
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -24,12 +24,17 @@
 
 # 📙 일반
 
-
-
 # 📗 선택
 
 # ✅ 완료
 
+## Issue57. Agenda/TOC 페이지 ArrowLeft 키 누락 (등록: 2026-05-02, 해결: 2026-05-02, commit: c730a5c) ✅
+* 목적: Agenda(agenda.html) 및 챕터 덱 TOC 슬라이드에서 ↑는 작동하나 ← 키는 아무 동작 없는 문제 수정
+* 카테고리: Frontend (키 네비게이션)
+* 복잡도: 단순
+* 해결:
+    - `generateAgendaHTML` keydown 핸들러: `ArrowLeft` 조건을 `ArrowUp`과 동일하게 추가 → `index.html`로 이동
+    - 챕터 덱 keydown 핸들러: `isTocSlide(cur)`일 때 `ArrowLeft` → `agenda.html`로 이동 블록 추가
 
 ## Issue52. m2SlideStyle2_chapter 프로젝트 구조 정비 (등록: 2026-05-02, 해결: 2026-05-02, commit: c57e016) ✅
 * 목적: `Projects/m2SlideStyle2_chapter/` 폴더 구조와 의도 일치 — Chapter Mode 샘플인지 Single Page인지 명확화

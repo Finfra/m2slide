@@ -180,15 +180,18 @@
 }
 
 /* Default (Original) Mode - controlled by body class */
+/* Issue26: video도 img/svg와 동일한 미디어 처리 */
 .reveal .media-container img,
-.reveal .media-container svg {
+.reveal .media-container svg,
+.reveal .media-container video {
   display: block;
   margin: 0 auto;
 }
 
 /* 1. Original: 원본 크기 유지 (단, 화면 넘지 않음) */
 .media-enlarge-original .reveal .media-container img,
-.media-enlarge-original .reveal .media-container svg {
+.media-enlarge-original .reveal .media-container svg,
+.media-enlarge-original .reveal .media-container video {
   max-width: 100% !important;
   max-height: 100% !important;
   width: auto !important;
@@ -198,7 +201,8 @@
 
 /* 2. Width: 너비 최대화 */
 .media-enlarge-width .reveal .media-container img,
-.media-enlarge-width .reveal .media-container svg {
+.media-enlarge-width .reveal .media-container svg,
+.media-enlarge-width .reveal .media-container video {
   width: 100% !important;
   height: auto !important;
   max-width: none !important;
@@ -233,6 +237,7 @@
 
 .media-enlarge-height .reveal .media-container img,
 .media-enlarge-height .reveal .media-container svg,
+.media-enlarge-height .reveal .media-container video,
 .media-enlarge-height .graph-scroll img,
 .media-enlarge-height .graph-scroll svg {
   height: 100% !important;
@@ -269,6 +274,7 @@
 
 .media-enlarge-fit .reveal .media-container img,
 .media-enlarge-fit .reveal .media-container svg,
+.media-enlarge-fit .reveal .media-container video,
 .media-enlarge-fit .graph-scroll img,
 .media-enlarge-fit .graph-scroll svg {
   width: 100% !important;
@@ -494,4 +500,205 @@
 .guide-line-mode .reveal .theContents {
   border: 3px solid rgba(0, 0, 255, 0.5) !important;
   background-color: rgba(0, 0, 255, 0.05) !important;
+}
+
+/* =========================================
+   8. Issue27_1: image-only 자동 감지 시 풀스크린 이미지
+   ========================================= */
+.reveal section.layout-blank.layout-blank--full-image {
+  padding: 0;
+}
+.reveal section.layout-blank.layout-blank--full-image .blank-header {
+  display: none;
+}
+.reveal section.layout-blank.layout-blank--full-image .blank-body {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.reveal section.layout-blank.layout-blank--full-image .blank-body p {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reveal section.layout-blank.layout-blank--full-image .blank-body img {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* =========================================
+   9. Issue43: video-only 자동 감지 시 풀스크린 비디오
+   (Issue27_1·27_4의 video 버전 — width/height 100% + object-fit: contain)
+   ========================================= */
+.reveal section.layout-blank.layout-blank--full-video {
+  padding: 0;
+}
+.reveal section.layout-blank.layout-blank--full-video .blank-header {
+  display: none;
+}
+.reveal section.layout-blank.layout-blank--full-video .blank-body {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.reveal section.layout-blank.layout-blank--full-video .blank-body p,
+.reveal section.layout-blank.layout-blank--full-video .blank-body .media-container {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reveal section.layout-blank.layout-blank--full-video .blank-body video {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* ========================================================================
+   _toc Layout — Issue55: 3페이지 모델의 TOC Page (chapter deck 내부)
+   + Agenda Page (standalone agenda.html)에서도 동일 layout 재사용
+   ※ reveal.js 레이아웃 파괴 속성 (display: flex, height: 100%, position 등) 사용 금지
+   ======================================================================== */
+.toc-page-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  padding: 18px 24px;
+  margin: 0 0 12px 0;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.toc-page-title {
+  margin: 0;
+  font-size: 1.6em;
+  font-weight: 700;
+  color: #ffffff;
+  text-align: left;
+  display: inline-block;
+}
+.toc-page-downloads {
+  float: right;
+  margin-top: 4px;
+}
+.toc-page-downloads:after {
+  content: "";
+  display: block;
+  clear: both;
+}
+.toc-download-btn {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.7em;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.toc-download-btn:hover {
+  background: rgba(255, 255, 255, 0.32);
+  color: #ffffff;
+}
+.toc-download-epub  { /* 변형 hook (필요 시 색상 조정) */ }
+.toc-download-pdf   { /* 변형 hook */ }
+.toc-download-pptx  { /* 변형 hook */ }
+.toc-markmap {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+.toc-mindmap-svg {
+  width: 100%;
+  max-width: 100%;
+  display: block;
+  min-height: 360px;
+}
+
+/* ========================================================================
+   _cover Layout — Issue55: Cover Page (index.html deck #/0)
+   ※ reveal.js 레이아웃 파괴 속성 사용 금지
+   ======================================================================== */
+.reveal section.layout-cover .cover-subtitle {
+  font-size: 0.9em;
+  color: #555;
+  margin-top: 0.3em;
+}
+.reveal section.layout-cover .cover-part-subtitle {
+  font-size: 0.8em;
+  color: #888;
+  margin-top: 0.2em;
+}
+.reveal section.layout-cover .cover-body {
+  margin-top: auto;
+  padding: 0.8em 0;
+  font-size: 0.8em;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+}
+.reveal section.layout-cover .cover-label {
+  font-weight: 600;
+  margin-right: 0.4em;
+  color: #444;
+}
+.reveal section.layout-cover .cover-instructor-name {
+  font-weight: 600;
+}
+.reveal section.layout-cover .cover-instructor-contact {
+  color: #666;
+  margin-left: 0.5em;
+  font-size: 0.9em;
+}
+.reveal section.layout-cover .cover-lecture-date,
+.reveal section.layout-cover .cover-version {
+  color: #777;
+  font-size: 0.9em;
+  margin-right: 1em;
+}
+.reveal section.layout-cover .cover-qr {
+  text-align: right;
+  padding-top: 0.5em;
+}
+.reveal section.layout-cover .cover-qr-image {
+  max-width: 80px;
+  max-height: 80px;
+}
+.reveal section.layout-cover .cover-qr-url {
+  font-size: 0.65em;
+  color: #888;
+}
+
+/* ========================================================================
+   _agenda Layout — Issue55: Agenda Page (standalone agenda.html)
+   ※ reveal.js 없는 독립 페이지용 — flex/height 제약 없음
+   ======================================================================== */
+.layout-_agenda {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
 }

@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://unpkg.com/open-props"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css"/>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"/>
-  <link rel="stylesheet" href="css/custom.css?v=1777630831952">
+  <link rel="stylesheet" href="css/custom.css?v=1777703259452">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -39,6 +39,11 @@
     })();
   </script>
   <style>
+    /* Issue53: 페이지 번호 클릭 비활성화 — prev arrow 클릭 영역 침범 방지 */
+    .reveal .slide-number,
+    .reveal .slide-number a {
+      pointer-events: none;
+    }
     /* Markmap SVG baseline (allow container to control size) */
     #toc-mindmap {
       width: 100%;
@@ -57,80 +62,7 @@
       font-size: 16px !important;
       font-weight: 700;
     }
-    /* Minimal elements left inline to avoid FOUC */
-    /* TOC container outside Reveal.js for Safari compatibility */
-    #toc-container {
-      display: flex;
-      flex-direction: column;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: radial-gradient(#f7fbfc, #add9e4);
-      z-index: 100;
-      box-sizing: border-box;
-      overflow: hidden; /* Prevent scrollbars if title is huge */
-    }
-    #toc-container h1.main-title {
-      font-family: var(--main-title-font-family, var(--global-font-family, inherit));
-      text-align: var(--main-title-align, center);
-      color: var(--main-title-color, #333);
-      font-size: var(--main-title-font-size, 80px);
-      margin: 0;
-      padding: var(--main-title-padding, 40px 0 20px 0);
-      flex-shrink: 0; /* Title should not shrink */
-      text-transform: none;
-      font-weight: var(--main-title-font-weight, 700);
-      text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000;
-    }
-    #toc-container .title-card {
-      flex-shrink: 0;
-      text-align: var(--main-title-align, center);
-    }
-    #toc-container p.main-subtitle {
-      font-family: var(--main-title-font-family, var(--global-font-family, inherit));
-      color: var(--main-title-color, #555);
-      font-size: calc(var(--main-title-font-size, 80px) * 0.5);
-      font-weight: 400;
-      margin: 0;
-      padding: 4px 0 8px 0;
-      text-align: var(--main-title-align, center);
-      text-shadow: none;
-      opacity: 0.85;
-    }
-    #toc-container p.main-author {
-      font-family: var(--main-title-font-family, var(--global-font-family, inherit));
-      color: var(--main-title-color, #555);
-      font-size: calc(var(--main-title-font-size, 80px) * 0.35);
-      font-weight: 400;
-      margin: 0;
-      padding: 4px 0 4px 0;
-      text-align: var(--main-title-align, center);
-      text-shadow: none;
-      opacity: 0.7;
-    }
-    #toc-container p.main-slogan {
-      font-family: var(--main-title-font-family, var(--global-font-family, inherit));
-      color: var(--main-title-color, #888);
-      font-size: calc(var(--main-title-font-size, 80px) * 0.3);
-      font-weight: 300;
-      font-style: italic;
-      margin: 0;
-      padding: 4px 0 10px 0;
-      text-align: var(--main-title-align, center);
-      text-shadow: none;
-      opacity: 0.6;
-    }
-    #toc-container #toc-mindmap {
-      width: 100%;
-      flex: 1; /* Grow to fill space, basis 0 */
-      min-height: 0; /* Allow shrinking */
-      display: block;
-    }
-    #toc-container a {
-      text-decoration: none;
-    }
+    /* Issue55 Phase 7: #toc-container 오버레이 제거 — TOC slide 내부 .toc-mindmap-svg + agenda.html에서 마크맵 렌더 */
     .nav-up-btn {
       position: fixed;
       bottom: 14px;
@@ -216,16 +148,7 @@
     <span>상위</span>
   </a>
 
-  <!-- TOC container outside Reveal.js for Safari compatibility -->
-  <div id="toc-container">
-    <div class="title-card">
-      <h1 class="main-title">3.1 채팅 기반의 한계</h1>
-      
-      
-      
-    </div>
-    <svg id="toc-mindmap"></svg>
-  </div>
+  <!-- Issue55 Phase 7: #toc-container 오버레이 제거 — 마크맵은 _toc.html layout 내부 SVG 또는 agenda.html에서 렌더 -->
 
   <div id="last-slide-message">마지막 페이지입니다. 다음 챕터로 이동하려면 다시 →를 누르세요.</div>
 
@@ -233,8 +156,13 @@
     <div class="slides">
 
       <section class="layout-_toc title-slide" id="toc-placeholder">
-  <h1>3.1 채팅 기반의 한계</h1>
-  <div class="toc-markmap"></div>
+  <header class="toc-page-header">
+    <h1 class="toc-page-title">3.1 채팅 기반의 한계</h1>
+    <div class="toc-page-downloads"><a href="LlmAndVibeCoding.epub" download class="toc-download-btn toc-download-epub">📚 EPUB</a><a href="LlmAndVibeCoding.pdf" download class="toc-download-btn toc-download-pdf">📄 PDF</a><a href="LlmAndVibeCoding.pptx" download class="toc-download-btn toc-download-pptx">📊 PPTX</a></div>
+  </header>
+  <div class="toc-markmap">
+    <svg class="toc-mindmap-svg"></svg>
+  </div>
       </section>
 
       <section class="title-slide" data-chapter-title="3.1 채팅 기반의 한계">
@@ -353,7 +281,8 @@ graph TB
       center: true,
       slideNumber: 'c/t',
       transition: 'slide',
-      backgroundTransition: 'fade'
+      backgroundTransition: 'fade',
+      touch: false  // Issue51: 커스텀 드래그 핸들러가 touch 이벤트를 직접 관리
     });
 
     // Initialize mermaid for diagrams (manual rendering)
@@ -565,28 +494,27 @@ graph TB
     // Also re-apply on resize
     window.addEventListener('resize', applyDynamicStyles);
 
-    // Initialize markmap for table of contents (outside Reveal.js for Safari compatibility)
-    var tocContainer = document.getElementById('toc-container');
+    // Issue55 Phase 6/7: TOC 슬라이드 내부 .toc-mindmap-svg에 markmap 렌더 (#toc-container 오버레이 폐기)
     var tocData = {
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/0\">3.1 채팅 기반의 한계</a>",
+                  "content": "<a href=\"#/1\">3.1 채팅 기반의 한계</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/1\">채팅 기반의 한계</a>",
+                              "content": "<a href=\"#/2\">채팅 기반의 한계</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/2\">채팅 기반의 주요 한계</a>",
+                              "content": "<a href=\"#/3\">채팅 기반의 주요 한계</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/3\">구체적 사례: React 컴포넌트</a>",
+                              "content": "<a href=\"#/4\">구체적 사례: React 컴포넌트</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/4\">생산성 차이</a>",
+                              "content": "<a href=\"#/5\">생산성 차이</a>",
                               "children": []
                         }
                   ]
@@ -605,72 +533,50 @@ graph TB
     var markmapInitialized = false;
     var markmapInstance = null;
 
-    // Function to toggle TOC visibility based on current slide
-    function updateTocVisibility() {
-      var currentSlide = Reveal.getIndices();
-      if (currentSlide.h === 0 && currentSlide.v === 0) {
-        // First slide: show TOC container
-        tocContainer.style.display = 'flex';
+    function findTocSlideSvg() {
+      var tocSlide = document.getElementById('toc-placeholder');
+      if (!tocSlide) return null;
+      return tocSlide.querySelector('.toc-mindmap-svg');
+    }
 
-        // Initialize markmap on first show
-        if (!markmapInitialized && window.markmap && tocContainer) {
-          // Create with layout options so the tree breathes horizontally
-          try {
-            markmapInstance = window.markmap.Markmap.create('#toc-mindmap', {
-              autoFit: true,
-              fitRatio: 0.95,
-              spacingHorizontal: 80,
-              spacingVertical: 12,
-              paddingX: 40,
-              initialExpandLevel: 3
-            }, tocData);
-            markmapInitialized = true;
-            
-            // Ensure fit after layout settles
-            if (!isPrintMode) {
-                requestAnimationFrame(function () {
-                  if (markmapInstance && markmapInstance.fit) {
-                    try { markmapInstance.fit(); } catch(e) {}
-                  }
-                });
-                setTimeout(function(){ 
-                  if (markmapInstance && markmapInstance.fit) {
-                    try { markmapInstance.fit(); } catch(e) {}
-                  }
-                }, 50);
-            } else {
-                // In print mode, wait longer and fit once
-                setTimeout(function(){ 
-                   if (markmapInstance && markmapInstance.fit) {
-                      try { markmapInstance.fit(); } catch(e) {}
-                   }
-                }, 1000);
-            }
-          } catch(e) {
-            console.warn('Markmap initialization failed:', e);
-          }
-        } else if (markmapInitialized && markmapInstance && markmapInstance.fit) {
-          // Re-fit when returning to the first slide
-          if (!isPrintMode) {
-              requestAnimationFrame(function () { 
-                try { markmapInstance.fit(); } catch(e) {} 
-              });
-          }
+    function initTocMarkmapIfNeeded() {
+      if (markmapInitialized) {
+        if (markmapInstance && markmapInstance.fit && !isPrintMode) {
+          requestAnimationFrame(function(){ try { markmapInstance.fit(); } catch(e){} });
         }
-      } else {
-        // Other slides: hide TOC container
-        tocContainer.style.display = 'none';
+        return;
+      }
+      if (!window.markmap) return;
+      var svg = findTocSlideSvg();
+      if (!svg) return;
+      try {
+        markmapInstance = window.markmap.Markmap.create(svg, {
+          autoFit: true,
+          fitRatio: 0.95,
+          spacingHorizontal: 80,
+          spacingVertical: 12,
+          paddingX: 40,
+          initialExpandLevel: 3
+        }, tocData);
+        markmapInitialized = true;
+        if (!isPrintMode) {
+          setTimeout(function(){ if (markmapInstance && markmapInstance.fit) { try { markmapInstance.fit(); } catch(e){} } }, 50);
+        } else {
+          setTimeout(function(){ if (markmapInstance && markmapInstance.fit) { try { markmapInstance.fit(); } catch(e){} } }, 1000);
+        }
+      } catch(e) {
+        console.warn('Markmap initialization failed:', e);
       }
     }
 
-    // Initial state check
     Reveal.on('ready', function() {
-      updateTocVisibility();
+      initTocMarkmapIfNeeded();
     });
-
-    // Update on slide change
     Reveal.on('slidechanged', function() {
-      updateTocVisibility();
+      var cur = Reveal.getCurrentSlide();
+      if (cur && cur.id === 'toc-placeholder') {
+        initTocMarkmapIfNeeded();
+      }
     });
 
     // Keep Markmap fitted on window resize
@@ -818,48 +724,93 @@ graph TB
     var lastSlideMessageShown = false;
     var lastSlideMessage = document.getElementById('last-slide-message');
 
-    // Connect keyboard navigation
+    // Issue55 Phase 9: 키 네비게이션 — 페이지 계층 단계별 이동
+    // M2SLIDE_MODE: 'single' | 'chapter' (빌드 시점 주입)
+    var M2SLIDE_MODE = 'chapter';
+    function isCoverSlide(slide) {
+      if (!slide) return false;
+      return slide.classList && slide.classList.contains('layout-cover');
+    }
+    function isTocSlide(slide) {
+      if (!slide) return false;
+      return slide.id === 'toc-placeholder';
+    }
+    function findTocSlideIndex() {
+      // 0X-*.html (chapter)에서 #/toc-placeholder의 horizontal index 찾기
+      var slides = Reveal.getHorizontalSlides();
+      for (var i = 0; i < slides.length; i++) {
+        if (slides[i].id === 'toc-placeholder') return i;
+      }
+      return -1;
+    }
     document.addEventListener('keydown', function(event) {
-      // Check if up arrow key is pressed
+      var cur = Reveal.getCurrentSlide();
+      // ↑ 키: 페이지 계층 상위로 이동
       if (event.key === 'ArrowUp' || event.keyCode === 38) {
-        var currentSlide = Reveal.getIndices();
-        // Only navigate to parent if there are no vertical slides and parent exists
-        if (currentSlide.v === 0) {
-          var navLink = document.getElementById('nav-up-link');
-          if (navLink) {
+        var idx = Reveal.getIndices();
+        if (idx.v !== 0) return; // 수직 슬라이드 내부에서는 기본 동작
+        if (isCoverSlide(cur)) {
+          // Cover 슬라이드: 최상위 — 동작 없음
+          event.preventDefault();
+          return;
+        }
+        if (isTocSlide(cur)) {
+          // TOC 슬라이드 → agenda.html
+          event.preventDefault();
+          window.location.href = 'agenda.html';
+          return;
+        }
+        // 본문 슬라이드
+        if (M2SLIDE_MODE === 'single') {
+          event.preventDefault();
+          window.location.href = 'agenda.html';
+        } else {
+          // Chapter 모드: 같은 deck의 #/toc-placeholder로 이동
+          var tocIdx = findTocSlideIndex();
+          if (tocIdx >= 0) {
             event.preventDefault();
-            window.location.href = navLink.href;
-          } else {
-            // Single page mode: go to first slide
-            event.preventDefault();
-            Reveal.slide(0, 0);
+            Reveal.slide(tocIdx, 0);
           }
+        }
+        return;
+      }
+
+      // ← 키: TOC 슬라이드에서 agenda.html로 이동
+      if (event.key === 'ArrowLeft' || event.keyCode === 37) {
+        if (isTocSlide(cur)) {
+          event.preventDefault();
+          window.location.href = 'agenda.html';
+          return;
         }
       }
 
-      // Check if right arrow key is pressed
+      // → / ↓ 키: Cover 슬라이드 override → agenda.html (D5=B, D6=B)
+      if (event.key === 'ArrowRight' || event.keyCode === 39 ||
+          event.key === 'ArrowDown'  || event.keyCode === 40) {
+        if (isCoverSlide(cur)) {
+          event.preventDefault();
+          window.location.href = 'agenda.html';
+          return;
+        }
+      }
+
+      // → 키: 마지막 슬라이드 → 다음 챕터 (기존 동작 유지)
       if (event.key === 'ArrowRight' || event.keyCode === 39) {
         var totalSlides = Reveal.getTotalSlides();
-        var currentSlide = Reveal.getIndices();
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
         var hasNextChapter = '03.2.vibecoding-start.html' !== '';
-
-        // Check if on last slide
         if (currentSlideNumber >= totalSlides) {
           if (hasNextChapter) {
             if (lastSlideMessageShown) {
-              // Second press: navigate to next chapter
               lastSlideMessage.style.display = 'none';
               lastSlideMessageShown = false;
               window.location.href = '03.2.vibecoding-start.html';
             } else {
-              // First press: show message
               event.preventDefault();
               lastSlideMessage.style.display = 'block';
               lastSlideMessageShown = true;
             }
           } else {
-            // No next chapter - do nothing or show different message
             event.preventDefault();
           }
         }
@@ -871,6 +822,70 @@ graph TB
       lastSlideMessage.style.display = 'none';
       lastSlideMessageShown = false;
     });
+
+    // Issue51: touch/mouse 드래그 네비게이션 (Reveal touch:false이므로 직접 구현)
+    // synthetic keydown으로 기존 Phase 9 키 핸들러(isCoverSlide, M2SLIDE_MODE 등) 재사용
+    (function(){
+      var startX, startY, startTime;
+      var SWIPE_MIN_PX = 50;
+      var SWIPE_MAX_MS = 700;
+
+      function simulateKey(key, keyCode) {
+        document.dispatchEvent(new KeyboardEvent('keydown', {
+          key: key, keyCode: keyCode, bubbles: true, cancelable: true
+        }));
+      }
+
+      function onSwipe(dx, dy) {
+        var adx = Math.abs(dx), ady = Math.abs(dy);
+        if (adx >= ady && adx >= SWIPE_MIN_PX) {
+          // 수평 swipe: 좌→우 = prev, 우→좌 = next
+          simulateKey(dx < 0 ? 'ArrowRight' : 'ArrowLeft', dx < 0 ? 39 : 37);
+        } else if (ady > adx && ady >= SWIPE_MIN_PX) {
+          // 수직 swipe: 위→아래 = ↑(부모 이동), 아래→위 = ↓
+          simulateKey(dy > 0 ? 'ArrowUp' : 'ArrowDown', dy > 0 ? 38 : 40);
+        }
+      }
+
+      // ── Touch (모바일/태블릿) ──
+      document.addEventListener('touchstart', function(e) {
+        if (e.touches.length !== 1) return;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        startTime = Date.now();
+      }, { passive: true });
+
+      document.addEventListener('touchend', function(e) {
+        if (e.changedTouches.length !== 1) return;
+        if (Date.now() - startTime > SWIPE_MAX_MS) return;
+        onSwipe(
+          e.changedTouches[0].clientX - startX,
+          e.changedTouches[0].clientY - startY
+        );
+      }, { passive: true });
+
+      // ── Mouse drag (데스크톱) ──
+      var isDragging = false;
+      document.addEventListener('mousedown', function(e) {
+        if (e.button !== 0) return;
+        startX = e.clientX; startY = e.clientY;
+        startTime = Date.now(); isDragging = false;
+      });
+      document.addEventListener('mousemove', function(e) {
+        if (e.buttons !== 1) return;
+        if (Math.abs(e.clientX - startX) > 10 || Math.abs(e.clientY - startY) > 10) {
+          isDragging = true;
+        }
+      });
+      document.addEventListener('mouseup', function(e) {
+        if (e.button !== 0 || !isDragging) { isDragging = false; return; }
+        isDragging = false;
+        // 텍스트 선택 시 드래그 무시
+        if (window.getSelection && window.getSelection().toString().length > 0) return;
+        if (Date.now() - startTime > SWIPE_MAX_MS) return;
+        onSwipe(e.clientX - startX, e.clientY - startY);
+      });
+    })();
   </script>
 </body>
 </html>
