@@ -116,8 +116,8 @@
    ========================================================================= */
 
 /* 4.1 cover: puffer1 좌상단 + subtitle 박스 우하단 */
-.reveal section.layout-cover,
-.guide-line-mode .reveal .slides section.layout-cover {
+.reveal section.layout-_cover,
+.guide-line-mode .reveal .slides section.layout-_cover {
   background-color: #ffffff !important;
   background-image: url('../theme-img/finfraPuffer1.png');
   background-repeat: no-repeat;
@@ -128,16 +128,16 @@
   min-height: 100% !important;
 }
 
-.reveal section.layout-cover .cover-header {
+.reveal section.layout-_cover .cover-header {
   text-align: center;
   padding: 22% 0 6% 0;
 }
 
-.reveal section.layout-cover .cover-title {
+.reveal section.layout-_cover .cover-title {
   font-size: clamp(1.2em, 5vw, 3.4em);
 }
 
-.reveal section.layout-cover .cover-meta {
+.reveal section.layout-_cover .cover-meta {
   align-self: flex-end;
   font-size: 1.1em;
   border: 2px solid var(--kn-accent);
@@ -148,7 +148,7 @@
 }
 
 /* 4.2 contents: puffer2s 우상단 (작게) */
-.reveal section.layout-contents,
+.reveal section.layout-_contents,
 .reveal section.layout-contents-full {
   background-image: url('../theme-img/finfraPuffer2s.png');
   background-repeat: no-repeat;
@@ -156,7 +156,7 @@
   background-size: 9% auto;
 }
 
-.reveal section.layout-contents .contents-header,
+.reveal section.layout-_contents .contents-header,
 .reveal section.layout-contents-full .contents-header {
   padding: 1.2em 0 0.6em 0;
   text-align: center;
@@ -265,7 +265,7 @@
 }
 
 /* 4.8 blank: 장식 없음 (상하 노랑선만) */
-.reveal section.layout-blank .blank-header {
+.reveal section.layout-_blank .blank-header {
   text-align: center;
 }
 
@@ -354,19 +354,19 @@
 /* =========================================================================
    6. _cover Layout 확장 — Issue55: nowage 커버 확장 요소 (subtitle, body, QR)
    ========================================================================= */
-.reveal section.layout-cover .cover-subtitle {
+.reveal section.layout-_cover .cover-subtitle {
   font-size: 1em;
   color: rgba(255, 255, 255, 0.85);
   margin-top: 0.3em;
   font-weight: 300;
 }
-.reveal section.layout-cover .cover-part-subtitle {
+.reveal section.layout-_cover .cover-part-subtitle {
   font-size: 0.75em;
   color: rgba(255, 255, 255, 0.7);
   margin-top: 0.2em;
   letter-spacing: 0.05em;
 }
-.reveal section.layout-cover .cover-body {
+.reveal section.layout-_cover .cover-body {
   margin-top: auto;
   padding: 0.6em 0;
   font-size: 0.75em;
@@ -374,45 +374,45 @@
   flex-direction: column;
   gap: 0.3em;
 }
-.reveal section.layout-cover .cover-label {
+.reveal section.layout-_cover .cover-label {
   font-weight: 700;
   margin-right: 0.4em;
   color: var(--kn-accent, #f9a825);
 }
-.reveal section.layout-cover .cover-instructor-name {
+.reveal section.layout-_cover .cover-instructor-name {
   font-weight: 600;
 }
-.reveal section.layout-cover .cover-instructor-contact {
+.reveal section.layout-_cover .cover-instructor-contact {
   margin-left: 0.5em;
   opacity: 0.8;
   font-size: 0.9em;
 }
-.reveal section.layout-cover .cover-lecture-date,
-.reveal section.layout-cover .cover-version {
+.reveal section.layout-_cover .cover-lecture-date,
+.reveal section.layout-_cover .cover-version {
   opacity: 0.75;
   font-size: 0.9em;
   margin-right: 1em;
 }
-.reveal section.layout-cover .cover-qr {
+.reveal section.layout-_cover .cover-qr {
   text-align: right;
   padding-top: 0.4em;
 }
-.reveal section.layout-cover .cover-qr-image {
+.reveal section.layout-_cover .cover-qr-image {
   max-width: 70px;
   max-height: 70px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   padding: 2px;
   background: #fff;
 }
-.reveal section.layout-cover .cover-qr-url {
+.reveal section.layout-_cover .cover-qr-url {
   font-size: 0.6em;
   opacity: 0.7;
   margin-top: 0.2em;
 }
 /* Issue67: layout.js의 빈 wrapper strip 후 잔존 가능성 보호 — 미정의 메타로 비워진 컨테이너 숨김 */
-.reveal section.layout-cover .cover-qr:empty,
-.reveal section.layout-cover .cover-meta:empty,
-.reveal section.layout-cover .cover-body:empty {
+.reveal section.layout-_cover .cover-qr:empty,
+.reveal section.layout-_cover .cover-meta:empty,
+.reveal section.layout-_cover .cover-body:empty {
   display: none;
 }
 
@@ -510,31 +510,31 @@
    ========================================================================= */
 
 /* 8.1 _cover 슬롯 */
-.guide-line-mode .reveal section.layout-cover .cover-header {
+.guide-line-mode .reveal section.layout-_cover .cover-header {
   border: 2px dashed rgba(255, 165, 0, 0.7) !important;        /* orange */
   background-color: rgba(255, 165, 0, 0.06) !important;
 }
-.guide-line-mode .reveal section.layout-cover .cover-subtitle {
+.guide-line-mode .reveal section.layout-_cover .cover-subtitle {
   border: 2px dashed rgba(0, 200, 200, 0.7) !important;        /* cyan */
   background-color: rgba(0, 200, 200, 0.06) !important;
 }
-.guide-line-mode .reveal section.layout-cover .cover-part-subtitle {
+.guide-line-mode .reveal section.layout-_cover .cover-part-subtitle {
   border: 2px dashed rgba(150, 75, 0, 0.7) !important;         /* brown */
   background-color: rgba(150, 75, 0, 0.06) !important;
 }
-.guide-line-mode .reveal section.layout-cover .cover-body {
+.guide-line-mode .reveal section.layout-_cover .cover-body {
   border: 2px dashed rgba(128, 0, 128, 0.7) !important;        /* purple */
   background-color: rgba(128, 0, 128, 0.06) !important;
 }
-.guide-line-mode .reveal section.layout-cover .cover-instructor {
+.guide-line-mode .reveal section.layout-_cover .cover-instructor {
   border: 2px dashed rgba(0, 128, 128, 0.7) !important;        /* teal */
   background-color: rgba(0, 128, 128, 0.06) !important;
 }
-.guide-line-mode .reveal section.layout-cover .cover-meta {
+.guide-line-mode .reveal section.layout-_cover .cover-meta {
   border: 2px dashed rgba(255, 0, 255, 0.7) !important;        /* magenta */
   background-color: rgba(255, 0, 255, 0.06) !important;
 }
-.guide-line-mode .reveal section.layout-cover .cover-qr {
+.guide-line-mode .reveal section.layout-_cover .cover-qr {
   border: 2px dashed rgba(218, 165, 32, 0.8) !important;       /* goldenrod */
   background-color: rgba(218, 165, 32, 0.08) !important;
 }
@@ -586,13 +586,13 @@
    - ::before 사용 이유: ::after는 §3 h1::after / cover-title::after에서 hr.png 사용 중 → 충돌 회피
    - position: relative 강제 — absolute 자식 ::before 기준점 확보
    - SVG는 pseudo-element 미지원 → 라벨 생략 (outline만) */
-.guide-line-mode .reveal section.layout-cover .cover-header,
-.guide-line-mode .reveal section.layout-cover .cover-subtitle,
-.guide-line-mode .reveal section.layout-cover .cover-part-subtitle,
-.guide-line-mode .reveal section.layout-cover .cover-body,
-.guide-line-mode .reveal section.layout-cover .cover-instructor,
-.guide-line-mode .reveal section.layout-cover .cover-meta,
-.guide-line-mode .reveal section.layout-cover .cover-qr,
+.guide-line-mode .reveal section.layout-_cover .cover-header,
+.guide-line-mode .reveal section.layout-_cover .cover-subtitle,
+.guide-line-mode .reveal section.layout-_cover .cover-part-subtitle,
+.guide-line-mode .reveal section.layout-_cover .cover-body,
+.guide-line-mode .reveal section.layout-_cover .cover-instructor,
+.guide-line-mode .reveal section.layout-_cover .cover-meta,
+.guide-line-mode .reveal section.layout-_cover .cover-qr,
 .guide-line-mode .reveal section.layout-_toc .toc-page-header,
 .guide-line-mode .reveal section.layout-_toc .toc-markmap,
 .guide-line-mode .reveal section.layout-_toc .toc-body,
@@ -606,13 +606,13 @@
 }
 
 /* 라벨 공통 스타일 */
-.guide-line-mode .reveal section.layout-cover .cover-header::before,
-.guide-line-mode .reveal section.layout-cover .cover-subtitle::before,
-.guide-line-mode .reveal section.layout-cover .cover-part-subtitle::before,
-.guide-line-mode .reveal section.layout-cover .cover-body::before,
-.guide-line-mode .reveal section.layout-cover .cover-instructor::before,
-.guide-line-mode .reveal section.layout-cover .cover-meta::before,
-.guide-line-mode .reveal section.layout-cover .cover-qr::before,
+.guide-line-mode .reveal section.layout-_cover .cover-header::before,
+.guide-line-mode .reveal section.layout-_cover .cover-subtitle::before,
+.guide-line-mode .reveal section.layout-_cover .cover-part-subtitle::before,
+.guide-line-mode .reveal section.layout-_cover .cover-body::before,
+.guide-line-mode .reveal section.layout-_cover .cover-instructor::before,
+.guide-line-mode .reveal section.layout-_cover .cover-meta::before,
+.guide-line-mode .reveal section.layout-_cover .cover-qr::before,
 .guide-line-mode .reveal section.layout-_toc .toc-page-header::before,
 .guide-line-mode .reveal section.layout-_toc .toc-markmap::before,
 .guide-line-mode .reveal section.layout-_toc .toc-body::before,
@@ -638,13 +638,13 @@
 }
 
 /* 슬롯별 라벨 텍스트 + 색상 (해당 슬롯 dashed 색과 통일) */
-.guide-line-mode .reveal section.layout-cover .cover-header::before { content: "cover-header"; color: rgba(200, 130, 0, 1); }
-.guide-line-mode .reveal section.layout-cover .cover-subtitle::before { content: "cover-subtitle"; color: rgba(0, 160, 160, 1); }
-.guide-line-mode .reveal section.layout-cover .cover-part-subtitle::before { content: "cover-part-subtitle"; color: rgba(120, 60, 0, 1); }
-.guide-line-mode .reveal section.layout-cover .cover-body::before { content: "cover-body"; color: rgba(128, 0, 128, 1); }
-.guide-line-mode .reveal section.layout-cover .cover-instructor::before { content: "cover-instructor"; color: rgba(0, 110, 110, 1); }
-.guide-line-mode .reveal section.layout-cover .cover-meta::before { content: "cover-meta"; color: rgba(200, 0, 200, 1); }
-.guide-line-mode .reveal section.layout-cover .cover-qr::before { content: "cover-qr"; color: rgba(180, 130, 20, 1); }
+.guide-line-mode .reveal section.layout-_cover .cover-header::before { content: "cover-header"; color: rgba(200, 130, 0, 1); }
+.guide-line-mode .reveal section.layout-_cover .cover-subtitle::before { content: "cover-subtitle"; color: rgba(0, 160, 160, 1); }
+.guide-line-mode .reveal section.layout-_cover .cover-part-subtitle::before { content: "cover-part-subtitle"; color: rgba(120, 60, 0, 1); }
+.guide-line-mode .reveal section.layout-_cover .cover-body::before { content: "cover-body"; color: rgba(128, 0, 128, 1); }
+.guide-line-mode .reveal section.layout-_cover .cover-instructor::before { content: "cover-instructor"; color: rgba(0, 110, 110, 1); }
+.guide-line-mode .reveal section.layout-_cover .cover-meta::before { content: "cover-meta"; color: rgba(200, 0, 200, 1); }
+.guide-line-mode .reveal section.layout-_cover .cover-qr::before { content: "cover-qr"; color: rgba(180, 130, 20, 1); }
 
 .guide-line-mode .reveal section.layout-_toc .toc-page-header::before { content: "toc-page-header"; color: rgba(200, 130, 0, 1); }
 .guide-line-mode .reveal section.layout-_toc .toc-markmap::before { content: "toc-markmap"; color: rgba(128, 0, 128, 1); }
