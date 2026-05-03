@@ -119,3 +119,6 @@ Temporary Items
 # data: .gitkeep만 추적, 그 외 사용자 데이터는 추적 제외
 /data/*
 !/data/.gitkeep
+
+# Backup files
+*.bak
