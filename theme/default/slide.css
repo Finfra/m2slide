@@ -186,13 +186,14 @@
   max-width: 55%;
 }
 
-/* 4.4 chapter: puffer2 중앙-좌측 + 제목 하단 */
+/* 4.4 chapter: puffer2 중앙-좌측 + 제목 하단
+   Issue72: !important 제거 — base.css와 동일 specificity (0,0,2,2). theme이 후순위 로드되어 자연 우선 */
 .reveal section.layout-chapter {
   background-image: url('../theme-img/finfraPuffer2.png');
   background-repeat: no-repeat;
   background-position: 18% 38%;
   background-size: 16% auto;
-  justify-content: flex-end !important;
+  justify-content: flex-end;
 }
 
 .reveal section.layout-chapter .chapter-header {
@@ -234,7 +235,8 @@
   padding-right: 4%;
 }
 
-/* 4.7 closing: puffer1 중앙 큼 + cat 우하단 */
+/* 4.7 closing: puffer1 중앙 큼 + cat 우하단
+   Issue72: !important 제거 — base.css와 동일 specificity. theme 후순위 로드로 자연 우선 */
 .reveal section.layout-closing {
   background-image:
     url('../theme-img/finfraPuffer1.png'),
@@ -242,9 +244,9 @@
   background-repeat: no-repeat, no-repeat;
   background-position: 30% 55%, 88% 85%;
   background-size: 32% auto, 18% auto;
-  justify-content: flex-start !important;
-  align-items: stretch !important;
-  text-align: center !important;
+  justify-content: flex-start;
+  align-items: stretch;
+  text-align: center;
 }
 
 .reveal section.layout-closing .closing-header {
@@ -271,19 +273,16 @@
    5. _toc Layout (Issue55) — chapter deck TOC slide + standalone agenda.html
    ========================================================================= */
 .toc-page-header {
-  background: linear-gradient(135deg, #1a1a2e 0%, #2d2d5f 100%);
-  color: #ffffff;
+  background: none;
   padding: 22px 28px;
   margin: 0 0 16px 0;
-  border-bottom: 4px solid #ffd54f;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  /* 제목 h1::after 가 hr.png 노란 밑줄을 제공하므로 header border-bottom 중복 제거 */
 }
 .toc-page-title {
   font-family: var(--main-title-font-family, 'GmarketSansBold', sans-serif);
   margin: 0;
   font-size: 1.8em;
   font-weight: 700;
-  color: #ffffff;
   text-align: left;
   display: inline-block;
   letter-spacing: -0.02em;
@@ -301,10 +300,10 @@
   display: inline-block;
   margin-left: 10px;
   padding: 8px 16px;
-  background: rgba(255, 213, 79, 0.18);
-  color: #ffd54f;
+  background: rgba(27, 94, 32, 0.08);
+  color: #1b5e20;
   text-decoration: none;
-  border: 1px solid rgba(255, 213, 79, 0.5);
+  border: 1px solid #2e7d32;
   border-radius: 4px;
   font-size: 0.7em;
   font-weight: 600;
@@ -313,8 +312,8 @@
   transition: background 0.2s, color 0.2s;
 }
 .toc-download-btn:hover {
-  background: #ffd54f;
-  color: #1a1a2e;
+  background: #1b5e20;
+  color: #ffffff;
 }
 .toc-markmap {
   width: 100%;
@@ -340,6 +339,11 @@
 .toc-mindmap-svg foreignObject a:hover,
 .markmap-foreign a:hover {
   text-decoration: none;
+}
+
+/* chapter-card 내부 bullet 제거 — base.css §10 layout-* ul > li::before 의 ● override */
+.reveal section[class*="layout-"] ul.chapter-list--cards > li.chapter-card::before {
+  content: none;
 }
 
 /* =========================================================================
@@ -408,6 +412,59 @@
 }
 
 /* =========================================================================
+   6.5 _toc Layout — toc-body 카드화
+   - base.css §공통 [class*="layout-"] > [class$="-body"] 의 flex-grow:1 override
+   - 컨텐츠는 자연 높이 카드로 표시 (max-height 미지정 → 콘텐츠 크기로 자연 fit)
+   - 빈 .toc-body 는 숨김 처리 (TOC 슬라이드에 본문이 없는 경우 잔존 카드 방지)
+   ========================================================================= */
+.reveal section.layout-_toc > .toc-body {
+  /* 카드 자체는 항상 콘텐츠 크기로 (flex stretching·height 강제 차단) */
+  flex: 0 0 auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  align-self: center;
+  /* 카드 스타일 */
+  width: fit-content;
+  max-width: 80%;
+  margin: 1em auto;
+  padding: 1em 1.5em;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  /* 컨텐츠 영역이므로 테두리·그림자 불필요 (사용자 결정) */
+}
+
+.reveal section.layout-_toc > .toc-body:empty {
+  display: none;
+}
+
+/* base.css의 li.bullet-dot/li.bullet-dash 가 list-style-type:disc/-style 을
+   부여해 layout-* §10의 ::before "●/─" 와 이중 마커 충돌을 일으킴.
+   layout-* 내부에서는 ::before 마커만 사용하도록 list-style 제거. */
+.reveal section[class*="layout-"] li.bullet-dot,
+.reveal section[class*="layout-"] li.bullet-dash {
+  list-style: none;
+}
+
+/* 챕터 카드 그림자 강조 — base.css 기본 box-shadow rgba(0,0,0,0.08) 가
+   흰 카드+흰 배경 환경에서 거의 보이지 않음. theme 시각 강화. */
+.reveal section.layout-_toc .chapter-list--cards .chapter-card {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.reveal section.layout-_toc .chapter-list--cards .chapter-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+/* 본문(.toc-body)이 비어있지 않은 placeholder _toc 슬라이드는
+   비어있는 markmap 자리(SVG 380px min-height)가 카드를 아래로 밀어냄.
+   본문 카드가 있을 때는 markmap 영역을 숨겨 카드 위주 레이아웃 유지. */
+.reveal section.layout-_toc:has(> .toc-body:not(:empty)) > .toc-markmap {
+  display: none;
+}
+
+/* =========================================================================
    7. _agenda Layout — Issue55: Agenda Page (standalone agenda.html)
    ========================================================================= */
 .layout-_agenda {
@@ -417,4 +474,226 @@
   min-height: 100vh;
   box-sizing: border-box;
   background: #f9f9fb;
+}
+
+/* toc-markmap이 남은 세로 공간을 채우도록 flex-grow 적용 (theContents 패턴).
+   base.css §12의 .agenda-frame .toc-mindmap-svg { height: calc(100% - 200px) } override.
+   테두리·라운드 추가로 영역 시각 강조. */
+.agenda-frame .layout-_agenda {
+  min-height: 0;
+}
+.agenda-frame .toc-markmap {
+  flex: 1 1 0;
+  min-height: 0;
+  border: 2px solid var(--kn-accent);
+  border-radius: 8px;
+  padding: 12px;
+  overflow: hidden;
+  background: #ffffff;
+}
+.agenda-frame .toc-mindmap-svg {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: block;
+}
+
+/* =========================================================================
+   8. Guide Line — 테마 슬롯별 색상 (디버깅 시각화)
+   - base.css §8: section(red) / h1·h2·h3(green) / .theContents(blue)
+   - 본 섹션: theme이 정의한 _cover/_toc/_agenda 슬롯에 슬롯별 색 추가
+   - 색상 충돌 회피: 빨/초/파 외 cyan, magenta, orange, purple, teal, brown 사용
+   ========================================================================= */
+
+/* 8.1 _cover 슬롯 */
+.guide-line-mode .reveal section.layout-cover .cover-header {
+  border: 2px dashed rgba(255, 165, 0, 0.7) !important;        /* orange */
+  background-color: rgba(255, 165, 0, 0.06) !important;
+}
+.guide-line-mode .reveal section.layout-cover .cover-subtitle {
+  border: 2px dashed rgba(0, 200, 200, 0.7) !important;        /* cyan */
+  background-color: rgba(0, 200, 200, 0.06) !important;
+}
+.guide-line-mode .reveal section.layout-cover .cover-part-subtitle {
+  border: 2px dashed rgba(150, 75, 0, 0.7) !important;         /* brown */
+  background-color: rgba(150, 75, 0, 0.06) !important;
+}
+.guide-line-mode .reveal section.layout-cover .cover-body {
+  border: 2px dashed rgba(128, 0, 128, 0.7) !important;        /* purple */
+  background-color: rgba(128, 0, 128, 0.06) !important;
+}
+.guide-line-mode .reveal section.layout-cover .cover-instructor {
+  border: 2px dashed rgba(0, 128, 128, 0.7) !important;        /* teal */
+  background-color: rgba(0, 128, 128, 0.06) !important;
+}
+.guide-line-mode .reveal section.layout-cover .cover-meta {
+  border: 2px dashed rgba(255, 0, 255, 0.7) !important;        /* magenta */
+  background-color: rgba(255, 0, 255, 0.06) !important;
+}
+.guide-line-mode .reveal section.layout-cover .cover-qr {
+  border: 2px dashed rgba(218, 165, 32, 0.8) !important;       /* goldenrod */
+  background-color: rgba(218, 165, 32, 0.08) !important;
+}
+
+/* 8.2 _toc 슬롯 */
+.guide-line-mode .reveal section.layout-_toc .toc-page-header {
+  border: 2px dashed rgba(255, 165, 0, 0.7) !important;        /* orange */
+  background-color: rgba(255, 165, 0, 0.06) !important;
+}
+.guide-line-mode .reveal section.layout-_toc .toc-markmap {
+  border: 2px dashed rgba(128, 0, 128, 0.7) !important;        /* purple */
+  background-color: rgba(128, 0, 128, 0.06) !important;
+}
+.guide-line-mode .reveal section.layout-_toc .toc-body {
+  border: 2px dashed rgba(0, 200, 200, 0.7) !important;        /* cyan */
+  background-color: rgba(0, 200, 200, 0.06) !important;
+}
+.guide-line-mode .reveal section.layout-_toc .toc-cards {
+  border: 2px dashed rgba(255, 0, 255, 0.7) !important;        /* magenta */
+  background-color: rgba(255, 0, 255, 0.06) !important;
+}
+
+/* 8.3 _agenda 슬롯 — agenda.html은 standalone(.reveal 없음). .reveal 비종속 셀렉터 사용 */
+.guide-line-mode .layout-_agenda {
+  border: 2px dashed rgba(255, 0, 255, 0.5) !important;        /* magenta (외곽) */
+  background-color: rgba(255, 0, 255, 0.03) !important;
+}
+.guide-line-mode .layout-_agenda .toc-page-header {
+  border: 2px dashed rgba(255, 165, 0, 0.7) !important;        /* orange */
+  background-color: rgba(255, 165, 0, 0.06) !important;
+}
+.guide-line-mode .layout-_agenda .toc-page-title {
+  border: 2px dashed rgba(0, 200, 0, 0.7) !important;          /* green (h1 슬롯) */
+  background-color: rgba(0, 200, 0, 0.06) !important;
+}
+.guide-line-mode .layout-_agenda .toc-page-downloads {
+  border: 2px dashed rgba(0, 128, 128, 0.7) !important;        /* teal */
+  background-color: rgba(0, 128, 128, 0.06) !important;
+}
+.guide-line-mode .layout-_agenda .toc-markmap {
+  border: 2px dashed rgba(128, 0, 128, 0.7) !important;        /* purple */
+  background-color: rgba(128, 0, 128, 0.06) !important;
+}
+.guide-line-mode .layout-_agenda .toc-mindmap-svg {
+  outline: 2px dashed rgba(218, 165, 32, 0.6) !important;      /* goldenrod (svg 영역) */
+}
+
+/* 8.4 슬롯 라벨 — 우측 하단 안쪽에 클래스명 표시 (::before, position: absolute)
+   - ::before 사용 이유: ::after는 §3 h1::after / cover-title::after에서 hr.png 사용 중 → 충돌 회피
+   - position: relative 강제 — absolute 자식 ::before 기준점 확보
+   - SVG는 pseudo-element 미지원 → 라벨 생략 (outline만) */
+.guide-line-mode .reveal section.layout-cover .cover-header,
+.guide-line-mode .reveal section.layout-cover .cover-subtitle,
+.guide-line-mode .reveal section.layout-cover .cover-part-subtitle,
+.guide-line-mode .reveal section.layout-cover .cover-body,
+.guide-line-mode .reveal section.layout-cover .cover-instructor,
+.guide-line-mode .reveal section.layout-cover .cover-meta,
+.guide-line-mode .reveal section.layout-cover .cover-qr,
+.guide-line-mode .reveal section.layout-_toc .toc-page-header,
+.guide-line-mode .reveal section.layout-_toc .toc-markmap,
+.guide-line-mode .reveal section.layout-_toc .toc-body,
+.guide-line-mode .reveal section.layout-_toc .toc-cards,
+.guide-line-mode .layout-_agenda,
+.guide-line-mode .layout-_agenda .toc-page-header,
+.guide-line-mode .layout-_agenda .toc-page-title,
+.guide-line-mode .layout-_agenda .toc-page-downloads,
+.guide-line-mode .layout-_agenda .toc-markmap {
+  position: relative !important;
+}
+
+/* 라벨 공통 스타일 */
+.guide-line-mode .reveal section.layout-cover .cover-header::before,
+.guide-line-mode .reveal section.layout-cover .cover-subtitle::before,
+.guide-line-mode .reveal section.layout-cover .cover-part-subtitle::before,
+.guide-line-mode .reveal section.layout-cover .cover-body::before,
+.guide-line-mode .reveal section.layout-cover .cover-instructor::before,
+.guide-line-mode .reveal section.layout-cover .cover-meta::before,
+.guide-line-mode .reveal section.layout-cover .cover-qr::before,
+.guide-line-mode .reveal section.layout-_toc .toc-page-header::before,
+.guide-line-mode .reveal section.layout-_toc .toc-markmap::before,
+.guide-line-mode .reveal section.layout-_toc .toc-body::before,
+.guide-line-mode .reveal section.layout-_toc .toc-cards::before,
+.guide-line-mode .layout-_agenda::before,
+.guide-line-mode .layout-_agenda .toc-page-header::before,
+.guide-line-mode .layout-_agenda .toc-page-title::before,
+.guide-line-mode .layout-_agenda .toc-page-downloads::before,
+.guide-line-mode .layout-_agenda .toc-markmap::before {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: 14px;
+  font-family: 'Nanum Gothic Coding', 'Menlo', monospace;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  pointer-events: none;
+  z-index: 9999;
+  line-height: 1.3;
+}
+
+/* 슬롯별 라벨 텍스트 + 색상 (해당 슬롯 dashed 색과 통일) */
+.guide-line-mode .reveal section.layout-cover .cover-header::before { content: "cover-header"; color: rgba(200, 130, 0, 1); }
+.guide-line-mode .reveal section.layout-cover .cover-subtitle::before { content: "cover-subtitle"; color: rgba(0, 160, 160, 1); }
+.guide-line-mode .reveal section.layout-cover .cover-part-subtitle::before { content: "cover-part-subtitle"; color: rgba(120, 60, 0, 1); }
+.guide-line-mode .reveal section.layout-cover .cover-body::before { content: "cover-body"; color: rgba(128, 0, 128, 1); }
+.guide-line-mode .reveal section.layout-cover .cover-instructor::before { content: "cover-instructor"; color: rgba(0, 110, 110, 1); }
+.guide-line-mode .reveal section.layout-cover .cover-meta::before { content: "cover-meta"; color: rgba(200, 0, 200, 1); }
+.guide-line-mode .reveal section.layout-cover .cover-qr::before { content: "cover-qr"; color: rgba(180, 130, 20, 1); }
+
+.guide-line-mode .reveal section.layout-_toc .toc-page-header::before { content: "toc-page-header"; color: rgba(200, 130, 0, 1); }
+.guide-line-mode .reveal section.layout-_toc .toc-markmap::before { content: "toc-markmap"; color: rgba(128, 0, 128, 1); }
+.guide-line-mode .reveal section.layout-_toc .toc-body::before { content: "toc-body"; color: rgba(0, 160, 160, 1); }
+.guide-line-mode .reveal section.layout-_toc .toc-cards::before { content: "toc-cards"; color: rgba(200, 0, 200, 1); }
+
+.guide-line-mode .layout-_agenda::before { content: "layout-_agenda"; color: rgba(200, 0, 200, 1); }
+.guide-line-mode .layout-_agenda .toc-page-header::before { content: "toc-page-header"; color: rgba(200, 130, 0, 1); }
+.guide-line-mode .layout-_agenda .toc-page-title::before { content: "toc-page-title"; color: rgba(0, 160, 0, 1); }
+.guide-line-mode .layout-_agenda .toc-page-downloads::before { content: "toc-page-downloads"; color: rgba(0, 110, 110, 1); }
+.guide-line-mode .layout-_agenda .toc-markmap::before { content: "toc-markmap"; color: rgba(128, 0, 128, 1); }
+
+/* 8.5 Generic Slot Labels — 모든 layout-* 슬롯 + plain section .title/.theContents 자동 라벨링
+   - attr(class)로 슬롯 클래스명을 그대로 라벨로 표시
+   - :where()로 specificity 0 부여 → 위 8.1~8.4 specific 규칙(0,4,1)이 자연 우선 적용
+   - 따라서 cover/_toc/_agenda는 기존 색·라벨 유지, 그 외 layout-*(contents/blank/chapter/...)는
+     본 fallback 규칙으로 자동 라벨링 */
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-header"],
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-title"],
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-divider"],
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-body"],
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-row"],
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-left"],
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-right"],
+:where(.guide-line-mode .reveal .slides section) > .theContents,
+:where(.guide-line-mode .reveal .slides section) > .title {
+  position: relative !important;
+  border: 2px dashed rgba(140, 90, 200, 0.55) !important;
+  background-color: rgba(140, 90, 200, 0.04) !important;
+}
+
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-header"]::before,
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-title"]::before,
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-divider"]::before,
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-body"]::before,
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-row"]::before,
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-left"]::before,
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-right"]::before,
+:where(.guide-line-mode .reveal .slides section) > .theContents::before,
+:where(.guide-line-mode .reveal .slides section) > .title::before {
+  content: attr(class);
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: 14px;
+  font-family: 'Nanum Gothic Coding', 'Menlo', monospace;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  color: rgba(140, 90, 200, 1);
+  pointer-events: none;
+  z-index: 9999;
+  line-height: 1.3;
 }

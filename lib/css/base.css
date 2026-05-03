@@ -246,13 +246,14 @@
   padding-left: 1.5em;
 }
 
-/* Nested lists */
+/* Nested lists
+   Issue72: !important 제거 — layout-* 셀렉터(higher specificity)가 자연 override */
 .reveal ul ul,
 .reveal ul ol,
 .reveal ol ul,
 .reveal ol ol {
   display: block;
-  margin-left: 1.5em !important;
+  margin-left: 1.5em;
   margin-top: 0.2em;
   font-size: 90%;
 }
@@ -1082,9 +1083,10 @@
   font-size: 0.9em;
 }
 
-/* 들여쓰기 누적 */
+/* 들여쓰기 누적
+   Issue72: !important 제거 — 본 셀렉터 specificity (0,1,1,2)가 base nested list (0,0,1,2)보다 높아 자연 우선 */
 .reveal section[class*="layout-"] ul ul {
-  margin-left: 1.2em !important;
+  margin-left: 1.2em;
   font-size: 100%; /* 글로벌의 90% 축소 무시 — 가독성 우선 */
 }
 
