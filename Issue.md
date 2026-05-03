@@ -1,14 +1,10 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 70
+* Issue HWM: 71
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
-    - Issue70 (2026-05-03, fa43351)
-    - Issue66 (2026-05-03, bffd865)
-    - Issue69 (2026-05-03, 84a2fbe)
-    - Issue68 (2026-05-03, 0cec27f)
-
+    
 # 🤔 결정사항
 ## img 폴더 이중 복사 유지 (소스 `img/` + 빌드 `slide/img/`)
 * 결정: 현행 `fs.cpSync` 방식 유지
@@ -17,7 +13,7 @@
 # 🌱 이슈후보
 1. css에 "!important"가 너무 과도하게 쓰이고 있음. css.md파일 참고해서 최적화가 필요한 부분 최적화해줘. (안정성과 수동용이성 및 slide.css 최소화가 목적임.)
 
-# 🔥 진행 중
+# 🔥 진행중
 
 
 # 📕 중요
@@ -30,6 +26,27 @@
 # ✅ 완료
 
 > v0.5.0 (2026-05-03) 시점 71건 아카이브 → [`z_old/old_issue.md`](z_old/old_issue.md)
+
+## Issue71. ↑ 키 H1 section anchor 단위 이동 + Home 키 도입 (등록: 2026-05-03, 해결: 2026-05-03, commit: d54eab7) ✅
+* 목적: `_doc_design/key_navigation.md` v1에서 후속 검토로 분리되었던 "본문 → H1 section anchor → Agenda" 4단계 페이지 계층(Single)·5단계(Chapter) 구현. 동시에 Home 키를 도입해 어디서든 1키로 Agenda 진입 가능하게 함
+* plan: (단순/중간 — plan 파일 미생성, 본 이슈 본문 명세로 충분)
+* 상세:
+    - 현재 동작: Single 본문에서 ↑ → 즉시 `agenda.html` 직행. H1 section 슬라이드(layout-_toc.autoToc)를 거치지 않음
+    - 사용자 보고: `m2SlideStyle1_single/slide/index.html#/13` ("이미지" H1 children) 위치에서 ↑ → `#/12` H1 section으로 가야 자연스러운데 agenda로 감
+    - 마크다운 파서(`lib/slide-parser.js:243-269`)는 이미 H1 children이 있는 슬라이드를 `layout: '_toc'` + `autoToc: true`로 자동 분류 중. 따라서 별도 H1 식별 로직 불필요 — layout 클래스만 활용
+    - chapter mode `#/toc-placeholder` 슬라이드와 구분: id가 `toc-placeholder`면 chapter 시작 TOC, 그 외 `layout-_toc`면 H1 section anchor
+* 구현 명세:
+    - `_doc_design/key_navigation.md` 매트릭스 갱신 (K4 v1을 H1 anchor 단위로 승격, Chapter 모드도 본문→H1→TOC 단계 추가, Home 키 행 추가)
+    - `lib/html-builder.js` deck `keydown` 핸들러:
+        - 본문 슬라이드(layout-_toc 아님)에서 ↑ 시 같은 deck 내 자기보다 앞쪽의 가장 가까운 `layout-_toc`(toc-placeholder 제외) 인덱스 찾아 `Reveal.slide(idx, 0)` — 없으면 기존 폴백(Single agenda / Chapter toc-placeholder / agenda)
+        - autoToc 슬라이드(layout-_toc + id≠toc-placeholder)에서 ↑ 시 Single → agenda.html, Chapter → 같은 deck `#/toc-placeholder`(있으면) → 없으면 agenda
+        - Home 키(keyCode 36) → 항상 `agenda.html`로 이동 (cover/agenda 자체에서는 동작 없음 또는 reload 방지)
+    - `lib/html-builder.js` agenda standalone 핸들러: Home 키는 자기 페이지이므로 무시
+    - `lib/html-builder.js` cover 핸들러: Home 키 → agenda.html
+* 검증:
+    - `Projects/m2SlideStyle1_single` 빌드 → `index.html#/13`에서 ↑ → `#/12`(또는 직전 H1 anchor) 이동 확인
+    - `Projects/m2SlideStyle2_chapter` 빌드 → 본문에서 ↑ → 같은 deck H1 anchor → 다시 ↑ → `#/toc-placeholder` 이동 확인
+    - 모든 페이지에서 Home 키 → `agenda.html` 진입
 
 # ⏸️ 보류
 
