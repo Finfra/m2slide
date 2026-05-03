@@ -3,6 +3,7 @@
 * Issue HWM: 70
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
+    - Issue70 (2026-05-03, fa43351)
     - Issue66 (2026-05-03, bffd865)
     - Issue69 (2026-05-03, 84a2fbe)
     - Issue68 (2026-05-03, 0cec27f)
@@ -17,37 +18,6 @@
 
 # 🔥 진행 중
 
-## Issue70. 키 네비게이션 체계 정리 — Single ←·Chapter ↑·Chapter 챕터 간 ← (등록: 2026-05-03)
-* 목적: m2slide 키보드(swipe/drag 포함) 네비게이션을 페이지 계층 기반 단일 매트릭스로 정리하고, 사용자 보고 4건(Single ↑/←, Chapter ↑/←) 해결
-* design: `_doc_design/key_navigation.md`
-* plan: `_doc_work/plan/key_navigation_plan.md`
-* task: `_doc_work/tasks/key_navigation_task.md`
-* 카테고리: Frontend, Generator
-* 복잡도: 중간 (변경 파일 2개, ↑ 검증·prev chapter lookup 신규)
-* 선행 이슈: Issue51 (swipe/drag), Issue55 (3페이지 모델), Issue57 (Agenda/TOC ←)
-* 현상 (4건):
-    - **Single ↑**: 본문에서 ↑ → 무조건 Agenda. 본문 내 H1 계층 단계별 이동 미지원 (의도된 v1 동작이나 사용자 멘탈 모델과 격차 있음 — H1 anchor는 v2 후보로 분리)
-    - **Single ←**: 본문 첫 슬라이드(`index.html#/1`)에서 ← → Cover(`#/0`)로 이동. **Agenda로 가야 함** (→ 키 "마지막 슬라이드 → 다음 챕터" 의 대칭)
-    - **Chapter ↑**: ↑가 ←처럼 동작 (코드는 이미 같은 deck `#/toc-placeholder`로 이동하게 작성되어 있으나 실제 동작 안 함 — DevTools 진단 필요). Single 본문 → Agenda와 동일 멘탈 모델로 통일
-    - **Chapter 챕터 간 ←**: `02-code-syntax.html#/0`(TOC slide)에서 ← → 동작 없음. **이전 챕터(`01-text-layout.html`)의 마지막 슬라이드로 이동해야 함** (→의 대칭)
-* 통일 원칙:
-    - **↑** : 페이지 계층의 직속 부모 (Single 본문→Agenda, Chapter 본문→deck TOC slide, TOC→Agenda, Agenda→Cover)
-    - **←** : deck 내 이전 슬라이드. deck 첫 슬라이드(또는 single 본문 첫)면 "이전 챕터 마지막" 또는 "Agenda"로 fallback
-    - **→/↓** : 다음 슬라이드. 마지막이면 다음 챕터(기존 동작 유지). Cover에서는 Agenda 직행(D5/D6, Issue55)
-    - **⎋** : Reveal.js overview (1회). ⎋*2(2회 연속)는 썸네일 보기(as-is, Reveal 표준)
-* 구현 명세 (Phase 7단계):
-    - Phase 1: `lib/agenda.js`에 `getPrevChapter(fileName, agendaPath)` 신규 export (`getNextChapter` 미러링)
-    - Phase 2: `lib/html-builder.js` `generateHTML`에서 `prevChapter` 산출 + JS 컨텍스트 주입
-    - Phase 3: Chapter mode TOC slide ← 핸들러 — `prevChapter` 존재 시 `'${prevChapter}#/9999'` (Reveal hash clamp로 마지막 슬라이드), 없으면 `agenda.html`
-    - Phase 4: Single mode 본문 첫 슬라이드(`idx.h===1 && cover_enabled`) ← → `agenda.html` (Cover 우회). `M2SLIDE_COVER` JS 변수 신규 주입
-    - Phase 5: Chapter ↑ 동작 검증·수정 — DevTools에서 `Reveal.getIndices()`/`findTocSlideIndex()` 진단 후 원인별 fix (preventDefault 누락 / v 분기 / toc-placeholder 미생성)
-    - Phase 6: 9개 시나리오 브라우저 수동 검증 (`m2SlideStyle1_single` / `m2SlideStyle2_chapter` / `layoutTest`)
-    - Phase 7: `_doc_design/chapter-single-mode.md` cross-reference 추가, plan frontmatter `issue: TBD` → `issue: Issue70`
-* 위험 요소:
-    - Reveal.js 5.0.4의 hash `#/9999` clamp 동작 — 안 되면 `?last=1` + `Reveal.on('ready')` fallback
-    - swipe/drag (1156–1216 IIFE)는 synthetic dispatch이므로 자동 반영되나 회귀 검증 필수
-    - Cover override(D5/D6)와 Single ← 핸들러 동시 등록 — if-else 순서로 충돌 방지
-
 
 # 📕 중요
 
@@ -57,6 +27,39 @@
 
 
 # ✅ 완료
+
+## Issue70. 키 네비게이션 체계 정리 — Single ←·Chapter ↑·Chapter 챕터 간 ← (등록: 2026-05-03, 해결: 2026-05-03, commit: fa43351) ✅
+* 목적: m2slide 키보드(swipe/drag 포함) 네비게이션을 페이지 계층 기반 단일 매트릭스로 정리하고, 사용자 보고 4건(Single ↑/←, Chapter ↑/←) 해결
+* design: `_doc_design/key_navigation.md`
+* plan: `_doc_work/plan/key_navigation_plan.md`
+* task: `_doc_work/tasks/key_navigation_task.md`
+* 카테고리: Frontend, Generator
+* 복잡도: 중간 (변경 파일 2개, ↑ 검증·prev chapter lookup 신규)
+* 선행 이슈: Issue51 (swipe/drag), Issue55 (3페이지 모델), Issue57 (Agenda/TOC ←)
+* 현상 (4건):
+    - **Single ↑**: 본문에서 ↑ → 무조건 Agenda. 본문 내 H1 계층 단계별 이동 미지원 (의도된 v1 동작이나 사용자 멘탈 모델과 격차 있음 — H1 anchor는 v2 후보로 분리)
+    - **Single ←**: 본문 첫 슬라이드(`index.html#/1`)에서 ← → Cover(`#/0`)로 이동. **Agenda로 가야 함**
+    - **Chapter ↑**: ↑가 ←처럼 동작. Single 본문 → Agenda와 동일 멘탈 모델로 통일
+    - **Chapter 챕터 간 ←**: TOC slide(또는 chapter `#/0`)에서 ← → 이전 챕터의 마지막 슬라이드로 이동
+* 통일 원칙:
+    - **↑** : 페이지 계층의 직속 부모 (Single 본문→Agenda, Chapter 본문→deck TOC slide, TOC→Agenda, Agenda→Cover)
+    - **←** : deck 내 이전 슬라이드. deck 첫 슬라이드(또는 single 본문 첫)면 "이전 챕터 마지막" 또는 "Agenda"로 fallback
+    - **→/↓** : 다음 슬라이드. 마지막이면 다음 챕터(기존 동작 유지). Cover에서는 Agenda 직행(D5/D6, Issue55)
+    - **⎋** : Reveal.js overview (1회). ⎋*2(2회 연속)는 썸네일 보기(as-is, Reveal 표준)
+* 구현 결과 (Phase 0-7):
+    - Phase 0: Reveal.js 5.x hash clamp 의존성 회피 → `?last=1` query 방식 채택
+    - Phase 1: `lib/agenda.js`에 `_getAdjacentChapter` 헬퍼 + `getPrevChapter`/`getNextChapter` wrapper (DRY)
+    - Phase 2: `lib/html-builder.js`에 `PREV_CHAPTER` JS 변수 빌드 시점 주입
+    - Phase 3: Chapter mode TOC slide(또는 `atChapterDeckStart`) ← → `PREV_CHAPTER + '?last=1'` 또는 `agenda.html`
+    - Phase 4: Single mode + cover_enabled + `idx.h===1` ← → `agenda.html` (Cover 우회). `M2SLIDE_COVER` 변수 신규
+    - Phase 5: 근본 원인 — m2SlideStyle2_chapter `AGENDA.md`가 H2 subsection 없음 → `getSubsections()=[]` → toc-placeholder 미생성 → `findTocSlideIndex()=-1` → 핸들러 silent fail. **Fix**: chapter mode + tocIdx===-1 시 `agenda.html` graceful fallback
+    - Phase 6: 3개 프로젝트 빌드 + HTML 변수 주입 검증 통과 (브라우저 12 시나리오는 후속 사용자 검증)
+    - Phase 7: `_doc_design/chapter-single-mode.md` cross-reference 추가
+* 변경 파일:
+    - `lib/agenda.js`: `getPrevChapter` + `_getAdjacentChapter` 추가
+    - `lib/html-builder.js`: `PREV_CHAPTER`/`M2SLIDE_COVER` 주입, `Reveal.on('ready')` `?last=1` 핸들러, ↑/← graceful fallback
+    - `_doc_design/key_navigation.md` (신규 SSOT, gitignored)
+    - `_doc_design/chapter-single-mode.md` (cross-reference, gitignored)
 
 ## Issue66. cover 페이지 Reveal.initialize 하드코딩으로 slide_ratio 무효화 (등록: 2026-05-03, 해결: 2026-05-03, commit: bffd865) ✅
 * 목적: chapter 모드 진입 페이지(`index.html`, cover_enabled=true)에서 `slide_ratio` 설정이 사실상 무시되고 항상 `fill`처럼 동작하는 버그 수정
