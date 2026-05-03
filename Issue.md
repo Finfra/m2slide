@@ -1,7 +1,7 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 67
-* 최근 종결: Issue65 (2026-05-03, 9c83d87)
+* Issue HWM: 68
+* 최근 종결: Issue68 (2026-05-03, 0cec27f)
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
     * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
@@ -10,6 +10,10 @@
     * 등록 후 `gh issue close {IssueNum}`으로 닫기 (완료된 경우)
 
 # 🤔 결정사항
+## img 폴더 이중 복사 유지 (소스 `img/` + 빌드 `slide/img/`)
+* 결정: 현행 `fs.cpSync` 방식 유지
+* 이유: `slide/` 폴더를 통째로 삭제 후 재생성하는 빌드 패턴이 잦음
+
 ## chapter-single mode 맞추기
 | 페이지      | slide위치                  | theme의 layout위치 | 작업 |
 | ----------- | -------------------------- | ------------------ | ---- |
@@ -82,6 +86,36 @@
 
 
 # ✅ 완료
+
+## Issue68. single-page mode PDF 미생성 + 프로젝트 루트 stale EPUB 누적 (등록: 2026-05-03, 해결: 2026-05-03, commit: 0cec27f) ✅
+* 목적: `./m2slide.sh --pdf --epub` 실행 시 single-page mode 프로젝트(`m2SlideStyle1_single`)에서 PDF가 한 번도 생성되지 않고 agenda.html 다운로드 영역에 PDF 버튼이 누락되는 버그 수정. 부수적으로 프로젝트 루트에 stale EPUB이 누적되는 현상도 정리
+* 카테고리: Build
+* 복잡도: 단순 (변경 파일 1개, m2slide.sh)
+* 현상:
+    - `./m2slide.sh --pdf --epub m2SlideStyle1_single` 실행 시 `slide/{ProjectName}.pdf` 미생성
+    - agenda.html 헤더 다운로드 영역에 EPUB 버튼만 표시 (PDF 버튼 누락)
+    - decktape 출력에 `Unable to activate the Reveal JS DeckTape plugin for ... agenda.html` 에러 + `No chapter PDFs found to combine` 경고
+    - 별건: `Projects/m2SlideStyle2_chapter/m2SlideStyle.epub` 같은 옛 파일명 규칙 orphan EPUB이 프로젝트 루트에 잔존
+* 원인 분석:
+    - **A. PDF 루프의 모드 가정 오류** (`m2slide.sh` PDF 섹션):
+        - chapter mode 전제로 `index.html`을 무조건 스킵 (Markmap 인덱스 가정)
+        - 그러나 single-page mode에서는 `index.html`이 **실제 슬라이드 덱**, `agenda.html`이 Markmap 랜딩 — 매핑이 정반대
+        - 결과: single mode에서 처리 대상이 `agenda.html`뿐 → decktape이 비-덱 페이지에 reveal plugin 적용 실패 → PDF 0개 → combine 단계 noop
+    - **B. 프로젝트 루트의 stale 다운로드 산출물**:
+        - `lib/generate-epub.js`가 `PROJECT_DIR/{ProjectName}.epub`에 일단 쓰고 m2slide.sh가 `slide/`로 mv하는 2단계 흐름
+        - 과거 파일명 도출 규칙(`path.basename(projectDir)` 변경 등)에 따라 mv되지 않은 orphan이 PROJECT_DIR 루트에 영구 잔존
+* 구현 명세:
+    - `m2slide.sh` 빌드 초기 단계: PROJECT_DIR 루트의 `*.epub`/`*.pdf`/`*.pptx`를 `find -maxdepth 1 -delete`로 정리 (이 산출물은 항상 `slide/`에만 존재해야 함)
+    - `m2slide.sh` PDF 루프:
+        - `agenda.html`은 두 모드 모두 Markmap 랜딩이므로 무조건 스킵
+        - `INPUT_DIR == PROJECT_DIR`을 single-page mode 신호로 사용 (markdown/ 부재)
+        - chapter mode에서는 기존대로 `index.html` 스킵, single mode에서는 `index.html` 처리
+* 검증 결과 (2026-05-03 빌드):
+    - `m2SlideStyle1_single` (single mode): `slide/m2SlideStyle1_single.pdf` (3.2M, 33 슬라이드 결합) 생성, agenda.html에 EPUB+PDF 양쪽 버튼 출력, PROJECT_DIR 루트 EPUB/PDF 0건
+    - `m2SlideStyle2_chapter` (chapter mode): 7개 챕터 PDF + 결합 PDF 정상 생성, agenda.html EPUB+PDF 버튼 정상, decktape의 agenda.html 실패 메시지 사라짐 (cosmetic 회귀 정상화), orphan `m2SlideStyle.epub` 자동 정리
+* 회귀 영향:
+    - 두 모드 모두 산출물·버튼 둘 다 정상 동작
+    - 사용자가 PROJECT_DIR 루트에 직접 둔 `*.epub`/`*.pdf`/`*.pptx` 파일은 삭제됨 (이 위치는 빌드 산출물 임시 영역으로만 사용되므로 사용자 자료 두지 않는 것이 약속된 위치)
 
 ## Issue67. cover layout 빈 메타 변수 → 빈 박스/래퍼 잔존 (등록: 2026-05-03, 해결: 2026-05-03, commit: b3a486e) ✅
 * 목적: `_meta.yml`에 `version`/`lecture_date`/`qr_code_path`/`qr_url`/`subtitle` 등 일부 메타가 미정의일 때 cover 슬라이드에 빈 span/div와 broken `<img src="">`이 그대로 남아 시각적 빈 박스 흔적을 남기는 버그 제거
