@@ -72,7 +72,7 @@
     - `slide_ratio: fill` 프로젝트: 변화 없음
     - `"16:9"`/`"3:2"` 프로젝트의 cover 페이지: viewport 채움 → 비율 박스로 변경 (이것이 원래 의도였으므로 시각 회귀가 곧 정상화)
 
-## Issue69. agenda.html이 _config.yml의 slide_ratio를 적용하지 않음 (등록: 2026-05-03, 해결: 2026-05-03, commit: 84a2fbe) ✅
+## Issue69. agenda.html이 _config.yml의 slide_ratio를 적용하지 않음 (등록: 2026-05-03, 해결: 2026-05-03, commit: 84a2fbe, 357de16) ✅
 * 목적: agenda.html(chapter 모드 진입 직후 페이지 / single 모드 standalone agenda)이 `slide_ratio` 설정을 무시하고 항상 viewport 100%로 렌더링되는 버그 수정
 * 카테고리: Generator
 * 복잡도: 단순 (변경 파일 2개, 수정 자명)
@@ -155,7 +155,7 @@
 * 회귀 영향:
     - cover layout만 시각 변화. 다른 layout(`_toc`, `_agenda`, `_blank` 등)은 같은 후처리 통과하지만 빈 wrapper 패턴 자체가 거의 발생하지 않음
 
-## Issue65. slide_ratio: none 값 제거 — 유효값 단일화 (16:9 / 3:2 / fill) (등록: 2026-05-03, 해결: 2026-05-03, commit: 9c83d87) ✅
+## Issue65. slide_ratio: none 값 제거 — 유효값 단일화 (16:9 / 3:2 / fill) (등록: 2026-05-03, 해결: 2026-05-03, commit: 9c83d87, 201eeba) ✅
 * 목적: Issue63 이후 `none`이 `16:9`의 단순 alias로 전락. 유효값을 명확히 하기 위해 `none` 제거 + 기본값을 `16:9`로 명시. `fill`은 비율 무제약(viewport 채움) 단독 의미 유지.
 * plan: `_doc_work/plan/slide_ratio_none_removal_plan.md`
 * 카테고리: Build / Generator
@@ -221,7 +221,7 @@
 * 회귀 영향: 기존 `slide_ratio: none` 프로젝트는 16:9 비율 박스로 표시됨 (의도된 동작 — Issue63 본질 요구). 비율 무제약이 필요하면 `slide_ratio: fill` 명시.
 * 후속 이슈 후보: contents-body·contents-header height 분리 명시 시스템 / outer padding 색상·배경 control / `auto-fit-content` 모드 (콘텐츠 기반 비율 자동 결정)
 
-## Issue64. lib/css/base.css 도입 — _config.yml + slide.css 슬림화 (KISS·DRY) (등록: 2026-05-02, 해결: 2026-05-03, commit: 7a10b81) ✅
+## Issue64. lib/css/base.css 도입 — _config.yml + slide.css 슬림화 (KISS·DRY) (등록: 2026-05-02, 해결: 2026-05-03, commit: 7a10b81, 028284e) ✅
 * 목적: 두 테마(`default`/`nowage`) `slide.css`가 1422줄 100% 동일한 상태를 해소. 공통 CSS를 `lib/css/base.css`로 추출하여 `_config.yml` style 섹션 + `slide.css`를 슬림화하고 KISS·DRY 원칙 회복.
 * plan: `_doc_work/plan/css_refactoring_plan.md`
 * task: `_doc_work/tasks/css_refactoring_task.md`
@@ -416,7 +416,7 @@
     - footer 표시 (`version`, `lecture_date`) — 후속 이슈 후보
     - Issue50 Orientation 슬라이드 (cover → Orientation → TOC 순서 정책)
 
-## Issue48. meta.yml 운영 — 프로젝트 메타데이터 분리 SSOT (등록: 2026-05-02, 해결: 2026-05-02, commit: 0a2f75a) ✅
+## Issue48. meta.yml 운영 — 프로젝트 메타데이터 분리 SSOT (등록: 2026-05-02, 해결: 2026-05-02, commit: 0a2f75a, c36e7d9) ✅
 * 목적: 프로젝트별 운영 메타데이터(instructor, version, lecture_date, gdrive, qr 등)를 별도 `meta.yml`로 분리하여 `_config.yml`(렌더링 설정)과 책임 명확화
 * 카테고리: Build (config 시스템)
 * 복잡도: 중간
