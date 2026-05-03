@@ -473,7 +473,6 @@
   width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
-  background: #f9f9fb;
 }
 
 /* toc-markmap이 남은 세로 공간을 채우도록 flex-grow 적용 (theContents 패턴).

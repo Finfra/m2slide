@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Examples for MarkdownGraph — Agenda</title>
+<link rel="stylesheet" href="css/custom.css?v=1777725205740">
+<style>
+/* agenda.html 전용 최소 보정 — 슬라이드가 아니라 문서이므로 reveal.js 컨텍스트 없음 */
+html, body { margin: 0; padding: 0; width: 100%; height: 100%; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; }
+.layout-_toc { padding: 24px; box-sizing: border-box; }
+.toc-mindmap-svg { width: 100%; height: calc(100vh - 200px); display: block; }
+.toc-markmap { padding: 12px 0; }
+</style>
+</head>
+<body>
+<div class="layout-_agenda">
+  <header class="toc-page-header">
+    <h1 class="toc-page-title">Examples for MarkdownGraph</h1>
+    <div class="toc-page-downloads"></div>
+  </header>
+  <div class="toc-markmap">
+    <svg class="toc-mindmap-svg"></svg>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
+<script>
+(function(){
+  const tocData = {"content":"","children":[{"content":"<a href=\"index.html#/0\">Text Samples</a>","children":[{"content":"<a href=\"index.html#/1\">짧은글 ABC abc</a>","children":[]},{"content":"<a href=\"index.html#/2\">긴글</a>","children":[]}]},{"content":"<a href=\"index.html#/3\">Mermaid Samples</a>","children":[{"content":"<a href=\"index.html#/4\">Paragraph and Diagram</a>","children":[]},{"content":"<a href=\"index.html#/5\">Flowchart</a>","children":[]},{"content":"<a href=\"index.html#/6\">Class</a>","children":[]},{"content":"<a href=\"index.html#/7\">Sequence</a>","children":[]},{"content":"<a href=\"index.html#/8\">Entity Relationship</a>","children":[]},{"content":"<a href=\"index.html#/9\">State</a>","children":[]},{"content":"<a href=\"index.html#/10\">Mindmap</a>","children":[]},{"content":"<a href=\"index.html#/11\">Architecture</a>","children":[]},{"content":"<a href=\"index.html#/12\">Block</a>","children":[]},{"content":"<a href=\"index.html#/13\">C4</a>","children":[]},{"content":"<a href=\"index.html#/14\">Gantt</a>","children":[]},{"content":"<a href=\"index.html#/15\">Git</a>","children":[]},{"content":"<a href=\"index.html#/16\">Kanban</a>","children":[]},{"content":"<a href=\"index.html#/17\">Packet</a>","children":[]},{"content":"<a href=\"index.html#/18\">Pie</a>","children":[]},{"content":"<a href=\"index.html#/19\">Quadrant</a>","children":[]},{"content":"<a href=\"index.html#/20\">Radar</a>","children":[]},{"content":"<a href=\"index.html#/21\">Requirement</a>","children":[]},{"content":"<a href=\"index.html#/22\">Sankey</a>","children":[]},{"content":"<a href=\"index.html#/23\">StateDiagram </a>","children":[]},{"content":"<a href=\"index.html#/24\">Timeline</a>","children":[]},{"content":"<a href=\"index.html#/25\">Timeline (계속)</a>","children":[]},{"content":"<a href=\"index.html#/26\">Treemap</a>","children":[]},{"content":"<a href=\"index.html#/27\">User Journey</a>","children":[]},{"content":"<a href=\"index.html#/28\">XY</a>","children":[]},{"content":"<a href=\"index.html#/29\">blockdiag</a>","children":[]},{"content":"<a href=\"index.html#/30\">seqdiag</a>","children":[]},{"content":"<a href=\"index.html#/31\">actdiag</a>","children":[]},{"content":"<a href=\"index.html#/32\">nwdiag</a>","children":[]},{"content":"<a href=\"index.html#/33\">`ditaa` (ASCII → 그림 변환)</a>","children":[]}]},{"content":"<a href=\"index.html#/34\">Graphviz (DOT)</a>","children":[]},{"content":"<a href=\"index.html#/35\">Vega</a>","children":[{"content":"<a href=\"index.html#/36\">Vega-lite</a>","children":[]},{"content":"<a href=\"index.html#/37\">Vega</a>","children":[]}]},{"content":"<a href=\"index.html#/38\">PlantUML</a>","children":[{"content":"<a href=\"index.html#/39\">Class Diagram</a>","children":[]},{"content":"<a href=\"index.html#/40\">Component Diagram</a>","children":[]},{"content":"<a href=\"index.html#/41\">Activity Diagram</a>","children":[]},{"content":"<a href=\"index.html#/42\">Use Case Diagram</a>","children":[]}]},{"content":"<a href=\"index.html#/43\">try </a>","children":[{"content":"<a href=\"index.html#/44\">CodeBlock</a>","children":[]}]}]};
+  function init() {
+    if (!window.markmap) { return setTimeout(init, 50); }
+    const svg = document.querySelector('.toc-mindmap-svg');
+    if (!svg) return;
+    const opts = window.markmap.deriveOptions({ initialExpandLevel: 2 });
+    window.mm = window.markmap.Markmap.create(svg, opts, tocData);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+// Issue55 Phase 9: ↑ 키로 Cover Page(index.html)로, → / ↓ 키로 다음 페이지(첫 챕터 또는 deck 본문)로 이동
+(function(){
+  const _tocData = {"content":"","children":[{"content":"<a href=\"index.html#/0\">Text Samples</a>","children":[{"content":"<a href=\"index.html#/1\">짧은글 ABC abc</a>","children":[]},{"content":"<a href=\"index.html#/2\">긴글</a>","children":[]}]},{"content":"<a href=\"index.html#/3\">Mermaid Samples</a>","children":[{"content":"<a href=\"index.html#/4\">Paragraph and Diagram</a>","children":[]},{"content":"<a href=\"index.html#/5\">Flowchart</a>","children":[]},{"content":"<a href=\"index.html#/6\">Class</a>","children":[]},{"content":"<a href=\"index.html#/7\">Sequence</a>","children":[]},{"content":"<a href=\"index.html#/8\">Entity Relationship</a>","children":[]},{"content":"<a href=\"index.html#/9\">State</a>","children":[]},{"content":"<a href=\"index.html#/10\">Mindmap</a>","children":[]},{"content":"<a href=\"index.html#/11\">Architecture</a>","children":[]},{"content":"<a href=\"index.html#/12\">Block</a>","children":[]},{"content":"<a href=\"index.html#/13\">C4</a>","children":[]},{"content":"<a href=\"index.html#/14\">Gantt</a>","children":[]},{"content":"<a href=\"index.html#/15\">Git</a>","children":[]},{"content":"<a href=\"index.html#/16\">Kanban</a>","children":[]},{"content":"<a href=\"index.html#/17\">Packet</a>","children":[]},{"content":"<a href=\"index.html#/18\">Pie</a>","children":[]},{"content":"<a href=\"index.html#/19\">Quadrant</a>","children":[]},{"content":"<a href=\"index.html#/20\">Radar</a>","children":[]},{"content":"<a href=\"index.html#/21\">Requirement</a>","children":[]},{"content":"<a href=\"index.html#/22\">Sankey</a>","children":[]},{"content":"<a href=\"index.html#/23\">StateDiagram </a>","children":[]},{"content":"<a href=\"index.html#/24\">Timeline</a>","children":[]},{"content":"<a href=\"index.html#/25\">Timeline (계속)</a>","children":[]},{"content":"<a href=\"index.html#/26\">Treemap</a>","children":[]},{"content":"<a href=\"index.html#/27\">User Journey</a>","children":[]},{"content":"<a href=\"index.html#/28\">XY</a>","children":[]},{"content":"<a href=\"index.html#/29\">blockdiag</a>","children":[]},{"content":"<a href=\"index.html#/30\">seqdiag</a>","children":[]},{"content":"<a href=\"index.html#/31\">actdiag</a>","children":[]},{"content":"<a href=\"index.html#/32\">nwdiag</a>","children":[]},{"content":"<a href=\"index.html#/33\">`ditaa` (ASCII → 그림 변환)</a>","children":[]}]},{"content":"<a href=\"index.html#/34\">Graphviz (DOT)</a>","children":[]},{"content":"<a href=\"index.html#/35\">Vega</a>","children":[{"content":"<a href=\"index.html#/36\">Vega-lite</a>","children":[]},{"content":"<a href=\"index.html#/37\">Vega</a>","children":[]}]},{"content":"<a href=\"index.html#/38\">PlantUML</a>","children":[{"content":"<a href=\"index.html#/39\">Class Diagram</a>","children":[]},{"content":"<a href=\"index.html#/40\">Component Diagram</a>","children":[]},{"content":"<a href=\"index.html#/41\">Activity Diagram</a>","children":[]},{"content":"<a href=\"index.html#/42\">Use Case Diagram</a>","children":[]}]},{"content":"<a href=\"index.html#/43\">try </a>","children":[{"content":"<a href=\"index.html#/44\">CodeBlock</a>","children":[]}]}]};
+  // tocData.children[0]의 content에서 첫 href를 추출 — chapter 모드면 첫 챕터 HTML, single 모드면 index.html#/N
+  function firstHrefFromToc(node){
+    if (!node || !node.children || node.children.length === 0) return null;
+    for (const child of node.children) {
+      if (child && child.content && typeof child.content === 'string') {
+        const m = child.content.match(/href="([^"]+)"/);
+        if (m) return m[1];
+      }
+      const nested = firstHrefFromToc(child);
+      if (nested) return nested;
+    }
+    return null;
+  }
+  const nextUrl = firstHrefFromToc(_tocData);
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowUp' || e.keyCode === 38 || e.key === 'ArrowLeft' || e.keyCode === 37) {
+      e.preventDefault();
+      // cover_enabled=false: agenda is top-level, no navigation
+    } else if (e.key === 'ArrowRight' || e.keyCode === 39 || e.key === 'ArrowDown' || e.keyCode === 40 || e.key === 'PageDown' || e.keyCode === 34 || e.key === ' ' || e.keyCode === 32) {
+      if (nextUrl) {
+        e.preventDefault();
+        window.location.href = nextUrl;
+      }
+    }
+  });
+})();
+</script>
+</body>
+</html>
