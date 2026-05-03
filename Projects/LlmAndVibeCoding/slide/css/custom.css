@@ -327,6 +327,11 @@
   display: block;
   min-height: 380px;
 }
+/* markmap fold/expand 인디케이터 원 크기 30% 축소 (기본 r=6 → 4.2) */
+.toc-markmap circle,
+.toc-mindmap-svg circle {
+  r: 4.2;
+}
 /* markmap 링크 밑줄 제거 (foreignObject 내 <a> 기본 브라우저 스타일 차단) */
 .toc-markmap a,
 .toc-mindmap-svg a,
