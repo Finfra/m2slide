@@ -78,6 +78,40 @@ CSS 수정 후 **반드시 확인**:
 
 문제 발생 시 즉시 원복하고 안전한 속성만 사용할 것!
 
+## 🛑 base.css 수정 가드 (필독)
+
+`lib/css/base.css`는 모든 theme·layout이 공유하는 **최하단 기반 스타일 SSOT**임. 변경 시 모든 프로젝트에 동시에 영향을 주므로 다음 룰을 엄격히 준수.
+
+### 필수 룰
+
+1. **수정 전 사용자 컨펌 필수**
+    - `lib/css/base.css` 수정 요청·필요 발생 시 **수정 전에 반드시 사용자에게 컨펌 받을 것**
+    - 컨펌 없이 즉시 수정 금지 (theme의 `slide.css` 또는 layout 단위 CSS로 우회 가능한지 먼저 검토)
+    - 컨펌 시 변경 사유·범위·대안 검토 결과를 함께 제시
+
+2. **최소 수정 원칙**
+    - base.css는 **최대한 수정하지 않음**
+    - 우선순위: theme의 `slide.css` > layout 단위 CSS > base.css
+    - 특정 theme/layout에서만 필요한 스타일은 절대 base.css에 추가 금지
+    - 진짜 모든 프로젝트 공통 기반 스타일에만 한정 (Reveal.js 핵심 레이아웃 보정 등)
+
+3. **수정 후 Project 테스트 필수**
+    - base.css 변경 후에는 반드시 다음 대표 프로젝트들을 빌드·확인:
+        - `Projects/m2SlideStyle1_single` (단일 페이지 기본)
+        - `Projects/m2SlideStyle2_chapter` (다중 챕터 + AGENDA.md)
+        - `Projects/layoutTest` (모든 layout 시각 검증)
+    - 빌드 명령: `./m2slide.sh {ProjectName}`
+    - "테스트 필수 항목"(위 섹션) 4가지 체크리스트도 함께 적용
+    - 회귀 발견 시 즉시 원복
+
+### 적용 트리거
+
+* 사용자가 `lib/css/base.css` 수정 요청
+* 다른 작업 중 base.css 수정 필요성 발견
+* Issue·plan에 base.css 변경이 포함된 경우
+
+위 셋 중 하나라도 해당하면 본 룰 발동.
+
 ## 핵심 아키텍처
 
 ### 프로젝트 폴더 구조
@@ -353,10 +387,11 @@ open Projects/LlmAndVibeCoding/slide/01-opening.html
 - 독립적인 프레젠테이션으로 동작
 ## Claude Code 규칙 (`.claude/rules/`)
 
-| 규칙              | 설명                                                                     |
-| :---------------- | :----------------------------------------------------------------------- |
-| `issue-rules`     | m2slide 이슈 관리 규칙 (issue-g 기반)                                    |
-| `md-m2slide-rules`| m2slide 마크다운 작성 규칙. 글로벌 `md-slide-rules` 기반 + 고유 확장   |
+| 규칙                  | 설명                                                                       |
+| :-------------------- | :------------------------------------------------------------------------- |
+| `issue-rules`         | m2slide 이슈 관리 규칙 (issue-g 기반)                                      |
+| `md-m2slide-rules`    | m2slide 마크다운 작성 규칙. 글로벌 `md-slide-rules` 기반 + 고유 확장     |
+| `apply-verify-rules`  | 코드·템플릿·CSS·콘텐츠 수정 후 빌드 → HTML 직접 검증 → 브라우저 표시 절차 |
 
 **슬라이드 마크다운 작성 시 의무 참조 순서**:
 1. `~/.claude/rules/md-rules.md` (일반 마크다운 기본)
