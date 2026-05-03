@@ -28,7 +28,6 @@ chapter_markmap_depth: 3
 
 # 사용할 theme (theme/{name}/slide.css + layouts)
 theme: default
-slide_ratio: none # 3:2 # 16:9 # none
 # Open Props 사용 여부 (true: CDN 로드, false: 기본값 사용)
 use_open_props: true
 
