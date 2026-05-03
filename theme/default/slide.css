@@ -123,7 +123,9 @@
   background-repeat: no-repeat;
   background-position: 6% 14%;
   background-size: 18% auto;
-  min-height: 100vh !important;
+  /* Issue63: 100vh → 100% (parent .slides 기준 = ratio 모드 1080px 논리 높이 / fill 모드 viewport).
+     vh 기반은 transform scale 비율 fit과 충돌. */
+  min-height: 100% !important;
 }
 
 .reveal section.layout-cover .cover-header {
@@ -397,6 +399,12 @@
   font-size: 0.6em;
   opacity: 0.7;
   margin-top: 0.2em;
+}
+/* Issue67: layout.js의 빈 wrapper strip 후 잔존 가능성 보호 — 미정의 메타로 비워진 컨테이너 숨김 */
+.reveal section.layout-cover .cover-qr:empty,
+.reveal section.layout-cover .cover-meta:empty,
+.reveal section.layout-cover .cover-body:empty {
+  display: none;
 }
 
 /* =========================================================================
