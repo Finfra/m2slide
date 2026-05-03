@@ -27,6 +27,7 @@
 * 목적: m2slide 키보드(swipe/drag 포함) 네비게이션을 페이지 계층 기반 단일 매트릭스로 정리하고, 사용자 보고 4건(Single ↑/←, Chapter ↑/←) 해결
 * design: `_doc_design/key_navigation.md`
 * plan: `_doc_work/plan/key_navigation_plan.md`
+* task: `_doc_work/tasks/key_navigation_task.md`
 * 카테고리: Frontend, Generator
 * 복잡도: 중간 (변경 파일 2개, ↑ 검증·prev chapter lookup 신규)
 * 선행 이슈: Issue51 (swipe/drag), Issue55 (3페이지 모델), Issue57 (Agenda/TOC ←)
