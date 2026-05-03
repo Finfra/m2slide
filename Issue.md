@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 65
+* Issue HWM: 67
 * 최근 종결: Issue65 (2026-05-03, 9c83d87)
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * **GitHub Issue 등록 규칙**:
@@ -22,6 +22,56 @@
 
 # 🔥 진행 중
 
+## Issue66. cover 페이지 Reveal.initialize 하드코딩으로 slide_ratio 무효화 (등록: 2026-05-03)
+* 목적: chapter 모드 진입 페이지(`index.html`, cover_enabled=true)에서 `slide_ratio` 설정이 사실상 무시되고 항상 `fill`처럼 동작하는 버그 수정
+* 카테고리: Generator
+* 복잡도: 단순 (변경 파일 1개, 수정 자명)
+* 선행 이슈: Issue63 (slide_ratio 체계), Issue65 (값 단일화)
+* 현상:
+    - chapter 모드 + `cover_enabled: true`인 프로젝트(예: `m2SlideStyle2_chapter`)에서 첫 화면(`index.html`)이 viewport 전체를 채움
+    - `slide_ratio: "3:2"`/`"16:9"` 어느 값으로 설정해도 cover 페이지는 동일하게 fill로 표시
+    - 챕터 본문(`01-*.html` 등)은 정상적으로 ratio fit 동작 → 사용자 시점에서 "chapter 모드 전체가 fill"로 인식됨
+* 원인 분석 (2026-05-03 직접 HTML 비교 검증):
+    - `lib/html-builder.js`에 두 개의 HTML 생성 함수 존재
+        - `generateHTML` (챕터 본문 + single 모드 index): [lib/html-builder.js:425-441](../../lib/html-builder.js#L425-L441)에서 `revealWidth`/`revealHeight`를 `slideRatio`별로 분기 → [:635-636](../../lib/html-builder.js#L635-L636)에서 `Reveal.initialize`에 전달
+        - `generateCoverHTML` (chapter 모드 cover): [:1300-1303](../../lib/html-builder.js#L1300-L1303)에서 `ratioClass`만 계산하고 DOM 클래스로 부여. **`Reveal.initialize` 호출 [:1366](../../lib/html-builder.js#L1366)에서 하드코딩**
+    - 하드코딩 라인 (한 줄):
+      ```js
+      Reveal.initialize({ controls: false, progress: false, slideNumber: false, hash: false, center: true, transition: 'none', touch: false, width: '100%', height: '100%', margin: 0.0 });
+      ```
+    - 인라인 CSS 변수(`--slide-ratio`)와 DOM ratio class(`ratio-16-9` 등)는 cfg 따라 정상 출력됨을 직접 확인 → 원인은 **Reveal.initialize 옵션 하드코딩 단 1곳**
+    - 추가 충돌 옵션: `center: true`도 하드코딩 — `generateHTML`은 [:641](../../lib/html-builder.js#L641)에서 "ratio 모드에서는 항상 false (vertical centering이 ratio fit과 충돌하는 이슈 회피)" 정책. cover도 동일 정책 적용해야 일관성 유지
+* 영향 범위 (2026-05-03 경로 분기 확인):
+    - **chapter 모드 + `cover_enabled: true`만 영향**: `index.html`이 `generateCoverHTML` 별도 함수로 생성됨 ([lib/generate-slides.js:213](../../lib/generate-slides.js#L213) → [lib/html-builder.js:1263](../../lib/html-builder.js#L1263)) — 1366 하드코딩 적용
+    - **single 모드 + `cover_enabled: true`는 정상**: cover 슬라이드가 `generateHTML` 경로의 `#/0`에 주입됨 ([lib/html-builder.js:365-366](../../lib/html-builder.js#L365-L366)) — 425-441 ratio 분기 정상 동작
+    - 사용자 시각 검증(2026-05-03 캡처): `m2SlideStyle1_single` 정상 박스 fit / `m2SlideStyle2_chapter` cover가 viewport 전체 채움(빨간 outline) + 콘텐츠는 좌측 상단으로 몰림
+    - `slide_ratio: fill` 사용 프로젝트는 의도대로 동작하므로 시각 변화 없음
+* 정답 reference (2026-05-03 사용자 캡처 확정):
+    - **single 모드 cover layout = 정답 형태** — chapter 모드 cover도 동일 시각이 나오도록 fix
+    - 정답 형태 특징: 빨간 outline 박스가 ratio 비율로 fit되고 viewport 중앙 배치, cover 콘텐츠(타이틀·강사·버전 박스)가 박스 내부에 정상 배치
+    - 현재 chapter 모드 증상: 빨간 outline이 viewport 전체로 확장, 콘텐츠는 fixed 좌표계 기준으로 좌상단에 몰림, 버전 박스 우측 둥둥
+    - 시각 차이 원인은 `Reveal.initialize` 옵션 단 1줄 (1366) — 단일 hot fix 지점 확정
+* 정책 결정 (2026-05-03 확정):
+    - **Single 모드 영향 최소화**: 현재 single 모드는 정상 작동(`generateHTML` 경로 사용)이므로 fix 작업 시 `generateHTML` 쪽 로직은 그대로 유지. 변경은 `generateCoverHTML` 내부에 한정
+    - **공통 헬퍼 추출**: `resolveRevealDimensions(slideRatio) → { width, height, ratioClass }` 헬퍼를 정의하여 `generateHTML`·`generateCoverHTML` 두 함수가 공유 (DRY). `generateHTML`은 동작 동일성 회귀 검증으로 보호
+* 구현 명세:
+    - `lib/html-builder.js`에 `resolveRevealDimensions(slideRatio)` 공통 헬퍼 추가 (현재 `generateHTML` 425-441 분기 로직을 그대로 추출)
+    - `generateHTML`: 기존 분기 블록을 헬퍼 호출로 교체 (동작 동일성 보장)
+    - `generateCoverHTML` 1366 라인:
+        - 하드코딩 `width: '100%', height: '100%'` 제거 → 헬퍼 결과로 교체
+        - 하드코딩 `center: true` 제거 → `generateHTML` 정책과 일관: `ratioClass === 'ratio-fill' ? !_cfg.topAlign : false`
+        - 다른 옵션(`controls: false, progress: false, slideNumber: false, hash: false, transition: 'none', touch: false`)은 cover 의도(컨트롤 없는 단일 슬라이드)이므로 유지
+    - cover 페이지도 `slide_ratio === 'fill'`일 때만 100%/100% 적용 (헬퍼가 자연 처리)
+* 검증 시나리오 (cfg 동적 확인 — 사용자가 설정값을 자유롭게 swap하므로 빌드 시점 cfg 기준으로 검증):
+    - `m2SlideStyle2_chapter` 빌드 → `index.html`의 `Reveal.initialize` width/height가 cfg `slide_ratio`와 일치 (`"16:9"` → 1920×1080, `"3:2"` → 1920×1280, `fill` → 100%/100%)
+    - `m2SlideStyle2_chapter` 빌드 → `index.html`의 `Reveal.initialize` `center: false` (단, `slide_ratio: fill` 시는 `!_cfg.topAlign`)
+    - `LlmAndVibeCoding_test` (`cover_enabled: true`) 빌드 → 동일 검증
+    - 시각: cover 페이지의 빨간 outline 박스가 viewport 중앙 ratio fit 박스로 표시 (single 모드 cover와 동일 형태)
+    - **회귀 보호**: `m2SlideStyle1_single` (single 모드, `generateHTML` 경로) 빌드 → 변경 전후 `Reveal.initialize` 옵션 + DOM ratio class + `--slide-ratio` 인라인 변수가 동일 (헬퍼 추출이 동작 변화 일으키지 않음 확인)
+* 회귀 영향:
+    - `slide_ratio: fill` 프로젝트: 변화 없음
+    - `"16:9"`/`"3:2"` 프로젝트의 cover 페이지: viewport 채움 → 비율 박스로 변경 (이것이 원래 의도였으므로 시각 회귀가 곧 정상화)
+
 
 
 # 📕 중요
@@ -32,6 +82,26 @@
 
 
 # ✅ 완료
+
+## Issue67. cover layout 빈 메타 변수 → 빈 박스/래퍼 잔존 (등록: 2026-05-03, 해결: 2026-05-03, commit: b3a486e) ✅
+* 목적: `_meta.yml`에 `version`/`lecture_date`/`qr_code_path`/`qr_url`/`subtitle` 등 일부 메타가 미정의일 때 cover 슬라이드에 빈 span/div와 broken `<img src="">`이 그대로 남아 시각적 빈 박스 흔적을 남기는 버그 제거
+* 카테고리: Generator / Theme
+* 복잡도: 단순 (변경 파일 2개, 방법 자명)
+* 현상:
+    - `Projects/m2SlideStyle2_chapter/_meta.yml`처럼 instructor만 정의되고 나머지 필드 미정의 시 cover 페이지에 흰 QR 박스 + 빈 meta 영역 잔존
+    - 원인: `lib/layout.js:60-66` `renderLayout`이 단순 `{{var}}` 치환만 수행 → 미정의 변수는 빈 문자열로 치환되지만 `<span class="cover-version"></span>` 같은 래퍼는 그대로 남음
+    - 추가: `<img src="" ...>`은 `onerror` 핸들러가 모든 브라우저에서 일관 발화 안 함, `cover-qr-image`의 `background:#fff + border + padding` 스타일 (theme/default/slide.css:392-397)이 흰 박스 잔존을 유발
+* 구현 (A+B 혼합):
+    - **A. `lib/layout.js` renderLayout 후처리 (`_stripEmptyWrappers`)**:
+        - 변수 치환 후 `<img\b[^>]*\bsrc=""[^>]*>` 패턴 제거 (빈 src img 통째)
+        - `<(span|div)\b[^>]*>\s*</\1>` 패턴 반복 제거 (자식 비워진 wrapper도 do-while로 자연 제거)
+    - **B. `theme/default/slide.css`에 `:empty` 보조 규칙**:
+        - `.cover-qr:empty, .cover-meta:empty, .cover-body:empty { display: none; }`
+* 검증 결과 (2026-05-03 빌드):
+    - `m2SlideStyle2_chapter/slide/index.html`: `<img src="">` 0건, 빈 `cover-*` span/div 0건, cover-meta+cover-qr div 통째로 사라짐, instructor 영역 정상 보존
+    - 회귀 검증: `01-text-layout.html`, `agenda.html`, `LlmAndVibeCoding/index.html` 모두 빈 wrapper 0건
+* 회귀 영향:
+    - cover layout만 시각 변화. 다른 layout(`_toc`, `_agenda`, `_blank` 등)은 같은 후처리 통과하지만 빈 wrapper 패턴 자체가 거의 발생하지 않음
 
 ## Issue65. slide_ratio: none 값 제거 — 유효값 단일화 (16:9 / 3:2 / fill) (등록: 2026-05-03, 해결: 2026-05-03, commit: 9c83d87) ✅
 * 목적: Issue63 이후 `none`이 `16:9`의 단순 alias로 전락. 유효값을 명확히 하기 위해 `none` 제거 + 기본값을 `16:9`로 명시. `fill`은 비율 무제약(viewport 채움) 단독 의미 유지.
