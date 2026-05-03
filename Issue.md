@@ -1,13 +1,10 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 68
-* 최근 종결: Issue68 (2026-05-03, 0cec27f)
+* Issue HWM: 70
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
-* **GitHub Issue 등록 규칙**:
-    * GitHub Issue 등록 시 제목의 `IssueXX. ` 접두사는 제거합니다. (GitHub 자체 번호와 중복 방지)
-    * 예: `Issue21. 제목` -> `제목`
-    * 명령어: `gh issue create --title "제목" --body "내용"`
-    * 등록 후 `gh issue close {IssueNum}`으로 닫기 (완료된 경우)
+* Save Point :
+    - Issue69 (2026-05-03, 84a2fbe)
+    - Issue68 (2026-05-03, 0cec27f)
 
 # 🤔 결정사항
 ## img 폴더 이중 복사 유지 (소스 `img/` + 빌드 `slide/img/`)
@@ -25,6 +22,36 @@
 1. css에 "!important"가 너무 과도하게 쓰이고 있음. css.md파일 참고해서 최적화가 필요한 부분 최적화해줘. (안정성과 수동용이성 및 slide.css 최소화가 목적임.)
 
 # 🔥 진행 중
+
+## Issue70. 키 네비게이션 체계 정리 — Single ←·Chapter ↑·Chapter 챕터 간 ← (등록: 2026-05-03)
+* 목적: m2slide 키보드(swipe/drag 포함) 네비게이션을 페이지 계층 기반 단일 매트릭스로 정리하고, 사용자 보고 4건(Single ↑/←, Chapter ↑/←) 해결
+* design: `_doc_design/key_navigation.md`
+* plan: `_doc_work/plan/key_navigation_plan.md`
+* 카테고리: Frontend, Generator
+* 복잡도: 중간 (변경 파일 2개, ↑ 검증·prev chapter lookup 신규)
+* 선행 이슈: Issue51 (swipe/drag), Issue55 (3페이지 모델), Issue57 (Agenda/TOC ←)
+* 현상 (4건):
+    - **Single ↑**: 본문에서 ↑ → 무조건 Agenda. 본문 내 H1 계층 단계별 이동 미지원 (의도된 v1 동작이나 사용자 멘탈 모델과 격차 있음 — H1 anchor는 v2 후보로 분리)
+    - **Single ←**: 본문 첫 슬라이드(`index.html#/1`)에서 ← → Cover(`#/0`)로 이동. **Agenda로 가야 함** (→ 키 "마지막 슬라이드 → 다음 챕터" 의 대칭)
+    - **Chapter ↑**: ↑가 ←처럼 동작 (코드는 이미 같은 deck `#/toc-placeholder`로 이동하게 작성되어 있으나 실제 동작 안 함 — DevTools 진단 필요). Single 본문 → Agenda와 동일 멘탈 모델로 통일
+    - **Chapter 챕터 간 ←**: `02-code-syntax.html#/0`(TOC slide)에서 ← → 동작 없음. **이전 챕터(`01-text-layout.html`)의 마지막 슬라이드로 이동해야 함** (→의 대칭)
+* 통일 원칙:
+    - **↑** : 페이지 계층의 직속 부모 (Single 본문→Agenda, Chapter 본문→deck TOC slide, TOC→Agenda, Agenda→Cover)
+    - **←** : deck 내 이전 슬라이드. deck 첫 슬라이드(또는 single 본문 첫)면 "이전 챕터 마지막" 또는 "Agenda"로 fallback
+    - **→/↓** : 다음 슬라이드. 마지막이면 다음 챕터(기존 동작 유지). Cover에서는 Agenda 직행(D5/D6, Issue55)
+    - **⎋** : Reveal.js overview (1회). ⎋*2(2회 연속)는 썸네일 보기(as-is, Reveal 표준)
+* 구현 명세 (Phase 7단계):
+    - Phase 1: `lib/agenda.js`에 `getPrevChapter(fileName, agendaPath)` 신규 export (`getNextChapter` 미러링)
+    - Phase 2: `lib/html-builder.js` `generateHTML`에서 `prevChapter` 산출 + JS 컨텍스트 주입
+    - Phase 3: Chapter mode TOC slide ← 핸들러 — `prevChapter` 존재 시 `'${prevChapter}#/9999'` (Reveal hash clamp로 마지막 슬라이드), 없으면 `agenda.html`
+    - Phase 4: Single mode 본문 첫 슬라이드(`idx.h===1 && cover_enabled`) ← → `agenda.html` (Cover 우회). `M2SLIDE_COVER` JS 변수 신규 주입
+    - Phase 5: Chapter ↑ 동작 검증·수정 — DevTools에서 `Reveal.getIndices()`/`findTocSlideIndex()` 진단 후 원인별 fix (preventDefault 누락 / v 분기 / toc-placeholder 미생성)
+    - Phase 6: 9개 시나리오 브라우저 수동 검증 (`m2SlideStyle1_single` / `m2SlideStyle2_chapter` / `layoutTest`)
+    - Phase 7: `_doc_design/chapter-single-mode.md` cross-reference 추가, plan frontmatter `issue: TBD` → `issue: Issue70`
+* 위험 요소:
+    - Reveal.js 5.0.4의 hash `#/9999` clamp 동작 — 안 되면 `?last=1` + `Reveal.on('ready')` fallback
+    - swipe/drag (1156–1216 IIFE)는 synthetic dispatch이므로 자동 반영되나 회귀 검증 필수
+    - Cover override(D5/D6)와 Single ← 핸들러 동시 등록 — if-else 순서로 충돌 방지
 
 ## Issue66. cover 페이지 Reveal.initialize 하드코딩으로 slide_ratio 무효화 (등록: 2026-05-03)
 * 목적: chapter 모드 진입 페이지(`index.html`, cover_enabled=true)에서 `slide_ratio` 설정이 사실상 무시되고 항상 `fill`처럼 동작하는 버그 수정
@@ -76,8 +103,6 @@
     - `slide_ratio: fill` 프로젝트: 변화 없음
     - `"16:9"`/`"3:2"` 프로젝트의 cover 페이지: viewport 채움 → 비율 박스로 변경 (이것이 원래 의도였으므로 시각 회귀가 곧 정상화)
 
-
-
 # 📕 중요
 
 # 📙 일반
@@ -86,6 +111,39 @@
 
 
 # ✅ 완료
+
+## Issue69. agenda.html이 _config.yml의 slide_ratio를 적용하지 않음 (등록: 2026-05-03, 해결: 2026-05-03, commit: 84a2fbe) ✅
+* 목적: agenda.html(chapter 모드 진입 직후 페이지 / single 모드 standalone agenda)이 `slide_ratio` 설정을 무시하고 항상 viewport 100%로 렌더링되는 버그 수정
+* 카테고리: Generator
+* 복잡도: 단순 (변경 파일 2개, 수정 자명)
+* 선행 이슈: Issue63 (slide_ratio 체계), Issue65 (값 단일화), Issue66 (cover 동일 root cause)
+* 현상:
+    - `slide_ratio: "16:9"` / `"3:2"` / `fill` 어느 값으로 설정해도 `agenda.html`은 동일하게 viewport 전체로 렌더링됨
+    - chapter 본문(`01-*.html`) 및 cover(`index.html`, Issue66 수정 완료 시점 기준)와 시각 일관성 깨짐
+* 원인 분석:
+    - `lib/html-builder.js` `generateAgendaHTML()`이 `_cfg.slideRatio`를 단 한 곳도 참조하지 않음
+    - 다른 페이지 생성기와 비교: `generateHTML`/`generateCoverHTML`은 `resolveRevealDimensions(_cfg.slideRatio)` 호출 + `--slide-ratio` CSS 변수 주입
+    - `generateAgendaHTML`은 reveal.js를 쓰지 않는 standalone HTML 문서라는 이유로 ratio 처리가 통째로 빠진 것이 root cause
+    - 인라인 CSS가 `html, body { width: 100%; height: 100%; }`와 `.toc-mindmap-svg { height: calc(100vh - 200px); }`를 강제하여 ratio fit이 원천적으로 불가능
+* 정책 결정:
+    - **standalone HTML 문서이므로 reveal.js 의존 없이 CSS만으로 처리**: `<html>`에 ratio class + `--slide-ratio` CSS 변수 주입 + 인라인 height 강제 제거
+    - agenda.html 전용 ratio fit 박스(`<div class="agenda-frame">`)를 base.css §12로 분리
+    - markmap SVG의 `calc(100vh - 200px)` 높이 계산은 ratio fit 박스 내부 기준(`calc(100% - 200px)`)으로 변경
+* 구현 결과 (commit 84a2fbe):
+    - `lib/html-builder.js`:
+        - `resolveRevealDimensions` 헬퍼 추가 (Issue66과 공유 의도, agenda 호출 의존성 충족)
+        - `generateAgendaHTML()` 시작부에서 `resolveRevealDimensions(_cfg.slideRatio)` + `slideRatioNumeric(_cfg.slideRatio)` 호출
+        - `<html lang="ko">` → `<html lang="ko" class="${ratioClass}" style="--slide-ratio: ${ratioVar};">`
+        - 인라인 `<style>` 블록 제거 → `${BASE_CSS}` 인라인 + body class `agenda-page`
+        - bodyHtml을 `<div class="agenda-frame">...</div>`로 wrap
+    - `lib/css/base.css` §12 신설:
+        - `body.agenda-page`: letterbox 컨테이너 (flex 중앙 정렬 + 흰색 bg)
+        - `.agenda-frame`: ratio 박스 (`width: min(100vw, 100vh * var(--slide-ratio))` / `height: min(100vh, 100vw / var(--slide-ratio))`)
+        - `html.ratio-fill .agenda-frame`: fill 모드 override
+        - `.agenda-frame .toc-mindmap-svg { height: calc(100% - 200px); }` — agenda-frame 기준
+* 회귀 영향:
+    - `slide_ratio: fill` 프로젝트: 변화 없음
+    - `"16:9"`/`"3:2"` 프로젝트의 agenda 페이지: viewport 채움 → 비율 박스로 변경 (정상화)
 
 ## Issue68. single-page mode PDF 미생성 + 프로젝트 루트 stale EPUB 누적 (등록: 2026-05-03, 해결: 2026-05-03, commit: 0cec27f) ✅
 * 목적: `./m2slide.sh --pdf --epub` 실행 시 single-page mode 프로젝트(`m2SlideStyle1_single`)에서 PDF가 한 번도 생성되지 않고 agenda.html 다운로드 영역에 PDF 버튼이 누락되는 버그 수정. 부수적으로 프로젝트 루트에 stale EPUB이 누적되는 현상도 정리
