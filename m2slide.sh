@@ -162,11 +162,19 @@ if [ -d "$OUTPUT_DIR" ]; then
   rm -f "$OUTPUT_DIR"/*.html
 fi
 
-# Run the HTML generator
-node "$SCRIPT_DIR/lib/generate-slides.js" "$PROJECT_DIR"
-
 # Define Project Name
 PROJECT_NAME=$(basename "$PROJECT_DIR")
+
+# Clean stale download artifacts at project root.
+# generate-epub.js writes to PROJECT_DIR first (then m2slide.sh moves to slide/),
+# but if filename derivation differs across versions, orphan EPUB/PDF/PPTX may
+# accumulate at project root. These artifacts always belong in slide/.
+for ext in epub pdf pptx; do
+  find "$PROJECT_DIR" -maxdepth 1 -type f -name "*.$ext" -delete 2>/dev/null || true
+done
+
+# Run the HTML generator
+node "$SCRIPT_DIR/lib/generate-slides.js" "$PROJECT_DIR"
 
 # Generate EPUB if requested
 if [ "$GENERATE_EPUB" = true ]; then
@@ -197,11 +205,25 @@ if [ "$GENERATE_PDF" = true ]; then
     rm -rf "$PDF_TMP_DIR"
     mkdir -p "$PDF_TMP_DIR"
 
+    # Detect single-page mode: in single mode index.html IS the slide deck;
+    # in chapter mode index.html is a redirect/cover and agenda.html is the
+    # Markmap landing — neither is a Reveal.js deck.
+    SINGLE_PAGE_MODE=false
+    if [ "$INPUT_DIR" = "$PROJECT_DIR" ]; then
+      SINGLE_PAGE_MODE=true
+    fi
+
     for file in "$OUTPUT_DIR"/*.html; do
       filename=$(basename "$file")
 
-      # Skip index.html (Markmap)
-      if [ "$filename" == "index.html" ]; then
+      # agenda.html is a Markmap landing page in both modes — never a Reveal deck
+      if [ "$filename" == "agenda.html" ]; then
+        continue
+      fi
+
+      # In chapter mode, index.html is redirect/cover (not a deck) — skip.
+      # In single-page mode, index.html IS the deck — process it.
+      if [ "$filename" == "index.html" ] && [ "$SINGLE_PAGE_MODE" != true ]; then
         continue
       fi
 
