@@ -17,6 +17,7 @@
      §9  Layout 골격 (cover/contents/contents-full/split-image-text/chapter-toc/chapter/exercise/exercise-small/blank/closing/toc)
      §10 Layout-* 공통 (padding, header 정렬, list markers ●─▶•)
      §11 반응형 (cover-title clamp 공식 — _doc_design/css.md §3 근거)
+     §12 Standalone agenda.html (Issue69 — reveal.js 컨텍스트 외 ratio fit + letterbox)
    ========================================================================= */
 
 /* =========================================================================
@@ -1094,4 +1095,49 @@
    ========================================================================= */
 .reveal section.layout-cover .cover-title {
   font-size: clamp(1.2em, 5vw, 3.4em);
+}
+
+/* =========================================================================
+   12. Standalone agenda.html — ratio fit + letterbox (Issue69)
+   - reveal.js 컨텍스트 없는 standalone 페이지에서 cfg.slideRatio 기반 ratio fit
+   - body.agenda-page = letterbox 컨테이너 (cover의 .reveal 흰색 bg와 일관성 확보)
+   - .agenda-frame   = ratio 박스 (var(--slide-ratio) 활용 min() 공식)
+   - html.ratio-fill = frame이 viewport 채움 (auto 산술 불가 회피용 override)
+   ========================================================================= */
+body.agenda-page {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  overflow: hidden;
+  font-family: var(--global-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif);
+}
+.agenda-frame {
+  width: min(100vw, 100vh * var(--slide-ratio));
+  height: min(100vh, 100vw / var(--slide-ratio));
+  background: #ffffff;
+  overflow: hidden;
+  position: relative;
+}
+html.ratio-fill .agenda-frame {
+  width: 100vw;
+  height: 100vh;
+}
+.agenda-frame .layout-_toc,
+.agenda-frame .layout-_agenda {
+  padding: 24px;
+  box-sizing: border-box;
+  height: 100%;
+}
+.agenda-frame .toc-mindmap-svg {
+  width: 100%;
+  height: calc(100% - 200px);
+  display: block;
+}
+.agenda-frame .toc-markmap {
+  padding: 12px 0;
 }
