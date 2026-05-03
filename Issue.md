@@ -3,6 +3,7 @@
 * Issue HWM: 70
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
+    - Issue66 (2026-05-03, bffd865)
     - Issue69 (2026-05-03, 84a2fbe)
     - Issue68 (2026-05-03, 0cec27f)
 
@@ -10,13 +11,6 @@
 ## img 폴더 이중 복사 유지 (소스 `img/` + 빌드 `slide/img/`)
 * 결정: 현행 `fs.cpSync` 방식 유지
 * 이유: `slide/` 폴더를 통째로 삭제 후 재생성하는 빌드 패턴이 잦음
-
-## chapter-single mode 맞추기
-| 페이지      | slide위치                  | theme의 layout위치 | 작업 |
-| ----------- | -------------------------- | ------------------ | ---- |
-| Cover Page  | index.html                 | _cover.html        |      |
-| Agenda Page | agenda.html                | _agenda.html       |      |
-| TOC Page    | 0X-*.html#/toc-placeholder | _toc.html          |      |
 
 # 🌱 이슈후보
 1. css에 "!important"가 너무 과도하게 쓰이고 있음. css.md파일 참고해서 최적화가 필요한 부분 최적화해줘. (안정성과 수동용이성 및 slide.css 최소화가 목적임.)
@@ -54,7 +48,17 @@
     - swipe/drag (1156–1216 IIFE)는 synthetic dispatch이므로 자동 반영되나 회귀 검증 필수
     - Cover override(D5/D6)와 Single ← 핸들러 동시 등록 — if-else 순서로 충돌 방지
 
-## Issue66. cover 페이지 Reveal.initialize 하드코딩으로 slide_ratio 무효화 (등록: 2026-05-03)
+
+# 📕 중요
+
+# 📙 일반
+
+# 📗 선택
+
+
+# ✅ 완료
+
+## Issue66. cover 페이지 Reveal.initialize 하드코딩으로 slide_ratio 무효화 (등록: 2026-05-03, 해결: 2026-05-03, commit: bffd865) ✅
 * 목적: chapter 모드 진입 페이지(`index.html`, cover_enabled=true)에서 `slide_ratio` 설정이 사실상 무시되고 항상 `fill`처럼 동작하는 버그 수정
 * 카테고리: Generator
 * 복잡도: 단순 (변경 파일 1개, 수정 자명)
@@ -65,53 +69,28 @@
     - 챕터 본문(`01-*.html` 등)은 정상적으로 ratio fit 동작 → 사용자 시점에서 "chapter 모드 전체가 fill"로 인식됨
 * 원인 분석 (2026-05-03 직접 HTML 비교 검증):
     - `lib/html-builder.js`에 두 개의 HTML 생성 함수 존재
-        - `generateHTML` (챕터 본문 + single 모드 index): [lib/html-builder.js:425-441](../../lib/html-builder.js#L425-L441)에서 `revealWidth`/`revealHeight`를 `slideRatio`별로 분기 → [:635-636](../../lib/html-builder.js#L635-L636)에서 `Reveal.initialize`에 전달
-        - `generateCoverHTML` (chapter 모드 cover): [:1300-1303](../../lib/html-builder.js#L1300-L1303)에서 `ratioClass`만 계산하고 DOM 클래스로 부여. **`Reveal.initialize` 호출 [:1366](../../lib/html-builder.js#L1366)에서 하드코딩**
-    - 하드코딩 라인 (한 줄):
-      ```js
-      Reveal.initialize({ controls: false, progress: false, slideNumber: false, hash: false, center: true, transition: 'none', touch: false, width: '100%', height: '100%', margin: 0.0 });
-      ```
+        - `generateHTML` (챕터 본문 + single 모드 index): `revealWidth`/`revealHeight`를 `slideRatio`별로 분기 → `Reveal.initialize`에 전달
+        - `generateCoverHTML` (chapter 모드 cover): `ratioClass`만 계산하고 DOM 클래스로 부여. **`Reveal.initialize` 호출 부에서 하드코딩**
     - 인라인 CSS 변수(`--slide-ratio`)와 DOM ratio class(`ratio-16-9` 등)는 cfg 따라 정상 출력됨을 직접 확인 → 원인은 **Reveal.initialize 옵션 하드코딩 단 1곳**
-    - 추가 충돌 옵션: `center: true`도 하드코딩 — `generateHTML`은 [:641](../../lib/html-builder.js#L641)에서 "ratio 모드에서는 항상 false (vertical centering이 ratio fit과 충돌하는 이슈 회피)" 정책. cover도 동일 정책 적용해야 일관성 유지
+    - 추가 충돌 옵션: `center: true`도 하드코딩 — `generateHTML`은 "ratio 모드에서는 항상 false (vertical centering이 ratio fit과 충돌하는 이슈 회피)" 정책. cover도 동일 정책 적용해야 일관성 유지
 * 영향 범위 (2026-05-03 경로 분기 확인):
-    - **chapter 모드 + `cover_enabled: true`만 영향**: `index.html`이 `generateCoverHTML` 별도 함수로 생성됨 ([lib/generate-slides.js:213](../../lib/generate-slides.js#L213) → [lib/html-builder.js:1263](../../lib/html-builder.js#L1263)) — 1366 하드코딩 적용
-    - **single 모드 + `cover_enabled: true`는 정상**: cover 슬라이드가 `generateHTML` 경로의 `#/0`에 주입됨 ([lib/html-builder.js:365-366](../../lib/html-builder.js#L365-L366)) — 425-441 ratio 분기 정상 동작
-    - 사용자 시각 검증(2026-05-03 캡처): `m2SlideStyle1_single` 정상 박스 fit / `m2SlideStyle2_chapter` cover가 viewport 전체 채움(빨간 outline) + 콘텐츠는 좌측 상단으로 몰림
+    - **chapter 모드 + `cover_enabled: true`만 영향**: `index.html`이 `generateCoverHTML` 별도 함수로 생성됨 — 하드코딩 적용
+    - **single 모드 + `cover_enabled: true`는 정상**: cover 슬라이드가 `generateHTML` 경로의 `#/0`에 주입됨 — ratio 분기 정상 동작
     - `slide_ratio: fill` 사용 프로젝트는 의도대로 동작하므로 시각 변화 없음
-* 정답 reference (2026-05-03 사용자 캡처 확정):
-    - **single 모드 cover layout = 정답 형태** — chapter 모드 cover도 동일 시각이 나오도록 fix
-    - 정답 형태 특징: 빨간 outline 박스가 ratio 비율로 fit되고 viewport 중앙 배치, cover 콘텐츠(타이틀·강사·버전 박스)가 박스 내부에 정상 배치
-    - 현재 chapter 모드 증상: 빨간 outline이 viewport 전체로 확장, 콘텐츠는 fixed 좌표계 기준으로 좌상단에 몰림, 버전 박스 우측 둥둥
-    - 시각 차이 원인은 `Reveal.initialize` 옵션 단 1줄 (1366) — 단일 hot fix 지점 확정
 * 정책 결정 (2026-05-03 확정):
     - **Single 모드 영향 최소화**: 현재 single 모드는 정상 작동(`generateHTML` 경로 사용)이므로 fix 작업 시 `generateHTML` 쪽 로직은 그대로 유지. 변경은 `generateCoverHTML` 내부에 한정
-    - **공통 헬퍼 추출**: `resolveRevealDimensions(slideRatio) → { width, height, ratioClass }` 헬퍼를 정의하여 `generateHTML`·`generateCoverHTML` 두 함수가 공유 (DRY). `generateHTML`은 동작 동일성 회귀 검증으로 보호
-* 구현 명세:
-    - `lib/html-builder.js`에 `resolveRevealDimensions(slideRatio)` 공통 헬퍼 추가 (현재 `generateHTML` 425-441 분기 로직을 그대로 추출)
-    - `generateHTML`: 기존 분기 블록을 헬퍼 호출로 교체 (동작 동일성 보장)
-    - `generateCoverHTML` 1366 라인:
-        - 하드코딩 `width: '100%', height: '100%'` 제거 → 헬퍼 결과로 교체
-        - 하드코딩 `center: true` 제거 → `generateHTML` 정책과 일관: `ratioClass === 'ratio-fill' ? !_cfg.topAlign : false`
-        - 다른 옵션(`controls: false, progress: false, slideNumber: false, hash: false, transition: 'none', touch: false`)은 cover 의도(컨트롤 없는 단일 슬라이드)이므로 유지
-    - cover 페이지도 `slide_ratio === 'fill'`일 때만 100%/100% 적용 (헬퍼가 자연 처리)
-* 검증 시나리오 (cfg 동적 확인 — 사용자가 설정값을 자유롭게 swap하므로 빌드 시점 cfg 기준으로 검증):
-    - `m2SlideStyle2_chapter` 빌드 → `index.html`의 `Reveal.initialize` width/height가 cfg `slide_ratio`와 일치 (`"16:9"` → 1920×1080, `"3:2"` → 1920×1280, `fill` → 100%/100%)
-    - `m2SlideStyle2_chapter` 빌드 → `index.html`의 `Reveal.initialize` `center: false` (단, `slide_ratio: fill` 시는 `!_cfg.topAlign`)
-    - `LlmAndVibeCoding_test` (`cover_enabled: true`) 빌드 → 동일 검증
-    - 시각: cover 페이지의 빨간 outline 박스가 viewport 중앙 ratio fit 박스로 표시 (single 모드 cover와 동일 형태)
-    - **회귀 보호**: `m2SlideStyle1_single` (single 모드, `generateHTML` 경로) 빌드 → 변경 전후 `Reveal.initialize` 옵션 + DOM ratio class + `--slide-ratio` 인라인 변수가 동일 (헬퍼 추출이 동작 변화 일으키지 않음 확인)
+    - **공통 헬퍼 추출**: `resolveRevealDimensions(slideRatio) → { width, height, ratioClass }` 헬퍼를 정의하여 `generateHTML`·`generateCoverHTML` 두 함수가 공유 (DRY)
+* 구현 결과 (commit bffd865):
+    - `lib/html-builder.js`:
+        - `generateHTML`: 기존 ratio 분기 블록(15줄)을 `resolveRevealDimensions(_cfg.slideRatio)` 헬퍼 호출 1줄로 교체 (동작 동일성 보장)
+        - `generateCoverHTML`: `ratioClass` 분기를 동일 헬퍼로 단일화
+        - `generateCoverHTML`의 `Reveal.initialize` 하드코딩 제거 → 헬퍼 결과 사용 (`width`, `height`, `center: ratioClass === 'ratio-fill' ? !_cfg.topAlign : false`)
+        - `resolveRevealDimensions` 헬퍼는 Issue69(commit 84a2fbe) 작업 시 선행 추가됨 (agenda.html에서도 동일 헬퍼 활용)
+* 검증 결과:
+    - `m2SlideStyle2_chapter` (slide_ratio: "16:9") 빌드 → `index.html`의 `Reveal.initialize`에 `width: 1920, height: 1080, center: false` 정상 적용
 * 회귀 영향:
     - `slide_ratio: fill` 프로젝트: 변화 없음
     - `"16:9"`/`"3:2"` 프로젝트의 cover 페이지: viewport 채움 → 비율 박스로 변경 (이것이 원래 의도였으므로 시각 회귀가 곧 정상화)
-
-# 📕 중요
-
-# 📙 일반
-
-# 📗 선택
-
-
-# ✅ 완료
 
 ## Issue69. agenda.html이 _config.yml의 slide_ratio를 적용하지 않음 (등록: 2026-05-03, 해결: 2026-05-03, commit: 84a2fbe) ✅
 * 목적: agenda.html(chapter 모드 진입 직후 페이지 / single 모드 standalone agenda)이 `slide_ratio` 설정을 무시하고 항상 viewport 100%로 렌더링되는 버그 수정
