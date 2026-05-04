@@ -93,8 +93,7 @@
 .reveal section[class*="layout-"] .exercise-title::after,
 .reveal section[class*="layout-"] .blank-title::after,
 .reveal section[class*="layout-"] .closing-title::after,
-.reveal section[class*="layout-"] .toc-title::after,
-.reveal section[class*="layout-"] .contents-body > .title::after {
+.reveal section[class*="layout-"] .toc-title::after {
   content: "";
   position: absolute;
   left: 0;
@@ -107,6 +106,22 @@
   pointer-events: none;
 }
 
+/* 본문 H2.title은 hr.png를 제목 텍스트 vertical 중앙(middle)에 배치 — 사용자 결정 */
+.reveal section[class*="layout-"] .contents-body > .title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 14px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: -1;
+}
+
 /* 본문 H2.title도 §3 제목 처리 — theme_default_layout: contents 환경에서
    본문 H2가 contents-body 내부에 있을 때 hr.png 밑줄 적용 (가운데 바) */
 .reveal section[class*="layout-"] .contents-body > .title {
@@ -115,7 +130,6 @@
   color: var(--kn-text);
   position: relative;
   display: block;
-  padding-bottom: 0.15em;
   margin: 0 auto 0.5em auto;
 }
 
