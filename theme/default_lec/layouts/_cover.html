@@ -1,0 +1,25 @@
+<section class="layout-cover">
+  <div class="cover-header">
+    <h1 class="cover-title">{{title}}</h1>
+    <div class="cover-subtitle">{{subtitle}}</div>
+    <div class="cover-part-subtitle">{{part_subtitle}}</div>
+  </div>
+
+  <div class="cover-body">
+    <div class="cover-instructor">
+      <span class="cover-label">강사</span>
+      <span class="cover-instructor-name">{{instructor_name}}</span>
+      <span class="cover-instructor-contact">{{instructor_contact}}</span>
+    </div>
+
+    <div class="cover-meta">
+      <span class="cover-lecture-date">{{lecture_date}}</span>
+      <span class="cover-version">{{version}}</span>
+    </div>
+  </div>
+
+  <div class="cover-qr">
+    <img class="cover-qr-image" src="{{qr_code_path}}" alt="QR" onerror="this.style.display='none'">
+    <div class="cover-qr-url">{{qr_url}}</div>
+  </div>
+</section>

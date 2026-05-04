@@ -1,14 +1,18 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 78
+* Issue HWM: 79
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
     
 # 🤔 결정사항
+## _meta.yml파일 사용 안함.
+* AGENDA.md나 {프로젝트명}.md파일의 yaml front matter에 추가하기로 함. 
+
 ## img 폴더 이중 복사 유지 (소스 `img/` + 빌드 `slide/img/`)
 * 결정: 현행 `fs.cpSync` 방식 유지
 * 이유: `slide/` 폴더를 통째로 삭제 후 재생성하는 빌드 패턴이 잦음
+
 
 # 🌱 이슈후보
 1. 쳅터모드에서 페이지 번호가 해당 md마다 1부터 시작하는데, 전체 기준으로 제공되어야함. 단, md 방식에서는 breadcum방식으로 쳅터 번호를 페이지 옆에 제공해야함. 관련 설정 필요. 
@@ -16,6 +20,37 @@
 
 # 🔥 진행중
 
+## Issue79. `_meta.yml` 폐기 + 메타데이터를 슬라이드 소스 frontmatter로 통합 (등록: 2026-05-04)
+* 목적: 결정사항 "_meta.yml파일 사용 안함"(Issue.md L9-11)에 따라 운영 메타데이터를 별도 파일로 분리하지 않고 슬라이드 소스 파일(AGENDA.md / `{ProjectName}.md`)의 YAML frontmatter에 통합. 단일 SSOT로 책임 단순화.
+* 상세:
+    - 폐기 대상: `Projects/*/_meta.yml` 6개 파일 (layoutTest, LlmAndVibeCoding, LlmAndVibeCoding_test, m2SlideStyle1_single, m2SlideStyle2_chapter, MarkdownGraph)
+    - 메타 출처 신규 정책:
+        - Chapter mode: `markdown/AGENDA.md` frontmatter
+        - Single mode: 선택된 슬라이드 소스 `.md`(`{ProjectName}.md` 또는 README.md 등) frontmatter
+    - 마이그레이션 대상 키: `instructor_name`, `instructor_contact`, `version`, `release_date`, `created_at`, `created_by`, `lecture_date`, `part_subtitle`, `gdrive_url`, `qr_code_path`, `qr_url` 등 (`_doc_design/meta-yml.md` v1 스키마 전체)
+    - 코드 변경: `lib/config.js` `loadProjectMeta()` 시그니처 변경 — projectDir + inputDir 받아 슬라이드 소스 frontmatter에서 메타 키 추출. `lib/generate-slides.js`·`lib/generate-epub.js`(있다면) 호출부 갱신
+    - 설계 문서: `_doc_design/meta-yml.md` deprecation 노트 추가 + 새 정책으로 갱신 (frontmatter 통합 SSOT)
+    - 문서 갱신: `CLAUDE.md`, `README.md`, `.claude/rules/md-m2slide-rules.md`의 `_meta.yml` 언급을 frontmatter 정책으로 갱신
+* 구현 명세:
+    - 6개 프로젝트 frontmatter 마이그레이션:
+        - `Projects/{layoutTest, MarkdownGraph}/{Name}.md`: 기존 frontmatter에 메타 키 추가
+        - `Projects/m2SlideStyle1_single/m2SlideStyle.md`: 동일
+        - `Projects/{m2SlideStyle2_chapter, LlmAndVibeCoding, LlmAndVibeCoding_test}/markdown/AGENDA.md`: frontmatter 없는 경우 신규 생성, 있으면 메타 키 추가
+    - `lib/config.js` `loadProjectMeta(projectDir, cfg)` → `loadProjectMeta(projectDir, inputDir, cfg)`로 시그니처 확장 (또는 inputDir resolve 후 호출 순서 조정)
+    - `_meta.yml` 6개 삭제
+    - 빌드 검증: 6개 프로젝트 전수 빌드 → cover 슬라이드의 instructor/version/lecture_date 슬롯이 frontmatter 값으로 정상 치환 확인 (apply-verify-rules)
+    - 깨진 참조 검증: 코드·문서에 잔존 `_meta.yml` 참조 0건 (단, historical Issue 코멘트는 보존)
+ + layout_default.md를 theme_layout_default.md에 머징 (등록: 2026-05-03)
+* 목적: Issue73에서 추가된 번호 prefix layout 6종(`2.2.contents-full`, `2.3.contents-split`, `4.2.chapter`, `6.1.exercise`, `6.2.exercise-small`, `9.1.closing`)을 폐기하고, 시각 디자인 SSOT(과거 `layout_default.md`)를 `theme_layout_default.md`에 통합하여 default theme 단일 진입점으로 단순화함
+* 상세:
+    - 폐기 대상: `theme/default/layouts/` 번호 prefix HTML 6개 (현재 unstaged 삭제 상태 → `git rm` 스테이징)
+    - `_doc_design/layout_default.md`: 시각 디자인 SSOT(공통 시각 토큰·마스코트 자산·keynote 영감 매핑)를 `theme_layout_default.md` §7 "디자인 방향성"·§8 "변경 가이드라인"으로 머징한 후 파일 삭제
+    - `_doc_design/theme_layout_default.md`: §7~8 신설(시각 디자인 + 변경 가이드라인 통합), description 갱신("default theme SSOT — 시스템 layout 6종 + 시각 디자인 + 변경 가이드라인")
+    - `_doc_design/theme.md`, `_doc_design/theme_layout.md`, 기타 참조 문서: 책임 분담 표·참고 섹션의 `layout_default.md` 링크를 `theme_layout_default.md`로 일괄 갱신
+* 구현 명세:
+    - 검증: 빌드 영향 없음(번호 prefix layout은 어떤 프로젝트도 사용하지 않음 추정 → grep으로 확인)
+    - 빌드 검증: `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest` 빌드 + HTML 산출물 확인 (apply-verify-rules)
+    - 깨진 링크 검증: `_doc_design/`·`_doc_work/`·`.claude/`·`Issue.md` 전수 grep으로 잔존 `layout_default.md` 참조 0건 확인 (머징 직후 historical text는 그대로 보존)
 
 # 📙 일반
 
@@ -24,20 +59,7 @@
 
 # ✅ 완료
 
-> v0.5.0 (2026-05-03) 시점 71건 아카이브 → [`z_old/old_issue.md`](z_old/old_issue.md)
 
-## Issue78. 번호 prefix layout 6종 폐기 + layout_default.md를 theme_layout_default.md에 머징 (등록: 2026-05-03, 해결: 2026-05-03, commit: afdb361) ✅
-* 목적: Issue73에서 추가된 번호 prefix layout 6종(`2.2.contents-full`, `2.3.contents-split`, `4.2.chapter`, `6.1.exercise`, `6.2.exercise-small`, `9.1.closing`)을 폐기하고, 시각 디자인 SSOT(과거 `layout_default.md`)를 `theme_layout_default.md`에 통합하여 default theme 단일 진입점으로 단순화함
-* 상세:
-    - 폐기 대상: `theme/default/layouts/` 번호 prefix HTML 6개 (`git rm` 처리)
-    - `_doc_design/layout_default.md` → `theme_layout_default.md` §7 "디자인 방향성"·§8 "변경 가이드라인" 머징 후 삭제
-    - 부수 작업(범위 확장): layout HTML class를 파일명 기준 `_` prefix 유지 표기로 정렬 (`layout-cover` → `layout-_cover` 등) — `_doc_design/theme_layout.md` §4.2/§4.3 규정 정렬
-    - `lib/css/base.css`, `theme/default/slide.css`, `lib/html-builder.js`의 selector·생성 클래스명 일괄 갱신
-* 검증:
-    - 빌드 검증: `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest` 모두 통과
-    - 산출물 HTML에서 `layout-_<name>` 클래스 정상 출력 확인 (8건 이상)
-    - 폐기된 번호 prefix layout 6종은 어떤 프로젝트에서도 미참조 (grep 0건)
-    - `layout_default.md` 잔존 참조 0건 (`_doc_design/`·`_doc_work/`·`.claude/`·`Issue.md`)
 
 ## Issue77. markmap fold 인디케이터 원 크기 30% 축소 (등록: 2026-05-03, 해결: 2026-05-03, commit: a29a0fa) ✅
 * 목적: agenda 페이지 markmap 서브챕터 fold 인디케이터 원이 너무 크게 표시되는 문제 해결
@@ -131,6 +153,8 @@
     - `theme/default/slide.css:55,67`, `theme/nowage/slide.css:57,69` 셀렉터 `.reveal.ratio-none` → `.reveal`
     - `_config.org.yml:50` 라인 제거
     - Reveal.initialize 호출부 width/height 인자 제거 (기본값 위임)
+
+> v0.5.0 (2026-05-03) 시점 71건 아카이브 → [`z_old/old_issue.md`](z_old/old_issue.md)
 
 # 🚫 취소
 

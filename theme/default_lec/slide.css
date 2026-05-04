@@ -1,18 +1,9 @@
-/* theme: default — 테마 고유 스타일만 (Issue64 슬림화 1422→403)
- * 공통 골격(레이아웃·컴포넌트·반응형·:root 변수 기본값)은 lib/css/base.css가 inline <style>로 주입.
+/* theme: default_lec — 강의용 공식 테마 (Issue64 슬림화)
+ * 공통 골격은 lib/css/base.css가 inline <style>로 주입.
  * 본 파일은 색상·배경 이미지·테마별 시각 언어만 정의.
  *
  * CSS 우선순위: CDN(1-3) → base.css inline(4) → 본 파일(5) → <body style>(6)
- * 설계 SSOT (원칙·정책·금지·테마 정책): _doc_design/css.md
- *
- * 본 파일 목차:
- *   §1  Keynote Nowage 색상 변수 (:root --kn-*) + .reveal background/color 명시
- *   §2  layout-* 상/하단 노랑 가로선(::before/::after) + slide-number 스타일
- *   §3  제목 노랑 밑줄 (h1::after background-image: hr.png) — 모든 layout
- *   §4  마스코트 배경 (finfra*.png) — cover/contents/chapter-toc/chapter/exercise/exercise-small/closing/blank
- *   §5  _toc Layout (그라디언트 헤더, 다운로드 버튼, markmap SVG)
- *   §6  _cover 확장 (subtitle, body, instructor, qr-image, qr-url)
- *   §7  _agenda Layout (그라디언트 배경)
+ * 분류 SSOT: _doc_design/css.md "리팩터링 계획" 섹션 (Phase 7에서 영구 목록으로 대체 예정)
  */
 
 /* =========================================================================
@@ -123,9 +114,7 @@
   background-repeat: no-repeat;
   background-position: 6% 14%;
   background-size: 18% auto;
-  /* Issue63: 100vh → 100% (parent .slides 기준 = ratio 모드 1080px 논리 높이 / fill 모드 viewport).
-     vh 기반은 transform scale 비율 fit과 충돌. */
-  min-height: 100% !important;
+  min-height: 100vh !important;
 }
 
 .reveal section.layout-_cover .cover-header {
@@ -187,7 +176,7 @@
 }
 
 /* 4.4 chapter: puffer2 중앙-좌측 + 제목 하단
-   Issue72: !important 제거 — base.css와 동일 specificity (0,0,2,2). theme이 후순위 로드되어 자연 우선 */
+   Issue72: !important 제거 — base.css와 동일 specificity. theme 후순위 로드로 자연 우선 */
 .reveal section.layout-chapter {
   background-image: url('../theme-img/finfraPuffer2.png');
   background-repeat: no-repeat;
@@ -273,10 +262,9 @@
    5. _toc Layout (Issue55) — chapter deck TOC slide + standalone agenda.html
    ========================================================================= */
 .toc-page-header {
-  background: none;
+  background: transparent;
   padding: 22px 28px;
   margin: 0 0 16px 0;
-  /* 제목 h1::after 가 hr.png 노란 밑줄을 제공하므로 header border-bottom 중복 제거 */
 }
 .toc-page-title {
   font-family: var(--main-title-font-family, 'GmarketSansBold', sans-serif);
@@ -327,11 +315,6 @@
   display: block;
   min-height: 380px;
 }
-/* markmap fold/expand 인디케이터 원 크기 30% 축소 (기본 r=6 → 4.2) */
-.toc-markmap circle,
-.toc-mindmap-svg circle {
-  r: 4.2;
-}
 /* markmap 링크 밑줄 제거 (foreignObject 내 <a> 기본 브라우저 스타일 차단) */
 .toc-markmap a,
 .toc-mindmap-svg a,
@@ -344,11 +327,6 @@
 .toc-mindmap-svg foreignObject a:hover,
 .markmap-foreign a:hover {
   text-decoration: none;
-}
-
-/* chapter-card 내부 bullet 제거 — base.css §10 layout-* ul > li::before 의 ● override */
-.reveal section[class*="layout-"] ul.chapter-list--cards > li.chapter-card::before {
-  content: none;
 }
 
 /* =========================================================================
@@ -408,65 +386,6 @@
   font-size: 0.6em;
   opacity: 0.7;
   margin-top: 0.2em;
-}
-/* Issue67: layout.js의 빈 wrapper strip 후 잔존 가능성 보호 — 미정의 메타로 비워진 컨테이너 숨김 */
-.reveal section.layout-_cover .cover-qr:empty,
-.reveal section.layout-_cover .cover-meta:empty,
-.reveal section.layout-_cover .cover-body:empty {
-  display: none;
-}
-
-/* =========================================================================
-   6.5 _toc Layout — toc-body 카드화
-   - base.css §공통 [class*="layout-"] > [class$="-body"] 의 flex-grow:1 override
-   - 컨텐츠는 자연 높이 카드로 표시 (max-height 미지정 → 콘텐츠 크기로 자연 fit)
-   - 빈 .toc-body 는 숨김 처리 (TOC 슬라이드에 본문이 없는 경우 잔존 카드 방지)
-   ========================================================================= */
-.reveal section.layout-_toc > .toc-body {
-  /* 카드 자체는 항상 콘텐츠 크기로 (flex stretching·height 강제 차단) */
-  flex: 0 0 auto !important;
-  height: auto !important;
-  min-height: 0 !important;
-  max-height: none !important;
-  overflow: visible !important;
-  align-self: center;
-  /* 카드 스타일 */
-  width: fit-content;
-  max-width: 80%;
-  margin: 1em auto;
-  padding: 1em 1.5em;
-  background: rgba(255, 255, 255, 0.85);
-  border-radius: 12px;
-  /* 컨텐츠 영역이므로 테두리·그림자 불필요 (사용자 결정) */
-}
-
-.reveal section.layout-_toc > .toc-body:empty {
-  display: none;
-}
-
-/* base.css의 li.bullet-dot/li.bullet-dash 가 list-style-type:disc/-style 을
-   부여해 layout-* §10의 ::before "●/─" 와 이중 마커 충돌을 일으킴.
-   layout-* 내부에서는 ::before 마커만 사용하도록 list-style 제거. */
-.reveal section[class*="layout-"] li.bullet-dot,
-.reveal section[class*="layout-"] li.bullet-dash {
-  list-style: none;
-}
-
-/* 챕터 카드 그림자 강조 — base.css 기본 box-shadow rgba(0,0,0,0.08) 가
-   흰 카드+흰 배경 환경에서 거의 보이지 않음. theme 시각 강화. */
-.reveal section.layout-_toc .chapter-list--cards .chapter-card {
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
-}
-
-.reveal section.layout-_toc .chapter-list--cards .chapter-card:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-}
-
-/* 본문(.toc-body)이 비어있지 않은 placeholder _toc 슬라이드는
-   비어있는 markmap 자리(SVG 380px min-height)가 카드를 아래로 밀어냄.
-   본문 카드가 있을 때는 markmap 영역을 숨겨 카드 위주 레이아웃 유지. */
-.reveal section.layout-_toc:has(> .toc-body:not(:empty)) > .toc-markmap {
-  display: none;
 }
 
 /* =========================================================================

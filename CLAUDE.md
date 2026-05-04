@@ -179,7 +179,7 @@ Projects/
 `_config.yml`에서 theme + layout 지정 (자세한 사용법은 `README.md` 참조).
 
 ```yaml
-theme: nowage                   # theme/{name}/slide.css
+theme: default_lec              # theme/{name}/slide.css
 theme_default_layout: contents  # 슬라이드 기본 layout
 ```
 
@@ -187,16 +187,17 @@ theme_default_layout: contents  # 슬라이드 기본 layout
 
 ```
 theme/
-├── default/                # 기본 theme (git 추적)
+├── default/                # 기본 theme (git 추적, 범용)
 │   ├── slide.css           # 전역 + 모든 .layout-* selector
 │   └── layouts/
 │       └── _toc.html       # 시스템 layout (TOC 자동 적용)
-└── nowage/                 # 사용자 커스터마이징 (gitignored)
-    ├── slide.css
-    └── layouts/            # HTML 템플릿만 (CSS는 slide.css에 통합)
-        ├── _toc.html
-        ├── cover.html
-        └── ...
+├── default_lec/            # 강의용 공식 테마 (git 추적)
+│   ├── slide.css
+│   └── layouts/            # HTML 템플릿만 (CSS는 slide.css에 통합)
+│       ├── _toc.html
+│       ├── _cover.html
+│       └── ...
+└── (그 외 사용자 커스터마이징은 gitignored)
 ```
 
 - `theme:` 미설정 시 `default` 자동 적용

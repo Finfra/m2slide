@@ -637,21 +637,21 @@
 }
 
 /* 1. Cover Layout */
-.reveal section.layout-cover {
+.reveal section.layout-_cover {
   justify-content: flex-start;
 }
 
-.reveal section.layout-cover .cover-header {
+.reveal section.layout-_cover .cover-header {
   padding: 2em 0 1em 0;
 }
 
-.reveal section.layout-cover .cover-title {
+.reveal section.layout-_cover .cover-title {
   font-size: 3.2em;
   font-weight: 700;
   margin: 0;
 }
 
-.reveal section.layout-cover .cover-visual {
+.reveal section.layout-_cover .cover-visual {
   flex-grow: 1;
   display: flex;
   align-items: center;
@@ -660,46 +660,46 @@
   min-height: 0;
 }
 
-.reveal section.layout-cover .cover-visual img,
-.reveal section.layout-cover .cover-visual svg {
+.reveal section.layout-_cover .cover-visual img,
+.reveal section.layout-_cover .cover-visual svg {
   max-width: 90%;
   max-height: 80%;
   width: auto;
   height: auto;
 }
 
-.reveal section.layout-cover .cover-meta {
+.reveal section.layout-_cover .cover-meta {
   flex-shrink: 0;
   padding: 1em 0;
   font-size: 1.2em;
 }
 
 /* 2. Contents Layout */
-.reveal section.layout-contents {
+.reveal section.layout-_contents {
   justify-content: flex-start;
 }
 
-.reveal section.layout-contents .contents-header {
+.reveal section.layout-_contents .contents-header {
   padding: 1.5em 0;
 }
 
-.reveal section.layout-contents .contents-title {
+.reveal section.layout-_contents .contents-title {
   font-size: 2.8em;
   font-weight: 700;
   margin: 0;
 }
 
-.reveal section.layout-contents .contents-divider {
+.reveal section.layout-_contents .contents-divider {
   width: 40%;
   margin: 0.5em 0 0 0;
 }
 
-.reveal section.layout-contents .contents-body {
+.reveal section.layout-_contents .contents-body {
   padding: 1.5em 0;
 }
 
-.reveal section.layout-contents ul,
-.reveal section.layout-contents ol {
+.reveal section.layout-_contents ul,
+.reveal section.layout-_contents ol {
   text-align: left;
   font-size: 1.1em;
   line-height: 1.6;
@@ -890,35 +890,38 @@
 }
 
 /* 8. Blank Layout */
-.reveal section.layout-blank {
+.reveal section.layout-_blank {
   justify-content: flex-start;
 }
 
-.reveal section.layout-blank .blank-header {
+.reveal section.layout-_blank .blank-header {
   padding: 1.5em 0;
 }
 
-.reveal section.layout-blank .blank-title {
+.reveal section.layout-_blank .blank-title {
   font-size: 2.8em;
   font-weight: 700;
   margin: 0;
 }
 
-.reveal section.layout-blank .blank-body {
+.reveal section.layout-_blank .blank-body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
   padding: 1.5em 0;
 }
 
-/* Issue27_1: image-only 자동 감지 시 풀스크린 이미지 표시 */
-.reveal section.layout-blank.layout-blank--full-image {
+/* image-only / video-only 자동 감지 시 풀스크린 미디어 표시 (공통 패턴) */
+.reveal section.layout-_blank--full-image,
+.reveal section.layout-_blank--full-video {
   padding: 0;
 }
-.reveal section.layout-blank.layout-blank--full-image .blank-header {
+.reveal section.layout-_blank--full-image .blank-header,
+.reveal section.layout-_blank--full-video .blank-header {
   display: none;
 }
-.reveal section.layout-blank.layout-blank--full-image .blank-body {
+.reveal section.layout-_blank--full-image .blank-body,
+.reveal section.layout-_blank--full-video .blank-body {
   padding: 0;
   display: flex;
   align-items: center;
@@ -927,7 +930,9 @@
   height: 100%;
   overflow: hidden;
 }
-.reveal section.layout-blank.layout-blank--full-image .blank-body p {
+.reveal section.layout-_blank--full-image .blank-body p,
+.reveal section.layout-_blank--full-video .blank-body p,
+.reveal section.layout-_blank--full-video .blank-body .media-container {
   margin: 0;
   width: 100%;
   height: 100%;
@@ -935,41 +940,8 @@
   align-items: center;
   justify-content: center;
 }
-.reveal section.layout-blank.layout-blank--full-image .blank-body img {
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  display: block;
-}
-
-/* Issue43: video-only 자동 감지 시 풀스크린 비디오 표시 (Issue27_1·27_4의 video 버전) */
-.reveal section.layout-blank.layout-blank--full-video {
-  padding: 0;
-}
-.reveal section.layout-blank.layout-blank--full-video .blank-header {
-  display: none;
-}
-.reveal section.layout-blank.layout-blank--full-video .blank-body {
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-.reveal section.layout-blank.layout-blank--full-video .blank-body p,
-.reveal section.layout-blank.layout-blank--full-video .blank-body .media-container {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.reveal section.layout-blank.layout-blank--full-video .blank-body video {
+.reveal section.layout-_blank--full-image .blank-body img,
+.reveal section.layout-_blank--full-video .blank-body video {
   width: 100%;
   height: 100%;
   max-width: 100%;
@@ -1106,7 +1078,7 @@
    - 공식 근거: _doc_design/css.md §3.2
    - 30자 한·영 혼합 가정, 5vw = 100/(30 × 0.6)
    ========================================================================= */
-.reveal section.layout-cover .cover-title {
+.reveal section.layout-_cover .cover-title {
   font-size: clamp(1.2em, 5vw, 3.4em);
 }
 
@@ -1156,7 +1128,7 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1777793098533">
+  <link rel="stylesheet" href="css/custom.css?v=1777857732254">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -2228,7 +2200,7 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
     var PREV_CHAPTER = '02.3.cli-based.html';
     function isCoverSlide(slide) {
       if (!slide) return false;
-      return slide.classList && slide.classList.contains('layout-cover');
+      return slide.classList && slide.classList.contains('layout-_cover');
     }
     function isTocSlide(slide) {
       if (!slide) return false;
@@ -2269,57 +2241,34 @@ git commit -m "AI: 사용자 인증 기능 추가"</code></pre>
 
     document.addEventListener('keydown', function(event) {
       var cur = Reveal.getCurrentSlide();
+      // 키 동작 종결 헬퍼: 브라우저 default + Reveal.js 기본 핸들러까지 차단 (key_navigation.md 매트릭스 강제)
+      function stop() { event.preventDefault(); event.stopImmediatePropagation(); }
+      // chapter 모드의 deck 내 TOC slide 폴백 점프 (없으면 agenda)
+      function gotoTocOrAgenda() {
+        if (M2SLIDE_MODE === 'chapter') {
+          var i = findTocSlideIndex();
+          if (i >= 0) { Reveal.slide(i, 0); return; }
+        }
+        window.location.href = 'agenda.html';
+      }
 
       // Issue71: Home 키 — 어디서든 agenda.html 직행 (Cover 포함, agenda는 자기 페이지라 deck 내 동작 영향 없음)
       if (event.key === 'Home' || event.keyCode === 36) {
-        event.preventDefault();
+        stop();
         window.location.href = 'agenda.html';
         return;
       }
 
-      // ↑ 키: 페이지 계층 상위로 이동 (Issue71 — H1 anchor 단위 추가)
+      // ↑ 키: 페이지 계층 상위로 이동 (key_navigation.md K3/K4 — vertical 무관, 항상 anchor/agenda 점프)
       if (event.key === 'ArrowUp' || event.keyCode === 38) {
-        var idx = Reveal.getIndices();
-        if (idx.v !== 0) return; // 수직 슬라이드 내부에서는 기본 동작
-        if (isCoverSlide(cur)) {
-          // Cover 슬라이드: 최상위 — 동작 없음
-          event.preventDefault();
-          return;
-        }
-        if (isTocSlide(cur)) {
-          // TOC 슬라이드 → agenda.html
-          event.preventDefault();
-          window.location.href = 'agenda.html';
-          return;
-        }
-        if (isAnchorSlide(cur)) {
-          // Issue71: H1 anchor 슬라이드
-          event.preventDefault();
-          if (M2SLIDE_MODE === 'chapter') {
-            var tocIdxA = findTocSlideIndex();
-            if (tocIdxA >= 0) { Reveal.slide(tocIdxA, 0); return; }
-          }
-          window.location.href = 'agenda.html';
-          return;
-        }
-        // 본문 슬라이드 — Issue71: 같은 deck 직전 H1 anchor 우선
-        var anchorIdx = findPrevAnchorIndex(idx.h);
-        event.preventDefault();
-        if (anchorIdx >= 0) {
-          Reveal.slide(anchorIdx, 0);
-          return;
-        }
-        // H1 anchor 없음 → 모드별 폴백
-        if (M2SLIDE_MODE === 'single') {
-          window.location.href = 'agenda.html';
-        } else {
-          var tocIdxB = findTocSlideIndex();
-          if (tocIdxB >= 0) {
-            Reveal.slide(tocIdxB, 0);
-          } else {
-            window.location.href = 'agenda.html';
-          }
-        }
+        if (isCoverSlide(cur)) { stop(); return; } // Cover: 최상위
+        if (isTocSlide(cur))   { stop(); window.location.href = 'agenda.html'; return; }
+        if (isAnchorSlide(cur)){ stop(); gotoTocOrAgenda(); return; }
+        // 본문 슬라이드 → 같은 deck 직전 H1 anchor (없으면 모드별 폴백)
+        var anchorIdx = findPrevAnchorIndex(Reveal.getIndices().h);
+        stop();
+        if (anchorIdx >= 0) { Reveal.slide(anchorIdx, 0); return; }
+        gotoTocOrAgenda();
         return;
       }
 

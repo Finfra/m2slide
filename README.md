@@ -50,11 +50,11 @@ m2slide/
 │   ├── generate-epub.js           # EPUB 변환 스크립트
 │   ├── deploy.sh                  # GitHub Pages 배포
 │   └── debug_yaml.js              # YAML 파싱 디버그 유틸
-├── theme/                         # 테마 (default만 git 추적, 그 외 gitignored)
-│   ├── default/
+├── theme/                         # 테마 (default·default_lec git 추적, 그 외 gitignored)
+│   ├── default/                   # 범용 기본 테마
 │   │   ├── slide.css              # 전역 스타일
 │   │   └── layouts/_toc.html      # 시스템 layout (TOC 자동 적용)
-│   └── nowage/                    # 사용자 커스텀 (예시)
+│   └── default_lec/               # 강의용 공식 테마
 │       ├── slide.css
 │       └── layouts/*.html         # cover, contents, split-image-text 등
 └── README.md
@@ -253,7 +253,7 @@ pandoc Projects/ProjectA/markdown/*.md -o complete.pptx
 각 프로젝트는 `_config.yml`에서 theme과 기본 layout을 지정합니다.
 
 ```yaml
-theme: nowage                   # theme/{name}/slide.css 적용
+theme: default_lec              # theme/{name}/slide.css 적용
 theme_default_layout: contents  # theme/{name}/layouts/contents.html 자동 적용
 ```
 
@@ -292,16 +292,16 @@ lib/css/base.css            # 모든 테마 공통 골격 (Issue64, ~1050줄)
                             # @import + :root 기본값 + 공통 레이아웃 + 컴포넌트 + 반응형
                             # html-builder.js가 inline <style>로 자동 주입
 theme/
-├── default/                # 기본 theme (git 추적, ~400줄 슬림화)
+├── default/                # 기본 theme (git 추적, 범용 ~400줄)
 │   ├── slide.css           # 테마 고유: 색상·배경 이미지·시각 언어
 │   └── layouts/
 │       └── _toc.html       # 시스템 layout (TOC)
-└── nowage/                 # 사용자 커스텀 (gitignore)
+└── default_lec/            # 강의용 공식 테마 (git 추적)
     ├── slide.css           # 테마 고유 selector
     └── layouts/            # HTML 템플릿만 (CSS는 slide.css에 통합)
         ├── _toc.html
-        ├── cover.html
-        ├── contents.html
+        ├── _cover.html
+        ├── _contents.html
         ├── split-image-text.html
         └── ...
 ```
