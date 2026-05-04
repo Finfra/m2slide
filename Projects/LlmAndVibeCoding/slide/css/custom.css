@@ -374,11 +374,6 @@
   flex-direction: column;
   gap: 0.3em;
 }
-.reveal section.layout-_cover .cover-label {
-  font-weight: 700;
-  margin-right: 0.4em;
-  color: var(--kn-accent, #f9a825);
-}
 .reveal section.layout-_cover .cover-instructor-name {
   font-weight: 600;
 }
