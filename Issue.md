@@ -20,6 +20,8 @@
 
 # 🔥 진행중
 
+# 📕 중요
+
 # 📙 일반
 
 # 📗 선택
@@ -77,33 +79,30 @@
     - `,` / `.` 키 동작 사용자 직접 확인 완료 — `#/12` 에서 `,` → `#/8`, `.` → `#/20` 정상
     - 진단 페이지 `_doc_work/key-test.html` 는 검증 완료 후 삭제
 
-### Issue92_1. macOS 환경에서 Home/End 물리 키 keydown 미전달 원인 규명·복구 (등록: 2026-05-04)
+### Issue92_1. macOS 환경에서 Home/End 물리 키 keydown 미전달 원인 규명·복구 (등록: 2026-05-04, 해결: 2026-05-04, commit: 3cdde72) ✅
 * 카테고리: Frontend
-* 목적: Issue92 fallback (`,` / `.`) 으로 우회는 했으나, 표준 ⇤ Home / ⇥ End 물리 키가 정상 동작해야 발표 중 손가락 위치를 자연스럽게 유지 가능. macOS 단계에서 Home/End keydown 이 브라우저까지 전달되지 않는 근본 원인을 규명하고 OS·키보드·리매핑 도구 설정으로 복구
-* 상세:
-    - 진단 결과 (key-test.html, window 최상위 capture phase): ↑↓←→·PgUp·PgDown·Cmd·Cmd+Arrow 전달 정상이나 Home/End 만 keydown 이벤트 자체가 페이지에 미도달
-    - 우리 JS 핸들러 단계 이전 (브라우저 이벤트 생성 이전 단계) 에서 차단되므로 코드 수정 불가능 — OS·키보드 펌웨어·리매핑 앱 단계 조사 필요
-    - 의심 후보:
-        - macOS 시스템 설정 → 키보드 → 키보드 단축키에서 Home/End 가 다른 동작에 할당
-        - Karabiner-Elements / BetterTouchTool / Hammerspoon / Magnet / Rectangle 등 키 리매핑 도구가 Home/End 가로챔
-        - 한/영 IME 가 Home/End 가로챔 (영문 모드 vs 한글 모드 비교 필요)
-        - 외장 키보드 펌웨어 매핑 또는 Fn 레이어 설정
-        - macOS 접근성 → 단축키 설정
-* 구현 명세:
-    - 사용자 환경 점검 단계:
-        - `Karabiner-EventViewer` 앱 설치 후 Home/End 입력 시 OS 단계에서 잡히는지 확인
-        - 입력 모드 (한/영) 를 영문으로 고정한 뒤 재시도
-        - 시스템 환경설정 → 키보드 → 단축키 탭의 모든 카테고리에서 Home·End 매핑 검토
-        - 키 리매핑 앱 비활성화 후 재시도 (각 앱 quit → 테스트)
-        - 다른 키보드 (외장 vs 내장 vs 다른 외장) 로 교차 검증
-    - 원인 식별 후 해당 설정 변경 또는 비활성화로 복구
-    - 진단 페이지 (`_doc_work/key-test.html`) 재생성 후 사용 — 향후 재발 시 동일 절차로 빠르게 분리 가능
+* 목적: Issue92 fallback (`,` / `.`) 으로 우회는 했으나, 표준 ⇤ Home / ⇥ End 물리 키가 정상 동작해야 발표 중 손가락 위치를 자연스럽게 유지 가능. macOS 단계에서 Home/End keydown 이 브라우저까지 전달되지 않는 근본 원인을 규명하고 복구
+* 원인 (식별):
+    - **Keyboard Maestro** `KeyHome` / `KeyEnd` 매크로가 Home/End 키를 ⌘ArrowLeft / ⌘ArrowRight 로 변환 (조건: iTerm front 가 아닐 때 → ⌘LeftArrow + Home 시뮬레이션, 그 외 → ⌘LeftArrow). 결과적으로 페이지에는 Home keydown 이 도달하지 않고 ⌘+ArrowLeft 가 도달
+    - IME 무관 확인 (영문 모드에서도 동일), Karabiner / BetterTouchTool 무관 확인, macOS 시스템 단축키 무관 확인 → KM 매크로가 단일 원인
+    - 사용자가 KM 매크로의 다른 기능 의존성으로 매크로 자체를 변경 불가
+* 구현 명세 (실행):
+    - `lib/html-builder.js` 4개 핸들러에 `⌘+← → Home`, `⌘+→ → End` 동의어 매핑 추가:
+        - deck Home 핸들러: `(event.metaKey && event.key === 'ArrowLeft')` 추가
+        - deck End 핸들러: `(event.metaKey && event.key === 'ArrowRight')` 추가
+        - cover handler: Home/End fallback 분기에 `(e.metaKey && (ArrowLeft||ArrowRight))` 추가, ArrowRight child 분기에 `!e.metaKey` 조건 강화
+        - agenda handler: 동일 패턴 적용 (ArrowLeft/ArrowRight 일반 분기 `!e.metaKey`, Home/End fallback 분기에 ⌘+arrow 추가)
+    - deck ArrowLeft / ArrowRight 일반 핸들러에 `!event.metaKey` 조건 추가 — Home/End 분기와 충돌 방지
+    - 진단 도구 `_doc_work/key-test.html` 재생성하여 OS 단계 이벤트 도달 여부 검증
 * 검증:
-    - key-test.html 에서 Home·End 물리 키 입력 시 keydown 로그 정상 출력
-    - `Projects/m2SlideStyle1_single/slide/index.html#/12` 에서 Home → #/8, End → #/20 정상 동작
+    - `m2SlideStyle1_single` 빌드 성공, 산출물 `index.html` 5건 + `agenda.html` 3건 `Issue92_1` 마커 확인
+    - `index.html#/12` 에서 Home(KM 변환) → #/8, End(KM 변환) → #/20 정상 동작 (사용자 검증)
+    - ⌘+← / ⌘+→ 직접 입력도 동일 동작
+    - 일반 ←/→ 슬라이드 prev/next 회귀 없음
+* 디버깅 노트: [`_doc_work/debug_TECH.md`](_doc_work/debug_TECH.md) "키보드 네비게이션" 섹션에 사례 박제
 * 비고:
-    - 원인이 OS 환경 (사용자 머신 한정) 으로 확정되면 코드 변경 없이 종결 가능
-    - 다수 사용자에게 재현되면 Issue92 fallback 외 추가 코드적 대응 (예: KeyboardEvent 정규화 layer) 검토
+    - 원인이 사용자 환경(KM 매크로) 한정이므로 다수 사용자에게는 재현 안 될 수 있으나, ⌘+arrow → Home/End 동의어 매핑은 일반적 macOS 텍스트 편집 컨벤션과도 일치하여 부수 비용 없음
+    - 향후 KeyboardEvent 정규화 레이어가 필요하면 본 패턴을 베이스로 일반화 가능
 
 ## Issue89. ⇤ Home / ⇥ End 키 동작 안 함 — Reveal.js hijack 수정 (등록: 2026-05-04, 해결: 2026-05-04, commit: ba4e084) ✅
 * 카테고리: Frontend
