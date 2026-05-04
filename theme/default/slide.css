@@ -414,18 +414,22 @@
   opacity: 1;
   font-size: 0.9em;
 }
-/* Issue80 §2.1: cover-meta — 우상단 absolute, 박스 없이 작게 */
+/* Issue80 §2.1: cover-meta — 우상단 absolute, 박스 없이 작게
+   - top 24px: 노랑 가로선(top:12px + height:2px = 14px 끝)과 10px 여백
+   - line-height 1: 텍스트 baseline이 가로선 위로 침범하지 않도록 박스 높이 최소화
+   - right 56px: base.css §10 layout-* padding right(56px)와 정렬 */
 .reveal section.layout-_cover .cover-meta {
   position: absolute;
-  top: 28px;
-  right: 32px;
+  top: 24px;
+  right: 56px;
   align-self: auto;
   margin: 0;
   padding: 0;
   border: none;
   background: transparent;
   max-width: none;
-  font-size: 0.6em;
+  font-size: 0.55em;
+  line-height: 1;
   display: flex;
   gap: 0.6em;
   color: var(--kn-text);
@@ -604,6 +608,8 @@
 .guide-line-mode .reveal section.layout-_cover .cover-meta {
   border: 2px dashed rgba(255, 0, 255, 0.7) !important;        /* magenta */
   background-color: rgba(255, 0, 255, 0.06) !important;
+  /* Issue80 후속: cover-meta는 §6에서 absolute로 정의되었으므로 라벨용 positioned ancestor 강제(아래 §8.4)에서 absolute 유지하도록 본 selector에서 명시 override */
+  position: absolute !important;
 }
 .guide-line-mode .reveal section.layout-_cover .cover-qr {
   border: 2px dashed rgba(218, 165, 32, 0.8) !important;       /* goldenrod */
@@ -662,7 +668,7 @@
 .guide-line-mode .reveal section.layout-_cover .cover-part-subtitle,
 .guide-line-mode .reveal section.layout-_cover .cover-body,
 .guide-line-mode .reveal section.layout-_cover .cover-instructor,
-.guide-line-mode .reveal section.layout-_cover .cover-meta,
+/* Issue80 후속: cover-meta는 §6에서 absolute(우상단). 본 list에 포함하면 relative 강제로 absolute가 깨져 guide_line 모드에서 version 위치 사라짐 → 제외. ::before 라벨은 absolute 컨테이너 기준으로도 정상 동작 */
 .guide-line-mode .reveal section.layout-_cover .cover-qr,
 .guide-line-mode .reveal section.layout-_toc .toc-page-header,
 .guide-line-mode .reveal section.layout-_toc .toc-markmap,
