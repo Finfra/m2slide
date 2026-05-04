@@ -185,10 +185,10 @@
 
 .reveal section[class*="layout-"] .mermaid svg,
 .reveal section[class*="layout-"] .media-container svg {
-  max-width: 100% !important;
-  max-height: 100% !important;
-  width: auto !important;
-  height: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
   object-fit: contain;
 }
 
