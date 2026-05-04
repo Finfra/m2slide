@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 97
+* Issue HWM: 98
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
@@ -20,42 +20,32 @@
 
 # 🔥 진행중
 
-# 📕 중요
-
-## Issue97. default_lec theme를 default theme의 Issue80/86 시각 변경과 동기화 (등록: 2026-05-04)
-* 카테고리: Theme
-* 목적: `theme_layout_lec.md` §3.1·§3.4가 "DOM 스키마 외 슬롯·시각 배치는 default §3.X 동일"로 명시하나, default가 Issue80(2026-05-04 a268ad4) / Issue86(2026-05-04 582d064) 으로 갱신된 후 `theme/default_lec/slide.css`가 동기화되지 않아 설계 SSOT와 코드가 어긋남. 코드를 설계에 맞춤 + 의도적 미동기 항목은 설계 문서에 명시
-* 상세:
-    - **불일치 1 — cover-meta 박스 (Issue80 §2.1 미반영)**
-        - 설계: `theme_layout_default.md §2.1` — "커버-meta 박스 스타일 제거 + version·lecture_date를 우상단 absolute"
-        - default 코드: `theme/default/slide.css` 우상단 absolute 적용됨
-        - default_lec 코드: `theme/default_lec/slide.css:129-137` — 여전히 `border: 2px solid`, `padding: 0.4em 1em`, `margin: 0 4% 4% 0`, `align-self: flex-end` 박스 스타일 (좌하단)
-    - **불일치 2 — page-number / controls / progress 위치 (Issue86 미반영)**
-        - 설계 의도(Issue86): outer padding 바깥(viewport letterbox 영역)에 `position: fixed`로 표시
-        - default 코드: `theme/default/slide.css:69-92` — `position: fixed !important; bottom: 0 !important; z-index: 200 !important` 적용 + `_cover` 슬라이드일 때 hide
-        - default_lec 코드: `theme/default_lec/slide.css:49-55` — `position`/`z-index`/`bottom: 0` 미설정 (기존 `bottom: 18px; right: 24px`만 유지). `_cover` hide selector도 누락
-    - **불일치 3 — `_contents` 우상단 puffer 위치 (Issue86 가로선 정렬 후속)**
-        - default 코드: `background-position: 96% 28px` (절대값 — 상단 가로선 22px 아래 보장)
-        - default_lec 코드: `theme/default_lec/slide.css:144` — `96% 6%` (구 상대값, 상단 가로선과 충돌 가능)
-    - **참고 — hr.png 통일은 Issue86에서 명시적으로 default만 적용 (옵션 3)**
-        - Issue.md `Issue86` 본문: "hr.png 이미지화는 default만 우선 적용 (옵션 3 선택)"
-        - 따라서 default_lec은 sketch 톤 hr.png 미적용이 의도. **이 결정이 `theme_layout_lec.md`에 명시되지 않음** → 설계 문서 보강 필요
+## Issue98. 코드 블록 좌측 정렬 + HTML escape + hljs 클래스 누락 — 코드 하이라이트 다중 결함 (등록: 2026-05-04)
+* 카테고리: Generator + Theme
+* 목적: `Projects/m2SlideStyle2_chapter/slide/02-code-syntax.html#/1` (`JavaScript 코드 예시`) 에서 코드가 슬라이드 가운데로 정렬되어 가독성 저해. 동시에 (1) HTML 특수문자(`<`,`>`,`&`)가 escape되지 않아 Python `if n <= 1:` 같은 코드가 브라우저에서 깨질 위험, (2) `<pre>`/`<code>` 가 hljs 박스 스타일을 받지 못해 일반 본문과 시각 구분이 사라짐. 3건 모두 코드 하이라이트 기능의 근본 결함이므로 한 묶음으로 해결
+* 근본 원인:
+    1. **좌측 정렬 누락**: [`lib/css/base.css:243`](lib/css/base.css) `.reveal pre { width: 100%; margin: 0 auto }` 만 있고 `text-align` 미설정 → Reveal.js 기본 `.reveal { text-align: center }` 가 상속되어 `<pre>` 내부 각 라인이 가운데 정렬됨. `.reveal section.layout-_contents ul, ol { text-align: left }` ([`lib/css/base.css:754`](lib/css/base.css)) 처럼 명시 override 필요
+    2. **HTML escape 누락**: [`lib/markdown.js:452`](lib/markdown.js) 정규 코드 블록 분기에서 `codeLines.join('\n')` 을 그대로 `<code>` 안에 삽입. `<`,`>`,`&` 가 escape되지 않아 Python `if n <= 1:` → 브라우저가 `<= 1:`을 HTML 태그 시작으로 파싱. mermaid/kroki 분기는 의도적으로 raw 유지가 맞으나, 일반 코드 블록은 escape 필수
+    3. **hljs 박스 스타일 차단**: [`theme/default/slide.css:275-279`](theme/default/slide.css) 가 `pre`, `pre code` 에 `background: transparent !important` 강제 → CDN github.css (`highlight.js@11.9.0/styles/github.css`) 의 `.hljs { background: #f6f8fa; padding: 1em; ... }` 가 무력화. 결과적으로 코드가 본문 텍스트와 동일한 배경에 떠있어 "코드 박스" 시각 단서 사라짐. 또한 빌드 산출물 `<code>` 에는 `hljs` 클래스가 미부착 (RevealHighlight 플러그인 런타임 처리 결과 의존) — pre-render 단계에서 `hljs` class 명시 부착하면 CSS 적용이 더 안정적
 * 구현 명세:
-    - **A. 코드 업데이트 (default_lec/slide.css)**:
-        - cover-meta 블록을 default `theme/default/slide.css:606-621` 형태로 교체 (position: absolute, top/right, version·lecture_date 작게)
-        - `.reveal .slide-number`에 `position: fixed !important; bottom: 0 !important; z-index: 200 !important` 추가
-        - `.reveal .controls`, `.reveal .progress`도 default와 동일하게 fixed 처리
-        - `_cover`/`_agenda` 슬라이드에서 slide-number/controls/progress hide selector 추가
-        - `_contents` background-position을 `96% 28px`로 변경
-    - **B. 설계 문서 업데이트 (theme_layout_lec.md)**:
-        - §3.4 또는 §4.4에 "hr.png 손글씨 밑줄 미적용 (Issue86 옵션 3) — default_lec은 단색 2px 가로선 유지" 명시
-        - §3.1 cover 또는 별도 섹션에 page-number/controls/progress 위치 정책이 default와 동일함을 reference로 명시
+    - **A. 좌측 정렬 추가** ([`lib/css/base.css`](lib/css/base.css)):
+        - `.reveal pre { ... }` 블록에 `text-align: left;` 추가
+        - `.reveal pre code { ... }` 블록에도 명시 `text-align: left;` 보강 (specificity 보호)
+    - **B. HTML escape 추가** ([`lib/markdown.js:449-453`](lib/markdown.js)):
+        - 정규 코드 블록 분기에서 `codeLines.join('\n')` → `escapeHtml(codeLines.join('\n'))` 로 변경
+        - `escapeHtml` 헬퍼 신규: `&` → `&amp;`, `<` → `&lt;`, `>` → `&gt;` 만 처리 (코드용 최소 escape, `"` `'` 는 attribute 아닌 text 컨텍스트라 불필요)
+        - mermaid/kroki 분기는 변경 없음 (raw source 필요)
+    - **C. hljs 박스 시각 복구**:
+        - 옵션 1 (권장): [`theme/default/slide.css:275-279`](theme/default/slide.css) 의 `background: transparent !important` selector 에서 `pre, pre code` 제거 → github.css `.hljs` 배경 살림. (단, Reveal.js 다크 배경 슬라이드 사용 시 충돌 가능성은 별도 검토)
+        - 옵션 2: `pre`/`pre code` 는 transparent 유지 + 자체 `.code-wrapper { background: var(--code-bg, #f6f8fa); padding: 1em; border-radius: 6px; }` 추가 (CDN 의존 제거)
+        - 빌드 산출물에 `hljs` 클래스 명시 부착도 검토: [`lib/markdown.js:451`](lib/markdown.js) `langClass` 에 `hljs` 추가 → `class="language-X hljs"`
     - **검증**:
-        - `LlmAndVibeCoding`(default_lec 사용) 빌드 통과
-        - cover 슬라이드: cover-meta가 우상단 absolute, slide-number/progress 미표시 확인
-        - 일반 슬라이드: page-number가 viewport 우하단 letterbox 영역에 표시
-        - `_contents` 우상단 puffer가 상단 가로선과 겹치지 않음 확인
-        - default theme 사용 프로젝트(m2SlideStyle1_single, m2SlideStyle2_chapter, layoutTest) 회귀 없음
+        - `m2SlideStyle2_chapter` 빌드 후 `02-code-syntax.html#/1` (JavaScript), `#/2` (Python) 좌측 정렬 + 박스 배경 시각 확인
+        - Python `if n <= 1:` 가 정상 텍스트로 표시되는지 (HTML 태그로 파싱되지 않는지) 확인
+        - `m2SlideStyle1_single`, `LlmAndVibeCoding` (`06-practical-cases.html` 코드 블록 다수) 회귀 없음
+        - guide-line-mode 에서 hljs span (`hljs-keyword`, `hljs-title function_` 등) 정상 출력 재확인
+
+# 📕 중요
 
 # 📙 일반
 
@@ -63,6 +53,27 @@
 
 
 # ✅ 완료
+
+## Issue97. default_lec theme를 default theme의 Issue80/86 시각 변경과 동기화 (등록: 2026-05-04, 해결: 2026-05-04, commit: 8883e2e) ✅
+* 카테고리: Theme
+* 목적: `theme_layout_lec.md` §3.1·§3.4가 "DOM 스키마 외 슬롯·시각 배치는 default §3.X 동일"로 명시하나 default가 Issue80(a268ad4) / Issue86(582d064)으로 갱신된 후 `theme/default_lec/slide.css`가 동기화되지 않아 설계 SSOT와 코드 어긋남. 코드를 설계에 맞춤 + hr.png 미적용은 의도적 차이로 설계 문서에 명시
+* 구현 명세 (실행):
+    - **코드 (`theme/default_lec/slide.css`)**:
+        - cover-meta: 박스 스타일 제거 + 우상단 `position: absolute (top:24px, right:5%)`, font-size 0.55em (Issue80 §2.1 동기)
+        - `_cover` min-height: 100vh → 100% (base.css §10 layout-* 100% 규칙 동기)
+        - slide-number: `position: fixed !important; bottom: 0 !important; right: 24px; z-index: 200 !important`, font-size 14px (Issue86 동기)
+        - controls: `position: fixed; bottom: 0; right: 0; z-index: 200` 추가
+        - progress: `position: fixed; left: 0; right: 0; bottom: 0; z-index: 100` 추가
+        - `_cover` 슬라이드에서 slide-number/controls/progress hide selector 추가
+        - `_contents` puffer position 96% 6% → 96% 28px + `_contents_no_title` 추가
+        - `_contents_no_title > .contents-body { padding-top: 0; margin-top: 0 }` 추가
+    - **설계 문서 (`_doc_design/theme_layout_lec.md`, gitignored)**:
+        - §3.1: cover-meta 우상단 absolute 명시 (Issue80 동기) + min-height 100% 명시
+        - §5.1: hr.png 옵션 3 결정(default 전용, lec은 단색 2px 유지) 명시 + page-number/controls/progress 위치 정책 명시
+* 검증:
+    - `LlmAndVibeCoding_test` (default_lec) 빌드 통과 — 산출물 `slide/css/custom.css`에 5건 변경 모두 반영 확인
+    - default theme 회귀 검증 통과: `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest` 빌드 성공
+    - 브라우저 확인: cover-meta 우상단 absolute, slide-number letterbox 표시, _cover에서 네비게이션 hide
 
 ## Issue96. 2x2 그리드 (columns 안에 rows 중첩) 균등 분할 미적용 (등록: 2026-05-04, 해결: 2026-05-04, commit: fdbe8da) ✅
 * 카테고리: Theme
