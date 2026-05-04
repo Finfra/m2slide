@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 103
+* Issue HWM: 105
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
@@ -20,6 +20,27 @@
 
 # 🔥 진행중
 
+## Issue104. Chapter ← 이전 챕터 진입 시 트랜지션 방향 역전 — 순방향 애니메이션이 뒤로가기 의도와 충돌 (등록: 2026-05-04)
+* 카테고리: Frontend
+* 목적: Chapter 모드에서 ← 키로 이전 챕터(`?last=1`)로 이동 시, 새 페이지가 fresh load되어 Reveal.js가 forward 트랜지션(우→좌 슬라이드)을 재생함. 사용자는 "뒤로 가는 동작"을 인식하므로 backward 트랜지션(좌→우 슬라이드)이어야 직관적
+* 상세:
+    - 재현: 페이지 2 (`Projects/m2SlideStyle2_chapter/slide/03-data-visualization.html`)에서 ← 키 누름
+    - 현재: 페이지 1 (`02-code-syntax.html?last=1#/2`)로 이동하면서 forward 슬라이드 애니메이션 재생 → 방향 혼동
+    - 기대: backward 슬라이드 애니메이션(반대 방향) 재생 → 사용자가 "뒤로 갔음"을 시각적으로 인지
+    - 영향 범위: Chapter 모드 ← (TOC slide·#/0에서 이전 챕터로 진입), Home/⌘← (이전 챕터 첫 슬라이드 진입)도 동일 이슈 가능
+* 구현 명세 (계획):
+    - 도착 페이지에서 진입 방향을 인지할 수 있는 URL 시그널 추가 (ex: `?last=1&dir=back`, 기존 `?last=1` 자체로도 ← 진입 시그널로 충분)
+    - [`lib/html-builder.js`](lib/html-builder.js)의 navigation 코드 (lines 1262-1289) — ← / Home에서 PREV_CHAPTER 진입 시 `?last=1` (기존) 또는 `?dir=back` 추가
+    - 도착 페이지의 `Reveal.on('ready')` 핸들러에서 시그널 감지 시:
+        - 옵션 A (CSS): body에 `.m2-enter-back` 클래스 부착 → CSS keyframe으로 backward slide 애니메이션 1회 재생
+        - 옵션 B (JS): `Reveal.configure({ transition: 'slide' })` 상태에서 첫 표시 시 임시로 다른 슬라이드를 거쳐 backward 방향으로 트랜지션 (시각 잔상 위험)
+        - 권장: 옵션 A — Reveal.js 기본 트랜지션 비활성화 + 자체 CSS keyframe (제어성·안정성)
+    - 검증: chapter 프로젝트 빌드 후 페이지 2 → ← → 페이지 1 진입 시 슬라이드가 좌측에서 우측으로 들어옴 확인
+* 검증:
+    - `m2SlideStyle2_chapter` 빌드 산출물 확인
+    - 브라우저: 페이지 2 → ← → 페이지 1, backward 트랜지션 시각 확인
+    - 회귀: 일반 페이지 직접 진입(`?last=1` 없이)은 트랜지션 없음(현행) 유지
+
 # 📕 중요
 
 # 📙 일반
@@ -28,6 +49,28 @@
 
 
 # ✅ 완료
+
+## Issue105. ⇤/⇥ Single 모드 sibling을 H1 전용에서 레벨 인식 트리 탐색으로 확장 (등록: 2026-05-04, 해결: 2026-05-04, commit: 2e188b5) ✅
+* 카테고리: Frontend
+* 목적: H2 sub-anchor 간 sibling 이동(`4.1 ↔ 4.2`) 불가 — Issue92의 H1-only 정책 부수 효과. 사용자 멘탈 모델("같은 레벨에서 옆으로")과 어긋남. 트리 탐색 의미로 일반화
+* 구현 명세 (실행):
+    - 신규 함수 ([`lib/html-builder.js`](lib/html-builder.js)):
+        - `getEnclosingAnchorLevel(currentH)`: enclosing anchor 레벨 N 결정 (현재가 anchor면 자기 level, 본문이면 직전 anchor level, 기본 1)
+        - `findPrevSiblingAnchorIndex(currentH, level)`: currentH 이전 슬라이드 중 anchor && `headingLevel <= level` 첫 매치
+        - `findNextSiblingAnchorIndex(currentH, level)`: currentH 이후 슬라이드 중 anchor && `headingLevel <= level` 첫 매치
+    - Home 핸들러 Single 분기: `findPrevH1AnchorIndex` → `findPrevSiblingAnchorIndex(curH, encLevel)`
+    - End 핸들러 Single 분기: `findNextH1AnchorIndex` → `findNextSiblingAnchorIndex(curH, encLevel)`
+    - Chapter 모드는 변경 없음 (deck 단위 점프 유지)
+    - 설계 동기: [`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) Issue105 항목 (단축키 동작 표·K4·변경 이력)
+* 효과:
+    - H2 anchor 간 sibling 이동 가능 (예: `4.1 ↔ 4.2`)
+    - H2 마지막 sibling에서 ⇥ → 부모 H1의 다음 H1 sibling으로 자연 fall-up (트리 탐색)
+    - 본문 슬라이드도 동일 — enclosing anchor 레벨 기준
+    - H1 ↔ H1 회귀 유지 (자식 H2 skip)
+* 검증:
+    - `m2SlideStyle1_single` 빌드 산출물 `index.html`에 신규 함수 7회 occurrence 부착 확인 (`getEnclosingAnchorLevel`, `findPrev/NextSiblingAnchorIndex`, Home/End 호출부)
+    - `m2SlideStyle2_chapter`, `layoutTest` 빌드 회귀 없음 (Chapter ⇤/⇥는 기존 deck 단위 점프 유지)
+    - 브라우저: `index.html#/14` 열림 — 사용자 ⇥/⇤ 직접 확인 가능
 
 ## Issue103. Single 모드 본문(leaf)에서 ↓ 키 무동작 — 다음 H1 anchor fall-through 미구현 (등록: 2026-05-04, 해결: 2026-05-04, commit: 7570cf0) ✅
 * 카테고리: Frontend
