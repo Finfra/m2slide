@@ -56,6 +56,13 @@
 .reveal section[class*="layout-"]::before { top: 12px; }
 .reveal section[class*="layout-"]::after  { bottom: 12px; }
 
+/* 모든 layout-* section min-height: 100% 강제 — 상하 inner gap 대칭 보장
+   기존: .layout-_cover만 min-height 적용 → contents/blank/toc는 contents 크기로 짧아져
+   ::after가 viewport 아래에 가까이 붙고 ::before는 letterbox + padding으로 멀어 비대칭 발생 */
+.reveal section[class*="layout-"] {
+  min-height: 100% !important;
+}
+
 /* 페이지 번호 (Reveal.js 기본 .slide-number 활용 + 폴백) */
 .reveal .slide-number {
   background: transparent !important;
@@ -167,13 +174,14 @@
 /* Issue80 §2.1: cover-meta 박스 스타일 제거 — version·lecture_date를 우상단 absolute로 (§6에서 position·박스 제거 정의) */
 
 /* 4.2 contents: puffer2s 우상단 (작게)
-   Issue80 §2.5: _contents_no_title도 동일 마스코트 적용 */
+   Issue80 §2.5: _contents_no_title도 동일 마스코트 적용
+   background-position-y: 40px(절대값) — 상단 가로선(top:12 + height:10 = 22px)과 마스코트 분리 보장 */
 .reveal section.layout-_contents,
 .reveal section.layout-contents-full,
 .reveal section.layout-_contents_no_title {
   background-image: url('../theme-img/finfraPuffer2s.png');
   background-repeat: no-repeat;
-  background-position: 96% 6%;
+  background-position: 96% 40px;
   background-size: 9% auto;
 }
 
@@ -393,11 +401,12 @@
   content: none;
 }
 
-/* Issue80 §2.3: _toc 우상단 puffer2s 마스코트 (좌상단 puffer1 → 우상단 puffer2s, 본문 layout 일관성) */
+/* Issue80 §2.3: _toc 우상단 puffer2s 마스코트 (좌상단 puffer1 → 우상단 puffer2s, 본문 layout 일관성)
+   background-position-y: 40px(절대값) — 상단 가로선과 분리 */
 .reveal section.layout-_toc {
   background-image: url('../theme-img/finfraPuffer2s.png');
   background-repeat: no-repeat;
-  background-position: 96% 6%;
+  background-position: 96% 40px;
   background-size: 9% auto;
 }
 
@@ -560,7 +569,7 @@
   position: relative;
   background-image: url('../theme-img/finfraPuffer2s.png');
   background-repeat: no-repeat;
-  background-position: 96% 6%;
+  background-position: 96% 40px;
   background-size: 8% auto;
 }
 
