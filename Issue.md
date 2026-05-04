@@ -20,42 +20,42 @@
 
 # 🔥 진행중
 
-## Issue90. title_contents_gap이 .contents-title에 적용 안 됨 (등록: 2026-05-04)
-* 카테고리: Theme
-* 목적: `_config.yml`의 `title_contents_gap` 설정이 chapter 모드의 `.contents-title`(contents-header 안의 제목)에는 적용되지 않아 모드별 제목↔본문 갭이 일관되지 않음. 모든 제목 클래스에 일관 적용되도록 보강
-* 상세:
-    - `lib/css/base.css:142` — `margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);`이 `.reveal .title`에만 정의됨
-    - chapter 모드는 H2가 `.contents-header > .contents-title` 구조로 빌드되어 `.title` 셀렉터 미매치 → `title_contents_gap: 30` 무시됨
-    - single 모드는 `.contents-body > .title:first-child`로 빌드되어 일부 적용되나, `:first-child` 박스의 `padding-bottom`과 중복 작용
-* 구현 명세:
-    - base.css `.reveal .title { margin-bottom: ... }` 셀렉터를 `.reveal .title, .reveal .contents-title, .reveal .chapter-title, .reveal .toc-title, .reveal .chapter-toc-title`로 확장 (또는 `.reveal [class$="-title"], .reveal .title` 일괄)
-    - 빌드 산출물(`Projects/m2SlideStyle1_single`, `Projects/m2SlideStyle2_chapter`) HTML에서 `.contents-title { margin-bottom: ...em }` 적용 확인
-    - `_config.yml`의 `title_contents_gap` 값을 0/30/60으로 바꿔 가며 챕터/싱글 모두 갭 변화 시각 확인
-* 후속: Issue91 — 갭 적용 후 contents-title의 underline 가로선이 contents-header 안에 있어 갭 비대칭으로 보이는 문제 해결
-
-# 📙 일반
-
-## Issue91. 제목 underline이 contents-header 안쪽에 있어 위/아래 갭 비대칭 (등록: 2026-05-04)
-* 카테고리: Theme
-* 목적: 슬라이드 위쪽 가로선(`section::before`)은 contents-header 박스 **바깥**에 있는 반면, 제목 아래 underline(`.contents-title::after` 또는 `.title::after`)은 박스 **안쪽**에 위치하여 시각적으로 위/아래 갭이 비대칭으로 보임. underline을 박스 바깥으로 빼서 첫번째 가로선과 동일한 시각적 패턴으로 정렬
-* 상세:
-    - guide-line-mode 검증 결과(m2SlideStyle2_chapter `01-text-layout.html#/1`):
-        - 위 가로선: contents-header(초록) 박스 위쪽 외부에 위치 (자연스러움)
-        - 아래 가로선: contents-header 박스 안쪽 하단에 위치 (제목 underline)
-    - underline의 `position: absolute; bottom: 0`이 `.title`/`.contents-title` 박스 기준이라 박스 안에 갇힘
-* 구현 명세:
-    - 옵션A: `.title::after`/`.contents-title::after`의 `bottom: 0` → `bottom: -10px` (또는 `-100%`)로 박스 외부로 밀어냄. underline은 contents-header padding-bottom 아래쪽 또는 contents-body 시작 직전에 위치
-    - 옵션B: contents-header에 `padding-bottom: 0` + `margin-bottom: 0`으로 만들고, underline을 contents-header `::after`로 분리 (구조 변경)
-    - 옵션A가 변경 폭 작아 우선 검토
-* 의존: Issue90 선행 해결 (title_contents_gap 정상 작동 확보 후 underline 위치 조정해야 갭 제어가 의미 있음)
-* 검증: m2SlideStyle1_single, m2SlideStyle2_chapter 빌드 후 첫 본문 슬라이드에서 위/아래 가로선 모두 contents-header(또는 .title) 박스 외부에 위치, 위 갭 == 아래 갭 시각 확인
-
 # 📙 일반
 
 # 📗 선택
 
 
 # ✅ 완료
+
+## Issue91. 제목 underline이 contents-header 안쪽에 있어 위/아래 갭 비대칭 (등록: 2026-05-04, 해결: 2026-05-04, commit: 2b1c3d9) ✅
+* 카테고리: Theme
+* 목적: 슬라이드 위쪽 가로선(`section::before`)과 제목 아래 underline(`.title::after`)이 서로 다른 박스 기준이라 좌우 끝이 정렬되지 않고, underline이 contents-header/box 안쪽에 갇혀 위/아래 갭 비대칭으로 보임. 두 가로선을 모두 `.title` 박스에 부착하여 자동 정렬
+* 구현 명세 (Issue90과 동일 커밋에서 해결):
+    - `theme/default/slide.css`:
+        - `.layout-_contents`에서 `section::before` 숨김 (대신 `.title::before` 사용)
+        - 위쪽 가로선: `.title::before { top: -12px; right: 0 }` — `.title` 박스 외부 위, 슬라이드 하단 가로선과 동일 폭
+        - 아래 underline: `.title::after { bottom: -12px; right: 10% }` — `.title` 박스 외부 아래, 우상단 puffer 회피용 right 10% 유지
+    - `lib/html-builder.js`:
+        - 빈 `contents-header`(빈 `<h1 class="contents-title">`) 빌드 후 제거
+        - `.contents-body` 첫 자식 H2를 section 직속 자식으로 이동 (백업본 `<section><h2 class="title">+<div class="theContents">` 구조와 등가)
+* 검증: m2SlideStyle1_single, m2SlideStyle2_chapter 빌드 산출물에서 두 가로선 모두 `.title` 박스 외부에 위치하고 좌우 끝이 자동 정렬됨 (`.title` width: 100% → 박스 폭에 종속)
+
+## Issue90. title_contents_gap이 .contents-title에 적용 안 됨 (등록: 2026-05-04, 해결: 2026-05-04, commit: 2b1c3d9) ✅
+* 카테고리: Theme
+* 목적: `_config.yml`의 `title_contents_gap` 설정이 chapter 모드의 H2 슬라이드에서 작동하지 않아 모드별 제목↔본문 갭이 일관되지 않음. 모든 제목 클래스에 일관 적용 + cascade 충돌 해소
+* 근본 원인:
+    - `base.css:135` `.reveal .title { margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em) }` (specificity 0,0,2,0)이 theme `.reveal section[class*="layout-"] .contents-body > .title { margin: 0.3em auto 0.3em auto }` shorthand (specificity 0,0,4,1)에 의해 override됨 — `margin-bottom: 0.3em` 강제 명시로 변수 무력화
+    - `.contents-body`가 flex column이지만 H2가 그 자식이 아니라 외부로 이동했을 때 .title 자체의 sibling collapse 가능
+* 구현 명세:
+    - `lib/css/base.css`:
+        - `.reveal .title` 룰을 `.title, .contents-title, .chapter-title, .chapter-toc-title, .toc-title, .blank-title, .closing-title, .exercise-title` 그룹으로 분리
+        - font-* 속성은 `.title` 전용 유지, `margin-bottom: calc(...)`만 그룹 전체에 일관 적용
+    - `theme/default/slide.css`:
+        - `.contents-body > .title`의 `margin: 0.3em auto 0.3em auto` shorthand 분리 → `margin-top/left/right`만 명시, `margin-bottom`은 base.css의 calc(...)이 정상 적용되도록 제거
+        - `.title:first-child + * { margin-top: 0 !important }` — sibling margin collapse 차단
+        - `section[class*="layout-"] > .title` 셀렉터 추가 — H2가 contents-body 외부 이동 시에도 동일 스타일 적용
+        - `.layout-_contents > .title { width: 100%, padding/margin 좌우 0, box-sizing: border-box }` — section padding과 동일 폭 보장
+* 검증: m2SlideStyle1_single, m2SlideStyle2_chapter, layoutTest 3종 빌드 통과. `title_contents_gap: 0/30/60` 변경 시 갭 비례 변화 확인. 가이드라인 모드에서 `.title` 박스가 `.contents-body` 외부에 위치하고 두 가로선이 정렬됨
 
 ## Issue92. Home/End sibling 점프가 H2 sub-section까지 매칭 + 일부 환경에서 Home/End keydown 미전달 (등록: 2026-05-04, 해결: 2026-05-04, commit: b9610bb) ✅
 * 카테고리: Frontend
