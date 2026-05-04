@@ -417,11 +417,11 @@
 /* Issue80 §2.1: cover-meta — 우상단 absolute, 박스 없이 작게
    - top 24px: 노랑 가로선(top:12px + height:2px = 14px 끝)과 10px 여백
    - line-height 1: 텍스트 baseline이 가로선 위로 침범하지 않도록 박스 높이 최소화
-   - right 56px: base.css §10 layout-* padding right(56px)와 정렬 */
+   - right 5%: 가로선(right: 4%) 안쪽 1% 들여쓰기 — 픽셀 단위(56px) 사용 시 가로선 우측 끝보다 바깥으로 나가는 문제 회피 */
 .reveal section.layout-_cover .cover-meta {
   position: absolute;
   top: 24px;
-  right: 56px;
+  right: 5%;
   align-self: auto;
   margin: 0;
   padding: 0;
