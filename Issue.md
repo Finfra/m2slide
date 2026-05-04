@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 102
+* Issue HWM: 103
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
@@ -28,6 +28,25 @@
 
 
 # ✅ 완료
+
+## Issue103. Single 모드 본문(leaf)에서 ↓ 키 무동작 — 다음 H1 anchor fall-through 미구현 (등록: 2026-05-04, 해결: 2026-05-04, commit: 7570cf0) ✅
+* 카테고리: Frontend
+* 목적: Single 모드에서도 leaf ↓가 fall-through로 다음 주요 섹션(H1 anchor)으로 이동. Chapter 모드 leaf ↓(다음 챕터)와 대칭
+* 상세:
+    - 재현: `Projects/m2SlideStyle1_single/slide/index.html#/3` ("중첩 리스트", 본문 leaf)에서 ↓ 누름 → 무반응
+    - 기대: `#/5` ("2. 코드 및 신택스 하이라이팅", 다음 H1 anchor)로 즉시 이동
+    - 도착지는 ⇥ End와 동일하나 위치 무관 leaf fall-through로 의미 통일
+* 구현 명세 (실행):
+    - [`lib/html-builder.js`](lib/html-builder.js) ArrowDown leaf branch에 Single 모드 분기 추가
+    - `M2SLIDE_MODE === 'chapter'`: 기존 Chapter fall-through 유지
+    - `else` (Single): `findNextH1AnchorIndex(Reveal.getIndices().h)` → ≥0이면 `Reveal.slide(idx, 0)`. 마지막 H1 섹션은 무동작
+    - 메시지·확인 없이 1회 누름 (양 모드 공통)
+    - [`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) Single 모드 매트릭스·K7·변경 이력 동기 갱신
+* 검증:
+    - `m2SlideStyle1_single` 빌드 산출물 `index.html`에 leaf branch Single 분기 코드 부착 확인 (`leafNextH1 = findNextH1AnchorIndex(...)`)
+    - `m2SlideStyle2_chapter` 빌드 산출물에도 동일 분기 부착 (Chapter 분기 우선) — 회귀 없음
+    - `layoutTest` 빌드 통과
+    - 브라우저: `index.html#/3` ↓ → `#/5` 이동, 마지막 섹션 본문에서 무동작
 
 ## Issue101. 코드 박스 시각 안정화 — CDN github.css 의존 제거 + 자체 .code-wrapper 박스 (등록: 2026-05-04, 해결: 2026-05-04, commit: 42979cf) ✅
 * 카테고리: Theme
