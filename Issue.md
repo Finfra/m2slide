@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 101
+* Issue HWM: 102
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
@@ -49,6 +49,21 @@
 
 
 # ✅ 완료
+
+## Issue102. H2 sub-anchor에서 ↑ 시 직속 부모 H1 anchor로 이동 안 함 (Issue100 후속) (등록: 2026-05-04, 해결: 2026-05-04, commit: 354d142) ✅
+* 카테고리: Frontend
+* 목적: Issue100 수정 후 `Projects/m2SlideStyle1_single/slide/index.html#/14` (H2 sub-anchor "4.1. 이미지") 에서 ↑ 누름 시 직속 부모 #/12 (H1 anchor "4. 이미지 및 미디어") 로 이동해야 하나 즉시 agenda.html 로 점프. 페이지 계층 (leaf → H2 → H1 → TOC/agenda → cover) 의 H2→H1 단계 누락
+* 근본 원인: [`lib/html-builder.js`](lib/html-builder.js) ↑ 핸들러 `if (isAnchorSlide(cur)){ ... gotoTocOrAgenda() }` 분기가 H1 anchor와 H2 sub-anchor를 구분 없이 모두 TOC/agenda로 전송. H2 sub-anchor는 H1을 부모로 가져야 함
+* 구현 명세 (실행):
+    - ↑ 핸들러 분기 재구성:
+        - `isH1Anchor(cur)` → `gotoTocOrAgenda()` (H1 → 한 단계 위 TOC/agenda)
+        - `isAnchorSlide(cur)` (H2 sub-anchor) → `findPrevH1AnchorIndex` 결과로 점프, 없으면 TOC/agenda 폴백
+        - leaf 본문 → `findPrevAnyAnchorIndex` (Issue100 동일)
+* 검증:
+    - `m2SlideStyle1_single` #/14 → ↑ → #/12 (H1) 정상 이동
+    - #/12 (H1) → ↑ → agenda.html 정상
+    - #/15 (leaf) → ↑ → #/14 (Issue100 회귀 없음)
+    - m2SlideStyle2_chapter, layoutTest 빌드 회귀 없음
 
 ## Issue99. Chapter 모드 본문(leaf)에서 ↓ 키 무동작 — 다음 챕터 fall-through 미구현 (등록: 2026-05-04, 해결: 2026-05-04, commit: 68eb82b) ✅
 * 카테고리: Frontend
