@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 89
+* Issue HWM: 92
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
@@ -15,12 +15,60 @@
 
 
 # 🌱 이슈후보
-1. 쳅터모드에서 페이지 번호가 해당 md마다 1부터 시작하는데, 전체 기준으로 제공되어야함. 단, md 방식에서는 breadcum방식으로 쳅터 번호를 페이지 옆에 제공해야함. 관련 설정 필요. 
-2. 
+2. 쳅터모드에서 페이지 번호가 해당 md마다 1부터 시작하는데, 전체 기준으로 제공되어야함. 단, md 방식에서는 breadcum방식으로 쳅터 번호를 페이지 옆에 제공해야함. 관련 설정 필요. 
+1. 페이지 네비게이션 번호와 주소 맞지 않음. 페이지 네비게션 번호가 0(toc때문)부터 시작해야함.향후 toc를 생략하는 상황에서도 1부터 시작해서 잘 맞게됨. 
 
 # 🔥 진행중
 
+## Issue92. Home/End sibling 점프가 H2 sub-section까지 매칭 + 일부 환경에서 Home/End keydown 미전달 (등록: 2026-05-04)
+* 카테고리: Frontend
+* 목적: Single 모드에서 ⇤ Home / ⇥ End 가 설계 의도(인접 H1 anchor 점프)와 다르게 동작 + 일부 macOS 환경에서 Home/End keydown 이벤트가 페이지까지 도달하지 않아 키 자체가 무반응. 두 문제 모두 해결하여 발표 중 sibling 챕터 점프를 안정적으로 보장
+* 상세:
+    - 증상1: `Projects/m2SlideStyle1_single` `index.html#/12` (H1 `4. 이미지 및 미디어`) 에서 ⇥ End 가 `#/14` (H2 `4.1. 이미지`) 로 잡힘. 사용자 기대치는 다음 H1 인 `#/20` (`5. 레이아웃 예제`). ⇤ Home 도 H2 sub-anchor (`#/14`, `#/17`) 가 후보에 들어가 H1 점프 의미 훼손
+    - 원인1: `lib/html-builder.js` `findPrevAnchorIndex` / `findNextAnchorIndex` 가 `isAnchorSlide` (`layout-_toc` + `id !== 'toc-placeholder'`) 만 검사. 설계 ([`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) L87) 는 "직전/직후 **H1 anchor**" 명시이나 코드는 H2 sub-section autoToc 까지 모두 매칭
+    - 원인2: `lib/slide-parser.js` autoToc 분기는 헤딩 레벨에 무관하게 (children 존재 시) `layout: '_toc'` 로 wrap. 렌더된 section에 heading level 정보가 없어 키 핸들러가 H1 vs H2 구분 불가
+    - 증상2: 사용자 환경 (macOS) 에서 물리적 Home/End 키를 눌러도 window 최상위 capture phase 에서도 keydown 자체가 잡히지 않음 (PgUp/PgDown 은 정상 도달). 진단 페이지 `_doc_work/key-test.html` 로 확인. 원인은 OS·키보드·리매핑 도구 단계 추정 — 우리 코드로는 해결 불가
+* 구현 명세:
+    - `lib/slide-parser.js` autoToc 분기에서 `s.headingLevel = level` 보존
+    - `lib/html-builder.js` `generateSlideHTML` 에서 `slide.autoToc && slide.headingLevel` 인 section 에 `data-heading-level="${level}"` 속성 주입
+    - 키 핸들러 (`generateHTML` 본문 deck) 에 `isH1Anchor` 헬퍼 추가 — `isAnchorSlide` + `dataset.headingLevel === '1'`. `findPrevAnchorIndex` / `findNextAnchorIndex` 가 `isH1Anchor` 사용. `isAnchorSlide` 자체는 ↑/↓ parent/child 의미 유지 위해 그대로 (H2 sub-section TOC 도 anchor 로 인정)
+    - Home/End 핸들러에 fallback 매칭 추가: `event.code === 'Comma'` / `event.code === 'Period'` (`,` / `.`). cover 핸들러 ([`generateCoverHTML`](lib/html-builder.js)) 와 agenda 핸들러 ([`generateAgendaHTML`](lib/html-builder.js)) 에도 동일 fallback 적용 (no-op 매핑 확장). `event.code` 기반이라 Shift·한글 IME 무관
+    - 설계 문서 [`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) 키 정의 표 / 핵심 원칙 / 변경 이력 갱신 — `,`·`.` fallback 명시
+* 검증:
+    - 빌드 3종 (`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`) 모두 성공
+    - `Projects/m2SlideStyle1_single/slide/index.html` H1 anchor (`data-heading-level="1"`) 7개 (#/1, #/5, #/8, #/12, #/20, #/28, #/31), H2 sub-anchor (`data-heading-level="2"`) 2개 (#/14, #/17) 분리 확인
+    - `,` / `.` 키 동작 사용자 직접 확인 완료 — `#/12` 에서 `,` → `#/8`, `.` → `#/20` 정상
+    - 진단 페이지 `_doc_work/key-test.html` 는 검증 완료 후 삭제
+
+## Issue90. title_contents_gap이 .contents-title에 적용 안 됨 (등록: 2026-05-04)
+* 카테고리: Theme
+* 목적: `_config.yml`의 `title_contents_gap` 설정이 chapter 모드의 `.contents-title`(contents-header 안의 제목)에는 적용되지 않아 모드별 제목↔본문 갭이 일관되지 않음. 모든 제목 클래스에 일관 적용되도록 보강
+* 상세:
+    - `lib/css/base.css:142` — `margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);`이 `.reveal .title`에만 정의됨
+    - chapter 모드는 H2가 `.contents-header > .contents-title` 구조로 빌드되어 `.title` 셀렉터 미매치 → `title_contents_gap: 30` 무시됨
+    - single 모드는 `.contents-body > .title:first-child`로 빌드되어 일부 적용되나, `:first-child` 박스의 `padding-bottom`과 중복 작용
+* 구현 명세:
+    - base.css `.reveal .title { margin-bottom: ... }` 셀렉터를 `.reveal .title, .reveal .contents-title, .reveal .chapter-title, .reveal .toc-title, .reveal .chapter-toc-title`로 확장 (또는 `.reveal [class$="-title"], .reveal .title` 일괄)
+    - 빌드 산출물(`Projects/m2SlideStyle1_single`, `Projects/m2SlideStyle2_chapter`) HTML에서 `.contents-title { margin-bottom: ...em }` 적용 확인
+    - `_config.yml`의 `title_contents_gap` 값을 0/30/60으로 바꿔 가며 챕터/싱글 모두 갭 변화 시각 확인
+* 후속: Issue91 — 갭 적용 후 contents-title의 underline 가로선이 contents-header 안에 있어 갭 비대칭으로 보이는 문제 해결
+
 # 📙 일반
+
+## Issue91. 제목 underline이 contents-header 안쪽에 있어 위/아래 갭 비대칭 (등록: 2026-05-04)
+* 카테고리: Theme
+* 목적: 슬라이드 위쪽 가로선(`section::before`)은 contents-header 박스 **바깥**에 있는 반면, 제목 아래 underline(`.contents-title::after` 또는 `.title::after`)은 박스 **안쪽**에 위치하여 시각적으로 위/아래 갭이 비대칭으로 보임. underline을 박스 바깥으로 빼서 첫번째 가로선과 동일한 시각적 패턴으로 정렬
+* 상세:
+    - guide-line-mode 검증 결과(m2SlideStyle2_chapter `01-text-layout.html#/1`):
+        - 위 가로선: contents-header(초록) 박스 위쪽 외부에 위치 (자연스러움)
+        - 아래 가로선: contents-header 박스 안쪽 하단에 위치 (제목 underline)
+    - underline의 `position: absolute; bottom: 0`이 `.title`/`.contents-title` 박스 기준이라 박스 안에 갇힘
+* 구현 명세:
+    - 옵션A: `.title::after`/`.contents-title::after`의 `bottom: 0` → `bottom: -10px` (또는 `-100%`)로 박스 외부로 밀어냄. underline은 contents-header padding-bottom 아래쪽 또는 contents-body 시작 직전에 위치
+    - 옵션B: contents-header에 `padding-bottom: 0` + `margin-bottom: 0`으로 만들고, underline을 contents-header `::after`로 분리 (구조 변경)
+    - 옵션A가 변경 폭 작아 우선 검토
+* 의존: Issue90 선행 해결 (title_contents_gap 정상 작동 확보 후 underline 위치 조정해야 갭 제어가 의미 있음)
+* 검증: m2SlideStyle1_single, m2SlideStyle2_chapter 빌드 후 첫 본문 슬라이드에서 위/아래 가로선 모두 contents-header(또는 .title) 박스 외부에 위치, 위 갭 == 아래 갭 시각 확인
 
 # 📙 일반
 
