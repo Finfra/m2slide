@@ -20,8 +20,6 @@
 
 # 🔥 진행중
 
-    - 회귀: 일반 페이지 직접 진입(`?last=1` 없이)은 트랜지션 없음(현행) 유지
-
 # 📕 중요
 
 # 📙 일반
@@ -43,13 +41,14 @@
         - hasBack 단독: `body.m2-back-enter` 부착 (첫 슬라이드 진입 backward 애니메이션)
         - hasFwd: `body.m2-fwd-enter` 부착 (forward 애니메이션)
         - 450ms 후 클래스 제거
-    - CSS keyframes (template `<style>`):
-        - `m2-slide-from-right` (← 키, backward 방향)
-        - `m2-slide-from-left` (→ 키, forward 방향)
-        - `body.m2-back-enter`, `body.m2-fwd-enter` selector
+    - CSS keyframes (template `<style>`, Reveal.js 표준 컨벤션):
+        - `m2-slide-from-left` (← 키 backward — 좌측에서 등장, 우측 모션)
+        - `m2-slide-from-right` (→ 키 forward — 우측에서 등장, 좌측 모션)
+        - `body.m2-back-enter`, `body.m2-fwd-enter` selector + `!important`로 Reveal inline transform 우선
+    - `body.m2-cross-loading` 클래스로 cross-page 진입 동안 `.reveal { visibility: hidden }` → Reveal 내부 forward 트랜지션 깜빡임 차단 후 `requestAnimationFrame`에서 노출 + 애니메이션 시작
 * 효과:
-    - ← 키로 이전 챕터 진입 시 슬라이드가 우측에서 등장 (좌측 모션) — 뒤로 가는 시각 정합
-    - → 키로 다음 챕터 진입 시 슬라이드가 좌측에서 등장 (우측 모션) — 앞으로 가는 시각 정합
+    - ← 키로 이전 챕터 진입 시 슬라이드가 좌측에서 등장 (Reveal backward와 동일) — 뒤로 가는 시각 정합
+    - → 키로 다음 챕터 진입 시 슬라이드가 우측에서 등장 (Reveal forward와 동일) — 앞으로 가는 시각 정합
     - PgDown(?last=1만, back 없음)은 즉시 점프 (기존 동작 유지)
 * 검증:
     - 3종 프로젝트 빌드 통과
