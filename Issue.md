@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 98
+* Issue HWM: 100
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
@@ -20,6 +20,26 @@
 
 # 🔥 진행중
 
+## Issue99. Chapter 모드 본문(leaf)에서 ↓ 키 무동작 — 다음 챕터 fall-through 미구현 (등록: 2026-05-04)
+* 카테고리: Frontend
+* 목적: [`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) (직전 갱신) "본문 leaf ↓ → 다음 챕터 첫 슬라이드(TOC slide, 메시지 없음·1회)" 설계가 코드에 반영되지 않음. `02-code-syntax.html?last=1#/2`에서 ↓ 무반응 — `→ →`(2회·메시지) 만 다음 챕터로 이동. 설계 문서와 구현 어긋남
+* 상세:
+    - 재현: `Projects/m2SlideStyle2_chapter/slide/01-text-layout.html#/2` 또는 `#/3`에서 ↓ 누름 → 무반응
+    - 기대: `02-code-syntax.html` 첫 슬라이드(TOC slide, `#/0`)로 즉시 이동, 메시지 없음
+    - → 와 차별점:
+        1. 위치 무관 (본문 어느 슬라이드에서나 1회로 즉시 이동, → 는 마지막 슬라이드+메시지+2회)
+        2. 메시지 없음 (→ 는 "다음 챕터로 이동하려면 다시 →를 누르세요" 안내)
+* 구현 명세:
+    - [`lib/html-builder.js`](lib/html-builder.js) `generateHTML` 일반 deck 키 핸들러 ArrowDown 분기(line 1206-1224)의 leaf branch(line 1221-1223 `// 본문(leaf): 동작 없음`) 수정
+    - Chapter 모드(`M2SLIDE_MODE === 'chapter'`)이고 `NEXT_CHAPTER` 존재 시 → `window.location.href = NEXT_CHAPTER` (메시지·확인 없이 즉시)
+    - 마지막 챕터(NEXT_CHAPTER 빈값 또는 `'index.html'`)면 동작 없음
+    - Single 모드는 leaf ↓ 무동작 유지 (설계 K7 분기 반영)
+* 검증:
+    - `m2SlideStyle2_chapter` 빌드 후 `01-text-layout.html#/2`·`#/3`에서 ↓ → `02-code-syntax.html` 이동 확인
+    - 마지막 챕터에서 ↓ 무동작 확인
+    - Single 모드(`m2SlideStyle1_single`) 본문에서 ↓ 무동작 회귀 확인
+    - layoutTest 빌드 회귀 확인
+
 # 📕 중요
 
 # 📙 일반
@@ -28,6 +48,19 @@
 
 
 # ✅ 완료
+
+## Issue100. 본문 leaf에서 ↑ 키가 직속 부모(H2 sub-anchor) 건너뛰고 H1 anchor로 점프 (등록: 2026-05-04, 해결: 2026-05-04, commit: 68eb82b) ✅
+* 카테고리: Frontend
+* 목적: `Projects/m2SlideStyle1_single/slide/index.html#/15` (H2 sub-anchor `#/14` 직후 본문 leaf) 에서 ↑ 키 누름 시 #/14가 아닌 #/12 (H1 anchor "4. 이미지 및 미디어")로 점프. 직속 부모 의미 위반. `_doc_design/key_navigation.md` 설계의 ↑=parent 규칙에서 H2 sub-anchor도 부모 후보에 포함되어야 함
+* 근본 원인: [`lib/html-builder.js`](lib/html-builder.js) `findPrevAnchorIndex` (Issue92에서 H1만 매칭하는 `isH1Anchor`로 변경됨) — Home/End sibling 점프와 ↑ parent 점프가 같은 함수를 공유하여 H2 sub-anchor가 ↑ 후보에서도 제외됨. Issue92는 sibling 점프(Home/End)에서 H2를 제외하려는 의도였으나 ↑ parent 점프까지 영향
+* 구현 명세 (실행):
+    - 함수 분리: `findPrevH1AnchorIndex`/`findNextH1AnchorIndex` (Home/End sibling, ↓ TOC→첫 H1 — `isH1Anchor` 유지) + `findPrevAnyAnchorIndex` (↑ parent — `isAnchorSlide` 사용으로 H2 sub-anchor 포함)
+    - 호출부 갱신: ↑ key (line 1194) → `findPrevAnyAnchorIndex` / Home (1239) → `findPrevH1AnchorIndex` / End (1293) → `findNextH1AnchorIndex` / ↓ TOC (1209) → `findNextH1AnchorIndex(-1)` (currentH=-1로 처음부터 검색)
+* 검증:
+    - `m2SlideStyle1_single` 빌드 후 `index.html#/15` → ↑ → `#/14` (H2 sub-anchor) 정상 이동
+    - `#/14` (H2 anchor) → ↑ → agenda.html (anchor 슬라이드 → TOC/agenda 폴백 정상)
+    - Home/End sibling 점프는 H1 anchor만 매칭 (Issue92 의도 유지)
+    - `m2SlideStyle2_chapter`, `layoutTest` 빌드 회귀 없음
 
 ## Issue98. 코드 블록 좌측 정렬 + HTML escape + hljs 클래스 누락 — 코드 하이라이트 다중 결함 (등록: 2026-05-04, 해결: 2026-05-04, commit: d567d53) ✅
 * 카테고리: Generator + Theme
