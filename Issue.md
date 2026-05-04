@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 109
+* Issue HWM: 110
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.6.0 (2026-05-05)** — release: 9키 네비게이션 SSOT 정립 + 트리 탐색 의미 도입 (Issue71-106 36건). Backward 트랜지션·anchor 자식 우선·leaf fall-through 등 키 동작 정밀화 + Pandoc columns/rows 호환 + 메타데이터 SSOT 통합
@@ -19,6 +19,19 @@
 1. 쳅터모드에서 페이지 번호가 해당 md마다 1부터 시작하는데, 전체 기준으로 제공되어야함. 단, md 방식에서는 breadcum방식으로 쳅터 번호를 페이지 옆에 제공해야함. 관련 설정 필요.
 
 # 🔥 진행중
+
+## Issue110. 챕터 간 이동 시 cross-page flicker 발생 (등록: 2026-05-05)
+* 카테고리: Frontend
+* 목적: 챕터 모드에서 `?fwd=1` 또는 `?last=1&back=1` 파라미터로 페이지 전환 시, Reveal.js가 초기화되기 전 raw `.reveal` 콘텐츠가 잠깐 paint되어 layout이 무너진 상태가 보이는 flicker 발생. Issue104에서 도입한 `body.m2-cross-loading .reveal { visibility: hidden }` 가드가 작동하지 않음.
+* 상세:
+    - `lib/html-builder.js:686-691` `m2-cross-loading` 클래스 추가 inline script가 `<body>` 안의 `<div class="reveal">` HTML 파싱·렌더링 + 6개 CDN script(D3·Markmap·Reveal·plugins·Mermaid) 로딩이 끝난 시점에 실행됨
+    - 그 이전에 브라우저는 raw HTML(슬라이드 콘텐츠를 자연 흐름 레이아웃으로) 이미 paint
+    - 결과: cross-page 진입 시 0.1~수백ms 동안 Reveal 미초기화 상태가 화면에 노출 → flicker 인지
+* 구현 명세:
+    - `<head>` 안에 인라인 스크립트 추가: `location.search`에 `back=1` 또는 `fwd=1` 포함 시 `document.documentElement.classList.add('m2-cross-loading')` 즉시 실행
+    - CSS 셀렉터를 `body.m2-cross-loading .reveal`에서 `.m2-cross-loading .reveal`로 변경(또는 `html.m2-cross-loading .reveal` 추가)하여 html 클래스로도 매칭
+    - `Reveal.on('ready')` 핸들러에서 `documentElement`의 클래스도 함께 제거
+    - 검증: `m2SlideStyle2_chapter` 빌드 후 챕터 간 →·← 키, PgDown(?last=1) 이동 시 flicker 없음 확인
 
 ## Issue107. 슬라이드 우측 하단 네비게이션 UI 정리 [진행중] — `^/v` 버튼을 `</>` 사이에 배치 + 비활성 회색 처리 (등록: 2026-05-05)
 * 카테고리: Frontend
