@@ -20,28 +20,6 @@
 
 # 🔥 진행중
 
-## Issue108. 페이지 번호 표시와 URL hash 1-based 일치 (등록: 2026-05-05)
-* 카테고리: Frontend
-* 목적: 우측 하단 페이지 번호 표시(`slideNumber: 'c/t'`)는 1-based(1,2,...)로 노출되지만 Reveal.js URL hash는 0-based(`#/0`,`#/1`,...)로 시작하여 사용자가 보는 번호와 주소가 어긋남. 예: 표시 `4/34` ↔ 주소 `#/3`. 두 값을 1-based로 통일하여 향후 TOC 슬라이드를 생략(`toc_placeholder: false`)하더라도 페이지 번호와 hash가 일관되게 유지되도록 함.
-* 상세:
-    - `lib/html-builder.js:703` `Reveal.initialize({ slideNumber: 'c/t' })` — 표시 number는 reveal.js 내부에서 1-based로 계산
-    - Reveal.js 기본 hash는 0-based (`#/0`이 첫 슬라이드)
-    - 첫 슬라이드가 자동 주입되는 TOC(`toc_placeholder: true` 기본값) 또는 cover라서 사용자는 "1번 페이지인데 hash는 #/0"이라는 비대칭을 봄
-    - 현재 사용자 환경에서 TOC를 생략하면 hash·표시 불일치가 더 명확해질 위험 존재
-* 구현 명세:
-    - **1차 시도** (Reveal.js 5.0.4 기본 옵션): `Reveal.initialize` 옵션에 `hashOneBasedIndex: true` 추가 — `lib/html-builder.js:703` 인근. 옵션 동작 확인은 빌드 후 브라우저에서 첫 슬라이드 hash가 `#/1`로 노출되는지로 검증
-    - **fallback (옵션 미지원 시)**: Reveal `slidechanged`·`ready`·`hashchange` 이벤트에서 `Reveal.getIndices()`를 읽어 `location.hash`를 `#/(h+1)` 또는 `#/(h+1)/(v+1)` 형태로 직접 갱신. 단 `replaceState` 사용으로 history 오염 방지. fallback 진입 전에 1차 옵션 적용 결과를 사용자에게 보고 후 결정
-    - **slideNumber 표시는 그대로**: `slideNumber: 'c/t'` 유지(이미 1-based)
-    - **Cover/TOC 자동 주입과의 정합성**: 자동 주입 슬라이드가 첫 hash를 차지하더라도 1-based 매핑은 동일하게 동작. 별도 분기 불필요
-    - **검증 시나리오** (`m2SlideStyle2_chapter` 프로젝트):
-        1. 빌드 후 첫 슬라이드 진입 시 URL이 `#/1`로 표시되는가
-        2. 우측 하단 표시 번호 `1/N`과 hash `#/1`이 일치하는가
-        3. → 키로 다음 슬라이드 이동 시 `#/2`, 표시 `2/N`로 동기화되는가
-        4. `toc_placeholder: false`로 빌드해도 첫 슬라이드 = `#/1` 유지되는가
-        5. 직접 `#/3` 접근 시 표시도 `3/N`으로 일치하는가
-        6. 챕터 모드(`m2SlideStyle2_chapter`)에서도 동일 동작 (각 챕터 HTML 내 hash 1부터)
-    - **금지 사항**: `display: flex`·`height: 100%`·`position`·`transform` 등 CSS 레이아웃 속성 변경 없음(본 이슈는 JS 옵션 단독 변경)
-
 ## Issue107. 슬라이드 우측 하단 네비게이션 UI 정리 [진행중] — `^/v` 버튼을 `</>` 사이에 배치 + 비활성 회색 처리 (등록: 2026-05-05)
 * 카테고리: Frontend
 * 목적: 현재 우측 하단 `nav-up-btn`의 "상위" 텍스트가 군더더기. ↑ 키만 노출되고 ↓ 키는 시각적 진입점이 없어 사용자가 키보드 단축키 존재를 모름. Reveal.js 기본 `</>` 사이에 `^/v` 버튼을 배치해 4방향 네비게이션을 일관되게 노출하고, 더 이상 이동할 곳이 없는 방향은 회색(disabled) 표시로 가시화.
@@ -72,6 +50,22 @@
 
 > v0.6.0 (2026-05-05) 시점 Issue71-106 36건 아카이브 → [`z_old/old_issue.md`](z_old/old_issue.md)
 > v0.5.0 (2026-05-03) 시점 Issue~70 71건 아카이브 → [`z_old/old_issue.md`](z_old/old_issue.md)
+
+## Issue108. 페이지 번호 표시와 URL hash 1-based 일치 (등록: 2026-05-05, 해결: 2026-05-05, commit: 12ad52b) ✅
+* 카테고리: Frontend
+* 목적: 우측 하단 페이지 번호 표시(`slideNumber: 'c/t'`)는 1-based로 노출되지만 Reveal.js URL hash는 0-based로 시작하여 사용자가 보는 번호와 주소가 어긋남(예: 표시 `4/34` ↔ 주소 `#/3`). 두 값을 1-based로 통일하여 TOC 슬라이드 생략 여부와 무관하게 페이지 번호와 hash가 일관되게 유지되도록 함.
+* 해결:
+    - `lib/html-builder.js:691` `Reveal.initialize`에 `hashOneBasedIndex: true` 옵션 추가 — Reveal.js 5.0.4가 정식 지원하는 옵션으로 hash 텍스트만 ±1 시프트(내부 인덱스는 0-based 그대로 유지하므로 키 핸들러 영향 없음)
+    - TOC anchor 링크 4곳 +1 시프트 (hashOneBasedIndex 보정):
+        - `lib/html-builder.js:94` H1 markmap branch
+        - `lib/html-builder.js:105` H2 markmap leaf
+        - `lib/html-builder.js:234` chapter-card list (plain 슬라이드)
+        - `lib/html-builder.js:275` chapter-card list (layout 슬라이드)
+    - Cover 페이지 빌더(`lib/html-builder.js:1759`)는 `hash: false`/`slideNumber: false`라 본 이슈 영향 없음
+* 검증:
+    - `m2SlideStyle1_single`(단일) — cover 진입 시 `#/1`, 표시 `1/34` 일치, → 키 진행 시 `#/2`/`2/34` 동기화, agenda TOC anchor 클릭 시 의도된 슬라이드로 정확히 이동
+    - `m2SlideStyle2_chapter`(챕터) — 7개 챕터 HTML 모두 hash↔표시 일치
+* 회귀 진단 기록: 초기 수정 직후 사용자가 "→ 안 되고 PageDown만 됨" 보고 → `hashOneBasedIndex` 단독 적용은 회귀 아님(브라우저 캐시 문제)으로 확인. agenda anchor 링크의 0-based 가정이 hashOneBasedIndex와 충돌하여 잘못된 슬라이드로 진입하던 부수 문제는 anchor +1 시프트로 해결.
 
 # ⏸️ 보류
 
