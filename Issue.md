@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 79
+* Issue HWM: 84
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
@@ -22,10 +22,81 @@
 
 # 📙 일반
 
+## Issue80. theme_layout_default.md §2 레이아웃 변경 결정사항 default theme 적용 (등록: 2026-05-04)
+* 카테고리: Theme
+* 선행: Issue84 완료 대기 — Issue84(`theme.md` §2 `slide_css:` 우선순위 표 정정)가 종결된 후에만 본 이슈 진행. 사유: Issue84의 `slide_css:`/`theme:` fallback 동작 명세가 본 이슈의 `theme/default/slide.css` 수정 범위·우선순위 판단의 전제 조건
+* 목적: `_doc_design/theme_layout_default.md` §2에 명세된 레이아웃 설계 결정사항 6종을 `theme/default/` 실제 layout HTML·`slide.css`·마스코트 배치에 반영. 설계 SSOT와 빌드 산출물 간 정합성 회복.
+* 상세:
+    - 참조: [`_doc_design/theme_layout_default.md`](_doc_design/theme_layout_default.md) §2
+    - 영향 파일(예상):
+        - `theme/default/layouts/_cover.html`, `_agenda.html`, `_toc.html`, `_contents.html`, `_contents_no_title.html`, `_blank.html`
+        - `theme/default/slide.css` (`.layout-_*` selector, `div.layout-_agenda::before`, 마스코트 background-image/position)
+        - `Projects/layoutTest` 시각 검증 슬라이드 (필요 시 갱신)
+* 구현 명세:
+    1. `_cover` (§2.1):
+        - `version` 박스(`.cover-version` 등)를 우상단 작은 텍스트로 이동. 기존 우하단 박스 스타일 제거
+        - `instructor_name` + `instructor_contact`를 박스 없이 중앙 하단 한 줄(제목 아래) 검정 텍스트로 표기. "강사:" 라벨 제거
+        - QR(`qr_code_path`/`qr_url`) 위치는 본 이슈에서 미변경(보류) — 추후 별도 이슈
+    2. `_agenda` (§2.2):
+        - 상단 노랑 가로선 추가. wrapper가 `<div class="layout-_agenda">` (standalone)이므로 §4.4 공통 selector(`section[class*="layout-"]`)에 매치되지 않음 → `div.layout-_agenda::before` 별도 selector를 `slide.css`에 추가
+        - 우상단 puffer2s(`finfraPuffer2s.png`) 마스코트 추가 — 현행 마스코트 없음
+        - 우상단 다운로드 버튼(`.toc-page-downloads`)과 충돌 시 버튼은 헤더 안쪽으로 정렬되도록 위치 조정
+    3. `_toc` (§2.3):
+        - 마스코트 위치 변경: 좌상단 `finfraPuffer1.png` → 우상단 `finfraPuffer2s.png` (본문 layout 일관성)
+        - `theme/default/slide.css`의 `.layout-_toc` background-image/position 갱신
+    4. `_contents` (§2.4):
+        - 현행(우상단 puffer2s + §4.4 상하 가로선 + 제목 `hr.png` 밑줄)이 빌드 결과에 누락 없이 출력되는지 확인. 회귀 발견 시 selector 보강
+    5. `_contents_no_title` (§2.5):
+        - `_contents`와 동일한 마스코트·가로선·hr.png 유지하되, 헤더 영역 제거로 본문이 제목 영역까지 차지하도록 CSS 조정
+    6. `_blank` (§2.6):
+        - 마스코트·제목·상하단 노랑 가로선·페이지번호 모두 제거 (풀스크린 콘텐츠 전용)
+        - `section.layout-_blank::before/::after` 무효화, `.slide-number` 숨김 처리
+* CSS 수정 가드:
+    - [`CLAUDE.md`](CLAUDE.md) "CSS 수정 시 주의사항" 절대 준수 — `.reveal .slides section`에 `display: flex`/`height: 100%`/`position`/`transform` 직접 적용 금지. 내부 wrapper(`.cover-header`, `.contents-body` 등)에만 flexbox 적용
+    - `lib/css/base.css` 수정 필요 시 [`CLAUDE.md`](CLAUDE.md) "base.css 수정 가드"에 따라 사용자 컨펌 선행
+    - inline-style 금지 — 모든 변경은 `theme/default/slide.css`에서 정의
+* 검증:
+    - `_doc_design/theme_layout_default.md` §6 검증 기준 15항 모두 통과
+    - 빌드 회귀: `./m2slide.sh layoutTest` + `m2SlideStyle1_single` + `m2SlideStyle2_chapter` 3종 빌드 후 산출물 HTML 직접 검증 + 브라우저 시각 확인 ([`apply-verify-rules`](.claude/rules/apply-verify-rules.md))
+    - 시각 회귀 항목: 마스코트 위치(_toc 우상단, _agenda 우상단, _blank 없음), 가로선(_blank 제외 모두), _cover 강사·버전 신규 배치, _agenda 상단 가로선
+
 # 📗 선택
 
 
 # ✅ 완료
+
+## Issue84. 설계 문서 `theme.md` §2 `slide_css:` 우선순위 표 정정 (등록: 2026-05-04, 해결: 2026-05-04, commit: TBD) ✅
+* 목적: `theme.md` §2가 `slide_css:`를 단순 "우선순위 1 (최우선)"으로 기술하나, 실제 코드(`lib/config.js:241-260`)는 "`slide_css:` 지정 + 파일 존재 시 최우선, 미존재 시 `theme:` fallback"으로 동작. 동작 조건 누락된 spec 정정
+* 상세:
+    - `_doc_design/theme.md` §2 표에 "파일 존재 시 우선" 조건 명시
+    - 표 아래에 fallback 동작 보강: `slide_css:` 지정 파일 미존재 시 → `theme:`로 fallback (silent failure 방지) + `theme:` 미존재 시 default fallback + warning
+* 검증: 문서 변경만 (gitignored `_doc_design/`). `lib/config.js` 동작과 기재 일치 재확인
+
+## Issue83. 설계 문서 `theme_layout.md` §5.1·§11.2·§15 `_toc` 자동 적용 조건 정정 (등록: 2026-05-04, 해결: 2026-05-04, commit: TBD) ✅
+* 목적: `theme_layout.md` §5.1·§11.2가 "첫 슬라이드 자동 `_toc` 적용"으로만 기술하나, 실제 코드(`lib/html-builder.js:341`)는 Issue58 이후 "AGENDA.md 서브챕터(H3) 존재 시"에만 `_toc` 적용. Issue58 변경분 미반영 정정
+* 상세:
+    - §5.1: 적용 조건 3개(`_toc.html` 존재 + `hasTocItems` + `!skipTocPlaceholder`) 명시. single mode/서브챕터 없는 chapter는 미적용 + `isTitle` 슬라이드 제거 명시
+    - §11.2: 처리 흐름 7단계로 재구성, 조건 검사·기존 isTitle 교체·fallback 분리 명시
+    - §15 검증 기준 7,8,8a 분리 — 적용 케이스/미적용 케이스/예외 fallback
+* 검증: 문서 변경만 (gitignored `_doc_design/`). chapter-single-mode.md와 정합성 유지
+
+## Issue82. `lib/layout.js` dead `_WARNED_MISSING_LAYOUTS` 제거 + 설계 문서 §4.4 정정 (등록: 2026-05-04, 해결: 2026-05-04, commit: ee70b2a) ✅
+* 목적: `theme_layout.md` §4.4가 회귀 보장 요소로 기재한 `_WARNED_MISSING_LAYOUTS` Set이 실제로는 `lib/layout.js:58`에 dead code로 남아있고, 실제 dedup은 `lib/html-builder.js`의 `_warnedMissingLayouts`가 담당. 코드·문서 모두 실태에 정렬
+* 상세:
+    - `lib/layout.js`에서 `_WARNED_MISSING_LAYOUTS` Set 선언 제거 + Issue41 코멘트 정리 (Issue82 코멘트로 갱신)
+    - `_doc_design/theme_layout.md` §4.4 회귀 보장 요소 표기 정정: `lib/layout.js _registerLayoutTemplate()` + `lib/html-builder.js _warnedMissingLayouts`
+* 검증: 4개 프로젝트 빌드 회귀 없음 (m2SlideStyle1_single, m2SlideStyle2_chapter, layoutTest, LlmAndVibeCoding)
+
+## Issue81. 슬라이드 layout 메타 `#layout-` prefix 정식 지원 (등록: 2026-05-04, 해결: 2026-05-04, commit: c27ae5d) ✅
+* 목적: 설계 문서(`_doc_design/theme_layout.md` §6, §6.2 + `.claude/rules/md-m2slide-rules.md` 다수 예제)는 `#layout-name` syntax를 명시하나 실제 코드(`lib/slide-parser.js` `extractLayoutMeta`)는 `#name` 형태만 인식하여 모든 문서·예제가 동작하지 않던 상태. spec ↔ code 정합성 회복
+* 상세:
+    - `extractLayoutMeta` regex 확장: `^#(_?[a-z][a-z0-9-]*)\s*$` → `^#(?:layout-)?(_?[a-z][a-z0-9-]*)\s*$`
+    - `#layout-name` 정식 + `#name` alias 양쪽 모두 인식. 기존 프로젝트 회귀 0
+    - 방어적 파서 동작 유지 (`# ` 공백, `#한글`, `#My` 대문자 거부)
+    - JSDoc 코멘트 갱신: 정식·alias 양식 명시
+* 검증:
+    - 파서 단위 10/10 통과: `#layout-cover`/`#cover`/`#layout-_blank`/`#_toc`/`#my-layout`/`#layout-contents-no-title` 양식 + 거부 케이스
+    - 4개 프로젝트 빌드 회귀 없음 (m2SlideStyle1_single, m2SlideStyle2_chapter, layoutTest, LlmAndVibeCoding)
 
 ## Issue79. `_meta.yml` 폐기 + 메타데이터를 슬라이드 소스 frontmatter로 통합 (등록: 2026-05-04, 해결: 2026-05-04, commit: d49f9bb) ✅
 * 목적: 결정사항 "_meta.yml파일 사용 안함"(Issue.md 결정사항 섹션)에 따라 운영 메타데이터를 별도 파일로 분리하지 않고 슬라이드 소스 파일(AGENDA.md / `{ProjectName}.md`)의 YAML frontmatter에 통합. 단일 SSOT로 책임 단순화
