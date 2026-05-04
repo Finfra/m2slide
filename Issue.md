@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 96
+* Issue HWM: 97
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
@@ -20,20 +20,42 @@
 
 # 🔥 진행중
 
-## Issue96. 2x2 그리드 (columns 안에 rows 중첩) 균등 분할 미적용 (등록: 2026-05-04)
-* 카테고리: Theme
-* 목적: `Projects/layoutTest/slide/index.html#/7` (2x2 그리드 — `::: columns` 안에 `::: rows` 중첩) 에서 4개 row가 contents-body 상단에 작은 박스로 수축되고 균등 분할되지 않음. nested rows가 부모 column 높이를 채우도록 보장
-* 근본 원인: [`lib/css/base.css`](lib/css/base.css)
-    - `.m2-cols { align-items: center }`: column 박스가 cross-axis(세로)로 콘텐츠 자연 크기로 수축 → `.m2-col`이 contents-body 높이를 채우지 못함
-    - `.m2-col`이 flex 컨테이너 아님 (`flex: 1; min-width: 0`만 있음) → 자식 `.m2-rows`의 `flex: 1 1 auto`가 작동할 부모 컨텍스트 부재
-    - `.m2-cols`에 `flex: 1 1 auto` 미설정 → contents-body(flex column) 안에서 자연 높이로 수축
-* 구현 명세:
-    - `.m2-cols`에 `flex: 1 1 auto; min-height: 0;` 추가 (contents-body 높이 채움)
-    - `.m2-cols:has(.m2-rows), .columns:has(.rows)`에 `align-items: stretch` 추가 → 중첩 rows가 있을 때만 column이 풀-height. 단순 image+text 2-col(`#/4`) 의 기존 center 정렬 유지
-    - `.m2-col`에 `display: flex; flex-direction: column;` 추가 → 내부 `.m2-rows`가 flex item으로 작동
-    - 검증: layoutTest `#/7` 2x2 그리드 4개 row 균등 분할, `#/4`/`#/5`/`#/6` 회귀 없음, m2SlideStyle1_single/m2SlideStyle2_chapter 회귀 없음
-
 # 📕 중요
+
+## Issue97. default_lec theme를 default theme의 Issue80/86 시각 변경과 동기화 (등록: 2026-05-04)
+* 카테고리: Theme
+* 목적: `theme_layout_lec.md` §3.1·§3.4가 "DOM 스키마 외 슬롯·시각 배치는 default §3.X 동일"로 명시하나, default가 Issue80(2026-05-04 a268ad4) / Issue86(2026-05-04 582d064) 으로 갱신된 후 `theme/default_lec/slide.css`가 동기화되지 않아 설계 SSOT와 코드가 어긋남. 코드를 설계에 맞춤 + 의도적 미동기 항목은 설계 문서에 명시
+* 상세:
+    - **불일치 1 — cover-meta 박스 (Issue80 §2.1 미반영)**
+        - 설계: `theme_layout_default.md §2.1` — "커버-meta 박스 스타일 제거 + version·lecture_date를 우상단 absolute"
+        - default 코드: `theme/default/slide.css` 우상단 absolute 적용됨
+        - default_lec 코드: `theme/default_lec/slide.css:129-137` — 여전히 `border: 2px solid`, `padding: 0.4em 1em`, `margin: 0 4% 4% 0`, `align-self: flex-end` 박스 스타일 (좌하단)
+    - **불일치 2 — page-number / controls / progress 위치 (Issue86 미반영)**
+        - 설계 의도(Issue86): outer padding 바깥(viewport letterbox 영역)에 `position: fixed`로 표시
+        - default 코드: `theme/default/slide.css:69-92` — `position: fixed !important; bottom: 0 !important; z-index: 200 !important` 적용 + `_cover` 슬라이드일 때 hide
+        - default_lec 코드: `theme/default_lec/slide.css:49-55` — `position`/`z-index`/`bottom: 0` 미설정 (기존 `bottom: 18px; right: 24px`만 유지). `_cover` hide selector도 누락
+    - **불일치 3 — `_contents` 우상단 puffer 위치 (Issue86 가로선 정렬 후속)**
+        - default 코드: `background-position: 96% 28px` (절대값 — 상단 가로선 22px 아래 보장)
+        - default_lec 코드: `theme/default_lec/slide.css:144` — `96% 6%` (구 상대값, 상단 가로선과 충돌 가능)
+    - **참고 — hr.png 통일은 Issue86에서 명시적으로 default만 적용 (옵션 3)**
+        - Issue.md `Issue86` 본문: "hr.png 이미지화는 default만 우선 적용 (옵션 3 선택)"
+        - 따라서 default_lec은 sketch 톤 hr.png 미적용이 의도. **이 결정이 `theme_layout_lec.md`에 명시되지 않음** → 설계 문서 보강 필요
+* 구현 명세:
+    - **A. 코드 업데이트 (default_lec/slide.css)**:
+        - cover-meta 블록을 default `theme/default/slide.css:606-621` 형태로 교체 (position: absolute, top/right, version·lecture_date 작게)
+        - `.reveal .slide-number`에 `position: fixed !important; bottom: 0 !important; z-index: 200 !important` 추가
+        - `.reveal .controls`, `.reveal .progress`도 default와 동일하게 fixed 처리
+        - `_cover`/`_agenda` 슬라이드에서 slide-number/controls/progress hide selector 추가
+        - `_contents` background-position을 `96% 28px`로 변경
+    - **B. 설계 문서 업데이트 (theme_layout_lec.md)**:
+        - §3.4 또는 §4.4에 "hr.png 손글씨 밑줄 미적용 (Issue86 옵션 3) — default_lec은 단색 2px 가로선 유지" 명시
+        - §3.1 cover 또는 별도 섹션에 page-number/controls/progress 위치 정책이 default와 동일함을 reference로 명시
+    - **검증**:
+        - `LlmAndVibeCoding`(default_lec 사용) 빌드 통과
+        - cover 슬라이드: cover-meta가 우상단 absolute, slide-number/progress 미표시 확인
+        - 일반 슬라이드: page-number가 viewport 우하단 letterbox 영역에 표시
+        - `_contents` 우상단 puffer가 상단 가로선과 겹치지 않음 확인
+        - default theme 사용 프로젝트(m2SlideStyle1_single, m2SlideStyle2_chapter, layoutTest) 회귀 없음
 
 # 📙 일반
 
@@ -41,6 +63,18 @@
 
 
 # ✅ 완료
+
+## Issue96. 2x2 그리드 (columns 안에 rows 중첩) 균등 분할 미적용 (등록: 2026-05-04, 해결: 2026-05-04, commit: fdbe8da) ✅
+* 카테고리: Theme
+* 목적: `Projects/layoutTest/slide/index.html#/7` (2x2 그리드 — `::: columns` 안에 `::: rows` 중첩) 에서 4개 row가 contents-body 상단에 작은 박스로 수축되고 균등 분할되지 않음
+* 근본 원인: [`lib/css/base.css`](lib/css/base.css)
+    - `.m2-cols { align-items: center }` + `flex` 미설정 → column 박스가 세로로 콘텐츠 자연 크기로 수축, contents-body 높이를 채우지 못함
+    - `.m2-col`이 flex 컨테이너 아님 → 자식 `.m2-rows`의 `flex: 1 1 auto`가 작동할 부모 컨텍스트 부재
+* 구현 명세:
+    - `.m2-cols`에 `flex: 1 1 auto; min-height: 0;` 추가 (contents-body 높이 채움)
+    - `.m2-cols:has(.m2-rows), .columns:has(.rows)`에 `align-items: stretch` 추가 → 중첩 rows 있을 때만 column 풀-height. 단순 image+text 2-col(`#/4`)은 기존 center 정렬 유지
+    - `.m2-col`에 `display: flex; flex-direction: column;` 추가 → 내부 `.m2-rows`가 flex item으로 작동
+* 검증: layoutTest, m2SlideStyle1_single, m2SlideStyle2_chapter 3종 빌드 성공. `#/7` 2x2 그리드 4개 row 균등 분할 정상. `#/4`/`#/5`/`#/6` 회귀 없음
 
 ## Issue94. 테이블 슬라이드에 layout-_contents 클래스 미적용 (등록: 2026-05-04, 해결: 2026-05-04, commit: 45cedeb) ✅
 * 카테고리: Generator
