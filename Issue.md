@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 88
+* Issue HWM: 89
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
@@ -19,6 +19,39 @@
 2. 
 
 # 🔥 진행중
+
+## Issue89. ⇤ Home / ⇥ End 키 동작 안 함 — Reveal.js hijack 수정 (등록: 2026-05-04)
+* 카테고리: Frontend
+* 목적: Issue87에서 추가한 ⇤ Home / ⇥ End sibling 점프가 Reveal.js 5.0.4의 자체 keymap에 의해 가로채져 동작 안 함. capture phase 등록으로 우선순위 확보
+* 현상:
+    - 사용자 사용 검증 결과 (m2SlideStyle1_single):
+        - `index.html#/9` (본문) → Home → 동작 없음 (기대: `#/8` 직전 H1 anchor)
+        - `index.html#/8` (anchor) → End → 동작 없음 (기대: `#/12` 직후 H1 anchor)
+- ↓ 동작은 정상 (anchor → 직후 슬라이드, 본문 → 동작 없음)
+- ↑은 매트릭스대로 작동 — H1 anchor에서 ↑ → agenda는 [`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) line 57 정의된 동작 (parent = Agenda)
+* 원인 분석:
+    - Reveal.js 5.0.4가 `Home` (keyCode 36) → `Reveal.slide(0)` (첫 슬라이드), `End` (keyCode 35) → `Reveal.slide(last)` (마지막 슬라이드)로 자체 매핑
+    - 우리 `document.addEventListener('keydown', handler)` 호출이 **bubble phase**(3번째 인자 누락)에 등록되며, Reveal의 keydown listener도 동일 phase. 등록 순서상 `Reveal.initialize()`가 먼저 호출되어 우리 핸들러가 무력화
+    - `event.preventDefault() + stopImmediatePropagation()`은 우리 핸들러가 호출되어야 효력 발생 — 호출 자체가 안 되면 무의미
+    - PgUp/PgDown(⇞/⇟)은 정상 동작 — Reveal 기본 매핑이 PgUp/PgDown을 다른 동작에 쓰지 않거나 다른 등록 경로를 사용 (검증 필요)
+* 구현 명세:
+    - `lib/html-builder.js` 3종 핸들러 모두 `document.addEventListener('keydown', handler, {capture: true})` 또는 `true`로 변경
+        - `generateHTML` deck 핸들러 (라인 ~1107)
+        - `generateCoverHTML` cover 핸들러 (라인 ~1438)
+        - `generateAgendaHTML` agenda 핸들러 (라인 ~1606)
+    - capture phase는 모든 bubble listener보다 먼저 호출되므로 Reveal 핸들러 호출 전에 우리 stop()이 작동
+    - `stop()` 헬퍼는 기존 그대로 유지 (preventDefault + stopImmediatePropagation)
+* 검증:
+    - `m2SlideStyle1_single`:
+        - `#/9` → Home → `#/8` (직전 anchor) 도달
+        - `#/8` → End → `#/12` (직후 anchor) 도달
+        - `#/12` → Home → `#/8` 도달
+        - `#/9` → End → `#/12` 도달
+    - `m2SlideStyle2_chapter`:
+        - 챕터 deck 본문 → Home → 이전 챕터 (`PREV_CHAPTER`) 페이지 이동
+        - 챕터 deck 본문 → End → 다음 챕터 (`NEXT_CHAPTER`) 페이지 이동
+    - PgUp/PgDown 동작 회귀 없음 (capture phase가 PgUp/PgDown까지 우선 처리)
+    - ⎋ overview 토글, ←/→/↑/↓ 기존 동작 회귀 없음
 
 # 📙 일반
 
