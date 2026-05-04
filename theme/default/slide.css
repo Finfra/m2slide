@@ -63,14 +63,23 @@
   min-height: 100% !important;
 }
 
-/* 페이지 번호 (Reveal.js 기본 .slide-number 활용 + 폴백) */
+/* 페이지 번호 (Reveal.js 기본 .slide-number 활용 + 폴백)
+   bottom: 2px — 하단 가로선(bottom:12, height:10 → 12-22px)과 충돌 회피하여
+   progress bar 영역(reveal.js 기본 .progress: bottom:0, height:3px) 옆으로 이동 */
 .reveal .slide-number {
   background: transparent !important;
   color: var(--kn-page-num-color) !important;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
-  bottom: 18px;
+  bottom: 2px;
   right: 24px;
+}
+
+/* Reveal.js controls (← →) — 가로선 아래 progress bar 영역으로 이동
+   기본 reveal.js controls는 우하단 박스 — bottom 0 으로 내려 가로선과 겹치지 않게 */
+.reveal .controls {
+  bottom: 0 !important;
+  right: 0 !important;
 }
 
 /* =========================================================================
@@ -181,7 +190,7 @@
 .reveal section.layout-_contents_no_title {
   background-image: url('../theme-img/finfraPuffer2s.png');
   background-repeat: no-repeat;
-  background-position: 96% 40px;
+  background-position: 96% 28px;
   background-size: 9% auto;
 }
 
@@ -406,7 +415,7 @@
 .reveal section.layout-_toc {
   background-image: url('../theme-img/finfraPuffer2s.png');
   background-repeat: no-repeat;
-  background-position: 96% 40px;
+  background-position: 96% 28px;
   background-size: 9% auto;
 }
 
@@ -569,7 +578,7 @@
   position: relative;
   background-image: url('../theme-img/finfraPuffer2s.png');
   background-repeat: no-repeat;
-  background-position: 96% 40px;
+  background-position: 96% 28px;
   background-size: 8% auto;
 }
 
