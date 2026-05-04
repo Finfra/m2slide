@@ -43,8 +43,8 @@
 .reveal section[class*="layout-"]::after {
   content: "";
   position: absolute;
-  left: 4%;
-  right: 4%;
+  left: 56px;
+  right: 56px;
   height: 2px;
   background: var(--kn-accent);
   pointer-events: none;
@@ -93,7 +93,8 @@
 .reveal section[class*="layout-"] .exercise-title::after,
 .reveal section[class*="layout-"] .blank-title::after,
 .reveal section[class*="layout-"] .closing-title::after,
-.reveal section[class*="layout-"] .toc-title::after {
+.reveal section[class*="layout-"] .toc-title::after,
+.reveal section[class*="layout-"] .contents-body > .title::after {
   content: "";
   position: absolute;
   left: 0;
@@ -104,6 +105,29 @@
   background-size: 100% 100%;
   background-repeat: no-repeat;
   pointer-events: none;
+}
+
+/* 본문 H2.title도 §3 제목 처리 — theme_default_layout: contents 환경에서
+   본문 H2가 contents-body 내부에 있을 때 hr.png 밑줄 적용 (가운데 바) */
+.reveal section[class*="layout-"] .contents-body > .title {
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  color: var(--kn-text);
+  position: relative;
+  display: block;
+  padding-bottom: 0.15em;
+  margin: 0 auto 0.5em auto;
+}
+
+/* 빈 contents-title은 hr.png 표시 안 함 — 본문 H2.title에 hr.png가 적용되므로 중복 방지.
+   :has() selector로 빈 contents-title을 가진 contents-header 자체도 숨겨 상단 빈 영역 제거 */
+.reveal section.layout-_contents .contents-title:empty,
+.reveal section.layout-_contents_no_title .contents-title:empty {
+  display: none !important;
+}
+.reveal section.layout-_contents .contents-header:has(> .contents-title:empty),
+.reveal section.layout-_contents_no_title .contents-header:has(> .contents-title:empty) {
+  display: none !important;
 }
 
 /* 기존 contents-divider 등은 hr.png로 대체되었으므로 숨김 */
@@ -537,12 +561,14 @@
   background-size: 8% auto;
 }
 
-/* Issue80 §2.2: standalone agenda 상단 노랑 가로선 */
+/* Issue80 §2.2: standalone agenda 상단 노랑 가로선
+   left/right 24px: base.css §12 .agenda-frame .layout-_agenda padding(24px)과 일치시켜
+   콘텐츠 박스(.toc-markmap) 폭과 동일하게 정렬 */
 .layout-_agenda::before {
   content: "";
   position: absolute;
-  left: 4%;
-  right: 4%;
+  left: 24px;
+  right: 24px;
   top: 12px;
   height: 2px;
   background: var(--kn-accent);
