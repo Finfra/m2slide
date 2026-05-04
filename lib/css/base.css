@@ -558,17 +558,49 @@ body {
   min-width: 0;
 }
 
+/* Issue95: .m2-rows가 부모 .contents-body(flex column) 의 남은 높이를 채우고,
+   .m2-row가 균등(또는 인라인 height 비례)으로 분할되도록 flex 보강 */
 .reveal .m2-rows,
 .reveal .rows {
   display: flex;
   flex-direction: column;
   gap: 20px;
   width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .reveal .m2-row,
 .reveal .row {
   width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  /* Issue95: 행 내부 콘텐츠(텍스트+미디어)가 세로로 쌓이고, .media-container가
+     남은 높이를 채워서 이미지/SVG가 행 경계를 넘지 않도록 flex column 컨테이너로 동작 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Issue95: .m2-row 내부의 .media-container가 남은 높이를 채우도록.
+   기존 `.contents-body > .media-container` 규칙(theme/default/slide.css)은
+   contents-body 직속 자식만 매칭하므로 row 내부에서는 적용되지 않음 */
+.reveal .m2-row > .media-container,
+.reveal .row > .media-container {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.reveal .m2-row > .media-container img,
+.reveal .m2-row > .media-container svg,
+.reveal .row > .media-container img,
+.reveal .row > .media-container svg {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 .reveal .card {
