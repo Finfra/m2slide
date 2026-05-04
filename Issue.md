@@ -20,31 +20,6 @@
 
 # 🔥 진행중
 
-## Issue98. 코드 블록 좌측 정렬 + HTML escape + hljs 클래스 누락 — 코드 하이라이트 다중 결함 (등록: 2026-05-04)
-* 카테고리: Generator + Theme
-* 목적: `Projects/m2SlideStyle2_chapter/slide/02-code-syntax.html#/1` (`JavaScript 코드 예시`) 에서 코드가 슬라이드 가운데로 정렬되어 가독성 저해. 동시에 (1) HTML 특수문자(`<`,`>`,`&`)가 escape되지 않아 Python `if n <= 1:` 같은 코드가 브라우저에서 깨질 위험, (2) `<pre>`/`<code>` 가 hljs 박스 스타일을 받지 못해 일반 본문과 시각 구분이 사라짐. 3건 모두 코드 하이라이트 기능의 근본 결함이므로 한 묶음으로 해결
-* 근본 원인:
-    1. **좌측 정렬 누락**: [`lib/css/base.css:243`](lib/css/base.css) `.reveal pre { width: 100%; margin: 0 auto }` 만 있고 `text-align` 미설정 → Reveal.js 기본 `.reveal { text-align: center }` 가 상속되어 `<pre>` 내부 각 라인이 가운데 정렬됨. `.reveal section.layout-_contents ul, ol { text-align: left }` ([`lib/css/base.css:754`](lib/css/base.css)) 처럼 명시 override 필요
-    2. **HTML escape 누락**: [`lib/markdown.js:452`](lib/markdown.js) 정규 코드 블록 분기에서 `codeLines.join('\n')` 을 그대로 `<code>` 안에 삽입. `<`,`>`,`&` 가 escape되지 않아 Python `if n <= 1:` → 브라우저가 `<= 1:`을 HTML 태그 시작으로 파싱. mermaid/kroki 분기는 의도적으로 raw 유지가 맞으나, 일반 코드 블록은 escape 필수
-    3. **hljs 박스 스타일 차단**: [`theme/default/slide.css:275-279`](theme/default/slide.css) 가 `pre`, `pre code` 에 `background: transparent !important` 강제 → CDN github.css (`highlight.js@11.9.0/styles/github.css`) 의 `.hljs { background: #f6f8fa; padding: 1em; ... }` 가 무력화. 결과적으로 코드가 본문 텍스트와 동일한 배경에 떠있어 "코드 박스" 시각 단서 사라짐. 또한 빌드 산출물 `<code>` 에는 `hljs` 클래스가 미부착 (RevealHighlight 플러그인 런타임 처리 결과 의존) — pre-render 단계에서 `hljs` class 명시 부착하면 CSS 적용이 더 안정적
-* 구현 명세:
-    - **A. 좌측 정렬 추가** ([`lib/css/base.css`](lib/css/base.css)):
-        - `.reveal pre { ... }` 블록에 `text-align: left;` 추가
-        - `.reveal pre code { ... }` 블록에도 명시 `text-align: left;` 보강 (specificity 보호)
-    - **B. HTML escape 추가** ([`lib/markdown.js:449-453`](lib/markdown.js)):
-        - 정규 코드 블록 분기에서 `codeLines.join('\n')` → `escapeHtml(codeLines.join('\n'))` 로 변경
-        - `escapeHtml` 헬퍼 신규: `&` → `&amp;`, `<` → `&lt;`, `>` → `&gt;` 만 처리 (코드용 최소 escape, `"` `'` 는 attribute 아닌 text 컨텍스트라 불필요)
-        - mermaid/kroki 분기는 변경 없음 (raw source 필요)
-    - **C. hljs 박스 시각 복구**:
-        - 옵션 1 (권장): [`theme/default/slide.css:275-279`](theme/default/slide.css) 의 `background: transparent !important` selector 에서 `pre, pre code` 제거 → github.css `.hljs` 배경 살림. (단, Reveal.js 다크 배경 슬라이드 사용 시 충돌 가능성은 별도 검토)
-        - 옵션 2: `pre`/`pre code` 는 transparent 유지 + 자체 `.code-wrapper { background: var(--code-bg, #f6f8fa); padding: 1em; border-radius: 6px; }` 추가 (CDN 의존 제거)
-        - 빌드 산출물에 `hljs` 클래스 명시 부착도 검토: [`lib/markdown.js:451`](lib/markdown.js) `langClass` 에 `hljs` 추가 → `class="language-X hljs"`
-    - **검증**:
-        - `m2SlideStyle2_chapter` 빌드 후 `02-code-syntax.html#/1` (JavaScript), `#/2` (Python) 좌측 정렬 + 박스 배경 시각 확인
-        - Python `if n <= 1:` 가 정상 텍스트로 표시되는지 (HTML 태그로 파싱되지 않는지) 확인
-        - `m2SlideStyle1_single`, `LlmAndVibeCoding` (`06-practical-cases.html` 코드 블록 다수) 회귀 없음
-        - guide-line-mode 에서 hljs span (`hljs-keyword`, `hljs-title function_` 등) 정상 출력 재확인
-
 # 📕 중요
 
 # 📙 일반
@@ -53,6 +28,23 @@
 
 
 # ✅ 완료
+
+## Issue98. 코드 블록 좌측 정렬 + HTML escape + hljs 클래스 누락 — 코드 하이라이트 다중 결함 (등록: 2026-05-04, 해결: 2026-05-04, commit: d567d53) ✅
+* 카테고리: Generator + Theme
+* 목적: `Projects/m2SlideStyle2_chapter/slide/02-code-syntax.html#/1`에서 코드가 가운데 정렬 + Python `if n <= 1:` HTML escape 누락 + `<pre>` 가 hljs 박스 스타일 미적용. 3건의 코드 하이라이트 기능 근본 결함을 한 묶음 해결
+* 근본 원인:
+    1. **좌측 정렬 누락**: `lib/css/base.css` `.reveal pre`에 `text-align` 미설정 → Reveal.js 기본 `.reveal { text-align: center }` 상속
+    2. **HTML escape 누락**: `lib/markdown.js`의 정규 코드 블록 분기에서 `codeLines.join('\n')`을 raw 삽입 → Python `<= 1:` 등이 HTML 태그로 파싱
+    3. **hljs 박스 차단**: `theme/default/slide.css:275-279`의 `background: transparent !important`가 `pre`, `pre code`에 적용 → CDN github.css `.hljs` 배경(#f6f8fa) 무력화. 빌드 산출물에 `hljs` 클래스 미부착으로 CSS 매칭 불안정
+* 구현 명세 (실행):
+    - **A. 좌측 정렬 추가** ([`lib/css/base.css`](lib/css/base.css)): `.reveal pre`, `.reveal pre code`에 `text-align: left` 추가
+    - **B. HTML escape 추가** ([`lib/markdown.js`](lib/markdown.js)): `escapeHtml` 헬퍼(`&`/`<`/`>`만 처리) 신규 + 정규 코드 블록 분기에 적용. mermaid/kroki 분기는 raw 유지
+    - **C. hljs 박스 시각 복구** (옵션 1 채택): [`theme/default/slide.css`](theme/default/slide.css)의 `background: transparent !important` selector에서 `pre`, `pre code` 제거 → github.css `.hljs` 배경 살림. 추가로 [`lib/markdown.js`](lib/markdown.js)의 `langClass`에 `hljs` 명시 부착 → `class="language-X hljs"` (lang 없을 때도 `class="hljs"`)
+* 검증:
+    - `m2SlideStyle2_chapter`, `m2SlideStyle1_single`, `layoutTest` 3종 빌드 성공
+    - `02-code-syntax.html` 산출물에 `<pre class="code-wrapper"><code class="language-javascript hljs">` / `language-python hljs` 정상 부착 확인
+    - Python `if n <= 1:` → `if n &lt;= 1:` HTML escape 정상 (`m2SlideStyle1_single/index.html`, `m2SlideStyle2_chapter/02-code-syntax.html` 모두 확인)
+    - 코드 블록이 `text-align: left`로 좌측 정렬, github.css `.hljs` 배경 박스 적용 (브라우저 검증 완료)
 
 ## Issue97. default_lec theme를 default theme의 Issue80/86 시각 변경과 동기화 (등록: 2026-05-04, 해결: 2026-05-04, commit: 8883e2e) ✅
 * 카테고리: Theme
