@@ -50,7 +50,7 @@
   background-size: 100% 100%;
   background-repeat: no-repeat;
   pointer-events: none;
-  z-index: 0;
+  z-index: 100;            /* layout 자식 요소(flex item) 위로 — 하단 가로선이 본문 영역에 가려지지 않도록 */
 }
 
 .reveal section[class*="layout-"]::before { top: 12px; }
@@ -95,7 +95,8 @@
 .reveal section[class*="layout-"] .exercise-title::after,
 .reveal section[class*="layout-"] .blank-title::after,
 .reveal section[class*="layout-"] .closing-title::after,
-.reveal section[class*="layout-"] .toc-title::after {
+.reveal section[class*="layout-"] .toc-title::after,
+.reveal section[class*="layout-"] .contents-body > .title::after {
   content: "";
   position: absolute;
   left: 0;
@@ -106,6 +107,18 @@
   background-size: 100% 100%;
   background-repeat: no-repeat;
   pointer-events: none;
+}
+
+/* 본문 H2.title도 §3 제목 처리 — theme_default_layout: contents 환경에서
+   본문 H2가 contents-body 내부에 .title로 배치될 때 hr.png 밑줄(가운데 바) 적용 */
+.reveal section[class*="layout-"] .contents-body > .title {
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  color: var(--kn-text);
+  position: relative;
+  display: block;
+  padding-bottom: 0.15em;
+  margin: 0 auto 0.5em auto;
 }
 
 /* 빈 contents-title 영역 숨김 — m2slide가 H2 슬라이드 빌드 시 contents-title을
