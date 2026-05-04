@@ -45,8 +45,10 @@
   position: absolute;
   left: 56px;
   right: 56px;
-  height: 2px;
-  background: var(--kn-accent);
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
   pointer-events: none;
   z-index: 0;
 }
@@ -107,9 +109,9 @@
 }
 
 /* 본문 H2.title은 hr.png를 제목 텍스트 vertical 중앙(middle)에 배치 — 사용자 결정
-   - ::after를 제목 박스 전체 영역으로 펼치고 background-position: center로 png 자체 가운데 정렬
-   - background-size: 100% auto로 png 비율 유지 (stretch 시 픽셀 왜곡 방지)
-   - line-height: 1.1로 제목 박스 height를 텍스트 크기와 가깝게 → background center가 텍스트 시각 중앙과 일치 */
+   - 제목 박스를 line-height:1 + padding:0으로 강제하여 박스 height = 텍스트 크기
+   - ::after는 박스 전체(top:0; bottom:0)에 펼치고 background-size:100% 100%로 stretch
+   - line-height:1로 박스 == 텍스트라 background center == 텍스트 시각 중앙 */
 .reveal section[class*="layout-"] .contents-body > .title::after {
   content: "";
   position: absolute;
@@ -118,7 +120,7 @@
   top: 0;
   bottom: 0;
   background-image: url('../theme-img/hr.png');
-  background-size: 100% auto;
+  background-size: 100% 100%;
   background-position: center center;
   background-repeat: no-repeat;
   pointer-events: none;
@@ -126,15 +128,17 @@
 }
 
 /* 본문 H2.title도 §3 제목 처리 — theme_default_layout: contents 환경에서
-   본문 H2가 contents-body 내부에 있을 때 hr.png 밑줄 적용 (가운데 바) */
+   본문 H2가 contents-body 내부에 있을 때 hr.png 밑줄 적용 (가운데 바)
+   line-height:1 + padding:0으로 박스 == 텍스트 크기 강제 (시각 중앙 보장) */
 .reveal section[class*="layout-"] .contents-body > .title {
   font-weight: 900;
   letter-spacing: -0.01em;
   color: var(--kn-text);
   position: relative;
   display: block;
-  line-height: 1.1;
-  margin: 0 auto 0.5em auto;
+  line-height: 1 !important;
+  padding: 0 !important;
+  margin: 0.3em auto 0.6em auto;
 }
 
 /* 빈 contents-title은 hr.png 표시 안 함 — 본문 H2.title에 hr.png가 적용되므로 중복 방지.
@@ -588,8 +592,10 @@
   left: 24px;
   right: 24px;
   top: 12px;
-  height: 2px;
-  background: var(--kn-accent);
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
   pointer-events: none;
   z-index: 0;
 }
