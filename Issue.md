@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 86
+* Issue HWM: 88
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
@@ -20,7 +20,60 @@
 
 # 🔥 진행중
 
+## Issue87. key_navigation 설계 반영 — ↑/↓ 챕터 점프 재정의 + ⇤/⇥/⇞/⇟ 4개 단축키 신설 (등록: 2026-05-04)
+* 카테고리: Frontend + Generator
+* 목적: [`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) 신규 SSOT를 빌드 산출물에 반영. ↑를 "이전 챕터 TOC 직행"으로 재정의(↓와 대칭)하고 parent/child/Agenda 직행/마지막 페이지 직행 단축키 4개 신설
+* 설계: `_doc_design/key_navigation.md` (방금 갱신)
+* 상세:
+    - **키 의미 변경**:
+        - ↑: 기존 "계층 parent" → 신규 "이전 챕터 TOC slide 직행" (Single은 같은 deck 직전 H1 anchor)
+        - ↓: 기존 "다음 슬라이드 동의어" → 신규 "다음 챕터 TOC slide 직행" (Single은 직후 H1 anchor) — Issue71 작업 연속
+    - **신규 단축키 4개**:
+        - ⇤ Home(36): 페이지 계층 parent 이동 (구 ↑ 동작 승계)
+        - ⇥ End(35): 페이지 계층 child 이동 (⇤와 대칭)
+        - ⇞ PgUp(33): 어디서든 Agenda Page 직행 (구 ⌂ 동작 승계, Reveal 기본 hijack)
+        - ⇟ PgDown(34): 마지막 페이지 직행 (⇞와 대칭, Reveal 기본 hijack)
+    - **swipe·mouse drag**: ←/→/↑/↓ 4방향만 dispatch, ⇤/⇥/⇞/⇟는 키보드 전용
+    - **영향**: 기존 ↑로 parent 이동을 학습한 사용자에게 동작 변경. ⇞/⇟는 Reveal.js 기본 PgUp/PgDown navigation을 hijack
+* 구현 명세:
+    - `lib/agenda.js` 신규 함수: `getPrevChapter()`, `getFirstChild(currentLevel)`, `getLastChapter()`
+    - `lib/html-builder.js` `generateHTML` (1074–1146): 9개 키 핸들러 재작성
+        - ↑/↓: 기존 핸들러 로직 교체 — 챕터 lookup 후 `0X-*.html#/toc-placeholder` 이동, Single은 deck 내 autoToc 슬라이드 색인 탐색
+        - ⇤/⇥: 페이지 계층 트리 walk + graceful fallback (없는 단계 건너뜀)
+        - ⇞/⇟: `agenda.html` 고정 / `getLastChapter() + ?last=1` 직행 (`event.preventDefault()`로 Reveal 기본 차단)
+    - `lib/html-builder.js` `generateAgendaHTML` (1545–1573): Agenda 페이지 ↑/↓/⇤/⇥/⇞/⇟ 핸들러 추가 (메타 페이지 예외 동작 포함)
+    - `lib/html-builder.js` `generateCoverHTML` (1373–1379): Cover 페이지 ↑/↓/⇤/⇥/⇞/⇟ 핸들러 추가 (Cover에서 ↑/⇤는 동작 없음)
+    - `lib/html-builder.js` IIFE swipe handler (1156–1216): 4방향 dispatch 로직 변경 없음, 단축키는 dispatch 대상 제외 명시
+* 검증:
+    - 대표 프로젝트 빌드: `m2SlideStyle1_single` (Single mode), `m2SlideStyle2_chapter` (Chapter mode)
+    - 매트릭스 9개 키 × 각 위치 조합 수동 확인
+    - Reveal.js PgUp/PgDown 기본 동작이 hijack되어 본 정의대로 작동하는지 확인
+    - swipe로 ⇤/⇥/⇞/⇟ 트리거 안 됨 확인
+* 설계 갱신 (2026-05-04, 사용 피드백 반영):
+    - **K3/K4 키 매핑 swap**: ↑↔Home, ↓↔End. Home/End의 "양 끝 이동" 의미가 sibling 점프(수평 이동)에 더 적합. 화살표 ↑/↓는 트리 시각 직관(수직 = parent/child)과 일치
+    - 새 매핑: **↑/↓ = parent/child (수직)**, **⇤/⇥ = 이전/다음 sibling (수평)**, ⇞/⇟ 변경 없음
+    - 구현 작업 추가: `generateHTML` 내 keydown 핸들러에서 키-동작 swap 필요 (`'ArrowUp'/'ArrowDown'` ↔ `'Home'/'End'`). agenda/cover 핸들러도 동일 swap. swipe IIFE 코멘트 갱신 (위 swipe = parent, 아래 swipe = child)
+    - 함수명·산출물 구조는 변경 없음 (`getPrev/NextChapter`는 ⇤/⇥에서 호출, `findPrev/NextAnchorIndex`는 ↑/↓에서 호출)
+
 # 📙 일반
+
+## Issue88. key_navigation.md 정합성 후속 수정 (등록: 2026-05-04)
+* 카테고리: Generator (설계 문서)
+* 목적: Issue87 설계 변경 후 검토 결과 6건 정합성 보강. mermaid 라벨·구현 매핑·변형 캡션·결정사항 표현 정리
+* 설계: `_doc_design/key_navigation.md`
+* 상세:
+    1. **Mermaid TOC2 라벨 정확성**: `↑ from 본문` → `↑ from 본문 (anchor 없을 시)` 단서 추가. 본문 ↑은 직전 H1 anchor 우선이고 TOC slide는 폴백
+    2. **구현 매핑 함수명 정정**: 계층 parent/child lookup 행에서 `getParentPage` 재활용 언급 제거 (메인/서브 섹션 lookup이라 본 설계와 무관). deck 내부 lookup + 정적 redirect 조합 명시
+    3. **cover_enabled=false 변형 캡션 보완**: ← 동작 외 ↑ 동작도 명시 (Cover 부재 → 동작 없음)
+    4. **K12 분리**: 결정사항 표 K12("K3/K4 swap 사유")는 결정이 아닌 변경 history. 표 외 한 줄 메모 또는 "변경 이력" 섹션으로 분리
+    5. **K11 표현 정리**: "Reveal 기본 hijack 인지" → "Reveal 기본 동작 override"
+    6. **후속 검토 항목 추가**: Chapter mode에서 같은 챕터 내 H1 anchor 간 sibling 점프 수단 부재 — 의도된 설계로 유지하되 긴 챕터 발표 UX 개선 후보로 명시
+* 구현 명세:
+    - `_doc_design/key_navigation.md` 단일 파일 수정
+    - 코드 변경 없음 (문서 정합성 작업)
+* 검증:
+    - 표·매트릭스·mermaid·결정사항 사이 모순 없음
+    - Issue87 구현과 동기 commit (설계↔구현 동시 정합성 확보)
 
 # 📗 선택
 
