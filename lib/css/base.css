@@ -243,11 +243,13 @@ body {
 .reveal pre {
   width: 100%;
   margin: 0 auto;
+  text-align: left;
 }
 
 .reveal pre code {
   overflow: auto;
   max-height: none;
+  text-align: left;
 }
 
 /* =========================================================================

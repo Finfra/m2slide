@@ -271,13 +271,10 @@
 .reveal section.layout-_contents > .contents-body,
 .reveal section.layout-_contents > .contents-header,
 .reveal section.layout-_contents_no_title > .contents-body,
-.reveal section.layout-_contents_no_title > .contents-header,
-.reveal section.layout-_contents pre,
-.reveal section.layout-_contents pre code,
-.reveal section.layout-_contents_no_title pre,
-.reveal section.layout-_contents_no_title pre code {
+.reveal section.layout-_contents_no_title > .contents-header {
   background: transparent !important;
 }
+/* Issue98: pre/pre code 의 transparent 강제 제거 — github.css `.hljs` 배경(#f6f8fa) 살림 */
 
 .reveal section[class*="layout-"] .contents-body > .media-container {
   flex: 1 1 0;
