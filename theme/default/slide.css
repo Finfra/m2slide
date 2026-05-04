@@ -166,6 +166,32 @@
   display: none !important;
 }
 
+/* Mermaid SVG가 슬라이드 영역을 초과하여 잘리는 문제 해결
+   - mermaid가 SVG에 inline width/height를 설정하므로 max-* 와 auto로 강제 fit
+   - .contents-body를 flex column으로 만들고 .media-container에 flex-grow 1으로
+     남은 영역 가득 차게 하여 SVG의 max-height: 100% 기준 영역 확보 */
+.reveal section.layout-_contents > .contents-body,
+.reveal section.layout-_contents_no_title > .contents-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.reveal section[class*="layout-"] .contents-body > .media-container {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.reveal section[class*="layout-"] .mermaid svg,
+.reveal section[class*="layout-"] .media-container svg {
+  max-width: 100% !important;
+  max-height: 100% !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain;
+}
+
 /* =========================================================================
    4. 마스코트 배경 — finfra* 이미지 (theme/{name}/img/ → slide/theme-img/)
    ========================================================================= */
