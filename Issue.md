@@ -20,11 +20,9 @@
 
 # 🔥 진행중
 
-# 📙 일반
-
-## Issue80. theme_layout_default.md §2 레이아웃 변경 결정사항 default theme 적용 (등록: 2026-05-04)
+## Issue80. theme_layout_default.md §2 레이아웃 변경 결정사항 default theme 적용 (등록: 2026-05-04, 진행: 2026-05-04)
 * 카테고리: Theme
-* 선행: Issue84 완료 대기 — Issue84(`theme.md` §2 `slide_css:` 우선순위 표 정정)가 종결된 후에만 본 이슈 진행. 사유: Issue84의 `slide_css:`/`theme:` fallback 동작 명세가 본 이슈의 `theme/default/slide.css` 수정 범위·우선순위 판단의 전제 조건
+* 선행: Issue84 완료 (commit 568f456) — fallback 동작 명세 확보 완료
 * 목적: `_doc_design/theme_layout_default.md` §2에 명세된 레이아웃 설계 결정사항 6종을 `theme/default/` 실제 layout HTML·`slide.css`·마스코트 배치에 반영. 설계 SSOT와 빌드 산출물 간 정합성 회복.
 * 상세:
     - 참조: [`_doc_design/theme_layout_default.md`](_doc_design/theme_layout_default.md) §2
@@ -59,6 +57,8 @@
     - `_doc_design/theme_layout_default.md` §6 검증 기준 15항 모두 통과
     - 빌드 회귀: `./m2slide.sh layoutTest` + `m2SlideStyle1_single` + `m2SlideStyle2_chapter` 3종 빌드 후 산출물 HTML 직접 검증 + 브라우저 시각 확인 ([`apply-verify-rules`](.claude/rules/apply-verify-rules.md))
     - 시각 회귀 항목: 마스코트 위치(_toc 우상단, _agenda 우상단, _blank 없음), 가로선(_blank 제외 모두), _cover 강사·버전 신규 배치, _agenda 상단 가로선
+
+# 📙 일반
 
 # 📗 선택
 
