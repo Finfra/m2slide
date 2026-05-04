@@ -20,18 +20,6 @@
 
 # 🔥 진행중
 
-## Issue78. 번호 prefix layout 6종 폐기 + layout_default.md를 theme_layout_default.md에 머징 (등록: 2026-05-03)
-* 목적: Issue73에서 추가된 번호 prefix layout 6종(`2.2.contents-full`, `2.3.contents-split`, `4.2.chapter`, `6.1.exercise`, `6.2.exercise-small`, `9.1.closing`)을 폐기하고, 시각 디자인 SSOT(과거 `layout_default.md`)를 `theme_layout_default.md`에 통합하여 default theme 단일 진입점으로 단순화함
-* 상세:
-    - 폐기 대상: `theme/default/layouts/` 번호 prefix HTML 6개 (현재 unstaged 삭제 상태 → `git rm` 스테이징)
-    - `_doc_design/layout_default.md`: 시각 디자인 SSOT(공통 시각 토큰·마스코트 자산·keynote 영감 매핑)를 `theme_layout_default.md` §7 "디자인 방향성"·§8 "변경 가이드라인"으로 머징한 후 파일 삭제
-    - `_doc_design/theme_layout_default.md`: §7~8 신설(시각 디자인 + 변경 가이드라인 통합), description 갱신("default theme SSOT — 시스템 layout 6종 + 시각 디자인 + 변경 가이드라인")
-    - `_doc_design/theme.md`, `_doc_design/theme_layout.md`, 기타 참조 문서: 책임 분담 표·참고 섹션의 `layout_default.md` 링크를 `theme_layout_default.md`로 일괄 갱신
-* 구현 명세:
-    - 검증: 빌드 영향 없음(번호 prefix layout은 어떤 프로젝트도 사용하지 않음 추정 → grep으로 확인)
-    - 빌드 검증: `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest` 빌드 + HTML 산출물 확인 (apply-verify-rules)
-    - 깨진 링크 검증: `_doc_design/`·`_doc_work/`·`.claude/`·`Issue.md` 전수 grep으로 잔존 `layout_default.md` 참조 0건 확인 (머징 직후 historical text는 그대로 보존)
-
 # 📙 일반
 
 # 📗 선택
@@ -54,6 +42,19 @@
     - 6개 프로젝트 전수 빌드 통과 — 콘솔 `✅ Project meta loaded from frontmatter: ...`
     - cover 슬라이드 `cover-instructor-name`에 frontmatter 값 정상 치환 (`남중구 (핀프라)`)
     - `_meta.yml` 잔존 참조 0건 (코드·문서, historical Issue 코멘트 제외)
+
+## Issue78. 번호 prefix layout 6종 폐기 + layout_default.md를 theme_layout_default.md에 머징 (등록: 2026-05-03, 해결: 2026-05-03, commit: afdb361) ✅
+* 목적: Issue73에서 추가된 번호 prefix layout 6종(`2.2.contents-full`, `2.3.contents-split`, `4.2.chapter`, `6.1.exercise`, `6.2.exercise-small`, `9.1.closing`)을 폐기하고, 시각 디자인 SSOT(과거 `layout_default.md`)를 `theme_layout_default.md`에 통합하여 default theme 단일 진입점으로 단순화함
+* 상세:
+    - 폐기 대상: `theme/default/layouts/` 번호 prefix HTML 6개 (`git rm` 처리)
+    - `_doc_design/layout_default.md` → `theme_layout_default.md` §7 "디자인 방향성"·§8 "변경 가이드라인" 머징 후 삭제
+    - 부수 작업(범위 확장): layout HTML class를 파일명 기준 `_` prefix 유지 표기로 정렬 (`layout-cover` → `layout-_cover` 등) — `_doc_design/theme_layout.md` §4.2/§4.3 규정 정렬
+    - `lib/css/base.css`, `theme/default/slide.css`, `lib/html-builder.js`의 selector·생성 클래스명 일괄 갱신
+* 검증:
+    - 빌드 검증: `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest` 모두 통과
+    - 산출물 HTML에서 `layout-_<name>` 클래스 정상 출력 확인 (8건 이상)
+    - 폐기된 번호 prefix layout 6종은 어떤 프로젝트에서도 미참조 (grep 0건)
+    - `layout_default.md` 잔존 참조 0건 (`_doc_design/`·`_doc_work/`·`.claude/`·`Issue.md`)
 
 ## Issue77. markmap fold 인디케이터 원 크기 30% 축소 (등록: 2026-05-03, 해결: 2026-05-03, commit: a29a0fa) ✅
 * 목적: agenda 페이지 markmap 서브챕터 fold 인디케이터 원이 너무 크게 표시되는 문제 해결
