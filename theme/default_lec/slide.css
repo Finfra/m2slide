@@ -45,14 +45,41 @@
 .reveal section[class*="layout-"]::before { top: 12px; }
 .reveal section[class*="layout-"]::after  { bottom: 12px; }
 
-/* 페이지 번호 (Reveal.js 기본 .slide-number 활용 + 폴백) */
+/* Issue97: 페이지 번호·controls·progress — outer padding 바깥(viewport edge)에 위치
+   - body { padding: var(--slide-outer-padding) } 으로 .reveal이 outer padding 안쪽에 있음
+   - position: fixed 로 viewport 기준 위치 → body padding 영역(letterbox) 표시 */
 .reveal .slide-number {
+  position: fixed !important;
   background: transparent !important;
   color: var(--kn-page-num-color) !important;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
-  bottom: 18px;
-  right: 24px;
+  bottom: 0 !important;
+  right: 24px !important;
+  z-index: 200 !important;
+}
+
+.reveal .controls {
+  position: fixed !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  z-index: 200 !important;
+}
+
+.reveal .progress {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 100 !important;
+}
+
+/* Issue97: _cover/_agenda 슬라이드: 페이지번호·controls·progress 모두 숨김
+   사용자 결정: 표지에서는 네비게이션·번호·진행바 노출 안 함 */
+.reveal:has(.slides > section.present.layout-_cover) .slide-number,
+.reveal:has(.slides > section.present.layout-_cover) .controls,
+.reveal:has(.slides > section.present.layout-_cover) .progress {
+  display: none !important;
 }
 
 /* =========================================================================
@@ -106,7 +133,8 @@
    4. 마스코트 배경 — finfra* 이미지 (theme/{name}/img/ → slide/theme-img/)
    ========================================================================= */
 
-/* 4.1 cover: puffer1 좌상단 + subtitle 박스 우하단 */
+/* 4.1 cover: puffer1 좌상단 + subtitle 박스 우하단
+   Issue97: min-height 100vh → 100% (default §3.1 동일, base.css §10 layout-* 100% 규칙 따름) */
 .reveal section.layout-_cover,
 .guide-line-mode .reveal .slides section.layout-_cover {
   background-color: #ffffff !important;
@@ -114,7 +142,7 @@
   background-repeat: no-repeat;
   background-position: 6% 14%;
   background-size: 18% auto;
-  min-height: 100vh !important;
+  min-height: 100% !important;
 }
 
 .reveal section.layout-_cover .cover-header {
@@ -126,23 +154,51 @@
   font-size: clamp(1.2em, 5vw, 3.4em);
 }
 
+/* Issue97 (Issue80 §2.1 동기): cover-meta — 우상단 absolute, 박스 없이 작게
+   - top 24px: 노랑 가로선(top:12px + height:2px = 14px 끝)과 10px 여백
+   - line-height 1: 텍스트 baseline이 가로선 위로 침범하지 않도록 박스 높이 최소화
+   - right 5%: 가로선(right: 56px) 안쪽 들여쓰기 */
 .reveal section.layout-_cover .cover-meta {
-  align-self: flex-end;
-  font-size: 1.1em;
-  border: 2px solid var(--kn-accent);
-  padding: 0.4em 1em;
-  margin: 0 4% 4% 0;
-  background: #fff;
-  max-width: 50%;
+  position: absolute;
+  top: 24px;
+  right: 5%;
+  align-self: auto;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  max-width: none;
+  font-size: 0.55em;
+  line-height: 1;
+  display: flex;
+  gap: 0.6em;
+  color: var(--kn-text);
+  z-index: 1;
+}
+.reveal section.layout-_cover .cover-lecture-date,
+.reveal section.layout-_cover .cover-version {
+  opacity: 0.85;
+  color: var(--kn-text);
+  font-size: 1em;
+  margin: 0;
 }
 
-/* 4.2 contents: puffer2s 우상단 (작게) */
+/* 4.2 contents: puffer2s 우상단 (작게)
+   Issue97 (Issue80 §2.5 + Issue86 동기): _contents_no_title도 동일 마스코트 적용 +
+   background-position-y: 28px(절대값) — 상단 가로선(top:12 + height:2 = 14px)과 마스코트 분리 */
 .reveal section.layout-_contents,
-.reveal section.layout-contents-full {
+.reveal section.layout-contents-full,
+.reveal section.layout-_contents_no_title {
   background-image: url('../theme-img/finfraPuffer2s.png');
   background-repeat: no-repeat;
-  background-position: 96% 6%;
+  background-position: 96% 28px;
   background-size: 9% auto;
+}
+
+/* Issue97 (Issue80 §2.5 동기): _contents_no_title — 헤더 영역 없음, 본문이 위까지 차지 */
+.reveal section.layout-_contents_no_title > .contents-body {
+  padding-top: 0;
+  margin-top: 0;
 }
 
 .reveal section.layout-_contents .contents-header,
