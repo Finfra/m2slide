@@ -20,25 +20,6 @@
 
 # 🔥 진행중
 
-## Issue104. Chapter ← 이전 챕터 진입 시 트랜지션 방향 역전 — 순방향 애니메이션이 뒤로가기 의도와 충돌 (등록: 2026-05-04)
-* 카테고리: Frontend
-* 목적: Chapter 모드에서 ← 키로 이전 챕터(`?last=1`)로 이동 시, 새 페이지가 fresh load되어 Reveal.js가 forward 트랜지션(우→좌 슬라이드)을 재생함. 사용자는 "뒤로 가는 동작"을 인식하므로 backward 트랜지션(좌→우 슬라이드)이어야 직관적
-* 상세:
-    - 재현: 페이지 2 (`Projects/m2SlideStyle2_chapter/slide/03-data-visualization.html`)에서 ← 키 누름
-    - 현재: 페이지 1 (`02-code-syntax.html?last=1#/2`)로 이동하면서 forward 슬라이드 애니메이션 재생 → 방향 혼동
-    - 기대: backward 슬라이드 애니메이션(반대 방향) 재생 → 사용자가 "뒤로 갔음"을 시각적으로 인지
-    - 영향 범위: Chapter 모드 ← (TOC slide·#/0에서 이전 챕터로 진입), Home/⌘← (이전 챕터 첫 슬라이드 진입)도 동일 이슈 가능
-* 구현 명세 (계획):
-    - 도착 페이지에서 진입 방향을 인지할 수 있는 URL 시그널 추가 (ex: `?last=1&dir=back`, 기존 `?last=1` 자체로도 ← 진입 시그널로 충분)
-    - [`lib/html-builder.js`](lib/html-builder.js)의 navigation 코드 (lines 1262-1289) — ← / Home에서 PREV_CHAPTER 진입 시 `?last=1` (기존) 또는 `?dir=back` 추가
-    - 도착 페이지의 `Reveal.on('ready')` 핸들러에서 시그널 감지 시:
-        - 옵션 A (CSS): body에 `.m2-enter-back` 클래스 부착 → CSS keyframe으로 backward slide 애니메이션 1회 재생
-        - 옵션 B (JS): `Reveal.configure({ transition: 'slide' })` 상태에서 첫 표시 시 임시로 다른 슬라이드를 거쳐 backward 방향으로 트랜지션 (시각 잔상 위험)
-        - 권장: 옵션 A — Reveal.js 기본 트랜지션 비활성화 + 자체 CSS keyframe (제어성·안정성)
-    - 검증: chapter 프로젝트 빌드 후 페이지 2 → ← → 페이지 1 진입 시 슬라이드가 좌측에서 우측으로 들어옴 확인
-* 검증:
-    - `m2SlideStyle2_chapter` 빌드 산출물 확인
-    - 브라우저: 페이지 2 → ← → 페이지 1, backward 트랜지션 시각 확인
     - 회귀: 일반 페이지 직접 진입(`?last=1` 없이)은 트랜지션 없음(현행) 유지
 
 # 📕 중요
@@ -49,6 +30,31 @@
 
 
 # ✅ 완료
+
+## Issue104. Chapter ← 이전 챕터 진입 시 트랜지션 방향 역전 — 순방향 애니메이션이 뒤로가기 의도와 충돌 (등록: 2026-05-04, 해결: 2026-05-05, commit: 48f63e2) ✅
+* 카테고리: Frontend
+* 목적: Chapter 모드에서 ← 키로 이전 챕터(`?last=1`)로 이동 시, fresh page load로 Reveal.js가 forward 트랜지션(우→좌)을 재생함. 사용자는 "뒤로 가는 동작"으로 인식하므로 backward 트랜지션(좌→우)이 직관적
+* 구현 명세 (실행, 옵션 A 채택 — 자체 CSS keyframe):
+    - URL 시그널 ([`lib/html-builder.js`](lib/html-builder.js)):
+        - PREV_CHAPTER href: `?back=1` (Home 단독) / `?last=1&back=1` (← 키로 이전 챕터 마지막 슬라이드 진입)
+        - NEXT_CHAPTER href: `?fwd=1` (End / 본문 마지막 → / leaf ↓)
+    - 도착 페이지 `Reveal.on('ready')` 핸들러:
+        - hasBack && hasLast: `transition: 'none'`으로 마지막 슬라이드 즉시 점프 + `body.m2-back-enter` 부착 → backward keyframe 1회 재생
+        - hasBack 단독: `body.m2-back-enter` 부착 (첫 슬라이드 진입 backward 애니메이션)
+        - hasFwd: `body.m2-fwd-enter` 부착 (forward 애니메이션)
+        - 450ms 후 클래스 제거
+    - CSS keyframes (template `<style>`):
+        - `m2-slide-from-right` (← 키, backward 방향)
+        - `m2-slide-from-left` (→ 키, forward 방향)
+        - `body.m2-back-enter`, `body.m2-fwd-enter` selector
+* 효과:
+    - ← 키로 이전 챕터 진입 시 슬라이드가 우측에서 등장 (좌측 모션) — 뒤로 가는 시각 정합
+    - → 키로 다음 챕터 진입 시 슬라이드가 좌측에서 등장 (우측 모션) — 앞으로 가는 시각 정합
+    - PgDown(?last=1만, back 없음)은 즉시 점프 (기존 동작 유지)
+* 검증:
+    - 3종 프로젝트 빌드 통과
+    - `m2SlideStyle2_chapter/slide/01-text-layout.html` 산출물에 keyframes·시그널 핸들러·body 클래스 25 occurrences 부착
+    - 브라우저: 페이지 2 → ← → 페이지 1 backward 트랜지션, 페이지 1 → →→ → 페이지 2 forward 트랜지션 시각 확인 가능
 
 ## Issue106. anchor에서 ↓ 누름 시 자식 sub-anchor 우선 — H1 → 첫 H2로 점프 (등록: 2026-05-04, 해결: 2026-05-04, commit: dc60188) ✅
 * 카테고리: Frontend
