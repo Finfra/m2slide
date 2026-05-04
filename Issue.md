@@ -77,6 +77,34 @@
     - `,` / `.` 키 동작 사용자 직접 확인 완료 — `#/12` 에서 `,` → `#/8`, `.` → `#/20` 정상
     - 진단 페이지 `_doc_work/key-test.html` 는 검증 완료 후 삭제
 
+### Issue92_1. macOS 환경에서 Home/End 물리 키 keydown 미전달 원인 규명·복구 (등록: 2026-05-04)
+* 카테고리: Frontend
+* 목적: Issue92 fallback (`,` / `.`) 으로 우회는 했으나, 표준 ⇤ Home / ⇥ End 물리 키가 정상 동작해야 발표 중 손가락 위치를 자연스럽게 유지 가능. macOS 단계에서 Home/End keydown 이 브라우저까지 전달되지 않는 근본 원인을 규명하고 OS·키보드·리매핑 도구 설정으로 복구
+* 상세:
+    - 진단 결과 (key-test.html, window 최상위 capture phase): ↑↓←→·PgUp·PgDown·Cmd·Cmd+Arrow 전달 정상이나 Home/End 만 keydown 이벤트 자체가 페이지에 미도달
+    - 우리 JS 핸들러 단계 이전 (브라우저 이벤트 생성 이전 단계) 에서 차단되므로 코드 수정 불가능 — OS·키보드 펌웨어·리매핑 앱 단계 조사 필요
+    - 의심 후보:
+        - macOS 시스템 설정 → 키보드 → 키보드 단축키에서 Home/End 가 다른 동작에 할당
+        - Karabiner-Elements / BetterTouchTool / Hammerspoon / Magnet / Rectangle 등 키 리매핑 도구가 Home/End 가로챔
+        - 한/영 IME 가 Home/End 가로챔 (영문 모드 vs 한글 모드 비교 필요)
+        - 외장 키보드 펌웨어 매핑 또는 Fn 레이어 설정
+        - macOS 접근성 → 단축키 설정
+* 구현 명세:
+    - 사용자 환경 점검 단계:
+        - `Karabiner-EventViewer` 앱 설치 후 Home/End 입력 시 OS 단계에서 잡히는지 확인
+        - 입력 모드 (한/영) 를 영문으로 고정한 뒤 재시도
+        - 시스템 환경설정 → 키보드 → 단축키 탭의 모든 카테고리에서 Home·End 매핑 검토
+        - 키 리매핑 앱 비활성화 후 재시도 (각 앱 quit → 테스트)
+        - 다른 키보드 (외장 vs 내장 vs 다른 외장) 로 교차 검증
+    - 원인 식별 후 해당 설정 변경 또는 비활성화로 복구
+    - 진단 페이지 (`_doc_work/key-test.html`) 재생성 후 사용 — 향후 재발 시 동일 절차로 빠르게 분리 가능
+* 검증:
+    - key-test.html 에서 Home·End 물리 키 입력 시 keydown 로그 정상 출력
+    - `Projects/m2SlideStyle1_single/slide/index.html#/12` 에서 Home → #/8, End → #/20 정상 동작
+* 비고:
+    - 원인이 OS 환경 (사용자 머신 한정) 으로 확정되면 코드 변경 없이 종결 가능
+    - 다수 사용자에게 재현되면 Issue92 fallback 외 추가 코드적 대응 (예: KeyboardEvent 정규화 layer) 검토
+
 ## Issue89. ⇤ Home / ⇥ End 키 동작 안 함 — Reveal.js hijack 수정 (등록: 2026-05-04, 해결: 2026-05-04, commit: ba4e084) ✅
 * 카테고리: Frontend
 * 목적: Issue87에서 추가한 ⇤ Home / ⇥ End sibling 점프가 Reveal.js 5.0.4의 자체 keymap에 의해 가로채져 동작 안 함. capture phase 등록으로 우선순위 확보
