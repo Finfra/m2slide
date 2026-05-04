@@ -994,17 +994,49 @@
   line-height: 1.3;
 }
 
-/* 8.6 노란 가로선(::before/::after) 자체에 layout 클래스명 라벨 표시
-   - §2의 hr.png 가로선 위에 attr(class) 텍스트만 얹어 KISS하게 section 라벨 노출
-   - height: 10px 안에 작은 monospace 텍스트 우측 정렬 */
+/* 8.6 §2 가로선(::before/::after) → 가이드 모드에서 라벨 박스로 변환
+   - hr.png/높이 점유 해제 후 §8.5와 동일한 흰 배경·보라 테두리 라벨 박스로 통일
+   - layout-_contents의 §3 override(`.title::before` hr.png)는 §8.7에서 처리 */
 .guide-line-mode .reveal section[class*="layout-"]::before,
 .guide-line-mode .reveal section[class*="layout-"]::after {
   content: attr(class) !important;
+  background-image: none !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  left: auto !important;
+  right: 8px !important;
+  height: auto !important;
+  width: auto !important;
+  border: 1px solid rgba(140, 90, 200, 1);
+  border-radius: 4px;
+  padding: 2px 8px;
   font-family: 'Nanum Gothic Coding', 'Menlo', monospace;
-  font-size: 9px;
+  font-size: 13px;
   font-weight: 700;
   color: rgba(140, 90, 200, 1);
-  text-align: right;
-  padding-right: 8px;
-  line-height: 10px;
+  line-height: 1.3;
+  z-index: 9999;
+}
+
+/* 8.7 §3 override: layout-_contents의 .title::before(hr.png 노란 밑줄)를
+   가이드 모드에서 라벨 박스로 변환. specificity (0,3,2)로 §8.5(:where 0,1,1) 이김 */
+.guide-line-mode .reveal section.layout-_contents > .title::before,
+.guide-line-mode .reveal section.layout-_contents .contents-body > .title::before {
+  content: attr(class) !important;
+  background-image: none !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  top: auto !important;
+  bottom: 4px !important;
+  left: auto !important;
+  right: 6px !important;
+  height: auto !important;
+  width: auto !important;
+  border: 1px solid rgba(140, 90, 200, 1) !important;
+  border-radius: 4px !important;
+  padding: 2px 8px !important;
+  font-family: 'Nanum Gothic Coding', 'Menlo', monospace !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: rgba(140, 90, 200, 1) !important;
+  line-height: 1.3 !important;
+  z-index: 9999 !important;
 }
