@@ -87,8 +87,8 @@
      - 기하 관계: contents_width = contents_height × var(--slide-ratio)
   */
   --slide-ratio: 1.7778;
-  --slide-outer-padding: 0;
-  --slide-inner-padding: 0;
+  --slide-outer-padding: 0px;
+  --slide-inner-padding: 0px;
 }
 
 /* =========================================================================
@@ -174,12 +174,15 @@
   transform: none;
 }
 
-/* Issue63: outer padding (슬라이드↔뷰포트 대칭).
-   - .reveal에 inset 적용으로 Reveal.js scaling 영역 축소 → 자동 중앙 배치 + 시각적 외부 여백
+/* Issue63 + Issue: outer padding (슬라이드↔뷰포트 대칭).
+   - body에 padding 적용 + box-sizing: border-box로 Reveal scaling 영역(body content box) 축소
+   - Reveal.js가 측정하는 viewport 크기 자체가 줄어들어 4면 균등 inset + 자동 fit
+   - 기존 .reveal { inset } 방식은 left/top만 밀려나고 scale은 원본 viewport 기준이라 right/bottom 오버플로
    - 0이면 효과 없음 (기존과 동일)
 */
-.reveal {
-  inset: var(--slide-outer-padding, 0) !important;
+body {
+  padding: var(--slide-outer-padding, 0) !important;
+  box-sizing: border-box !important;
 }
 
 /* 개별 슬라이드 섹션
@@ -1091,15 +1094,22 @@ body.agenda-page {
   font-family: var(--global-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif);
 }
 .agenda-frame {
-  width: min(100vw, 100vh * var(--slide-ratio));
-  height: min(100vh, 100vw / var(--slide-ratio));
+  /* outer padding 반영: viewport 단위에서 좌우/상하 padding 합계만큼 차감 */
+  width: min(
+    calc(100vw - 2 * var(--slide-outer-padding, 0px)),
+    calc((100vh - 2 * var(--slide-outer-padding, 0px)) * var(--slide-ratio))
+  );
+  height: min(
+    calc(100vh - 2 * var(--slide-outer-padding, 0px)),
+    calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
+  );
   background: #ffffff;
   overflow: hidden;
   position: relative;
 }
 html.ratio-fill .agenda-frame {
-  width: 100vw;
-  height: 100vh;
+  width: calc(100vw - 2 * var(--slide-outer-padding, 0px));
+  height: calc(100vh - 2 * var(--slide-outer-padding, 0px));
 }
 .agenda-frame .layout-_toc,
 .agenda-frame .layout-_agenda {

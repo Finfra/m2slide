@@ -19,7 +19,7 @@ video_default: controls       # 컨트롤만, 자동재생 없음 (기본 권장
 guide_line: true              # 레이아웃 디버깅용 가이드 라인 표시
 use_open_props: true          # Open Props CDN 로드 (false=기본값 사용)
 slide_ratio: "16:9"           # 16:9 (default) | 3:2 | fill (비율 무제약). Issue63: --slide-ratio 변수로 노출됨. Issue65: 화이트리스트 외 입력은 빌드 실패
-slide_outer_padding: 0        # outer padding (슬라이드↔뷰포트 대칭). CSS length (예: 0, 20px, 2vh) — .reveal inset에 적용
+slide_outer_padding: 0        # outer padding (슬라이드↔뷰포트 대칭). CSS length (예: 0, 20px, 2vh) — body padding에 적용 (Issue85: 4면 균등)
 slide_inner_padding: 0        # inner padding (콘텐츠↔슬라이드 경계 대칭). CSS length — section padding에 적용
 
 # 스타일 설정 (Issue64 1.b 정책)
