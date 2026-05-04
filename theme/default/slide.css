@@ -63,25 +63,33 @@
   min-height: 100% !important;
 }
 
-/* 페이지 번호 (Reveal.js 기본 .slide-number 활용 + 폴백)
-   bottom: 2px — 하단 가로선(bottom:12, height:10 → 12-22px)과 충돌 회피하여
-   progress bar 영역(reveal.js 기본 .progress: bottom:0, height:3px) 옆으로 이동 */
+/* 페이지 번호·controls·progress: outer padding 바깥(viewport edge)에 위치
+   - body { padding: var(--slide-outer-padding) } 으로 .reveal이 outer padding 안쪽에 있음
+   - position: fixed 로 viewport 기준 위치 → body padding 영역(letterbox) 표시 */
 .reveal .slide-number {
+  position: fixed !important;
   background: transparent !important;
   color: var(--kn-page-num-color) !important;
   font-size: 14px;
   font-weight: 600;
-  bottom: 0;
-  right: 24px;
-  z-index: 200 !important;   /* progress bar/하단 가로선 위로 — 잘림 방지 */
+  bottom: 0 !important;
+  right: 24px !important;
+  z-index: 200 !important;
 }
 
-/* Reveal.js controls (← →) — 가로선 아래 progress bar 영역으로 이동
-   z-index: 200 — progress bar 위로 표시 */
 .reveal .controls {
+  position: fixed !important;
   bottom: 0 !important;
   right: 0 !important;
   z-index: 200 !important;
+}
+
+.reveal .progress {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 100 !important;
 }
 
 /* _cover/_agenda 슬라이드: 페이지번호·controls·progress 모두 숨김

@@ -34,8 +34,8 @@
 .reveal section[class*="layout-"]::after {
   content: "";
   position: absolute;
-  left: 4%;
-  right: 4%;
+  left: 56px;
+  right: 56px;
   height: 2px;
   background: var(--kn-accent);
   pointer-events: none;
