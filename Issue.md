@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 92
+* Issue HWM: 95
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
@@ -20,6 +20,20 @@
 
 # 🔥 진행중
 
+## Issue94. 테이블 슬라이드에 layout-_contents 클래스 미적용 (등록: 2026-05-04)
+* 카테고리: Generator
+* 목적: 테이블이 포함된 슬라이드만 `<section>`에 `class="layout-_contents"`가 부여되지 않아 `theme_default_layout: contents` 환경에서 §3 제목 스타일·상하단 hr.png 가로선·우상단 puffer 마스코트가 모두 누락됨. 다른 본문 슬라이드와 동일한 레이아웃 적용 보장
+* 상세:
+    - 증상: `Projects/m2SlideStyle1_single/slide/index.html#/29` ("기본 테이블"), `#/30` ("이미지가 포함된 테이블")에서 H2 제목 하단 underline·상하단 가로선·puffer 마스코트 모두 미표시
+    - 재현: `./m2slide.sh m2SlideStyle1_single` 실행 후 `index.html#/29`, `#/30` 직접 확인
+    - 근본 원인: [`lib/html-builder.js:251`](lib/html-builder.js)의 디스패처 `if (slide.isTitle || slide.isTable) { return generatePlainSlideHTML(slide); }`이 테이블 슬라이드를 plain 경로로 위임. `generatePlainSlideHTML`은 `title-slide`/`has-text` 클래스만 부여하고 `layout-{name}` 클래스는 추가하지 않음 (`generateSlideHTML`의 layout 경로 line 294-301에만 존재). 과거 reveal.js markdown plugin에 `data-markdown`으로 위임하던 흔적이지만 현재는 `convertMarkdownToHTML`이 직접 `<table>` HTML을 생성하므로 우회 불필요
+    - 영향 범위: `theme_default_layout: contents` 사용 + 테이블 포함 슬라이드 보유한 모든 프로젝트. m2SlideStyle1_single 외에 layoutTest, m2SlideStyle2_chapter도 잠재적 영향
+* 구현 명세:
+    - **해결안 A (권장)**: `lib/html-builder.js:251` 디스패처에서 `slide.isTable` 조건만 제거 — 테이블 슬라이드도 layout 템플릿(_contents) 경로 통과. layout 경로의 `convertMarkdownToHTML`이 이미 테이블을 정상 변환하므로 동작 유지 + layout 클래스 자동 부여
+    - 검증:
+        - m2SlideStyle1_single 빌드 후 `#/29`, `#/30` 슬라이드의 `<section class="layout-_contents">` 확인 + 상·하단 가로선·puffer·title underline 정상 표시
+        - layoutTest, m2SlideStyle2_chapter 회귀 없음 확인
+
 # 📕 중요
 
 # 📙 일반
@@ -28,6 +42,26 @@
 
 
 # ✅ 완료
+
+## Issue95. Pandoc `::: rows` 행이 contents-body 채우지 못하고 height 비례 미적용 (등록: 2026-05-04, 해결: 2026-05-04, commit: 09babdf) ✅
+* 카테고리: Theme
+* 목적: `Projects/layoutTest/slide/index.html#/6` (상/하 분할) 에서 두 번째 `.m2-row`가 `.contents-body` 영역에 흡수되어 보이고, 마크다운에 명시한 `height="40%"`/`height="60%"` 비례가 무시되어 콘텐츠 자연 크기로 떠 있음. 추가로 행 내부 이미지가 행 경계를 넘어 오버플로
+* 근본 원인:
+    - `lib/css/base.css`의 `.m2-rows` / `.m2-row` 규칙에 `flex`/`min-height` 부재 → `.contents-body`(flex column) 안에서 자연 높이로 수축, 인라인 `height: N%` 미적용
+    - `.m2-row`가 flex column이 아니라 `.media-container`의 `flex-grow`가 적용되지 않음 → 이미지 자연 크기로 행 경계 초과
+* 구현 명세:
+    - `lib/css/base.css` `.m2-rows / .rows`: `flex: 1 1 auto; min-height: 0;` 추가 → contents-body 남은 높이 채움
+    - `lib/css/base.css` `.m2-row / .row`: `flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden;` → 균등/비례 분할 + 내부 미디어 컨테인
+    - `.m2-row > .media-container`: `flex: 1 1 0; min-height: 0; overflow: hidden` + img/svg에 `max-height: 100%; object-fit: contain` → 이미지 행 경계 내 contained
+* 검증: layoutTest, m2SlideStyle1_single, m2SlideStyle2_chapter 3종 빌드 성공. `#/6` 둘째 행 박스가 `m2-row row` 라벨로 표시되고 contents-body 끝까지 도달, 이미지 행 경계 내 contained. `#/7` (2x2 nested rows) 균등 분할 정상. `.m2-cols` 가로 분할 영향 없음 (해당 규칙 미변경)
+
+## Issue93. Pandoc `::: columns` / `::: rows` 본문 누락 (등록: 2026-05-04, 해결: 2026-05-04, commit: 09babdf) ✅
+* 카테고리: Generator
+* 목적: `Projects/layoutTest/layoutTest.md` 슬라이드 4~7 (`Pandoc ::: columns 두 컬럼`, `3분할 카드`, `상/하 분할`, `2x2 그리드`) 의 본문이 산출물 HTML에서 빈 `<div class="contents-body"></div>`로 렌더되어, Pandoc fenced div 다분할 레이아웃 기능이 완전히 동작 안 함
+* 근본 원인: [`lib/html-builder.js:258`](lib/html-builder.js)의 `extractSlots(slide.rawMarkdown)` 호출이 `convertMarkdownToHTML`보다 먼저 실행됨. `extractSlots` 정규식 `/^:::\s+([a-z][a-zA-Z0-9-]*)\s*\n([\s\S]*?)\n:::\s*$/gm` ([`lib/slide-parser.js:111`](lib/slide-parser.js)) 이 `::: columns ... :::` / `::: rows ... :::` 블록을 "이름 있는 슬롯"으로 매칭하여 본문에서 제거. `_contents` layout 템플릿에 `{{columns}}` / `{{rows}}` 변수가 없어 콘텐츠 silently 누락
+* 구현 명세:
+    - `lib/slide-parser.js` `extractSlots`에 `PANDOC_LAYOUT_RESERVED = new Set(['columns', 'column', 'rows', 'row'])` 화이트리스트 추가, 매칭 시 원본 텍스트 그대로 반환하여 후속 `preprocessPandocDiv`가 fenced div로 처리하도록 위임
+* 검증: layoutTest 빌드 후 slide 4~7의 `<div class="contents-body">` 안에 `<div class="m2-cols columns">`/`<div class="m2-rows rows">` 정상 마크업 출력. `#/7` (2x2 nested) 정상. m2SlideStyle1_single, m2SlideStyle2_chapter 회귀 없음. 사용자 정의 슬롯(`::: leftPanel` 등) 영향 없음 (예약어 4개만 제외)
 
 ## Issue91. 제목 underline이 contents-header 안쪽에 있어 위/아래 갭 비대칭 (등록: 2026-05-04, 해결: 2026-05-04, commit: 2b1c3d9) ✅
 * 카테고리: Theme
