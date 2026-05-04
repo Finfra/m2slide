@@ -550,12 +550,29 @@ body {
   justify-content: space-between;
   gap: 4%;
   width: 100%;
+  /* Issue96: contents-body(flex column) 안에서 남은 높이 채워서 nested rows가
+     비율대로 분할될 수 있도록 함. 자연 콘텐츠는 영향 없음 (children 자연 크기 유지) */
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Issue96: rows가 중첩될 때만 column 박스를 풀-height로 stretch.
+   단순 image+text 2-col은 기존 center 정렬 유지 (image 수직 중앙) */
+.reveal .m2-cols:has(.m2-rows),
+.reveal .m2-cols:has(.rows),
+.reveal .columns:has(.m2-rows),
+.reveal .columns:has(.rows) {
+  align-items: stretch;
 }
 
 .reveal .m2-col,
 .reveal .column {
   flex: 1;
   min-width: 0;
+  /* Issue96: 내부 .m2-rows가 flex item으로 작동하여 column 높이를 채울 수 있도록
+     flex 컨테이너로 변환. 자연 콘텐츠(텍스트/이미지)는 동일하게 top-down 스택 */
+  display: flex;
+  flex-direction: column;
 }
 
 /* Issue95: .m2-rows가 부모 .contents-body(flex column) 의 남은 높이를 채우고,
