@@ -191,10 +191,21 @@
    - Reveal.js가 측정하는 viewport 크기 자체가 줄어들어 4면 균등 inset + 자동 fit
    - 기존 .reveal { inset } 방식은 left/top만 밀려나고 scale은 원본 viewport 기준이라 right/bottom 오버플로
    - 0이면 효과 없음 (기존과 동일)
+   - A안(애니메이션 outer padding 영역까지 가시화):
+     html/body/.reveal/.slides 의 overflow를 visible로 풀어 슬라이드 transition 시
+     section이 .reveal 영역(=padding 안쪽)을 벗어나도 body padding 영역에 paint 되도록 함.
 */
+html,
+body {
+  overflow: visible !important;
+}
 body {
   padding: var(--slide-outer-padding, 0) !important;
   box-sizing: border-box !important;
+}
+.reveal,
+.reveal .slides {
+  overflow: visible !important;
 }
 
 /* 개별 슬라이드 섹션
