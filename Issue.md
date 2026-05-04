@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 105
+* Issue HWM: 106
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
@@ -49,6 +49,25 @@
 
 
 # ✅ 완료
+
+## Issue106. anchor에서 ↓ 누름 시 자식 sub-anchor 우선 — H1 → 첫 H2로 점프 (등록: 2026-05-04, 해결: 2026-05-04, commit: dc60188) ✅
+* 카테고리: Frontend
+* 목적: H1 anchor에서 ↓ 가 outline 자식(H2) 우선해야 사용자 멘탈 모델("하위 toc 있으면 그곳으로, 없으면 직후 슬라이드")과 정합
+* 구현 명세 (실행):
+    - 신규 함수 `findFirstChildAnchorIndex(currentH, level)` ([`lib/html-builder.js`](lib/html-builder.js)):
+        - currentH+1부터 scan, anchor 슬라이드 발견 시:
+            - level > 현재 → 반환 (자식 anchor 발견)
+            - level ≤ 현재 → -1 반환 (scope 종료)
+    - ↓ 핸들러 anchor 분기 갱신: `findFirstChildAnchorIndex(idxD, encLv)` 결과 ≥ 0 → 그곳 / -1 → 기존 `idxD + 1` 동작
+    - Single/Chapter 모드 공통 적용
+    - 설계 동기: [`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) Issue106 항목 (Single/Chapter 매트릭스, K3, 변경 이력)
+* 효과:
+    - #/12 (H1 "4. 이미지 및 미디어") ↓ → #/14 (H2 "4.1") — content "개요"(#/13) skip
+    - #/14 (H2 "4.1", 자식 없음) ↓ → #/15 content (회귀 없음)
+    - #/1 (H1 "1", 자식 없음) ↓ → #/2 content (회귀 없음)
+* 검증:
+    - `m2SlideStyle1_single` 빌드 산출물 `index.html`에 `findFirstChildAnchorIndex` 부착 확인 (2 occurrences)
+    - `m2SlideStyle2_chapter`, `layoutTest` 빌드 회귀 없음
 
 ## Issue105. ⇤/⇥ Single 모드 sibling을 H1 전용에서 레벨 인식 트리 탐색으로 확장 (등록: 2026-05-04, 해결: 2026-05-04, commit: 2e188b5) ✅
 * 카테고리: Frontend
