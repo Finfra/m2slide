@@ -2,6 +2,66 @@
 
 All notable changes to this project. m2slide follows [SemVer](https://semver.org/).
 
+## [v0.6.0] - 2026-05-05
+
+### Issues 종결 (36건, Issue71-106)
+
+#### 키보드 네비게이션 — 9키 체계 정립 + 트리 탐색 (Issue71, 87-92, 99-106)
+
+- **Issue71**: ↑ 키 H1 section anchor 단위 이동 + Home 키 도입 (d54eab7)
+- **Issue87**: key_navigation 설계 반영 — 9키 네비게이션 체계 구현 (a44b7b6)
+- **Issue88**: key_navigation.md 정합성 후속 수정 (a44b7b6)
+- **Issue89**: ⇤ Home / ⇥ End 키 동작 안 함 — Reveal.js hijack 수정 (ba4e084)
+- **Issue92**: Home/End sibling 점프가 H2 sub-section까지 매칭 + 일부 환경에서 Home/End keydown 미전달 (b9610bb)
+- **Issue99**: Chapter 모드 본문(leaf)에서 ↓ 키 무동작 — 다음 챕터 fall-through (68eb82b)
+- **Issue100**: 본문 leaf에서 ↑ 키가 직속 부모(H2 sub-anchor) 건너뛰고 H1 anchor로 점프 (68eb82b)
+- **Issue102**: H2 sub-anchor에서 ↑ 시 직속 부모 H1 anchor로 이동 (Issue100 후속) (354d142)
+- **Issue103**: Single 모드 본문(leaf)에서 ↓ 키 무동작 — 다음 H1 anchor fall-through (7570cf0)
+- **Issue104**: Chapter ← 이전 챕터 진입 시 backward 트랜지션 애니메이션 반영 (48f63e2)
+- **Issue105**: ⇤/⇥ Single 모드 sibling을 H1 전용에서 레벨 인식 트리 탐색으로 확장 (2e188b5)
+- **Issue106**: anchor에서 ↓ 누름 시 자식 sub-anchor 우선 — H1 → 첫 H2로 점프 (dc60188)
+
+#### 시각·CSS 개선 (Issue72, 80, 85-86, 90-91, 94-98, 101)
+
+- **Issue72**: CSS `!important` 과도 사용 1차 최적화 (05b7782)
+- **Issue80**: theme_layout_default.md §2 레이아웃 변경 결정사항 default theme 적용 (a268ad4)
+- **Issue85**: slide_outer_padding 4면 균등 적용 + agenda 반영 + unitless 0 calc 회귀 수정 (1a9d78d)
+- **Issue86**: default theme 시각 개선 — 가로선 hr.png 통일 + 페이지 UI를 outer padding 바깥으로 (582d064)
+- **Issue90**: title_contents_gap이 .contents-title에 적용 안 됨 (2b1c3d9)
+- **Issue91**: 제목 underline이 contents-header 안쪽에 있어 위/아래 갭 비대칭 (2b1c3d9)
+- **Issue94**: 테이블 슬라이드에 layout-_contents 클래스 미적용 (45cedeb)
+- **Issue95**: Pandoc `::: rows` 행이 contents-body 채우지 못하고 height 비례 미적용 (09babdf)
+- **Issue96**: 2x2 그리드 (columns 안에 rows 중첩) 균등 분할 미적용 (fdbe8da)
+- **Issue97**: default_lec theme를 default theme의 Issue80/86 시각 변경과 동기화 (8883e2e)
+- **Issue98**: 코드 블록 좌측 정렬 + HTML escape + hljs 클래스 누락 (d567d53)
+- **Issue101**: 코드 박스 시각 안정화 — CDN github.css 의존 제거 + 자체 .code-wrapper 박스 (42979cf)
+
+#### 기능 추가 / Pandoc 호환 (Issue73-74, 76, 79, 81, 93)
+
+- **Issue73**: theme/default/layouts/ 번호 prefix layout 6종 신규 추가 (da0cc88)
+- **Issue74**: AGENDA title Format A/B 통일 + cover 강사 label 미세 개선 (67222eb)
+- **Issue76**: lib/combine-pdfs.py 신규 — macOS Quartz 기반 PDF 병합 (1cb45ba)
+- **Issue79**: `_meta.yml` 폐기 + 메타데이터를 슬라이드 소스 frontmatter로 통합 (d49f9bb)
+- **Issue81**: 슬라이드 layout 메타 `#layout-` prefix 정식 지원 (c27ae5d)
+- **Issue93**: Pandoc `::: columns` / `::: rows` 본문 누락 (09babdf)
+
+#### 설계 문서 정합성 (Issue75, 77-78, 82-84)
+
+- **Issue75**: _agenda.html instructor div 제거 + CLAUDE.md base.css 가드 섹션 추가 (8d47945)
+- **Issue77**: markmap fold 인디케이터 원 크기 30% 축소 (a29a0fa)
+- **Issue78**: 번호 prefix layout 6종 폐기 + layout_default.md를 theme_layout_default.md에 머징 (afdb361)
+- **Issue82**: lib/layout.js dead `_WARNED_MISSING_LAYOUTS` 제거 + 설계 문서 §4.4 정정 (ee70b2a)
+- **Issue83**: 설계 문서 `theme_layout.md` §5.1·§11.2·§15 `_toc` 자동 적용 조건 정정 (568f456)
+- **Issue84**: 설계 문서 `theme.md` §2 `slide_css:` 우선순위 표 정정 (568f456)
+
+### 주요 변화 요약
+
+- **9키 네비게이션 SSOT 정립**: `_doc_design/key_navigation.md` — ←/→/↑/↓ 4방향 + ⇤/⇥/⇞/⇟ 4단축. Single/Chapter 모드 매트릭스 + K1~K11 결정사항
+- **트리 탐색 의미 도입**: ⇤/⇥는 enclosing anchor 레벨 N 기준 prev/next anchor at `level ≤ N` (H1↔H1, H2↔H2, …). leaf ↓는 fall-through (다음 챕터/다음 H1). anchor ↓는 자식 sub-anchor 우선
+- **Backward 트랜지션 애니메이션**: ← 챕터 이동 시 우측에서 슬라이드 진입(좌측 모션). `?back=1`/`?fwd=1` URL 시그널 + 자체 CSS keyframe
+- **Pandoc fenced div 호환**: `::: columns` / `::: rows` 정상 처리 + 2x2 그리드 균등 분할
+- **메타데이터 SSOT 통합**: `_meta.yml` 폐기, 슬라이드 소스 frontmatter로 통합 (Issue79). cover/agenda 자동 주입 정책
+
 ## [v0.5.0] - 2026-05-03
 
 ### Issues 종결 (71건)
