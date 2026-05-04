@@ -130,6 +130,7 @@
 .reveal section[class*="layout-"] .blank-title::after,
 .reveal section[class*="layout-"] .closing-title::after,
 .reveal section[class*="layout-"] .toc-title::after,
+.reveal section[class*="layout-"] > .title::after,
 .reveal section[class*="layout-"] .contents-body > .title::after {
   content: "";
   position: absolute;
@@ -144,7 +145,12 @@
 }
 
 /* 본문 H2.title도 §3 제목 처리 — theme_default_layout: contents 환경에서
-   본문 H2가 contents-body 내부에 .title로 배치될 때 hr.png 밑줄(가운데 바) 적용 */
+   본문 H2가 contents-body 내부에 .title로 배치될 때 hr.png 밑줄(가운데 바) 적용
+   Issue90: margin-bottom 명시하지 않음 — base.css의 .reveal .title rule
+   (margin-bottom: calc(var(--title-contents-gap-pct) * 0.01em))이 적용되어
+   title_contents_gap 변수가 정상 작동하도록 함.
+   Issue90: H2가 contents-body 밖(section 직속 자식)으로 이동되는 경우도 동일 스타일 적용 */
+.reveal section[class*="layout-"] > .title,
 .reveal section[class*="layout-"] .contents-body > .title {
   font-weight: 900;
   letter-spacing: -0.01em;
@@ -154,7 +160,81 @@
   width: fit-content;
   max-width: 100%;
   padding-bottom: 0.3em;
-  margin: 0.3em auto 0.3em auto;
+  margin-top: 0.3em;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* contents 레이아웃 한정: 제목 밑줄 폭을 상단 가로선(::before)과 동일하게 맞춤
+   다른 레이아웃(_blank, _cover 등)은 글자 폭 fit-content 유지.
+   Issue90: H2가 contents-body 밖(section 직속 자식)으로 이동된 경우도 동일 적용. */
+.reveal section.layout-_contents > .title,
+.reveal section.layout-_contents .contents-body > .title {
+  width: 100%;
+  text-align: center;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+  box-sizing: border-box;
+}
+
+/* Issue90: 위/아래 가로선을 .title 박스 외부에 부착하여 .title 폭과 자동 정렬.
+   layout-_contents에서 section::before 숨김 + .title::before/::after로 hr.png를 박스 외부 배치.
+   - ::before: .title 박스 위쪽 외부 (top: -12px)
+   - ::after:  .title 박스 아래쪽 외부 (bottom: -12px)
+   둘 다 동일 박스 기준이라 좌우 끝이 정확히 정렬됨. */
+.reveal section.layout-_contents::before {
+  display: none !important;
+}
+
+.reveal section.layout-_contents > .title::before {
+  content: "";
+  position: absolute;
+  top: -12px;  /* 박스 외부 위 (hr 10px + 2px 여유) */
+  left: 0;
+  right: 0;  /* 위쪽 가로선은 슬라이드 하단 가로선과 동일 폭(.title 박스 가득 = section content-box 폭) */
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+/* .title underline(::after) — 우상단 puffer 회피용 right: 10% 유지 */
+.reveal section.layout-_contents > .title::after {
+  top: auto;
+  bottom: -12px;  /* 박스 외부 아래 (hr 10px + 2px 여유) */
+  left: 0;
+  right: 10%;
+}
+
+/* contents 레이아웃 H2 제목 위치 — 제목 텍스트 vertical center를 우상단
+   puffer(8%, top:28px) 중심(y≈87px)에 정렬 + 위/아래 갭 대칭.
+   - 위 갭 = padding-top - 22px (슬라이드 ::before 가로선이 12+10=22px에서 끝)
+   - 아래 갭 = padding-bottom - 10px (.title::after underline height 10px이 padding-bottom 영역 점유)
+   - 대칭 위해 padding-bottom = padding-top - 12px 유지
+   - padding-top 1em(50px), padding-bottom 0.76em(38px) → 위·아래 갭 모두 ≈28px */
+.reveal section.layout-_contents > .contents-body:has(> .title:first-child) {
+  padding-top: 0;
+}
+.reveal section.layout-_contents .contents-body > .title:first-child {
+  margin-top: 0;
+  padding-top: 1em;
+  padding-bottom: 0.76em;
+}
+
+/* 우상단 puffer(8%)와 underline 충돌 회피 — underline이 puffer 좌측 직전까지만
+   그어지도록 right: 10% (puffer는 우측 ~12% 영역 점유) */
+.reveal section.layout-_contents .contents-body > .title::after {
+  right: 10%;
+}
+
+/* Issue90: .title의 margin-bottom(title_contents_gap)이 다음 sibling의 기본 margin-top과
+   margin collapse로 사라지는 문제 해결 — collapse 방지를 위해 .title 직후 sibling의
+   margin-top을 0으로 강제. .title margin-bottom 값(title_contents_gap)이 단독 적용됨. */
+.reveal section.layout-_contents .contents-body > .title:first-child + * {
+  margin-top: 0 !important;
 }
 
 /* 빈 contents-title 영역 숨김 — m2slide가 H2 슬라이드 빌드 시 contents-title을
@@ -183,6 +263,20 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+}
+
+/* _contents/_contents_no_title 본문·헤더 투명 배경
+   우상단 puffer 마스코트가 본문 뒤로 보이도록 명시적 transparent 적용
+   (agenda .toc-mindmap-svg transparent 정책과 일관) */
+.reveal section.layout-_contents > .contents-body,
+.reveal section.layout-_contents > .contents-header,
+.reveal section.layout-_contents_no_title > .contents-body,
+.reveal section.layout-_contents_no_title > .contents-header,
+.reveal section.layout-_contents pre,
+.reveal section.layout-_contents pre code,
+.reveal section.layout-_contents_no_title pre,
+.reveal section.layout-_contents_no_title pre code {
+  background: transparent !important;
 }
 
 .reveal section[class*="layout-"] .contents-body > .media-container {
@@ -237,7 +331,7 @@
   background-image: url('../theme-img/finfraPuffer2s.png');
   background-repeat: no-repeat;
   background-position: 96% 28px;
-  background-size: 9% auto;
+  background-size: 8% auto;
 }
 
 .reveal section.layout-_contents .contents-header,
@@ -628,6 +722,12 @@
   background-size: 8% auto;
 }
 
+/* agenda 제목을 상단 가로선과 같은 라인까지 올리고 우상단 puffer2s와 같은 세로 위치에 정렬 */
+.layout-_agenda .toc-page-header {
+  padding: 2px 28px;
+  margin: 0;
+}
+
 /* Issue80 §2.2: standalone agenda 상단 노랑 가로선
    left/right 24px: base.css §12 .agenda-frame .layout-_agenda padding(24px)과 일치시켜
    콘텐츠 박스(.toc-markmap) 폭과 동일하게 정렬 */
@@ -663,7 +763,7 @@
   border-radius: 8px;
   padding: 12px;
   overflow: hidden;
-  background: #ffffff;
+  background: transparent;
 }
 .agenda-frame .toc-mindmap-svg {
   width: 100%;

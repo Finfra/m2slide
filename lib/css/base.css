@@ -138,7 +138,19 @@
   padding: var(--title-padding, 0);
   text-transform: none;
   font-weight: var(--title-font-weight, 700);
-  /* title_contents_gap: CSS 변수로 gap 적용 (JS 타이밍 독립) */
+}
+
+/* Issue90: title_contents_gap을 모든 *-title 클래스에 일관 적용 (JS 타이밍 독립).
+   기존엔 .reveal .title에만 적용되어 chapter 모드(.contents-title 사용 시) 무효였음.
+   cover-title은 표지 디자인 padding이 제어하므로 제외. */
+.reveal .title,
+.reveal .contents-title,
+.reveal .chapter-title,
+.reveal .chapter-toc-title,
+.reveal .toc-title,
+.reveal .blank-title,
+.reveal .closing-title,
+.reveal .exercise-title {
   margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);
 }
 
