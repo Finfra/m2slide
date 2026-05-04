@@ -1,8 +1,9 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 110
+* Issue HWM: 111
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
+    - **v0.6.1 (2026-05-05)** — fix: Issue107·108·109·110 4건 완료. cross-page flicker 가드 SSOT 상수화 + 페이지번호 1-based hash 일치 + outer padding transition 가시화 + ^/v 마름모 네비게이션
     - **v0.6.0 (2026-05-05)** — release: 9키 네비게이션 SSOT 정립 + 트리 탐색 의미 도입 (Issue71-106 36건). Backward 트랜지션·anchor 자식 우선·leaf fall-through 등 키 동작 정밀화 + Pandoc columns/rows 호환 + 메타데이터 SSOT 통합
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
     
@@ -17,21 +18,34 @@
 
 # 🌱 이슈후보
 1. 쳅터모드에서 페이지 번호가 해당 md마다 1부터 시작하는데, 전체 기준으로 제공되어야함. 단, md 방식에서는 breadcum방식으로 쳅터 번호를 페이지 옆에 제공해야함. 관련 설정 필요.
+2. 마름모 네비게이션 보기 옵션과 페이지 보기 오션 추가
+3. Agenda 페이지 디자인 개선 복어 대신 고양이로(_doc_design/keynote-nowage-theme/img/finfraCat.png 50%흐리게) 제목줄에 제목줄에 Agenda로 고정(yaml front matter로 지정 가능하게 할 것(초기값이 Agenda)), 선에 걸치지 않게, 제목줄 폰트 크기 고정인데 다른 레이아웃처럼 상대 크기로 가야함.
+4. 개요2이상의 페이지에서 첫번째 바 사라지는 버그(file:///Users/nowage/_git/__all/videoMaker/lib/m2slide/Projects/m2SlideStyle1_single/slide/index.html?fwd=1#/16)
 
 # 🔥 진행중
 
-## Issue110. 챕터 간 이동 시 cross-page flicker 발생 (등록: 2026-05-05)
+## Issue111. 슬라이드 전환·요소 애니메이션 옵션 정리 (등록: 2026-05-05)
 * 카테고리: Frontend
-* 목적: 챕터 모드에서 `?fwd=1` 또는 `?last=1&back=1` 파라미터로 페이지 전환 시, Reveal.js가 초기화되기 전 raw `.reveal` 콘텐츠가 잠깐 paint되어 layout이 무너진 상태가 보이는 flicker 발생. Issue104에서 도입한 `body.m2-cross-loading .reveal { visibility: hidden }` 가드가 작동하지 않음.
+* 목적: 현행 슬라이드 전환(좌우 slide)·기본 트랜지션을 재검토하여 reveal.js가 제공하는 애니메이션 옵션(transition, fragment, auto-animate, background)을 m2slide에서 어떤 형태로 노출·제어할지 결정. 불필요한 효과는 제거, 유용한 효과는 마크다운 frontmatter·메타로 일관 노출.
 * 상세:
-    - `lib/html-builder.js:686-691` `m2-cross-loading` 클래스 추가 inline script가 `<body>` 안의 `<div class="reveal">` HTML 파싱·렌더링 + 6개 CDN script(D3·Markmap·Reveal·plugins·Mermaid) 로딩이 끝난 시점에 실행됨
-    - 그 이전에 브라우저는 raw HTML(슬라이드 콘텐츠를 자연 흐름 레이아웃으로) 이미 paint
-    - 결과: cross-page 진입 시 0.1~수백ms 동안 Reveal 미초기화 상태가 화면에 노출 → flicker 인지
+    - 현행: `slide` 트랜지션이 글로벌 적용. fragment·auto-animate는 `<!-- .element / .slide: ... -->` syntax 미검증 (m2slide 자체 파서가 reveal.js markdown 플러그인 syntax를 보존하는지 불명)
+    - 검토 항목:
+        - **Transition**: `none` / `fade` / `slide` / `convex` / `concave` / `zoom` 중 기본값·옵션 노출 방식
+        - **Fragment** (단계별 등장): `fade-in`, `fade-up`, `grow`, `highlight-*`, `strike` 등 — m2slide 마크다운 파서가 HTML 주석 메타를 통과시키는지 테스트
+        - **Auto-Animate**: `data-auto-animate` 슬라이드 간 자동 모핑 — 코드/다이어그램 진화 표현용
+        - **Background transitions**: `data-background-transition` 단독 옵션
+        - **Auto-slide**: `data-autoslide` 자동 재생
+    - 제거 후보: 잔상·flicker 유발 가능성이 있거나(이미 Issue104·110에서 transition gating 추가됨) 발표 시 산만한 효과
 * 구현 명세:
-    - `<head>` 안에 인라인 스크립트 추가: `location.search`에 `back=1` 또는 `fwd=1` 포함 시 `document.documentElement.classList.add('m2-cross-loading')` 즉시 실행
-    - CSS 셀렉터를 `body.m2-cross-loading .reveal`에서 `.m2-cross-loading .reveal`로 변경(또는 `html.m2-cross-loading .reveal` 추가)하여 html 클래스로도 매칭
-    - `Reveal.on('ready')` 핸들러에서 `documentElement`의 클래스도 함께 제거
-    - 검증: `m2SlideStyle2_chapter` 빌드 후 챕터 간 →·← 키, PgDown(?last=1) 이동 시 flicker 없음 확인
+    - 1단계 — 테스트 프로젝트 `Projects/animationTest/` 신설:
+        - 각 transition·fragment·auto-animate를 한 슬라이드씩 배치
+        - `m2slide.sh animationTest` 빌드 후 실제 동작 검증
+    - 2단계 — 동작 확인된 효과 SSOT 문서화 ([_doc_design/animation.md](_doc_design/animation.md) 신규):
+        - frontmatter 키 (`transition`, `transition_speed`, `auto_animate` 등) 정의
+        - 슬라이드 메타 syntax (`#fragment-fade-up` 같은 m2slide 확장 또는 reveal 표준 주석 사용)
+    - 3단계 — `lib/html-builder.js` Reveal.initialize 옵션 노출 + 마크다운 파서에 메타 변환 추가
+    - 4단계 — [`md-m2slide-rules.md`](.claude/rules/md-m2slide-rules.md) 업데이트, [noteForHuman.md](noteForHuman.md) 사용자 가이드 추가
+    - 검증: animationTest + 기존 3개 대표 프로젝트(`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`) 시각 회귀 없음 확인
 
 # 📕 중요
 
@@ -41,6 +55,19 @@
 
 
 # ✅ 완료
+
+## Issue110. 챕터 간 이동 시 cross-page flicker 발생 (등록: 2026-05-05, 해결: 2026-05-05, commit: 6af44f8) ✅
+* 카테고리: Frontend
+* 목적: 챕터 모드에서 `?fwd=1` / `?back=1` / `?last=1` 파라미터로 페이지 전환 시, Reveal.js 초기화 이전 raw `.reveal` 콘텐츠가 paint되어 layout 무너진 상태가 보이는 flicker. Issue104의 `body.m2-cross-loading .reveal { visibility: hidden }` 가드는 body 파싱 후 실행되어 차단 못함.
+* 해결:
+    - `lib/html-builder.js` 내 4개 SSOT 상수 신설 — generateHTML/Cover/Agenda 모든 빌더가 공유:
+        - `M2_CROSS_GUARD_HEAD_HTML` — `<head>` 안 인라인 script로 `location.search`에 `back=1`/`fwd=1`/`last=1` 포함 시 `document.documentElement.classList.add('m2-cross-loading')` 즉시 실행 (body 파싱 전에 동작)
+        - `M2_CROSS_GUARD_CSS` — `html.m2-cross-loading .reveal`, `html.m2-cross-loading .agenda-frame`, `body.m2-cross-loading .reveal`, `body.m2-cross-loading .agenda-frame { visibility: hidden }` — html/body 양쪽 + Reveal/agenda 양쪽 컨테이너 매칭
+        - `M2_RELEASE_FN_JS` — `m2ReleaseCrossGuard()` 함수: `Reveal.on('ready')` 시점에 documentElement·body 양쪽 클래스 정리
+        - `M2_NAV_HELPER_JS` — `m2NavWithSignal(url, signal)` helper: hash가 포함된 URL에 시그널을 안전 주입 (단순 append 시 `index.html#/2?fwd=1` 형태로 깨지는 회귀 방지)
+* 검증: `m2SlideStyle2_chapter` 빌드 후 `02-code-syntax.html`에 가드 마커(html/body 양쪽 셀렉터, m2ReleaseCrossGuard 함수) 정상 주입 확인
+
+> **v0.6.1 (2026-05-05)** — Issue110 cross-page flicker 가드 SSOT 상수화 (`M2_CROSS_GUARD_*`, `M2_NAV_HELPER_JS`)
 
 ## Issue107. 슬라이드 우측 하단 네비게이션 UI 정리 — `^/v` 버튼을 `</>` 사이에 배치 + 비활성 회색 처리 (등록: 2026-05-05, 해결: 2026-05-05, commit: 67834c3) ✅
 * 카테고리: Frontend
