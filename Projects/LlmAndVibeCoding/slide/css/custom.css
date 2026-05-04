@@ -43,25 +43,61 @@
 .reveal section[class*="layout-"]::after {
   content: "";
   position: absolute;
-  left: 4%;
-  right: 4%;
-  height: 2px;
-  background: var(--kn-accent);
+  left: 56px;
+  right: 56px;
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
   pointer-events: none;
-  z-index: 0;
+  z-index: 100;            /* layout 자식 요소(flex item) 위로 — 하단 가로선이 본문 영역에 가려지지 않도록 */
 }
 
 .reveal section[class*="layout-"]::before { top: 12px; }
 .reveal section[class*="layout-"]::after  { bottom: 12px; }
 
-/* 페이지 번호 (Reveal.js 기본 .slide-number 활용 + 폴백) */
+/* 모든 layout-* section min-height: 100% 강제 — 상하 inner gap 대칭 보장
+   기존: .layout-_cover만 min-height 적용 → contents/blank/toc는 contents 크기로 짧아져
+   ::after가 viewport 아래에 가까이 붙고 ::before는 letterbox + padding으로 멀어 비대칭 발생 */
+.reveal section[class*="layout-"] {
+  min-height: 100% !important;
+}
+
+/* 페이지 번호·controls·progress: outer padding 바깥(viewport edge)에 위치
+   - body { padding: var(--slide-outer-padding) } 으로 .reveal이 outer padding 안쪽에 있음
+   - position: fixed 로 viewport 기준 위치 → body padding 영역(letterbox) 표시 */
 .reveal .slide-number {
+  position: fixed !important;
   background: transparent !important;
   color: var(--kn-page-num-color) !important;
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 600;
-  bottom: 18px;
-  right: 24px;
+  bottom: 0 !important;
+  right: 24px !important;
+  z-index: 200 !important;
+}
+
+.reveal .controls {
+  position: fixed !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  z-index: 200 !important;
+}
+
+.reveal .progress {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 100 !important;
+}
+
+/* _cover/_agenda 슬라이드: 페이지번호·controls·progress 모두 숨김
+   사용자 결정: 표지에서는 네비게이션·번호·진행바 노출 안 함 */
+.reveal:has(.slides > section.present.layout-_cover) .slide-number,
+.reveal:has(.slides > section.present.layout-_cover) .controls,
+.reveal:has(.slides > section.present.layout-_cover) .progress {
+  display: none !important;
 }
 
 /* =========================================================================
@@ -93,7 +129,9 @@
 .reveal section[class*="layout-"] .exercise-title::after,
 .reveal section[class*="layout-"] .blank-title::after,
 .reveal section[class*="layout-"] .closing-title::after,
-.reveal section[class*="layout-"] .toc-title::after {
+.reveal section[class*="layout-"] .toc-title::after,
+.reveal section[class*="layout-"] > .title::after,
+.reveal section[class*="layout-"] .contents-body > .title::after {
   content: "";
   position: absolute;
   left: 0;
@@ -106,9 +144,172 @@
   pointer-events: none;
 }
 
+/* 본문 H2.title도 §3 제목 처리 — theme_default_layout: contents 환경에서
+   본문 H2가 contents-body 내부에 .title로 배치될 때 hr.png 밑줄(가운데 바) 적용
+   Issue90: margin-bottom 명시하지 않음 — base.css의 .reveal .title rule
+   (margin-bottom: calc(var(--title-contents-gap-pct) * 0.01em))이 적용되어
+   title_contents_gap 변수가 정상 작동하도록 함.
+   Issue90: H2가 contents-body 밖(section 직속 자식)으로 이동되는 경우도 동일 스타일 적용 */
+.reveal section[class*="layout-"] > .title,
+.reveal section[class*="layout-"] .contents-body > .title {
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  color: var(--kn-text);
+  position: relative;
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  padding-bottom: 0.3em;
+  margin-top: 0.3em;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* contents 레이아웃 한정: 제목 밑줄 폭을 상단 가로선(::before)과 동일하게 맞춤
+   다른 레이아웃(_blank, _cover 등)은 글자 폭 fit-content 유지.
+   Issue90: H2가 contents-body 밖(section 직속 자식)으로 이동된 경우도 동일 적용. */
+.reveal section.layout-_contents > .title,
+.reveal section.layout-_contents .contents-body > .title {
+  width: 100%;
+  text-align: center;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+  box-sizing: border-box;
+}
+
+/* Issue90: 위/아래 가로선을 .title 박스 외부에 부착하여 .title 폭과 자동 정렬.
+   layout-_contents에서 section::before 숨김 + .title::before/::after로 hr.png를 박스 외부 배치.
+   - ::before: .title 박스 위쪽 외부 (top: -12px)
+   - ::after:  .title 박스 아래쪽 외부 (bottom: -12px)
+   둘 다 동일 박스 기준이라 좌우 끝이 정확히 정렬됨. */
+.reveal section.layout-_contents::before {
+  display: none !important;
+}
+
+.reveal section.layout-_contents > .title::before {
+  content: "";
+  position: absolute;
+  top: -12px;  /* 박스 외부 위 (hr 10px + 2px 여유) */
+  left: 0;
+  right: 0;  /* 위쪽 가로선은 슬라이드 하단 가로선과 동일 폭(.title 박스 가득 = section content-box 폭) */
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+/* .title underline(::after) — 우상단 puffer 회피용 right: 10% 유지 */
+.reveal section.layout-_contents > .title::after {
+  top: auto;
+  bottom: -12px;  /* 박스 외부 아래 (hr 10px + 2px 여유) */
+  left: 0;
+  right: 10%;
+}
+
+/* contents 레이아웃 H2 제목 위치 — 제목 텍스트 vertical center를 우상단
+   puffer(8%, top:28px) 중심(y≈87px)에 정렬 + 위/아래 갭 대칭.
+   - 위 갭 = padding-top - 22px (슬라이드 ::before 가로선이 12+10=22px에서 끝)
+   - 아래 갭 = padding-bottom - 10px (.title::after underline height 10px이 padding-bottom 영역 점유)
+   - 대칭 위해 padding-bottom = padding-top - 12px 유지
+   - padding-top 1em(50px), padding-bottom 0.76em(38px) → 위·아래 갭 모두 ≈28px */
+.reveal section.layout-_contents > .contents-body:has(> .title:first-child) {
+  padding-top: 0;
+}
+.reveal section.layout-_contents .contents-body > .title:first-child {
+  margin-top: 0;
+  padding-top: 1em;
+  padding-bottom: 0.76em;
+}
+
+/* 우상단 puffer(8%)와 underline 충돌 회피 — underline이 puffer 좌측 직전까지만
+   그어지도록 right: 10% (puffer는 우측 ~12% 영역 점유) */
+.reveal section.layout-_contents .contents-body > .title::after {
+  right: 10%;
+}
+
+/* Issue90: .title의 margin-bottom(title_contents_gap)이 다음 sibling의 기본 margin-top과
+   margin collapse로 사라지는 문제 해결 — collapse 방지를 위해 .title 직후 sibling의
+   margin-top을 0으로 강제. .title margin-bottom 값(title_contents_gap)이 단독 적용됨. */
+.reveal section.layout-_contents .contents-body > .title:first-child + * {
+  margin-top: 0 !important;
+}
+
+/* 빈 contents-title 영역 숨김 — m2slide가 H2 슬라이드 빌드 시 contents-title을
+   비워두고 H2를 contents-body 내부 .title로 배치. 빈 contents-title의 ::after
+   hr.png가 두꺼운 막대로 표시되는 것을 방지 (가운데 바는 §2 슬라이드 상하단만 유지) */
+.reveal section.layout-_contents .contents-title:empty,
+.reveal section.layout-_contents_no_title .contents-title:empty {
+  display: none !important;
+}
+.reveal section.layout-_contents .contents-header:has(> .contents-title:empty),
+.reveal section.layout-_contents_no_title .contents-header:has(> .contents-title:empty) {
+  display: none !important;
+}
+
 /* 기존 contents-divider 등은 hr.png로 대체되었으므로 숨김 */
 .reveal section[class*="layout-"] [class$="-divider"] {
   display: none !important;
+}
+
+/* Mermaid SVG가 슬라이드 영역을 초과하여 잘리는 문제 해결
+   - mermaid가 SVG에 inline width/height를 설정하므로 max-* 와 auto로 강제 fit
+   - .contents-body를 flex column으로 만들고 .media-container에 flex-grow 1으로
+     남은 영역 가득 차게 하여 SVG의 max-height: 100% 기준 영역 확보 */
+.reveal section.layout-_contents > .contents-body,
+.reveal section.layout-_contents_no_title > .contents-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* _contents/_contents_no_title 본문·헤더 투명 배경
+   우상단 puffer 마스코트가 본문 뒤로 보이도록 명시적 transparent 적용
+   (agenda .toc-mindmap-svg transparent 정책과 일관) */
+.reveal section.layout-_contents > .contents-body,
+.reveal section.layout-_contents > .contents-header,
+.reveal section.layout-_contents_no_title > .contents-body,
+.reveal section.layout-_contents_no_title > .contents-header {
+  background: transparent !important;
+}
+/* Issue98: pre/pre code 의 transparent 강제 제거 — github.css `.hljs` 배경(#f6f8fa) 살림 */
+
+/* Issue101: 코드 박스 자체 스타일 — CDN github.css 의존 제거.
+   github.css는 토큰 색상(.hljs-keyword 등)만 담당, 박스(배경·패딩·radius·폰트)는 자체 정의.
+   CDN 장애·다크 테마·hljs 버전 변경에도 박스 시각 보장. */
+.reveal section[class*="layout-"] .code-wrapper {
+  background: var(--code-bg, #f6f8fa);
+  padding: 0.8em 1em;
+  border-radius: 6px;
+  border: 1px solid var(--code-border, #e1e4e8);
+  font-family: var(--code-font-family, 'SF Mono', Monaco, Menlo, Consolas, 'Courier New', monospace);
+  font-size: 0.85em;
+  line-height: 1.45;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  overflow: auto;
+}
+.reveal section[class*="layout-"] .code-wrapper code {
+  background: transparent;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.reveal section[class*="layout-"] .contents-body > .media-container {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.reveal section[class*="layout-"] .mermaid svg,
+.reveal section[class*="layout-"] .media-container svg {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain;
 }
 
 /* =========================================================================
@@ -137,29 +338,30 @@
   font-size: clamp(1.2em, 5vw, 3.4em);
 }
 
-.reveal section.layout-_cover .cover-meta {
-  align-self: flex-end;
-  font-size: 1.1em;
-  border: 2px solid var(--kn-accent);
-  padding: 0.4em 1em;
-  margin: 0 4% 4% 0;
-  background: #fff;
-  max-width: 50%;
-}
+/* Issue80 §2.1: cover-meta 박스 스타일 제거 — version·lecture_date를 우상단 absolute로 (§6에서 position·박스 제거 정의) */
 
-/* 4.2 contents: puffer2s 우상단 (작게) */
+/* 4.2 contents: puffer2s 우상단 (작게)
+   Issue80 §2.5: _contents_no_title도 동일 마스코트 적용
+   background-position-y: 40px(절대값) — 상단 가로선(top:12 + height:10 = 22px)과 마스코트 분리 보장 */
 .reveal section.layout-_contents,
-.reveal section.layout-contents-full {
+.reveal section.layout-contents-full,
+.reveal section.layout-_contents_no_title {
   background-image: url('../theme-img/finfraPuffer2s.png');
   background-repeat: no-repeat;
-  background-position: 96% 6%;
-  background-size: 9% auto;
+  background-position: 96% 28px;
+  background-size: 8% auto;
 }
 
 .reveal section.layout-_contents .contents-header,
 .reveal section.layout-contents-full .contents-header {
   padding: 1.2em 0 0.6em 0;
   text-align: center;
+}
+
+/* Issue80 §2.5: _contents_no_title — 헤더 영역 없음, 본문이 위까지 차지 */
+.reveal section.layout-_contents_no_title > .contents-body {
+  padding-top: 0;
+  margin-top: 0;
 }
 
 /* 4.3 chapter-toc: puffer1 좌상단 + TOC 박스 우하단 */
@@ -264,9 +466,24 @@
   font-size: 1.4em;
 }
 
-/* 4.8 blank: 장식 없음 (상하 노랑선만) */
+/* 4.8 blank: 장식 완전 제거 (Issue80 §2.6 — 풀스크린 콘텐츠 전용)
+   - 상하단 노랑 가로선 제거 (§2 공통 ::before/::after 무효화)
+   - 제목(blank-header) 숨김
+   - blank-body 상단 패딩 0
+   - 페이지 번호 숨김 (현재 슬라이드가 _blank일 때만) */
+.reveal section.layout-_blank::before,
+.reveal section.layout-_blank::after {
+  content: none !important;
+  background: none !important;
+}
 .reveal section.layout-_blank .blank-header {
-  text-align: center;
+  display: none !important;
+}
+.reveal section.layout-_blank > .blank-body {
+  padding: 0 !important;
+}
+.reveal:has(.slides > section.present.layout-_blank) .slide-number {
+  display: none !important;
 }
 
 /* =========================================================================
@@ -351,42 +568,82 @@
   content: none;
 }
 
+/* Issue80 §2.3: _toc 우상단 puffer2s 마스코트 (좌상단 puffer1 → 우상단 puffer2s, 본문 layout 일관성)
+   background-position-y: 40px(절대값) — 상단 가로선과 분리 */
+.reveal section.layout-_toc {
+  background-image: url('../theme-img/finfraPuffer2s.png');
+  background-repeat: no-repeat;
+  background-position: 96% 28px;
+  background-size: 9% auto;
+}
+
 /* =========================================================================
    6. _cover Layout 확장 — Issue55: nowage 커버 확장 요소 (subtitle, body, QR)
    ========================================================================= */
+/* Issue80 §2.1: 흰 배경 cover로 변경 — subtitle·body 텍스트는 모두 검정(--kn-text) */
 .reveal section.layout-_cover .cover-subtitle {
   font-size: 1em;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--kn-text);
   margin-top: 0.3em;
   font-weight: 300;
 }
 .reveal section.layout-_cover .cover-part-subtitle {
   font-size: 0.75em;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--kn-text);
+  opacity: 0.75;
   margin-top: 0.2em;
   letter-spacing: 0.05em;
 }
+/* Issue80 §2.1: cover-body — 제목 바로 아래 한 줄(중앙 정렬), instructor만 표시 (meta는 absolute 우상단) */
 .reveal section.layout-_cover .cover-body {
-  margin-top: auto;
-  padding: 0.6em 0;
-  font-size: 0.75em;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3em;
+  margin-top: 0;
+  padding: 0.4em 0 0 0;
+  font-size: 0.85em;
+  display: block;
+  text-align: center;
+  color: var(--kn-text);
+}
+.reveal section.layout-_cover .cover-instructor {
+  display: inline-block;
+  color: var(--kn-text);
 }
 .reveal section.layout-_cover .cover-instructor-name {
   font-weight: 600;
+  color: var(--kn-text);
 }
 .reveal section.layout-_cover .cover-instructor-contact {
   margin-left: 0.5em;
-  opacity: 0.8;
+  color: var(--kn-text);
+  opacity: 1;
   font-size: 0.9em;
+}
+/* Issue80 §2.1: cover-meta — 우상단 absolute, 박스 없이 작게
+   - top 24px: 노랑 가로선(top:12px + height:2px = 14px 끝)과 10px 여백
+   - line-height 1: 텍스트 baseline이 가로선 위로 침범하지 않도록 박스 높이 최소화
+   - right 5%: 가로선(right: 4%) 안쪽 1% 들여쓰기 — 픽셀 단위(56px) 사용 시 가로선 우측 끝보다 바깥으로 나가는 문제 회피 */
+.reveal section.layout-_cover .cover-meta {
+  position: absolute;
+  top: 24px;
+  right: 5%;
+  align-self: auto;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  max-width: none;
+  font-size: 0.55em;
+  line-height: 1;
+  display: flex;
+  gap: 0.6em;
+  color: var(--kn-text);
+  z-index: 1;
 }
 .reveal section.layout-_cover .cover-lecture-date,
 .reveal section.layout-_cover .cover-version {
-  opacity: 0.75;
-  font-size: 0.9em;
-  margin-right: 1em;
+  opacity: 0.85;
+  color: var(--kn-text);
+  font-size: 1em;
+  margin: 0;
 }
 .reveal section.layout-_cover .cover-qr {
   text-align: right;
@@ -466,6 +723,9 @@
 
 /* =========================================================================
    7. _agenda Layout — Issue55: Agenda Page (standalone agenda.html)
+   - Issue80 §2.2: 상단 가로선(::before) + 우상단 puffer2s 마스코트
+     standalone wrapper(.layout-_agenda div)는 §2 공통 selector(section[class*=layout-])에
+     매치되지 않으므로 div.layout-_agenda::before 별도 정의
    ========================================================================= */
 .layout-_agenda {
   display: flex;
@@ -473,6 +733,39 @@
   width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
+  position: relative;
+  background-image: url('../theme-img/finfraPuffer2s.png');
+  background-repeat: no-repeat;
+  background-position: 96% 28px;
+  background-size: 8% auto;
+}
+
+/* agenda 제목을 상단 가로선과 같은 라인까지 올리고 우상단 puffer2s와 같은 세로 위치에 정렬 */
+.layout-_agenda .toc-page-header {
+  padding: 2px 28px;
+  margin: 0;
+}
+
+/* Issue80 §2.2: standalone agenda 상단 노랑 가로선
+   left/right 24px: base.css §12 .agenda-frame .layout-_agenda padding(24px)과 일치시켜
+   콘텐츠 박스(.toc-markmap) 폭과 동일하게 정렬 */
+.layout-_agenda::before {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 12px;
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Issue80 §2.2: 다운로드 버튼이 puffer2s와 충돌하지 않도록 헤더 안쪽으로 정렬 */
+.layout-_agenda .toc-page-downloads {
+  margin-right: 9%;
 }
 
 /* toc-markmap이 남은 세로 공간을 채우도록 flex-grow 적용 (theContents 패턴).
@@ -488,7 +781,7 @@
   border-radius: 8px;
   padding: 12px;
   overflow: hidden;
-  background: #ffffff;
+  background: transparent;
 }
 .agenda-frame .toc-mindmap-svg {
   width: 100%;
@@ -528,6 +821,8 @@
 .guide-line-mode .reveal section.layout-_cover .cover-meta {
   border: 2px dashed rgba(255, 0, 255, 0.7) !important;        /* magenta */
   background-color: rgba(255, 0, 255, 0.06) !important;
+  /* Issue80 후속: cover-meta는 §6에서 absolute로 정의되었으므로 라벨용 positioned ancestor 강제(아래 §8.4)에서 absolute 유지하도록 본 selector에서 명시 override */
+  position: absolute !important;
 }
 .guide-line-mode .reveal section.layout-_cover .cover-qr {
   border: 2px dashed rgba(218, 165, 32, 0.8) !important;       /* goldenrod */
@@ -586,7 +881,7 @@
 .guide-line-mode .reveal section.layout-_cover .cover-part-subtitle,
 .guide-line-mode .reveal section.layout-_cover .cover-body,
 .guide-line-mode .reveal section.layout-_cover .cover-instructor,
-.guide-line-mode .reveal section.layout-_cover .cover-meta,
+/* Issue80 후속: cover-meta는 §6에서 absolute(우상단). 본 list에 포함하면 relative 강제로 absolute가 깨져 guide_line 모드에서 version 위치 사라짐 → 제외. ::before 라벨은 absolute 컨테이너 기준으로도 정상 동작 */
 .guide-line-mode .reveal section.layout-_cover .cover-qr,
 .guide-line-mode .reveal section.layout-_toc .toc-page-header,
 .guide-line-mode .reveal section.layout-_toc .toc-markmap,
@@ -664,6 +959,7 @@
 :where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-row"],
 :where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-left"],
 :where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-right"],
+:where(.guide-line-mode .reveal section[class*="layout-"]) pre.code-wrapper,
 :where(.guide-line-mode .reveal .slides section) > .theContents,
 :where(.guide-line-mode .reveal .slides section) > .title {
   position: relative !important;
@@ -678,6 +974,7 @@
 :where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-row"]::before,
 :where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-left"]::before,
 :where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-right"]::before,
+:where(.guide-line-mode .reveal section[class*="layout-"]) pre.code-wrapper::before,
 :where(.guide-line-mode .reveal .slides section) > .theContents::before,
 :where(.guide-line-mode .reveal .slides section) > .title::before {
   content: attr(class);
@@ -695,4 +992,51 @@
   pointer-events: none;
   z-index: 9999;
   line-height: 1.3;
+}
+
+/* 8.6 §2 가로선(::before/::after) → 가이드 모드에서 라벨 박스로 변환
+   - hr.png/높이 점유 해제 후 §8.5와 동일한 흰 배경·보라 테두리 라벨 박스로 통일
+   - layout-_contents의 §3 override(`.title::before` hr.png)는 §8.7에서 처리 */
+.guide-line-mode .reveal section[class*="layout-"]::before,
+.guide-line-mode .reveal section[class*="layout-"]::after {
+  content: attr(class) !important;
+  background-image: none !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  left: auto !important;
+  right: 8px !important;
+  height: auto !important;
+  width: auto !important;
+  border: 1px solid rgba(140, 90, 200, 1);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-family: 'Nanum Gothic Coding', 'Menlo', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(140, 90, 200, 1);
+  line-height: 1.3;
+  z-index: 9999;
+}
+
+/* 8.7 §3 override: layout-_contents의 .title::before(hr.png 노란 밑줄)를
+   가이드 모드에서 라벨 박스로 변환. specificity (0,3,2)로 §8.5(:where 0,1,1) 이김 */
+.guide-line-mode .reveal section.layout-_contents > .title::before,
+.guide-line-mode .reveal section.layout-_contents .contents-body > .title::before {
+  content: attr(class) !important;
+  background-image: none !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  top: auto !important;
+  bottom: 4px !important;
+  left: auto !important;
+  right: 6px !important;
+  height: auto !important;
+  width: auto !important;
+  border: 1px solid rgba(140, 90, 200, 1) !important;
+  border-radius: 4px !important;
+  padding: 2px 8px !important;
+  font-family: 'Nanum Gothic Coding', 'Menlo', monospace !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: rgba(140, 90, 200, 1) !important;
+  line-height: 1.3 !important;
+  z-index: 9999 !important;
 }

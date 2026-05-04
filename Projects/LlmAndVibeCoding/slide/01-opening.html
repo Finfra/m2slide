@@ -98,8 +98,8 @@
      - 기하 관계: contents_width = contents_height × var(--slide-ratio)
   */
   --slide-ratio: 1.7778;
-  --slide-outer-padding: 0;
-  --slide-inner-padding: 0;
+  --slide-outer-padding: 0px;
+  --slide-inner-padding: 0px;
 }
 
 /* =========================================================================
@@ -149,7 +149,19 @@
   padding: var(--title-padding, 0);
   text-transform: none;
   font-weight: var(--title-font-weight, 700);
-  /* title_contents_gap: CSS 변수로 gap 적용 (JS 타이밍 독립) */
+}
+
+/* Issue90: title_contents_gap을 모든 *-title 클래스에 일관 적용 (JS 타이밍 독립).
+   기존엔 .reveal .title에만 적용되어 chapter 모드(.contents-title 사용 시) 무효였음.
+   cover-title은 표지 디자인 padding이 제어하므로 제외. */
+.reveal .title,
+.reveal .contents-title,
+.reveal .chapter-title,
+.reveal .chapter-toc-title,
+.reveal .toc-title,
+.reveal .blank-title,
+.reveal .closing-title,
+.reveal .exercise-title {
   margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);
 }
 
@@ -185,12 +197,15 @@
   transform: none;
 }
 
-/* Issue63: outer padding (슬라이드↔뷰포트 대칭).
-   - .reveal에 inset 적용으로 Reveal.js scaling 영역 축소 → 자동 중앙 배치 + 시각적 외부 여백
+/* Issue63 + Issue: outer padding (슬라이드↔뷰포트 대칭).
+   - body에 padding 적용 + box-sizing: border-box로 Reveal scaling 영역(body content box) 축소
+   - Reveal.js가 측정하는 viewport 크기 자체가 줄어들어 4면 균등 inset + 자동 fit
+   - 기존 .reveal { inset } 방식은 left/top만 밀려나고 scale은 원본 viewport 기준이라 right/bottom 오버플로
    - 0이면 효과 없음 (기존과 동일)
 */
-.reveal {
-  inset: var(--slide-outer-padding, 0) !important;
+body {
+  padding: var(--slide-outer-padding, 0) !important;
+  box-sizing: border-box !important;
 }
 
 /* 개별 슬라이드 섹션
@@ -239,11 +254,13 @@
 .reveal pre {
   width: 100%;
   margin: 0 auto;
+  text-align: left;
 }
 
 .reveal pre code {
   overflow: auto;
   max-height: none;
+  text-align: left;
 }
 
 /* =========================================================================
@@ -546,25 +563,74 @@
   justify-content: space-between;
   gap: 4%;
   width: 100%;
+  /* Issue96: contents-body(flex column) 안에서 남은 높이 채워서 nested rows가
+     비율대로 분할될 수 있도록 함. 자연 콘텐츠는 영향 없음 (children 자연 크기 유지) */
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Issue96: rows가 중첩될 때만 column 박스를 풀-height로 stretch.
+   단순 image+text 2-col은 기존 center 정렬 유지 (image 수직 중앙) */
+.reveal .m2-cols:has(.m2-rows),
+.reveal .m2-cols:has(.rows),
+.reveal .columns:has(.m2-rows),
+.reveal .columns:has(.rows) {
+  align-items: stretch;
 }
 
 .reveal .m2-col,
 .reveal .column {
   flex: 1;
   min-width: 0;
+  /* Issue96: 내부 .m2-rows가 flex item으로 작동하여 column 높이를 채울 수 있도록
+     flex 컨테이너로 변환. 자연 콘텐츠(텍스트/이미지)는 동일하게 top-down 스택 */
+  display: flex;
+  flex-direction: column;
 }
 
+/* Issue95: .m2-rows가 부모 .contents-body(flex column) 의 남은 높이를 채우고,
+   .m2-row가 균등(또는 인라인 height 비례)으로 분할되도록 flex 보강 */
 .reveal .m2-rows,
 .reveal .rows {
   display: flex;
   flex-direction: column;
   gap: 20px;
   width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .reveal .m2-row,
 .reveal .row {
   width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  /* Issue95: 행 내부 콘텐츠(텍스트+미디어)가 세로로 쌓이고, .media-container가
+     남은 높이를 채워서 이미지/SVG가 행 경계를 넘지 않도록 flex column 컨테이너로 동작 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Issue95: .m2-row 내부의 .media-container가 남은 높이를 채우도록.
+   기존 `.contents-body > .media-container` 규칙(theme/default/slide.css)은
+   contents-body 직속 자식만 매칭하므로 row 내부에서는 적용되지 않음 */
+.reveal .m2-row > .media-container,
+.reveal .row > .media-container {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.reveal .m2-row > .media-container img,
+.reveal .m2-row > .media-container svg,
+.reveal .row > .media-container img,
+.reveal .row > .media-container svg {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 .reveal .card {
@@ -1102,15 +1168,22 @@ body.agenda-page {
   font-family: var(--global-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif);
 }
 .agenda-frame {
-  width: min(100vw, 100vh * var(--slide-ratio));
-  height: min(100vh, 100vw / var(--slide-ratio));
+  /* outer padding 반영: viewport 단위에서 좌우/상하 padding 합계만큼 차감 */
+  width: min(
+    calc(100vw - 2 * var(--slide-outer-padding, 0px)),
+    calc((100vh - 2 * var(--slide-outer-padding, 0px)) * var(--slide-ratio))
+  );
+  height: min(
+    calc(100vh - 2 * var(--slide-outer-padding, 0px)),
+    calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
+  );
   background: #ffffff;
   overflow: hidden;
   position: relative;
 }
 html.ratio-fill .agenda-frame {
-  width: 100vw;
-  height: 100vh;
+  width: calc(100vw - 2 * var(--slide-outer-padding, 0px));
+  height: calc(100vh - 2 * var(--slide-outer-padding, 0px));
 }
 .agenda-frame .layout-_toc,
 .agenda-frame .layout-_agenda {
@@ -1128,7 +1201,7 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1777860603700">
+  <link rel="stylesheet" href="css/custom.css?v=1777907705656">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1160,6 +1233,7 @@ html.ratio-fill .agenda-frame {
     .reveal .slide-number,
     .reveal .slide-number a {
       pointer-events: none;
+      text-decoration: none;
     }
     /* Markmap SVG baseline (allow container to control size) */
     #toc-mindmap {
@@ -1223,6 +1297,27 @@ html.ratio-fill .agenda-frame {
       z-index: 1000;
       text-align: center;
     }
+    /* Issue104: 챕터 간 cross-page 이동 시 진입 방향 애니메이션 (Reveal.js 표준 컨벤션) */
+    @keyframes m2-slide-from-left {
+      from { transform: translate3d(-100%, 0, 0); opacity: 0; }
+      to   { transform: translate3d(0, 0, 0); opacity: 1; }
+    }
+    @keyframes m2-slide-from-right {
+      from { transform: translate3d(100%, 0, 0); opacity: 0; }
+      to   { transform: translate3d(0, 0, 0); opacity: 1; }
+    }
+    /* backward (← 키): 좌측에서 등장 → 우측 모션 (Reveal backward와 동일) */
+    body.m2-back-enter .reveal .slides > section.present {
+      animation: m2-slide-from-left 400ms ease-out !important;
+    }
+    /* forward (→ 키): 우측에서 등장 → 좌측 모션 (Reveal forward와 동일) */
+    body.m2-fwd-enter .reveal .slides > section.present {
+      animation: m2-slide-from-right 400ms ease-out !important;
+    }
+    /* cross-page 진입 동안 Reveal.js 내부 트랜지션이 보이지 않도록 .reveal 잠시 숨김 */
+    body.m2-cross-loading .reveal {
+      visibility: hidden;
+    }
   </style>
 </head>
 <body class=" guide-line-mode media-enlarge-fit" style="
@@ -1258,8 +1353,8 @@ html.ratio-fill .agenda-frame {
   --content-padding: 1%;
   --title-contents-gap-pct: 30;
   --slide-ratio: 1.7778;
-  --slide-outer-padding: 0;
-  --slide-inner-padding: 0;
+  --slide-outer-padding: 0px;
+  --slide-inner-padding: 0px;
 ">
   <a href="index.html" class="nav-up-btn" title="상위 페이지" id="nav-up-link">
     <svg viewBox="0 0 24 24">
@@ -1275,7 +1370,7 @@ html.ratio-fill .agenda-frame {
   <div class="reveal ratio-16-9">
     <div class="slides">
 
-<section class="layout-_toc title-slide">
+<section data-heading-level="1" class="layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">1. AI 코딩의 패러다임 전환</h1>
   </header>
@@ -1437,7 +1532,7 @@ graph TB
 </div>
       </section>
 
-      <section data-chapter-title="1. AI 코딩의 패러다임 전환">
+      <section class="has-text" data-chapter-title="1. AI 코딩의 패러다임 전환">
 <h2 class="title">개발자 역할의 변화</h2>
 <div class="theContents">
 <table>
@@ -1487,6 +1582,13 @@ graph TB
       if (qs.get('top') === '1') document.body.classList.add('top-align-mode');
     } catch (e) {}
 
+    // Issue104: cross-page 진입(?back=1 또는 ?fwd=1) 시 Reveal 내부 트랜지션이 보이지 않도록 .reveal을 잠시 숨김
+    try {
+      if (location.search.indexOf('back=1') !== -1 || location.search.indexOf('fwd=1') !== -1) {
+        document.body.classList.add('m2-cross-loading');
+      }
+    } catch (e) {}
+
     var isPrintMode = /print-pdf/gi.test(window.location.search);
 
     Reveal.initialize({
@@ -1502,7 +1604,14 @@ graph TB
       slideNumber: 'c/t',
       transition: 'slide',
       backgroundTransition: 'fade',
-      touch: false  // Issue51: 커스텀 드래그 핸들러가 touch 이벤트를 직접 관리
+      touch: false,  // Issue51: 커스텀 드래그 핸들러가 touch 이벤트를 직접 관리
+      // Issue89: Home/End/PgUp/PgDown은 m2slide 매트릭스가 처리. Reveal 기본 keymap 비활성화로 hijack 차단
+      keyboard: {
+        36: null,  // Home
+        35: null,  // End
+        33: null,  // PageUp
+        34: null   // PageDown
+      }
     });
 
     // Initialize mermaid for diagrams (manual rendering)
@@ -1962,9 +2071,13 @@ graph TB
     // M2SLIDE_MODE: 'single' | 'chapter' (빌드 시점 주입)
     // M2SLIDE_COVER: 'true' | 'false' (cover_enabled, Single mode ← override 판정용)
     // PREV_CHAPTER: 이전 챕터 HTML 파일명 (chapter mode TOC slide ← 대상)
+    // NEXT_CHAPTER: 다음 챕터 HTML 파일명 (chapter mode ↓ 대상, key_navigation.md K9)
     var M2SLIDE_MODE = 'chapter';
     var M2SLIDE_COVER = false;
     var PREV_CHAPTER = '';
+    var NEXT_CHAPTER = '02-llm-tool-evolution.html';
+    // Issue87: ⇟ PgDown(마지막 페이지 직행) — Single mode은 '' (deck last로 자체 계산)
+    var LAST_CHAPTER = '08-qa-closing.html';
     function isCoverSlide(slide) {
       if (!slide) return false;
       return slide.classList && slide.classList.contains('layout-_cover');
@@ -1973,11 +2086,17 @@ graph TB
       if (!slide) return false;
       return slide.id === 'toc-placeholder';
     }
-    // Issue71: H1 section anchor — layout-_toc class를 가지나 toc-placeholder id는 없는 슬라이드
+    // Issue71: section anchor — layout-_toc class를 가지나 toc-placeholder id는 없는 슬라이드 (H1·H2 sub-section autoToc 모두 포함)
     function isAnchorSlide(slide) {
       if (!slide) return false;
       if (!slide.classList || !slide.classList.contains('layout-_toc')) return false;
       return slide.id !== 'toc-placeholder';
+    }
+    // Issue92: H1 레벨 anchor만 sibling 점프(Home/End) 및 본문 ↑ 부모 lookup 대상
+    // (H2 sub-section autoToc는 isAnchorSlide==true이지만 isH1Anchor==false → sibling/parent 후보에서 제외)
+    function isH1Anchor(slide) {
+      if (!isAnchorSlide(slide)) return false;
+      return slide.dataset && slide.dataset.headingLevel === '1';
     }
     function findTocSlideIndex() {
       // 0X-*.html (chapter)에서 #/toc-placeholder의 horizontal index 찾기
@@ -1987,25 +2106,133 @@ graph TB
       }
       return -1;
     }
-    // Issue71: 현재 horizontal index 이전에서 가장 가까운 H1 anchor 슬라이드 index 반환
-    function findPrevAnchorIndex(currentH) {
+    // Issue71+92: 현재 horizontal index 이전에서 가장 가까운 H1 anchor 슬라이드 index 반환 (Home sibling 점프용)
+    function findPrevH1AnchorIndex(currentH) {
+      var slides = Reveal.getHorizontalSlides();
+      for (var i = currentH - 1; i >= 0; i--) {
+        if (isH1Anchor(slides[i])) return i;
+      }
+      return -1;
+    }
+    // K9+Issue92: 현재 horizontal index 이후에서 가장 가까운 H1 anchor 슬라이드 index 반환 (End sibling, ↓ TOC 첫 H1)
+    function findNextH1AnchorIndex(currentH) {
+      var slides = Reveal.getHorizontalSlides();
+      for (var i = currentH + 1; i < slides.length; i++) {
+        if (isH1Anchor(slides[i])) return i;
+      }
+      return -1;
+    }
+    // Issue99: 현재 horizontal index 이전에서 가장 가까운 anchor (H1 또는 H2 sub) 반환 — ↑ 부모 점프용
+    // 본문 leaf의 직속 부모는 H2 sub-anchor가 우선(있을 때), 없으면 H1 anchor로 폴백
+    function findPrevAnyAnchorIndex(currentH) {
       var slides = Reveal.getHorizontalSlides();
       for (var i = currentH - 1; i >= 0; i--) {
         if (isAnchorSlide(slides[i])) return i;
       }
       return -1;
     }
+    // Issue105: enclosing anchor의 heading level 반환 (현재가 anchor면 자기 level, 본문이면 직전 anchor level, 없으면 1)
+    function getEnclosingAnchorLevel(currentH) {
+      var slides = Reveal.getHorizontalSlides();
+      var cur = slides[currentH];
+      if (isAnchorSlide(cur) && cur.dataset && cur.dataset.headingLevel) {
+        return parseInt(cur.dataset.headingLevel, 10) || 1;
+      }
+      for (var i = currentH - 1; i >= 0; i--) {
+        var s = slides[i];
+        if (isAnchorSlide(s) && s.dataset && s.dataset.headingLevel) {
+          return parseInt(s.dataset.headingLevel, 10) || 1;
+        }
+      }
+      return 1;
+    }
+    // Issue105: 트리 탐색 sibling 점프 (Home/End용)
+    // currentH 이전/이후 슬라이드 중 anchor && headingLevel <= level 첫 매치 반환
+    function findPrevSiblingAnchorIndex(currentH, level) {
+      var slides = Reveal.getHorizontalSlides();
+      for (var i = currentH - 1; i >= 0; i--) {
+        var s = slides[i];
+        if (!isAnchorSlide(s)) continue;
+        var lv = (s.dataset && s.dataset.headingLevel) ? parseInt(s.dataset.headingLevel, 10) : 1;
+        if (lv <= level) return i;
+      }
+      return -1;
+    }
+    function findNextSiblingAnchorIndex(currentH, level) {
+      var slides = Reveal.getHorizontalSlides();
+      for (var i = currentH + 1; i < slides.length; i++) {
+        var s = slides[i];
+        if (!isAnchorSlide(s)) continue;
+        var lv = (s.dataset && s.dataset.headingLevel) ? parseInt(s.dataset.headingLevel, 10) : 1;
+        if (lv <= level) return i;
+      }
+      return -1;
+    }
+    // Issue106: 자식 sub-anchor (level > 현재) 첫 매치 반환 — anchor에서 ↓ 시 outline 우선 이동
+    // currentH+1부터 scan, anchor 발견 시 level > 현재면 자식, level ≤ 현재면 scope 종료(-1)
+    function findFirstChildAnchorIndex(currentH, level) {
+      var slides = Reveal.getHorizontalSlides();
+      for (var i = currentH + 1; i < slides.length; i++) {
+        var s = slides[i];
+        if (!isAnchorSlide(s)) continue;
+        var lv = (s.dataset && s.dataset.headingLevel) ? parseInt(s.dataset.headingLevel, 10) : 1;
+        if (lv > level) return i;
+        return -1;
+      }
+      return -1;
+    }
 
     // Issue70: ?last=1 query 진입 시 마지막 슬라이드로 이동 (Chapter ← TOC slide → prev chapter 마지막)
+    // Issue104: ?back=1 진입 시 forward 트랜지션 억제 + backward 방향 CSS 애니메이션 1회 재생
     Reveal.on('ready', function(){
       try {
-        if (location.search.indexOf('last=1') !== -1) {
+        var hasLast = location.search.indexOf('last=1') !== -1;
+        var hasBack = location.search.indexOf('back=1') !== -1;
+        if (hasLast) {
           var totalH = Reveal.getHorizontalSlides().length;
-          if (totalH > 0) Reveal.slide(totalH - 1, 0);
+          if (totalH > 0) {
+            if (hasBack) {
+              // Backward 진입: 트랜지션 없이 즉시 마지막 슬라이드로 점프 (Reveal 내부 트랜지션 억제)
+              Reveal.configure({ transition: 'none' });
+              Reveal.slide(totalH - 1, 0);
+              // 다음 frame에 .reveal 노출 + backward 애니메이션 시작
+              requestAnimationFrame(function() {
+                document.body.classList.remove('m2-cross-loading');
+                document.body.classList.add('m2-back-enter');
+                setTimeout(function() {
+                  Reveal.configure({ transition: 'slide' });
+                  document.body.classList.remove('m2-back-enter');
+                }, 450);
+              });
+            } else {
+              // Forward 점프 (PgDown 등): 기존 동작 유지
+              Reveal.slide(totalH - 1, 0);
+            }
+          }
+        } else if (hasBack) {
+          // ?back=1 단독 (Home 등): 첫 슬라이드에서 backward 애니메이션 재생
+          requestAnimationFrame(function() {
+            document.body.classList.remove('m2-cross-loading');
+            document.body.classList.add('m2-back-enter');
+            setTimeout(function() {
+              document.body.classList.remove('m2-back-enter');
+            }, 450);
+          });
+        } else if (location.search.indexOf('fwd=1') !== -1) {
+          // Issue104: ?fwd=1 — 다음 챕터 forward 진입 시 forward 애니메이션 재생
+          requestAnimationFrame(function() {
+            document.body.classList.remove('m2-cross-loading');
+            document.body.classList.add('m2-fwd-enter');
+            setTimeout(function() {
+              document.body.classList.remove('m2-fwd-enter');
+            }, 450);
+          });
         }
       } catch (_) {}
     });
 
+    // Issue89: capture phase 등록 — Reveal.js 5.0.4가 Home/End 등 일부 키를 자체 keymap으로 가로채므로
+    // bubble보다 먼저 호출되는 capture phase에서 stop()으로 차단해야 본 매트릭스가 우선 적용됨
     document.addEventListener('keydown', function(event) {
       var cur = Reveal.getCurrentSlide();
       // 키 동작 종결 헬퍼: 브라우저 default + Reveal.js 기본 핸들러까지 차단 (key_navigation.md 매트릭스 강제)
@@ -2019,35 +2246,129 @@ graph TB
         window.location.href = 'agenda.html';
       }
 
-      // Issue71: Home 키 — 어디서든 agenda.html 직행 (Cover 포함, agenda는 자기 페이지라 deck 내 동작 영향 없음)
-      if (event.key === 'Home' || event.keyCode === 36) {
+      // Issue87: ⇞ PgUp — 어디서든 agenda.html 직행 (구 ⌂ Home 동작 승계)
+      if (event.key === 'PageUp' || event.keyCode === 33) {
         stop();
         window.location.href = 'agenda.html';
         return;
       }
 
-      // ↑ 키: 페이지 계층 상위로 이동 (key_navigation.md K3/K4 — vertical 무관, 항상 anchor/agenda 점프)
+      // Issue87: ⇟ PgDown — 마지막 페이지 직행 (Reveal 기본 hijack)
+      // Chapter: LAST_CHAPTER + ?last=1 → Reveal.on('ready')에서 마지막 슬라이드로 이동
+      // Single: 같은 deck 마지막 horizontal 슬라이드
+      if (event.key === 'PageDown' || event.keyCode === 34) {
+        stop();
+        if (M2SLIDE_MODE === 'chapter' && LAST_CHAPTER) {
+          window.location.href = LAST_CHAPTER + '?last=1';
+        } else {
+          var totalLast = Reveal.getHorizontalSlides().length;
+          if (totalLast > 0) Reveal.slide(totalLast - 1, 0);
+        }
+        return;
+      }
+
+      // Issue87 (2026-05-04 swap): ↑ 키 — 페이지 계층 parent 이동 (K3, 구 ⇤ Home 동작 승계)
+      // Issue101: 페이지 계층 = leaf → H2 sub-anchor → H1 anchor → TOC/agenda → cover
+      //   leaf 본문 → 직전 anchor (H2 우선, 없으면 H1)
+      //   H2 sub-anchor → 직전 H1 anchor (없으면 TOC/agenda 폴백)
+      //   H1 anchor → TOC/agenda
       if (event.key === 'ArrowUp' || event.keyCode === 38) {
         if (isCoverSlide(cur)) { stop(); return; } // Cover: 최상위
         if (isTocSlide(cur))   { stop(); window.location.href = 'agenda.html'; return; }
-        if (isAnchorSlide(cur)){ stop(); gotoTocOrAgenda(); return; }
-        // 본문 슬라이드 → 같은 deck 직전 H1 anchor (없으면 모드별 폴백)
-        var anchorIdx = findPrevAnchorIndex(Reveal.getIndices().h);
+        if (isH1Anchor(cur))   { stop(); gotoTocOrAgenda(); return; }
+        if (isAnchorSlide(cur)) {
+          // H2 sub-anchor → 직전 H1 anchor
+          var h1Idx = findPrevH1AnchorIndex(Reveal.getIndices().h);
+          stop();
+          if (h1Idx >= 0) { Reveal.slide(h1Idx, 0); return; }
+          gotoTocOrAgenda();
+          return;
+        }
+        // 본문 leaf → 같은 deck 직전 anchor (H2 우선, 없으면 H1) — Issue100 회복
+        var anchorIdx = findPrevAnyAnchorIndex(Reveal.getIndices().h);
         stop();
         if (anchorIdx >= 0) { Reveal.slide(anchorIdx, 0); return; }
         gotoTocOrAgenda();
         return;
       }
 
+      // Issue87 (2026-05-04 swap): ↓ 키 — 페이지 계층 child 이동 (K3, 구 ⇥ End 동작 승계)
+      // Cover→agenda 포함. deck 내부:
+      //   TOC slide → 첫 H1 anchor (없으면 첫 본문 #/1)
+      //   H1 anchor → 같은 deck 직후 슬라이드
+      //   본문(leaf) → Chapter 모드: 다음 챕터 첫 슬라이드 (TOC slide, 메시지 없음·1회) [Issue99]
+      //                Single 모드: 동작 없음 (leaf 유지)
+      if (event.key === 'ArrowDown' || event.keyCode === 40) {
+        if (isCoverSlide(cur)) { stop(); window.location.href = 'agenda.html'; return; }
+        if (isTocSlide(cur)) {
+          var firstAnchor = findNextH1AnchorIndex(-1);
+          stop();
+          if (firstAnchor >= 0) Reveal.slide(firstAnchor, 0);
+          else if (Reveal.getHorizontalSlides().length > 1) Reveal.slide(1, 0);
+          return;
+        }
+        if (isAnchorSlide(cur)) {
+          // Issue106: 자식 sub-anchor (level > 현재) 우선 — outline 트리 의미. 없으면 직후 슬라이드 (기존)
+          var idxD = Reveal.getIndices().h;
+          var anchorLv = getEnclosingAnchorLevel(idxD);
+          var firstChild = findFirstChildAnchorIndex(idxD, anchorLv);
+          stop();
+          if (firstChild >= 0) {
+            Reveal.slide(firstChild, 0);
+          } else if (idxD + 1 < Reveal.getHorizontalSlides().length) {
+            Reveal.slide(idxD + 1, 0);
+          }
+          return;
+        }
+        // 본문(leaf): leaf fall-through, 메시지 없이 즉시 이동
+        //   Chapter 모드 → 다음 챕터 첫 슬라이드 (Issue99)
+        //   Single 모드 → 다음 H1 anchor (Issue103). 마지막 H1 섹션이면 무동작
+        stop();
+        if (M2SLIDE_MODE === 'chapter') {
+          if (NEXT_CHAPTER && NEXT_CHAPTER !== 'index.html') {
+            // Issue104: 다음 챕터 진입은 forward — ?fwd=1 시그널로 forward 애니메이션
+            window.location.href = NEXT_CHAPTER + '?fwd=1';
+          }
+        } else {
+          var leafNextH1 = findNextH1AnchorIndex(Reveal.getIndices().h);
+          if (leafNextH1 >= 0) Reveal.slide(leafNextH1, 0);
+        }
+        return;
+      }
+
+      // Issue87 (2026-05-04 swap): ⇤ Home — 이전 sibling 점프 (K4)
+      // Chapter: 이전 챕터 TOC slide / Single: 같은 deck 직전 H1 anchor
+      // Issue92: ',' (Comma) 를 fallback 으로 매핑 — 일부 macOS·외장 키보드 환경에서 Home keydown이 OS 단계에서 가로채져 페이지로 전달되지 않음
+      // Issue92_1: ⌘+← 도 Home fallback — Keyboard Maestro 등 키 리매핑 도구가 Home → ⌘ArrowLeft 변환 시 호환
+      if (event.key === 'Home' || event.keyCode === 36 || event.code === 'Comma' || (event.metaKey && event.key === 'ArrowLeft')) {
+        if (isCoverSlide(cur)) { stop(); return; } // Cover: 최상위
+        if (M2SLIDE_MODE === 'chapter') {
+          stop();
+          // 첫 챕터(PREV_CHAPTER 빈값)는 동작 없음
+          // Issue104: 이전 챕터 진입은 backward 방향 — ?back=1 시그널로 backward 애니메이션 재생
+          if (PREV_CHAPTER) window.location.href = PREV_CHAPTER + '?back=1';
+          return;
+        }
+        // Issue105: Single — 트리 탐색 sibling. enclosing anchor 레벨 N 기준 직전 anchor at level ≤ N
+        var curHForHome = Reveal.getIndices().h;
+        var encLevelHome = getEnclosingAnchorLevel(curHForHome);
+        var prevAnchorIdx = findPrevSiblingAnchorIndex(curHForHome, encLevelHome);
+        stop();
+        if (prevAnchorIdx >= 0) Reveal.slide(prevAnchorIdx, 0);
+        return;
+      }
+
       // ← 키 처리 — Issue70 통일 매트릭스
-      if (event.key === 'ArrowLeft' || event.keyCode === 37) {
+      // Issue92_1: ⌘+← 는 Home fallback 으로 위에서 처리되었으므로 제외
+      if ((event.key === 'ArrowLeft' || event.keyCode === 37) && !event.metaKey) {
         var idxL = Reveal.getIndices();
         // Chapter mode TOC slide 또는 (TOC 없는 chapter의) 첫 슬라이드 #/0 → 이전 챕터 마지막 (없으면 agenda)
         var atChapterDeckStart = (M2SLIDE_MODE === 'chapter' && idxL.h === 0 && idxL.v === 0);
         if (isTocSlide(cur) || atChapterDeckStart) {
           event.preventDefault();
           if (M2SLIDE_MODE === 'chapter' && PREV_CHAPTER) {
-            window.location.href = PREV_CHAPTER + '?last=1';
+            // Issue104: ← 이전 챕터 마지막 진입은 backward — &back=1 시그널 추가
+            window.location.href = PREV_CHAPTER + '?last=1&back=1';
           } else {
             window.location.href = 'agenda.html';
           }
@@ -2061,14 +2382,38 @@ graph TB
         }
       }
 
-      // → / ↓ 키: Cover 슬라이드 override → agenda.html (D5=B, D6=B)
-      if (event.key === 'ArrowRight' || event.keyCode === 39 ||
-          event.key === 'ArrowDown'  || event.keyCode === 40) {
+      // → 키: Cover 슬라이드 override → agenda.html (D6 결정)
+      // (↓는 위 child 이동 블록에서 이미 Cover 처리됨)
+      // Issue92_1: ⌘+→ 는 End fallback 으로 아래에서 처리되므로 제외
+      if ((event.key === 'ArrowRight' || event.keyCode === 39) && !event.metaKey) {
         if (isCoverSlide(cur)) {
           event.preventDefault();
           window.location.href = 'agenda.html';
           return;
         }
+      }
+
+      // Issue87 (2026-05-04 swap): ⇥ End — 다음 sibling 점프 (K4, ⇤와 대칭)
+      // Chapter: 다음 챕터 TOC slide / Single: 같은 deck 직후 H1 anchor
+      // Issue92: '.' (Period) 를 fallback 으로 매핑 — Home/End 동일 사유
+      // Issue92_1: ⌘+→ 도 End fallback — Keyboard Maestro 등이 End → ⌘ArrowRight 변환 시 호환
+      if (event.key === 'End' || event.keyCode === 35 || event.code === 'Period' || (event.metaKey && event.key === 'ArrowRight')) {
+        if (M2SLIDE_MODE === 'chapter') {
+          stop();
+          // 마지막 챕터(NEXT_CHAPTER 빈값/wrap)는 동작 없음 (K5)
+          if (NEXT_CHAPTER && NEXT_CHAPTER !== 'index.html') {
+            // Issue104: 다음 챕터 진입은 forward — ?fwd=1 시그널
+            window.location.href = NEXT_CHAPTER + '?fwd=1';
+          }
+          return;
+        }
+        // Issue105: Single — 트리 탐색 sibling. enclosing anchor 레벨 N 기준 직후 anchor at level ≤ N
+        var curHForEnd = Reveal.getIndices().h;
+        var encLevelEnd = getEnclosingAnchorLevel(curHForEnd);
+        var nextAnchorIdx = findNextSiblingAnchorIndex(curHForEnd, encLevelEnd);
+        stop();
+        if (nextAnchorIdx >= 0) Reveal.slide(nextAnchorIdx, 0);
+        return;
       }
 
       // → 키: 마지막 슬라이드 → 다음 챕터 (기존 동작 유지)
@@ -2081,7 +2426,8 @@ graph TB
             if (lastSlideMessageShown) {
               lastSlideMessage.style.display = 'none';
               lastSlideMessageShown = false;
-              window.location.href = '02-llm-tool-evolution.html';
+              // Issue104: 다음 챕터 진입은 forward — ?fwd=1 시그널
+              window.location.href = '02-llm-tool-evolution.html?fwd=1';
             } else {
               event.preventDefault();
               lastSlideMessage.style.display = 'block';
@@ -2092,7 +2438,7 @@ graph TB
           }
         }
       }
-    });
+    }, true);  // Issue89: capture phase
 
     // Hide message when slide changes
     Reveal.on('slidechanged', function() {
@@ -2116,10 +2462,11 @@ graph TB
       function onSwipe(dx, dy) {
         var adx = Math.abs(dx), ady = Math.abs(dy);
         if (adx >= ady && adx >= SWIPE_MIN_PX) {
-          // 수평 swipe: 좌→우 = prev, 우→좌 = next
+          // 수평 swipe: 좌→우 = ← (prev), 우→좌 = → (next)
           simulateKey(dx < 0 ? 'ArrowRight' : 'ArrowLeft', dx < 0 ? 39 : 37);
         } else if (ady > adx && ady >= SWIPE_MIN_PX) {
-          // 수직 swipe: 위→아래 = ↑(부모 이동), 아래→위 = ↓
+          // 수직 swipe (Issue87 2026-05-04 swap): 위→아래 = ↑(parent), 아래→위 = ↓(child)
+          // 단축키(⇤/⇥/⇞/⇟)는 swipe로 트리거 불가 — sibling/끝단 점프는 키보드 전용
           simulateKey(dy > 0 ? 'ArrowUp' : 'ArrowDown', dy > 0 ? 38 : 40);
         }
       }

@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 107
+* Issue HWM: 108
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.6.0 (2026-05-05)** — release: 9키 네비게이션 SSOT 정립 + 트리 탐색 의미 도입 (Issue71-106 36건). Backward 트랜지션·anchor 자식 우선·leaf fall-through 등 키 동작 정밀화 + Pandoc columns/rows 호환 + 메타데이터 SSOT 통합
@@ -16,10 +16,31 @@
 
 
 # 🌱 이슈후보
-2. 쳅터모드에서 페이지 번호가 해당 md마다 1부터 시작하는데, 전체 기준으로 제공되어야함. 단, md 방식에서는 breadcum방식으로 쳅터 번호를 페이지 옆에 제공해야함. 관련 설정 필요. 
-1. 페이지 네비게이션 번호와 주소 맞지 않음. 페이지 네비게션 번호가 0(toc때문)부터 시작해야함.향후 toc를 생략하는 상황에서도 1부터 시작해서 잘 맞게됨. 
+1. 쳅터모드에서 페이지 번호가 해당 md마다 1부터 시작하는데, 전체 기준으로 제공되어야함. 단, md 방식에서는 breadcum방식으로 쳅터 번호를 페이지 옆에 제공해야함. 관련 설정 필요.
 
 # 🔥 진행중
+
+## Issue108. 페이지 번호 표시와 URL hash 1-based 일치 (등록: 2026-05-05)
+* 카테고리: Frontend
+* 목적: 우측 하단 페이지 번호 표시(`slideNumber: 'c/t'`)는 1-based(1,2,...)로 노출되지만 Reveal.js URL hash는 0-based(`#/0`,`#/1`,...)로 시작하여 사용자가 보는 번호와 주소가 어긋남. 예: 표시 `4/34` ↔ 주소 `#/3`. 두 값을 1-based로 통일하여 향후 TOC 슬라이드를 생략(`toc_placeholder: false`)하더라도 페이지 번호와 hash가 일관되게 유지되도록 함.
+* 상세:
+    - `lib/html-builder.js:703` `Reveal.initialize({ slideNumber: 'c/t' })` — 표시 number는 reveal.js 내부에서 1-based로 계산
+    - Reveal.js 기본 hash는 0-based (`#/0`이 첫 슬라이드)
+    - 첫 슬라이드가 자동 주입되는 TOC(`toc_placeholder: true` 기본값) 또는 cover라서 사용자는 "1번 페이지인데 hash는 #/0"이라는 비대칭을 봄
+    - 현재 사용자 환경에서 TOC를 생략하면 hash·표시 불일치가 더 명확해질 위험 존재
+* 구현 명세:
+    - **1차 시도** (Reveal.js 5.0.4 기본 옵션): `Reveal.initialize` 옵션에 `hashOneBasedIndex: true` 추가 — `lib/html-builder.js:703` 인근. 옵션 동작 확인은 빌드 후 브라우저에서 첫 슬라이드 hash가 `#/1`로 노출되는지로 검증
+    - **fallback (옵션 미지원 시)**: Reveal `slidechanged`·`ready`·`hashchange` 이벤트에서 `Reveal.getIndices()`를 읽어 `location.hash`를 `#/(h+1)` 또는 `#/(h+1)/(v+1)` 형태로 직접 갱신. 단 `replaceState` 사용으로 history 오염 방지. fallback 진입 전에 1차 옵션 적용 결과를 사용자에게 보고 후 결정
+    - **slideNumber 표시는 그대로**: `slideNumber: 'c/t'` 유지(이미 1-based)
+    - **Cover/TOC 자동 주입과의 정합성**: 자동 주입 슬라이드가 첫 hash를 차지하더라도 1-based 매핑은 동일하게 동작. 별도 분기 불필요
+    - **검증 시나리오** (`m2SlideStyle2_chapter` 프로젝트):
+        1. 빌드 후 첫 슬라이드 진입 시 URL이 `#/1`로 표시되는가
+        2. 우측 하단 표시 번호 `1/N`과 hash `#/1`이 일치하는가
+        3. → 키로 다음 슬라이드 이동 시 `#/2`, 표시 `2/N`로 동기화되는가
+        4. `toc_placeholder: false`로 빌드해도 첫 슬라이드 = `#/1` 유지되는가
+        5. 직접 `#/3` 접근 시 표시도 `3/N`으로 일치하는가
+        6. 챕터 모드(`m2SlideStyle2_chapter`)에서도 동일 동작 (각 챕터 HTML 내 hash 1부터)
+    - **금지 사항**: `display: flex`·`height: 100%`·`position`·`transform` 등 CSS 레이아웃 속성 변경 없음(본 이슈는 JS 옵션 단독 변경)
 
 ## Issue107. 슬라이드 우측 하단 네비게이션 UI 정리 [진행중] — `^/v` 버튼을 `</>` 사이에 배치 + 비활성 회색 처리 (등록: 2026-05-05)
 * 카테고리: Frontend

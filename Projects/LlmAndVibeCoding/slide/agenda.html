@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ko" class="ratio-16-9" style="--slide-ratio: 1.7778;">
+<html lang="ko" class="ratio-16-9" style="--slide-ratio: 1.7778; --slide-outer-padding: 0px; --slide-inner-padding: 0px;">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -94,8 +94,8 @@
      - 기하 관계: contents_width = contents_height × var(--slide-ratio)
   */
   --slide-ratio: 1.7778;
-  --slide-outer-padding: 0;
-  --slide-inner-padding: 0;
+  --slide-outer-padding: 0px;
+  --slide-inner-padding: 0px;
 }
 
 /* =========================================================================
@@ -145,7 +145,19 @@
   padding: var(--title-padding, 0);
   text-transform: none;
   font-weight: var(--title-font-weight, 700);
-  /* title_contents_gap: CSS 변수로 gap 적용 (JS 타이밍 독립) */
+}
+
+/* Issue90: title_contents_gap을 모든 *-title 클래스에 일관 적용 (JS 타이밍 독립).
+   기존엔 .reveal .title에만 적용되어 chapter 모드(.contents-title 사용 시) 무효였음.
+   cover-title은 표지 디자인 padding이 제어하므로 제외. */
+.reveal .title,
+.reveal .contents-title,
+.reveal .chapter-title,
+.reveal .chapter-toc-title,
+.reveal .toc-title,
+.reveal .blank-title,
+.reveal .closing-title,
+.reveal .exercise-title {
   margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);
 }
 
@@ -181,12 +193,15 @@
   transform: none;
 }
 
-/* Issue63: outer padding (슬라이드↔뷰포트 대칭).
-   - .reveal에 inset 적용으로 Reveal.js scaling 영역 축소 → 자동 중앙 배치 + 시각적 외부 여백
+/* Issue63 + Issue: outer padding (슬라이드↔뷰포트 대칭).
+   - body에 padding 적용 + box-sizing: border-box로 Reveal scaling 영역(body content box) 축소
+   - Reveal.js가 측정하는 viewport 크기 자체가 줄어들어 4면 균등 inset + 자동 fit
+   - 기존 .reveal { inset } 방식은 left/top만 밀려나고 scale은 원본 viewport 기준이라 right/bottom 오버플로
    - 0이면 효과 없음 (기존과 동일)
 */
-.reveal {
-  inset: var(--slide-outer-padding, 0) !important;
+body {
+  padding: var(--slide-outer-padding, 0) !important;
+  box-sizing: border-box !important;
 }
 
 /* 개별 슬라이드 섹션
@@ -235,11 +250,13 @@
 .reveal pre {
   width: 100%;
   margin: 0 auto;
+  text-align: left;
 }
 
 .reveal pre code {
   overflow: auto;
   max-height: none;
+  text-align: left;
 }
 
 /* =========================================================================
@@ -542,25 +559,74 @@
   justify-content: space-between;
   gap: 4%;
   width: 100%;
+  /* Issue96: contents-body(flex column) 안에서 남은 높이 채워서 nested rows가
+     비율대로 분할될 수 있도록 함. 자연 콘텐츠는 영향 없음 (children 자연 크기 유지) */
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Issue96: rows가 중첩될 때만 column 박스를 풀-height로 stretch.
+   단순 image+text 2-col은 기존 center 정렬 유지 (image 수직 중앙) */
+.reveal .m2-cols:has(.m2-rows),
+.reveal .m2-cols:has(.rows),
+.reveal .columns:has(.m2-rows),
+.reveal .columns:has(.rows) {
+  align-items: stretch;
 }
 
 .reveal .m2-col,
 .reveal .column {
   flex: 1;
   min-width: 0;
+  /* Issue96: 내부 .m2-rows가 flex item으로 작동하여 column 높이를 채울 수 있도록
+     flex 컨테이너로 변환. 자연 콘텐츠(텍스트/이미지)는 동일하게 top-down 스택 */
+  display: flex;
+  flex-direction: column;
 }
 
+/* Issue95: .m2-rows가 부모 .contents-body(flex column) 의 남은 높이를 채우고,
+   .m2-row가 균등(또는 인라인 height 비례)으로 분할되도록 flex 보강 */
 .reveal .m2-rows,
 .reveal .rows {
   display: flex;
   flex-direction: column;
   gap: 20px;
   width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .reveal .m2-row,
 .reveal .row {
   width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  /* Issue95: 행 내부 콘텐츠(텍스트+미디어)가 세로로 쌓이고, .media-container가
+     남은 높이를 채워서 이미지/SVG가 행 경계를 넘지 않도록 flex column 컨테이너로 동작 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Issue95: .m2-row 내부의 .media-container가 남은 높이를 채우도록.
+   기존 `.contents-body > .media-container` 규칙(theme/default/slide.css)은
+   contents-body 직속 자식만 매칭하므로 row 내부에서는 적용되지 않음 */
+.reveal .m2-row > .media-container,
+.reveal .row > .media-container {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.reveal .m2-row > .media-container img,
+.reveal .m2-row > .media-container svg,
+.reveal .row > .media-container img,
+.reveal .row > .media-container svg {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
 }
 
 .reveal .card {
@@ -1098,15 +1164,22 @@ body.agenda-page {
   font-family: var(--global-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif);
 }
 .agenda-frame {
-  width: min(100vw, 100vh * var(--slide-ratio));
-  height: min(100vh, 100vw / var(--slide-ratio));
+  /* outer padding 반영: viewport 단위에서 좌우/상하 padding 합계만큼 차감 */
+  width: min(
+    calc(100vw - 2 * var(--slide-outer-padding, 0px)),
+    calc((100vh - 2 * var(--slide-outer-padding, 0px)) * var(--slide-ratio))
+  );
+  height: min(
+    calc(100vh - 2 * var(--slide-outer-padding, 0px)),
+    calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
+  );
   background: #ffffff;
   overflow: hidden;
   position: relative;
 }
 html.ratio-fill .agenda-frame {
-  width: 100vw;
-  height: 100vh;
+  width: calc(100vw - 2 * var(--slide-outer-padding, 0px));
+  height: calc(100vh - 2 * var(--slide-outer-padding, 0px));
 }
 .agenda-frame .layout-_toc,
 .agenda-frame .layout-_agenda {
@@ -1124,7 +1197,7 @@ html.ratio-fill .agenda-frame {
 }
 
 </style>
-<link rel="stylesheet" href="css/custom.css?v=1777860603719">
+<link rel="stylesheet" href="css/custom.css?v=1777907705674">
 </head>
 <body class="agenda-page guide-line-mode">
 <div class="agenda-frame">
@@ -1171,10 +1244,14 @@ html.ratio-fill .agenda-frame {
     init();
   }
 })();
-// Issue55 Phase 9: ↑ 키로 Cover Page(index.html)로, → / ↓ 키로 다음 페이지(첫 챕터 또는 deck 본문)로 이동
+// Issue87 (2026-05-04 swap): agenda 키 핸들러 (key_navigation.md 매트릭스)
+//   ←/↑ (parent) → Cover (cover_enabled=true) / 동작 없음 (cover_enabled=false)
+//   →/↓ (child)/Space → 첫 챕터 TOC(Chapter) / 첫 H1 anchor·본문(Single)
+//   ⇤/⇥ (sibling) → 동작 없음 (Agenda는 메타 페이지, sibling 없음)
+//   ⇞ PgUp → 무시 (자기 페이지)
+//   ⇟ PgDown → LAST_CHAPTER?last=1 (Chapter) / index.html?last=1 (Single)
 (function(){
   const _tocData = {"content":"","children":[{"content":"<a href=\"01-opening.html\">1. AI 코딩의 패러다임 전환</a>","children":[]},{"content":"<a href=\"02-llm-tool-evolution.html\">2. LLM 코딩 툴의 진화 과정</a>","children":[{"content":"<a href=\"02.1.chat-based.html\">2.1 초기: 채팅 기반 시대 (2022-2023)</a>","children":[]},{"content":"<a href=\"02.2.ide-integration.html\">2.2 전환점: IDE 통합의 시작 (2023-2024)</a>","children":[]},{"content":"<a href=\"02.3.cli-based.html\">2.3 현재: CLI 기반 시대 (2024-현재)</a>","children":[]}]},{"content":"<a href=\"03-vibecoding-concept.html\">3. 바이브 코딩(VibeCoding) 개념과 철학</a>","children":[{"content":"<a href=\"03.1.chat-limitations.html\">3.1 채팅 기반의 한계</a>","children":[]},{"content":"<a href=\"03.2.vibecoding-start.html\">3.2 바이브 코딩의 시작</a>","children":[]}]},{"content":"<a href=\"04-vibecoding-generations.html\">4. 바이브 코딩 세대 구분</a>","children":[{"content":"<a href=\"04.1.ide-generation.html\">4.1 1세대: IDE 기반 코딩</a>","children":[]},{"content":"<a href=\"04.2.cli-generation.html\">4.2 2세대: CLI 기반 코딩</a>","children":[]}]},{"content":"<a href=\"05-generation-comparison.html\">5. 세대별 비교 및 선택 가이드</a>","children":[]},{"content":"<a href=\"06-practical-cases.html\">6. (참고) 실전 사례: 세대별 활용법</a>","children":[]},{"content":"<a href=\"07-adoption-roadmap.html\">7. (참고) 바이브 코딩 도입 로드맵</a>","children":[]},{"content":"<a href=\"08-qa-closing.html\">8. Q&A 및 클로징</a>","children":[]}]};
-  // tocData.children[0]의 content에서 첫 href를 추출 — chapter 모드면 첫 챕터 HTML, single 모드면 index.html#/N
   function firstHrefFromToc(node){
     if (!node || !node.children || node.children.length === 0) return null;
     for (const child of node.children) {
@@ -1187,21 +1264,53 @@ html.ratio-fill .agenda-frame {
     }
     return null;
   }
+  const AGENDA_MODE = 'chapter';
+  const AGENDA_LAST_CHAPTER = '08-qa-closing.html';
+  const AGENDA_COVER_ENABLED = false;
   const nextUrl = firstHrefFromToc(_tocData);
+  // Issue89: capture phase — 일관성 (agenda는 reveal.js 미사용이라 hijack 우려는 적으나 동일 패턴 유지)
   document.addEventListener('keydown', function(e){
-    if (e.key === 'ArrowUp' || e.keyCode === 38 || e.key === 'ArrowLeft' || e.keyCode === 37) {
-      e.preventDefault();
-      // cover_enabled=false: agenda is top-level, no navigation
-    } else if (e.key === 'ArrowRight' || e.keyCode === 39 || e.key === 'ArrowDown' || e.keyCode === 40 || e.key === 'PageDown' || e.keyCode === 34 || e.key === ' ' || e.keyCode === 32) {
-      if (nextUrl) {
-        e.preventDefault();
-        window.location.href = nextUrl;
-      }
-    } else if (e.key === 'Home' || e.keyCode === 36) {
-      // Issue71: agenda 자체에서는 Home 키 무시 (자기 페이지 reload 방지)
-      e.preventDefault();
+    // ← / ↑ (parent) → Cover (cover_enabled=true에 한함)
+    // Issue92_1: ⌘+← 는 Home fallback (sibling, no-op)으로 아래에서 처리되므로 제외
+    if (((e.key === 'ArrowLeft' || e.keyCode === 37) && !e.metaKey) ||
+        e.key === 'ArrowUp' || e.keyCode === 38) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      if (AGENDA_COVER_ENABLED) window.location.href = 'index.html';
+      return;
     }
-  });
+    // → / ↓ (child) / Space → 첫 챕터/첫 H1 anchor
+    // Issue92_1: ⌘+→ 는 End fallback (sibling, no-op)으로 아래에서 처리되므로 제외
+    if (((e.key === 'ArrowRight' || e.keyCode === 39) && !e.metaKey) ||
+        e.key === 'ArrowDown' || e.keyCode === 40 ||
+        e.key === ' ' || e.keyCode === 32) {
+      if (nextUrl) { e.preventDefault(); e.stopImmediatePropagation(); window.location.href = nextUrl; }
+      return;
+    }
+    // ⇤ Home / ⇥ End (sibling) → 동작 없음 (Agenda는 메타 페이지, sibling 없음)
+    // Issue92: ',' / '.' 를 Home/End fallback 으로 매핑 — 동일하게 no-op
+    // Issue92_1: ⌘+← / ⌘+→ 도 Home/End fallback — 동일하게 no-op
+    if (e.key === 'Home' || e.keyCode === 36 || e.code === 'Comma' ||
+        e.key === 'End' || e.keyCode === 35 || e.code === 'Period' ||
+        (e.metaKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight'))) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      return;
+    }
+    // ⇞ PgUp → 자기 페이지 무시
+    if (e.key === 'PageUp' || e.keyCode === 33) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      return;
+    }
+    // ⇟ PgDown → 마지막 페이지
+    if (e.key === 'PageDown' || e.keyCode === 34) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      if (AGENDA_MODE === 'chapter' && AGENDA_LAST_CHAPTER) {
+        window.location.href = AGENDA_LAST_CHAPTER + '?last=1';
+      } else if (AGENDA_MODE === 'single') {
+        window.location.href = 'index.html?last=1';
+      }
+      return;
+    }
+  }, true);
 })();
 </script>
 </body>
