@@ -33,25 +33,6 @@
     - `Reveal.on('ready')` 핸들러에서 `documentElement`의 클래스도 함께 제거
     - 검증: `m2SlideStyle2_chapter` 빌드 후 챕터 간 →·← 키, PgDown(?last=1) 이동 시 flicker 없음 확인
 
-## Issue107. 슬라이드 우측 하단 네비게이션 UI 정리 [진행중] — `^/v` 버튼을 `</>` 사이에 배치 + 비활성 회색 처리 (등록: 2026-05-05)
-* 카테고리: Frontend
-* 목적: 현재 우측 하단 `nav-up-btn`의 "상위" 텍스트가 군더더기. ↑ 키만 노출되고 ↓ 키는 시각적 진입점이 없어 사용자가 키보드 단축키 존재를 모름. Reveal.js 기본 `</>` 사이에 `^/v` 버튼을 배치해 4방향 네비게이션을 일관되게 노출하고, 더 이상 이동할 곳이 없는 방향은 회색(disabled) 표시로 가시화.
-* 상세:
-    - 현재 `lib/html-builder.js:535-562` `.nav-up-btn`이 `right: 70px` 위치에 텍스트 "상위"와 함께 표시됨
-    - Reveal.js 기본 `.controls`는 `.navigate-left`·`.navigate-right`만 활성화, `.navigate-up`·`.navigate-down`은 수직 슬라이드 부재로 비활성
-    - `↑` 키(html-builder.js:1319) = 페이지 계층 parent 이동 / `↓` 키(html-builder.js:1345) = child 이동 (Cover→agenda, TOC→첫 anchor, anchor→자식, leaf→다음 챕터/H1)
-    - 마우스 사용자가 ↓ 동작에 접근할 시각적 단서가 없음
-* 구현 명세:
-    - **DOM**: `nav-up-btn` 제거. Reveal `.controls` 내부 `.navigate-up`·`.navigate-down` 강제 표시 (display block, opacity로 활성/비활성)
-    - **클릭 이벤트**: `.navigate-up` click → `ArrowUp` keydown 시뮬레이션 / `.navigate-down` click → `ArrowDown` keydown 시뮬레이션 (기존 keydown 핸들러 재사용)
-    - **활성/비활성 판정**:
-        - `^`(↑): 현재 슬라이드가 Cover면 비활성. 그 외 활성
-        - `v`(↓): Single 모드의 leaf에서 다음 H1 anchor 없으면 비활성 / Chapter 모드에서 leaf이고 NEXT_CHAPTER 없으면 비활성. 그 외 활성
-        - `<`/`>`: Reveal.js 기본 enabled 클래스 그대로 사용 (이미 회색 처리됨)
-    - **상태 갱신**: `Reveal.on('slidechanged')` 및 `Reveal.on('ready')`에서 활성/비활성 재계산
-    - **CSS**: `.controls .navigate-up`, `.controls .navigate-down`을 `.controls .navigate-left`·`.controls .navigate-right`와 동일 스타일·위치 적용. `.disabled` 또는 `[data-disabled]` 상태에서 `opacity: 0.3` (회색)
-    - **검증**: `m2SlideStyle2_chapter` 프로젝트로 빌드 후 (1) Cover에서 ^ 회색 (2) leaf에서 v 활성 (3) 마지막 챕터 leaf에서 v 회색 (4) 클릭 시 키와 동일 이동 확인
-
 # 📕 중요
 
 # 📙 일반
@@ -60,6 +41,17 @@
 
 
 # ✅ 완료
+
+## Issue107. 슬라이드 우측 하단 네비게이션 UI 정리 — `^/v` 버튼을 `</>` 사이에 배치 + 비활성 회색 처리 (등록: 2026-05-05, 해결: 2026-05-05, commit: 67834c3) ✅
+* 카테고리: Frontend
+* 목적: 우측 하단 `nav-up-btn`의 "상위" 텍스트 군더더기. ↑/↓ 키 동작에 마우스 진입점 부재 → Reveal `</>` 사이에 `^/v` 마름모 배치 + 비활성 회색 처리.
+* Walkthrough:
+    - `nav-up-btn` DOM/CSS 제거 ([lib/html-builder.js](lib/html-builder.js))
+    - Reveal `.navigate-up`·`.navigate-down` 강제 표시 + `.m2-enabled` 클래스로 활성/비활성 회색 처리
+    - 클릭 핸들러: `ArrowUp`/`ArrowDown` keydown 시뮬레이션 (기존 핸들러 재사용)
+    - `Reveal.on('ready'/'slidechanged')`에서 `m2UpdateNavControls()` 활성 상태 재계산
+    - 좌표 컴팩트 마름모: ↑ `bottom: 2.9em`, ↓ `bottom: 0em`, → `right: 0.8em` (←/→ default 유지)
+    - 페이지 번호: viewport 우측 하단 fixed `right: 20px, bottom: 20px, width: 60px, height: 14px` — 마름모 정중앙
 
 > v0.6.0 (2026-05-05) 시점 Issue71-106 36건 아카이브 → [`z_old/old_issue.md`](z_old/old_issue.md)
 > v0.5.0 (2026-05-03) 시점 Issue~70 71건 아카이브 → [`z_old/old_issue.md`](z_old/old_issue.md)
