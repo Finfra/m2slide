@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 100
+* Issue HWM: 101
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
@@ -19,6 +19,27 @@
 1. 페이지 네비게이션 번호와 주소 맞지 않음. 페이지 네비게션 번호가 0(toc때문)부터 시작해야함.향후 toc를 생략하는 상황에서도 1부터 시작해서 잘 맞게됨. 
 
 # 🔥 진행중
+
+## Issue101. 코드 박스 시각 안정화 — CDN github.css 의존 제거 + 자체 .code-wrapper 박스 (등록: 2026-05-04)
+* 카테고리: Theme
+* 목적: Issue98 옵션 1(CDN github.css `.hljs` 배경 살리기)은 CDN 가용성·라이트 테마 가정·highlight.js 버전 의존이라는 3가지 안정성 위험을 가짐. 코드 박스 자체는 자체 CSS로 정의하고 CDN은 토큰 색상 보강 역할로 분리하여 안정성 확보
+* 근본 원인 (Issue98 옵션 1의 한계):
+    1. CDN 장애·오프라인 시 `.hljs` 배경(`#f6f8fa`) 미적용 → 코드가 본문과 시각 구분 사라짐
+    2. github.css는 라이트 테마 — 다크 슬라이드 배경 사용 시 `#f6f8fa` 부조화
+    3. highlight.js 향후 버전이 `.hljs { background, padding }` 정의를 변경하면 의도치 않은 시각 변화
+    4. RevealHighlight 플러그인 미실행 환경에서 `hljs` 클래스만 부착되어 토큰 색상 빠진 채 박스만 남는 어색한 상태 가능
+* 구현 명세:
+    - [`theme/default/slide.css`](theme/default/slide.css)에 `.reveal section[class*="layout-"] .code-wrapper` 자체 박스 스타일 신규
+        - `background: var(--code-bg, #f6f8fa)`, `padding: 0.8em 1em`, `border-radius: 6px`, `box-shadow: 0 1px 2px rgba(0,0,0,0.05)` 등 테마 변수 매핑
+        - `font-family: var(--code-font-family, 'SF Mono', Monaco, 'Courier New', monospace)`, `font-size: 0.85em` 명시
+    - 기존 github.css `.hljs` 배경과 중복되지 않도록 우리 박스 specificity가 더 높음 (selector 깊이로 자연 우선)
+    - github.css는 토큰 색상(.hljs-keyword, .hljs-string 등)만 살아남음 — 용도 분리
+    - default_lec theme도 동일 박스 스타일 동기 (옵션 — 사용자 결정 필요)
+* 검증:
+    - `m2SlideStyle2_chapter`/`m2SlideStyle1_single`/`layoutTest` 3종 빌드 후 코드 박스 시각 확인
+    - `02-code-syntax.html#/1` (JS), `#/2` (Python) 박스 배경·padding·border-radius 정상
+    - github.css CDN 차단 시뮬레이션(브라우저 DevTools network block) → 박스 그대로 유지, 토큰 색상만 빠짐 확인
+    - 회귀: 다른 본문 슬라이드, 마스코트, 가로선, mermaid/kroki 다이어그램 영향 없음
 
 # 📕 중요
 

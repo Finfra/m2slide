@@ -276,6 +276,27 @@
 }
 /* Issue98: pre/pre code 의 transparent 강제 제거 — github.css `.hljs` 배경(#f6f8fa) 살림 */
 
+/* Issue101: 코드 박스 자체 스타일 — CDN github.css 의존 제거.
+   github.css는 토큰 색상(.hljs-keyword 등)만 담당, 박스(배경·패딩·radius·폰트)는 자체 정의.
+   CDN 장애·다크 테마·hljs 버전 변경에도 박스 시각 보장. */
+.reveal section[class*="layout-"] .code-wrapper {
+  background: var(--code-bg, #f6f8fa);
+  padding: 0.8em 1em;
+  border-radius: 6px;
+  border: 1px solid var(--code-border, #e1e4e8);
+  font-family: var(--code-font-family, 'SF Mono', Monaco, Menlo, Consolas, 'Courier New', monospace);
+  font-size: 0.85em;
+  line-height: 1.45;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  overflow: auto;
+}
+.reveal section[class*="layout-"] .code-wrapper code {
+  background: transparent;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+}
+
 .reveal section[class*="layout-"] .contents-body > .media-container {
   flex: 1 1 0;
   min-height: 0;
@@ -938,6 +959,7 @@
 :where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-row"],
 :where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-left"],
 :where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-right"],
+:where(.guide-line-mode .reveal section[class*="layout-"]) pre.code-wrapper,
 :where(.guide-line-mode .reveal .slides section) > .theContents,
 :where(.guide-line-mode .reveal .slides section) > .title {
   position: relative !important;
@@ -952,6 +974,7 @@
 :where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-row"]::before,
 :where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-left"]::before,
 :where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-right"]::before,
+:where(.guide-line-mode .reveal section[class*="layout-"]) pre.code-wrapper::before,
 :where(.guide-line-mode .reveal .slides section) > .theContents::before,
 :where(.guide-line-mode .reveal .slides section) > .title::before {
   content: attr(class);
@@ -969,4 +992,19 @@
   pointer-events: none;
   z-index: 9999;
   line-height: 1.3;
+}
+
+/* 8.6 노란 가로선(::before/::after) 자체에 layout 클래스명 라벨 표시
+   - §2의 hr.png 가로선 위에 attr(class) 텍스트만 얹어 KISS하게 section 라벨 노출
+   - height: 10px 안에 작은 monospace 텍스트 우측 정렬 */
+.guide-line-mode .reveal section[class*="layout-"]::before,
+.guide-line-mode .reveal section[class*="layout-"]::after {
+  content: attr(class) !important;
+  font-family: 'Nanum Gothic Coding', 'Menlo', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: rgba(140, 90, 200, 1);
+  text-align: right;
+  padding-right: 8px;
+  line-height: 10px;
 }
