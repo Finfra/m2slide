@@ -20,26 +20,6 @@
 
 # 🔥 진행중
 
-## Issue99. Chapter 모드 본문(leaf)에서 ↓ 키 무동작 — 다음 챕터 fall-through 미구현 (등록: 2026-05-04)
-* 카테고리: Frontend
-* 목적: [`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) (직전 갱신) "본문 leaf ↓ → 다음 챕터 첫 슬라이드(TOC slide, 메시지 없음·1회)" 설계가 코드에 반영되지 않음. `02-code-syntax.html?last=1#/2`에서 ↓ 무반응 — `→ →`(2회·메시지) 만 다음 챕터로 이동. 설계 문서와 구현 어긋남
-* 상세:
-    - 재현: `Projects/m2SlideStyle2_chapter/slide/01-text-layout.html#/2` 또는 `#/3`에서 ↓ 누름 → 무반응
-    - 기대: `02-code-syntax.html` 첫 슬라이드(TOC slide, `#/0`)로 즉시 이동, 메시지 없음
-    - → 와 차별점:
-        1. 위치 무관 (본문 어느 슬라이드에서나 1회로 즉시 이동, → 는 마지막 슬라이드+메시지+2회)
-        2. 메시지 없음 (→ 는 "다음 챕터로 이동하려면 다시 →를 누르세요" 안내)
-* 구현 명세:
-    - [`lib/html-builder.js`](lib/html-builder.js) `generateHTML` 일반 deck 키 핸들러 ArrowDown 분기(line 1206-1224)의 leaf branch(line 1221-1223 `// 본문(leaf): 동작 없음`) 수정
-    - Chapter 모드(`M2SLIDE_MODE === 'chapter'`)이고 `NEXT_CHAPTER` 존재 시 → `window.location.href = NEXT_CHAPTER` (메시지·확인 없이 즉시)
-    - 마지막 챕터(NEXT_CHAPTER 빈값 또는 `'index.html'`)면 동작 없음
-    - Single 모드는 leaf ↓ 무동작 유지 (설계 K7 분기 반영)
-* 검증:
-    - `m2SlideStyle2_chapter` 빌드 후 `01-text-layout.html#/2`·`#/3`에서 ↓ → `02-code-syntax.html` 이동 확인
-    - 마지막 챕터에서 ↓ 무동작 확인
-    - Single 모드(`m2SlideStyle1_single`) 본문에서 ↓ 무동작 회귀 확인
-    - layoutTest 빌드 회귀 확인
-
 # 📕 중요
 
 # 📙 일반
@@ -48,6 +28,24 @@
 
 
 # ✅ 완료
+
+## Issue99. Chapter 모드 본문(leaf)에서 ↓ 키 무동작 — 다음 챕터 fall-through 미구현 (등록: 2026-05-04, 해결: 2026-05-04, commit: 68eb82b) ✅
+* 카테고리: Frontend
+* 목적: [`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) "본문 leaf ↓ → 다음 챕터 첫 슬라이드(TOC slide, 메시지 없음·1회)" 설계가 코드에 반영되지 않음. `02-code-syntax.html?last=1#/2`에서 ↓ 무반응 — `→ →`(2회·메시지) 만 다음 챕터로 이동
+* 상세:
+    - 재현: `Projects/m2SlideStyle2_chapter/slide/01-text-layout.html#/2` 또는 `#/3`에서 ↓ 누름 → 무반응
+    - 기대: `02-code-syntax.html` 첫 슬라이드(TOC slide, `#/0`)로 즉시 이동, 메시지 없음
+    - → 와 차별점: ① 위치 무관 (본문 어느 슬라이드에서나 1회로 즉시 이동) ② 메시지 없음
+* 구현 명세 (실행):
+    - [`lib/html-builder.js`](lib/html-builder.js) `generateHTML` ArrowDown 분기 leaf branch (line 1230-1236) 수정
+    - Chapter 모드(`M2SLIDE_MODE === 'chapter'`)이고 `NEXT_CHAPTER` 유효(빈값/`'index.html'` 아님) 시 → `window.location.href = NEXT_CHAPTER`
+    - Single 모드 또는 마지막 챕터는 무동작 (가드 통과 안 함)
+    - 커밋 68eb82b(Issue100 fix)에 함께 포함되어 적용됨
+* 검증:
+    - `m2SlideStyle2_chapter` 빌드 후 `01-text-layout.html` 산출물에 leaf branch 코드 부착 확인 (`NEXT_CHAPTER='02-code-syntax.html'`, mode=chapter)
+    - 마지막 챕터 `07-m2slide-features.html`은 `NEXT_CHAPTER='index.html'`로 가드 → 무동작 정상
+    - `m2SlideStyle1_single/index.html`: `M2SLIDE_MODE='single'`로 가드 → leaf ↓ 무동작 회귀 정상
+    - `m2SlideStyle1_single`, `layoutTest` 빌드 통과
 
 ## Issue100. 본문 leaf에서 ↑ 키가 직속 부모(H2 sub-anchor) 건너뛰고 H1 anchor로 점프 (등록: 2026-05-04, 해결: 2026-05-04, commit: 68eb82b) ✅
 * 카테고리: Frontend
