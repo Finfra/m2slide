@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 95
+* Issue HWM: 96
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
@@ -20,19 +20,18 @@
 
 # 🔥 진행중
 
-## Issue94. 테이블 슬라이드에 layout-_contents 클래스 미적용 (등록: 2026-05-04)
-* 카테고리: Generator
-* 목적: 테이블이 포함된 슬라이드만 `<section>`에 `class="layout-_contents"`가 부여되지 않아 `theme_default_layout: contents` 환경에서 §3 제목 스타일·상하단 hr.png 가로선·우상단 puffer 마스코트가 모두 누락됨. 다른 본문 슬라이드와 동일한 레이아웃 적용 보장
-* 상세:
-    - 증상: `Projects/m2SlideStyle1_single/slide/index.html#/29` ("기본 테이블"), `#/30` ("이미지가 포함된 테이블")에서 H2 제목 하단 underline·상하단 가로선·puffer 마스코트 모두 미표시
-    - 재현: `./m2slide.sh m2SlideStyle1_single` 실행 후 `index.html#/29`, `#/30` 직접 확인
-    - 근본 원인: [`lib/html-builder.js:251`](lib/html-builder.js)의 디스패처 `if (slide.isTitle || slide.isTable) { return generatePlainSlideHTML(slide); }`이 테이블 슬라이드를 plain 경로로 위임. `generatePlainSlideHTML`은 `title-slide`/`has-text` 클래스만 부여하고 `layout-{name}` 클래스는 추가하지 않음 (`generateSlideHTML`의 layout 경로 line 294-301에만 존재). 과거 reveal.js markdown plugin에 `data-markdown`으로 위임하던 흔적이지만 현재는 `convertMarkdownToHTML`이 직접 `<table>` HTML을 생성하므로 우회 불필요
-    - 영향 범위: `theme_default_layout: contents` 사용 + 테이블 포함 슬라이드 보유한 모든 프로젝트. m2SlideStyle1_single 외에 layoutTest, m2SlideStyle2_chapter도 잠재적 영향
+## Issue96. 2x2 그리드 (columns 안에 rows 중첩) 균등 분할 미적용 (등록: 2026-05-04)
+* 카테고리: Theme
+* 목적: `Projects/layoutTest/slide/index.html#/7` (2x2 그리드 — `::: columns` 안에 `::: rows` 중첩) 에서 4개 row가 contents-body 상단에 작은 박스로 수축되고 균등 분할되지 않음. nested rows가 부모 column 높이를 채우도록 보장
+* 근본 원인: [`lib/css/base.css`](lib/css/base.css)
+    - `.m2-cols { align-items: center }`: column 박스가 cross-axis(세로)로 콘텐츠 자연 크기로 수축 → `.m2-col`이 contents-body 높이를 채우지 못함
+    - `.m2-col`이 flex 컨테이너 아님 (`flex: 1; min-width: 0`만 있음) → 자식 `.m2-rows`의 `flex: 1 1 auto`가 작동할 부모 컨텍스트 부재
+    - `.m2-cols`에 `flex: 1 1 auto` 미설정 → contents-body(flex column) 안에서 자연 높이로 수축
 * 구현 명세:
-    - **해결안 A (권장)**: `lib/html-builder.js:251` 디스패처에서 `slide.isTable` 조건만 제거 — 테이블 슬라이드도 layout 템플릿(_contents) 경로 통과. layout 경로의 `convertMarkdownToHTML`이 이미 테이블을 정상 변환하므로 동작 유지 + layout 클래스 자동 부여
-    - 검증:
-        - m2SlideStyle1_single 빌드 후 `#/29`, `#/30` 슬라이드의 `<section class="layout-_contents">` 확인 + 상·하단 가로선·puffer·title underline 정상 표시
-        - layoutTest, m2SlideStyle2_chapter 회귀 없음 확인
+    - `.m2-cols`에 `flex: 1 1 auto; min-height: 0;` 추가 (contents-body 높이 채움)
+    - `.m2-cols:has(.m2-rows), .columns:has(.rows)`에 `align-items: stretch` 추가 → 중첩 rows가 있을 때만 column이 풀-height. 단순 image+text 2-col(`#/4`) 의 기존 center 정렬 유지
+    - `.m2-col`에 `display: flex; flex-direction: column;` 추가 → 내부 `.m2-rows`가 flex item으로 작동
+    - 검증: layoutTest `#/7` 2x2 그리드 4개 row 균등 분할, `#/4`/`#/5`/`#/6` 회귀 없음, m2SlideStyle1_single/m2SlideStyle2_chapter 회귀 없음
 
 # 📕 중요
 
@@ -42,6 +41,15 @@
 
 
 # ✅ 완료
+
+## Issue94. 테이블 슬라이드에 layout-_contents 클래스 미적용 (등록: 2026-05-04, 해결: 2026-05-04, commit: 45cedeb) ✅
+* 카테고리: Generator
+* 목적: 테이블이 포함된 슬라이드만 `<section>`에 `class="layout-_contents"`가 부여되지 않아 `theme_default_layout: contents` 환경에서 §3 제목 스타일·상하단 hr.png 가로선·우상단 puffer 마스코트가 모두 누락됨. 다른 본문 슬라이드와 동일한 레이아웃 적용 보장
+* 근본 원인: [`lib/html-builder.js:251`](lib/html-builder.js)의 디스패처 `if (slide.isTitle || slide.isTable) { return generatePlainSlideHTML(slide); }`이 테이블 슬라이드를 plain 경로로 위임. `generatePlainSlideHTML`은 `title-slide`/`has-text` 클래스만 부여하고 `layout-{name}` 클래스는 추가하지 않음. 과거 reveal.js markdown plugin에 `data-markdown`으로 위임하던 흔적이지만 현재는 `convertMarkdownToHTML`이 직접 `<table>` HTML을 생성하므로 우회 불필요
+* 구현 명세:
+    - `lib/html-builder.js:251` 디스패처에서 `slide.isTable` 조건 제거 — 테이블 슬라이드도 layout 경로(_contents) 통과
+    - `lib/slide-parser.js:212` (선행 09babdf 포함): isTable 슬라이드 반환 시 `title`/`rawMarkdown`/`hasText` 필드 추가하여 layout 경로 정상 통과 보장 (extractFirstH1로 H2 제목 분리)
+* 검증: m2SlideStyle1_single `#/29` `#/30` 슬라이드에 `<section class="layout-_contents"><h2 class="title">+<div class="contents-body"><table>` 정상 구조. m2SlideStyle2_chapter `06-tables-mixed.html` 동일 정상. layoutTest 빌드 성공 (테이블 슬라이드 없음, 회귀 없음)
 
 ## Issue95. Pandoc `::: rows` 행이 contents-body 채우지 못하고 height 비례 미적용 (등록: 2026-05-04, 해결: 2026-05-04, commit: 09babdf) ✅
 * 카테고리: Theme
