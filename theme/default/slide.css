@@ -184,7 +184,11 @@
    - ::before: .title 박스 위쪽 외부 (top: -12px)
    - ::after:  .title 박스 아래쪽 외부 (bottom: -12px)
    둘 다 동일 박스 기준이라 좌우 끝이 정확히 정렬됨. */
-.reveal section.layout-_contents::before {
+/* Issue116: .title이 .contents-body 안쪽에 있는 슬라이드(image-only/list-only H3 등)에서는
+   .contents-body의 overflow-y:auto가 .title::before(top:-12px)를 clipping함.
+   → .title이 section 직속 자식일 때만 section::before를 숨기고, 그렇지 않으면
+   §2 공통 section::before(left:56px,right:56px,top:12px) 그대로 사용. */
+.reveal section.layout-_contents:has(> .title)::before {
   display: none !important;
 }
 
