@@ -31,6 +31,17 @@ nav_indicator: both           # Issue115: 우측 하단 표시 모드
                               # diamond = 마름모 + ←/→만 (페이지번호 숨김)
                               # page = 페이지번호만 (마름모 + ←/→ 모두 숨김)
 
+# Issue111: 슬라이드 전환·배경 트랜지션 전역 기본값 (reveal.js Reveal.initialize에 그대로 전달)
+#   - default_transition / default_background_transition 화이트리스트:
+#       none / fade / slide / convex / concave / zoom
+#   - default_transition_speed: default / fast / slow
+#   - 슬라이드 단위 override (`#transition-zoom` 등)는 후속 Issue117·118에서 추가 예정
+#   - cover/agenda 페이지는 본 옵션 영향 없음 (transition: none 고정)
+animation:
+  default_transition: slide
+  default_transition_speed: default
+  default_background_transition: fade
+
 
 # 스타일 설정 (Issue64 1.b 정책)
 # - 기본값은 lib/css/base.css :root에 정의됨. lib/config.js styleConfig가 동일값으로 동기화됨.
