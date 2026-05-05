@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 111
+* Issue HWM: 113
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.6.1 (2026-05-05)** — fix: Issue107·108·109·110 4건 완료. cross-page flicker 가드 SSOT 상수화 + 페이지번호 1-based hash 일치 + outer padding transition 가시화 + ^/v 마름모 네비게이션
@@ -17,12 +17,43 @@
 
 
 # 🌱 이슈후보
-1. 쳅터모드에서 페이지 번호가 해당 md마다 1부터 시작하는데, 전체 기준으로 제공되어야함. 단, md 방식에서는 breadcum방식으로 쳅터 번호를 페이지 옆에 제공해야함. 관련 설정 필요.
-2. 마름모 네비게이션 보기 옵션과 페이지 보기 오션 추가
-3. Agenda 페이지 디자인 개선 복어 대신 고양이로(_doc_design/keynote-nowage-theme/img/finfraCat.png 50%흐리게) 제목줄에 제목줄에 Agenda로 고정(yaml front matter로 지정 가능하게 할 것(초기값이 Agenda)), 선에 걸치지 않게, 제목줄 폰트 크기 고정인데 다른 레이아웃처럼 상대 크기로 가야함.
-4. 개요2이상의 페이지에서 첫번째 바 사라지는 버그(file:///Users/nowage/_git/__all/videoMaker/lib/m2slide/Projects/m2SlideStyle1_single/slide/index.html?fwd=1#/16)
+1. 마름모 네비게이션 보기 옵션과 페이지 보기 오션 추가
+2. 개요2이상의 페이지에서 첫번째 바 사라지는 버그(file:///Users/nowage/_git/__all/videoMaker/lib/m2slide/Projects/m2SlideStyle1_single/slide/index.html?fwd=1#/16)
 
 # 🔥 진행중
+
+## Issue112. 챕터모드 페이지 번호 전체 기준 + breadcrumb 챕터 번호 제공 (등록: 2026-05-05)
+* 카테고리: Frontend
+* 목적: 챕터 모드(다중 md + AGENDA.md)에서 페이지 번호가 각 챕터 HTML마다 `1/N`으로 reset됨. 발표·교재 사용 시 사용자가 전체 진행률을 파악하기 어려움. 페이지 번호를 **전역 누적**으로 표시하고, 챕터 번호 breadcrumb을 페이지 번호 옆에 표시하여 위치 인지를 돕는다. 단일 모드는 영향 없음(이미 전역 1/N).
+* 상세:
+    - 현행: `lib/html-builder.js:742` `slideNumber: 'c/t'` (Reveal.js 기본 — 챕터 HTML별 c/t)
+    - 변경 후 표시(예시): `1.2 > 5/123` — 챕터번호.섹션 > 전역페이지/총합
+        - `1.2`: AGENDA.md 기반 챕터 번호 (H2/H3 순서 기반, 1.2 = 첫 메인의 2번째 하위)
+        - `5`: 전역 페이지 번호 (Agenda 페이지부터 누적 시작, cover 제외)
+        - `123`: 전체 슬라이드 총합 (Agenda + 모든 챕터 슬라이드 합)
+    - 기준점:
+        - cover 슬라이드: 전역 카운트에서 **제외**
+        - Agenda(index.html) 슬라이드: 전역 카운트 **시작점**(1번)
+        - 각 챕터 HTML의 슬라이드: Agenda 다음부터 등장 순서로 누적
+    - 단일 모드: 변경 없음(현행 `c/t` 유지). breadcrumb 미표시.
+* 구현 명세:
+    - 1단계 — `lib/agenda-parser.js`(또는 동일 역할 모듈)에서 챕터 트리 → `chapter_meta.json`(파일별 `{chapterNumber, slideOffset, totalSlides}` 매핑) 산출
+        - `slideOffset`: 각 챕터 HTML의 첫 슬라이드가 전역 몇 번째인지
+        - `totalSlides`: 전체 합계 (모든 빌드 산출물 공유)
+        - 빌드 1차 패스: 각 md 슬라이드 수 카운트 → offset/total 계산
+        - 빌드 2차 패스: 각 HTML에 메타 주입
+    - 2단계 — `lib/html-builder.js` Reveal `slideNumber` 콜백 사용:
+        - `slideNumber: function(slide) { return chapterNum + ' > ' + (slideOffset + Reveal.getIndices(slide).h + 1) + '/' + totalSlides; }` (1-based 유지)
+        - chapterNum/slideOffset/totalSlides는 빌드 시 각 HTML에 inline 주입
+    - 3단계 — `_config.yml` 신규 옵션:
+        - `page_number_mode: 'global' | 'local'` (default: chapter 모드는 `global`, single은 `local`)
+        - `breadcrumb: true | false` (default: chapter 모드에서 `true`)
+    - 4단계 — Agenda(index.html) 페이지 번호 표시: `Agenda > 1/123`(또는 chapter `0`)
+    - 5단계 — 검증:
+        - `m2SlideStyle2_chapter`: 챕터 1의 5번째 슬라이드 → `1 > 5/N` 표시 확인 (N은 전체 합)
+        - `m2SlideStyle1_single`: 변경 없이 `c/t` 유지 확인
+        - cover 슬라이드: 페이지 번호 표시 자체가 숨겨져 있으므로 영향 없음 (Issue107 마름모/페이지번호 가시성 SSOT 그대로)
+        - URL hash 1-based 일관성(Issue108) 유지 확인
 
 ## Issue111. 슬라이드 전환·요소 애니메이션 옵션 정리 (등록: 2026-05-05)
 * 카테고리: Frontend
@@ -55,6 +86,32 @@
 
 
 # ✅ 완료
+
+## Issue113. Agenda 페이지 디자인 개선 — 고양이 배경·제목 고정·선 회피·frame 비례 폰트 (등록: 2026-05-05, 해결: 2026-05-05, commit: a5c7f03) ✅
+* 카테고리: Theme
+* 목적: standalone `agenda.html`의 시각 마감을 정리. (1) 마스코트 통일감을 위해 우상단 puffer 대신 finfraCat을 흐리게 배치, (2) agenda 헤더 타이틀을 프로젝트명이 아니라 "Agenda"로 고정하되 frontmatter에서 override 가능, (3) 제목이 상단 노랑 가로선과 겹치지 않게 위치 보정, (4) agenda-frame 폰트가 px 기준이라 frame 크기에 따라 균형이 깨지는 문제를 reveal.js content 슬라이드와 동일한 letterbox-aware 스케일로 변경.
+* 해결:
+    - 배경 — `theme/default/slide.css` `.layout-_agenda::after` pseudo로 finfraCat을 50% opacity로 분리 배치 (요소 자체 opacity면 자식까지 흐려짐). 위치·크기 모두 `--frame-w`/`--frame-h` 비례로 설정 + `translateY(-15.5%)`로 미세 보정.
+    - 제목 고정 (`lib/agenda.js`, `lib/generate-slides.js`, `lib/html-builder.js`):
+        - `getAgendaPageTitleFromMd()` 신설 — AGENDA.md frontmatter `agenda_title:` 추출
+        - `lib/config.js`에 `agendaTitle` 기본값 `'Agenda'` + `_config.yml` `agenda_title:` 파싱
+        - `generate-slides.js`: `agendaPageTitle = AGENDA frontmatter > _config.yml > 'Agenda'` 우선순위 결정 후 `generateAgendaHTML({ agendaTitle, documentTitle, ... })`로 분리 전달
+        - `generateAgendaHTML` 시그니처에 `agendaTitle`(헤더용) + `documentTitle`(브라우저 탭 `<title>`용) 추가, 구 호출 호환 위해 기존 `title` 인자도 fallback 유지
+    - 선 겹침 방지 — `.layout-_agenda .toc-page-header { padding: calc(var(--frame-h) * 0.03) ... }`로 노랑 가로선(top:12 + h:10 = 22px) 아래에 위치 + `position: relative; z-index: 1`로 하단 보장
+    - frame 비례 폰트:
+        - `body.agenda-page` 에 `--frame-w` / `--frame-h` CSS 변수 정의 — base.css §12 `.agenda-frame { width/height min(...) }` 공식을 그대로 재현하여 reveal.js content 슬라이드의 letterbox된 실제 frame 크기와 동일
+        - `html.ratio-fill body.agenda-page` 별도 분기 (fill 모드)
+        - `body.agenda-page .agenda-frame { font-size: calc(var(--frame-h) * 0.022) }` → 1080p frame ≈ 23.76px → `.toc-page-title 1.8em` ≈ 42.8px (reveal 슬라이드 톤과 유사)
+        - 고양이·헤더 padding도 `calc(var(--frame-h) * X)` 형식 → viewport 변화와 무관하게 frame 비율 그대로 유지
+        - `container-type: size`는 markmap SVG 사이징을 깨뜨리므로 미사용 (CSS 변수 방식 채택)
+    - toc-markmap 영역 `margin-top: calc(var(--frame-h) * 0.03)` — 마스코트와 시각 분리
+    - base.css 미수정 (theme에서 모두 제어)
+* 검증:
+    - 빌드: `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `MarkdownGraph`, `layoutTest` 4개 프로젝트 정상
+    - 모든 `slide/agenda.html` 헤더 타이틀 `"Agenda"` 고정 출력 확인
+    - 브라우저 탭 `<title>` 프로젝트명 유지 확인 (`m2Slide2 : Chapter — Agenda`)
+    - frontmatter `agenda_title: 차례` 추가 시 헤더만 `차례`로 override + 탭 타이틀도 `m2Slide2 : Chapter — 차례`로 갱신 → 원복 후 기본값 복귀 검증
+    - Chrome으로 `Projects/m2SlideStyle2_chapter/slide/agenda.html` 시각 검증 (창 크기 변경 시 frame 비례 스케일 유지 확인)
 
 ## Issue110. 챕터 간 이동 시 cross-page flicker 발생 (등록: 2026-05-05, 해결: 2026-05-05, commit: 6af44f8) ✅
 * 카테고리: Frontend
