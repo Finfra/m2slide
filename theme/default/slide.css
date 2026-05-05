@@ -723,9 +723,12 @@
 
 /* =========================================================================
    7. _agenda Layout — Issue55: Agenda Page (standalone agenda.html)
-   - Issue80 §2.2: 상단 가로선(::before) + 우상단 puffer2s 마스코트
+   - Issue80 §2.2: 상단 가로선(::before) + 우상단 마스코트
      standalone wrapper(.layout-_agenda div)는 §2 공통 selector(section[class*=layout-])에
-     매치되지 않으므로 div.layout-_agenda::before 별도 정의
+     매치되지 않으므로 div.layout-_agenda::before/::after 별도 정의
+   - Issue113: puffer2s → finfraCat (50% 흐리게, ::after pseudo로 opacity 분리),
+     제목줄을 노랑 가로선 아래로 내려 겹침 제거,
+     agenda-frame 폰트 크기를 viewport 비례로 변경 (다른 reveal 슬라이드와 동일 스케일감)
    ========================================================================= */
 .layout-_agenda {
   display: flex;
@@ -734,16 +737,35 @@
   min-height: 100vh;
   box-sizing: border-box;
   position: relative;
-  background-image: url('../theme-img/finfraPuffer2s.png');
-  background-repeat: no-repeat;
-  background-position: 96% 28px;
-  background-size: 8% auto;
 }
 
-/* agenda 제목을 상단 가로선과 같은 라인까지 올리고 우상단 puffer2s와 같은 세로 위치에 정렬 */
+/* Issue113: 우측 마스코트는 ::after pseudo로 분리해 50% opacity 적용
+   (요소 자체에 opacity를 주면 자식 콘텐츠도 흐려짐).
+   크기·위치 모두 --frame-h/--frame-w(아래 정의) 비례 → reveal.js content 슬라이드와
+   동일하게 "letterbox된 frame 크기"를 기준으로 스케일. */
+.layout-_agenda::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--frame-h) * 0.03);
+  right: calc(var(--frame-w) * 0.02);
+  width: calc(var(--frame-w) * 0.126);
+  height: calc(var(--frame-h) * 0.198);
+  background-image: url('../theme-img/finfraCat.png');
+  background-repeat: no-repeat;
+  background-position: right top;
+  background-size: contain;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+  transform: translateY(-15.5%);
+}
+
+/* Issue113: agenda 제목을 상단 노랑 가로선 아래로 내려 겹침 제거. */
 .layout-_agenda .toc-page-header {
-  padding: 2px 28px;
+  padding: calc(var(--frame-h) * 0.03) 28px calc(var(--frame-h) * 0.01) 28px;
   margin: 0;
+  position: relative;
+  z-index: 1;
 }
 
 /* Issue80 §2.2: standalone agenda 상단 노랑 가로선
@@ -763,9 +785,32 @@
   z-index: 0;
 }
 
-/* Issue80 §2.2: 다운로드 버튼이 puffer2s와 충돌하지 않도록 헤더 안쪽으로 정렬 */
+/* Issue80 §2.2: 다운로드 버튼이 마스코트와 충돌하지 않도록 헤더 안쪽으로 정렬 */
 .layout-_agenda .toc-page-downloads {
-  margin-right: 9%;
+  margin-right: 16%;
+}
+
+/* Issue113: agenda-frame은 reveal.js content 슬라이드와 달리 transform: scale을 받지 않는
+   standalone 컨테이너. content 슬라이드처럼 "frame 실제 크기" 기준으로 스케일하기 위해
+   base.css §12의 min() 공식을 그대로 CSS 변수로 재현(--frame-h, --frame-w).
+   font-size 및 마스코트·헤더 padding이 모두 이 변수에 비례하므로 viewport letterbox 변화와
+   무관하게 frame 비율 그대로 유지됨. (container-type: size는 markmap SVG 사이징을 깨뜨리므로 미사용) */
+body.agenda-page {
+  --frame-w: min(
+    calc(100vw - 2 * var(--slide-outer-padding, 0px)),
+    calc((100vh - 2 * var(--slide-outer-padding, 0px)) * var(--slide-ratio))
+  );
+  --frame-h: min(
+    calc(100vh - 2 * var(--slide-outer-padding, 0px)),
+    calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
+  );
+}
+html.ratio-fill body.agenda-page {
+  --frame-w: calc(100vw - 2 * var(--slide-outer-padding, 0px));
+  --frame-h: calc(100vh - 2 * var(--slide-outer-padding, 0px));
+}
+body.agenda-page .agenda-frame {
+  font-size: calc(var(--frame-h) * 0.022);
 }
 
 /* toc-markmap이 남은 세로 공간을 채우도록 flex-grow 적용 (theContents 패턴).
@@ -777,6 +822,8 @@
 .agenda-frame .toc-markmap {
   flex: 1 1 0;
   min-height: 0;
+  /* Issue113: 마스코트(고양이)와 시각적으로 분리되도록 markmap 영역만 아래로 이동 */
+  margin-top: calc(var(--frame-h) * 0.03);
   border: 2px solid var(--kn-accent);
   border-radius: 8px;
   padding: 12px;

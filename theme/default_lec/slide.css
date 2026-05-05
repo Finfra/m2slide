@@ -472,6 +472,27 @@
   display: block;
 }
 
+/* Issue113: agenda-frame은 transform: scale을 받지 않는 standalone 컨테이너.
+   base.css §12의 min() 공식을 CSS 변수(--frame-h)로 재현해 frame 실제 높이 기준 폰트 부여.
+   (container-type: size는 markmap SVG 사이징을 깨뜨리므로 미사용) */
+body.agenda-page {
+  --frame-w: min(
+    calc(100vw - 2 * var(--slide-outer-padding, 0px)),
+    calc((100vh - 2 * var(--slide-outer-padding, 0px)) * var(--slide-ratio))
+  );
+  --frame-h: min(
+    calc(100vh - 2 * var(--slide-outer-padding, 0px)),
+    calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
+  );
+}
+html.ratio-fill body.agenda-page {
+  --frame-w: calc(100vw - 2 * var(--slide-outer-padding, 0px));
+  --frame-h: calc(100vh - 2 * var(--slide-outer-padding, 0px));
+}
+body.agenda-page .agenda-frame {
+  font-size: calc(var(--frame-h) * 0.022);
+}
+
 /* =========================================================================
    8. Guide Line — 테마 슬롯별 색상 (디버깅 시각화)
    - base.css §8: section(red) / h1·h2·h3(green) / .theContents(blue)
