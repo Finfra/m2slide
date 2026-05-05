@@ -20,30 +20,6 @@
 
 # 🔥 진행중
 
-## Issue115. 우측 하단 네비게이션 표시 모드 옵션 — 마름모 ↔ 페이지번호 보기 토글 (등록: 2026-05-05)
-* 카테고리: Frontend
-* 목적: Issue107에서 우측 하단에 `^/v` 마름모 네비게이션 컨트롤과 페이지 번호(`c/t`)를 동시에 배치(마름모 정중앙에 페이지번호)했음. 발표 환경에 따라 (1) 발표자가 키 네비게이션만 사용하고 시각 단서를 최소화하고 싶을 때 페이지 번호만 보고 싶거나, (2) 마우스 조작이 잦아 마름모 컨트롤만 강조하고 싶을 때 둘 사이를 토글할 수 있어야 함. 현재는 두 표현이 항상 함께 노출되어 선택지가 없음.
-* 상세:
-    - 현행 (Issue107 commit 67834c3):
-        - `lib/html-builder.js`에서 Reveal `.navigate-up`/`.navigate-down` 강제 표시 + `.m2-enabled` 클래스 토글
-        - 페이지 번호는 viewport 우측 하단 fixed (`right: 20px, bottom: 20px, w 60px, h 14px`)로 마름모 정중앙
-    - 제안 옵션:
-        - `_config.yml` 신규 키 `nav_indicator: 'both' | 'diamond' | 'page'` (default: `both` — 회귀 없음)
-        - `both`: 현행 동작 유지 (마름모 + 페이지번호)
-        - `diamond`: 마름모만 표시. 페이지번호 숨김 (`.slide-number { display: none }`)
-        - `page`: 페이지번호만 표시. `^/v` 마름모(`.navigate-up/down`) 및 ←/→ 화살표 모두 숨김
-    - 단축키 토글 검토(선택): `N` 키로 런타임 순환 (`both → diamond → page → both`). v1에서는 정적 옵션만 도입하고 단축키는 후속 이슈로 미룸
-* 구현 명세:
-    - 1단계 — `lib/config.js`에 `navIndicator` 기본값 `'both'` + `_config.yml` `nav_indicator:` 파싱
-    - 2단계 — `lib/html-builder.js` Reveal 컨테이너 또는 body에 `data-nav-indicator="${navIndicator}"` 속성 주입
-    - 3단계 — `theme/default/slide.css`(또는 `lib/css/base.css` 컨펌 후) 분기 selector 추가:
-        - `body[data-nav-indicator="diamond"] .slide-number { display: none }`
-        - `body[data-nav-indicator="page"] .navigate-up, body[data-nav-indicator="page"] .navigate-down, body[data-nav-indicator="page"] .navigate-left, body[data-nav-indicator="page"] .navigate-right { display: none !important }`
-    - 4단계 — Cover/Agenda 페이지(`generateCoverHTML`, `generateAgendaHTML`)에도 동일 속성 전파. Cover는 `slideNumber: false`라 영향 적지만 일관성을 위해 nav 화살표 숨김 분기는 적용
-    - 5단계 — `_config.org.yml`에 옵션 주석 + 기본값 노출
-    - 6단계 — `noteForHuman.md` 사용자 가이드 갱신
-    - 검증: 3종 표현 각각 빌드 (`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`) → 우측 하단 표시·키 네비게이션·페이지 번호 동기화(Issue108) 회귀 없음 확인
-
 ## Issue111. 슬라이드 전환·요소 애니메이션 옵션 정리 (등록: 2026-05-05)
 * 카테고리: Frontend
 * 목적: 현행 슬라이드 전환(좌우 slide)·기본 트랜지션을 재검토하여 reveal.js가 제공하는 애니메이션 옵션(transition, fragment, auto-animate, background)을 m2slide에서 어떤 형태로 노출·제어할지 결정. 불필요한 효과는 제거, 유용한 효과는 마크다운 frontmatter·메타로 일관 노출.
@@ -104,6 +80,24 @@
 
 
 # ✅ 완료
+
+## Issue115. 우측 하단 네비게이션 표시 모드 옵션 — 마름모 ↔ 페이지번호 보기 토글 (등록: 2026-05-05, 해결: 2026-05-05, commit: 35d73a6, 0353534, e144aa2) ✅
+* 카테고리: Frontend
+* 목적: Issue107에서 우측 하단에 `^/v` 마름모 + 페이지번호를 동시 배치한 이후, 발표 환경에 따라 표현을 토글할 수 있는 정적 옵션 부재. 발표자 선호(키 vs 마우스)에 따라 시각 단서를 분리해서 노출할 수 있도록 `_config.yml` 옵션 추가.
+* 해결:
+    - **`lib/config.js`** (commit `35d73a6`): `VALID_NAV_INDICATORS = ['both', 'diamond', 'page']` 화이트리스트 + `navIndicator: 'both'` 기본값 + `applyConfig`에 `nav_indicator:` 파서. 잘못된 값 입력 시 `console.warn` 후 default fallback.
+    - **`lib/html-builder.js`** (commit `0353534`): 3개 페이지(`generateHTML`/`generateCoverHTML`/`generateAgendaHTML`) body에 `data-nav-indicator="${_cfg.navIndicator}"` 속성 일관 주입. `<style>` 블록에 분기 selector 2종:
+        - `body[data-nav-indicator="diamond"] .reveal .slide-number { display: none !important }` — 페이지번호 숨김
+        - `body[data-nav-indicator="page"] .reveal .controls .navigate-up/down/left/right { display: none !important }` — 마름모 + 좌우 화살표 모두 숨김
+    - **`_config.org.yml`** (commit `e144aa2`): `nav_indicator: both` 옵션 + 3종 모드 인라인 주석 노출.
+    - Cover/Agenda 페이지는 시각 영향 없음(`controls`/`slide-number` 자체가 비표시). 일관성 차원에서 `data-nav-indicator` 속성만 전파하여 향후 런타임 토글 시 동일 속성 기반 동작 보장.
+* 검증:
+    - JS syntax: `lib/config.js`, `lib/html-builder.js` `node -e require()` OK
+    - default `both`: `m2SlideStyle1_single`(1) + `m2SlideStyle2_chapter`(9) + `layoutTest`(2) HTML 모두 `data-nav-indicator="both"` 주입 확인
+    - `diamond` override: body 속성 + CSS selector 정상 반영 (페이지번호 숨김)
+    - `page` override: body 속성 정상 반영 (마름모 + 좌우 화살표 숨김)
+    - Invalid 값 (`nav_indicator: invalid`): `⚠️ Invalid nav_indicator: 'invalid' — allowed: both | diamond | page` 경고 + default `both` fallback
+    - 원본 config 복원 후 회귀 없음
 
 ## Issue114. Home/End 키 동작 보강 — Cover/Agenda/첫 챕터 boundary fallback (등록: 2026-05-05, 해결: 2026-05-05, commit: b3b3359) ✅
 * 카테고리: Frontend
