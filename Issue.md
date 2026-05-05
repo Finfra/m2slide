@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 116
+* Issue HWM: 118
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.6.1 (2026-05-05)** — fix: Issue107·108·109·110 4건 완료. cross-page flicker 가드 SSOT 상수화 + 페이지번호 1-based hash 일치 + outer padding transition 가시화 + ^/v 마름모 네비게이션
@@ -17,6 +17,9 @@
 
 
 # 🌱 이슈후보
+
+1. (Issue117) 슬라이드 단위 애니메이션 디렉티브 — `#transition-*`/`#background-*`/`#auto-animate`/`#autoslide-*` (slide-parser + html-builder section 속성 주입). Issue111에서 분할.
+2. (Issue118) Pandoc `{.fragment .fade-up}` 인라인 attribute 파서 — `<li>`/`<p>` class 주입 (markdown.js inline parser 변경, TDD 필수). Issue111에서 분할.
 
 # 🔥 진행중
 
@@ -42,44 +45,36 @@
     - 3단계 — `lib/html-builder.js` Reveal.initialize 옵션 노출 + 마크다운 파서에 메타 변환 추가
     - 4단계 — [`md-m2slide-rules.md`](.claude/rules/md-m2slide-rules.md) 업데이트, [noteForHuman.md](noteForHuman.md) 사용자 가이드 추가
     - 검증: animationTest + 기존 3개 대표 프로젝트(`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`) 시각 회귀 없음 확인
+* 분할 (2026-05-05): SSOT 명세를 그대로 구현하면 slide-parser·markdown.js inline parser 변경이 필요해 회귀 위험 큼. 본 이슈는 **글로벌 transition 옵션 노출 + SSOT 문서**까지로 스코프 축소하고 슬라이드 단위 디렉티브와 fragment attribute는 후속 이슈로 분리:
+    - **Issue117** — 슬라이드 단위 애니메이션 디렉티브 (`#transition-*` 등)
+    - **Issue118** — Pandoc `{.fragment}` inline attribute 파서
 
 # 📕 중요
 
 # 📙 일반
 
-## Issue116. 개요2이상 페이지에서 첫번째 바 사라지는 버그 (등록: 2026-05-05)
-* 카테고리: Frontend
-* 목적: 단일 모드(`m2SlideStyle1_single`) 슬라이드 중 개요 H2 이상 레벨 페이지의 "첫번째 바"가 렌더링 누락되어 사용자에게 시각 단서가 부족함. 재현 URL: `file:///.../Projects/m2SlideStyle1_single/slide/index.html?fwd=1#/16`. 현재 fix 단계 진입 전 단계로, "바"가 가리키는 정확한 시각 요소(상단 노랑 가로선 / breadcrumb bar / fragment 진행 바 / progress bar 등) 식별이 1차 작업.
-* 상세:
-    - 재현: cover_enabled 단일 모드, `?fwd=1` 신호로 cover→deck 진입한 상태. 16번 슬라이드(hashOneBasedIndex 적용 → 0-based index 15)는 H2 이상 헤더의 첫 슬라이드일 가능성 높음
-    - 의심 후보 (fix 단계에서 Read·DOM 검증 필요):
-        - **후보 A — 상단 노랑 가로선** (Issue113 `.toc-page-header` top:12 + h:10 = 22px line)
-        - **후보 B — 페이지번호 breadcrumb bar** (Issue112 `m2-breadcrumb-mode` body class — 단일 모드는 placeholder null이므로 실제로는 비활성. 그러나 chapter 첫 페이지 진입 시 일시적으로 토글되는 회귀 가능성)
-        - **후보 C — fragment / list bullet bar** (`.layout-_contents` 또는 base.css §12 슬라이드 bullet 첫 항목 marker)
-        - **후보 D — Reveal `.progress` bar** (Reveal 기본 progress가 첫 슬라이드에서 0폭으로 보이지 않는 정상 동작과 혼동 가능)
-    - 영향 범위:
-        - 단일 모드(`m2SlideStyle1_single`) 16번 슬라이드 + 동일 패턴(개요 H2 이상)인 다른 슬라이드 전수
-        - 챕터 모드에서 동일 현상 재현되는지 비교 검증 필요
-* 구현 명세:
-    - 1단계 — 재현 검증:
-        - `m2SlideStyle1_single`의 markdown 소스 → 16번 슬라이드 H 레벨·layout 확인
-        - Chrome DevTools로 해당 슬라이드 첫 자식 element 트리 + computed style 확인
-        - "바"가 실제로 누락된(없음) 것인지 vs `display:none`/`visibility:hidden`/`opacity:0`/색·배경 동일로 시각적으로만 안 보이는 것인지 구분
-    - 2단계 — 원인 추적:
-        - Issue104·109·110의 transition gating·`overflow: visible`·cross-page guard가 첫 진입 시 첫 자식을 일시 숨기는지 확인
-        - Issue113 `.layout-_agenda::after` finfraCat overlay z-index 충돌 가능성 (단일 모드 deck에는 무관해야 하지만 검증)
-        - hashOneBasedIndex(Issue108) anchor 시프트가 16번 슬라이드 진입 시 한 슬라이드 건너뛰는 회귀 발생 여부 확인
-    - 3단계 — 수정:
-        - 원인 확정 후 최소 패치. **CSS 수정 시** [`CLAUDE.md`](CLAUDE.md) "CSS 수정 시 주의사항" + "base.css 수정 가드" 절 준수 (`display: flex`, `height: 100%`, `position`, `transform` 변경 금지). theme/{name}/slide.css 또는 layout 단위 CSS로 우회 가능한지 우선 검토
-    - 4단계 — 검증:
-        - 재현 URL에서 "바" 정상 표시 확인
-        - `m2SlideStyle1_single` 전체 슬라이드 회귀 없음
-        - `m2SlideStyle2_chapter`·`layoutTest`·`MarkdownGraph` 시각 회귀 없음
-
 # 📗 선택
 
 
 # ✅ 완료
+
+## Issue116. 개요2이상 페이지에서 첫번째 바 사라지는 버그 (등록: 2026-05-05, 해결: 2026-05-05, commit: ebc6b2b) ✅
+* 카테고리: Frontend / Theme
+* 목적: 단일 모드 슬라이드 중 H3 image-only/list-only 슬라이드(예: `m2SlideStyle1_single` `#/16` "이미지 Only")에서 상단 노랑 가로선이 누락되어 다른 페이지와 시각 일관성이 깨지던 문제.
+* 원인:
+    - Issue90 이후 `theme/default/slide.css` §2가 layout-_contents의 `section::before`를 일괄 `display: none`으로 숨기고 `.title::before`(`top: -12px`)에 가로선을 부착하는 구조로 전환됨
+    - `.title`이 `.contents-body` 안쪽에 위치하는 빌드 결과(image-only `### Only` 슬라이드: `<section><div class="contents-body"><h3 class="title">…`)에서는 `.contents-body { overflow-y: auto }`(`base.css` §9)가 `.title::before`(상단 박스 외부)를 clipping → 가로선이 화면에 그려지지 않음
+    - `.title`이 section 직속 자식인 슬라이드(`<section><h2 class="title">…`)는 clipping 대상 ancestor 부재로 정상 표시 → "다른 페이지처럼" 동작
+* 해결:
+    - `theme/default/slide.css:187` `section.layout-_contents::before { display:none !important }` 셀렉터를 `section.layout-_contents:has(> .title)::before`로 좁힘
+    - 효과: `.title` 직속 자식 슬라이드만 section::before 숨기고 `.title::before`로 가로선 그림(기존 동작 유지). `.title`이 `.contents-body` 안쪽인 슬라이드는 §2 공통 `section::before`(left:56px, right:56px, top:12px)가 그대로 살아 상단 가로선 정상 표시
+    - `.title::before` 자체는 미변경(image-only 슬라이드에서는 매칭되지 않으므로 clipping 문제도 자동 회피)
+* 검증:
+    - **재현 슬라이드**: `m2SlideStyle1_single#/16` ("이미지 Only", H3 in contents-body) — 상단 가로선 복원 확인 (Chrome 1920×1080 헤드리스 + 200px 크롭 시각 검증)
+    - **회귀 없음**: 같은 프로젝트 `#/14`(개요, H2 직속 자식) / `#/22`(2분할 레이아웃, H2 직속) 상단 가로선 그대로 표시
+    - **챕터 모드**: `m2SlideStyle2_chapter/04-images-media.html` slide 3(`이미지와 리스트`, H2 직속) `.title::before` 정상 + section::before 숨김 유지
+    - **layoutTest**: 영향 없음 확인
+    - 3개 대표 프로젝트(`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`) `m2slide.sh` 빌드 성공 + Chrome 사용자 시각 확인용 창 오픈
 
 ## Issue115. 우측 하단 네비게이션 표시 모드 옵션 — 마름모 ↔ 페이지번호 보기 토글 (등록: 2026-05-05, 해결: 2026-05-05, commit: 35d73a6, 0353534, e144aa2) ✅
 * 카테고리: Frontend
