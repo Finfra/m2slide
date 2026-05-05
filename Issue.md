@@ -1,8 +1,9 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 124
+* Issue HWM: 125
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
+    - **v0.6.5 (2026-05-05)** — fix: Issue118 (Pandoc `{.fragment .fade-up}` 인라인 attribute 파서 — `<li>`/`<p>` class 주입). reveal.js fragment 단계별 등장 효과를 마크다운에서 자연스럽게 표현. TDD 19 케이스 통과 (node:test 표준, 외부 dependency 0). 사용자 요구 시 Issue124(refresh hash-jump transition 차단)도 동일 마일스톤에 합산 가능.
     - **v0.6.4 (2026-05-05)** — fix: Issue117 (슬라이드 단위 디렉티브 마무리: H2 다음 디렉티브 매칭 + 6종 syntax 완성) + Issue123 (cross-page 진입 시 deck 첫 hash jump의 슬라이드 transition 재생 부작용 fix — `_isCrossPageEntry` 가드 + Reveal.on('ready') 복원). Issue117 6종 디렉티브 (`#transition-*`, `#background-color-*`, `#background-transition-*`, `#auto-animate`, `#autoslide-*`, `#layout-*`) 모두 reveal.js `data-*` 속성 변환 동작.
     - **v0.6.3 (2026-05-05)** — fix: Issue119 (cover_layout 옵션) + Issue120 (cross-page navigation fade-in CSS animation, A안) + Issue122 (Issue120 hot-fix: wasCrossLoading 가드로 단순 리프레쉬 시 fade-in 미발동). cover 슬라이드 layout 자유 지정 + cover↔agenda↔deck cross-page 진입 시에만 `_cfg.animation.defaultBackgroundTransition !== 'none'`일 때 250ms fade-in 자연 등장 (페이지 리프레쉬·새 탭은 미발동).
     - **v0.6.2 (2026-05-05)** — fix: Issue111 (글로벌 animation 옵션 + cross-page CSS gating + cover cfg 통합) + Issue116 근본 fix + Issue117 진행 (슬라이드 단위 디렉티브 파서). _config.yml `animation:` 섹션으로 reveal.js transition·transitionSpeed·backgroundTransition 글로벌 노출 + 슬라이드별 `#transition-*`/`#background-color-*`/`#auto-animate`/`#autoslide-*` 디렉티브.
@@ -22,34 +23,31 @@
 
 # 🔥 진행중
 
-## Issue118. Pandoc `{.fragment .fade-up}` 인라인 attribute 파서 — `<li>`/`<p>` class 주입 (등록: 2026-05-05)
-* 카테고리: Generator / Frontend
-* 목적: Pandoc 표준 inline attribute syntax `{.class .class}`를 list item·paragraph 끝에 작성하면 출력 HTML 요소에 해당 class를 주입. reveal.js `fragment` 단계별 등장 효과를 마크다운 자연스럽게 표현.
+## Issue125. Reveal.js hash-jump CSS transition 시각 차단 — m2-initial-loading visibility 가드 일반화 (Issue123/124 보강) (등록: 2026-05-05)
+* 카테고리: Frontend
+* 목적: Issue123/124에서 `Reveal.initialize`의 `transition` JS 옵션을 `'none'`으로 시작·복원 패턴 시도했으나 사용자 보고 "여전히 refresh 시 transition 보임". 분석 결과 **reveal.js 5.x의 transition JS 옵션은 슬라이드 변경 시 fade/slide CSS class 추가만 제어하며, `.reveal .slides`에 정의된 transform CSS transition(슬라이드 위치 이동 효과)은 reveal.js 자체 stylesheet에 박혀 있어 JS 옵션으로 막을 수 없음**. → JS 옵션 접근 포기, **visibility:hidden 가드 일반화**로 시각적 차단.
 * 상세:
-    - 입력: `* 두 번째 항목 {.fragment .fade-up}` → 출력: `<li class="bullet-dot fragment fade-up">두 번째 항목</li>`
-    - 입력: `이 단락은 단계 등장 {.fragment}` → 출력: `<p class="fragment">이 단락은 단계 등장</p>`
-    - **TDD 필수** — markdown.js inline parser 변경은 회귀 위험이 크므로 테스트 케이스 선행 작성:
-        - 단순 fragment: `* a {.fragment}`
-        - 복수 class: `* b {.fragment .fade-up}`
-        - 일반 텍스트의 `{` 보존: `* {a, b}는 집합` (디렉티브 아님)
-        - 코드 블록 내부의 `{}` 보존: `\`{.foo}\`` 인라인 코드
-        - 빈 attribute `{}`: 무시 (warn만)
-        - reveal.js 표준 fragment 클래스: `fragment`, `fragment.fade-up`, `fragment.fade-down`, `fragment.fade-left`, `fragment.fade-right`, `fragment.grow`, `fragment.shrink`, `fragment.highlight-red/green/blue`, `fragment.fade-in-then-out`, `fragment.current-visible`
+    - reveal.js 동작: `Reveal.initialize` 시 `hash: true` + URL hash → 자체적으로 `Reveal.slide(h, v, f)` 호출. 이때 `.reveal .slides` 컨테이너의 `transform: translate(...)` 변경에 CSS transition이 자동 적용 (reveal.css/reveal.scss 정의). transition: 'none' JS 옵션은 이를 영향 못 줌.
+    - 기존 `M2_CROSS_GUARD_HEAD_HTML`은 cross-page 시그널(`?fwd=1`/`?back=1`/`?last=1`) 진입에만 `m2-cross-loading` class 추가. 단순 refresh·새 탭은 가드 없음 → transition 그대로 보임.
+    - Issue120 fade-in CSS animation은 별개. Issue122 fix로 cross-page만 발동 → 단순 refresh의 transition은 reveal.js 자체 hash-jump 효과.
 * 구현 명세:
-    - 1단계 — 테스트 인프라:
-        - `lib/__tests__/markdown.test.js` 또는 `tests/` 디렉토리 신설
-        - Node 표준 `node:test` 또는 단순 assertion 함수로 시작 (외부 dependency 회피)
-    - 2단계 — `lib/markdown.js` inline parser 확장:
-        - 라인 끝 `{.foo .bar}` 패턴 감지 → 라인 텍스트에서 제거 + classNames 배열 반환
-        - 코드 fence·코드 인라인 내부는 보호 (Issue118 함정)
-        - list item·paragraph 변환 시 추출된 classNames를 element class에 병합
-    - 3단계 — `Projects/animationTest/animationTest.md`:
-        - 슬라이드 4(이미 `{.fragment}` 예시 작성됨) 정상 동작 확인
-    - 4단계 — `noteForHuman.md` + `.claude/rules/md-m2slide-rules.md` 사용자 가이드 추가
+    - `lib/html-builder.js M2_CROSS_GUARD_HEAD_HTML`:
+        - 모든 페이지 첫 로드 시 무조건 `m2-initial-loading` class 추가 (visibility 가드용)
+        - cross-page 시그널 진입 시 추가로 `m2-cross-loading` class 추가 (기존 동작 + fade-in 트리거)
+    - `M2_CROSS_GUARD_CSS`:
+        - selector에 `m2-initial-loading` 추가: `html.m2-initial-loading .reveal, html.m2-initial-loading .agenda-frame { visibility: hidden; }`
+    - `M2_RELEASE_FN_JS`:
+        - 클래스 제거 시 `m2-initial-loading`도 함께 제거 (단순 refresh 케이스)
+        - `wasCrossLoading` 가드(Issue122)는 그대로 유지 → fade-in은 cross-page만
+    - **Issue123/124의 `Reveal.initialize` transition gating 원복** (불필요해진 데드 코드):
+        - `transition: 'none'` 하드코딩 → `'${_cfg.animation.defaultTransition}'` 복원
+        - `backgroundTransition: 'none'` 하드코딩 → `'${_cfg.animation.defaultBackgroundTransition}'` 복원
+        - `Reveal.on('ready', ...)` 복원 콜백 제거 (transition gating 자체 불필요)
     - 검증:
-        - 테스트 통과
-        - animationTest 슬라이드 4 빌드 결과에 `<li class="...fragment...">` 출현
-        - 다른 프로젝트(`m2SlideStyle1_single` 등) 회귀 없음 (기존 list/paragraph 변환 동일)
+        - 4개 대표 프로젝트 빌드 회귀 없음
+        - 단순 refresh 시 transition 미발동 (visibility:hidden 동안 hash-jump 완료) — 사용자 시각 검증 필요
+        - cross-page 시그널 진입 시 fade-in + transition 가드 정상 동작 (Issue110/120/122 동작 보존)
+        - 일반 키 이동 시 transition 정상 발동 (`_config.yml animation:` 설정값 그대로)
 
 # 📕 중요
 
@@ -59,6 +57,25 @@
 
 
 # ✅ 완료
+
+## Issue118. Pandoc `{.fragment .fade-up}` 인라인 attribute 파서 — `<li>`/`<p>` class 주입 (등록: 2026-05-05, 해결: 2026-05-05, commit: 9c560ed) ✅
+* 카테고리: Generator / Frontend
+* 목적: Pandoc 표준 inline attribute syntax `{.class .class}`를 list item·paragraph 끝에 작성하면 출력 HTML 요소에 해당 class를 주입. reveal.js `fragment` 단계별 등장 효과를 마크다운 자연스럽게 표현.
+* 해결 (commit `9c560ed`):
+    - **`lib/markdown.js extractInlineClasses(text)`**: 라인 끝 `{.foo .bar}` 패턴 추출 헬퍼 신설. 반환 `{ classes: ['foo','bar'], remaining: text }` 또는 `{ classes: [], remaining: text }`. 보수적 매칭 — 각 토큰 `.`로 시작 필수, backtick 종결 라인 보호(코드 인라인), 빈 `{}`/`{.}` 무시. module.exports에 `extractInlineClasses` 추가.
+    - **`lib/markdown.js convertMarkdownToHTML` 3곳 통합**:
+        - unordered list (line 311~): bulletClass(`bullet-dot`/`bullet-dash`) + `extractInlineClasses(content).classes` → `<li class="bullet-dot fragment fade-up">...</li>`
+        - ordered list (line ~390): `<li class="fragment grow">...</li>`
+        - paragraph (line ~540): `<p class="fragment">...</p>`
+        - 모두 `extractInlineClasses(text).remaining`을 `processInline()`에 전달하여 attribute 라인 텍스트는 출력 HTML에서 제거됨
+    - **TDD 인프라**: `lib/__tests__/markdown.test.js` 신설. node:test + node:assert/strict (외부 dependency 회피). 19 케이스:
+        - extractInlineClasses 12개 (단순/복수 class, 빈 attribute, 코드 인라인 보호, dot prefix 검증, 단독 `{.fragment}` 등)
+        - convertMarkdownToHTML 통합 7개 (unordered/ordered list, paragraph fragment 적용, 일반 텍스트 회귀 없음, 코드 인라인 안의 `{}` 보존)
+    - **`noteForHuman.md` + `.claude/rules/md-m2slide-rules.md`**: Pandoc inline attribute 사용 가이드 + reveal 표준 fragment 클래스 + 보호 규칙 명시.
+* 검증:
+    - **TDD**: `node --test lib/__tests__/markdown.test.js` 19/19 통과.
+    - **animationTest 슬라이드 4**: `* 두 번째 항목 {.fragment}` → `<li class="bullet-dot fragment">두 번째 항목</li>`. `* 세 번째 항목 {.fragment .highlight-red}` → `<li class="bullet-dot fragment highlight-red">세 번째 항목</li>`. 빌드 결과 grep 정상 확인.
+    - **회귀 없음**: m2SlideStyle1_single, m2SlideStyle2_chapter, layoutTest 빌드 후 의도치 않은 fragment class 주입 0건.
 
 ## Issue124. 페이지 refresh·새 탭 진입 시 Reveal hash-jump transition 재생 부작용 (Issue123 일반화) (등록: 2026-05-05, 해결: 2026-05-05, commit: 56897b2) ✅
 * 카테고리: Frontend
