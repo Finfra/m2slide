@@ -3,6 +3,7 @@
 * Issue HWM: 121
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
+    - **v0.6.3 (2026-05-05)** — fix: Issue119 (cover_layout 옵션) + Issue120 (cross-page navigation fade-in CSS animation, A안). cover 슬라이드 layout 자유 지정 + cover↔agenda↔deck 페이지 진입 시 `_cfg.animation.defaultBackgroundTransition !== 'none'`일 때 250ms fade-in 자연 등장.
     - **v0.6.2 (2026-05-05)** — fix: Issue111 (글로벌 animation 옵션 + cross-page CSS gating + cover cfg 통합) + Issue116 근본 fix + Issue117 진행 (슬라이드 단위 디렉티브 파서). _config.yml `animation:` 섹션으로 reveal.js transition·transitionSpeed·backgroundTransition 글로벌 노출 + 슬라이드별 `#transition-*`/`#background-color-*`/`#auto-animate`/`#autoslide-*` 디렉티브.
     - **v0.6.1 (2026-05-05)** — fix: Issue107·108·109·110 4건 완료. cross-page flicker 가드 SSOT 상수화 + 페이지번호 1-based hash 일치 + outer padding transition 가시화 + ^/v 마름모 네비게이션
     - **v0.6.0 (2026-05-05)** — release: 9키 네비게이션 SSOT 정립 + 트리 탐색 의미 도입 (Issue71-106 36건). Backward 트랜지션·anchor 자식 우선·leaf fall-through 등 키 동작 정밀화 + Pandoc columns/rows 호환 + 메타데이터 SSOT 통합
@@ -20,30 +21,6 @@
 # 🌱 이슈후보
 
 # 🔥 진행중
-
-## Issue120. Cross-page navigation fade-in CSS animation (A안) (등록: 2026-05-05)
-* 카테고리: Frontend
-* 목적: Issue111 후속 분석 결과, agenda 페이지는 reveal.js 미사용이라 transition 옵션이 적용 불가능. cross-page navigation(cover↔agenda↔deck) 시 Issue110의 `m2-cross-loading` 가드가 가시성을 잠시 숨겼다가 즉시 복귀하는 패턴인데, 가드 해제 시점에 짧은 fade-in animation을 추가하여 페이지 전환을 시각적으로 부드럽게 만듦. agenda 페이지에 reveal을 도입하지 않고도 동일한 시각 효과를 cover/agenda/deck 모두에 일관 적용.
-* 상세:
-    - 현재(Issue110): `?fwd=1`/`?back=1`/`?last=1` 진입 시 `documentElement.classList.add('m2-cross-loading')` → CSS `visibility: hidden` → Reveal ready 또는 markmap render 후 `m2ReleaseCrossGuard()` 호출 → class 제거 → 즉시 가시화. 깜빡임 방지 목적은 달성하나 갑작스럽게 등장.
-    - 변경: 가드 해제 시점에 `body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out }` 적용. animation 종료(`animationend`) 후 class 제거.
-    - **Gating** (Issue111 후속과 동일 패턴):
-        - `_cfg.animation.defaultBackgroundTransition === 'none'`일 때는 keyframes·selector 출력 생략 → fade 비활성화
-        - 'fade'/'slide'/'convex'/'concave'/'zoom' 등 다른 값일 때만 활성화 (반대 의미: '슬라이드 background 전환을 시각적으로 표현하라'는 사용자 의도)
-    - 적용 대상: deck, cover (chapter mode index.html), agenda — `M2_CROSS_GUARD_CSS`/`M2_RELEASE_FN_JS` 공유 SSOT 변경으로 3개 페이지 모두 자동 적용
-* 구현 명세:
-    - 1단계 — `lib/html-builder.js M2_CROSS_GUARD_CSS`:
-        - `@keyframes m2-page-fade-in { from { opacity: 0 } to { opacity: 1 } }` + `body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important }` 추가
-        - `_cfg.animation.defaultBackgroundTransition === 'none'`일 때 keyframes·selector 모두 출력 생략 (gating)
-    - 2단계 — `lib/html-builder.js M2_RELEASE_FN_JS`:
-        - `documentElement.classList.remove('m2-cross-loading')` 직후 `document.body.classList.remove('m2-cross-loading')` 다음 라인에 `document.body.classList.add('m2-cross-loaded')` 추가
-        - `body.addEventListener('animationend', function(){ document.body.classList.remove('m2-cross-loaded') }, { once: true })` 추가
-    - 3단계 — 검증:
-        - 4개 대표 프로젝트 빌드 회귀 없음 (`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`, `animationTest`)
-        - `default_background_transition: none`(_config.org.yml 현 설정) 시 selector·keyframes HTML에 미출력 확인
-        - `default_background_transition: fade` 등 변경 시 keyframes + body.m2-cross-loaded selector HTML 출력 확인
-        - 사용자 시각 검증: cover→agenda→deck 진입 시 부드러운 fade-in 확인
-* B안(Agenda reveal.js 도입)은 별도 후속 이슈로 분리. agenda는 1슬라이드라 transition 본 효과는 0이고, 시각적으로는 본 A안의 cross-page fade-in으로 충분.
 
 ## Issue117. 슬라이드 단위 애니메이션 디렉티브 — `#transition-*`/`#background-*`/`#auto-animate`/`#autoslide-*` (등록: 2026-05-05)
 * 카테고리: Generator / Frontend
@@ -115,6 +92,19 @@
 
 
 # ✅ 완료
+
+## Issue120. Cross-page navigation fade-in CSS animation (A안) (등록: 2026-05-05, 해결: 2026-05-05, commit: 90dd3c7) ✅
+* 카테고리: Frontend
+* 목적: Issue111 후속 분석 결과, agenda 페이지는 reveal.js 미사용이라 transition 옵션이 적용 불가. cross-page navigation(cover↔agenda↔deck)에서 Issue110 가드 해제 시점에 짧은 fade-in CSS animation을 추가하여 페이지 전환을 시각적으로 부드럽게 만듦. agenda에 reveal을 도입하지 않고도 동일한 시각 효과를 cover/agenda/deck 모두에 일관 적용 (B안 reveal 도입은 회귀 위험으로 보류).
+* 해결 (commit `90dd3c7` — Issue119와 동봉 commit):
+    - **`lib/html-builder.js _crossPageFadeInCss(cfg)`** 헬퍼 함수 신설: `cfg.animation.defaultBackgroundTransition === 'none'`이면 빈 문자열 반환 (gating). 그 외 값(fade/slide/convex/concave/zoom)일 때 `@keyframes m2-page-fade-in { from { opacity: 0 } to { opacity: 1 } } body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important }` 출력.
+    - **`M2_CROSS_GUARD_CSS` 사용 위치 3곳에 inline 추가**: deck `${M2_CROSS_GUARD_CSS}${_crossPageFadeInCss(_cfg)}` (line 736), cover (line 1868), agenda (line 2096) — 3개 페이지 모두 일관 적용.
+    - **`M2_RELEASE_FN_JS` 확장**: 가드 해제(`m2-cross-loading` class 제거) 직후 `document.body.classList.add('m2-cross-loaded')` 호출 + `animationend` 리스너로 자가 제거. CSS selector가 없으면(none gating 시) class 추가만 되고 animation 효과는 0 → 안전.
+* 검증:
+    - 4개 대표 프로젝트(`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`, `animationTest`) 빌드 성공.
+    - **fade 활성 시** (default_background_transition: fade): 모든 deck/cover/agenda HTML에 `@keyframes m2-page-fade-in` + `body.m2-cross-loaded` selector + JS class add + animationend listener 출력 (line 1387-1388 + 2780-2783).
+    - **none gating 시** (default_background_transition: none): CSS keyframes·selector 미출력. JS는 그대로 남으나 selector 매칭 없어 효과 0 — 안전.
+* B안(Agenda reveal.js 도입)은 별도 후속 이슈로 분리. agenda는 1슬라이드라 transition 본 효과는 0이고, 시각적으로는 본 A안의 cross-page fade-in으로 충분 — 사용자 결정.
 
 ## Issue119. Cover 슬라이드 layout 지정 옵션 — `cover_layout: <name>` (등록: 2026-05-05, 해결: 2026-05-05, commit: 90dd3c7) ✅
 * 카테고리: Generator / Theme

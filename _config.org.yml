@@ -36,7 +36,7 @@ nav_indicator: both           # both (default) = 마름모(↑/↓) + ←/→ + 
 #       none / fade / slide / convex / concave / zoom
 #   - default_transition_speed: default / fast / slow
 animation:
-  default_transition: zoom
+  default_transition: fade
   default_transition_speed: default
   default_background_transition: fade
 
