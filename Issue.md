@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 123
+* Issue HWM: 124
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.6.4 (2026-05-05)** — fix: Issue117 (슬라이드 단위 디렉티브 마무리: H2 다음 디렉티브 매칭 + 6종 syntax 완성) + Issue123 (cross-page 진입 시 deck 첫 hash jump의 슬라이드 transition 재생 부작용 fix — `_isCrossPageEntry` 가드 + Reveal.on('ready') 복원). Issue117 6종 디렉티브 (`#transition-*`, `#background-color-*`, `#background-transition-*`, `#auto-animate`, `#autoslide-*`, `#layout-*`) 모두 reveal.js `data-*` 속성 변환 동작.
@@ -21,7 +21,6 @@
 # 🌱 이슈후보
 
 # 🔥 진행중
-
 
 ## Issue118. Pandoc `{.fragment .fade-up}` 인라인 attribute 파서 — `<li>`/`<p>` class 주입 (등록: 2026-05-05)
 * 카테고리: Generator / Frontend
@@ -60,6 +59,19 @@
 
 
 # ✅ 완료
+
+## Issue124. 페이지 refresh·새 탭 진입 시 Reveal hash-jump transition 재생 부작용 (Issue123 일반화) (등록: 2026-05-05, 해결: 2026-05-05, commit: 56897b2) ✅
+* 카테고리: Frontend
+* 목적: Issue123에서 cross-page 시그널 진입에만 transition 'none' gating을 적용했으나 단순 페이지 refresh·새 탭 진입에도 동일한 hash-jump transition 재생 부작용 잔존. 사용자 보고: "refresh 시에만 slide animation이 거슬리게 발동". 모든 페이지 첫 로드 일반화.
+* Walkthrough:
+    - 본질: Reveal.js 표준 동작 — `Reveal.initialize`가 hash(`#/N`) 파싱 후 #/0→#/N 이동 시 설정된 transition 재생. 시그널 유무 무관.
+    - Issue123 fix 한계: `_isCrossPageEntry`가 시그널 진입에만 true → 단순 refresh는 false → transition 정상 적용되어 hash-jump 발동.
+    - 해결 (`lib/html-builder.js generateHTML Reveal.initialize`):
+        - `_isCrossPageEntry` 변수 제거 (데드 코드 회피)
+        - `transition: 'none'`, `backgroundTransition: 'none'` 하드코딩 — 모든 페이지 첫 로드 일반화
+        - `Reveal.on('ready', ...)` 복원 콜백을 무조건 실행 (cross-page 조건 제거) → `_config.yml animation:` 설정값으로 복원
+        - hash-jump는 항상 즉시 위치, 사용자 키 입력은 복원된 transition 적용
+    - 검증: 4개 대표 프로젝트 빌드 회귀 없음. m2SlideStyle1_single 산출물에 `transition: 'none'` 하드코딩 + ready 복원 코드(`Reveal.configure({ transition: 'convex', backgroundTransition: 'zoom' })`) 정상 출력 — `_config.yml` 설정값(convex/zoom) 반영.
 
 ## Issue117. 슬라이드 단위 애니메이션 디렉티브 — `#transition-*`/`#background-*`/`#auto-animate`/`#autoslide-*` (등록: 2026-05-05, 해결: 2026-05-05, commit: 7d3130c, 6f34f65) ✅
 * 카테고리: Generator / Frontend
