@@ -3,7 +3,7 @@
 * Issue HWM: 122
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
-    - **v0.6.3 (2026-05-05)** — fix: Issue119 (cover_layout 옵션) + Issue120 (cross-page navigation fade-in CSS animation, A안). cover 슬라이드 layout 자유 지정 + cover↔agenda↔deck 페이지 진입 시 `_cfg.animation.defaultBackgroundTransition !== 'none'`일 때 250ms fade-in 자연 등장.
+    - **v0.6.3 (2026-05-05)** — fix: Issue119 (cover_layout 옵션) + Issue120 (cross-page navigation fade-in CSS animation, A안) + Issue122 (Issue120 hot-fix: wasCrossLoading 가드로 단순 리프레쉬 시 fade-in 미발동). cover 슬라이드 layout 자유 지정 + cover↔agenda↔deck cross-page 진입 시에만 `_cfg.animation.defaultBackgroundTransition !== 'none'`일 때 250ms fade-in 자연 등장 (페이지 리프레쉬·새 탭은 미발동).
     - **v0.6.2 (2026-05-05)** — fix: Issue111 (글로벌 animation 옵션 + cross-page CSS gating + cover cfg 통합) + Issue116 근본 fix + Issue117 진행 (슬라이드 단위 디렉티브 파서). _config.yml `animation:` 섹션으로 reveal.js transition·transitionSpeed·backgroundTransition 글로벌 노출 + 슬라이드별 `#transition-*`/`#background-color-*`/`#auto-animate`/`#autoslide-*` 디렉티브.
     - **v0.6.1 (2026-05-05)** — fix: Issue107·108·109·110 4건 완료. cross-page flicker 가드 SSOT 상수화 + 페이지번호 1-based hash 일치 + outer padding transition 가시화 + ^/v 마름모 네비게이션
     - **v0.6.0 (2026-05-05)** — release: 9키 네비게이션 SSOT 정립 + 트리 탐색 의미 도입 (Issue71-106 36건). Backward 트랜지션·anchor 자식 우선·leaf fall-through 등 키 동작 정밀화 + Pandoc columns/rows 호환 + 메타데이터 SSOT 통합
