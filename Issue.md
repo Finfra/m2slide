@@ -53,23 +53,25 @@
     - **Override 동작**: `Projects/animationTest/_config.yml`에 `animation: default_transition: zoom / default_transition_speed: fast / default_background_transition: convex` 적용 → 빌드 결과 HTML이 그대로 주입됨 확인.
     - **Invalid 값 fallback**: `default_transition: invalidValue` 등 잘못된 값 입력 시 `⚠️ Invalid animation.default_transition: 'invalidvalue' — allowed: none | fade | slide | convex | concave | zoom` 경고 + `cfg.animation.defaultTransition = 'slide'` (기본값) 유지 확인.
 
-## Issue116. 개요2이상 페이지에서 첫번째 바 사라지는 버그 (등록: 2026-05-05, 해결: 2026-05-05, commit: ebc6b2b) ✅
-* 카테고리: Frontend / Theme
+## Issue116. 개요2이상 페이지에서 첫번째 바 사라지는 버그 (등록: 2026-05-05, 해결: 2026-05-05, commit: ebc6b2b, 419235c) ✅
+* 카테고리: Frontend / Theme / Generator
 * 목적: 단일 모드 슬라이드 중 H3 image-only/list-only 슬라이드(예: `m2SlideStyle1_single` `#/16` "이미지 Only")에서 상단 노랑 가로선이 누락되어 다른 페이지와 시각 일관성이 깨지던 문제.
-* 원인:
-    - Issue90 이후 `theme/default/slide.css` §2가 layout-_contents의 `section::before`를 일괄 `display: none`으로 숨기고 `.title::before`(`top: -12px`)에 가로선을 부착하는 구조로 전환됨
-    - `.title`이 `.contents-body` 안쪽에 위치하는 빌드 결과(image-only `### Only` 슬라이드: `<section><div class="contents-body"><h3 class="title">…`)에서는 `.contents-body { overflow-y: auto }`(`base.css` §9)가 `.title::before`(상단 박스 외부)를 clipping → 가로선이 화면에 그려지지 않음
-    - `.title`이 section 직속 자식인 슬라이드(`<section><h2 class="title">…`)는 clipping 대상 ancestor 부재로 정상 표시 → "다른 페이지처럼" 동작
-* 해결:
-    - `theme/default/slide.css:187` `section.layout-_contents::before { display:none !important }` 셀렉터를 `section.layout-_contents:has(> .title)::before`로 좁힘
-    - 효과: `.title` 직속 자식 슬라이드만 section::before 숨기고 `.title::before`로 가로선 그림(기존 동작 유지). `.title`이 `.contents-body` 안쪽인 슬라이드는 §2 공통 `section::before`(left:56px, right:56px, top:12px)가 그대로 살아 상단 가로선 정상 표시
-    - `.title::before` 자체는 미변경(image-only 슬라이드에서는 매칭되지 않으므로 clipping 문제도 자동 회피)
+* 1차 시도 (`ebc6b2b`, 불완전):
+    - `theme/default/slide.css` §2 셀렉터를 `:has(> .title)`로 좁혀 `.title`이 `.contents-body` 안쪽일 때만 section::before가 살아 상단 바를 그리도록 우회.
+    - 한계: 같은 `layout-_contents`인데 H 레벨에 따라 DOM 구조가 갈리는 **구조적 비대칭**(generator 레이어 문제)을 그대로 두고 CSS에서만 fallback 분기 → 사용자 지적 "큰 문제"의 원인.
+* 근본 원인:
+    - `lib/html-builder.js:336` Issue90 fix 정규식이 `<h2 class="title">`만 매칭하여 contents-body 밖으로 끌어올리고 H3/H4/H5/H6는 contents-body 안쪽에 남겨둠.
+    - 결과: `## H2` 슬라이드는 `<section><h2 class="title">+<contents-body>`, `### H3` 슬라이드는 `<section><contents-body><h3 class="title">…` — 동일 layout이지만 DOM이 다름.
+    - 추가로 `.contents-body { overflow-y: auto }`(`base.css` §9)가 `.title::before(top:-12px)`를 clipping하여 H3 슬라이드 상단 가로선이 화면에 안 그려짐.
+* 근본 해결 (`419235c`):
+    - **Generator (`lib/html-builder.js:336`)**: 정규식을 `<h2`→`<(h[2-6])`로 확장 + closing tag backref(`\3`)로 안전 매칭. H2~H6 모든 `.title`을 `section` 직속 자식으로 일관 끌어올림 → DOM 구조 비대칭 제거.
+    - **Theme (`theme/default/slide.css` §2)**: 1차 시도의 `:has(> .title)` 우회 제거하고 원래의 단순 `section.layout-_contents::before { display: none }`로 복원. Generator가 SSOT, CSS는 Issue90 본래 의도(`> .title::before`로 가로선)대로 단순화.
+    - 효과: 모든 `layout-_contents` 슬라이드가 동일 DOM 구조 → `> .title::before` 일관 매칭 → clipping 문제 자동 차단 (구조적 차원에서 원천 해결).
 * 검증:
-    - **재현 슬라이드**: `m2SlideStyle1_single#/16` ("이미지 Only", H3 in contents-body) — 상단 가로선 복원 확인 (Chrome 1920×1080 헤드리스 + 200px 크롭 시각 검증)
-    - **회귀 없음**: 같은 프로젝트 `#/14`(개요, H2 직속 자식) / `#/22`(2분할 레이아웃, H2 직속) 상단 가로선 그대로 표시
-    - **챕터 모드**: `m2SlideStyle2_chapter/04-images-media.html` slide 3(`이미지와 리스트`, H2 직속) `.title::before` 정상 + section::before 숨김 유지
-    - **layoutTest**: 영향 없음 확인
-    - 3개 대표 프로젝트(`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`) `m2slide.sh` 빌드 성공 + Chrome 사용자 시각 확인용 창 오픈
+    - **DOM 일관성**: 5개 대표 슬라이드(`#/14` H2 개요 / `#/16` H3 이미지 Only / `#/17` H3 이미지+텍스트 / `#/19` H3 리스트 Only / `#/22` H2 2분할) 모두 `SECTION.layout-_contents`가 `.title`의 직속 부모로 확인.
+    - **잔존 패턴 0건**: `grep '<div class="contents-body"><h[1-6]'` 결과 `m2SlideStyle1_single` / `m2SlideStyle2_chapter` 빌드 결과물에서 0건.
+    - **시각 검증**: Chrome 1920×1080 헤드리스 + 250px 크롭 → `#/16` 상단 가로선 복원 + 슬라이드 14 / 17 / 19 / 22 시각 회귀 없음.
+    - **3개 대표 프로젝트** (`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`) `m2slide.sh` 빌드 성공.
 
 ## Issue115. 우측 하단 네비게이션 표시 모드 옵션 — 마름모 ↔ 페이지번호 보기 토글 (등록: 2026-05-05, 해결: 2026-05-05, commit: 35d73a6, 0353534, e144aa2) ✅
 * 카테고리: Frontend
