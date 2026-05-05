@@ -22,39 +22,6 @@
 
 # 🔥 진행중
 
-## Issue112. 챕터모드 페이지 번호 전체 기준 + breadcrumb 챕터 번호 제공 (등록: 2026-05-05)
-* 카테고리: Frontend
-* 목적: 챕터 모드(다중 md + AGENDA.md)에서 페이지 번호가 각 챕터 HTML마다 `1/N`으로 reset됨. 발표·교재 사용 시 사용자가 전체 진행률을 파악하기 어려움. 페이지 번호를 **전역 누적**으로 표시하고, 챕터 번호 breadcrumb을 페이지 번호 옆에 표시하여 위치 인지를 돕는다. 단일 모드는 영향 없음(이미 전역 1/N).
-* 상세:
-    - 현행: `lib/html-builder.js:742` `slideNumber: 'c/t'` (Reveal.js 기본 — 챕터 HTML별 c/t)
-    - 변경 후 표시(예시): `1.2 > 5/123` — 챕터번호.섹션 > 전역페이지/총합
-        - `1.2`: AGENDA.md 기반 챕터 번호 (H2/H3 순서 기반, 1.2 = 첫 메인의 2번째 하위)
-        - `5`: 전역 페이지 번호 (Agenda 페이지부터 누적 시작, cover 제외)
-        - `123`: 전체 슬라이드 총합 (Agenda + 모든 챕터 슬라이드 합)
-    - 기준점:
-        - cover 슬라이드: 전역 카운트에서 **제외**
-        - Agenda(index.html) 슬라이드: 전역 카운트 **시작점**(1번)
-        - 각 챕터 HTML의 슬라이드: Agenda 다음부터 등장 순서로 누적
-    - 단일 모드: 변경 없음(현행 `c/t` 유지). breadcrumb 미표시.
-* 구현 명세:
-    - 1단계 — `lib/agenda-parser.js`(또는 동일 역할 모듈)에서 챕터 트리 → `chapter_meta.json`(파일별 `{chapterNumber, slideOffset, totalSlides}` 매핑) 산출
-        - `slideOffset`: 각 챕터 HTML의 첫 슬라이드가 전역 몇 번째인지
-        - `totalSlides`: 전체 합계 (모든 빌드 산출물 공유)
-        - 빌드 1차 패스: 각 md 슬라이드 수 카운트 → offset/total 계산
-        - 빌드 2차 패스: 각 HTML에 메타 주입
-    - 2단계 — `lib/html-builder.js` Reveal `slideNumber` 콜백 사용:
-        - `slideNumber: function(slide) { return chapterNum + ' > ' + (slideOffset + Reveal.getIndices(slide).h + 1) + '/' + totalSlides; }` (1-based 유지)
-        - chapterNum/slideOffset/totalSlides는 빌드 시 각 HTML에 inline 주입
-    - 3단계 — `_config.yml` 신규 옵션:
-        - `page_number_mode: 'global' | 'local'` (default: chapter 모드는 `global`, single은 `local`)
-        - `breadcrumb: true | false` (default: chapter 모드에서 `true`)
-    - 4단계 — Agenda(index.html) 페이지 번호 표시: `Agenda > 1/123`(또는 chapter `0`)
-    - 5단계 — 검증:
-        - `m2SlideStyle2_chapter`: 챕터 1의 5번째 슬라이드 → `1 > 5/N` 표시 확인 (N은 전체 합)
-        - `m2SlideStyle1_single`: 변경 없이 `c/t` 유지 확인
-        - cover 슬라이드: 페이지 번호 표시 자체가 숨겨져 있으므로 영향 없음 (Issue107 마름모/페이지번호 가시성 SSOT 그대로)
-        - URL hash 1-based 일관성(Issue108) 유지 확인
-
 ## Issue111. 슬라이드 전환·요소 애니메이션 옵션 정리 (등록: 2026-05-05)
 * 카테고리: Frontend
 * 목적: 현행 슬라이드 전환(좌우 slide)·기본 트랜지션을 재검토하여 reveal.js가 제공하는 애니메이션 옵션(transition, fragment, auto-animate, background)을 m2slide에서 어떤 형태로 노출·제어할지 결정. 불필요한 효과는 제거, 유용한 효과는 마크다운 frontmatter·메타로 일관 노출.
@@ -86,6 +53,25 @@
 
 
 # ✅ 완료
+
+## Issue112. 챕터모드 페이지 번호 전체 기준 + breadcrumb 챕터 번호 제공 (등록: 2026-05-05, 해결: 2026-05-05, commit: a5c7f03, 7a805ac) ✅
+* 카테고리: Frontend
+* 목적: 챕터 모드(다중 md + AGENDA.md)에서 페이지 번호가 각 챕터 HTML마다 `1/N`으로 reset되어 사용자가 전체 진행률을 파악하기 어려운 문제. 페이지 번호를 전역 누적으로 표시하고 챕터 번호 breadcrumb prefix를 함께 노출. 단일 모드는 변경 없음.
+* 해결:
+    - **AGENDA.md → 챕터 번호 매핑** (`lib/agenda.js` `getChapterNumberMap`): 메인 엔트리는 `'1', '2', ...`, 서브 엔트리는 `'1.1', '1.2', ...` 형식의 `{[htmlFile]: chapterNum}` 매핑 산출.
+    - **2-pass 빌드** (`lib/generate-slides.js`):
+        - 1차 — 모든 챕터 HTML 빌드 (head에 `<script>window.M2_CHAPTER_META=null;/*M2_CHAPTER_META_PLACEHOLDER*/</script>` placeholder 인라인)
+        - 2차 — 빌드된 각 HTML의 top-level `<section>` 개수 합산하여 `{mode, breadcrumb, chapterNum, slideOffset, totalSlides}` JSON을 placeholder에 치환 주입
+    - **Reveal `slideNumber` callback** (`lib/html-builder.js`): chapterMeta 있을 때 array 반환 형식 `[chapterNum + ' › ' + globalNum, '/', totalSlides]` 사용. reveal.js 5.x callback은 string return 무시·array `[a, sep, b]` 표준 (문자열 반환 시 fallback으로 chapter 인덱스만 표시되는 회귀 발견).
+    - **breadcrumb 모드 CSS** (`lib/html-builder.js` 인라인): `body.m2-breadcrumb-mode .reveal .slide-number { width: auto; min-width: 60px; padding: 0 6px; white-space: nowrap }` — 기존 60px 고정 width를 풀어 breadcrumb 텍스트 잘림 방지.
+    - **body 클래스 토글** (`lib/html-builder.js`): chapterMeta가 set되고 breadcrumb=true·chapterNum non-empty일 때 `document.body.classList.add('m2-breadcrumb-mode')`로 폭 확장 룰 활성화.
+    - **설정** (`_config.yml`, `lib/config.js`):
+        - `page_number_mode: 'global' | 'local'` (default: `global`)
+        - `breadcrumb: true | false` (default: `true`)
+        - 단일 모드는 placeholder가 null로 유지되어 Reveal 기본 `c/t` fallback (회귀 없음)
+* 검증: `m2SlideStyle2_chapter` 빌드 결과 `3 › 9 / 19` 형식 정상 표시 확인 (브라우저). `m2SlideStyle1_single`은 placeholder null 유지 + `c/t` 폴백 회귀 없음. `layoutTest` 빌드 정상.
+
+> 코드는 a5c7f03(Issue113과 함께 lib/* 변경분 동봉) + 7a805ac(`_config.org.yml` 옵션 노출)에 분산.
 
 ## Issue113. Agenda 페이지 디자인 개선 — 고양이 배경·제목 고정·선 회피·frame 비례 폰트 (등록: 2026-05-05, 해결: 2026-05-05, commit: a5c7f03) ✅
 * 카테고리: Theme
