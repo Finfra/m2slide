@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 125
+* Issue HWM: 126
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.6.5 (2026-05-05)** — fix: Issue118 (Pandoc `{.fragment .fade-up}` 인라인 attribute 파서 — `<li>`/`<p>` class 주입). reveal.js fragment 단계별 등장 효과를 마크다운에서 자연스럽게 표현. TDD 19 케이스 통과 (node:test 표준, 외부 dependency 0). 사용자 요구 시 Issue124(refresh hash-jump transition 차단)도 동일 마일스톤에 합산 가능.
@@ -20,7 +20,8 @@
 
 
 # 🌱 이슈후보
-
+1. 백그라운드 기능 생기면 default_background_transition테스트. 
+2. 
 # 🔥 진행중
 
 # 📕 중요
@@ -31,6 +32,21 @@
 
 
 # ✅ 완료
+
+## Issue126. `_config.yml background:` 글로벌 배경 옵션 — none/#hex/image/video 4종 자동 판정 (등록: 2026-05-05, 해결: 2026-05-05, commit: a75adbc) ✅
+* 카테고리: Generator / Frontend
+* design: [`_doc_design/background.md`](_doc_design/background.md) (5개 레이어 SSOT, #3 자리)
+* 목적: 프로젝트 단위 배경을 `_config.yml`에 1줄로 지정. 값 패턴 자동 판정으로 색상·이미지·비디오 통합 처리.
+* Walkthrough:
+    - **`lib/config.js`**: `defaultConfig`에 `background: 'none'` / `backgroundType` / `backgroundFilename` 추가. `applyConfig`에 `background:` 파서 신설 — YAML 따옴표 처리(`"#FFFFFF"`) + hex의 `#` 보존(주석 분리 회피) + 4종 정규식 판정. 그 외 값은 warn 후 무시.
+    - **`lib/html-builder.js`**:
+        - `_globalBackgroundCss(cfg)` 헬퍼: type별 inline CSS — color는 `.reveal-viewport { background-color }`, image는 `.reveal-viewport { background: url(bg/{filename}) center/cover }`, video는 `video.m2-bg-video { position:fixed; object-fit:cover; z-index:-1 }`
+        - `_globalBackgroundVideoTag(cfg)`: video 타입일 때 `<video class="m2-bg-video" autoplay muted loop playsinline src="bg/{filename}">` 문자열
+        - generateHTML(deck) / generateCoverHTML(cover) / generateAgendaHTML(agenda) 3개 페이지 빌더에 inline CSS + body 직후 video 태그 일관 삽입
+    - **`lib/generate-slides.js`**: image/video 타입 시 `cfg.background`를 `projectDir` 기준으로 resolve → `slide/bg/{filename}`로 복사. 파일 미존재 시 warn + `none`으로 fallback.
+* 검증:
+    - 4개 대표 프로젝트(`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`, `animationTest`) 빌드 회귀 없음. 미설정 시 inline CSS·video 태그 0건 출력(gating).
+    - 4종 신규 테스트: m2SlideStyle1_single에 임시로 `background: "#1a1a2e"` / `background: img/scenery.png` / `background: img/test-bg.mp4` 적용 후 산출물 HTML 정상 + slide/bg/ 자산 복사 확인. agenda·cover에도 일관 적용. 원복 후 회귀 없음.
 
 ## Issue125. Reveal.js hash-jump CSS transition 시각 차단 — m2-initial-loading visibility 가드 일반화 (Issue123/124 원복·재해결) (등록: 2026-05-05, 해결: 2026-05-05, commit: 1c62510) ✅
 * 카테고리: Frontend
