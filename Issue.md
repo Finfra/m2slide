@@ -23,32 +23,6 @@
 
 # 🔥 진행중
 
-## Issue125. Reveal.js hash-jump CSS transition 시각 차단 — m2-initial-loading visibility 가드 일반화 (Issue123/124 보강) (등록: 2026-05-05)
-* 카테고리: Frontend
-* 목적: Issue123/124에서 `Reveal.initialize`의 `transition` JS 옵션을 `'none'`으로 시작·복원 패턴 시도했으나 사용자 보고 "여전히 refresh 시 transition 보임". 분석 결과 **reveal.js 5.x의 transition JS 옵션은 슬라이드 변경 시 fade/slide CSS class 추가만 제어하며, `.reveal .slides`에 정의된 transform CSS transition(슬라이드 위치 이동 효과)은 reveal.js 자체 stylesheet에 박혀 있어 JS 옵션으로 막을 수 없음**. → JS 옵션 접근 포기, **visibility:hidden 가드 일반화**로 시각적 차단.
-* 상세:
-    - reveal.js 동작: `Reveal.initialize` 시 `hash: true` + URL hash → 자체적으로 `Reveal.slide(h, v, f)` 호출. 이때 `.reveal .slides` 컨테이너의 `transform: translate(...)` 변경에 CSS transition이 자동 적용 (reveal.css/reveal.scss 정의). transition: 'none' JS 옵션은 이를 영향 못 줌.
-    - 기존 `M2_CROSS_GUARD_HEAD_HTML`은 cross-page 시그널(`?fwd=1`/`?back=1`/`?last=1`) 진입에만 `m2-cross-loading` class 추가. 단순 refresh·새 탭은 가드 없음 → transition 그대로 보임.
-    - Issue120 fade-in CSS animation은 별개. Issue122 fix로 cross-page만 발동 → 단순 refresh의 transition은 reveal.js 자체 hash-jump 효과.
-* 구현 명세:
-    - `lib/html-builder.js M2_CROSS_GUARD_HEAD_HTML`:
-        - 모든 페이지 첫 로드 시 무조건 `m2-initial-loading` class 추가 (visibility 가드용)
-        - cross-page 시그널 진입 시 추가로 `m2-cross-loading` class 추가 (기존 동작 + fade-in 트리거)
-    - `M2_CROSS_GUARD_CSS`:
-        - selector에 `m2-initial-loading` 추가: `html.m2-initial-loading .reveal, html.m2-initial-loading .agenda-frame { visibility: hidden; }`
-    - `M2_RELEASE_FN_JS`:
-        - 클래스 제거 시 `m2-initial-loading`도 함께 제거 (단순 refresh 케이스)
-        - `wasCrossLoading` 가드(Issue122)는 그대로 유지 → fade-in은 cross-page만
-    - **Issue123/124의 `Reveal.initialize` transition gating 원복** (불필요해진 데드 코드):
-        - `transition: 'none'` 하드코딩 → `'${_cfg.animation.defaultTransition}'` 복원
-        - `backgroundTransition: 'none'` 하드코딩 → `'${_cfg.animation.defaultBackgroundTransition}'` 복원
-        - `Reveal.on('ready', ...)` 복원 콜백 제거 (transition gating 자체 불필요)
-    - 검증:
-        - 4개 대표 프로젝트 빌드 회귀 없음
-        - 단순 refresh 시 transition 미발동 (visibility:hidden 동안 hash-jump 완료) — 사용자 시각 검증 필요
-        - cross-page 시그널 진입 시 fade-in + transition 가드 정상 동작 (Issue110/120/122 동작 보존)
-        - 일반 키 이동 시 transition 정상 발동 (`_config.yml animation:` 설정값 그대로)
-
 # 📕 중요
 
 # 📙 일반
@@ -57,6 +31,27 @@
 
 
 # ✅ 완료
+
+## Issue125. Reveal.js hash-jump CSS transition 시각 차단 — m2-initial-loading visibility 가드 일반화 (Issue123/124 원복·재해결) (등록: 2026-05-05, 해결: 2026-05-05, commit: 1c62510) ✅
+* 카테고리: Frontend
+* 목적: Issue123/124의 `Reveal.initialize` transition JS 옵션 gating 시도가 사용자 보고 "여전히 refresh 시 transition 보임"으로 실효 없음 판명. 근본 원인 재진단 후 visibility 가드 일반화로 재해결.
+* 근본 원인 (reveal.js 5.x 라이브러리 특성):
+    - `Reveal.initialize({ transition: 'none' })` JS 옵션은 슬라이드 변경 시 `fade`/`slide` CSS class 추가 여부만 제어
+    - 그러나 `.reveal .slides` 컨테이너에 정의된 `transform: translate(...)` CSS transition(슬라이드 위치 이동 효과)은 **reveal.js 자체 stylesheet에 박혀 있어 JS 옵션으로 막을 수 없음**
+    - hash 진입 시 `Reveal.slide(h, v, f)` 자동 호출 → `.slides`의 transform 변경 → CSS transition 자동 적용 → 사용자가 "slide animation"으로 인식
+* Walkthrough:
+    - **Issue123/124 원복**: `Reveal.initialize`의 `transition`·`backgroundTransition`을 `_config.yml animation:` 설정값으로 복원, ready 복원 콜백 제거 (visibility 가드로 시각 차단하므로 JS gating 불필요)
+    - **`M2_CROSS_GUARD_HEAD_HTML`**: 모든 첫 로드 시 `m2-initial-loading` class 무조건 추가 (visibility 가드용). cross-page 시그널 진입 시 추가로 `m2-cross-loading` 부여 (Issue120/122 fade-in 트리거)
+    - **`M2_CROSS_GUARD_CSS`**: selector에 `m2-initial-loading` 추가 → `html.m2-initial-loading .reveal, html.m2-initial-loading .agenda-frame { visibility: hidden; }`
+    - **`M2_RELEASE_FN_JS`**: 가드 해제 시 `m2-initial-loading`도 함께 제거. `wasCrossLoading` 가드(Issue122)는 그대로 → fade-in은 cross-page만 발동
+    - **deck ready 핸들러**: 일반 진입(시그널 없음, 단순 refresh·새 탭) 분기 추가 → `m2ReleaseCrossGuard()` 호출. 기존엔 cross-page 시그널 분기에만 release 호출하여 일반 refresh 시 가드가 영원히 풀리지 않는 회귀 방지
+    - cover/agenda는 이미 ready 콜백에 `m2ReleaseCrossGuard()` 호출 → m2-initial-loading 자동 해제
+* 검증:
+    - 4개 대표 프로젝트 빌드 회귀 없음
+    - 모든 deck/cover/agenda HTML에 `m2-initial-loading` 분기 + visibility CSS + 가드 해제 코드 정상 출력
+    - 단순 refresh 시 visibility:hidden 동안 reveal.js의 hash-jump transition이 진행되어도 사용자에게 안 보임
+    - cross-page 시그널 진입 시 Issue120 fade-in + Issue110 cross-page 가드 동작 보존
+    - 일반 키 이동은 `_config.yml animation:` 설정값으로 정상 transition
 
 ## Issue118. Pandoc `{.fragment .fade-up}` 인라인 attribute 파서 — `<li>`/`<p>` class 주입 (등록: 2026-05-05, 해결: 2026-05-05, commit: 9c560ed) ✅
 * 카테고리: Generator / Frontend
