@@ -757,7 +757,7 @@
   opacity: 0.5;
   pointer-events: none;
   z-index: 0;
-  transform: translateY(-15.5%);
+  transform: translateY(-13.5%);
 }
 
 /* Issue113: agenda 제목을 상단 노랑 가로선 아래로 내려 겹침 제거. */

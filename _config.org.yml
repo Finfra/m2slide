@@ -22,10 +22,10 @@ slide_ratio: "16:9"           # 16:9 (default) | 3:2 | fill (비율 무제약). 
 slide_outer_padding: 0        # outer padding (슬라이드↔뷰포트 대칭). CSS length (예: 0, 20px, 2vh) — body padding에 적용 (Issue85: 4면 균등)
 slide_inner_padding: 0        # inner padding (콘텐츠↔슬라이드 경계 대칭). CSS length — section padding에 적용
 
-# Issue112: 챕터 모드 페이지 번호 형식 (단일 모드는 무시)
 page_number_mode: global      # global (default) = 전역 누적 + breadcrumb / local = 챕터별 c/t (Reveal 기본)
 breadcrumb: true              # true (default) = 챕터번호 prefix 표시 (page_number_mode: global일 때만 의미)
                               # 출력 예: '3 › 9 / 19' (chapter 3, 전역 9번째 / 총 19) — breadcrumb=false 시 '9 / 19'
+
 
 # 스타일 설정 (Issue64 1.b 정책)
 # - 기본값은 lib/css/base.css :root에 정의됨. lib/config.js styleConfig가 동일값으로 동기화됨.
