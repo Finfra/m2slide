@@ -32,7 +32,7 @@
 
 # ✅ 완료
 
-## Issue111. 슬라이드 전환·요소 애니메이션 옵션 정리 (등록: 2026-05-05, 해결: 2026-05-05, commit: 45e897c) ✅
+## Issue111. 슬라이드 전환·요소 애니메이션 옵션 정리 (등록: 2026-05-05, 해결: 2026-05-05, commit: 45e897c, 1d72147) ✅
 * 카테고리: Frontend
 * 목적: 현행 슬라이드 전환(좌우 slide)·기본 트랜지션을 재검토하여 reveal.js가 제공하는 애니메이션 옵션을 m2slide에서 어떤 형태로 노출·제어할지 결정.
 * 분할 (2026-05-05): SSOT 명세를 그대로 구현하면 slide-parser·markdown.js inline parser 변경이 필요해 회귀 위험 큼. 본 이슈는 **글로벌 transition 옵션 노출 + SSOT 문서**까지로 스코프 축소:
@@ -52,6 +52,11 @@
     - **Default 동작 보존**: `m2SlideStyle1_single`(1) + `m2SlideStyle2_chapter`(deck 8) + `layoutTest`(1) 빌드 후 모든 deck HTML이 `Reveal.initialize({ transition: 'slide', transitionSpeed: 'default', backgroundTransition: 'fade', ... })` 동일 주입 확인 (이전 하드코딩과 같은 값 → 시각·동작 회귀 없음). cover/index.html은 의도대로 `transition: 'none'` 유지.
     - **Override 동작**: `Projects/animationTest/_config.yml`에 `animation: default_transition: zoom / default_transition_speed: fast / default_background_transition: convex` 적용 → 빌드 결과 HTML이 그대로 주입됨 확인.
     - **Invalid 값 fallback**: `default_transition: invalidValue` 등 잘못된 값 입력 시 `⚠️ Invalid animation.default_transition: 'invalidvalue' — allowed: none | fade | slide | convex | concave | zoom` 경고 + `cfg.animation.defaultTransition = 'slide'` (기본값) 유지 확인.
+* 후속 fix (commit `1d72147`):
+    - **회귀 발견**: 사용자가 `default_transition: 'none'`을 설정해도 `?fwd=1`/`?back=1` cross-page 진입 시 Issue104의 `body.m2-fwd-enter`/`body.m2-back-enter` CSS `@keyframes m2-slide-from-left/right` 400ms 애니메이션이 그대로 발생. reveal.js transition 옵션과 별개의 강제 CSS 애니메이션이라 'none' 의도에 위배.
+    - **`lib/html-builder.js`**: `generateHTML` `<style>` 블록의 cross-page selector(`body.m2-back-enter .reveal .slides > section.present { animation: ... }` / `body.m2-fwd-enter ...`)를 `_cfg.animation.defaultTransition === 'none'`일 때 출력 생략. body classList.add는 인라인 JS에 그대로 두어 다른 동작(가드 해제 등)에 영향 없음 — 효과만 차단.
+    - **`_config.org.yml`**: m2slide 글로벌 default를 `slide`/`fade` → `none`/`none`으로 전환. m2slide 정체성을 "기본 트랜지션 없음 + 사용자가 명시 선택할 때만 활성화"로 정립. 프로젝트별 `_config.yml`에서 `animation: default_transition: slide` 등으로 override 가능.
+    - **회귀 검증**: m2SlideStyle1_single / m2SlideStyle2_chapter (deck/index/agenda) / layoutTest 4개 모두 cross-page selector 0건. animationTest(zoom override)는 selector 2건 정상 출력.
 
 ## Issue116. 개요2이상 페이지에서 첫번째 바 사라지는 버그 (등록: 2026-05-05, 해결: 2026-05-05, commit: ebc6b2b, 419235c) ✅
 * 카테고리: Frontend / Theme / Generator
