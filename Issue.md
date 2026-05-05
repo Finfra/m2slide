@@ -3,6 +3,7 @@
 * Issue HWM: 118
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
+    - **v0.6.2 (2026-05-05)** — fix: Issue111 (글로벌 animation 옵션 + cross-page CSS gating + cover cfg 통합) + Issue116 근본 fix + Issue117 진행 (슬라이드 단위 디렉티브 파서). _config.yml `animation:` 섹션으로 reveal.js transition·transitionSpeed·backgroundTransition 글로벌 노출 + 슬라이드별 `#transition-*`/`#background-color-*`/`#auto-animate`/`#autoslide-*` 디렉티브.
     - **v0.6.1 (2026-05-05)** — fix: Issue107·108·109·110 4건 완료. cross-page flicker 가드 SSOT 상수화 + 페이지번호 1-based hash 일치 + outer padding transition 가시화 + ^/v 마름모 네비게이션
     - **v0.6.0 (2026-05-05)** — release: 9키 네비게이션 SSOT 정립 + 트리 탐색 의미 도입 (Issue71-106 36건). Backward 트랜지션·anchor 자식 우선·leaf fall-through 등 키 동작 정밀화 + Pandoc columns/rows 호환 + 메타데이터 SSOT 통합
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
@@ -18,10 +19,69 @@
 
 # 🌱 이슈후보
 
-1. (Issue117) 슬라이드 단위 애니메이션 디렉티브 — `#transition-*`/`#background-*`/`#auto-animate`/`#autoslide-*` (slide-parser + html-builder section 속성 주입). Issue111에서 분할.
-2. (Issue118) Pandoc `{.fragment .fade-up}` 인라인 attribute 파서 — `<li>`/`<p>` class 주입 (markdown.js inline parser 변경, TDD 필수). Issue111에서 분할.
-
 # 🔥 진행중
+
+## Issue117. 슬라이드 단위 애니메이션 디렉티브 — `#transition-*`/`#background-*`/`#auto-animate`/`#autoslide-*` (등록: 2026-05-05)
+* 카테고리: Generator / Frontend
+* 목적: Issue111에서 글로벌 `animation:` 옵션은 노출했으나 슬라이드별 override 수단 부재. `#layout-*` 메타 디렉티브와 동일 패턴으로 슬라이드 첫 줄에 `#transition-fade`, `#auto-animate`, `#autoslide-2000`, `#background-color-1a1a2e` 등을 작성하면 해당 `<section>`에 reveal.js `data-*` 속성으로 변환 주입.
+* 상세:
+    - 디렉티브 → reveal.js attribute 매핑:
+        - `#transition-{none|fade|slide|convex|concave|zoom}` → `data-transition`
+        - `#transition-{name}-{default|fast|slow}` → `data-transition` + `data-transition-speed` (예: `#transition-fade-fast`)
+        - `#background-color-{hex|name}` → `data-background-color` (예: `#background-color-1a1a2e` → `#1a1a2e` 자동 prepend, `#background-color-tomato` → CSS 컬러명)
+        - `#background-transition-{name}` → `data-background-transition`
+        - `#auto-animate` → `data-auto-animate` (값 없는 attribute)
+        - `#autoslide-{ms}` → `data-autoslide` (예: `#autoslide-2000`)
+    - **스코프 외 (Issue117_1로 분할 후보)**:
+        - `#background-image-*`: 경로에 `/`·`.` 포함되어 단순 정규식 한계. 향후 frontmatter `background_image:` 또는 인용부호 syntax로 별도 검토
+    - 적용 위치: 슬라이드 첫 비공백 라인부터 연속된 `#xxx-yyy` 디렉티브 라인을 모두 읽어 첫 비-디렉티브 라인 직전까지 누적
+* 구현 명세:
+    - 1단계 — `lib/slide-parser.js`:
+        - `extractDirectives(rawSlideText)` 신설 — 멀티 라인 디렉티브 파서. 반환: `{ directives: { layout, transition, transitionSpeed, backgroundColor, backgroundTransition, autoAnimate, autoslide }, text }`
+        - 기존 `extractLayoutMeta()`는 `extractDirectives()`를 호출하여 `{ layout, text }` 반환 형식 유지 (호환성)
+        - `parseMarkdownFile()`에서 추출된 directives를 slide 객체에 부여 (`slide.directives = ...`)
+    - 2단계 — `lib/html-builder.js`:
+        - `_buildLayoutSection`/일반 섹션 빌더에서 `slide.directives`를 `<section>` 태그의 `data-*` 속성으로 변환
+        - **글로벌 default와의 관계**: 슬라이드별 디렉티브가 있으면 reveal.js가 자동으로 글로벌보다 우선시 (reveal.js 표준 동작 — `data-transition` 있는 섹션은 해당 값, 없으면 글로벌 `transition` 옵션)
+    - 3단계 — `Projects/animationTest/animationTest.md`:
+        - 기존 슬라이드(reveal 표준 주석 syntax)에 m2slide 디렉티브 syntax 슬라이드 추가
+        - 빌드 후 grep으로 `data-transition`/`data-auto-animate` 등 정상 주입 확인
+    - 4단계 — `noteForHuman.md`:
+        - 슬라이드 단위 디렉티브 사용 예시 + 화이트리스트 + 글로벌과의 관계 명시
+    - 5단계 — `.claude/rules/md-m2slide-rules.md`:
+        - 디렉티브 syntax 표 추가 (이미 `#layout-*` 항목 있으므로 동일 섹션 확장)
+    - 검증:
+        - 3개 대표 프로젝트 + animationTest 빌드 회귀 없음
+        - animationTest 디렉티브 적용 슬라이드의 `<section>` data-* 속성 grep 검증
+
+## Issue118. Pandoc `{.fragment .fade-up}` 인라인 attribute 파서 — `<li>`/`<p>` class 주입 (등록: 2026-05-05)
+* 카테고리: Generator / Frontend
+* 목적: Pandoc 표준 inline attribute syntax `{.class .class}`를 list item·paragraph 끝에 작성하면 출력 HTML 요소에 해당 class를 주입. reveal.js `fragment` 단계별 등장 효과를 마크다운 자연스럽게 표현.
+* 상세:
+    - 입력: `* 두 번째 항목 {.fragment .fade-up}` → 출력: `<li class="bullet-dot fragment fade-up">두 번째 항목</li>`
+    - 입력: `이 단락은 단계 등장 {.fragment}` → 출력: `<p class="fragment">이 단락은 단계 등장</p>`
+    - **TDD 필수** — markdown.js inline parser 변경은 회귀 위험이 크므로 테스트 케이스 선행 작성:
+        - 단순 fragment: `* a {.fragment}`
+        - 복수 class: `* b {.fragment .fade-up}`
+        - 일반 텍스트의 `{` 보존: `* {a, b}는 집합` (디렉티브 아님)
+        - 코드 블록 내부의 `{}` 보존: `\`{.foo}\`` 인라인 코드
+        - 빈 attribute `{}`: 무시 (warn만)
+        - reveal.js 표준 fragment 클래스: `fragment`, `fragment.fade-up`, `fragment.fade-down`, `fragment.fade-left`, `fragment.fade-right`, `fragment.grow`, `fragment.shrink`, `fragment.highlight-red/green/blue`, `fragment.fade-in-then-out`, `fragment.current-visible`
+* 구현 명세:
+    - 1단계 — 테스트 인프라:
+        - `lib/__tests__/markdown.test.js` 또는 `tests/` 디렉토리 신설
+        - Node 표준 `node:test` 또는 단순 assertion 함수로 시작 (외부 dependency 회피)
+    - 2단계 — `lib/markdown.js` inline parser 확장:
+        - 라인 끝 `{.foo .bar}` 패턴 감지 → 라인 텍스트에서 제거 + classNames 배열 반환
+        - 코드 fence·코드 인라인 내부는 보호 (Issue118 함정)
+        - list item·paragraph 변환 시 추출된 classNames를 element class에 병합
+    - 3단계 — `Projects/animationTest/animationTest.md`:
+        - 슬라이드 4(이미 `{.fragment}` 예시 작성됨) 정상 동작 확인
+    - 4단계 — `noteForHuman.md` + `.claude/rules/md-m2slide-rules.md` 사용자 가이드 추가
+    - 검증:
+        - 테스트 통과
+        - animationTest 슬라이드 4 빌드 결과에 `<li class="...fragment...">` 출현
+        - 다른 프로젝트(`m2SlideStyle1_single` 등) 회귀 없음 (기존 list/paragraph 변환 동일)
 
 # 📕 중요
 
@@ -32,7 +92,7 @@
 
 # ✅ 완료
 
-## Issue111. 슬라이드 전환·요소 애니메이션 옵션 정리 (등록: 2026-05-05, 해결: 2026-05-05, commit: 45e897c, 1d72147) ✅
+## Issue111. 슬라이드 전환·요소 애니메이션 옵션 정리 (등록: 2026-05-05, 해결: 2026-05-05, commit: 45e897c, 1d72147, 7d3130c) ✅
 * 카테고리: Frontend
 * 목적: 현행 슬라이드 전환(좌우 slide)·기본 트랜지션을 재검토하여 reveal.js가 제공하는 애니메이션 옵션을 m2slide에서 어떤 형태로 노출·제어할지 결정.
 * 분할 (2026-05-05): SSOT 명세를 그대로 구현하면 slide-parser·markdown.js inline parser 변경이 필요해 회귀 위험 큼. 본 이슈는 **글로벌 transition 옵션 노출 + SSOT 문서**까지로 스코프 축소:
