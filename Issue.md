@@ -23,32 +23,6 @@
 
 # 🔥 진행중
 
-## Issue111. 슬라이드 전환·요소 애니메이션 옵션 정리 (등록: 2026-05-05)
-* 카테고리: Frontend
-* 목적: 현행 슬라이드 전환(좌우 slide)·기본 트랜지션을 재검토하여 reveal.js가 제공하는 애니메이션 옵션(transition, fragment, auto-animate, background)을 m2slide에서 어떤 형태로 노출·제어할지 결정. 불필요한 효과는 제거, 유용한 효과는 마크다운 frontmatter·메타로 일관 노출.
-* 상세:
-    - 현행: `slide` 트랜지션이 글로벌 적용. fragment·auto-animate는 `<!-- .element / .slide: ... -->` syntax 미검증 (m2slide 자체 파서가 reveal.js markdown 플러그인 syntax를 보존하는지 불명)
-    - 검토 항목:
-        - **Transition**: `none` / `fade` / `slide` / `convex` / `concave` / `zoom` 중 기본값·옵션 노출 방식
-        - **Fragment** (단계별 등장): `fade-in`, `fade-up`, `grow`, `highlight-*`, `strike` 등 — m2slide 마크다운 파서가 HTML 주석 메타를 통과시키는지 테스트
-        - **Auto-Animate**: `data-auto-animate` 슬라이드 간 자동 모핑 — 코드/다이어그램 진화 표현용
-        - **Background transitions**: `data-background-transition` 단독 옵션
-        - **Auto-slide**: `data-autoslide` 자동 재생
-    - 제거 후보: 잔상·flicker 유발 가능성이 있거나(이미 Issue104·110에서 transition gating 추가됨) 발표 시 산만한 효과
-* 구현 명세:
-    - 1단계 — 테스트 프로젝트 `Projects/animationTest/` 신설:
-        - 각 transition·fragment·auto-animate를 한 슬라이드씩 배치
-        - `m2slide.sh animationTest` 빌드 후 실제 동작 검증
-    - 2단계 — 동작 확인된 효과 SSOT 문서화 ([_doc_design/animation.md](_doc_design/animation.md) 신규):
-        - frontmatter 키 (`transition`, `transition_speed`, `auto_animate` 등) 정의
-        - 슬라이드 메타 syntax (`#fragment-fade-up` 같은 m2slide 확장 또는 reveal 표준 주석 사용)
-    - 3단계 — `lib/html-builder.js` Reveal.initialize 옵션 노출 + 마크다운 파서에 메타 변환 추가
-    - 4단계 — [`md-m2slide-rules.md`](.claude/rules/md-m2slide-rules.md) 업데이트, [noteForHuman.md](noteForHuman.md) 사용자 가이드 추가
-    - 검증: animationTest + 기존 3개 대표 프로젝트(`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`) 시각 회귀 없음 확인
-* 분할 (2026-05-05): SSOT 명세를 그대로 구현하면 slide-parser·markdown.js inline parser 변경이 필요해 회귀 위험 큼. 본 이슈는 **글로벌 transition 옵션 노출 + SSOT 문서**까지로 스코프 축소하고 슬라이드 단위 디렉티브와 fragment attribute는 후속 이슈로 분리:
-    - **Issue117** — 슬라이드 단위 애니메이션 디렉티브 (`#transition-*` 등)
-    - **Issue118** — Pandoc `{.fragment}` inline attribute 파서
-
 # 📕 중요
 
 # 📙 일반
@@ -57,6 +31,27 @@
 
 
 # ✅ 완료
+
+## Issue111. 슬라이드 전환·요소 애니메이션 옵션 정리 (등록: 2026-05-05, 해결: 2026-05-05, commit: 45e897c) ✅
+* 카테고리: Frontend
+* 목적: 현행 슬라이드 전환(좌우 slide)·기본 트랜지션을 재검토하여 reveal.js가 제공하는 애니메이션 옵션을 m2slide에서 어떤 형태로 노출·제어할지 결정.
+* 분할 (2026-05-05): SSOT 명세를 그대로 구현하면 slide-parser·markdown.js inline parser 변경이 필요해 회귀 위험 큼. 본 이슈는 **글로벌 transition 옵션 노출 + SSOT 문서**까지로 스코프 축소:
+    - **Issue117** (이슈후보) — 슬라이드 단위 애니메이션 디렉티브 (`#transition-*` 등)
+    - **Issue118** (이슈후보) — Pandoc `{.fragment}` inline attribute 파서
+* 해결:
+    - **Phase 1·2 — 검증·SSOT 문서**: `Projects/animationTest/` 신설하여 reveal.js markdown plugin syntax(`<!-- .slide: ... -->`, `<!-- .element: ... -->`, `{.fragment}`) 통과 여부 빌드+grep 검증 → 모두 텍스트로만 보존되고 section/element attribute로 변환되지 않음 확인. [`_doc_design/animation.md`](_doc_design/animation.md)에 결과·향후 syntax 설계 SSOT 작성.
+    - **Phase 3 — 글로벌 옵션 노출** (commit `45e897c`):
+        - **`lib/config.js`**: `VALID_TRANSITIONS = ['none','fade','slide','convex','concave','zoom']` + `VALID_TRANSITION_SPEEDS = ['default','fast','slow']` 화이트리스트. `cfg.animation = { defaultTransition: 'slide', defaultTransitionSpeed: 'default', defaultBackgroundTransition: 'fade' }` 기본값. `applyConfig`에 `animation:` 섹션 파서 + 잘못된 값 console.warn + default fallback (`nav_indicator` 패턴과 동일).
+        - **`lib/html-builder.js`**: `generateHTML` deck 핸들러의 `Reveal.initialize` 하드코딩 `transition: 'slide'`/`backgroundTransition: 'fade'`를 `_cfg.animation.*` 기반 동적 주입으로 교체. `transitionSpeed` 새로 노출. `generateCoverHTML`/`generateAgendaHTML`은 의도적으로 `transition: 'none'` 유지 (Issue110 cover/agenda 진입 애니메이션 미적용 정책 보존).
+        - **`_config.org.yml`**: `animation:` 섹션 + 3종 옵션 + 화이트리스트 인라인 주석. 슬라이드 단위 override는 후속 Issue117 안내.
+    - **Phase 4 — 사용자 가이드** (commit `45e897c`):
+        - **`noteForHuman.md`**: 슬라이드 트랜지션 사용 예시 + 화이트리스트 + cover/agenda 정책 명시.
+        - `md-m2slide-rules.md`는 슬라이드 단위 디렉티브(Issue117)·인라인 attribute(Issue118) 도입 시점에 함께 갱신 예정 (현 이슈에선 변경 사항 없음 — frontmatter `transition:` 키는 이미 글로벌 키와 별개로 동작 안 함, 차후 Issue117에서 정의).
+* 검증:
+    - JS syntax: `lib/config.js`, `lib/html-builder.js` `node -c` OK
+    - **Default 동작 보존**: `m2SlideStyle1_single`(1) + `m2SlideStyle2_chapter`(deck 8) + `layoutTest`(1) 빌드 후 모든 deck HTML이 `Reveal.initialize({ transition: 'slide', transitionSpeed: 'default', backgroundTransition: 'fade', ... })` 동일 주입 확인 (이전 하드코딩과 같은 값 → 시각·동작 회귀 없음). cover/index.html은 의도대로 `transition: 'none'` 유지.
+    - **Override 동작**: `Projects/animationTest/_config.yml`에 `animation: default_transition: zoom / default_transition_speed: fast / default_background_transition: convex` 적용 → 빌드 결과 HTML이 그대로 주입됨 확인.
+    - **Invalid 값 fallback**: `default_transition: invalidValue` 등 잘못된 값 입력 시 `⚠️ Invalid animation.default_transition: 'invalidvalue' — allowed: none | fade | slide | convex | concave | zoom` 경고 + `cfg.animation.defaultTransition = 'slide'` (기본값) 유지 확인.
 
 ## Issue116. 개요2이상 페이지에서 첫번째 바 사라지는 버그 (등록: 2026-05-05, 해결: 2026-05-05, commit: ebc6b2b) ✅
 * 카테고리: Frontend / Theme
