@@ -26,6 +26,11 @@ page_number_mode: global      # global (default) = 전역 누적 + breadcrumb / 
 breadcrumb: true              # true (default) = 챕터번호 prefix 표시 (page_number_mode: global일 때만 의미)
                               # 출력 예: '3 › 9 / 19' (chapter 3, 전역 9번째 / 총 19) — breadcrumb=false 시 '9 / 19'
 
+nav_indicator: both           # Issue115: 우측 하단 표시 모드
+                              # both (default) = 마름모(↑/↓) + ←/→ + 페이지번호 모두 표시
+                              # diamond = 마름모 + ←/→만 (페이지번호 숨김)
+                              # page = 페이지번호만 (마름모 + ←/→ 모두 숨김)
+
 
 # 스타일 설정 (Issue64 1.b 정책)
 # - 기본값은 lib/css/base.css :root에 정의됨. lib/config.js styleConfig가 동일값으로 동기화됨.
