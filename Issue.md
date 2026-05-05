@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 121
+* Issue HWM: 122
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.6.3 (2026-05-05)** — fix: Issue119 (cover_layout 옵션) + Issue120 (cross-page navigation fade-in CSS animation, A안). cover 슬라이드 layout 자유 지정 + cover↔agenda↔deck 페이지 진입 시 `_cfg.animation.defaultBackgroundTransition !== 'none'`일 때 250ms fade-in 자연 등장.
@@ -92,6 +92,14 @@
 
 
 # ✅ 완료
+
+## Issue122. Cross-page fade-in이 단순 페이지 리프레쉬에도 발동하는 부작용 (등록: 2026-05-05, 해결: 2026-05-05, commit: 6eec5d7) ✅
+* 카테고리: Frontend
+* 목적: Issue120(cross-page fade-in)이 의도와 달리 페이지 리프레쉬·새 탭 진입 시에도 250ms fade-in을 발동시키던 부작용 수정. cross-page navigation(`?fwd=1`/`?back=1`/`?last=1` 시그널 진입)에서만 fade-in 동작하도록 gating 추가.
+* Walkthrough:
+    - 원인: `M2_RELEASE_FN_JS`가 모든 페이지 진입 시 무조건 `body.classList.add('m2-cross-loaded')` 실행 → CSS selector 매칭 → 리프레쉬에도 fade-in 발동. `M2_CROSS_GUARD_HEAD_HTML`은 cross-page 시그널 진입에만 `m2-cross-loading` class를 부여하지만 release 함수가 이 신호를 무시함.
+    - 해결 (`lib/html-builder.js M2_RELEASE_FN_JS`): 클래스 제거 직전에 `wasCrossLoading = documentElement.classList.contains('m2-cross-loading') || body.classList.contains('m2-cross-loading')` 캡처. `!wasCrossLoading`이면 즉시 return → fade-in 미발동. true일 때만 기존 `body.classList.add('m2-cross-loaded')` + animationend 리스너 실행.
+    - 검증: 4개 대표 프로젝트(`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`, `animationTest`) 빌드 회귀 없음. deck/cover/agenda 3개 페이지 유형 모두 `wasCrossLoading` 분기 정상 출력.
 
 ## Issue120. Cross-page navigation fade-in CSS animation (A안) (등록: 2026-05-05, 해결: 2026-05-05, commit: 90dd3c7) ✅
 * 카테고리: Frontend
