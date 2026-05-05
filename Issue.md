@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 113
+* Issue HWM: 116
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.6.1 (2026-05-05)** — fix: Issue107·108·109·110 4건 완료. cross-page flicker 가드 SSOT 상수화 + 페이지번호 1-based hash 일치 + outer padding transition 가시화 + ^/v 마름모 네비게이션
@@ -17,8 +17,6 @@
 
 
 # 🌱 이슈후보
-1. 마름모 네비게이션 보기 옵션과 페이지 보기 오션 추가
-2. 개요2이상의 페이지에서 첫번째 바 사라지는 버그(file:///Users/nowage/_git/__all/videoMaker/lib/m2slide/Projects/m2SlideStyle1_single/slide/index.html?fwd=1#/16)
 
 # 🔥 진행중
 
@@ -49,10 +47,76 @@
 
 # 📙 일반
 
+## Issue115. 우측 하단 네비게이션 표시 모드 옵션 — 마름모 ↔ 페이지번호 보기 토글 (등록: 2026-05-05)
+* 카테고리: Frontend
+* 목적: Issue107에서 우측 하단에 `^/v` 마름모 네비게이션 컨트롤과 페이지 번호(`c/t`)를 동시에 배치(마름모 정중앙에 페이지번호)했음. 발표 환경에 따라 (1) 발표자가 키 네비게이션만 사용하고 시각 단서를 최소화하고 싶을 때 페이지 번호만 보고 싶거나, (2) 마우스 조작이 잦아 마름모 컨트롤만 강조하고 싶을 때 둘 사이를 토글할 수 있어야 함. 현재는 두 표현이 항상 함께 노출되어 선택지가 없음.
+* 상세:
+    - 현행 (Issue107 commit 67834c3):
+        - `lib/html-builder.js`에서 Reveal `.navigate-up`/`.navigate-down` 강제 표시 + `.m2-enabled` 클래스 토글
+        - 페이지 번호는 viewport 우측 하단 fixed (`right: 20px, bottom: 20px, w 60px, h 14px`)로 마름모 정중앙
+    - 제안 옵션:
+        - `_config.yml` 신규 키 `nav_indicator: 'both' | 'diamond' | 'page'` (default: `both` — 회귀 없음)
+        - `both`: 현행 동작 유지 (마름모 + 페이지번호)
+        - `diamond`: 마름모만 표시. 페이지번호 숨김 (`.slide-number { display: none }`)
+        - `page`: 페이지번호만 표시. `^/v` 마름모(`.navigate-up/down`) 및 ←/→ 화살표 모두 숨김
+    - 단축키 토글 검토(선택): `N` 키로 런타임 순환 (`both → diamond → page → both`). v1에서는 정적 옵션만 도입하고 단축키는 후속 이슈로 미룸
+* 구현 명세:
+    - 1단계 — `lib/config.js`에 `navIndicator` 기본값 `'both'` + `_config.yml` `nav_indicator:` 파싱
+    - 2단계 — `lib/html-builder.js` Reveal 컨테이너 또는 body에 `data-nav-indicator="${navIndicator}"` 속성 주입
+    - 3단계 — `theme/default/slide.css`(또는 `lib/css/base.css` 컨펌 후) 분기 selector 추가:
+        - `body[data-nav-indicator="diamond"] .slide-number { display: none }`
+        - `body[data-nav-indicator="page"] .navigate-up, body[data-nav-indicator="page"] .navigate-down, body[data-nav-indicator="page"] .navigate-left, body[data-nav-indicator="page"] .navigate-right { display: none !important }`
+    - 4단계 — Cover/Agenda 페이지(`generateCoverHTML`, `generateAgendaHTML`)에도 동일 속성 전파. Cover는 `slideNumber: false`라 영향 적지만 일관성을 위해 nav 화살표 숨김 분기는 적용
+    - 5단계 — `_config.org.yml`에 옵션 주석 + 기본값 노출
+    - 6단계 — `noteForHuman.md` 사용자 가이드 갱신
+    - 검증: 3종 표현 각각 빌드 (`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`) → 우측 하단 표시·키 네비게이션·페이지 번호 동기화(Issue108) 회귀 없음 확인
+
+## Issue116. 개요2이상 페이지에서 첫번째 바 사라지는 버그 (등록: 2026-05-05)
+* 카테고리: Frontend
+* 목적: 단일 모드(`m2SlideStyle1_single`) 슬라이드 중 개요 H2 이상 레벨 페이지의 "첫번째 바"가 렌더링 누락되어 사용자에게 시각 단서가 부족함. 재현 URL: `file:///.../Projects/m2SlideStyle1_single/slide/index.html?fwd=1#/16`. 현재 fix 단계 진입 전 단계로, "바"가 가리키는 정확한 시각 요소(상단 노랑 가로선 / breadcrumb bar / fragment 진행 바 / progress bar 등) 식별이 1차 작업.
+* 상세:
+    - 재현: cover_enabled 단일 모드, `?fwd=1` 신호로 cover→deck 진입한 상태. 16번 슬라이드(hashOneBasedIndex 적용 → 0-based index 15)는 H2 이상 헤더의 첫 슬라이드일 가능성 높음
+    - 의심 후보 (fix 단계에서 Read·DOM 검증 필요):
+        - **후보 A — 상단 노랑 가로선** (Issue113 `.toc-page-header` top:12 + h:10 = 22px line)
+        - **후보 B — 페이지번호 breadcrumb bar** (Issue112 `m2-breadcrumb-mode` body class — 단일 모드는 placeholder null이므로 실제로는 비활성. 그러나 chapter 첫 페이지 진입 시 일시적으로 토글되는 회귀 가능성)
+        - **후보 C — fragment / list bullet bar** (`.layout-_contents` 또는 base.css §12 슬라이드 bullet 첫 항목 marker)
+        - **후보 D — Reveal `.progress` bar** (Reveal 기본 progress가 첫 슬라이드에서 0폭으로 보이지 않는 정상 동작과 혼동 가능)
+    - 영향 범위:
+        - 단일 모드(`m2SlideStyle1_single`) 16번 슬라이드 + 동일 패턴(개요 H2 이상)인 다른 슬라이드 전수
+        - 챕터 모드에서 동일 현상 재현되는지 비교 검증 필요
+* 구현 명세:
+    - 1단계 — 재현 검증:
+        - `m2SlideStyle1_single`의 markdown 소스 → 16번 슬라이드 H 레벨·layout 확인
+        - Chrome DevTools로 해당 슬라이드 첫 자식 element 트리 + computed style 확인
+        - "바"가 실제로 누락된(없음) 것인지 vs `display:none`/`visibility:hidden`/`opacity:0`/색·배경 동일로 시각적으로만 안 보이는 것인지 구분
+    - 2단계 — 원인 추적:
+        - Issue104·109·110의 transition gating·`overflow: visible`·cross-page guard가 첫 진입 시 첫 자식을 일시 숨기는지 확인
+        - Issue113 `.layout-_agenda::after` finfraCat overlay z-index 충돌 가능성 (단일 모드 deck에는 무관해야 하지만 검증)
+        - hashOneBasedIndex(Issue108) anchor 시프트가 16번 슬라이드 진입 시 한 슬라이드 건너뛰는 회귀 발생 여부 확인
+    - 3단계 — 수정:
+        - 원인 확정 후 최소 패치. **CSS 수정 시** [`CLAUDE.md`](CLAUDE.md) "CSS 수정 시 주의사항" + "base.css 수정 가드" 절 준수 (`display: flex`, `height: 100%`, `position`, `transform` 변경 금지). theme/{name}/slide.css 또는 layout 단위 CSS로 우회 가능한지 우선 검토
+    - 4단계 — 검증:
+        - 재현 URL에서 "바" 정상 표시 확인
+        - `m2SlideStyle1_single` 전체 슬라이드 회귀 없음
+        - `m2SlideStyle2_chapter`·`layoutTest`·`MarkdownGraph` 시각 회귀 없음
+
 # 📗 선택
 
 
 # ✅ 완료
+
+## Issue114. Home/End 키 동작 보강 — Cover/Agenda/첫 챕터 boundary fallback (등록: 2026-05-05, 해결: 2026-05-05, commit: b3b3359) ✅
+* 카테고리: Frontend
+* 목적: ⇤Home/⇥End가 챕터 sibling 점프 전용이라 Cover, Agenda, 첫 챕터(이전 sibling 부재), 마지막 챕터(다음 sibling 부재)에서 동작 없음이던 문제. boundary에서 트리 한 단계 위·아래로 fall-through하여 발표 중 빠른 위치 이동 보강.
+* 해결:
+    - **Cover 핸들러** (`lib/html-builder.js generateCoverHTML`): ⇥End/'.'(Period)/⌘+→ → `agenda.html?fwd=1` (다음 sibling 부재 → child fall-through). ⇤Home은 최상위라 no-op 유지.
+    - **Agenda 핸들러** (`generateAgendaHTML`): Home/End 분기 분리 — ⇤Home/','(Comma)/⌘+← → `index.html?back=1` (cover_enabled=true 한정, parent fall-up). ⇥End/'.'(Period)/⌘+→ → `firstHrefFromToc(_tocData)` (첫 챕터 TOC, child fall-down).
+    - **챕터 deck 핸들러** (`generateHTML` line 1525~): chapter 모드 ⇤Home에서 PREV_CHAPTER 빈값 시 `agenda.html?back=1` fallback 추가. 마지막 챕터 ⇥End는 NEXT_CHAPTER 빈값/'index.html' 체크로 동작 없음 유지(사용자 결정 b).
+    - Single 모드는 영향 없음 (트리 탐색 sibling 의미가 chapter와 다름; 별도 이슈로 추후 검토).
+    - Issue92 fallback 키(`,`/`.`/⌘+←/⌘+→) 모두 새 매트릭스 적용.
+* 검증: `m2SlideStyle2_chapter` 빌드 후 3개 핸들러(`index.html`/`agenda.html`/`01-text-layout.html`)에 Issue114 마커 정상 주입 확인. 사용자 키 동작 확인 후 종결.
+
+> 매트릭스 갱신: [`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) (gitignore — 로컬 SSOT) Cover/Agenda/첫 챕터 행 + 단축키 섹션 boundary fallback 명시.
 
 ## Issue112. 챕터모드 페이지 번호 전체 기준 + breadcrumb 챕터 번호 제공 (등록: 2026-05-05, 해결: 2026-05-05, commit: a5c7f03, 7a805ac) ✅
 * 카테고리: Frontend
