@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 122
+* Issue HWM: 123
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.6.3 (2026-05-05)** — fix: Issue119 (cover_layout 옵션) + Issue120 (cross-page navigation fade-in CSS animation, A안) + Issue122 (Issue120 hot-fix: wasCrossLoading 가드로 단순 리프레쉬 시 fade-in 미발동). cover 슬라이드 layout 자유 지정 + cover↔agenda↔deck cross-page 진입 시에만 `_cfg.animation.defaultBackgroundTransition !== 'none'`일 때 250ms fade-in 자연 등장 (페이지 리프레쉬·새 탭은 미발동).
@@ -10,8 +10,7 @@
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
     
 # 🤔 결정사항
-## _meta.yml파일 사용 안함.
-* AGENDA.md나 {프로젝트명}.md파일의 yaml front matter에 추가하기로 함. 
+*  _meta.yml파일 사용 안함 : AGENDA.md나 {프로젝트명}.md파일의 yaml front matter에 추가하기로 함. 
 
 ## img 폴더 이중 복사 유지 (소스 `img/` + 빌드 `slide/img/`)
 * 결정: 현행 `fs.cpSync` 방식 유지
@@ -92,6 +91,18 @@
 
 
 # ✅ 완료
+
+## Issue123. Cross-page 시그널(?fwd=1) 진입 시 deck 첫 hash jump의 슬라이드 transition 재생 부작용 (등록: 2026-05-05, 해결: 2026-05-05, commit: 73426f4) ✅
+* 카테고리: Frontend
+* 목적: `?fwd=1#/N` URL로 cross-page 진입 시 Reveal.js가 사용자 설정 transition으로 초기화되어 hash jump 시 #/0→#/N 슬라이드 전환 애니메이션을 재생하던 부작용 수정. cross-page navigation은 페이지 단위 진입이므로 deck 내 slide transition은 발생하지 않아야 함 (이후 사용자 키 입력에서만 정상 transition).
+* Walkthrough:
+    - 원인: `lib/html-builder.js` deck `Reveal.initialize`가 `transition: '${_cfg.animation.defaultTransition}'`로 시작 → Reveal.js가 hash 파싱 후 #/N으로 이동할 때 설정된 transition 재생. 기존엔 `?last=1&back=1` 케이스만 `Reveal.configure({ transition: 'none' })`로 막고 있었음.
+    - 해결 (`lib/html-builder.js` deck `Reveal.initialize`):
+        - `_isCrossPageEntry` 변수 신설 (location.search에 `fwd=1`/`back=1`/`last=1` 포함 시 true)
+        - `transition`·`backgroundTransition`을 `_isCrossPageEntry ? 'none' : '<defaultValue>'`로 conditional 변경
+        - `Reveal.on('ready', ...)` 콜백 신규 추가: `_isCrossPageEntry === true`일 때 `Reveal.configure({ transition, backgroundTransition })`로 원래 값 복원 → 이후 사용자 키 입력은 정상 transition
+    - 기존 `?last=1&back=1` 분기 처리는 그대로 유지 (중복 안전, 회귀 위험 회피)
+    - 검증: 4개 대표 프로젝트 빌드 회귀 없음. m2SlideStyle1_single index.html + m2SlideStyle2_chapter 7개 deck + layoutTest/animationTest 모든 deck HTML에 `_isCrossPageEntry` 분기와 ready 복원 코드 정상 출력. 일반 진입·단순 리프레쉬는 `_isCrossPageEntry === false`로 정상 transition 유지.
 
 ## Issue122. Cross-page fade-in이 단순 페이지 리프레쉬에도 발동하는 부작용 (등록: 2026-05-05, 해결: 2026-05-05, commit: 6eec5d7) ✅
 * 카테고리: Frontend
