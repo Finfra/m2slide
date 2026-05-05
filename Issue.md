@@ -3,6 +3,7 @@
 * Issue HWM: 123
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
+    - **v0.6.4 (2026-05-05)** — fix: Issue117 (슬라이드 단위 디렉티브 마무리: H2 다음 디렉티브 매칭 + 6종 syntax 완성) + Issue123 (cross-page 진입 시 deck 첫 hash jump의 슬라이드 transition 재생 부작용 fix — `_isCrossPageEntry` 가드 + Reveal.on('ready') 복원). Issue117 6종 디렉티브 (`#transition-*`, `#background-color-*`, `#background-transition-*`, `#auto-animate`, `#autoslide-*`, `#layout-*`) 모두 reveal.js `data-*` 속성 변환 동작.
     - **v0.6.3 (2026-05-05)** — fix: Issue119 (cover_layout 옵션) + Issue120 (cross-page navigation fade-in CSS animation, A안) + Issue122 (Issue120 hot-fix: wasCrossLoading 가드로 단순 리프레쉬 시 fade-in 미발동). cover 슬라이드 layout 자유 지정 + cover↔agenda↔deck cross-page 진입 시에만 `_cfg.animation.defaultBackgroundTransition !== 'none'`일 때 250ms fade-in 자연 등장 (페이지 리프레쉬·새 탭은 미발동).
     - **v0.6.2 (2026-05-05)** — fix: Issue111 (글로벌 animation 옵션 + cross-page CSS gating + cover cfg 통합) + Issue116 근본 fix + Issue117 진행 (슬라이드 단위 디렉티브 파서). _config.yml `animation:` 섹션으로 reveal.js transition·transitionSpeed·backgroundTransition 글로벌 노출 + 슬라이드별 `#transition-*`/`#background-color-*`/`#auto-animate`/`#autoslide-*` 디렉티브.
     - **v0.6.1 (2026-05-05)** — fix: Issue107·108·109·110 4건 완료. cross-page flicker 가드 SSOT 상수화 + 페이지번호 1-based hash 일치 + outer padding transition 가시화 + ^/v 마름모 네비게이션
@@ -21,38 +22,6 @@
 
 # 🔥 진행중
 
-## Issue117. 슬라이드 단위 애니메이션 디렉티브 — `#transition-*`/`#background-*`/`#auto-animate`/`#autoslide-*` (등록: 2026-05-05)
-* 카테고리: Generator / Frontend
-* 목적: Issue111에서 글로벌 `animation:` 옵션은 노출했으나 슬라이드별 override 수단 부재. `#layout-*` 메타 디렉티브와 동일 패턴으로 슬라이드 첫 줄에 `#transition-fade`, `#auto-animate`, `#autoslide-2000`, `#background-color-1a1a2e` 등을 작성하면 해당 `<section>`에 reveal.js `data-*` 속성으로 변환 주입.
-* 상세:
-    - 디렉티브 → reveal.js attribute 매핑:
-        - `#transition-{none|fade|slide|convex|concave|zoom}` → `data-transition`
-        - `#transition-{name}-{default|fast|slow}` → `data-transition` + `data-transition-speed` (예: `#transition-fade-fast`)
-        - `#background-color-{hex|name}` → `data-background-color` (예: `#background-color-1a1a2e` → `#1a1a2e` 자동 prepend, `#background-color-tomato` → CSS 컬러명)
-        - `#background-transition-{name}` → `data-background-transition`
-        - `#auto-animate` → `data-auto-animate` (값 없는 attribute)
-        - `#autoslide-{ms}` → `data-autoslide` (예: `#autoslide-2000`)
-    - **스코프 외 (Issue117_1로 분할 후보)**:
-        - `#background-image-*`: 경로에 `/`·`.` 포함되어 단순 정규식 한계. 향후 frontmatter `background_image:` 또는 인용부호 syntax로 별도 검토
-    - 적용 위치: 슬라이드 첫 비공백 라인부터 연속된 `#xxx-yyy` 디렉티브 라인을 모두 읽어 첫 비-디렉티브 라인 직전까지 누적
-* 구현 명세:
-    - 1단계 — `lib/slide-parser.js`:
-        - `extractDirectives(rawSlideText)` 신설 — 멀티 라인 디렉티브 파서. 반환: `{ directives: { layout, transition, transitionSpeed, backgroundColor, backgroundTransition, autoAnimate, autoslide }, text }`
-        - 기존 `extractLayoutMeta()`는 `extractDirectives()`를 호출하여 `{ layout, text }` 반환 형식 유지 (호환성)
-        - `parseMarkdownFile()`에서 추출된 directives를 slide 객체에 부여 (`slide.directives = ...`)
-    - 2단계 — `lib/html-builder.js`:
-        - `_buildLayoutSection`/일반 섹션 빌더에서 `slide.directives`를 `<section>` 태그의 `data-*` 속성으로 변환
-        - **글로벌 default와의 관계**: 슬라이드별 디렉티브가 있으면 reveal.js가 자동으로 글로벌보다 우선시 (reveal.js 표준 동작 — `data-transition` 있는 섹션은 해당 값, 없으면 글로벌 `transition` 옵션)
-    - 3단계 — `Projects/animationTest/animationTest.md`:
-        - 기존 슬라이드(reveal 표준 주석 syntax)에 m2slide 디렉티브 syntax 슬라이드 추가
-        - 빌드 후 grep으로 `data-transition`/`data-auto-animate` 등 정상 주입 확인
-    - 4단계 — `noteForHuman.md`:
-        - 슬라이드 단위 디렉티브 사용 예시 + 화이트리스트 + 글로벌과의 관계 명시
-    - 5단계 — `.claude/rules/md-m2slide-rules.md`:
-        - 디렉티브 syntax 표 추가 (이미 `#layout-*` 항목 있으므로 동일 섹션 확장)
-    - 검증:
-        - 3개 대표 프로젝트 + animationTest 빌드 회귀 없음
-        - animationTest 디렉티브 적용 슬라이드의 `<section>` data-* 속성 grep 검증
 
 ## Issue118. Pandoc `{.fragment .fade-up}` 인라인 attribute 파서 — `<li>`/`<p>` class 주입 (등록: 2026-05-05)
 * 카테고리: Generator / Frontend
@@ -91,6 +60,21 @@
 
 
 # ✅ 완료
+
+## Issue117. 슬라이드 단위 애니메이션 디렉티브 — `#transition-*`/`#background-*`/`#auto-animate`/`#autoslide-*` (등록: 2026-05-05, 해결: 2026-05-05, commit: 7d3130c, 6f34f65) ✅
+* 카테고리: Generator / Frontend
+* 목적: Issue111 글로벌 `animation:` 옵션 위에 슬라이드별 override 수단 제공. `#layout-*`와 동일 패턴으로 슬라이드 디렉티브 라인을 작성하면 해당 `<section>` 태그에 reveal.js `data-*` 속성으로 변환 주입.
+* 해결:
+    - **`lib/slide-parser.js`** (commit `7d3130c`): `extractDirectives(rawSlideText)` 신설. `_emptyDirectives()` 객체에 layout / transition / transitionSpeed / backgroundColor / backgroundTransition / autoAnimate / autoslide 7종 필드. 화이트리스트는 `lib/config.js` `VALID_TRANSITIONS`/`VALID_TRANSITION_SPEEDS`와 동기화. 기존 `extractLayoutMeta()`는 `extractDirectives()` 호출 후 `{ layout, text }`로 변환하여 Issue81 호환 유지. `parseMarkdownFile()`에서 추출된 directives를 slide 객체에 부여.
+    - **`lib/html-builder.js`** (commit `7d3130c`): `_applyDirectiveAttrs(html, directives)` 헬퍼 추가. `generatePlainSlideHTML`/`generateSlideHTML` 두 경로 모두에서 첫 `<section>` 태그에 `data-transition`/`data-transition-speed`/`data-background-color`/`data-background-transition`/`data-auto-animate`(값 없는 attribute)/`data-autoslide` 변환 주입. reveal.js 표준 동작에 따라 슬라이드별 `data-*`가 글로벌 `Reveal.initialize` 옵션보다 자동 우선.
+    - **H2 다음 디렉티브 매칭** (commit `6f34f65`): SSOT 명세(_doc_design/animation.md) 형태 `## 제목 / #transition-zoom / #auto-animate / 본문` 슬라이드에서 H2가 첫 비공백 라인이라 디렉티브 매칭이 실패하던 회귀 fix. `extractDirectives()`에 H1~H6 헤더 + 빈 라인 skip 후 디렉티브 매칭 시도하는 분기 추가. Case 1 (Issue81 호환: 첫 비공백 라인이 디렉티브)도 그대로 동작.
+    - **`Projects/animationTest/animationTest.md`**: 6종 디렉티브 검증 슬라이드 추가.
+    - **`noteForHuman.md` + `.claude/rules/md-m2slide-rules.md`**: 디렉티브 표 + 화이트리스트 + 글로벌 관계 + H2 위/다음 두 형태 모두 동작 명시.
+    - **스코프 외 (Issue117_1 후보)**: `#background-image-*` (경로 정규식 한계 — frontmatter 또는 인용부호 syntax로 별도 검토).
+* 검증:
+    - JS syntax: `lib/slide-parser.js`, `lib/html-builder.js` `node -c` OK.
+    - animationTest 빌드 후 6종 디렉티브 모두 `<section data-* class="layout-_contents">` 정상 변환 grep 확인 (transition fade·zoom-fast / auto-animate / background-color #1a1a2e·#0f3460 / background-transition zoom / autoslide 2000).
+    - 3개 대표 프로젝트(`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`) 회귀 없음 (의도치 않은 data-* 주입 0건).
 
 ## Issue123. Cross-page 시그널(?fwd=1) 진입 시 deck 첫 hash jump의 슬라이드 transition 재생 부작용 (등록: 2026-05-05, 해결: 2026-05-05, commit: 73426f4) ✅
 * 카테고리: Frontend
