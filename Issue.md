@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 118
+* Issue HWM: 121
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.6.2 (2026-05-05)** — fix: Issue111 (글로벌 animation 옵션 + cross-page CSS gating + cover cfg 통합) + Issue116 근본 fix + Issue117 진행 (슬라이드 단위 디렉티브 파서). _config.yml `animation:` 섹션으로 reveal.js transition·transitionSpeed·backgroundTransition 글로벌 노출 + 슬라이드별 `#transition-*`/`#background-color-*`/`#auto-animate`/`#autoslide-*` 디렉티브.
@@ -20,6 +20,30 @@
 # 🌱 이슈후보
 
 # 🔥 진행중
+
+## Issue120. Cross-page navigation fade-in CSS animation (A안) (등록: 2026-05-05)
+* 카테고리: Frontend
+* 목적: Issue111 후속 분석 결과, agenda 페이지는 reveal.js 미사용이라 transition 옵션이 적용 불가능. cross-page navigation(cover↔agenda↔deck) 시 Issue110의 `m2-cross-loading` 가드가 가시성을 잠시 숨겼다가 즉시 복귀하는 패턴인데, 가드 해제 시점에 짧은 fade-in animation을 추가하여 페이지 전환을 시각적으로 부드럽게 만듦. agenda 페이지에 reveal을 도입하지 않고도 동일한 시각 효과를 cover/agenda/deck 모두에 일관 적용.
+* 상세:
+    - 현재(Issue110): `?fwd=1`/`?back=1`/`?last=1` 진입 시 `documentElement.classList.add('m2-cross-loading')` → CSS `visibility: hidden` → Reveal ready 또는 markmap render 후 `m2ReleaseCrossGuard()` 호출 → class 제거 → 즉시 가시화. 깜빡임 방지 목적은 달성하나 갑작스럽게 등장.
+    - 변경: 가드 해제 시점에 `body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out }` 적용. animation 종료(`animationend`) 후 class 제거.
+    - **Gating** (Issue111 후속과 동일 패턴):
+        - `_cfg.animation.defaultBackgroundTransition === 'none'`일 때는 keyframes·selector 출력 생략 → fade 비활성화
+        - 'fade'/'slide'/'convex'/'concave'/'zoom' 등 다른 값일 때만 활성화 (반대 의미: '슬라이드 background 전환을 시각적으로 표현하라'는 사용자 의도)
+    - 적용 대상: deck, cover (chapter mode index.html), agenda — `M2_CROSS_GUARD_CSS`/`M2_RELEASE_FN_JS` 공유 SSOT 변경으로 3개 페이지 모두 자동 적용
+* 구현 명세:
+    - 1단계 — `lib/html-builder.js M2_CROSS_GUARD_CSS`:
+        - `@keyframes m2-page-fade-in { from { opacity: 0 } to { opacity: 1 } }` + `body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important }` 추가
+        - `_cfg.animation.defaultBackgroundTransition === 'none'`일 때 keyframes·selector 모두 출력 생략 (gating)
+    - 2단계 — `lib/html-builder.js M2_RELEASE_FN_JS`:
+        - `documentElement.classList.remove('m2-cross-loading')` 직후 `document.body.classList.remove('m2-cross-loading')` 다음 라인에 `document.body.classList.add('m2-cross-loaded')` 추가
+        - `body.addEventListener('animationend', function(){ document.body.classList.remove('m2-cross-loaded') }, { once: true })` 추가
+    - 3단계 — 검증:
+        - 4개 대표 프로젝트 빌드 회귀 없음 (`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`, `animationTest`)
+        - `default_background_transition: none`(_config.org.yml 현 설정) 시 selector·keyframes HTML에 미출력 확인
+        - `default_background_transition: fade` 등 변경 시 keyframes + body.m2-cross-loaded selector HTML 출력 확인
+        - 사용자 시각 검증: cover→agenda→deck 진입 시 부드러운 fade-in 확인
+* B안(Agenda reveal.js 도입)은 별도 후속 이슈로 분리. agenda는 1슬라이드라 transition 본 효과는 0이고, 시각적으로는 본 A안의 cross-page fade-in으로 충분.
 
 ## Issue117. 슬라이드 단위 애니메이션 디렉티브 — `#transition-*`/`#background-*`/`#auto-animate`/`#autoslide-*` (등록: 2026-05-05)
 * 카테고리: Generator / Frontend
@@ -91,6 +115,15 @@
 
 
 # ✅ 완료
+
+## Issue119. Cover 슬라이드 layout 지정 옵션 — `cover_layout: <name>` (등록: 2026-05-05, 해결: 2026-05-05, commit: 90dd3c7) ✅
+* 카테고리: Generator / Theme
+* 목적: single 모드(및 chapter 모드 별도 cover index.html) cover 슬라이드 layout이 `_cover`로 하드코딩되어 사용자가 다른 layout(예: 프로젝트별 커스텀 cover, `_blank` 등)을 지정 불가하던 버그. `_config.yml`에 `cover_layout:` 옵션을 추가하여 cover 슬라이드 layout을 자유롭게 지정 가능. 기본값 `_cover`로 기존 동작 보존.
+* Walkthrough:
+    - `lib/config.js`: `coverLayout: '_cover'` 기본값 + `cover_layout: <name>` 파서 (화이트리스트 `^_?[a-z][a-z0-9-]*$`, theme_default_layout과 동일).
+    - `lib/html-builder.js`: single 모드 cover 주입(L473)·chapter 모드 `generateCoverHTML`·클라이언트 `isCoverSlide()` 판정 모두 `_cfg.coverLayout` 기반으로 변경 (`M2SLIDE_COVER_LAYOUT` 변수 신규 노출).
+    - 검증: m2SlideStyle1_single에 임시로 `cover_layout: blank` 적용 후 산출물 첫 슬라이드 `<section class="layout-_blank">` 정상 교체 확인. 원복 후 `layout-_cover` 복귀. m2SlideStyle1_single, m2SlideStyle2_chapter, layoutTest 빌드 회귀 없음.
+    - 문서: `.claude/rules/md-m2slide-rules.md` "Cover 슬라이드 자동 주입" 섹션에 cover_layout override 항목 추가 + `_doc_design/chapter-single-mode.md`에 `cover_layout` 동작 표 신규.
 
 ## Issue111. 슬라이드 전환·요소 애니메이션 옵션 정리 (등록: 2026-05-05, 해결: 2026-05-05, commit: 45e897c, 1d72147, 7d3130c) ✅
 * 카테고리: Frontend
