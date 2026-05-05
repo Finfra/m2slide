@@ -38,9 +38,9 @@ nav_indicator: both           # Issue115: 우측 하단 표시 모드
 #   - 슬라이드 단위 override (`#transition-zoom` 등)는 후속 Issue117·118에서 추가 예정
 #   - cover/agenda 페이지는 본 옵션 영향 없음 (transition: none 고정)
 animation:
-  default_transition: slide
+  default_transition: none
   default_transition_speed: default
-  default_background_transition: fade
+  default_background_transition: none
 
 
 # 스타일 설정 (Issue64 1.b 정책)
