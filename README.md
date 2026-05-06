@@ -26,6 +26,13 @@
 - **일관된 워크플로우**: 모든 프로젝트에 동일한 명령어 사용
 - **Git 친화적**: 프로젝트별 선택적 버전 관리
 
+### 4. 다양한 출력 형식
+- **HTML**: Reveal.js 프레젠테이션 (기본)
+- **EPUB**: 전자책 (`--epub`)
+- **PDF**: 챕터별 합본 PDF (`--pdf`, decktape 사용)
+- **PPTX**: PowerPoint 호환 (`--pptx`, pandoc 사용)
+- **GitHub Pages 자동 배포**: `_config.yml`의 `deploy_formats` + `/deploy-docs` 커맨드로 산출물·카드 자동 동기화 (자세한 내용은 [GitHub Pages 배포](#github-pages-배포) 섹션)
+
 ## 프로젝트 구조
 
 ```
@@ -363,38 +370,65 @@ theme/
 
 ## GitHub Pages 배포
 
-### 웹 배포 워크플로우
+루트 `docs/` 폴더가 GitHub Pages 소스 (`main` 브랜치 + `/docs`). 다수 프로젝트를 카드 형태로 한 곳에 모아 배포합니다 (https://finfra.github.io/m2slide/).
 
-**간편한 방법 (권장)**:
+### 방법 1: `/deploy-docs` 커맨드 (Claude Code, 권장)
+
+[.claude/commands/deploy-docs.md](.claude/commands/deploy-docs.md)에 정의된 슬래시 커맨드. **다수 프로젝트의 new/update/delete 자동 분기 + 산출물 형식 옵션 리스트 + 메인 인덱스 카드 자동 갱신**을 지원합니다.
+
+```
+/deploy-docs <project>          # docs/<project>/ 존재 시 update, 없으면 new
+/deploy-docs <project> delete   # 폴더 + 메인 인덱스 카드 제거 (사용자 승인 필수)
+/deploy-docs                    # 사용법 + 현재 docs/ 배포 목록 출력
+```
+
+**산출물 형식 (EPUB/PDF/PPTX) 자동 포함**: 프로젝트 `_config.yml`에 `deploy_formats` 한 줄 추가:
+
+```yaml
+deploy_formats: [epub, pdf, pptx]   # 모든 형식
+deploy_formats: [epub]               # EPUB만
+## 키 생략 또는 [] → HTML만 (기본)
+```
+
+이후 `/deploy-docs <project>` 한 번 호출로 빌드(m2slide.sh `--epub` 등 옵션 자동 전달) → docs/ 동기화 → 메인 인덱스 카드에 다운로드 배지(📚 EPUB · 📄 PDF · 📊 PPTX) 자동 노출.
+
+### 방법 2: `lib/deploy.sh` 스크립트 (단일 프로젝트)
+
 ```bash
-# config.yml의 현재 프로젝트를 자동으로 배포
+## _config.yml의 현재 프로젝트를 자동으로 배포
 ./lib/deploy.sh
 
-# 커스텀 커밋 메시지 사용
+## 커스텀 커밋 메시지
 ./lib/deploy.sh "Add new slides"
 ```
 
-**수동 배포**:
+* `_config.yml`에서 현재 프로젝트 자동 읽기
+* `slide/` 폴더를 `docs/` 폴더로 자동 복사
+* Git add, commit, push 자동 실행
+* 변경사항이 없으면 자동 종료
+
+### 방법 3: 수동 배포
+
 ```bash
-# 1. HTML 재생성
-./m2slide.sh --epub
+## 1. HTML(+선택 산출물) 재생성
+./m2slide.sh <project> --epub --pdf --pptx
 
-# 2. docs 폴더에 복사
-cp -r Projects/[Project]/slide/* docs/
+## 2. docs/ 폴더에 복사
+mkdir -p docs/<project>
+cp -R Projects/<project>/slide/. docs/<project>/
 
-# 3. Git 커밋 및 푸시
-git add docs
-git commit -m "Update slides"
-git push
+## 3. Git 커밋 및 푸시
+git add docs && git commit -m "Update slides" && git push
 ```
 
-약 1-2분 후 GitHub Pages에서 업데이트된 내용 확인 가능
+### 배포 확인
 
-**deploy.sh 스크립트 기능**:
-- config.yml에서 현재 프로젝트 자동 읽기
-- slide 폴더를 docs 폴더로 자동 복사
-- Git add, commit, push 자동 실행
-- 변경사항이 없으면 자동으로 종료
+푸시 후 약 1~2분 내 반영. 상태 확인:
+
+```bash
+gh api repos/<owner>/<repo>/pages/builds --jq '.[0] | {status, commit, updated_at}'
+gh run list --repo <owner>/<repo> --limit 3
+```
 
 ### GitHub Pages 설정 (최초 1회)
 

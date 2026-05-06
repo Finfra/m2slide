@@ -508,14 +508,14 @@
   display: inline-block;
   letter-spacing: -0.02em;
 }
+/* Issue: agenda 페이지 다운로드 버튼 위치를 우하단으로 이동
+   (헤더 안 우측 정렬 시 마스코트와 시각적 충돌 — Issue80 §2.2 회피 마진으로도 부족)
+   .layout-_agenda는 position: relative이므로 그 기준으로 absolute 잡힘 */
 .toc-page-downloads {
-  float: right;
-  margin-top: 8px;
-}
-.toc-page-downloads:after {
-  content: "";
-  display: block;
-  clear: both;
+  position: absolute;
+  bottom: calc(var(--frame-h, 100vh) * 0.03 + 5px);
+  right: calc(var(--frame-w, 100vw) * 0.03);
+  z-index: 5;
 }
 .toc-download-btn {
   display: inline-block;
@@ -598,18 +598,24 @@
   margin-top: 0.2em;
   letter-spacing: 0.05em;
 }
-/* Issue80 §2.1: cover-body — 제목 바로 아래 한 줄(중앙 정렬), instructor만 표시 (meta는 absolute 우상단) */
+/* Issue80 §2.1 + 후속: cover-body — 제목 아래 우측 정렬, instructor만 표시 (meta는 absolute 우상단)
+   - 작성자·연락처를 노란 박스(box.png) 안에 우측 정렬로 배치 */
 .reveal section.layout-_cover .cover-body {
   margin-top: 0;
-  padding: 0.4em 0 0 0;
+  padding: 0.6em 5% 0 0;
   font-size: 0.85em;
   display: block;
-  text-align: center;
+  text-align: right;
   color: var(--kn-text);
 }
 .reveal section.layout-_cover .cover-instructor {
   display: inline-block;
   color: var(--kn-text);
+  background: none;
+  padding: 0.5em 1.4em;
+  line-height: 1.2;
+  text-align: right;
+  min-width: 18em;
 }
 .reveal section.layout-_cover .cover-instructor-name {
   font-weight: 600;
@@ -789,10 +795,8 @@
   z-index: 0;
 }
 
-/* Issue80 §2.2: 다운로드 버튼이 마스코트와 충돌하지 않도록 헤더 안쪽으로 정렬 */
-.layout-_agenda .toc-page-downloads {
-  margin-right: 16%;
-}
+/* Issue80 §2.2 코드 제거: .toc-page-downloads가 헤더 밖으로 분리되어 우하단 absolute로 이동했으므로
+   마스코트(우상단)와 더 이상 시각적 충돌 없음. margin-right 회피 마진 불필요. */
 
 /* Issue113: agenda-frame은 reveal.js content 슬라이드와 달리 transform: scale을 받지 않는
    standalone 컨테이너. content 슬라이드처럼 "frame 실제 크기" 기준으로 스케일하기 위해

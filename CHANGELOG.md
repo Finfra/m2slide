@@ -2,6 +2,54 @@
 
 All notable changes to this project. m2slide follows [SemVer](https://semver.org/).
 
+## [v0.7.0] - 2026-05-06
+
+### What's new
+
+#### 🚀 `/deploy-docs` 커맨드 신규 — multi-project GitHub Pages 배포 (Issue127)
+
+`docs/` 하위에 다수 프로젝트를 카드 형태로 한 곳에 모아 배포하는 워크플로우 도입.
+
+- **`/deploy-docs <project>`**: docs/<project>/ 존재 시 update, 없으면 new 자동 분기
+- **`/deploy-docs <project> delete`**: 폴더 + 메인 인덱스 카드 제거 (사용자 승인 필수)
+- **`/deploy-docs`**: 사용법 + 현재 docs/ 배포 목록 출력
+- 카드 제목 자동 추출(`<title>` 태그) + `data-project` 속성 unique 매칭 + stale 파일 제거 + 검증 5종
+
+#### 📦 다양한 출력 형식 통합 — `_config.yml: deploy_formats` (Issue127)
+
+프로젝트 `_config.yml`에 한 줄 추가하면 `/deploy-docs`가 m2slide.sh에 옵션 자동 전달.
+
+```yaml
+deploy_formats: [epub, pdf, pptx]   # 모든 형식 (HTML 기본 + 추가)
+deploy_formats: [epub]               # EPUB만
+## 키 생략 또는 [] → HTML만
+```
+
+- 빌드 후 산출물(`<project>.epub`/`.pdf`/`.pptx`)이 docs/ 자동 동기화
+- 메인 인덱스 카드에 다운로드 배지 동적 노출 (📚 EPUB amber / 📄 PDF red / 📊 PPTX emerald)
+- 의존성 누락 시 graceful degradation (mmdc·decktape·pandoc 안내 출력 후 빌드 계속)
+
+#### 🎨 agenda 다운로드 버튼 우하단 이동 (Issue128, Issue80 후속)
+
+마스코트(우상단)와 시각적 충돌 회피.
+
+- 위치: `header > .toc-page-downloads` (float right) → `.layout-_agenda > .toc-page-downloads` (position absolute, bottom 3% + 5px / right 3%)
+- Issue113 frame 변수(--frame-h/--frame-w) 재사용 — viewport letterbox 변화 무관
+- z-index 5로 마스코트(z-index 0) 위에 표시되어 클릭 가능
+- Issue80 §2.2 `margin-right: 16%` 회피 마진 제거 (불필요)
+
+### Issues 종결
+
+- **Issue127** (commit: c3a9feb): /deploy-docs 신규 커맨드 + deploy_formats 옵션 + 카드 다운로드 배지 + README 업데이트
+- **Issue128** (commit: c3a9feb): agenda 다운로드 버튼 우하단 이동 (Issue80 후속)
+- **v0.6.x 시리즈 (Issue71-126, 56건)** 누적 z_old 아카이브 — 본 release에 누적 정리
+
+### 변경 파일
+
+- 신규: `.claude/commands/deploy-docs.md` (340줄)
+- 수정: `theme/default/layouts/_agenda.html`, `theme/default/slide.css`, `lib/html-builder.js`, `docs/index.html`, `README.md`, `Issue.md`, `VERSION`
+- 아카이브: `z_old/old_issue.md`에 v0.7.0 섹션 prepend (Issue127-128 + v0.6.x 누적)
+
 ## [v0.6.0] - 2026-05-05
 
 ### Issues 종결 (36건, Issue71-106)
