@@ -6,7 +6,7 @@
 
 ### 본 릴리즈 신규 (Issue127-128)
 
-## Issue127. `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 — multi-project GitHub Pages 배포 + 산출물 형식 자동화 (등록: 2026-05-06, 해결: 2026-05-06, commit: c3a9feb) ✅
+## Issue127. `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 — multi-project GitHub Pages 배포 + 산출물 형식 자동화 (등록: 2026-05-06, 해결: 2026-05-06, commit: 477da13) ✅
 * 카테고리: Build / Generator
 * 목적: 다수 프로젝트를 `docs/` 하위에 카드 형태로 배포·갱신·제거하는 워크플로우 도입. 기존 `lib/deploy.sh`(단일 프로젝트, 단순 복사)를 보완하는 Claude Code 슬래시 커맨드 + `_config.yml` 옵션 통합.
 * Walkthrough:
@@ -20,7 +20,7 @@
     - **README.md 업데이트**: GitHub Pages 배포 섹션 3-방법 비교 (`/deploy-docs` / `lib/deploy.sh` / 수동) + `deploy_formats` 옵션 안내 + 핵심 기능 §4 다양한 출력 형식 추가.
 * 검증: `m2SlideStyle1_single`에 `deploy_formats: [epub]` 추가 후 `/deploy-docs m2SlideStyle1_single` update 모드 동작 확인 — EPUB 1.2MB 생성 + 카드에 📚 EPUB 배지 + 검증 5종 통과.
 
-## Issue128. agenda 페이지 다운로드 버튼 위치 — 헤더 우측 → `.layout-_agenda` 우하단 absolute (Issue80 후속) (등록: 2026-05-06, 해결: 2026-05-06, commit: c3a9feb) ✅
+## Issue128. agenda 페이지 다운로드 버튼 위치 — 헤더 우측 → `.layout-_agenda` 우하단 absolute (Issue80 후속) (등록: 2026-05-06, 해결: 2026-05-06, commit: 477da13) ✅
 * 카테고리: Theme / Frontend
 * 목적: Issue80 §2.2의 `margin-right: 16%` 회피 마진으로도 마스코트(우상단)와 다운로드 버튼(헤더 우측)의 시각적 충돌이 잔존. 위치 자체를 바꿔 충돌 영역을 분리.
 * Walkthrough:

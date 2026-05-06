@@ -40,8 +40,8 @@ deploy_formats: [epub]               # EPUB만
 
 ### Issues 종결
 
-- **Issue127** (commit: c3a9feb): /deploy-docs 신규 커맨드 + deploy_formats 옵션 + 카드 다운로드 배지 + README 업데이트
-- **Issue128** (commit: c3a9feb): agenda 다운로드 버튼 우하단 이동 (Issue80 후속)
+- **Issue127** (commit: 477da13): /deploy-docs 신규 커맨드 + deploy_formats 옵션 + 카드 다운로드 배지 + README 업데이트
+- **Issue128** (commit: 477da13): agenda 다운로드 버튼 우하단 이동 (Issue80 후속)
 - **v0.6.x 시리즈 (Issue71-126, 56건)** 누적 z_old 아카이브 — 본 release에 누적 정리
 
 ### 변경 파일
