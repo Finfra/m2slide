@@ -13,4 +13,6 @@
 # Example: To add another project, uncomment the line below
 # !/AnotherProject/
 !/MarkdownGraph/
+!/m2SlideStyle1_single/
+!/m2SlideStyle2_chapter/
 !/slide.css.md
