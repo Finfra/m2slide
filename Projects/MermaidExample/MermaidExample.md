@@ -1,12 +1,12 @@
 ---
-title: Examples for MermaidExample
+title: Mermaid Samples
 description: 
 date: Nov 29, 2025
 tags: []
 instructor_name: 남중구 (핀프라)
-instructor_contact: jgnam73@hotmail.com
-version: 1.1.0
-release_date: 2026-05-02
+instructor_contact: nowage@gmail.com
+version: 1.1.1
+release_date: 2026-05-09
 created_at: 2026-05-02
 created_by: nowage
 ---
