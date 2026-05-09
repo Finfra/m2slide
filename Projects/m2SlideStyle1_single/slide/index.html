@@ -18,7 +18,6 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
-  <link rel="stylesheet" href="https://unpkg.com/open-props"/>
   <style data-m2slide-base="true">
 /* =========================================================================
    m2slide base.css — 모든 테마 공통 기본 스타일 (Issue64 도입)
@@ -1223,7 +1222,7 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1778059382050">
+  <link rel="stylesheet" href="css/custom.css?v=1778316246254">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1391,7 +1390,7 @@ html.ratio-fill .agenda-frame {
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
   </style>
 </head>
-<body class="  media-enlarge-fit" data-nav-indicator="both" style="
+<body class="top-align-mode  media-enlarge-fit" data-nav-indicator="both" style="
   --global-font-family: Pretendard, sans-serif;
   --title-font-family: GmarketSansBold;
   --title-font-weight: 50;
@@ -1445,7 +1444,7 @@ html.ratio-fill .agenda-frame {
   <div class="cover-body">
     <div class="cover-instructor">
       <span class="cover-instructor-name">남중구 (핀프라)</span>
-      <span class="cover-instructor-contact">jgnam73@hotmail.com</span>
+      <span class="cover-instructor-contact">nowage@gmail.com</span>
     </div>
 
     <div class="cover-meta">
@@ -1465,7 +1464,7 @@ html.ratio-fill .agenda-frame {
     <svg class="toc-mindmap-svg"></svg>
   </div>
   <div class="toc-body"><ul>
-<li class="bullet-dot">카드에 추가라인.</li>
+<li class="bullet-dot">현재 예제는 1개의 md파일로 생성됨.</li>
 </ul></div>
   <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="3">
 <li class="chapter-card"><a href="#/3">기본 텍스트 스타일</a></li>
@@ -2132,32 +2131,18 @@ classDiagram
       }
     });
 
-    // Render all Kroki diagrams (runtime fallback)
+    // Render all Kroki diagrams (runtime fallback).
+    //   빌드 타임에 SVG 캐시가 채워져 있으면 .kroki img는 이미 로컬 SVG를 가리키므로 본 핸들러는 skip.
+    //   data-type 속성이 남아 있는 .kroki 컨테이너만 (캐시 누락 시) 안내 메시지 표시.
+    //   참고: 빌드 타임에 path-based URL이 박힌 .kroki img는 onerror로 자체 처리됨.
     Reveal.on('ready', function() {
-      const allKrokiElements = document.querySelectorAll('.kroki');
-      if (allKrokiElements && allKrokiElements.length > 0) {
-        allKrokiElements.forEach(function(element, index) {
-          // Skip if already rendered
-          if (element.querySelector('svg') || element.querySelector('img')) {
-            return;
-          }
-
-          const diagramType = element.getAttribute('data-type');
-          const diagramSource = element.textContent.trim();
-
-          if (!diagramType || !diagramSource) {
-            return;
-          }
-
-          // Prefer GET image to avoid CORS issues on file:// origins
-          try {
-            const imgUrl = 'https://kroki.io/' + diagramType + '/svg?source=' + encodeURIComponent(diagramSource);
-            element.innerHTML = '<div class="graph-scroll"><img alt="' + diagramType + ' diagram" src="' + imgUrl + '"/></div>';
-          } catch (error) {
-            console.error('Kroki rendering setup error for ' + diagramType + ' diagram ' + index + ':', error);
-            element.innerHTML = '<p style="color: red;">Failed to prepare ' + diagramType + ' diagram.</p>';
-          }
-        });
+      var allKrokiElements = document.querySelectorAll('.kroki');
+      if (!allKrokiElements || allKrokiElements.length === 0) return;
+      for (var i = 0; i < allKrokiElements.length; i++) {
+        var element = allKrokiElements[i];
+        if (element.querySelector('svg') || element.querySelector('img')) continue;
+        var diagramType = element.getAttribute('data-type') || 'kroki';
+        element.innerHTML = '<div class="kroki-error"><strong>' + diagramType + ' diagram</strong> 빌드 타임 SVG 캐시 누락. m2slide 재빌드 필요</div>';
       }
     });
 
@@ -2425,19 +2410,42 @@ classDiagram
       var svg = findTocSlideSvg();
       if (!svg) return;
       try {
-        markmapInstance = window.markmap.Markmap.create(svg, {
-          autoFit: true,
-          fitRatio: 0.95,
-          spacingHorizontal: 80,
-          spacingVertical: 12,
-          paddingX: 40,
-          initialExpandLevel: 2
-        }, tocData);
+        /* Issue: agenda(deriveOptions 기본값)와 동일 옵션으로 통일 — 일관된 시각언어
+           기본값: paddingX:8, spacingHorizontal:80, spacingVertical:5, fitRatio:0.95 */
+        var opts = window.markmap.deriveOptions
+          ? window.markmap.deriveOptions({ initialExpandLevel: 2 })
+          : { autoFit: true, fitRatio: 0.95, spacingHorizontal: 80, spacingVertical: 5, paddingX: 8, initialExpandLevel: 2 };
+        opts.autoFit = true;  /* deriveOptions는 autoFit:false가 기본이므로 명시 */
+        markmapInstance = window.markmap.Markmap.create(svg, opts, tocData);
         markmapInitialized = true;
+        /* fit() 직전 SVG에 logical pixel 크기를 명시 — reveal.js transform: scale의 영향으로
+           getBoundingClientRect()가 scaled size를 반환해 markmap이 작게 그리는 문제 회피.
+           parentNode.offsetWidth/offsetHeight는 transform 적용 전 logical px이므로 안전. */
+        function refit(){
+          if (!markmapInstance || !markmapInstance.fit) return;
+          try {
+            var p = svg.parentNode;
+            if (p && p.offsetWidth > 0 && p.offsetHeight > 0) {
+              svg.setAttribute('width', p.offsetWidth);
+              svg.setAttribute('height', p.offsetHeight);
+            }
+            markmapInstance.fit();
+          } catch(e){}
+        }
         if (!isPrintMode) {
-          setTimeout(function(){ if (markmapInstance && markmapInstance.fit) { try { markmapInstance.fit(); } catch(e){} } }, 50);
+          requestAnimationFrame(refit);
+          setTimeout(refit, 50);
+          setTimeout(refit, 300);
+          setTimeout(refit, 800);
+          /* Issue: 컨테이너 크기 변경(flex 재계산·reveal 슬라이드 전환 transform 완료) 시 자동 재맞춤 */
+          if (window.ResizeObserver) {
+            try {
+              var ro = new ResizeObserver(function(){ refit(); });
+              ro.observe(svg.parentNode);
+            } catch(e){}
+          }
         } else {
-          setTimeout(function(){ if (markmapInstance && markmapInstance.fit) { try { markmapInstance.fit(); } catch(e){} } }, 1000);
+          setTimeout(refit, 1000);
         }
       } catch(e) {
         console.warn('Markmap initialization failed:', e);
@@ -2970,11 +2978,13 @@ classDiagram
           return;
         }
         // Issue105: Single — 트리 탐색 sibling. enclosing anchor 레벨 N 기준 직전 anchor at level ≤ N
+        // Issue133: sibling 부재 시 agenda.html?back=1 fallback (Chapter Issue114 대칭)
         var curHForHome = Reveal.getIndices().h;
         var encLevelHome = getEnclosingAnchorLevel(curHForHome);
         var prevAnchorIdx = findPrevSiblingAnchorIndex(curHForHome, encLevelHome);
         stop();
         if (prevAnchorIdx >= 0) Reveal.slide(prevAnchorIdx, 0);
+        else window.location.href = 'agenda.html?back=1';
         return;
       }
 
@@ -3031,11 +3041,13 @@ classDiagram
           return;
         }
         // Issue105: Single — 트리 탐색 sibling. enclosing anchor 레벨 N 기준 직후 anchor at level ≤ N
+        // Issue133: sibling 부재 시 agenda.html?fwd=1 fallback (Chapter Issue114 대칭)
         var curHForEnd = Reveal.getIndices().h;
         var encLevelEnd = getEnclosingAnchorLevel(curHForEnd);
         var nextAnchorIdx = findNextSiblingAnchorIndex(curHForEnd, encLevelEnd);
         stop();
         if (nextAnchorIdx >= 0) Reveal.slide(nextAnchorIdx, 0);
+        else window.location.href = 'agenda.html?fwd=1';
         return;
       }
 

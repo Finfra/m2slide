@@ -513,7 +513,7 @@
    .layout-_agenda는 position: relative이므로 그 기준으로 absolute 잡힘 */
 .toc-page-downloads {
   position: absolute;
-  bottom: calc(var(--frame-h, 100vh) * 0.03);
+  bottom: calc(var(--frame-h, 100vh) * 0.03 + 5px);
   right: calc(var(--frame-w, 100vw) * 0.03);
   z-index: 5;
 }
@@ -547,6 +547,20 @@
   max-width: 100%;
   display: block;
   min-height: 380px;
+}
+/* Issue: 일반 (non-agenda) layout-_toc에서 toc-markmap이 남은 세로 공간을 채우지 못해
+   markmap이 좁게 렌더되는 문제 해결 — agenda-frame 패턴(§7)을 layout-_toc에도 적용.
+   .layout-_toc는 base.css §10에서 display:flex; flex-direction:column이 이미 적용되어 있음.
+   - toc-markmap: flex:1 1 0으로 남은 vertical 공간을 점유
+   - toc-mindmap-svg: height:100%로 toc-markmap 전체를 채우고 markmap autoFit이 충분히 확장되게 함
+   .toc-body가 비어있지 않은 placeholder 슬라이드는 §6.5 :has() 규칙으로 toc-markmap이 display:none이라 영향 없음. */
+.reveal section.layout-_toc > .toc-markmap {
+  flex: 1 1 0;
+  min-height: 0;
+}
+.reveal section.layout-_toc > .toc-markmap > .toc-mindmap-svg {
+  height: 100%;
+  min-height: 0;
 }
 /* markmap fold/expand 인디케이터 원 크기 30% 축소 (기본 r=6 → 4.2) */
 .toc-markmap circle,
@@ -616,6 +630,9 @@
   line-height: 1.2;
   text-align: right;
   min-width: 18em;
+  /* Issue130: instructor(author+contact) 영역 노란 사각형 테두리 강조 */
+  border: 2px solid #FFD700;
+  border-radius: 6px;
 }
 .reveal section.layout-_cover .cover-instructor-name {
   font-weight: 600;
@@ -728,6 +745,13 @@
    비어있는 markmap 자리(SVG 380px min-height)가 카드를 아래로 밀어냄.
    본문 카드가 있을 때는 markmap 영역을 숨겨 카드 위주 레이아웃 유지. */
 .reveal section.layout-_toc:has(> .toc-body:not(:empty)) > .toc-markmap {
+  display: none;
+}
+
+/* Issue (균일성): markmap JS(initTocMarkmapIfNeeded)는 #toc-placeholder 한 곳만 렌더하므로
+   autoToc로 자동 생성된 다른 layout-_toc 슬라이드(H1 anchor 등)에는 빈 SVG가 남아 큰 빈 박스만 보임.
+   해당 슬라이드는 .toc-cards만 노출되도록 빈 markmap 영역 숨김. */
+.reveal section.layout-_toc:not(#toc-placeholder) > .toc-markmap {
   display: none;
 }
 

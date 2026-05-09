@@ -184,6 +184,10 @@
    - ::before: .title 박스 위쪽 외부 (top: -12px)
    - ::after:  .title 박스 아래쪽 외부 (bottom: -12px)
    둘 다 동일 박스 기준이라 좌우 끝이 정확히 정렬됨. */
+/* Issue90 / Issue116: layout-_contents는 generator(`lib/html-builder.js`)에서 모든
+   H2~H6 `.title`을 section 직속 자식으로 끌어올리므로 항상 `> .title::before`가
+   상단 가로선을 그림 → section::before는 일괄 숨김 (Issue116 회귀는 generator
+   정규식 `<h[2-6]` 확장으로 구조적으로 해결됨). */
 .reveal section.layout-_contents::before {
   display: none !important;
 }
@@ -504,14 +508,14 @@
   display: inline-block;
   letter-spacing: -0.02em;
 }
+/* Issue: agenda 페이지 다운로드 버튼 위치를 우하단으로 이동
+   (헤더 안 우측 정렬 시 마스코트와 시각적 충돌 — Issue80 §2.2 회피 마진으로도 부족)
+   .layout-_agenda는 position: relative이므로 그 기준으로 absolute 잡힘 */
 .toc-page-downloads {
-  float: right;
-  margin-top: 8px;
-}
-.toc-page-downloads:after {
-  content: "";
-  display: block;
-  clear: both;
+  position: absolute;
+  bottom: calc(var(--frame-h, 100vh) * 0.03 + 5px);
+  right: calc(var(--frame-w, 100vw) * 0.03);
+  z-index: 5;
 }
 .toc-download-btn {
   display: inline-block;
@@ -543,6 +547,20 @@
   max-width: 100%;
   display: block;
   min-height: 380px;
+}
+/* Issue: 일반 (non-agenda) layout-_toc에서 toc-markmap이 남은 세로 공간을 채우지 못해
+   markmap이 좁게 렌더되는 문제 해결 — agenda-frame 패턴(§7)을 layout-_toc에도 적용.
+   .layout-_toc는 base.css §10에서 display:flex; flex-direction:column이 이미 적용되어 있음.
+   - toc-markmap: flex:1 1 0으로 남은 vertical 공간을 점유
+   - toc-mindmap-svg: height:100%로 toc-markmap 전체를 채우고 markmap autoFit이 충분히 확장되게 함
+   .toc-body가 비어있지 않은 placeholder 슬라이드는 §6.5 :has() 규칙으로 toc-markmap이 display:none이라 영향 없음. */
+.reveal section.layout-_toc > .toc-markmap {
+  flex: 1 1 0;
+  min-height: 0;
+}
+.reveal section.layout-_toc > .toc-markmap > .toc-mindmap-svg {
+  height: 100%;
+  min-height: 0;
 }
 /* markmap fold/expand 인디케이터 원 크기 30% 축소 (기본 r=6 → 4.2) */
 .toc-markmap circle,
@@ -594,18 +612,27 @@
   margin-top: 0.2em;
   letter-spacing: 0.05em;
 }
-/* Issue80 §2.1: cover-body — 제목 바로 아래 한 줄(중앙 정렬), instructor만 표시 (meta는 absolute 우상단) */
+/* Issue80 §2.1 + 후속: cover-body — 제목 아래 우측 정렬, instructor만 표시 (meta는 absolute 우상단)
+   - 작성자·연락처를 노란 박스(box.png) 안에 우측 정렬로 배치 */
 .reveal section.layout-_cover .cover-body {
   margin-top: 0;
-  padding: 0.4em 0 0 0;
+  padding: 0.6em 5% 0 0;
   font-size: 0.85em;
   display: block;
-  text-align: center;
+  text-align: right;
   color: var(--kn-text);
 }
 .reveal section.layout-_cover .cover-instructor {
   display: inline-block;
   color: var(--kn-text);
+  background: none;
+  padding: 0.5em 1.4em;
+  line-height: 1.2;
+  text-align: right;
+  min-width: 18em;
+  /* Issue130: instructor(author+contact) 영역 노란 사각형 테두리 강조 */
+  border: 2px solid #FFD700;
+  border-radius: 6px;
 }
 .reveal section.layout-_cover .cover-instructor-name {
   font-weight: 600;
@@ -721,11 +748,21 @@
   display: none;
 }
 
+/* Issue (균일성): markmap JS(initTocMarkmapIfNeeded)는 #toc-placeholder 한 곳만 렌더하므로
+   autoToc로 자동 생성된 다른 layout-_toc 슬라이드(H1 anchor 등)에는 빈 SVG가 남아 큰 빈 박스만 보임.
+   해당 슬라이드는 .toc-cards만 노출되도록 빈 markmap 영역 숨김. */
+.reveal section.layout-_toc:not(#toc-placeholder) > .toc-markmap {
+  display: none;
+}
+
 /* =========================================================================
    7. _agenda Layout — Issue55: Agenda Page (standalone agenda.html)
-   - Issue80 §2.2: 상단 가로선(::before) + 우상단 puffer2s 마스코트
+   - Issue80 §2.2: 상단 가로선(::before) + 우상단 마스코트
      standalone wrapper(.layout-_agenda div)는 §2 공통 selector(section[class*=layout-])에
-     매치되지 않으므로 div.layout-_agenda::before 별도 정의
+     매치되지 않으므로 div.layout-_agenda::before/::after 별도 정의
+   - Issue113: puffer2s → finfraCat (50% 흐리게, ::after pseudo로 opacity 분리),
+     제목줄을 노랑 가로선 아래로 내려 겹침 제거,
+     agenda-frame 폰트 크기를 viewport 비례로 변경 (다른 reveal 슬라이드와 동일 스케일감)
    ========================================================================= */
 .layout-_agenda {
   display: flex;
@@ -734,16 +771,35 @@
   min-height: 100vh;
   box-sizing: border-box;
   position: relative;
-  background-image: url('../theme-img/finfraPuffer2s.png');
-  background-repeat: no-repeat;
-  background-position: 96% 28px;
-  background-size: 8% auto;
 }
 
-/* agenda 제목을 상단 가로선과 같은 라인까지 올리고 우상단 puffer2s와 같은 세로 위치에 정렬 */
+/* Issue113: 우측 마스코트는 ::after pseudo로 분리해 50% opacity 적용
+   (요소 자체에 opacity를 주면 자식 콘텐츠도 흐려짐).
+   크기·위치 모두 --frame-h/--frame-w(아래 정의) 비례 → reveal.js content 슬라이드와
+   동일하게 "letterbox된 frame 크기"를 기준으로 스케일. */
+.layout-_agenda::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--frame-h) * 0.03);
+  right: calc(var(--frame-w) * 0.02);
+  width: calc(var(--frame-w) * 0.126);
+  height: calc(var(--frame-h) * 0.198);
+  background-image: url('../theme-img/finfraCat.png');
+  background-repeat: no-repeat;
+  background-position: right top;
+  background-size: contain;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+  transform: translateY(-13.5%);
+}
+
+/* Issue113: agenda 제목을 상단 노랑 가로선 아래로 내려 겹침 제거. */
 .layout-_agenda .toc-page-header {
-  padding: 2px 28px;
+  padding: calc(var(--frame-h) * 0.03) 28px calc(var(--frame-h) * 0.01) 28px;
   margin: 0;
+  position: relative;
+  z-index: 1;
 }
 
 /* Issue80 §2.2: standalone agenda 상단 노랑 가로선
@@ -763,9 +819,30 @@
   z-index: 0;
 }
 
-/* Issue80 §2.2: 다운로드 버튼이 puffer2s와 충돌하지 않도록 헤더 안쪽으로 정렬 */
-.layout-_agenda .toc-page-downloads {
-  margin-right: 9%;
+/* Issue80 §2.2 코드 제거: .toc-page-downloads가 헤더 밖으로 분리되어 우하단 absolute로 이동했으므로
+   마스코트(우상단)와 더 이상 시각적 충돌 없음. margin-right 회피 마진 불필요. */
+
+/* Issue113: agenda-frame은 reveal.js content 슬라이드와 달리 transform: scale을 받지 않는
+   standalone 컨테이너. content 슬라이드처럼 "frame 실제 크기" 기준으로 스케일하기 위해
+   base.css §12의 min() 공식을 그대로 CSS 변수로 재현(--frame-h, --frame-w).
+   font-size 및 마스코트·헤더 padding이 모두 이 변수에 비례하므로 viewport letterbox 변화와
+   무관하게 frame 비율 그대로 유지됨. (container-type: size는 markmap SVG 사이징을 깨뜨리므로 미사용) */
+body.agenda-page {
+  --frame-w: min(
+    calc(100vw - 2 * var(--slide-outer-padding, 0px)),
+    calc((100vh - 2 * var(--slide-outer-padding, 0px)) * var(--slide-ratio))
+  );
+  --frame-h: min(
+    calc(100vh - 2 * var(--slide-outer-padding, 0px)),
+    calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
+  );
+}
+html.ratio-fill body.agenda-page {
+  --frame-w: calc(100vw - 2 * var(--slide-outer-padding, 0px));
+  --frame-h: calc(100vh - 2 * var(--slide-outer-padding, 0px));
+}
+body.agenda-page .agenda-frame {
+  font-size: calc(var(--frame-h) * 0.022);
 }
 
 /* toc-markmap이 남은 세로 공간을 채우도록 flex-grow 적용 (theContents 패턴).
@@ -777,6 +854,8 @@
 .agenda-frame .toc-markmap {
   flex: 1 1 0;
   min-height: 0;
+  /* Issue113: 마스코트(고양이)와 시각적으로 분리되도록 markmap 영역만 아래로 이동 */
+  margin-top: calc(var(--frame-h) * 0.03);
   border: 2px solid var(--kn-accent);
   border-radius: 8px;
   padding: 12px;

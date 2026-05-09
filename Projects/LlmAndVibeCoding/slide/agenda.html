@@ -1,9 +1,19 @@
 <!doctype html>
-<html lang="ko" class="ratio-16-9" style="--slide-ratio: 1.7778; --slide-outer-padding: 0px; --slide-inner-padding: 0px;">
+<html lang="ko" class="ratio-3-2" style="--slide-ratio: 1.5; --slide-outer-padding: 10px; --slide-inner-padding: 0px;">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>LLM 툴 진화와 바이브 코딩 세대 구분 — Agenda</title>
+<script>
+    // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
+    try {
+      document.documentElement.classList.add('m2-initial-loading');
+      var s = location.search;
+      if (s.indexOf('back=1') !== -1 || s.indexOf('fwd=1') !== -1 || s.indexOf('last=1') !== -1) {
+        document.documentElement.classList.add('m2-cross-loading');
+      }
+    } catch (e) {}
+  </script>
 <style data-m2slide-base="true">
 /* =========================================================================
    m2slide base.css — 모든 테마 공통 기본 스타일 (Issue64 도입)
@@ -198,10 +208,21 @@
    - Reveal.js가 측정하는 viewport 크기 자체가 줄어들어 4면 균등 inset + 자동 fit
    - 기존 .reveal { inset } 방식은 left/top만 밀려나고 scale은 원본 viewport 기준이라 right/bottom 오버플로
    - 0이면 효과 없음 (기존과 동일)
+   - A안(애니메이션 outer padding 영역까지 가시화):
+     html/body/.reveal/.slides 의 overflow를 visible로 풀어 슬라이드 transition 시
+     section이 .reveal 영역(=padding 안쪽)을 벗어나도 body padding 영역에 paint 되도록 함.
 */
+html,
+body {
+  overflow: visible !important;
+}
 body {
   padding: var(--slide-outer-padding, 0) !important;
   box-sizing: border-box !important;
+}
+.reveal,
+.reveal .slides {
+  overflow: visible !important;
 }
 
 /* 개별 슬라이드 섹션
@@ -1197,18 +1218,30 @@ html.ratio-fill .agenda-frame {
 }
 
 </style>
-<link rel="stylesheet" href="css/custom.css?v=1777907705674">
+<style>
+    /* Issue110/125: visibility 가드 — Reveal·agenda 양쪽 컨테이너 적용 */
+    html.m2-initial-loading .reveal,
+    html.m2-initial-loading .agenda-frame,
+    html.m2-cross-loading .reveal,
+    html.m2-cross-loading .agenda-frame,
+    body.m2-cross-loading .reveal,
+    body.m2-cross-loading .agenda-frame { visibility: hidden; }
+    /* Issue120: cross-page 페이지 진입 fade-in (cover↔agenda↔deck 모두 적용) */
+    @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
+    body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
+</style>
+<link rel="stylesheet" href="css/custom.css?v=1778317274958">
 </head>
-<body class="agenda-page guide-line-mode">
+<body class="agenda-page guide-line-mode" data-nav-indicator="both">
 <div class="agenda-frame">
 <div class="layout-_agenda">
   <header class="toc-page-header">
-    <h1 class="toc-page-title">LLM 툴 진화와 바이브 코딩 세대 구분</h1>
-    <div class="toc-page-downloads"><a href="LlmAndVibeCoding.epub" download class="toc-download-btn toc-download-epub">📚 EPUB</a><a href="LlmAndVibeCoding.pdf" download class="toc-download-btn toc-download-pdf">📄 PDF</a><a href="LlmAndVibeCoding.pptx" download class="toc-download-btn toc-download-pptx">📊 PPTX</a></div>
+    <h1 class="toc-page-title">Agenda</h1>
   </header>
   <div class="toc-markmap">
     <svg class="toc-mindmap-svg"></svg>
   </div>
+  
 </div>
 </div>
 <div id="m2-guide-layout-label" style="
@@ -1237,7 +1270,34 @@ html.ratio-fill .agenda-frame {
     if (!svg) return;
     const opts = window.markmap.deriveOptions({ initialExpandLevel: 2 });
     window.mm = window.markmap.Markmap.create(svg, opts, tocData);
+    // Issue110: cross-page 가드 해제 (markmap 렌더 후 다음 frame)
+    requestAnimationFrame(m2ReleaseCrossGuard);
   }
+  function m2ReleaseCrossGuard(){
+      // Issue122: cross-page navigation(?fwd=1/?back=1/?last=1)으로 진입한 경우만 fade-in 적용.
+      // M2_CROSS_GUARD_HEAD_HTML이 cross-page 시그널 진입 시에만 m2-cross-loading class를 부여하므로
+      // 이 클래스 보유 여부로 cross-page 여부 판정 → 단순 페이지 리프레쉬·새 탭 진입은 fade-in 미발동.
+      var wasCrossLoading = document.documentElement.classList.contains('m2-cross-loading')
+                         || document.body.classList.contains('m2-cross-loading');
+      document.documentElement.classList.remove('m2-cross-loading');
+      document.body.classList.remove('m2-cross-loading');
+      // Issue125: m2-initial-loading 가드도 함께 해제 (모든 첫 로드의 visibility 차단 풀기).
+      document.documentElement.classList.remove('m2-initial-loading');
+      if (!wasCrossLoading) return;
+      // Issue120: 가드 해제 직후 body에 .m2-cross-loaded 부여 → CSS @keyframes m2-page-fade-in 250ms 재생.
+      // animationend 후 class 제거(once). CSS selector가 없는 경우(default_background_transition: none)에는 효과 없음.
+      try {
+        document.body.classList.add('m2-cross-loaded');
+        document.body.addEventListener('animationend', function _m2FadeEnd(e){
+          if (e.animationName === 'm2-page-fade-in') {
+            document.body.classList.remove('m2-cross-loaded');
+            document.body.removeEventListener('animationend', _m2FadeEnd);
+          }
+        });
+      } catch (_) {}
+    }
+  // Issue110: markmap CDN 로드 실패·지연에도 무한 가드 방지 — 2초 후 강제 해제
+  setTimeout(m2ReleaseCrossGuard, 2000);
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
@@ -1251,6 +1311,13 @@ html.ratio-fill .agenda-frame {
 //   ⇞ PgUp → 무시 (자기 페이지)
 //   ⇟ PgDown → LAST_CHAPTER?last=1 (Chapter) / index.html?last=1 (Single)
 (function(){
+  function m2NavWithSignal(url, signal){
+      var hashIdx = url.indexOf('#');
+      var base = hashIdx === -1 ? url : url.slice(0, hashIdx);
+      var hash = hashIdx === -1 ? '' : url.slice(hashIdx);
+      var sep = base.indexOf('?') === -1 ? '?' : '&';
+      return base + sep + signal + hash;
+    }
   const _tocData = {"content":"","children":[{"content":"<a href=\"01-opening.html\">1. AI 코딩의 패러다임 전환</a>","children":[]},{"content":"<a href=\"02-llm-tool-evolution.html\">2. LLM 코딩 툴의 진화 과정</a>","children":[{"content":"<a href=\"02.1.chat-based.html\">2.1 초기: 채팅 기반 시대 (2022-2023)</a>","children":[]},{"content":"<a href=\"02.2.ide-integration.html\">2.2 전환점: IDE 통합의 시작 (2023-2024)</a>","children":[]},{"content":"<a href=\"02.3.cli-based.html\">2.3 현재: CLI 기반 시대 (2024-현재)</a>","children":[]}]},{"content":"<a href=\"03-vibecoding-concept.html\">3. 바이브 코딩(VibeCoding) 개념과 철학</a>","children":[{"content":"<a href=\"03.1.chat-limitations.html\">3.1 채팅 기반의 한계</a>","children":[]},{"content":"<a href=\"03.2.vibecoding-start.html\">3.2 바이브 코딩의 시작</a>","children":[]}]},{"content":"<a href=\"04-vibecoding-generations.html\">4. 바이브 코딩 세대 구분</a>","children":[{"content":"<a href=\"04.1.ide-generation.html\">4.1 1세대: IDE 기반 코딩</a>","children":[]},{"content":"<a href=\"04.2.cli-generation.html\">4.2 2세대: CLI 기반 코딩</a>","children":[]}]},{"content":"<a href=\"05-generation-comparison.html\">5. 세대별 비교 및 선택 가이드</a>","children":[]},{"content":"<a href=\"06-practical-cases.html\">6. (참고) 실전 사례: 세대별 활용법</a>","children":[]},{"content":"<a href=\"07-adoption-roadmap.html\">7. (참고) 바이브 코딩 도입 로드맵</a>","children":[]},{"content":"<a href=\"08-qa-closing.html\">8. Q&A 및 클로징</a>","children":[]}]};
   function firstHrefFromToc(node){
     if (!node || !node.children || node.children.length === 0) return null;
@@ -1266,7 +1333,7 @@ html.ratio-fill .agenda-frame {
   }
   const AGENDA_MODE = 'chapter';
   const AGENDA_LAST_CHAPTER = '08-qa-closing.html';
-  const AGENDA_COVER_ENABLED = false;
+  const AGENDA_COVER_ENABLED = true;
   const nextUrl = firstHrefFromToc(_tocData);
   // Issue89: capture phase — 일관성 (agenda는 reveal.js 미사용이라 hijack 우려는 적으나 동일 패턴 유지)
   document.addEventListener('keydown', function(e){
@@ -1275,7 +1342,7 @@ html.ratio-fill .agenda-frame {
     if (((e.key === 'ArrowLeft' || e.keyCode === 37) && !e.metaKey) ||
         e.key === 'ArrowUp' || e.keyCode === 38) {
       e.preventDefault(); e.stopImmediatePropagation();
-      if (AGENDA_COVER_ENABLED) window.location.href = 'index.html';
+      if (AGENDA_COVER_ENABLED) window.location.href = 'index.html?back=1';
       return;
     }
     // → / ↓ (child) / Space → 첫 챕터/첫 H1 anchor
@@ -1283,16 +1350,25 @@ html.ratio-fill .agenda-frame {
     if (((e.key === 'ArrowRight' || e.keyCode === 39) && !e.metaKey) ||
         e.key === 'ArrowDown' || e.keyCode === 40 ||
         e.key === ' ' || e.keyCode === 32) {
-      if (nextUrl) { e.preventDefault(); e.stopImmediatePropagation(); window.location.href = nextUrl; }
+      if (nextUrl) {
+        e.preventDefault(); e.stopImmediatePropagation();
+        // Issue110: hash 포함 URL(single 모드 'index.html#/2')에서도 ?fwd=1을 hash 앞에 안전 주입
+        window.location.href = m2NavWithSignal(nextUrl, 'fwd=1');
+      }
       return;
     }
-    // ⇤ Home / ⇥ End (sibling) → 동작 없음 (Agenda는 메타 페이지, sibling 없음)
-    // Issue92: ',' / '.' 를 Home/End fallback 으로 매핑 — 동일하게 no-op
-    // Issue92_1: ⌘+← / ⌘+→ 도 Home/End fallback — 동일하게 no-op
+    // Issue114: ⇤ Home → Cover (parent fall-up, cover_enabled=true 한정) / ⇥ End → 첫 챕터 TOC (child fall-down)
+    // Issue92: ',' (Comma) / '.' (Period) fallback / Issue92_1: ⌘+← / ⌘+→ fallback 동일 처리
     if (e.key === 'Home' || e.keyCode === 36 || e.code === 'Comma' ||
-        e.key === 'End' || e.keyCode === 35 || e.code === 'Period' ||
-        (e.metaKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight'))) {
+        (e.metaKey && e.key === 'ArrowLeft')) {
       e.preventDefault(); e.stopImmediatePropagation();
+      if (AGENDA_COVER_ENABLED) window.location.href = 'index.html?back=1';
+      return;
+    }
+    if (e.key === 'End' || e.keyCode === 35 || e.code === 'Period' ||
+        (e.metaKey && e.key === 'ArrowRight')) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      if (nextUrl) window.location.href = m2NavWithSignal(nextUrl, 'fwd=1');
       return;
     }
     // ⇞ PgUp → 자기 페이지 무시
