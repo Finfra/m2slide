@@ -3,10 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Text Samples</title>
+  <title>Examples for MermaidExample</title>
   <script>
-    // Issue110: cross-page flicker 가드 — body 파싱 전 documentElement에 클래스 부여
+    // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
+      document.documentElement.classList.add('m2-initial-loading');
       var s = location.search;
       if (s.indexOf('back=1') !== -1 || s.indexOf('fwd=1') !== -1 || s.indexOf('last=1') !== -1) {
         document.documentElement.classList.add('m2-cross-loading');
@@ -1222,9 +1223,7 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css"/>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"/>
-  <link rel="stylesheet" href="css/custom.css?v=1777946742762">
+  <link rel="stylesheet" href="css/custom.css?v=1778311526485">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1335,6 +1334,18 @@ html.ratio-fill .agenda-frame {
       padding: 0 6px !important;
       white-space: nowrap;
     }
+    /* Issue115: nav_indicator — 우측 하단 표시 모드 (both | diamond | page) */
+    /* diamond: 페이지번호만 숨김 (마름모만 노출) */
+    body[data-nav-indicator="diamond"] .reveal .slide-number {
+      display: none !important;
+    }
+    /* page: 마름모(↑/↓) + 좌우 화살표(←/→) 모두 숨김 (페이지번호만 노출) */
+    body[data-nav-indicator="page"] .reveal .controls .navigate-up,
+    body[data-nav-indicator="page"] .reveal .controls .navigate-down,
+    body[data-nav-indicator="page"] .reveal .controls .navigate-left,
+    body[data-nav-indicator="page"] .reveal .controls .navigate-right {
+      display: none !important;
+    }
     /* Last slide message */
     #last-slide-message {
       display: none;
@@ -1368,14 +1379,19 @@ html.ratio-fill .agenda-frame {
       animation: m2-slide-from-right 400ms ease-out !important;
     }
     
-    /* Issue110: cross-page flicker 가드 — Reveal·agenda 양쪽 컨테이너 적용 */
+    /* Issue110/125: visibility 가드 — Reveal·agenda 양쪽 컨테이너 적용 */
+    html.m2-initial-loading .reveal,
+    html.m2-initial-loading .agenda-frame,
     html.m2-cross-loading .reveal,
     html.m2-cross-loading .agenda-frame,
     body.m2-cross-loading .reveal,
     body.m2-cross-loading .agenda-frame { visibility: hidden; }
+    /* Issue120: cross-page 페이지 진입 fade-in (cover↔agenda↔deck 모두 적용) */
+    @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
+    body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
   </style>
 </head>
-<body class="top-align-mode  media-enlarge-fit" style="
+<body class="  media-enlarge-fit" data-nav-indicator="both" style="
   --global-font-family: Pretendard, sans-serif;
   --title-font-family: GmarketSansBold;
   --title-font-weight: 50;
@@ -1383,7 +1399,7 @@ html.ratio-fill .agenda-frame {
   --title-color: #000000;
   --title-align: center;
   --title-padding: 1%;
-  --main-title-font-family: GmarketSansBold;
+  --main-title-font-family: inherit;
   --main-title-font-weight: 400;
   --main-title-font-size: 2em;
   --main-title-color: #333333;
@@ -1391,7 +1407,7 @@ html.ratio-fill .agenda-frame {
   --main-title-padding: 40px 0 20px 0;
   --outline-title-font-family: GmarketSansBold;
   --outline-title-font-weight: 600;
-  --outline-title-font-size: 2.0em;
+  --outline-title-font-size: 2em;
   --outline-title-color: #000000;
   --outline-title-align: center;
   --outline-title-padding: 0;
@@ -1401,14 +1417,14 @@ html.ratio-fill .agenda-frame {
   --outline-title-sub-color: #666666;
   --outline-title-sub-align: right;
   --outline-title-sub-padding: 5px;
-  --content-font-family: Nanum Gothic Coding;
+  --content-font-family: inherit;
   --content-font-size: 1em;
   --content-color: #000000;
   --content-align: left;
   --content-padding: 1%;
   --title-contents-gap-pct: 30;
-  --slide-ratio: 1.7778;
-  --slide-outer-padding: 0px;
+  --slide-ratio: 1.5;
+  --slide-outer-padding: 10px;
   --slide-inner-padding: 0px;
 ">
   <!-- Issue107: nav-up-btn 제거 — Reveal 기본 .controls .navigate-up/.navigate-down에 동작 위임 -->
@@ -1416,51 +1432,30 @@ html.ratio-fill .agenda-frame {
 
   <div id="last-slide-message">마지막 페이지입니다. 다음 챕터로 이동하려면 다시 →를 누르세요.</div>
 
-  <div class="reveal ratio-16-9">
+  <div class="reveal ratio-3-2">
     <div class="slides">
 
-<section data-heading-level="1" class="layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">Text Samples</h1>
-  </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
+<section class="layout-_cover">
+  <div class="cover-header">
+    <h1 class="cover-title">Examples for MermaidExample</h1>
+    
+    
   </div>
+
+  <div class="cover-body">
+    <div class="cover-instructor">
+      <span class="cover-instructor-name">남중구 (핀프라)</span>
+      <span class="cover-instructor-contact">jgnam73@hotmail.com</span>
+    </div>
+
+    <div class="cover-meta">
+      
+      <span class="cover-version">1.1.0</span>
+    </div>
+  </div>
+
   
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="2">
-<li class="chapter-card"><a href="#/2">짧은글 ABC abc</a></li>
-<li class="chapter-card"><a href="#/3">긴글</a></li>
-</ul></div>
 </section>
-
-      <section class="has-text" data-chapter-title="Text Samples">
-<h2 class="title">짧은글 ABC abc</h2>
-<div class="theContents">
-<ul>
-<li class="bullet-dot">hi</li>
-<li class="bullet-dot">hello
-<ul>
-<li class="bullet-dash">hi</li>
-</ul>
-</li>
-</ul>
-</div>
-      </section>
-
-      <section class="has-text" data-chapter-title="Text Samples">
-<h2 class="title">긴글</h2>
-<div class="theContents">
-<ul>
-<li class="bullet-dot">hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi </li>
-<li class="bullet-dot">hello
-<ul>
-<li class="bullet-dash">hihihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi  hihi hihihih ihihihihihi hihihi hello</li>
-<li class="bullet-dash">hihihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi  hihi hihihih ihihihihihi hihihi hello</li>
-</ul>
-</li>
-</ul>
-</div>
-      </section>
 
 <section data-heading-level="1" class="layout-_toc title-slide">
   <header class="toc-page-header">
@@ -1471,42 +1466,42 @@ html.ratio-fill .agenda-frame {
   </div>
   
   <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="30">
-<li class="chapter-card"><a href="#/5">Paragraph and Diagram</a></li>
-<li class="chapter-card"><a href="#/6">Flowchart</a></li>
-<li class="chapter-card"><a href="#/7">Class</a></li>
-<li class="chapter-card"><a href="#/8">Sequence</a></li>
-<li class="chapter-card"><a href="#/9">Entity Relationship</a></li>
-<li class="chapter-card"><a href="#/10">State</a></li>
-<li class="chapter-card"><a href="#/11">Mindmap</a></li>
-<li class="chapter-card"><a href="#/12">Architecture</a></li>
-<li class="chapter-card"><a href="#/13">Block</a></li>
-<li class="chapter-card"><a href="#/14">C4</a></li>
-<li class="chapter-card"><a href="#/15">Gantt</a></li>
-<li class="chapter-card"><a href="#/16">Git</a></li>
-<li class="chapter-card"><a href="#/17">Kanban</a></li>
-<li class="chapter-card"><a href="#/18">Packet</a></li>
-<li class="chapter-card"><a href="#/19">Pie</a></li>
-<li class="chapter-card"><a href="#/20">Quadrant</a></li>
-<li class="chapter-card"><a href="#/21">Radar</a></li>
-<li class="chapter-card"><a href="#/22">Requirement</a></li>
-<li class="chapter-card"><a href="#/23">Sankey</a></li>
-<li class="chapter-card"><a href="#/24">StateDiagram</a></li>
-<li class="chapter-card"><a href="#/25">Timeline</a></li>
-<li class="chapter-card"><a href="#/26">Timeline (계속)</a></li>
-<li class="chapter-card"><a href="#/27">Treemap</a></li>
-<li class="chapter-card"><a href="#/28">User Journey</a></li>
-<li class="chapter-card"><a href="#/29">XY</a></li>
-<li class="chapter-card"><a href="#/30">blockdiag</a></li>
-<li class="chapter-card"><a href="#/31">seqdiag</a></li>
-<li class="chapter-card"><a href="#/32">actdiag</a></li>
-<li class="chapter-card"><a href="#/33">nwdiag</a></li>
-<li class="chapter-card"><a href="#/34">`ditaa` (ASCII → 그림 변환)</a></li>
+<li class="chapter-card"><a href="#/3">Paragraph and Diagram</a></li>
+<li class="chapter-card"><a href="#/4">Flowchart</a></li>
+<li class="chapter-card"><a href="#/5">Class</a></li>
+<li class="chapter-card"><a href="#/6">Sequence</a></li>
+<li class="chapter-card"><a href="#/7">Entity Relationship</a></li>
+<li class="chapter-card"><a href="#/8">State</a></li>
+<li class="chapter-card"><a href="#/9">Mindmap</a></li>
+<li class="chapter-card"><a href="#/10">Architecture</a></li>
+<li class="chapter-card"><a href="#/11">Block</a></li>
+<li class="chapter-card"><a href="#/12">C4</a></li>
+<li class="chapter-card"><a href="#/13">Gantt</a></li>
+<li class="chapter-card"><a href="#/14">Git</a></li>
+<li class="chapter-card"><a href="#/15">Kanban</a></li>
+<li class="chapter-card"><a href="#/16">Packet</a></li>
+<li class="chapter-card"><a href="#/17">Pie</a></li>
+<li class="chapter-card"><a href="#/18">Quadrant</a></li>
+<li class="chapter-card"><a href="#/19">Radar</a></li>
+<li class="chapter-card"><a href="#/20">Requirement</a></li>
+<li class="chapter-card"><a href="#/21">Sankey</a></li>
+<li class="chapter-card"><a href="#/22">StateDiagram</a></li>
+<li class="chapter-card"><a href="#/23">Timeline</a></li>
+<li class="chapter-card"><a href="#/24">Timeline (계속)</a></li>
+<li class="chapter-card"><a href="#/25">Treemap</a></li>
+<li class="chapter-card"><a href="#/26">User Journey</a></li>
+<li class="chapter-card"><a href="#/27">XY</a></li>
+<li class="chapter-card"><a href="#/28">blockdiag</a></li>
+<li class="chapter-card"><a href="#/29">seqdiag</a></li>
+<li class="chapter-card"><a href="#/30">actdiag</a></li>
+<li class="chapter-card"><a href="#/31">nwdiag</a></li>
+<li class="chapter-card"><a href="#/32">`ditaa` (ASCII → 그림 변환)</a></li>
 </ul></div>
 </section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
-<h2 class="title">Paragraph and Diagram</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Paragraph and Diagram</h2>
+  <div class="contents-body">
 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
 
 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
@@ -1517,13 +1512,12 @@ graph TD;
     A --> C[IDE 통합];
     B --> D[CLI 시대];
     C --> D;
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">Flowchart</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Flowchart</h2>
+  <div class="contents-body">
 <div class="media-container mermaid">
 flowchart TD
     A[Christmas] -->|Get money| B(Go shopping)
@@ -1532,13 +1526,13 @@ flowchart TD
     C -->|Two| E[iPhone]
     C -->|Three| F[fa:fa-car Car]
   
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">Class</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Class</h2>
+  <div class="contents-body">
+
 <div class="media-container mermaid">
 classDiagram
     Animal <|-- Duck
@@ -1561,26 +1555,26 @@ classDiagram
       +bool is_wild
       +run()
     }
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">Sequence</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Sequence</h2>
+  <div class="contents-body">
+
 <div class="media-container mermaid">
 sequenceDiagram
     Alice->>+John: Hello John, how are you?
     Alice->>+John: John, can you hear me?
     John-->>-Alice: Hi Alice, I can hear you!
     John-->>-Alice: I feel great!
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">Entity Relationship</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Entity Relationship</h2>
+  <div class="contents-body">
+
 <div class="media-container mermaid">
 erDiagram
     CUSTOMER ||--o{ ORDER : places
@@ -1605,13 +1599,13 @@ erDiagram
         int quantity
         float price
     }
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">State</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">State</h2>
+  <div class="contents-body">
+
 <div class="media-container mermaid">
 stateDiagram-v2
     [*] --> Still
@@ -1620,13 +1614,13 @@ stateDiagram-v2
     Moving --> Still
     Moving --> Crash
     Crash --> [*]
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">Mindmap</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Mindmap</h2>
+  <div class="contents-body">
+
 <div class="media-container mermaid">
 mindmap
   root((mindmap))
@@ -1645,13 +1639,12 @@ mindmap
     Tools
       Pen and paper
       Mermaid
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">Architecture</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Architecture</h2>
+  <div class="contents-body">
 <div class="media-container mermaid">
 architecture-beta
     group api(cloud)[API]
@@ -1664,13 +1657,13 @@ architecture-beta
     db:L -- R:server
     disk1:T -- B:server
     disk2:T -- B:db
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">Block</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Block</h2>
+  <div class="contents-body">
+
 <div class="media-container mermaid">
 block-beta
 columns 1
@@ -1686,13 +1679,13 @@ columns 1
   ID --> D
   C --> D
   style B fill:#969,stroke:#333,stroke-width:4px
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">C4</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">C4</h2>
+  <div class="contents-body">
+
 <div class="media-container mermaid">
 C4Context
     title System Context diagram for Internet Banking System
@@ -1727,13 +1720,13 @@ C4Context
     BiRel(SystemAA, SystemE, "Uses")
     Rel(SystemAA, SystemC, "Sends e-mails", "SMTP")
     Rel(SystemC, customerA, "Sends e-mails to")
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">Gantt</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Gantt</h2>
+  <div class="contents-body">
+
 <div class="media-container mermaid">
 gantt
     title A Gantt Diagram
@@ -1744,13 +1737,13 @@ gantt
     section Another
     Task in sec      :2014-01-12  , 12d
     another task      : 24d
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">Git</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Git</h2>
+  <div class="contents-body">
+
 <div class="media-container mermaid">
 gitGraph
     commit
@@ -1767,13 +1760,13 @@ gitGraph
     commit
     checkout main
     merge feature
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">Kanban</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Kanban</h2>
+  <div class="contents-body">
+
 <div class="media-container mermaid">
 %% Mermaid config removed for slide compatibility
 kanban
@@ -1795,13 +1788,13 @@ kanban
   id12[Can't reproduce]
     id3[Weird flickering in Firefox]
 
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">Packet</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Packet</h2>
+  <div class="contents-body">
+
 <div class="media-container mermaid">
 %% title: "TCP Packet"
 packet
@@ -1822,25 +1815,25 @@ packet
 144-159: "Urgent Pointer"
 160-191: "(Options and Padding)"
 192-255: "Data (variable length)"
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">Pie</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Pie</h2>
+  <div class="contents-body">
+
 <div class="media-container mermaid">
 pie title Pets adopted by volunteers
     "Dogs" : 386
     "Cats" : 85
     "Rats" : 15
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">Quadrant</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Quadrant</h2>
+  <div class="contents-body">
+
 <div class="media-container mermaid">
 quadrantChart
     title Reach and engagement of campaigns
@@ -1856,13 +1849,13 @@ quadrantChart
     Campaign D: [0.78, 0.34]
     Campaign E: [0.40, 0.34]
     Campaign F: [0.35, 0.78]
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">Radar</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Radar</h2>
+  <div class="contents-body">
+
 <div class="media-container mermaid">
 %% title: "Grades"
 radar-beta
@@ -1874,13 +1867,13 @@ radar-beta
   max 100
   min 0
 
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">Requirement</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Requirement</h2>
+  <div class="contents-body">
+
 <div class="media-container mermaid">
 requirementDiagram
 
@@ -1896,13 +1889,13 @@ requirementDiagram
     }
 
     test_entity - satisfies -> test_req
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">Sankey</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Sankey</h2>
+  <div class="contents-body">
+
 <div class="media-container mermaid">
 %% sankey config removed for slide compatibility
 sankey-beta
@@ -1975,26 +1968,24 @@ Tidal,Electricity grid,9.452
 UK land based bioenergy,Bio-conversion,182.01
 Wave,Electricity grid,19.013
 Wind,Electricity grid,289.366
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">StateDiagram </h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">StateDiagram </h2>
+  <div class="contents-body">
 <div class="media-container mermaid">
 stateDiagram
     [*] --> S1
     S1 --> S2
     S2 --> [*]
 
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
-<h2 class="title">Timeline</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Timeline</h2>
+  <div class="contents-body">
 <ul>
 <li class="bullet-dot">base</li>
 </ul>
@@ -2006,13 +1997,12 @@ timeline
          : Google
     2005 : YouTube
     2006 : Twitter
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section class="has-text" data-chapter-title="Mermaid Samples">
-<h2 class="title">Timeline (계속)</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Timeline (계속)</h2>
+  <div class="contents-body">
 <ul>
 <li class="bullet-dot">beta</li>
 </ul>
@@ -2021,13 +2011,12 @@ timeline-beta
     section Projects
       2023 : Start
       2024 : Release
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">Treemap</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Treemap</h2>
+  <div class="contents-body">
 <div class="media-container mermaid">
 treemap-beta
 "Section 1"
@@ -2037,13 +2026,13 @@ treemap-beta
 "Section 2"
     "Leaf 2.1": 20
     "Leaf 2.2": 25
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">User Journey</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">User Journey</h2>
+  <div class="contents-body">
+
 <div class="media-container mermaid">
 journey
     title My working day
@@ -2054,13 +2043,13 @@ journey
     section Go home
       Go downstairs: 5: Me
       Sit down: 5: Me
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">XY</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">XY</h2>
+  <div class="contents-body">
+
 <div class="media-container mermaid">
 xychart-beta
     title "Sales Revenue"
@@ -2068,120 +2057,61 @@ xychart-beta
     y-axis "Revenue (in $)" 4000 --> 11000
     bar [5000, 6000, 7500, 8200, 9500, 10500, 11000, 10200, 9200, 8500, 7000, 6000]
     line [5000, 6000, 7500, 8200, 9500, 10500, 11000, 10200, 9200, 8500, 7000, 6000]
-</div>
-</div>
-      </section>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">blockdiag</h2>
-<div class="theContents">
-<div class="media-container kroki" data-type="blockdiag">
-blockdiag {
-  blockdiag -> generates -> "block-diagrams";
-  blockdiag -> is -> "very easy!";
+<section class="layout-_contents">
+  <h2 class="title">blockdiag</h2>
+  <div class="contents-body">
 
-  blockdiag [color = "greenyellow"];
-  "block-diagrams" [color = "pink"];
-  "very easy!" [color = "orange"];
-}
-</div>
-</div>
-      </section>
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/blockdiag_3d91c7f2dbe3.svg" alt="blockdiag diagram"/></div>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">seqdiag</h2>
-<div class="theContents">
-<div class="media-container kroki" data-type="seqdiag">
-seqdiag {
-  browser  -> webserver [label = "GET /index.html"];
-  browser <-- webserver;
+<section class="layout-_contents">
+  <h2 class="title">seqdiag</h2>
+  <div class="contents-body">
 
-  browser  -> webserver [label = "POST /blog/comment"];
-  webserver -> database [label = "INSERT comment"];
-  webserver <-- database;
-  browser  <-- webserver;
-}
-</div>
-</div>
-      </section>
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/seqdiag_dbdff9c23f59.svg" alt="seqdiag diagram"/></div>
+</div></div>
+</section>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">actdiag</h2>
-<div class="theContents">
-<div class="media-container kroki" data-type="actdiag">
-actdiag {
-  write -> convert -> image;
+<section class="layout-_contents">
+  <h2 class="title">actdiag</h2>
+  <div class="contents-body">
 
-  lane user {
-    label = "User";
-    write  [label = "Writing reST"];
-    image  [label = "Get diagram IMAGE!"];
-  }
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/actdiag_1bae3522e5aa.svg" alt="actdiag diagram"/></div>
+</div></div>
+</section>
 
-  lane actdiag {
-    convert [label = "Convert reST to Image"];
-  }
-}
-</div>
-</div>
-      </section>
+<section class="layout-_contents">
+  <h2 class="title">nwdiag</h2>
+  <div class="contents-body">
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title">nwdiag</h2>
-<div class="theContents">
-<div class="media-container kroki" data-type="nwdiag">
-nwdiag {
-  network dmz {
-    address = "210.x.x.x/24";
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/nwdiag_bb80f1642847.svg" alt="nwdiag diagram"/></div>
+</div></div>
+</section>
 
-    web01 [address = "210.x.x.1"];
-    web02 [address = "210.x.x.2"];
-  }
+<section class="layout-_contents">
+  <h2 class="title"><code>ditaa</code> (ASCII → 그림 변환)</h2>
+  <div class="contents-body">
 
-  network internal {
-    address = "192.168.0.0/24";
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/ditaa_daf274882d65.svg" alt="ditaa diagram"/></div>
+</div></div>
+</section>
 
-    web01 [address = "192.168.0.1"];
-    web02 [address = "192.168.0.2"];
-    db01  [address = "192.168.0.10"];
-  }
-}
-</div>
-</div>
-      </section>
+<section class="layout-_contents">
+  <div class="contents-body"><h1 class="outline-title">Graphviz (DOT)</h1>
 
-      <section data-chapter-title="Mermaid Samples">
-<h2 class="title"><code>ditaa</code> (ASCII → 그림 변환)</h2>
-<div class="theContents">
-<div class="media-container kroki" data-type="ditaa">
-+--------+    +-------+
-|  CPU   | -> | RAM   |
-+--------+    +-------+
-</div>
-</div>
-      </section>
-
-      <section data-chapter-title="Graphviz (DOT)">
-<h1 class="outline-title">Graphviz (DOT)</h1>
-<div class="theContents">
-<div class="media-container kroki" data-type="dot">
-digraph G {
-    rankdir=TB;
-
-    A [label="2022 이전"];
-    B [label="ChatGPT"];
-    C [label="IDE 통합"];
-    D [label="CLI 시대"];
-
-    A -> B;
-    A -> C;
-    B -> D;
-    C -> D;
-}
-
-</div>
-</div>
-      </section>
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/dot_4f4b3a12bd03.svg" alt="dot diagram"/></div>
+</div></div>
+</section>
 
 <section data-heading-level="1" class="layout-_toc title-slide">
   <header class="toc-page-header">
@@ -2192,106 +2122,26 @@ digraph G {
   </div>
   
   <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="2">
-<li class="chapter-card"><a href="#/37">Vega-lite</a></li>
-<li class="chapter-card"><a href="#/38">Vega</a></li>
+<li class="chapter-card"><a href="#/35">Vega-lite</a></li>
+<li class="chapter-card"><a href="#/36">Vega</a></li>
 </ul></div>
 </section>
 
-      <section data-chapter-title="Vega">
-<h2 class="title">Vega-lite</h2>
-<div class="theContents">
-<div class="media-container kroki" data-type="vegalite">
-{
-    "$schema": "https://vega.github.io/schema/vega/v5.json",
-  "width": 300,
-  "height": 200,
-  "padding": 5,
-  "data": {
-    "values": [
-      {"a": "A", "b": 28},
-      {"a": "B", "b": 55},
-      {"a": "C", "b": 43},
-      {"a": "D", "b": 91},
-      {"a": "E", "b": 81},
-      {"a": "F", "b": 53}
-    ]
-  },
-  "mark": "bar",
-  "encoding": {
-    "x": {"field": "a", "type": "ordinal"},
-    "y": {"field": "b", "type": "quantitative"}
-  }
-}
-</div>
-</div>
-      </section>
+<section class="layout-_contents">
+  <h2 class="title">Vega-lite</h2>
+  <div class="contents-body">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/vegalite_a9e6c3e3adef.svg" alt="vegalite diagram"/></div>
+</div></div>
+</section>
 
-      <section data-chapter-title="Vega">
-<h2 class="title">Vega</h2>
-<div class="theContents">
-<div class="media-container kroki" data-type="vega">
-{
-  "$schema": "https://vega.github.io/schema/vega/v5.json",
-  "width": 300,
-  "height": 200,
-  "padding": 5,
-
-  "data": [
-    {
-      "name": "table",
-      "values": [
-        {"category": "A", "amount": 28},
-        {"category": "B", "amount": 55},
-        {"category": "C", "amount": 43},
-        {"category": "D", "amount": 91},
-        {"category": "E", "amount": 81},
-        {"category": "F", "amount": 53}
-      ]
-    }
-  ],
-
-  "scales": [
-    {
-      "name": "xscale",
-      "type": "band",
-      "domain": {"data": "table", "field": "category"},
-      "range": "width",
-      "padding": 0.05
-    },
-    {
-      "name": "yscale",
-      "type": "linear",
-      "domain": {"data": "table", "field": "amount"},
-      "range": "height"
-    }
-  ],
-
-  "axes": [
-    {"orient": "bottom", "scale": "xscale"},
-    {"orient": "left", "scale": "yscale"}
-  ],
-
-  "marks": [
-    {
-      "type": "rect",
-      "from": {"data": "table"},
-      "encode": {
-        "enter": {
-          "x": {"scale": "xscale", "field": "category"},
-          "width": {"scale": "xscale", "band": 1},
-          "y": {"scale": "yscale", "field": "amount"},
-          "y2": {"scale": "yscale", "value": 0}
-        },
-        "update": {"fill": {"value": "steelblue"}},
-        "hover": {"fill": {"value": "red"}}
-      }
-    }
-  ]
-}
-
-</div>
-</div>
-      </section>
+<section class="layout-_contents">
+  <h2 class="title">Vega</h2>
+  <div class="contents-body">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/vega_d76c226e4a8f.svg" alt="vega diagram"/></div>
+</div></div>
+</section>
 
 <section data-heading-level="1" class="layout-_toc title-slide">
   <header class="toc-page-header">
@@ -2302,61 +2152,37 @@ digraph G {
   </div>
   
   <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="4">
-<li class="chapter-card"><a href="#/40">Class Diagram</a></li>
-<li class="chapter-card"><a href="#/41">Component Diagram</a></li>
-<li class="chapter-card"><a href="#/42">Activity Diagram</a></li>
-<li class="chapter-card"><a href="#/43">Use Case Diagram</a></li>
+<li class="chapter-card"><a href="#/38">Class Diagram</a></li>
+<li class="chapter-card"><a href="#/39">Component Diagram</a></li>
+<li class="chapter-card"><a href="#/40">Activity Diagram</a></li>
+<li class="chapter-card"><a href="#/41">Use Case Diagram</a></li>
 </ul></div>
 </section>
 
-      <section data-chapter-title="PlantUML">
-<h2 class="title">Class Diagram</h2>
-<div class="theContents">
-<div class="media-container kroki" data-type="plantuml">
-@startuml
-A : 2022 이전;
-B : ChatGPT;
-C : IDE 통합;
-D : CLI 시대;
+<section class="layout-_contents">
+  <h2 class="title">Class Diagram</h2>
+  <div class="contents-body">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/plantuml_69cf0e62bce1.svg" alt="plantuml diagram"/></div>
+</div></div>
+</section>
 
-A --> B
-A --> C
-B --> D
-C --> D
-@enduml
-</div>
-</div>
-      </section>
+<section class="layout-_contents">
+  <h2 class="title">Component Diagram</h2>
+  <div class="contents-body">
 
-      <section data-chapter-title="PlantUML">
-<h2 class="title">Component Diagram</h2>
-<div class="theContents">
-<div class="media-container kroki" data-type="plantuml">
-@startuml
-component API
-component DB
-API --> DB
-@enduml
-</div>
-</div>
-      </section>
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/plantuml_ea4b30d578d8.svg" alt="plantuml diagram"/></div>
+</div></div>
+</section>
 
-      <section class="has-text" data-chapter-title="PlantUML">
-<h2 class="title">Activity Diagram</h2>
-<div class="theContents">
+<section class="layout-_contents">
+  <h2 class="title">Activity Diagram</h2>
+  <div class="contents-body">
 <div style="display:flex; gap:20px;">
   <div style="flex:1;">
-<div class="media-container kroki" data-type="plantuml">
-@startuml
-start
-:Login;
-if (valid?) then (yes)
-  :Show Dashboard;
-else (no)
-  :Retry;
-endif
-stop
-@enduml
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/plantuml_a179295a8a63.svg" alt="plantuml diagram"/></div>
 </div>
   </div>
   <div style="flex:1;">
@@ -2366,52 +2192,17 @@ stop
 </ul>
 
   </div>
-</div>
-</div>
-      </section>
-
-      <section data-chapter-title="PlantUML">
-<h2 class="title">Use Case Diagram</h2>
-<div class="theContents">
-<div class="media-container kroki" data-type="plantuml">
-@startuml
-actor User
-User --> (Login)
-User --> (Purchase)
-@enduml
-</div>
-</div>
-      </section>
-
-<section data-heading-level="1" class="layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">try</h1>
-  </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
-  </div>
-  
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="1">
-<li class="chapter-card"><a href="#/45">CodeBlock</a></li>
-</ul></div>
+</div></div>
 </section>
 
-      <section class="has-text" data-chapter-title="try">
-<h2 class="title">CodeBlock</h2>
-<div class="theContents">
-<ul>
-<li class="bullet-dot">요거는 Python. </li>
-</ul>
-<pre class="code-wrapper"><code class="language-python hljs">for i in range(10):
-  print(i)</code></pre>
-<ul>
-<li class="bullet-dot">요거는 java</li>
-</ul>
-<pre class="code-wrapper"><code class="language-java hljs">for (int i = 0; i &lt; 10; i++) {
-  System.out.println(i);
-}</code></pre>
-</div>
-      </section>
+<section class="layout-_contents">
+  <h2 class="title">Use Case Diagram</h2>
+  <div class="contents-body">
+
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/plantuml_c5b8bcde4acc.svg" alt="plantuml diagram"/></div>
+</div></div>
+</section>
 
     </div>
   </div>
@@ -2441,31 +2232,39 @@ User --> (Purchase)
 
     var isPrintMode = /print-pdf/gi.test(window.location.search);
 
+    // Issue125: hash-jump CSS transition은 reveal.js .reveal .slides에 박힌 transform transition이므로
+    // JS 옵션으로 막을 수 없음. M2_CROSS_GUARD의 m2-initial-loading visibility 가드로 시각적 차단.
+    // (Issue123/124의 transition gating 시도는 실효 없어 원복)
     Reveal.initialize({
       hash: true,
       // Issue108: URL hash와 페이지 번호 표시 모두 1-based로 통일 (#/1이 첫 슬라이드)
       hashOneBasedIndex: true,
       plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
       width: '1920',
-      height: '1080',
+      height: '1280',
       margin: 0.0,
       // Issue63: width 남을 때 horizontal center / height 남을 때 top 정렬.
       // ratio 모드에서는 항상 false (Reveal vertical centering이 ratio fit과 충돌하는 이슈 회피).
       // ratio-fill 모드에서만 사용자 top_align 설정 따름.
       center: false,
-      // Issue112: 챕터 모드 page_number_mode=global일 때 chapterMeta 기반 callback,
-      // 그 외(local/single)는 'c/t' 유지
+      // Issue112: 챕터 모드 page_number_mode=global일 때 chapterMeta 기반 callback.
+      //   reveal.js 5.x callback은 [a, separator, b] array 반환 형식 표준.
+      //   문자열 반환은 무시되어 fallback(챕터 인덱스만)으로 떨어지는 회귀 발생.
+      //   그 외(local/single)는 'c/t' 유지
       slideNumber: (window.M2_CHAPTER_META && window.M2_CHAPTER_META.mode === 'global')
         ? function(slide) {
             var m = window.M2_CHAPTER_META;
             var idx = (typeof Reveal.getIndices === 'function') ? Reveal.getIndices(slide) : { h: 0 };
             var globalNum = (m.slideOffset || 0) + (idx.h || 0) + 1;
-            var prefix = (m.breadcrumb && m.chapterNum) ? (m.chapterNum + ' › ') : '';
-            return prefix + globalNum + '/' + m.totalSlides;
+            var left = (m.breadcrumb && m.chapterNum) ? (m.chapterNum + ' › ' + globalNum) : String(globalNum);
+            return [left, '/', m.totalSlides];
           }
         : 'c/t',
-      transition: 'slide',
-      backgroundTransition: 'fade',
+      // Issue111: 전역 transition·배경 트랜지션은 _config.yml animation: 섹션에서 override 가능
+      //   기본값(slide / fade)은 lib/config.js createDefaultConfig에서 정의 (이전 하드코딩과 동일)
+      transition: 'convex',
+      transitionSpeed: 'default',
+      backgroundTransition: 'zoom',
       touch: false,  // Issue51: 커스텀 드래그 핸들러가 touch 이벤트를 직접 관리
       // Issue89: Home/End/PgUp/PgDown은 m2slide 매트릭스가 처리. Reveal 기본 keymap 비활성화로 hijack 차단
       keyboard: {
@@ -2541,38 +2340,24 @@ User --> (Purchase)
       }
     });
 
-    // Render all Kroki diagrams (runtime fallback)
+    // Render all Kroki diagrams (runtime fallback).
+    //   빌드 타임에 SVG 캐시가 채워져 있으면 .kroki img는 이미 로컬 SVG를 가리키므로 본 핸들러는 skip.
+    //   data-type 속성이 남아 있는 .kroki 컨테이너만 (캐시 누락 시) 안내 메시지 표시.
+    //   참고: 빌드 타임에 path-based URL이 박힌 .kroki img는 onerror로 자체 처리됨.
     Reveal.on('ready', function() {
-      const allKrokiElements = document.querySelectorAll('.kroki');
-      if (allKrokiElements && allKrokiElements.length > 0) {
-        allKrokiElements.forEach(function(element, index) {
-          // Skip if already rendered
-          if (element.querySelector('svg') || element.querySelector('img')) {
-            return;
-          }
-
-          const diagramType = element.getAttribute('data-type');
-          const diagramSource = element.textContent.trim();
-
-          if (!diagramType || !diagramSource) {
-            return;
-          }
-
-          // Prefer GET image to avoid CORS issues on file:// origins
-          try {
-            const imgUrl = 'https://kroki.io/' + diagramType + '/svg?source=' + encodeURIComponent(diagramSource);
-            element.innerHTML = '<div class="graph-scroll"><img alt="' + diagramType + ' diagram" src="' + imgUrl + '"/></div>';
-          } catch (error) {
-            console.error('Kroki rendering setup error for ' + diagramType + ' diagram ' + index + ':', error);
-            element.innerHTML = '<p style="color: red;">Failed to prepare ' + diagramType + ' diagram.</p>';
-          }
-        });
+      var allKrokiElements = document.querySelectorAll('.kroki');
+      if (!allKrokiElements || allKrokiElements.length === 0) return;
+      for (var i = 0; i < allKrokiElements.length; i++) {
+        var element = allKrokiElements[i];
+        if (element.querySelector('svg') || element.querySelector('img')) continue;
+        var diagramType = element.getAttribute('data-type') || 'kroki';
+        element.innerHTML = '<div class="kroki-error"><strong>' + diagramType + ' diagram</strong> 빌드 타임 SVG 캐시 누락. m2slide 재빌드 필요</div>';
       }
     });
 
 
     // Inject configuration
-    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":["https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css","https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400","fontFamily":"GmarketSansBold"},"outline_title":{"font_size":"2.0em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit","fontFamily":"Nanum Gothic Coding"}}};
+    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":[]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
 
     // Dynamic Styling and Resizing Script
     let observer; // Define observer at top level
@@ -2690,186 +2475,164 @@ User --> (Purchase)
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">Text Samples</a>",
+                  "content": "<a href=\"#/2\">Mermaid Samples</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/2\">짧은글 ABC abc</a>",
+                              "content": "<a href=\"#/3\">Paragraph and Diagram</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/3\">긴글</a>",
+                              "content": "<a href=\"#/4\">Flowchart</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/5\">Class</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/6\">Sequence</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/7\">Entity Relationship</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/8\">State</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/9\">Mindmap</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/10\">Architecture</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/11\">Block</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/12\">C4</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/13\">Gantt</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/14\">Git</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/15\">Kanban</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/16\">Packet</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/17\">Pie</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/18\">Quadrant</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/19\">Radar</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/20\">Requirement</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/21\">Sankey</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/22\">StateDiagram </a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/23\">Timeline</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/24\">Timeline (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/25\">Treemap</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/26\">User Journey</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/27\">XY</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/28\">blockdiag</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/29\">seqdiag</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/30\">actdiag</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/31\">nwdiag</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/32\">`ditaa` (ASCII → 그림 변환)</a>",
                               "children": []
                         }
                   ]
             },
             {
-                  "content": "<a href=\"#/4\">Mermaid Samples</a>",
-                  "children": [
-                        {
-                              "content": "<a href=\"#/5\">Paragraph and Diagram</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/6\">Flowchart</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/7\">Class</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/8\">Sequence</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/9\">Entity Relationship</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/10\">State</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/11\">Mindmap</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/12\">Architecture</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/13\">Block</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/14\">C4</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/15\">Gantt</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/16\">Git</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/17\">Kanban</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/18\">Packet</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/19\">Pie</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/20\">Quadrant</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/21\">Radar</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/22\">Requirement</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/23\">Sankey</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/24\">StateDiagram </a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/25\">Timeline</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/26\">Timeline (계속)</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/27\">Treemap</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/28\">User Journey</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/29\">XY</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/30\">blockdiag</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/31\">seqdiag</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/32\">actdiag</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/33\">nwdiag</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/34\">`ditaa` (ASCII → 그림 변환)</a>",
-                              "children": []
-                        }
-                  ]
-            },
-            {
-                  "content": "<a href=\"#/35\">Graphviz (DOT)</a>",
+                  "content": "<a href=\"#/33\">Graphviz (DOT)</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/36\">Vega</a>",
+                  "content": "<a href=\"#/34\">Vega</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/37\">Vega-lite</a>",
+                              "content": "<a href=\"#/35\">Vega-lite</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/38\">Vega</a>",
+                              "content": "<a href=\"#/36\">Vega</a>",
                               "children": []
                         }
                   ]
             },
             {
-                  "content": "<a href=\"#/39\">PlantUML</a>",
+                  "content": "<a href=\"#/37\">PlantUML</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/40\">Class Diagram</a>",
+                              "content": "<a href=\"#/38\">Class Diagram</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/41\">Component Diagram</a>",
+                              "content": "<a href=\"#/39\">Component Diagram</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/42\">Activity Diagram</a>",
+                              "content": "<a href=\"#/40\">Activity Diagram</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/43\">Use Case Diagram</a>",
-                              "children": []
-                        }
-                  ]
-            },
-            {
-                  "content": "<a href=\"#/44\">try </a>",
-                  "children": [
-                        {
-                              "content": "<a href=\"#/45\">CodeBlock</a>",
+                              "content": "<a href=\"#/41\">Use Case Diagram</a>",
                               "children": []
                         }
                   ]
@@ -3083,14 +2846,16 @@ User --> (Purchase)
     // PREV_CHAPTER: 이전 챕터 HTML 파일명 (chapter mode TOC slide ← 대상)
     // NEXT_CHAPTER: 다음 챕터 HTML 파일명 (chapter mode ↓ 대상, key_navigation.md K9)
     var M2SLIDE_MODE = 'single';
-    var M2SLIDE_COVER = false;
+    var M2SLIDE_COVER = true;
+    // Issue119: cover layout 이름 (_config.yml cover_layout, 기본 _cover). isCoverSlide() 판정에 사용.
+    var M2SLIDE_COVER_LAYOUT = '_cover';
     var PREV_CHAPTER = '';
     var NEXT_CHAPTER = '';
     // Issue87: ⇟ PgDown(마지막 페이지 직행) — Single mode은 '' (deck last로 자체 계산)
     var LAST_CHAPTER = '';
     function isCoverSlide(slide) {
       if (!slide) return false;
-      return slide.classList && slide.classList.contains('layout-_cover');
+      return slide.classList && slide.classList.contains('layout-' + M2SLIDE_COVER_LAYOUT);
     }
     function isTocSlide(slide) {
       if (!slide) return false;
@@ -3247,8 +3012,27 @@ User --> (Purchase)
     //   ?back=1        → backward 애니메이션 (← cross-chapter)
     //   ?fwd=1         → forward 애니메이션 (→ cross-chapter)
     function m2ReleaseCrossGuard(){
+      // Issue122: cross-page navigation(?fwd=1/?back=1/?last=1)으로 진입한 경우만 fade-in 적용.
+      // M2_CROSS_GUARD_HEAD_HTML이 cross-page 시그널 진입 시에만 m2-cross-loading class를 부여하므로
+      // 이 클래스 보유 여부로 cross-page 여부 판정 → 단순 페이지 리프레쉬·새 탭 진입은 fade-in 미발동.
+      var wasCrossLoading = document.documentElement.classList.contains('m2-cross-loading')
+                         || document.body.classList.contains('m2-cross-loading');
       document.documentElement.classList.remove('m2-cross-loading');
       document.body.classList.remove('m2-cross-loading');
+      // Issue125: m2-initial-loading 가드도 함께 해제 (모든 첫 로드의 visibility 차단 풀기).
+      document.documentElement.classList.remove('m2-initial-loading');
+      if (!wasCrossLoading) return;
+      // Issue120: 가드 해제 직후 body에 .m2-cross-loaded 부여 → CSS @keyframes m2-page-fade-in 250ms 재생.
+      // animationend 후 class 제거(once). CSS selector가 없는 경우(default_background_transition: none)에는 효과 없음.
+      try {
+        document.body.classList.add('m2-cross-loaded');
+        document.body.addEventListener('animationend', function _m2FadeEnd(e){
+          if (e.animationName === 'm2-page-fade-in') {
+            document.body.classList.remove('m2-cross-loaded');
+            document.body.removeEventListener('animationend', _m2FadeEnd);
+          }
+        });
+      } catch (_) {}
     }
     function m2PlayEnterAnim(direction) {
       // direction: 'back' | 'fwd'
@@ -3291,6 +3075,9 @@ User --> (Purchase)
           m2PlayEnterAnim('back');
         } else if (hasFwd) {
           m2PlayEnterAnim('fwd');
+        } else {
+          // Issue125: 일반 진입(시그널 없음, 단순 refresh·새 탭) — m2-initial-loading 가드만 해제
+          requestAnimationFrame(m2ReleaseCrossGuard);
         }
       } catch (_) {}
     });
@@ -3410,9 +3197,10 @@ User --> (Purchase)
         if (isCoverSlide(cur)) { stop(); return; } // Cover: 최상위
         if (M2SLIDE_MODE === 'chapter') {
           stop();
-          // 첫 챕터(PREV_CHAPTER 빈값)는 동작 없음
           // Issue104: 이전 챕터 진입은 backward 방향 — ?back=1 시그널로 backward 애니메이션 재생
+          // Issue114: 첫 챕터(PREV_CHAPTER 빈값)는 agenda fallback (parent 진입)
           if (PREV_CHAPTER) window.location.href = PREV_CHAPTER + '?back=1';
+          else window.location.href = 'agenda.html?back=1';
           return;
         }
         // Issue105: Single — 트리 탐색 sibling. enclosing anchor 레벨 N 기준 직전 anchor at level ≤ N

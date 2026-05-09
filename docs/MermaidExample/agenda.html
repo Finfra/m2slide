@@ -1,12 +1,13 @@
 <!doctype html>
-<html lang="ko" class="ratio-16-9" style="--slide-ratio: 1.7778; --slide-outer-padding: 0px; --slide-inner-padding: 0px;">
+<html lang="ko" class="ratio-3-2" style="--slide-ratio: 1.5; --slide-outer-padding: 10px; --slide-inner-padding: 0px;">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Examples for MarkdownGraph — Agenda</title>
+<title>Examples for MermaidExample — Agenda</title>
 <script>
-    // Issue110: cross-page flicker 가드 — body 파싱 전 documentElement에 클래스 부여
+    // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
+      document.documentElement.classList.add('m2-initial-loading');
       var s = location.search;
       if (s.indexOf('back=1') !== -1 || s.indexOf('fwd=1') !== -1 || s.indexOf('last=1') !== -1) {
         document.documentElement.classList.add('m2-cross-loading');
@@ -1218,24 +1219,29 @@ html.ratio-fill .agenda-frame {
 
 </style>
 <style>
-    /* Issue110: cross-page flicker 가드 — Reveal·agenda 양쪽 컨테이너 적용 */
+    /* Issue110/125: visibility 가드 — Reveal·agenda 양쪽 컨테이너 적용 */
+    html.m2-initial-loading .reveal,
+    html.m2-initial-loading .agenda-frame,
     html.m2-cross-loading .reveal,
     html.m2-cross-loading .agenda-frame,
     body.m2-cross-loading .reveal,
     body.m2-cross-loading .agenda-frame { visibility: hidden; }
+    /* Issue120: cross-page 페이지 진입 fade-in (cover↔agenda↔deck 모두 적용) */
+    @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
+    body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
 </style>
-<link rel="stylesheet" href="css/custom.css?v=1777946742763">
+<link rel="stylesheet" href="css/custom.css?v=1778311526486">
 </head>
-<body class="agenda-page">
+<body class="agenda-page" data-nav-indicator="both">
 <div class="agenda-frame">
 <div class="layout-_agenda">
   <header class="toc-page-header">
     <h1 class="toc-page-title">Agenda</h1>
-    
   </header>
   <div class="toc-markmap">
     <svg class="toc-mindmap-svg"></svg>
   </div>
+  <div class="toc-page-downloads"><a href="MermaidExample.epub" download class="toc-download-btn toc-download-epub">📚 EPUB</a></div>
 </div>
 </div>
 
@@ -1243,7 +1249,7 @@ html.ratio-fill .agenda-frame {
 <script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
 <script>
 (function(){
-  const tocData = {"content":"","children":[{"content":"<a href=\"index.html#/1\">Text Samples</a>","children":[{"content":"<a href=\"index.html#/2\">짧은글 ABC abc</a>","children":[]},{"content":"<a href=\"index.html#/3\">긴글</a>","children":[]}]},{"content":"<a href=\"index.html#/4\">Mermaid Samples</a>","children":[{"content":"<a href=\"index.html#/5\">Paragraph and Diagram</a>","children":[]},{"content":"<a href=\"index.html#/6\">Flowchart</a>","children":[]},{"content":"<a href=\"index.html#/7\">Class</a>","children":[]},{"content":"<a href=\"index.html#/8\">Sequence</a>","children":[]},{"content":"<a href=\"index.html#/9\">Entity Relationship</a>","children":[]},{"content":"<a href=\"index.html#/10\">State</a>","children":[]},{"content":"<a href=\"index.html#/11\">Mindmap</a>","children":[]},{"content":"<a href=\"index.html#/12\">Architecture</a>","children":[]},{"content":"<a href=\"index.html#/13\">Block</a>","children":[]},{"content":"<a href=\"index.html#/14\">C4</a>","children":[]},{"content":"<a href=\"index.html#/15\">Gantt</a>","children":[]},{"content":"<a href=\"index.html#/16\">Git</a>","children":[]},{"content":"<a href=\"index.html#/17\">Kanban</a>","children":[]},{"content":"<a href=\"index.html#/18\">Packet</a>","children":[]},{"content":"<a href=\"index.html#/19\">Pie</a>","children":[]},{"content":"<a href=\"index.html#/20\">Quadrant</a>","children":[]},{"content":"<a href=\"index.html#/21\">Radar</a>","children":[]},{"content":"<a href=\"index.html#/22\">Requirement</a>","children":[]},{"content":"<a href=\"index.html#/23\">Sankey</a>","children":[]},{"content":"<a href=\"index.html#/24\">StateDiagram </a>","children":[]},{"content":"<a href=\"index.html#/25\">Timeline</a>","children":[]},{"content":"<a href=\"index.html#/26\">Timeline (계속)</a>","children":[]},{"content":"<a href=\"index.html#/27\">Treemap</a>","children":[]},{"content":"<a href=\"index.html#/28\">User Journey</a>","children":[]},{"content":"<a href=\"index.html#/29\">XY</a>","children":[]},{"content":"<a href=\"index.html#/30\">blockdiag</a>","children":[]},{"content":"<a href=\"index.html#/31\">seqdiag</a>","children":[]},{"content":"<a href=\"index.html#/32\">actdiag</a>","children":[]},{"content":"<a href=\"index.html#/33\">nwdiag</a>","children":[]},{"content":"<a href=\"index.html#/34\">`ditaa` (ASCII → 그림 변환)</a>","children":[]}]},{"content":"<a href=\"index.html#/35\">Graphviz (DOT)</a>","children":[]},{"content":"<a href=\"index.html#/36\">Vega</a>","children":[{"content":"<a href=\"index.html#/37\">Vega-lite</a>","children":[]},{"content":"<a href=\"index.html#/38\">Vega</a>","children":[]}]},{"content":"<a href=\"index.html#/39\">PlantUML</a>","children":[{"content":"<a href=\"index.html#/40\">Class Diagram</a>","children":[]},{"content":"<a href=\"index.html#/41\">Component Diagram</a>","children":[]},{"content":"<a href=\"index.html#/42\">Activity Diagram</a>","children":[]},{"content":"<a href=\"index.html#/43\">Use Case Diagram</a>","children":[]}]},{"content":"<a href=\"index.html#/44\">try </a>","children":[{"content":"<a href=\"index.html#/45\">CodeBlock</a>","children":[]}]}]};
+  const tocData = {"content":"","children":[{"content":"<a href=\"index.html#/2\">Mermaid Samples</a>","children":[{"content":"<a href=\"index.html#/3\">Paragraph and Diagram</a>","children":[]},{"content":"<a href=\"index.html#/4\">Flowchart</a>","children":[]},{"content":"<a href=\"index.html#/5\">Class</a>","children":[]},{"content":"<a href=\"index.html#/6\">Sequence</a>","children":[]},{"content":"<a href=\"index.html#/7\">Entity Relationship</a>","children":[]},{"content":"<a href=\"index.html#/8\">State</a>","children":[]},{"content":"<a href=\"index.html#/9\">Mindmap</a>","children":[]},{"content":"<a href=\"index.html#/10\">Architecture</a>","children":[]},{"content":"<a href=\"index.html#/11\">Block</a>","children":[]},{"content":"<a href=\"index.html#/12\">C4</a>","children":[]},{"content":"<a href=\"index.html#/13\">Gantt</a>","children":[]},{"content":"<a href=\"index.html#/14\">Git</a>","children":[]},{"content":"<a href=\"index.html#/15\">Kanban</a>","children":[]},{"content":"<a href=\"index.html#/16\">Packet</a>","children":[]},{"content":"<a href=\"index.html#/17\">Pie</a>","children":[]},{"content":"<a href=\"index.html#/18\">Quadrant</a>","children":[]},{"content":"<a href=\"index.html#/19\">Radar</a>","children":[]},{"content":"<a href=\"index.html#/20\">Requirement</a>","children":[]},{"content":"<a href=\"index.html#/21\">Sankey</a>","children":[]},{"content":"<a href=\"index.html#/22\">StateDiagram </a>","children":[]},{"content":"<a href=\"index.html#/23\">Timeline</a>","children":[]},{"content":"<a href=\"index.html#/24\">Timeline (계속)</a>","children":[]},{"content":"<a href=\"index.html#/25\">Treemap</a>","children":[]},{"content":"<a href=\"index.html#/26\">User Journey</a>","children":[]},{"content":"<a href=\"index.html#/27\">XY</a>","children":[]},{"content":"<a href=\"index.html#/28\">blockdiag</a>","children":[]},{"content":"<a href=\"index.html#/29\">seqdiag</a>","children":[]},{"content":"<a href=\"index.html#/30\">actdiag</a>","children":[]},{"content":"<a href=\"index.html#/31\">nwdiag</a>","children":[]},{"content":"<a href=\"index.html#/32\">`ditaa` (ASCII → 그림 변환)</a>","children":[]}]},{"content":"<a href=\"index.html#/33\">Graphviz (DOT)</a>","children":[]},{"content":"<a href=\"index.html#/34\">Vega</a>","children":[{"content":"<a href=\"index.html#/35\">Vega-lite</a>","children":[]},{"content":"<a href=\"index.html#/36\">Vega</a>","children":[]}]},{"content":"<a href=\"index.html#/37\">PlantUML</a>","children":[{"content":"<a href=\"index.html#/38\">Class Diagram</a>","children":[]},{"content":"<a href=\"index.html#/39\">Component Diagram</a>","children":[]},{"content":"<a href=\"index.html#/40\">Activity Diagram</a>","children":[]},{"content":"<a href=\"index.html#/41\">Use Case Diagram</a>","children":[]}]}]};
   function init() {
     if (!window.markmap) { return setTimeout(init, 50); }
     const svg = document.querySelector('.toc-mindmap-svg');
@@ -1254,8 +1260,27 @@ html.ratio-fill .agenda-frame {
     requestAnimationFrame(m2ReleaseCrossGuard);
   }
   function m2ReleaseCrossGuard(){
+      // Issue122: cross-page navigation(?fwd=1/?back=1/?last=1)으로 진입한 경우만 fade-in 적용.
+      // M2_CROSS_GUARD_HEAD_HTML이 cross-page 시그널 진입 시에만 m2-cross-loading class를 부여하므로
+      // 이 클래스 보유 여부로 cross-page 여부 판정 → 단순 페이지 리프레쉬·새 탭 진입은 fade-in 미발동.
+      var wasCrossLoading = document.documentElement.classList.contains('m2-cross-loading')
+                         || document.body.classList.contains('m2-cross-loading');
       document.documentElement.classList.remove('m2-cross-loading');
       document.body.classList.remove('m2-cross-loading');
+      // Issue125: m2-initial-loading 가드도 함께 해제 (모든 첫 로드의 visibility 차단 풀기).
+      document.documentElement.classList.remove('m2-initial-loading');
+      if (!wasCrossLoading) return;
+      // Issue120: 가드 해제 직후 body에 .m2-cross-loaded 부여 → CSS @keyframes m2-page-fade-in 250ms 재생.
+      // animationend 후 class 제거(once). CSS selector가 없는 경우(default_background_transition: none)에는 효과 없음.
+      try {
+        document.body.classList.add('m2-cross-loaded');
+        document.body.addEventListener('animationend', function _m2FadeEnd(e){
+          if (e.animationName === 'm2-page-fade-in') {
+            document.body.classList.remove('m2-cross-loaded');
+            document.body.removeEventListener('animationend', _m2FadeEnd);
+          }
+        });
+      } catch (_) {}
     }
   // Issue110: markmap CDN 로드 실패·지연에도 무한 가드 방지 — 2초 후 강제 해제
   setTimeout(m2ReleaseCrossGuard, 2000);
@@ -1279,7 +1304,7 @@ html.ratio-fill .agenda-frame {
       var sep = base.indexOf('?') === -1 ? '?' : '&';
       return base + sep + signal + hash;
     }
-  const _tocData = {"content":"","children":[{"content":"<a href=\"index.html#/1\">Text Samples</a>","children":[{"content":"<a href=\"index.html#/2\">짧은글 ABC abc</a>","children":[]},{"content":"<a href=\"index.html#/3\">긴글</a>","children":[]}]},{"content":"<a href=\"index.html#/4\">Mermaid Samples</a>","children":[{"content":"<a href=\"index.html#/5\">Paragraph and Diagram</a>","children":[]},{"content":"<a href=\"index.html#/6\">Flowchart</a>","children":[]},{"content":"<a href=\"index.html#/7\">Class</a>","children":[]},{"content":"<a href=\"index.html#/8\">Sequence</a>","children":[]},{"content":"<a href=\"index.html#/9\">Entity Relationship</a>","children":[]},{"content":"<a href=\"index.html#/10\">State</a>","children":[]},{"content":"<a href=\"index.html#/11\">Mindmap</a>","children":[]},{"content":"<a href=\"index.html#/12\">Architecture</a>","children":[]},{"content":"<a href=\"index.html#/13\">Block</a>","children":[]},{"content":"<a href=\"index.html#/14\">C4</a>","children":[]},{"content":"<a href=\"index.html#/15\">Gantt</a>","children":[]},{"content":"<a href=\"index.html#/16\">Git</a>","children":[]},{"content":"<a href=\"index.html#/17\">Kanban</a>","children":[]},{"content":"<a href=\"index.html#/18\">Packet</a>","children":[]},{"content":"<a href=\"index.html#/19\">Pie</a>","children":[]},{"content":"<a href=\"index.html#/20\">Quadrant</a>","children":[]},{"content":"<a href=\"index.html#/21\">Radar</a>","children":[]},{"content":"<a href=\"index.html#/22\">Requirement</a>","children":[]},{"content":"<a href=\"index.html#/23\">Sankey</a>","children":[]},{"content":"<a href=\"index.html#/24\">StateDiagram </a>","children":[]},{"content":"<a href=\"index.html#/25\">Timeline</a>","children":[]},{"content":"<a href=\"index.html#/26\">Timeline (계속)</a>","children":[]},{"content":"<a href=\"index.html#/27\">Treemap</a>","children":[]},{"content":"<a href=\"index.html#/28\">User Journey</a>","children":[]},{"content":"<a href=\"index.html#/29\">XY</a>","children":[]},{"content":"<a href=\"index.html#/30\">blockdiag</a>","children":[]},{"content":"<a href=\"index.html#/31\">seqdiag</a>","children":[]},{"content":"<a href=\"index.html#/32\">actdiag</a>","children":[]},{"content":"<a href=\"index.html#/33\">nwdiag</a>","children":[]},{"content":"<a href=\"index.html#/34\">`ditaa` (ASCII → 그림 변환)</a>","children":[]}]},{"content":"<a href=\"index.html#/35\">Graphviz (DOT)</a>","children":[]},{"content":"<a href=\"index.html#/36\">Vega</a>","children":[{"content":"<a href=\"index.html#/37\">Vega-lite</a>","children":[]},{"content":"<a href=\"index.html#/38\">Vega</a>","children":[]}]},{"content":"<a href=\"index.html#/39\">PlantUML</a>","children":[{"content":"<a href=\"index.html#/40\">Class Diagram</a>","children":[]},{"content":"<a href=\"index.html#/41\">Component Diagram</a>","children":[]},{"content":"<a href=\"index.html#/42\">Activity Diagram</a>","children":[]},{"content":"<a href=\"index.html#/43\">Use Case Diagram</a>","children":[]}]},{"content":"<a href=\"index.html#/44\">try </a>","children":[{"content":"<a href=\"index.html#/45\">CodeBlock</a>","children":[]}]}]};
+  const _tocData = {"content":"","children":[{"content":"<a href=\"index.html#/2\">Mermaid Samples</a>","children":[{"content":"<a href=\"index.html#/3\">Paragraph and Diagram</a>","children":[]},{"content":"<a href=\"index.html#/4\">Flowchart</a>","children":[]},{"content":"<a href=\"index.html#/5\">Class</a>","children":[]},{"content":"<a href=\"index.html#/6\">Sequence</a>","children":[]},{"content":"<a href=\"index.html#/7\">Entity Relationship</a>","children":[]},{"content":"<a href=\"index.html#/8\">State</a>","children":[]},{"content":"<a href=\"index.html#/9\">Mindmap</a>","children":[]},{"content":"<a href=\"index.html#/10\">Architecture</a>","children":[]},{"content":"<a href=\"index.html#/11\">Block</a>","children":[]},{"content":"<a href=\"index.html#/12\">C4</a>","children":[]},{"content":"<a href=\"index.html#/13\">Gantt</a>","children":[]},{"content":"<a href=\"index.html#/14\">Git</a>","children":[]},{"content":"<a href=\"index.html#/15\">Kanban</a>","children":[]},{"content":"<a href=\"index.html#/16\">Packet</a>","children":[]},{"content":"<a href=\"index.html#/17\">Pie</a>","children":[]},{"content":"<a href=\"index.html#/18\">Quadrant</a>","children":[]},{"content":"<a href=\"index.html#/19\">Radar</a>","children":[]},{"content":"<a href=\"index.html#/20\">Requirement</a>","children":[]},{"content":"<a href=\"index.html#/21\">Sankey</a>","children":[]},{"content":"<a href=\"index.html#/22\">StateDiagram </a>","children":[]},{"content":"<a href=\"index.html#/23\">Timeline</a>","children":[]},{"content":"<a href=\"index.html#/24\">Timeline (계속)</a>","children":[]},{"content":"<a href=\"index.html#/25\">Treemap</a>","children":[]},{"content":"<a href=\"index.html#/26\">User Journey</a>","children":[]},{"content":"<a href=\"index.html#/27\">XY</a>","children":[]},{"content":"<a href=\"index.html#/28\">blockdiag</a>","children":[]},{"content":"<a href=\"index.html#/29\">seqdiag</a>","children":[]},{"content":"<a href=\"index.html#/30\">actdiag</a>","children":[]},{"content":"<a href=\"index.html#/31\">nwdiag</a>","children":[]},{"content":"<a href=\"index.html#/32\">`ditaa` (ASCII → 그림 변환)</a>","children":[]}]},{"content":"<a href=\"index.html#/33\">Graphviz (DOT)</a>","children":[]},{"content":"<a href=\"index.html#/34\">Vega</a>","children":[{"content":"<a href=\"index.html#/35\">Vega-lite</a>","children":[]},{"content":"<a href=\"index.html#/36\">Vega</a>","children":[]}]},{"content":"<a href=\"index.html#/37\">PlantUML</a>","children":[{"content":"<a href=\"index.html#/38\">Class Diagram</a>","children":[]},{"content":"<a href=\"index.html#/39\">Component Diagram</a>","children":[]},{"content":"<a href=\"index.html#/40\">Activity Diagram</a>","children":[]},{"content":"<a href=\"index.html#/41\">Use Case Diagram</a>","children":[]}]}]};
   function firstHrefFromToc(node){
     if (!node || !node.children || node.children.length === 0) return null;
     for (const child of node.children) {
@@ -1294,7 +1319,7 @@ html.ratio-fill .agenda-frame {
   }
   const AGENDA_MODE = 'single';
   const AGENDA_LAST_CHAPTER = '';
-  const AGENDA_COVER_ENABLED = false;
+  const AGENDA_COVER_ENABLED = true;
   const nextUrl = firstHrefFromToc(_tocData);
   // Issue89: capture phase — 일관성 (agenda는 reveal.js 미사용이라 hijack 우려는 적으나 동일 패턴 유지)
   document.addEventListener('keydown', function(e){
@@ -1318,13 +1343,18 @@ html.ratio-fill .agenda-frame {
       }
       return;
     }
-    // ⇤ Home / ⇥ End (sibling) → 동작 없음 (Agenda는 메타 페이지, sibling 없음)
-    // Issue92: ',' / '.' 를 Home/End fallback 으로 매핑 — 동일하게 no-op
-    // Issue92_1: ⌘+← / ⌘+→ 도 Home/End fallback — 동일하게 no-op
+    // Issue114: ⇤ Home → Cover (parent fall-up, cover_enabled=true 한정) / ⇥ End → 첫 챕터 TOC (child fall-down)
+    // Issue92: ',' (Comma) / '.' (Period) fallback / Issue92_1: ⌘+← / ⌘+→ fallback 동일 처리
     if (e.key === 'Home' || e.keyCode === 36 || e.code === 'Comma' ||
-        e.key === 'End' || e.keyCode === 35 || e.code === 'Period' ||
-        (e.metaKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight'))) {
+        (e.metaKey && e.key === 'ArrowLeft')) {
       e.preventDefault(); e.stopImmediatePropagation();
+      if (AGENDA_COVER_ENABLED) window.location.href = 'index.html?back=1';
+      return;
+    }
+    if (e.key === 'End' || e.keyCode === 35 || e.code === 'Period' ||
+        (e.metaKey && e.key === 'ArrowRight')) {
+      e.preventDefault(); e.stopImmediatePropagation();
+      if (nextUrl) window.location.href = m2NavWithSignal(nextUrl, 'fwd=1');
       return;
     }
     // ⇞ PgUp → 자기 페이지 무시

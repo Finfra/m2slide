@@ -1,5 +1,5 @@
 ---
-title: Examples for MarkdownGraph
+title: Examples for MermaidExample
 description: 
 date: Nov 29, 2025
 tags: []
@@ -10,21 +10,6 @@ release_date: 2026-05-02
 created_at: 2026-05-02
 created_by: nowage
 ---
-# Text Samples
----
-## 짧은글 ABC abc
-* hi
-* hello
-  - hi
----
-## 긴글
-* hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi 
-* hello
-  - hihihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi  hihi hihihih ihihihihihi hihihi hello
-  - hihihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi hihihihihihihihihihihihihihihi  hihi hihihih ihihihihihi hihihi hello
-
----
-
 # Mermaid Samples
 ---
 ## Paragraph and Diagram
@@ -789,18 +774,3 @@ User --> (Purchase)
 ```
 
 
----
-# try 
----
-## CodeBlock
-* 요거는 Python. 
-```python
-for i in range(10):
-  print(i)
-```
-* 요거는 java
-```java
-for (int i = 0; i < 10; i++) {
-  System.out.println(i);
-}
-```
