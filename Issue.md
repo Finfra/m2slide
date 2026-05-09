@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 134
+* Issue HWM: 135
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -17,6 +17,34 @@
 # 🌱 이슈후보
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
 # 🔥 진행중
+
+## Issue135. Chapter 모드 ⇤/⇥ 계층 인식 sibling 점프 (main/sub 구분) (등록: 2026-05-09)
+* 목적: Chapter 모드 ⇤(Home/`,`)/⇥(End/`.`)를 main/sub 챕터 계층을 인식하는 sibling 점프로 변경. main 조장에서 ⇥ 누르면 다음 main으로 직행(중간 sub 건너뜀). sub 조장에서는 같은 부모의 다음 sub로 이동
+* 상세:
+    - 재현: `Projects/LlmAndVibeCoding/slide/02-llm-tool-evolution.html#/toc-placeholder`(main 챕터 02 TOC)에서 End 누름 → 기대값 `03-vibecoding-concept.html?fwd=1`(다음 main)이나 실제 `02.1.chat-based.html?fwd=1`(서브챕터)로 이동
+    - 근본 원인: `lib/agenda.js:179-185`의 `_getAdjacentChapter`가 main(`##`)과 sub(`###`) 엔트리를 flat 배열로 평탄화 → `getNextChapter('02-...')` → `02.1.chat-based.html` 반환
+    - 부작용: ⇥가 →·↓와 동일 동작이 되어 단축키 의미 상실. 서브 개요가 많은 프로젝트(LlmAndVibeCoding 등) 빠른 탐색 불가
+    - 사용자 결정 정책: **계층 인식 + boundary fall-up** (Single 모드 Issue105와 동일 패턴)
+        - main에서 ⇥ → 다음 main (sub 건너뜀)
+        - sub에서 ⇥ → 같은 부모의 다음 sub. 마지막 sub면 부모의 다음 main으로 fall-up
+        - 부재 시 → `agenda.html?fwd=1` (Issue114 boundary fallback 유지)
+    - 영향 파일: `lib/agenda.js` (신규 sibling lookup 함수), `lib/html-builder.js` (Home/End 핸들러), `_doc_design/key_navigation.md` (단축키 동작 표 + K4 결정 갱신)
+* 카테고리: Frontend (키 네비게이션) + Generator (agenda.js)
+* 구현 명세:
+    - 1단계 — agenda.js 신규 함수: `getNextSiblingChapter(fileName, agendaPath)`, `getPrevSiblingChapter(fileName, agendaPath)`
+        - 현재 파일의 entry level(main/sub) 판정
+        - main → 같은 level main만 스캔하여 next/prev. 부재 시 `''`
+        - sub → 같은 부모 scope 내 sub만 스캔. 마지막/첫 sub면 부모의 next/prev main으로 fall-up
+        - `_detectEntryLevel`(H1·H2 자동 감지) 결과 호환
+    - 2단계 — html-builder.js 변수 주입: `nextSiblingChapter`, `prevSiblingChapter`를 deck JS 변수로 주입
+    - 3단계 — Home/End 핸들러 수정: Chapter 분기에서 `NEXT_CHAPTER`/`PREV_CHAPTER` → `NEXT_SIBLING_CHAPTER`/`PREV_SIBLING_CHAPTER` 사용. 부재 시 agenda fallback 유지
+    - 4단계 — `↓` leaf-fallthrough(line 1658), `→` 마지막 슬라이드(line 1768)는 기존 `NEXT_CHAPTER`(다음 파일) 그대로 — 파일 단위 sequential 의미 유지
+    - 5단계 — `_doc_design/key_navigation.md` 갱신: ⇤/⇥ 단축키 표(line 97-98) Chapter 컬럼에 main/sub 계층 인식 명시. K4 결정 갱신. 변경 이력 추가
+    - 6단계 — 빌드·검증: LlmAndVibeCoding 빌드 후 02 TOC End → 03 직행, 02.1 TOC End → 02.2 직행 확인. m2SlideStyle2_chapter 회귀 확인
+* 검증:
+    - 빌드된 `02-llm-tool-evolution.html` 키 핸들러에 `NEXT_SIBLING_CHAPTER` = `03-vibecoding-concept.html` 주입
+    - 브라우저: 02 TOC End → 03 TOC 이동, 02.1 End → 02.2, 02.3 End → 03(부모 fall-up), 마지막 main(08) End → agenda?fwd=1
+    - Issue114·Issue133 무회귀
 
 ## Issue133. Single 모드 ⇤/⇥ boundary fallback (Chapter Issue114 대칭) (등록: 2026-05-09)
 * 목적: Single 모드에서 첫 H1 anchor 또는 그 본문에서 ⇤(Home/`,`)를 누르면 `agenda.html?back=1`로, 마지막 anchor/본문에서 ⇥(End/`.`)를 누르면 `agenda.html?fwd=1`로 fall-through하여 Chapter 모드 Issue114 boundary fallback과 정책 일관성 확보
@@ -104,6 +132,24 @@
 
 
 # ✅ 완료
+
+## Issue135. _toc 슬라이드 markmap이 동일 페이지 슬라이드 이동 시 작게 다시 그려지는 문제 (등록: 2026-05-09, 해결: 2026-05-09) ✅
+* 목적: Issue134 후속. 다른 페이지에서 toc-placeholder로 진입할 때는 정상이지만 같은 페이지 내 슬라이드 이동(`slidechanged` 이벤트) 시 markmap이 좌상단에 작게 다시 그려지는 회귀 해결
+* 상세:
+    - 재현: `02-llm-tool-evolution.html?fwd=1#/2`에서 ←로 `#/toc-placeholder` 이동 시 markmap 축소. 반면 `01-opening.html`에서 →로 진입 시는 정상
+    - 원인: Issue134 수정에서 `refit()`이 `initTocMarkmapIfNeeded` 함수 내부 closure로 정의됨. `markmapInitialized=true` 이후의 early-return 경로(`slidechanged`·resize)는 그 closure에 접근 못 하고 raw `markmapInstance.fit()`만 호출 → BCR monkey-patch 적용 안 됨 → reveal `transform: scale` 영향으로 작게 fit
+    - 영향 파일: `lib/html-builder.js` (toc markmap init·resize handler)
+* 카테고리: Frontend (Markmap·TOC 렌더링)
+* 구현 명세:
+    - `refit` 함수를 `refitMarkmap`으로 외부 스코프로 끌어내 모든 호출 경로(initial init, slidechanged early-return, resize handler)가 동일 monkey-patch 적용 함수 사용
+    - `slidechanged` early-return 경로에 다단 retry(rAF + 50ms + 300ms) 추가 — flex 재계산·reveal transform settle 시점 차이 보정
+    - window resize handler의 raw `markmapInstance.fit()` 호출도 `refitMarkmap()`으로 교체
+    - debug_TECH.md § Markmap·TOC 렌더링 사례에 본 회귀 박제
+* 검증:
+    - `02-llm-tool-evolution.html?fwd=1#/2` → ←/Home으로 `#/toc-placeholder` 이동 시 markmap이 컨테이너 가득 채움
+    - `01-opening.html`에서 → 진입 시 정상 동작 무회귀
+    - window resize 시에도 일관된 비율 유지
+    - 빌드 산출물에서 `markmapInstance.fit()` 단독 호출이 try/finally 안(refitMarkmap 내부)에만 존재하는지 grep 검증
 
 ## Issue134. _toc 슬라이드 markmap이 reveal.js 안에서 작게 그려지는 문제 (등록: 2026-05-09, 해결: 2026-05-09, commit: c41e988) ✅
 * 목적: chapter `_toc` 슬라이드(`#toc-placeholder`)에서 markmap이 컨테이너의 좌상단 일부만 차지하는 시각 회귀 + autoToc 슬라이드의 빈 SVG 영역을 일관되게 처리
