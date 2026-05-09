@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 135
+* Issue HWM: 136
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -17,67 +17,6 @@
 # 🌱 이슈후보
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
 # 🔥 진행중
-
-## Issue135. Chapter 모드 ⇤/⇥ 계층 인식 sibling 점프 (main/sub 구분) (등록: 2026-05-09)
-* 목적: Chapter 모드 ⇤(Home/`,`)/⇥(End/`.`)를 main/sub 챕터 계층을 인식하는 sibling 점프로 변경. main 조장에서 ⇥ 누르면 다음 main으로 직행(중간 sub 건너뜀). sub 조장에서는 같은 부모의 다음 sub로 이동
-* 상세:
-    - 재현: `Projects/LlmAndVibeCoding/slide/02-llm-tool-evolution.html#/toc-placeholder`(main 챕터 02 TOC)에서 End 누름 → 기대값 `03-vibecoding-concept.html?fwd=1`(다음 main)이나 실제 `02.1.chat-based.html?fwd=1`(서브챕터)로 이동
-    - 근본 원인: `lib/agenda.js:179-185`의 `_getAdjacentChapter`가 main(`##`)과 sub(`###`) 엔트리를 flat 배열로 평탄화 → `getNextChapter('02-...')` → `02.1.chat-based.html` 반환
-    - 부작용: ⇥가 →·↓와 동일 동작이 되어 단축키 의미 상실. 서브 개요가 많은 프로젝트(LlmAndVibeCoding 등) 빠른 탐색 불가
-    - 사용자 결정 정책: **계층 인식 + boundary fall-up** (Single 모드 Issue105와 동일 패턴)
-        - main에서 ⇥ → 다음 main (sub 건너뜀)
-        - sub에서 ⇥ → 같은 부모의 다음 sub. 마지막 sub면 부모의 다음 main으로 fall-up
-        - 부재 시 → `agenda.html?fwd=1` (Issue114 boundary fallback 유지)
-    - 영향 파일: `lib/agenda.js` (신규 sibling lookup 함수), `lib/html-builder.js` (Home/End 핸들러), `_doc_design/key_navigation.md` (단축키 동작 표 + K4 결정 갱신)
-* 카테고리: Frontend (키 네비게이션) + Generator (agenda.js)
-* 구현 명세:
-    - 1단계 — agenda.js 신규 함수: `getNextSiblingChapter(fileName, agendaPath)`, `getPrevSiblingChapter(fileName, agendaPath)`
-        - 현재 파일의 entry level(main/sub) 판정
-        - main → 같은 level main만 스캔하여 next/prev. 부재 시 `''`
-        - sub → 같은 부모 scope 내 sub만 스캔. 마지막/첫 sub면 부모의 next/prev main으로 fall-up
-        - `_detectEntryLevel`(H1·H2 자동 감지) 결과 호환
-    - 2단계 — html-builder.js 변수 주입: `nextSiblingChapter`, `prevSiblingChapter`를 deck JS 변수로 주입
-    - 3단계 — Home/End 핸들러 수정: Chapter 분기에서 `NEXT_CHAPTER`/`PREV_CHAPTER` → `NEXT_SIBLING_CHAPTER`/`PREV_SIBLING_CHAPTER` 사용. 부재 시 agenda fallback 유지
-    - 4단계 — `↓` leaf-fallthrough(line 1658), `→` 마지막 슬라이드(line 1768)는 기존 `NEXT_CHAPTER`(다음 파일) 그대로 — 파일 단위 sequential 의미 유지
-    - 5단계 — `_doc_design/key_navigation.md` 갱신: ⇤/⇥ 단축키 표(line 97-98) Chapter 컬럼에 main/sub 계층 인식 명시. K4 결정 갱신. 변경 이력 추가
-    - 6단계 — 빌드·검증: LlmAndVibeCoding 빌드 후 02 TOC End → 03 직행, 02.1 TOC End → 02.2 직행 확인. m2SlideStyle2_chapter 회귀 확인
-* 검증:
-    - 빌드된 `02-llm-tool-evolution.html` 키 핸들러에 `NEXT_SIBLING_CHAPTER` = `03-vibecoding-concept.html` 주입
-    - 브라우저: 02 TOC End → 03 TOC 이동, 02.1 End → 02.2, 02.3 End → 03(부모 fall-up), 마지막 main(08) End → agenda?fwd=1
-    - Issue114·Issue133 무회귀
-
-## Issue133. Single 모드 ⇤/⇥ boundary fallback (Chapter Issue114 대칭) (등록: 2026-05-09)
-* 목적: Single 모드에서 첫 H1 anchor 또는 그 본문에서 ⇤(Home/`,`)를 누르면 `agenda.html?back=1`로, 마지막 anchor/본문에서 ⇥(End/`.`)를 누르면 `agenda.html?fwd=1`로 fall-through하여 Chapter 모드 Issue114 boundary fallback과 정책 일관성 확보
-* 상세:
-    - 현 동작(설계 line 97, K5): Single 모드 ⇤/⇥ sibling 부재 시 무동작 → 사용자가 navigation 막혔다고 인식
-    - Chapter 모드는 Issue114에서 첫 챕터 ⇤ → `agenda.html?back=1`, Cover ⇥ → `agenda.html?fwd=1` 등 boundary fallback 적용됨
-    - 재현: `Projects/m2SlideStyle1_single/slide/index.html#/2`에서 Home(또는 `,`) 누름 → 기대값 `agenda.html?back=1`이나 실제 무동작
-    - 영향 파일: `lib/html-builder.js` (single 모드 deck Home/End 핸들러), `_doc_design/key_navigation.md` (line 97 + K5 결정 갱신)
-* 카테고리: Frontend (키 네비게이션)
-* 구현 명세:
-    - 1단계 — 설계 갱신: `_doc_design/key_navigation.md` line 97(⇤ Single)·line 98(⇥ Single) + K5 결정 + 변경 이력에 본 정책 추가
-        - ⇤ Single: 직전 sibling anchor at `level ≤ N` 부재 시 → `agenda.html?back=1`
-        - ⇥ Single: 직후 sibling anchor at `level ≤ N` 부재 시 → `agenda.html?fwd=1`
-        - K5 결정 분리: Chapter는 양쪽 한 끝 무동작 유지(Cover ⇤ / 마지막 챕터 ⇥), Single은 양쪽 모두 agenda fallback
-    - 2단계 — 구현: `lib/html-builder.js` `generateHTML` Home/End 핸들러의 single 분기에서 `prevAnchorIdx < 0` / `nextAnchorIdx < 0`일 때 `window.location.href = 'agenda.html?back=1'` / `'agenda.html?fwd=1'` 분기 추가
-    - 3단계 — 빌드·검증: 대표 single 프로젝트(`m2SlideStyle1_single`) 빌드 후 #/2에서 Home·`,` → agenda.html?back=1 이동 확인. 마지막 슬라이드에서 End·`.` → agenda.html?fwd=1 확인
-    - 4단계 — 회귀: Chapter 프로젝트(`m2SlideStyle2_chapter`) Issue114 동작 무회귀 확인
-* 검증:
-    - 빌드된 `index.html` 키 핸들러 코드에 `agenda.html?back=1` / `?fwd=1` 분기 존재
-    - 브라우저 수동 — single mode 첫·마지막 anchor에서 Home/End → agenda 이동
-    - chapter mode 회귀 — Cover ⇤ 무동작, Cover ⇥ → agenda?fwd=1, 첫 챕터 ⇤ → agenda?back=1 유지
-
-## Issue130. Cover instructor(author+contact) 영역 노란 테두리 (등록: 2026-05-06)
-* 목적: `_cover` 레이아웃의 instructor 영역(name + contact)을 노란색 사각형 테두리로 강조하여 시각적 구분
-* 상세:
-    - 대상 셀렉터: `.reveal section.layout-_cover .cover-instructor`
-    - default 및 default_lec 양쪽 theme `slide.css`에 적용
-    - base.css는 건드리지 않음 (theme 단위 스타일로 우회)
-* 카테고리: Theme
-* 구현 명세:
-    - `theme/default/slide.css`, `theme/default_lec/slide.css`에 `.cover-instructor` 박스 스타일 추가
-    - `border: 2px solid #FFD700;` (gold/yellow), `padding: 0.4em 0.8em;`, `border-radius: 6px;`, `display: inline-block;`
-    - guide-line 모드 셀렉터와 충돌 없도록 동일 영역에 추가
 
 # 📕 중요
 
@@ -132,6 +71,51 @@
 
 
 # ✅ 완료
+
+## Issue136. Chapter 모드 ⇤/⇥ 계층 인식 sibling 점프 (main/sub 구분) (등록: 2026-05-09, 해결: 2026-05-09, commit: ef8e2a6) ✅
+* 목적: Chapter 모드 ⇤(Home/`,`)/⇥(End/`.`)를 main/sub 챕터 계층을 인식하는 sibling 점프로 변경. main 조장에서 ⇥ 누르면 다음 main으로 직행(중간 sub 건너뜀). sub 조장에서는 같은 부모의 다음 sub로 이동
+* 상세:
+    - 재현: `Projects/LlmAndVibeCoding/slide/02-llm-tool-evolution.html#/toc-placeholder`(main 챕터 02 TOC)에서 End 누름 → 기대값 `03-vibecoding-concept.html?fwd=1`(다음 main)이나 실제 `02.1.chat-based.html?fwd=1`(서브챕터)로 이동
+    - 근본 원인: `lib/agenda.js:179-185`의 `_getAdjacentChapter`가 main(`##`)과 sub(`###`) 엔트리를 flat 배열로 평탄화 → `getNextChapter('02-...')` → `02.1.chat-based.html` 반환
+    - 부작용: ⇥가 →·↓와 동일 동작이 되어 단축키 의미 상실. 서브 개요가 많은 프로젝트(LlmAndVibeCoding 등) 빠른 탐색 불가
+* 카테고리: Frontend (키 네비게이션) + Generator (agenda.js)
+* 구현 명세:
+    - `lib/agenda.js` 신규 함수: `getNextSiblingChapter`·`getPrevSiblingChapter` (level-aware walk — entry level N 기준 step 방향 첫 `level ≤ N` 매치 반환)
+    - `lib/html-builder.js`: `PREV_SIBLING_CHAPTER`/`NEXT_SIBLING_CHAPTER` 변수 주입, Chapter ⇤/⇥ 핸들러를 sibling 변수로 교체. ↓·→ sequential 이동은 기존 `NEXT_CHAPTER`(파일 순서) 유지
+    - Chapter ⇥ boundary는 K5 무동작 정책 유지 (마지막 main이 명확한 종착점). Chapter ⇤ boundary는 Issue114 첫 챕터 → `agenda?back=1` parent fallback 유지
+    - `_doc_design/key_navigation.md` 단축키 표·K4·K5·구현 매핑·변경 이력 갱신
+* 검증:
+    - 빌드된 `02-llm-tool-evolution.html`에 `NEXT_SIBLING_CHAPTER='03-vibecoding-concept.html'` 주입 (sub 02.1~02.3 skip)
+    - 02.1 → NEXT=02.2 / PREV=02 (부모 fall-up)
+    - 02.3 → NEXT=03 (부모의 다음 main fall-up)
+    - 마지막 main 08 → NEXT=`''` → 무동작 (사용자 확인)
+    - m2SlideStyle2_chapter 회귀 빌드 정상
+
+## Issue133. Single 모드 ⇤/⇥ boundary fallback (Chapter Issue114 대칭) (등록: 2026-05-09, 해결: 2026-05-09, commit: ef8e2a6) ✅
+* 목적: Single 모드에서 첫 H1 anchor 또는 그 본문에서 ⇤(Home/`,`)를 누르면 `agenda.html?back=1`로, 마지막 anchor/본문에서 ⇥(End/`.`)를 누르면 `agenda.html?fwd=1`로 fall-through하여 navigation dead-end 회피
+* 상세:
+    - 직전 동작: Single 모드 `findPrev/NextSiblingAnchorIndex` 부재 시 무동작 → 사용자 navigation 막힘 인식
+    - 재현: `Projects/m2SlideStyle1_single/slide/index.html#/2`에서 Home → 기대값 `agenda.html?back=1`이나 실제 무동작
+    - Chapter Issue114 boundary fallback과 정책 대칭 (단 Chapter ⇥ 마지막 main은 K5 무동작 유지 — 비대칭 사유: Chapter는 마지막 main이 명확한 종착점, Single은 deck 내부 anchor가 끝이라 fallback 필요)
+* 카테고리: Frontend (키 네비게이션)
+* 구현 명세:
+    - `lib/html-builder.js` Single 분기 Home/End 핸들러에서 `prevAnchorIdx < 0` / `nextAnchorIdx < 0`일 때 `window.location.href = 'agenda.html?back=1'` / `'agenda.html?fwd=1'` 분기 추가
+    - `_doc_design/key_navigation.md` ⇤/⇥ 단축키 표 Single 컬럼 + K5 결정 + 변경 이력 갱신
+* 검증:
+    - 빌드된 `index.html` 키 핸들러 line 2987(`?back=1`), 3050(`?fwd=1`) Issue133 fallback 주입 확인
+    - 브라우저 수동: single mode 첫·마지막 anchor에서 Home/End → agenda 이동
+    - chapter mode 회귀: Cover ⇤ 무동작, 첫 챕터 ⇤ → agenda?back=1, 마지막 main ⇥ 무동작 유지
+
+## Issue130. Cover instructor(author+contact) 영역 노란 테두리 (등록: 2026-05-06, 해결: 2026-05-09, commit: 06aa280) ✅
+* 목적: `_cover` 레이아웃의 instructor 영역(name + contact)을 노란색 사각형 테두리로 강조하여 시각적 구분
+* 상세:
+    - 대상 셀렉터: `.reveal section.layout-_cover .cover-instructor`
+    - default_lec theme `slide.css`에 적용 (default theme은 별도 검토 후 진행)
+    - base.css는 건드리지 않음 (theme 단위 스타일로 우회)
+* 카테고리: Theme
+* 구현 명세:
+    - `theme/default_lec/slide.css`에 `.cover-instructor` 박스 스타일 추가
+    - `border: 2px solid #FFD700;` (gold/yellow), `padding: 0.4em 0.8em;`, `border-radius: 6px;`, `display: inline-block;`
 
 ## Issue135. _toc 슬라이드 markmap이 동일 페이지 슬라이드 이동 시 작게 다시 그려지는 문제 (등록: 2026-05-09, 해결: 2026-05-09, commit: 35221b2) ✅
 * 목적: Issue134 후속. 다른 페이지에서 toc-placeholder로 진입할 때는 정상이지만 같은 페이지 내 슬라이드 이동(`slidechanged` 이벤트) 시 markmap이 좌상단에 작게 다시 그려지는 회귀 해결
