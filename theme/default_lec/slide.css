@@ -408,6 +408,13 @@
   flex-direction: column;
   gap: 0.3em;
 }
+/* Issue130: instructor(author+contact) 영역 노란 사각형 테두리 강조 */
+.reveal section.layout-_cover .cover-instructor {
+  display: inline-block;
+  border: 2px solid #FFD700;
+  border-radius: 6px;
+  padding: 0.4em 0.8em;
+}
 .reveal section.layout-_cover .cover-instructor-name {
   font-weight: 600;
 }
