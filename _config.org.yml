@@ -4,23 +4,25 @@
 # 프로젝트 경로: Projects/{current_project}
 
 # current_project: MarkdownGraph
-theme: default                # theme/{name}/slide.css + layouts/ (default 외에는 .gitignore 처리)
-theme_default_layout: contents      # 슬라이드 기본 layout (모든 본문 슬라이드를 layout-_contents로 wrap → §2 노랑 가로선 적용)
-cover_enabled: true          # true 시 첫 파일 첫 슬라이드 위치에 cover 자동 주입
-toc_placeholder: true        # true 시 모든 파일에 #/0 Map Slide(markmap) 강제 삽입
-cards_placeholder: true      # true 시 hasTocItems 챕터에 Cards Page(autoToc cards) 자동 삽입
-top_align: false              # true 시 reveal.js 중앙정렬 덮어쓰고 'top-align-mode' 클래스 적용 (주의)
-markmap_depth: 2              # Markmap 초기 펼침 깊이 (1=루트+1단계, 2=2단계까지)
-chapter_markmap_depth: 3      # 챕터별 페이지 Markmap 펼침 깊이 (markmap_depth+1 권장)
-title_contents_gap: 30        # title↔contents 갭 (title 높이의 %)
-auto_layout_detect: true      # false: 자동 감지 비활성화 (모든 슬라이드는 default layout 사용)
+theme: default                   # theme/{name}/slide.css + layouts/ (default 외에는 .gitignore 처리)
+theme_default_layout: contents   # 슬라이드 기본 layout (모든 본문 슬라이드를 layout-_contents로 wrap → §2 노랑 가로선 적용)
+cover_enabled: true              # true 시 첫 파일 첫 슬라이드 위치에 cover 자동 주입
+toc_placeholder: true            # true 시 모든 파일에 #/0 TOC 슬라이드 강제 삽입(Chapter모드에서 Only)
+cards_placeholder: true          # true 시 hasTocItems 챕터에 Cards Page(autoToc cards) 자동 삽입
+top_align: false                 # true 시 reveal.js 중앙정렬 덮어쓰고 'top-align-mode' 클래스 적용 (주의)
+markmap_depth: 2                 # Markmap 초기 펼침 깊이 (1=루트+1단계, 2=2단계까지)
+chapter_markmap_depth: 3         # 챕터별 페이지 Markmap 펼침 깊이 (markmap_depth+1 권장)
+head_left: d1                    # Issue141: _contents head-bar 좌측: d1~d99 절대 depth | now (breadcrumb) | none (비표시)
+head_right: now                  # Issue141: _contents head-bar 우측: 동일 옵션. now는 다른 head 옵션 d{m}이면 d{m+1}부터 현재까지 ' > ' 연결
+title_contents_gap: 30           # title↔contents 갭 (title 높이의 %)
+auto_layout_detect: true         # false: 자동 감지 비활성화 (모든 슬라이드는 default layout 사용)
 
 # `![alt](path.mp4)` 형태로 작성하면 <video> 태그로 자동 변환됨
 # controls, autoplay-muted, autoplay-loop, loop, muted, background, minimal, autoplay-nocontrols
 video_default: controls       # 컨트롤만, 자동재생 없음 (기본 권장)
-guide_line: false              # 레이아웃 디버깅용 가이드 라인 표시
-use_open_props: false          # Open Props CDN 로드 (false=기본값 사용)
-slide_ratio: "3:2"           # 16:9 (default) | 3:2 | fill (비율 무제약). Issue63: --slide-ratio 변수로 노출됨. Issue65: 화이트리스트 외 입력은 빌드 실패
+guide_line: false             # 레이아웃 디버깅용 가이드 라인 표시
+use_open_props: false         # Open Props CDN 로드 (false=기본값 사용)
+slide_ratio: "3:2"            # 16:9 (default) | 3:2 | fill (비율 무제약). Issue63: --slide-ratio 변수로 노출됨. Issue65: 화이트리스트 외 입력은 빌드 실패
 slide_outer_padding: 0        # outer padding (슬라이드↔뷰포트 대칭). CSS length (예: 0, 20px, 2vh) — body padding에 적용 (Issue85: 4면 균등)
 slide_inner_padding: 0        # inner padding (콘텐츠↔슬라이드 경계 대칭). CSS length — section padding에 적용
 
