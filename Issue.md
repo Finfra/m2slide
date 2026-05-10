@@ -18,22 +18,6 @@
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
 # 🔥 진행중
 
-## Issue139. End 키 → agenda fallback 제거 (모든 모드) (등록: 2026-05-10)
-* 목적: 마지막 챕터/anchor 또는 Cover 페이지에서 End 키 누르면 `agenda.html`로 돌아가는 fallback 동작 제거. End는 "다음 sibling 점프" 의미만 남기고 boundary에서는 무동작.
-* 상세:
-    - Issue133(2026-05-09)에서 추가된 Single 모드 End boundary fallback (`html-builder.js:1828`) 되돌리기
-    - Issue114에서 추가된 Cover 페이지 End → agenda fall-through (`html-builder.js:2128-2133`) 제거
-    - Chapter 모드는 이미 마지막 main 챕터에서 End 무동작이므로 변경 없음
-    - Home 키는 변경하지 않음 (사용자 요청 범위 외)
-* 카테고리: Frontend (키 네비게이션)
-* 구현 명세:
-    - `lib/html-builder.js:1828` Single 분기 End 핸들러: `else window.location.href = 'agenda.html?fwd=1';` 제거 (sibling 부재 시 무동작)
-    - `lib/html-builder.js:2128-2133` Cover 페이지 End 핸들러: `e.preventDefault(); e.stopImmediatePropagation();`만 남기고 `window.location.href = 'agenda.html?fwd=1';` 제거 (또는 블록 통째로 제거 — 무동작 처리는 ↑/⇤/← 블록에 통합 가능)
-    - `_doc_design/key_navigation.md` (있다면) End 단축키 표 갱신: Single 마지막 anchor·Cover End → 무동작
-* 검증:
-    - 빌드된 산출물에서 End 핸들러에 `agenda.html?fwd=1` 문자열 부재 확인 (Cover/Single deck 양쪽)
-    - 회귀: Chapter 모드 마지막 main End 무동작 유지, Home/← 동작 무영향, ⇥/`.`/⌘+→ 트리거 모두 동일 처리
-
 # 📕 중요
 
 # 📙 일반
@@ -87,6 +71,27 @@
 
 
 # ✅ 완료
+
+## Issue139. End 키 → agenda fallback 제거 (모든 모드) (등록: 2026-05-10, 해결: 2026-05-10, commit: bcdd2ad) ✅
+* 목적: 마지막 챕터/anchor 또는 Cover 페이지에서 End 키 누르면 `agenda.html`로 돌아가는 fallback 동작 제거. End는 "다음 sibling 점프" 의미만 남기고 boundary에서는 무동작.
+* 상세:
+    - Issue133(2026-05-09)에서 추가된 Single 모드 End boundary fallback (`html-builder.js:1828`) 되돌리기
+    - Issue114에서 추가된 Cover 페이지 End → agenda fall-through (`html-builder.js:2128-2133`) 제거
+    - Chapter 모드는 이미 마지막 main 챕터에서 End 무동작이므로 변경 없음
+    - Home 키는 변경하지 않음 (사용자 요청 범위 외)
+* 카테고리: Frontend (키 네비게이션)
+* 해결:
+    - `lib/html-builder.js` Single 분기 End 핸들러: `else window.location.href = 'agenda.html?fwd=1';` 제거 → sibling 부재 시 무동작
+    - `lib/html-builder.js` Cover 페이지 End 핸들러: `window.location.href = 'agenda.html?fwd=1';` 제거 → `e.preventDefault(); e.stopImmediatePropagation(); return;`만 유지
+    - 관련 주석(상단 매트릭스, ⌘+→ 안내) Issue139 마커로 갱신
+* 검증:
+    - `node -c lib/html-builder.js` 문법 OK
+    - `node --test lib/__tests__/*.js` 19/19 통과
+    - 대표 프로젝트 빌드 정상: `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`
+    - Single mode `slide/index.html` Issue139 주석 + End fallback 제거 확인 (line 3104)
+    - Chapter mode chapter HTML도 동일 처리 확인 (line 2441)
+    - Cover (`m2SlideStyle2_chapter/slide/index.html`) End 핸들러: agenda 이동 코드 제거 + `return;`만 유지 (line 1380-1385)
+    - 브라우저 수동: Single mode 마지막 H1 End → 무동작, Chapter mode Cover End → 무동작
 
 ## Issue138. Cards Page / Map Slide 의미 분리 — `_cards.html` 신규 + Map Slide layout 제거 + 두 옵션 분리 (등록: 2026-05-09, 해결: 2026-05-10, commit: 2044cc5) ✅
 * 목적: 같은 `layout-_toc` 클래스가 두 가지 시각적 결과(markmap vs cards)를 내는 의미적 불일치 해소. Glossary 분류 원칙(layout 있음 = Page, layout 없음 = Slide)에 맞춰 명명·구조 정리. TOC Page = 상위 명칭, Cards Page = `_cards.html` layout cards 변형, Map Slide = layout 없는 svg 슬라이드. `toc_placeholder` / `cards_placeholder` 두 옵션으로 각각 독립 활성
