@@ -16,6 +16,7 @@
 
 # 🌱 이슈후보
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
+
 # 🔥 진행중
 
 ## Issue141. _contents head_left/head_right 시스템 슬롯 + outline depth + breadcrumb (등록: 2026-05-10)
@@ -46,20 +47,6 @@
     - 빌드 검증: `m2SlideStyle1_single` (single mode head-bar 미표시), `m2SlideStyle2_chapter` (chapter outline 자동), `layoutTest` (시각 회귀 없음)
     - 옵션 교차 4종: `now/none`, `d2/now`, `none/none`, `d99/now`
     - guide-line 모드 라벨 가시화
-
-## Issue140. `toc_placeholder: true` Map Slide 미삽입 회귀 (Issue58 도입) (등록: 2026-05-10)
-* 목적: AGENDA.md에 서브섹션이 없는 평탄 H1-only 구조 프로젝트(예: `m2SlideStyle2_chapter`)에서 `toc_placeholder: true` 설정에도 Map Slide(`<section id="toc-placeholder">` + markmap SVG)가 삽입되지 않는 회귀 해결.
-* 상세:
-    - 회귀 도입: 9ed3298 (Issue58, 2026-05-02) — `hasTocItems` 게이트 신설 ("H3 없으면 `_toc` 미포함")
-    - 후속 변경: 7c4adda(Issue137), 2044cc5(Issue138)에서 게이트 유지
-    - 현 동작: [lib/html-builder.js:591](lib/html-builder.js#L591) `if (_cfg.tocPlaceholder && hasTocItems && ...)` 게이트 때문에 `m2SlideStyle2_chapter`의 모든 챕터에서 Map Slide 누락
-    - 빌드 확인: `grep 'id="toc-placeholder"' Projects/m2SlideStyle2_chapter/slide/*.html` → 0건
-    - 사용자 시나리오: `03-data-visualization.html#/4` 마지막 슬라이드 → → 키 → `04-images-media.html?fwd=1` 진입 시 `#/0`이 Cards Page만 표시되고 Map Slide 부재
-* 구현 명세:
-    - [lib/html-builder.js:591](lib/html-builder.js#L591) Map Slide 게이트에서 `hasTocItems` 제거 → `if (_cfg.tocPlaceholder && !options.skipTocPlaceholder)`
-    - [lib/html-builder.js:163-167](lib/html-builder.js#L163-L167) `hasTocInDeck` 오프셋 계산을 `_cfg.tocPlaceholder` 기반으로 변경 (Map Slide가 #/0을 점유하면 슬라이드 인덱스 +1 시프트 필요)
-    - markmap 데이터(`tocData`)는 `generateTOCFromFile`이 파일 자체의 H1/H2를 항상 파싱하므로 AGENDA.md 서브섹션 없어도 Map Slide markmap은 정상 렌더
-    - 검증: `m2SlideStyle2_chapter` 빌드 후 `id="toc-placeholder"` 7개 챕터 HTML 모두 존재 확인 + 브라우저에서 markmap SVG 렌더 확인
 
 # 📕 중요
 
@@ -114,6 +101,24 @@
 
 
 # ✅ 완료
+
+## Issue140. `toc_placeholder: true` Map Slide 미삽입 회귀 (Issue58 도입) (등록: 2026-05-10, 해결: 2026-05-10, commit: 453f423) ✅
+* 목적: AGENDA.md에 서브섹션이 없는 평탄 H1-only 구조 프로젝트(예: `m2SlideStyle2_chapter`)에서 `toc_placeholder: true` 설정에도 Map Slide(`<section id="toc-placeholder">` + markmap SVG)가 삽입되지 않는 회귀 해결.
+* 상세:
+    - 회귀 도입: 9ed3298 (Issue58, 2026-05-02) — `hasTocItems` 게이트 신설 ("H3 없으면 `_toc` 미포함")
+    - 후속 변경: 7c4adda(Issue137), 2044cc5(Issue138)에서 게이트 유지
+    - 사용자 시나리오: `03-data-visualization.html#/4` 마지막 슬라이드 → → 키 → `04-images-media.html?fwd=1` 진입 시 `#/0`이 Cards Page만 표시되고 Map Slide 부재
+* 카테고리: Generator (lib/html-builder.js)
+* 해결:
+    - [lib/html-builder.js:591](lib/html-builder.js#L591) Map Slide 게이트에서 `hasTocItems` 제거 → `if (_cfg.tocPlaceholder && !options.skipTocPlaceholder)` (Single 모드 가드 `&& hasAgenda` Issue141과 통합)
+    - [lib/html-builder.js:163-167](lib/html-builder.js#L163-L167) `hasTocInDeck` 오프셋을 `_cfg.tocPlaceholder && !!agendaPath` 기반으로 변경 (Chapter 모드 한정)
+    - Cards Page 게이트도 `&& hasAgenda` 추가 (Single 모드 보호, Issue141 통합 변경)
+    - markmap 데이터(`tocData`)는 `generateTOCFromFile`이 파일 자체의 H1/H2를 항상 파싱하므로 AGENDA.md 서브섹션 없어도 Map Slide markmap 정상 렌더
+* 검증:
+    - `m2SlideStyle2_chapter` 빌드: 7개 챕터 HTML 모두 `id="toc-placeholder"` 1건씩 존재
+    - `LlmAndVibeCoding` 회귀 무영향: 16개 챕터 모두 1건씩, 중복 없음
+    - TOC 링크 1-based hash 매핑 정확 (#/2 = Cards Page, #/3~ = 본문)
+    - 브라우저(Chrome) 시각 확인 — markmap SVG 정상 렌더
 
 ## Issue139. End 키 → agenda fallback 제거 (모든 모드) (등록: 2026-05-10, 해결: 2026-05-10, commit: bcdd2ad) ✅
 * 목적: 마지막 챕터/anchor 또는 Cover 페이지에서 End 키 누르면 `agenda.html`로 돌아가는 fallback 동작 제거. End는 "다음 sibling 점프" 의미만 남기고 boundary에서는 무동작.
