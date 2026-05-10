@@ -23,6 +23,7 @@
 
 # 📙 일반
 
+## Issue129. `default_background_transition` 회귀 테스트 (등록: 2026-05-06)
 * 목적: `_config.yml` `animation.default_background_transition` 옵션이 모든 슬라이드에 background transition을 적용하는지 회귀 테스트 마련
 * 상세:
     - Issue117에서 슬라이드별 `#background-transition-{name}` 디렉티브 추가됨
