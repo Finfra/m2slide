@@ -17,27 +17,7 @@
 # 🌱 이슈후보
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
 
-# 🔥 진행중
-
-## Issue143. `_contents` puffer2s 마스코트가 `head_right` 텍스트를 가림 (등록: 2026-05-10)
-* 목적: `_contents` 레이아웃 우상단 푸퍼 마스코트(`finfraPuffer2s.png`)가 섹션 기준 절대 위치(`background-position: 96% 28px`)로 배치되어 Issue141의 `contents-head-bar` `head_right` 텍스트와 겹쳐서 가독성을 해침. 절대 위치를 제거하고 첫번째 가로선(`.title::before`) 바로 아래, 두번째 가로선(`.title::after`) 위 — 즉 제목 밴드(title row) 내부에 위치시켜 head-bar와 분리.
-* 카테고리: Theme (default + default_lec)
-* 상세:
-    - 현재: `theme/default/slide.css:357-364`, `theme/default_lec/slide.css:193-` 의 `.layout-_contents` 섹션에 `background-image: finfraPuffer2s.png; background-position: 96% 28px;` 적용 → head-bar(font-size 0.5em, padding-top 8px, ~28px 영역)와 동일 좌표대 충돌
-    - 사용자 요청: "복어의 위치는 절대 위치가 아니라 첫번째 라인 바로 아래 있어서 두번째 라인하고 사이에 있어야함"
-    - 첫번째 라인 = `.contents-body > .title:first-child::before` (top hr), 두번째 라인 = 동 `::after` (bottom hr)
-* 구현 명세:
-    - section 레벨 `background-image`(puffer2s) 제거
-    - `.contents-body > .title:first-child` 자체에 `background-image: finfraPuffer2s.png` 추가
-    - `background-position: right N% center` (수직 중앙으로 두 hr 사이에 자리잡음) 또는 `right N% top`(첫번째 라인 바로 아래)
-    - `background-size: auto 100%`(또는 `contain`)으로 title 밴드 높이에 맞춰 스케일
-    - `_contents_no_title`은 title 부재 → 푸퍼 미표시 허용 (또는 별도 처리는 후속 검토)
-    - default + default_lec 양쪽 동기화
-* 검증:
-    - `LlmAndVibeCoding` 빌드 후 슬라이드 14, 15(2.3 챕터)에서 head_right 텍스트와 푸퍼 비충돌 확인
-    - `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest` 회귀 빌드
-    - title underline `right: 10%`(슬라이드 폭의 10% 우측 비움) 정책과의 정합 확인
-* 영향 범위: theme/default/slide.css, theme/default_lec/slide.css
+# 🚧 진행중
 
 # 📕 중요
 
@@ -47,6 +27,22 @@
 
 
 # ✅ 완료
+
+## Issue143. `_contents` puffer2s 마스코트가 `head_right` 텍스트를 가림 (등록: 2026-05-10, 해결: 2026-05-10, commit: d83a113) ✅
+* 목적: `_contents` 레이아웃 우상단 푸퍼 마스코트(`finfraPuffer2s.png`)가 섹션 절대 위치(`background-position: 96% 28px`)로 배치되어 Issue141 contents-head-bar `head_right` 텍스트와 중첩 → 절대 위치 제거 후 title 밴드(첫번째↔두번째 hr 사이)로 이동시켜 head-bar와 분리.
+* 카테고리: Theme (default + default_lec)
+* 해결:
+    - section 레벨 `background-image`(puffer2s) 제거 → `.layout-_contents > .title` (section 직속 자식)에 background 부착
+    - **selector 정정**: 기존안 `.contents-body > .title:first-child`는 매칭 실패 — `html-builder.js`가 H2~H6 `.title`을 section 직속으로 끌어올리는 구조 반영 필요. 최종 selector `.layout-_contents > .title, .layout-contents-full > .title`
+    - `background-position: right 4% center` (수직 중앙) + `background-size: auto 119%` (90% → 108% 20%↑ → 119% 추가 10%↑, 사용자 요청 반영)
+    - title underline `::after { right: 10% }` → `right: 0` 풀폭 복원 (puffer가 title 밴드 내부로 이동했으므로 회피 불필요)
+    - `.contents-body > .title::after { right: 10% }` 룰 제거
+    - default + default_lec 양쪽 동기화
+* Walkthrough:
+    - LlmAndVibeCoding 빌드 → 02.3.cli-based.html 슬라이드(`<section class="layout-_contents">` + `contents-head-bar` + `<h2 class="title">`) 정상 생성 확인
+    - m2SlideStyle1_single, m2SlideStyle2_chapter, layoutTest 회귀 빌드 통과
+    - 산출 `slide/css/custom.css`에서 `.reveal section.layout-_contents > .title { background-image: finfraPuffer2s.png; background-size: auto 119% }` 반영 확인
+* 영향 범위: theme/default/slide.css, theme/default_lec/slide.css
 
 ## Issue129. `default_background_transition` 회귀 테스트 (등록: 2026-05-06, 해결: 2026-05-10, commit: e214b43) ✅
 * 목적: `_config.yml` `animation.default_background_transition` 옵션이 모든 슬라이드에 background transition을 적용하는지 회귀 테스트 마련.
