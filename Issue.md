@@ -22,39 +22,30 @@
 
 # 📕 중요
 
-## Issue146. inline code 백틱 내 HTML 미이스케이프로 `<!-- ... -->`·`<div ...>` 내용 누락 (등록: 2026-05-10)
-* 목적: 슬라이드 마크다운에서 `` `<!-- .slide: ... -->` `` 또는 `` `<div data-fragment-index>` `` 같이 `<`/`>` 포함 inline code가 브라우저에서 사라지거나 레이아웃이 깨지는 문제 해결.
-* 카테고리: Generator (Frontend 영향)
-* 재현:
-    - `Projects/animationTest/animationTest.md` L14-17 (0. 검증 목적 슬라이드)
-    - 빌드 후 `Projects/animationTest/slide/index.html`에 `<code><!-- .slide: ... --></code>` 그대로 출력 → 브라우저가 HTML 주석으로 해석해 내용 삼킴
-    - `<code><div data-fragment-index></code>`는 실제 `<div>` 태그로 열려 문단 강제 줄바꿈 발생
-* 상세:
-    - `lib/markdown.js:749` `processInline()` 의 inline code 치환:
-      `text = text.replace(/`([^`]+)`/g, '<code>$1</code>');`
-      → 백틱 내용을 그대로 `<code>`로 감쌈. `<`, `>`, `&` 미이스케이프
-    - `escapeHtml()` 헬퍼는 [`lib/markdown.js:118`](lib/m2slide/lib/markdown.js#L118)에 이미 정의됨
-* 구현 명세:
-    - `lib/markdown.js` line 768 치환을 다음과 같이 수정:
-      ```js
-      text = text.replace(/`([^`]+)`/g, (m, code) => `<code>${escapeHtml(code)}</code>`);
-      ```
-    - 검증:
-        1. `./m2slide.sh animationTest` 빌드 성공
-        2. `slide/index.html`에 `&lt;!-- .slide:` `&lt;div data-fragment-index&gt;` 형태로 이스케이프 확인
-        3. 브라우저에서 0. 검증 목적 슬라이드 렌더링 결과 확인 (3가지 syntax 모두 정상 표시)
-        4. 회귀: 기존 `` `#layout-*` `` 등 단순 inline code도 정상 표시 유지
-    - 부작용 점검:
-        - `lib/__tests__/markdown.test.js` 19개 케이스 통과 확인
-        - 다른 프로젝트(`m2SlideStyle1_single`, `m2SlideStyle2_chapter`) 빌드 회귀 점검
-* 복잡도: 단순 (1 file 1 line)
-
 # 📙 일반
 
 # 📗 선택
 
 
 # ✅ 완료
+
+## Issue146. inline code 백틱 내 HTML 미이스케이프로 `<!-- ... -->`·`<div ...>` 내용 누락 (등록: 2026-05-10, 해결: 2026-05-10, commit: 2eefd8b) ✅
+* 목적: 슬라이드 마크다운에서 `` `<!-- .slide: ... -->` `` 또는 `` `<div data-fragment-index>` `` 같이 `<`/`>` 포함 inline code가 브라우저에서 사라지거나 레이아웃이 깨지는 문제 해결.
+* 카테고리: Generator (Frontend 영향)
+* 원인:
+    - [`lib/markdown.js:768`](lib/markdown.js#L768) `processInline()` 의 백틱 치환이 `<code>$1</code>`로 그대로 감쌈 → `<`, `>`, `&` 미이스케이프
+    - 브라우저는 `<code><!-- ... --></code>`를 HTML 주석으로 해석 → 내용 삭제
+    - 브라우저는 `<code><div ...></code>`를 실제 `<div>` 태그 열림으로 해석 → 문단 강제 줄바꿈
+* 해결:
+    - 백틱 치환 시 캡처 그룹을 `escapeHtml()`로 이스케이프 후 `<code>`로 감싸도록 변경
+    - `escapeHtml()` 헬퍼는 같은 파일 [`lib/markdown.js:118`](lib/markdown.js#L118)에 이미 정의되어 있어 그대로 활용
+* 검증:
+    - `lib/__tests__/markdown.test.js` 19개 케이스 통과
+    - `Projects/animationTest/slide/index.html` 출력에 `<code>&lt;!-- .slide: ... --&gt;</code>`, `<code>&lt;div data-fragment-index&gt;</code>` 형태로 이스케이프 확인
+    - `m2SlideStyle1_single`, `m2SlideStyle2_chapter` 회귀 빌드 성공
+    - 브라우저(Chrome) 렌더링 확인: 0. 검증 목적 슬라이드 3가지 syntax 모두 정상 표시
+* 비고:
+    - 본 fix 커밋(`2eefd8b`)에 사전 작업 중이던 unstaged 변경(kroki 2-tier 캐시 enhancement: `lib/markdown.js` 외 영역 + `lib/html-builder.js` + `run.sh` + `lib/kroki/*.svg`)이 함께 묶여 commit 됨. 별도 이슈 분리 필요 시 split 가능.
 
 ## Issue143. `_contents` puffer2s 마스코트가 `head_right` 텍스트를 가림 (등록: 2026-05-10, 해결: 2026-05-10, commit: d83a113) ✅
 * 목적: `_contents` 레이아웃 우상단 푸퍼 마스코트(`finfraPuffer2s.png`)가 섹션 절대 위치(`background-position: 96% 28px`)로 배치되어 Issue141 contents-head-bar `head_right` 텍스트와 중첩 → 절대 위치 제거 후 title 밴드(첫번째↔두번째 hr 사이)로 이동시켜 head-bar와 분리.
