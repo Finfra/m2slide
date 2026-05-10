@@ -1,3 +1,7 @@
+<!--
+  Issue138: Map Slide 전용 layout — markmap svg 영역만 보유.
+  Cards Page는 `_cards.html`로 분리(Issue138 신규). _toc.html은 markmap 시각화 전담.
+-->
 <section class="layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">{{title}}</h1>
@@ -5,6 +9,4 @@
   <div class="toc-markmap">
     <svg class="toc-mindmap-svg"></svg>
   </div>
-  <div class="toc-body">{{content}}</div>
-  <div class="toc-cards">{{cards}}</div>
 </section>

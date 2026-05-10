@@ -1,0 +1,13 @@
+<!--
+  Issue138: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
+  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
+-->
+<section class="layout-_cards layout-_toc title-slide">
+  <header class="toc-page-header">
+    <h1 class="toc-page-title">{{title}}</h1>
+  </header>
+  <div class="toc-cards">{{cards}}</div>
+</section>
