@@ -36,41 +36,40 @@
     - background-image 디렉티브 도입 시 fixture 확장
 * 의존성: background-image 또는 frontmatter `background_image` 기능 도입(Issue117_1 후보)이 선행되면 더 의미 있음. 단독으로도 부분 검증 가능
 
-## Issue131. `_contents` 레이아웃 제목 폰트를 소제목 크기와 동일하게 (등록: 2026-05-06)
-* 목적: `_contents` 레이아웃의 `contents-title`(현재 `2.8em`)이 본문 헤더(소제목)와 시각적으로 균일하도록 폰트 크기 축소
-* 상세:
-    - 현재 `lib/css/base.css:752-756` `font-size: 2.8em` — `contents-full`과도 동일 값
-    - 사용자 의도: 제목과 소제목의 위계 차이를 줄여 한 슬라이드 안에서 시각 균형 확보
-    - `_contents`만 영향, `contents-full`은 그대로 유지(긴 콘텐츠는 큰 제목이 적합)
-* 카테고리: Theme (또는 Generator 기반)
-* 구현 명세:
-    - **base.css 수정 가드 발동** — CLAUDE.md "base.css 수정 가드" 절에 따라 사용자 컨펌 후 진행
-    - 우회 검토: theme의 `slide.css`에서 `.reveal section.layout-_contents .contents-title { font-size: 2.0em }` 등으로 override 가능 → 우회 권장
-    - 컨펌 시 변경 범위:
-        - 우회안: `theme/default/slide.css` 및 `theme/default_lec/slide.css`에 `.layout-_contents .contents-title` 폰트 크기 override 추가
-        - 직접 수정안: `lib/css/base.css:753`을 H3 기준 폰트 크기로 변경
-    - 대표 프로젝트 빌드 검증 필수: `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`
-
-## Issue132. ePub 분할 레이아웃(2/3분할 카드) 렌더링 버그 (등록: 2026-05-06)
-* 목적: HTML 출력에서 정상 동작하는 2분할/3분할 레이아웃이 EPUB 출력에서 깨지는 문제 수정
-* 상세:
-    - 증상 스크린샷: `/Users/nowage/Desktop/epub버그/20260506_182102.png` 외 2장
-    - 영향 패턴:
-        - 3분할 카드 레이아웃 — `<div>` 기반
-        - 2분할 (좌: 텍스트 / 우: 이미지) — `<div>` 기반
-        - 3분할 카드 — Pandoc fenced div(`::: columns / ::: {.column}`) 기반
-    - HTML(reveal.js)에서는 `m2-cols`/`columns` 클래스 + flex CSS로 동작하나, `generate-epub.js`의 XHTML 변환·CSS 인라인 단계에서 누락 가능성
-* 카테고리: Generator (generate-epub.js)
-* 구현 명세:
-    - 1단계 — 재현: 분할 레이아웃 슬라이드 작성 후 `./m2slide.sh {Name} --epub` 실행, EPUB 내부 XHTML 파일 검증
-    - 2단계 — 분석: `generate-epub.js`의 `convertMarkdownToHTML` 또는 fenced div 처리 로직에서 `m2-cols`/`columns` 클래스 보존 여부 + EPUB 전용 CSS에 flex 스타일 정의 여부 확인
-    - 3단계 — 수정: 누락된 클래스 보존 + EPUB CSS에 flex 레이아웃(`display: flex; gap: 1em;`) + `.column[width]` inline style 매핑 추가
-    - 4단계 — 검증: iBooks 또는 EPUB validator로 분할 레이아웃 시각 확인
-
 # 📗 선택
 
 
 # ✅ 완료
+
+## Issue132. ePub 분할 레이아웃(2/3분할 카드) 렌더링 버그 (등록: 2026-05-06, 해결: 2026-05-10, commit: 9d3de29) ✅
+* 목적: HTML 출력에서 정상 동작하는 2분할/3분할 레이아웃이 EPUB 출력에서 깨지는 문제 수정
+* 카테고리: Generator (lib/generate-epub.js)
+* 원인:
+    - `lib/generate-epub.js:62-64` 모든 `<div>`·`</div>` 라인 무조건 skip → raw `<div>` 분할 레이아웃 손실
+    - Pandoc fenced div(`::: columns` / `::: {.column}`) 처리 부재 → 클래스 보존 실패
+    - chapter 인라인 CSS에 flex 레이아웃 정의 부재
+* 해결:
+    - [lib/generate-epub.js](lib/generate-epub.js) `markdownToXHTML`에 Pandoc fenced div 파서 추가 — 콜론 3개 이상 매칭(outer 4 / inner 5 변형 fixture 대응), class·width·height attribute 파싱하여 `<div class style>`로 변환, 깊이 추적
+    - raw HTML 통과 처리(`div/section/article/aside/figure/header/footer`) — paragraph wrap 회피
+    - chapter 인라인 `<style>`에 `.columns`/`.column`/`.m2-cols`/`.m2-col`/`.card`/`.rows`/`.row` flex 정의 추가
+* 검증:
+    - `node --test lib/__tests__/*.js` 34/34 통과 (회귀 무영향)
+    - `m2SlideStyle2_chapter --epub` 빌드 성공
+    - `chapter5.xhtml`(05-layout-examples): Pandoc fenced div 12건 + raw `<div>` 6건 모두 보존
+    - 7개 챕터 `xmllint --noout` 유효성 통과
+    - 브라우저(Chrome) 시각 확인 — 분할 레이아웃 정상 렌더
+
+## Issue131. `_contents` 레이아웃 제목 폰트를 소제목 크기와 동일하게 (등록: 2026-05-06, 해결: 2026-05-10, commit: 843cc4e) ✅
+* 목적: `_contents` 레이아웃의 `contents-title`(`2.8em`)을 본문 `.title`(소제목, `--title-font-size: 1.5em`)과 동일 크기로 위계 균형
+* 카테고리: Theme (default + default_lec)
+* 해결:
+    - **base.css 수정 가드 회피** — `theme/default/slide.css`·`theme/default_lec/slide.css` 양쪽에 override 추가
+    - `.reveal section.layout-_contents .contents-title { font-size: var(--title-font-size, 1.5em); }` (SSOT 변수 사용)
+    - base.css는 미수정 — 모든 프로젝트 회귀 위험 회피
+* 검증:
+    - 대표 프로젝트 3종 빌드: `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`
+    - 빌드 산출물 `slide/css/custom.css`(theme slide.css 복사본)에 Issue131 마커 + override 3건 모두 반영
+    - 브라우저(Chrome) 시각 확인 — 제목과 본문 H2.title 크기 균일
 
 ## Issue142. `head_breadcum` master toggle 코드 구현 (등록: 2026-05-10, 해결: 2026-05-10, commit: 88bfa08) ✅
 * 목적: `_doc_design/head.md`에 정의된 `head_breadcum: true` master toggle 옵션을 코드에 적용
