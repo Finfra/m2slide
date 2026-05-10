@@ -111,9 +111,10 @@
     - → numbering 자동 추론 (4.2.1의 부모 4.2 자동 매칭)
     - → numbering 없는 H2 outline 제외
     - → 최종: single/chapter mode 통일 알고리즘 (AGENDA.md outline은 head-bar에서 미사용)
-* 후속 (별도 이슈 후보):
-    - Task 10 문서화 (Glossary, theme_layout_default, md-m2slide-rules) — 미완료
-    - Issue142: `head_breadcum` master toggle 코드 구현 (이미 본 이슈에서 구현 완료 — Issue142 별도 종결 필요)
+* Task 10 문서화 완료 (commit dc405f1 후속):
+    - `_doc_design/Glossary.md` — Header 시스템 슬롯 표·상세 섹션 최종 정책 반영
+    - `_doc_design/theme_layout_default.md` — `_contents` 슬롯 표에 head_left/head_right 추가 + DOM 스키마 갱신
+    - `.claude/rules/md-m2slide-rules.md` — Header 시스템 슬롯 섹션(§1.5) 신규 추가 (옵션·알고리즘·예시·toggle)
 
 ## Issue140. `toc_placeholder: true` Map Slide 미삽입 회귀 (Issue58 도입) (등록: 2026-05-10, 해결: 2026-05-10, commit: 453f423) ✅
 * 목적: AGENDA.md에 서브섹션이 없는 평탄 H1-only 구조 프로젝트(예: `m2SlideStyle2_chapter`)에서 `toc_placeholder: true` 설정에도 Map Slide(`<section id="toc-placeholder">` + markmap SVG)가 삽입되지 않는 회귀 해결.
