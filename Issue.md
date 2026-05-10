@@ -20,26 +20,6 @@
 
 # 🚧 진행중
 
-## Issue147. `cards_placeholder: false` + `toc_placeholder: true` 조합에서 `id="toc-placeholder"` 중복 생성 (등록: 2026-05-10)
-* 목적: Chapter 모드에서 두 옵션 조합 시 동일 id를 가진 슬라이드 2장이 연속 생성되어 `#/toc-placeholder` 진입 후 → 키 이동 시 URL hash가 변하지 않는 문제 해결.
-* 카테고리: Generator (lib/slide-parser.js, lib/html-builder.js)
-* 재현:
-    - `Projects/LlmAndVibeCoding_v2/_config.yml` (`cards_placeholder: false`) + 글로벌 `_config.org.yml` (`toc_placeholder: true`)
-    - `./m2slide.sh LlmAndVibeCoding_v2` 빌드
-    - `slide/02-llm-tool-evolution.html` 파일 내 `id="toc-placeholder"` 2건 (line 1437, 1450). 동일 영향 챕터: `02-`, `03-vibecoding-concept`, `04-vibecoding-generations`. LlmAndVibeCoding(`cards_placeholder: false` + `toc_placeholder: true` 명시)는 16개 챕터 중 다수에 동일 중복 발생.
-    - 브라우저: `02-llm-tool-evolution.html?fwd=1#/toc-placeholder` 진입 → → 키 → horizontal index 0→1 이동되지만 URL hash는 `#/toc-placeholder` 유지 (Reveal.js의 id 기반 hash 라우팅 + duplicate id).
-* 원인:
-    - `lib/slide-parser.js:330` — `useTocPlaceholder=true`일 때 `slides.unshift('')` → `isTitle:true` 슬라이드 #/0 prepend (Issue138 이전 Cards Page 생성용 legacy 메커니즘).
-    - `lib/html-builder.js:613-618` — `!hasTocItems`일 때만 isTitle 제거. 서브챕터 있는 챕터(hasTocItems=true)에선 isTitle 잔존.
-    - `lib/html-builder.js:654-679` — `cards_placeholder=true` 경로에서만 isTitle을 `_cards` layout 슬라이드로 변환·소비. `cards_placeholder=false`면 isTitle 잔존.
-    - `lib/html-builder.js:644-650` (Issue144) — `!cardsPlaceholder` 시 `autoToc + _cards`만 splice. isTitle은 미처리.
-    - `lib/html-builder.js:687-699` — `_cfg.tocPlaceholder && hasAgenda`이면 `isMapSlide:true` 슬라이드 unshift. 잔존 isTitle 위에 또 prepend → 두 슬라이드 모두 generateTocSlideHTML / Map Slide 경로에서 `id="toc-placeholder"` 부여 → 중복.
-* 구현 명세:
-    - `lib/html-builder.js:644-650` `!cardsPlaceholder` 분기에서 `s.isTitle === true` 슬라이드도 splice 대상에 포함 (Issue138 Cards Page 분리 후 isTitle은 cards_placeholder=true 경로에서만 의미를 가지므로 false 시 deck에서 완전 제거가 사용자 의도와 일치).
-    - 검증: 영향 받은 모든 챕터 HTML에서 `grep -c 'id="toc-placeholder"'` ≤ 1, → 키 네비게이션 시 hash가 `#/0 → #/1` 등으로 정상 변화.
-    - 회귀: `cards_placeholder=true` 경로(LayoutTest, m2SlideStyle1_single, MermaidExample)는 isTitle → `_cards` 변환이 splice보다 앞에 실행되도록 코드 순서 유지 (line 654 블록이 line 644보다 먼저). 그러나 현재 구조는 644가 먼저이므로 cards_placeholder=true일 때는 644 분기 조건 자체가 false → 영향 없음.
-* 영향 범위: lib/html-builder.js, Issue.md
-
 # 📕 중요
 
 # 📙 일반
@@ -48,6 +28,30 @@
 
 
 # ✅ 완료
+
+## Issue147. `cards_placeholder: false` + `toc_placeholder: true` 조합에서 `id="toc-placeholder"` 중복 생성 (등록: 2026-05-10, 해결: 2026-05-10, commit: 2300788) ✅
+* 목적: Chapter 모드에서 두 옵션 조합 시 동일 id를 가진 슬라이드 2장이 연속 생성되어 `#/toc-placeholder` 진입 후 → 키 이동 시 URL hash가 변하지 않는 문제 해결.
+* 카테고리: Generator (lib/html-builder.js)
+* 재현:
+    - `Projects/LlmAndVibeCoding_v2/_config.yml` (`cards_placeholder: false`) + 글로벌 `_config.org.yml` (`toc_placeholder: true`)
+    - `./m2slide.sh LlmAndVibeCoding_v2` 빌드 → `slide/02-llm-tool-evolution.html`에 `id="toc-placeholder"` 2건 (line 1437 Map Slide + line 1450 TocSlide)
+    - 브라우저: `02-llm-tool-evolution.html?fwd=1#/toc-placeholder` 진입 → → 키 → horizontal index 0→1 이동되지만 URL hash는 `#/toc-placeholder` 유지 (Reveal.js의 id 기반 hash 라우팅 + duplicate id 결합)
+* 원인:
+    - `lib/slide-parser.js:330` — `useTocPlaceholder=true`일 때 `slides.unshift('')` → `isTitle:true` 슬라이드 #/0 prepend (Issue138 이전 Cards Page 생성용 legacy 메커니즘)
+    - `lib/html-builder.js:613-618` — `!hasTocItems`일 때만 isTitle 제거 → 서브챕터 있는 챕터(hasTocItems=true)에선 isTitle 잔존
+    - `lib/html-builder.js:654-679` — `cards_placeholder=true` 경로에서만 isTitle → `_cards` layout 변환·소비. `cards_placeholder=false`면 잔존
+    - `lib/html-builder.js:644-650` (Issue144 도입) — `!cardsPlaceholder` 시 `autoToc + _cards`만 splice. isTitle은 미처리
+    - `lib/html-builder.js:687-699` — `_cfg.tocPlaceholder && hasAgenda`이면 `isMapSlide:true` 슬라이드 unshift. 잔존 isTitle 위에 또 prepend → 두 슬라이드 모두 generateTocSlideHTML / Map Slide 경로에서 `id="toc-placeholder"` 부여 → DOM id 중복
+* 해결:
+    - [lib/html-builder.js:644-650](lib/html-builder.js#L644-L650) `!cardsPlaceholder` splice 분기에 `s.isTitle === true` 슬라이드 제거 추가
+    - Issue138 이후 isTitle은 cards_placeholder=true 경로에서만 의미를 가지므로 false 시점에는 deck에서 완전 제거하는 것이 사용자 의도와 일치 (Issue144 splice 정책과 동일 설계 철학)
+* Walkthrough:
+    - LlmAndVibeCoding_v2 재빌드 → 17개 챕터 모두 `id="toc-placeholder"` 1건 이하 (이전 02/03/04 챕터 중복 해소)
+    - LlmAndVibeCoding 재빌드 → 16개 챕터 모두 1건 이하 (이전 다수 중복 해소)
+    - 회귀(m2SlideStyle2_chapter cards_placeholder=false): 7개 챕터 1건씩 정상
+    - 회귀(m2SlideStyle1_single, LayoutTest, MermaidExample) Single 모드: agenda/index만 0건, 챕터 페이지 없음 → 영향 없음
+    - 브라우저 확인: `02-llm-tool-evolution.html?fwd=1#/toc-placeholder` → → 키 → 정상적으로 #/1 (다음 슬라이드)로 hash 전환
+* 영향 범위: lib/html-builder.js
 
 ## Issue146. inline code 백틱 내 HTML 미이스케이프로 `<!-- ... -->`·`<div ...>` 내용 누락 (등록: 2026-05-10, 해결: 2026-05-10, commit: 2eefd8b) ✅
 * 목적: 슬라이드 마크다운에서 `` `<!-- .slide: ... -->` `` 또는 `` `<div data-fragment-index>` `` 같이 `<`/`>` 포함 inline code가 브라우저에서 사라지거나 레이아웃이 깨지는 문제 해결.
