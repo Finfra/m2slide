@@ -19,26 +19,6 @@
 
 # 🔥 진행중
 
-## Issue144. `cards_placeholder: false` 옵션이 parser 단계 autoToc 변환을 막지 못함 (등록: 2026-05-10)
-* 목적: `_config.yml`에 `cards_placeholder: false`로 설정해도 H1+하위 H2 children 구조 슬라이드가 여전히 `_cards` layout(autoToc 카드 그리드)으로 렌더링됨. 옵션의 의미상 false면 Cards Page 출력이 완전히 차단되어 일반 contents 슬라이드로 표시되어야 함.
-* 카테고리: Generator
-* 상세:
-    - 재현: `Projects/LlmAndVibeCoding/_config.yml`에 `cards_placeholder: false` 설정 + `./m2slide.sh LlmAndVibeCoding` 빌드
-    - 결과: `slide/01-opening.html` 첫 슬라이드(`#/0`)가 `class="layout-_cards layout-_toc"` autoToc 카드 그리드로 렌더링 (옵션 false 무시)
-    - 원인: `lib/slide-parser.js:409`의 autoToc 변환 로직이 옵션 검사 없이 H1+H2 children 구조를 발견하면 무조건 `s.layout = '_cards'; s.autoToc = true`로 변환
-    - `lib/html-builder.js:631`의 `if (_cfg.cardsPlaceholder ...)` 게이트는 prepend(신규 _cards 슬라이드 삽입) 경로만 막고, 이미 parser가 만들어 놓은 autoToc 슬라이드는 통과
-* 구현 명세:
-    - `lib/html-builder.js`에서 parseMarkdownFile 호출 직후, `!_cfg.cardsPlaceholder` 일 때 `slides` 순회하여 `s.autoToc && s.layout === '_cards'`인 항목을 일반 슬라이드로 되돌림
-        - `s.layout = null` (theme_default_layout 적용)
-        - `s.autoToc = false`
-        - `s.headingLevel`·`s.children`는 보존 (Home/End/⇤/⇥ sibling 점프 anchor 기능 유지)
-    - 위치: 기존 `if (_cfg.cardsPlaceholder && ...)` 블록 (line 631) 직전
-* 검증:
-    - `LlmAndVibeCoding` 재빌드 후 `01-opening.html`에 `layout-_cards` class 부재 + 첫 슬라이드가 `_contents` layout으로 렌더링 확인
-    - `m2SlideStyle2_chapter`(cards_placeholder 미사용 또는 true) 회귀 — 카드 그리드 정상 표시
-    - `layoutTest` 회귀 빌드
-* 영향 범위: lib/html-builder.js
-
 ## Issue143. `_contents` puffer2s 마스코트가 `head_right` 텍스트를 가림 (등록: 2026-05-10)
 * 목적: `_contents` 레이아웃 우상단 푸퍼 마스코트(`finfraPuffer2s.png`)가 섹션 기준 절대 위치(`background-position: 96% 28px`)로 배치되어 Issue141의 `contents-head-bar` `head_right` 텍스트와 겹쳐서 가독성을 해침. 절대 위치를 제거하고 첫번째 가로선(`.title::before`) 바로 아래, 두번째 가로선(`.title::after`) 위 — 즉 제목 밴드(title row) 내부에 위치시켜 head-bar와 분리.
 * 카테고리: Theme (default + default_lec)
@@ -81,6 +61,23 @@
 
 
 # ✅ 완료
+
+## Issue144. `cards_placeholder: false` 옵션이 parser 단계 autoToc 변환을 막지 못함 (등록: 2026-05-10, 해결: 2026-05-10, commit: b2bd80a) ✅
+* 목적: `_config.yml`에 `cards_placeholder: false`로 설정해도 H1+하위 H2 children 구조 슬라이드가 여전히 `_cards` layout(autoToc 카드 그리드)으로 렌더링됨. 옵션의 의미상 false면 Cards Page 출력이 완전히 차단되어 일반 contents 슬라이드로 표시되어야 함.
+* 카테고리: Generator
+* 상세:
+    - 재현: `Projects/LlmAndVibeCoding/_config.yml`에 `cards_placeholder: false` 설정 + `./m2slide.sh LlmAndVibeCoding` 빌드
+    - 결과: `slide/01-opening.html` 첫 슬라이드(`#/0`)가 `class="layout-_cards layout-_toc"` autoToc 카드 그리드로 렌더링 (옵션 false 무시)
+    - 원인: `lib/slide-parser.js:409`의 autoToc 변환 로직이 옵션 검사 없이 H1+H2 children 구조를 발견하면 무조건 `s.layout = '_cards'; s.autoToc = true`로 변환
+    - `lib/html-builder.js:631`의 `if (_cfg.cardsPlaceholder ...)` 게이트는 prepend(신규 _cards 슬라이드 삽입) 경로만 막고, 이미 parser가 만들어 놓은 autoToc 슬라이드는 통과
+* 해결:
+    - `lib/html-builder.js`에 parseMarkdownFile 호출 직후 `!_cfg.cardsPlaceholder` 일 때 `slides` 순회하여 `s.autoToc && s.layout === '_cards'`인 항목 revert (`s.layout = null`, `s.autoToc = false`).
+    - headingLevel·children 보존하여 Home/End/⇤/⇥ sibling 점프 anchor 기능 유지.
+* Walkthrough:
+    - LlmAndVibeCoding(cards_placeholder=false) 빌드 → `01-opening.html` 첫 슬라이드 `layout-_contents` 정상 렌더링 (`layout-_cards` class 부재).
+    - m2SlideStyle2_chapter(cards_placeholder=true) 회귀 빌드 → `layout-_cards layout-_toc title-slide` 정상 유지.
+    - m2SlideStyle1_single, layoutTest 빌드 성공.
+* 영향 범위: lib/html-builder.js
 
 ## Issue132. ePub 분할 레이아웃(2/3분할 카드) 렌더링 버그 (등록: 2026-05-06, 해결: 2026-05-10, commit: 9d3de29) ✅
 * 목적: HTML 출력에서 정상 동작하는 2분할/3분할 레이아웃이 EPUB 출력에서 깨지는 문제 수정
