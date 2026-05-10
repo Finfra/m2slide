@@ -1222,7 +1222,7 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1778316246254">
+  <link rel="stylesheet" href="css/custom.css?v=1778374576077">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1456,22 +1456,24 @@ html.ratio-fill .agenda-frame {
   
 </section>
 
-<section data-heading-level="1" class="layout-_toc title-slide">
+<!--
+  Issue138: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
+  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
+-->
+<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">1. 텍스트 레이아웃</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
-  </div>
-  <div class="toc-body"><ul>
-<li class="bullet-dot">현재 예제는 1개의 md파일로 생성됨.</li>
-</ul></div>
   <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="3">
 <li class="chapter-card"><a href="#/3">기본 텍스트 스타일</a></li>
 <li class="chapter-card"><a href="#/4">중첩 리스트</a></li>
 <li class="chapter-card"><a href="#/5">번호 있는 리스트</a></li>
 </ul></div>
 </section>
+
 
 <section class="layout-_contents">
   <h2 class="title">기본 텍스트 스타일</h2>
@@ -1534,19 +1536,23 @@ html.ratio-fill .agenda-frame {
 </ol></div>
 </section>
 
-<section data-heading-level="1" class="layout-_toc title-slide">
+<!--
+  Issue138: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
+  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
+-->
+<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">2. 코드 및 신택스 하이라이팅</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
-  </div>
-  
   <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="2">
 <li class="chapter-card"><a href="#/7">JavaScript 코드 예시</a></li>
 <li class="chapter-card"><a href="#/8">Python 코드 예시</a></li>
 </ul></div>
 </section>
+
 
 <section class="layout-_contents">
   <h2 class="title">JavaScript 코드 예시</h2>
@@ -1572,20 +1578,24 @@ html.ratio-fill .agenda-frame {
 print(fibonacci(10))</code></pre></div>
 </section>
 
-<section data-heading-level="1" class="layout-_toc title-slide">
+<!--
+  Issue138: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
+  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
+-->
+<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">3. 데이터 시각화 (Mermaid)</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
-  </div>
-  
   <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="3">
 <li class="chapter-card"><a href="#/10">플로우차트 (Flowchart)</a></li>
 <li class="chapter-card"><a href="#/11">시퀀스 다이어그램 (Sequence Diagram)</a></li>
 <li class="chapter-card"><a href="#/12">클래스 다이어그램 (Class Diagram)</a></li>
 </ul></div>
 </section>
+
 
 <section class="layout-_contents">
   <h2 class="title">플로우차트 (Flowchart)</h2>
@@ -1648,20 +1658,24 @@ classDiagram
 </div></div>
 </section>
 
-<section data-heading-level="1" class="layout-_toc title-slide">
+<!--
+  Issue138: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
+  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
+-->
+<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">4. 이미지 및 미디어</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
-  </div>
-  
   <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="3">
 <li class="chapter-card"><a href="#/14">개요</a></li>
 <li class="chapter-card"><a href="#/15">4.1. 이미지</a></li>
 <li class="chapter-card"><a href="#/18">4.2. 리스트</a></li>
 </ul></div>
 </section>
+
 
 <section class="layout-_contents">
   <h2 class="title">개요</h2>
@@ -1673,19 +1687,23 @@ classDiagram
 </ul></div>
 </section>
 
-<section data-heading-level="2" class="layout-_toc title-slide">
+<!--
+  Issue138: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
+  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
+-->
+<section data-heading-level="2" class="layout-_cards layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">4.1. 이미지</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
-  </div>
-  
   <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="2">
 <li class="chapter-card"><a href="#/16">이미지 Only</a></li>
 <li class="chapter-card"><a href="#/17">기본 이미지 배치 (Scenery)</a></li>
 </ul></div>
 </section>
+
 
 <section class="layout-_contents">
   <h3 class="title">이미지 Only</h3>
@@ -1711,19 +1729,23 @@ classDiagram
 </div></div>
 </section>
 
-<section data-heading-level="2" class="layout-_toc title-slide">
+<!--
+  Issue138: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
+  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
+-->
+<section data-heading-level="2" class="layout-_cards layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">4.2. 리스트</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
-  </div>
-  
   <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="2">
 <li class="chapter-card"><a href="#/19">리스트 Only</a></li>
 <li class="chapter-card"><a href="#/20">이미지와 리스트 (Chart)</a></li>
 </ul></div>
 </section>
+
 
 <section class="layout-_contents">
   <h3 class="title">리스트 Only</h3>
@@ -1757,14 +1779,17 @@ classDiagram
 </div></div>
 </section>
 
-<section data-heading-level="1" class="layout-_toc title-slide">
+<!--
+  Issue138: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
+  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
+-->
+<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">5. 레이아웃 예제 (DIV 활용)</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
-  </div>
-  
   <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="7">
 <li class="chapter-card"><a href="#/22">2분할 레이아웃 - 1단계</a></li>
 <li class="chapter-card"><a href="#/23">2분할 레이아웃 - 1단계 [좌이미지]</a></li>
@@ -1775,6 +1800,7 @@ classDiagram
 <li class="chapter-card"><a href="#/28">3분할 레이아웃 (카드 형태) - div</a></li>
 </ul></div>
 </section>
+
 
 <section class="layout-_contents">
   <h2 class="title">2분할 레이아웃 - 1단계 </h2>
@@ -1910,19 +1936,23 @@ classDiagram
 </div></div>
 </section>
 
-<section data-heading-level="1" class="layout-_toc title-slide">
+<!--
+  Issue138: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
+  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
+-->
+<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">6. 테이블 및 이미지 혼합</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
-  </div>
-  
   <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="2">
 <li class="chapter-card"><a href="#/30">기본 테이블</a></li>
 <li class="chapter-card"><a href="#/31">이미지가 포함된 테이블</a></li>
 </ul></div>
 </section>
+
 
 <section class="layout-_contents">
   <h2 class="title">기본 테이블</h2>
@@ -1960,19 +1990,23 @@ classDiagram
 </ul></div>
 </section>
 
-<section data-heading-level="1" class="layout-_toc title-slide">
+<!--
+  Issue138: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
+  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
+-->
+<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">7. m2Slide 기능 소개</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
-  </div>
-  
   <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="2">
 <li class="chapter-card"><a href="#/33">네비게이션</a></li>
 <li class="chapter-card"><a href="#/34">마무리</a></li>
 </ul></div>
 </section>
+
 
 <section class="layout-_contents">
   <h2 class="title">네비게이션</h2>
@@ -2399,10 +2433,45 @@ classDiagram
       return tocSlide.querySelector('.toc-mindmap-svg');
     }
 
+    /* Issue134 후속: refit을 외부 스코프로 끌어내 initial·slidechanged·resize 모든 호출 경로가
+       동일 monkey-patch 적용 fit을 사용하도록 통일. 이전엔 slidechanged 시 markmapInitialized=true
+       early-return 경로에서 raw fit()을 호출해 같은 페이지 내 슬라이드 이동 시 transform scale
+       영향으로 markmap이 작게 다시 그려지는 회귀 발생.
+
+       refit 핵심: markmap.fit()은 svg.getBoundingClientRect()로 컨테이너 크기를 측정하는데
+       reveal.js의 transform: scale이 부모(.slides)에 걸려 있어 BCR은 visual(scaled) 크기를 반환.
+       윈도우 높이가 작을수록 측정값이 작아져 markmap content가 작게 그려짐.
+       해결: fit 동안 svg.getBoundingClientRect를 일시 monkey-patch하여 offsetWidth/offsetHeight
+       (transform 적용 전 logical px)를 반환하도록 함. fit() 후 try/finally로 원복. */
+    function refitMarkmap(){
+      if (!markmapInstance || !markmapInstance.fit) return;
+      var svg = findTocSlideSvg();
+      if (!svg) return;
+      try {
+        var p = svg.parentNode;
+        var w = p ? p.offsetWidth : 0;
+        var h = p ? p.offsetHeight : 0;
+        if (w > 0 && h > 0) {
+          svg.setAttribute('width', w);
+          svg.setAttribute('height', h);
+          var origGBCR = svg.getBoundingClientRect.bind(svg);
+          svg.getBoundingClientRect = function(){
+            return { x: 0, y: 0, top: 0, left: 0, right: w, bottom: h, width: w, height: h };
+          };
+          try { markmapInstance.fit(); } finally { svg.getBoundingClientRect = origGBCR; }
+        } else {
+          markmapInstance.fit();
+        }
+      } catch(e){}
+    }
+
     function initTocMarkmapIfNeeded() {
       if (markmapInitialized) {
-        if (markmapInstance && markmapInstance.fit && !isPrintMode) {
-          requestAnimationFrame(function(){ try { markmapInstance.fit(); } catch(e){} });
+        /* Issue134 후속: raw fit() 대신 monkey-patch 적용 refitMarkmap 호출 + 다단 retry */
+        if (!isPrintMode) {
+          requestAnimationFrame(refitMarkmap);
+          setTimeout(refitMarkmap, 50);
+          setTimeout(refitMarkmap, 300);
         }
         return;
       }
@@ -2418,34 +2487,20 @@ classDiagram
         opts.autoFit = true;  /* deriveOptions는 autoFit:false가 기본이므로 명시 */
         markmapInstance = window.markmap.Markmap.create(svg, opts, tocData);
         markmapInitialized = true;
-        /* fit() 직전 SVG에 logical pixel 크기를 명시 — reveal.js transform: scale의 영향으로
-           getBoundingClientRect()가 scaled size를 반환해 markmap이 작게 그리는 문제 회피.
-           parentNode.offsetWidth/offsetHeight는 transform 적용 전 logical px이므로 안전. */
-        function refit(){
-          if (!markmapInstance || !markmapInstance.fit) return;
-          try {
-            var p = svg.parentNode;
-            if (p && p.offsetWidth > 0 && p.offsetHeight > 0) {
-              svg.setAttribute('width', p.offsetWidth);
-              svg.setAttribute('height', p.offsetHeight);
-            }
-            markmapInstance.fit();
-          } catch(e){}
-        }
         if (!isPrintMode) {
-          requestAnimationFrame(refit);
-          setTimeout(refit, 50);
-          setTimeout(refit, 300);
-          setTimeout(refit, 800);
+          requestAnimationFrame(refitMarkmap);
+          setTimeout(refitMarkmap, 50);
+          setTimeout(refitMarkmap, 300);
+          setTimeout(refitMarkmap, 800);
           /* Issue: 컨테이너 크기 변경(flex 재계산·reveal 슬라이드 전환 transform 완료) 시 자동 재맞춤 */
           if (window.ResizeObserver) {
             try {
-              var ro = new ResizeObserver(function(){ refit(); });
+              var ro = new ResizeObserver(function(){ refitMarkmap(); });
               ro.observe(svg.parentNode);
             } catch(e){}
           }
         } else {
-          setTimeout(refit, 1000);
+          setTimeout(refitMarkmap, 1000);
         }
       } catch(e) {
         console.warn('Markmap initialization failed:', e);
@@ -2469,9 +2524,8 @@ classDiagram
 
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(function() {
-        if (markmapInstance && markmapInstance.fit) {
-          try { markmapInstance.fit(); } catch(e) {}
-        }
+        /* Issue135: window resize 핸들러도 monkey-patch 적용 refitMarkmap 사용 */
+        refitMarkmap();
         adjustGraphScrollHeights();
         fitSmallDiagrams();
         topBiasCurrentSlide();
@@ -2625,6 +2679,9 @@ classDiagram
     var M2SLIDE_COVER_LAYOUT = '_cover';
     var PREV_CHAPTER = '';
     var NEXT_CHAPTER = '';
+    // Issue136: ⇤/⇥ 단축키 전용 — main/sub 계층 인식 sibling 점프 (NEXT/PREV_CHAPTER는 sequential 파일 순서 그대로)
+    var PREV_SIBLING_CHAPTER = '';
+    var NEXT_SIBLING_CHAPTER = '';
     // Issue87: ⇟ PgDown(마지막 페이지 직행) — Single mode은 '' (deck last로 자체 계산)
     var LAST_CHAPTER = '';
     function isCoverSlide(slide) {
@@ -2635,11 +2692,13 @@ classDiagram
       if (!slide) return false;
       return slide.id === 'toc-placeholder';
     }
-    // Issue71: section anchor — layout-_toc class를 가지나 toc-placeholder id는 없는 슬라이드 (H1·H2 sub-section autoToc 모두 포함)
+    // Issue71: section anchor — layout-_toc 또는 layout-_cards class를 가진 슬라이드 (H1·H2 sub-section autoToc 모두 포함)
+    // Issue137: toc-placeholder id를 가진 슬라이드도 anchor 자격 보유.
+    // Issue138: Cards Page(layout-_cards)가 새 anchor 클래스. 기존 layout-_toc는 호환성 유지(#layout-_toc 명시 케이스).
     function isAnchorSlide(slide) {
       if (!slide) return false;
-      if (!slide.classList || !slide.classList.contains('layout-_toc')) return false;
-      return slide.id !== 'toc-placeholder';
+      if (!slide.classList) return false;
+      return slide.classList.contains('layout-_cards') || slide.classList.contains('layout-_toc');
     }
     // Issue92: H1 레벨 anchor만 sibling 점프(Home/End) 및 본문 ↑ 부모 lookup 대상
     // (H2 sub-section autoToc는 isAnchorSlide==true이지만 isH1Anchor==false → sibling/parent 후보에서 제외)
@@ -2972,8 +3031,9 @@ classDiagram
         if (M2SLIDE_MODE === 'chapter') {
           stop();
           // Issue104: 이전 챕터 진입은 backward 방향 — ?back=1 시그널로 backward 애니메이션 재생
-          // Issue114: 첫 챕터(PREV_CHAPTER 빈값)는 agenda fallback (parent 진입)
-          if (PREV_CHAPTER) window.location.href = PREV_CHAPTER + '?back=1';
+          // Issue114: 첫 챕터(sibling 빈값)는 agenda fallback (parent 진입)
+          // Issue136: PREV_CHAPTER(파일 순서) → PREV_SIBLING_CHAPTER(main↔main, sub↔sub 계층 인식)
+          if (PREV_SIBLING_CHAPTER) window.location.href = PREV_SIBLING_CHAPTER + '?back=1';
           else window.location.href = 'agenda.html?back=1';
           return;
         }
@@ -3033,10 +3093,10 @@ classDiagram
       if (event.key === 'End' || event.keyCode === 35 || event.code === 'Period' || (event.metaKey && event.key === 'ArrowRight')) {
         if (M2SLIDE_MODE === 'chapter') {
           stop();
-          // 마지막 챕터(NEXT_CHAPTER 빈값/wrap)는 동작 없음 (K5)
-          if (NEXT_CHAPTER && NEXT_CHAPTER !== 'index.html') {
-            // Issue104: 다음 챕터 진입은 forward — ?fwd=1 시그널
-            window.location.href = NEXT_CHAPTER + '?fwd=1';
+          // Issue136: NEXT_CHAPTER(파일 순서, ↓·→ 그대로 사용) → NEXT_SIBLING_CHAPTER(main↔main, sub↔sub)
+          // Issue114·K5: sibling 부재(마지막 main, 또는 마지막 sub의 부모도 마지막) → 동작 없음 (한쪽 끝)
+          if (NEXT_SIBLING_CHAPTER && NEXT_SIBLING_CHAPTER !== 'index.html') {
+            window.location.href = NEXT_SIBLING_CHAPTER + '?fwd=1';
           }
           return;
         }

@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"2.3","slideOffset":13,"totalSlides":92};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"2.3","slideOffset":14,"totalSlides":93};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1222,7 +1222,7 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1778317274940">
+  <link rel="stylesheet" href="css/custom.css?v=1778374440897">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1434,14 +1434,17 @@ html.ratio-fill .agenda-frame {
   <div class="reveal ratio-3-2">
     <div class="slides">
 
-<section data-heading-level="1" class="layout-_toc title-slide">
+<!--
+  Issue138: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
+  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
+-->
+<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">2.3 현재: CLI 기반 시대 (2024-현재)</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
-  </div>
-  
   <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="6">
 <li class="chapter-card"><a href="#/2">2세대: CLI 기반 코딩 시대 (2024-현재)</a></li>
 <li class="chapter-card"><a href="#/3">2세대: 대표 툴 (계속)</a></li>
@@ -1451,6 +1454,7 @@ html.ratio-fill .agenda-frame {
 <li class="chapter-card"><a href="#/7">2세대: 혁신 포인트</a></li>
 </ul></div>
 </section>
+
 
 <section class="layout-_contents">
   <h2 class="title">2세대: CLI 기반 코딩 시대 (2024-현재)</h2>
@@ -2119,7 +2123,7 @@ AI: "어떻게(How)" 구현할지 결정
     var M2SLIDE_COVER_LAYOUT = '_cover';
     var PREV_CHAPTER = '02.2.ide-integration.html';
     var NEXT_CHAPTER = '03-vibecoding-concept.html';
-    // Issue135: ⇤/⇥ 단축키 전용 — main/sub 계층 인식 sibling 점프 (NEXT/PREV_CHAPTER는 sequential 파일 순서 그대로)
+    // Issue136: ⇤/⇥ 단축키 전용 — main/sub 계층 인식 sibling 점프 (NEXT/PREV_CHAPTER는 sequential 파일 순서 그대로)
     var PREV_SIBLING_CHAPTER = '02.2.ide-integration.html';
     var NEXT_SIBLING_CHAPTER = '03-vibecoding-concept.html';
     // Issue87: ⇟ PgDown(마지막 페이지 직행) — Single mode은 '' (deck last로 자체 계산)
@@ -2132,11 +2136,13 @@ AI: "어떻게(How)" 구현할지 결정
       if (!slide) return false;
       return slide.id === 'toc-placeholder';
     }
-    // Issue71: section anchor — layout-_toc class를 가지나 toc-placeholder id는 없는 슬라이드 (H1·H2 sub-section autoToc 모두 포함)
+    // Issue71: section anchor — layout-_toc 또는 layout-_cards class를 가진 슬라이드 (H1·H2 sub-section autoToc 모두 포함)
+    // Issue137: toc-placeholder id를 가진 슬라이드도 anchor 자격 보유.
+    // Issue138: Cards Page(layout-_cards)가 새 anchor 클래스. 기존 layout-_toc는 호환성 유지(#layout-_toc 명시 케이스).
     function isAnchorSlide(slide) {
       if (!slide) return false;
-      if (!slide.classList || !slide.classList.contains('layout-_toc')) return false;
-      return slide.id !== 'toc-placeholder';
+      if (!slide.classList) return false;
+      return slide.classList.contains('layout-_cards') || slide.classList.contains('layout-_toc');
     }
     // Issue92: H1 레벨 anchor만 sibling 점프(Home/End) 및 본문 ↑ 부모 lookup 대상
     // (H2 sub-section autoToc는 isAnchorSlide==true이지만 isH1Anchor==false → sibling/parent 후보에서 제외)
@@ -2470,7 +2476,7 @@ AI: "어떻게(How)" 구현할지 결정
           stop();
           // Issue104: 이전 챕터 진입은 backward 방향 — ?back=1 시그널로 backward 애니메이션 재생
           // Issue114: 첫 챕터(sibling 빈값)는 agenda fallback (parent 진입)
-          // Issue135: PREV_CHAPTER(파일 순서) → PREV_SIBLING_CHAPTER(main↔main, sub↔sub 계층 인식)
+          // Issue136: PREV_CHAPTER(파일 순서) → PREV_SIBLING_CHAPTER(main↔main, sub↔sub 계층 인식)
           if (PREV_SIBLING_CHAPTER) window.location.href = PREV_SIBLING_CHAPTER + '?back=1';
           else window.location.href = 'agenda.html?back=1';
           return;
@@ -2531,7 +2537,7 @@ AI: "어떻게(How)" 구현할지 결정
       if (event.key === 'End' || event.keyCode === 35 || event.code === 'Period' || (event.metaKey && event.key === 'ArrowRight')) {
         if (M2SLIDE_MODE === 'chapter') {
           stop();
-          // Issue135: NEXT_CHAPTER(파일 순서, ↓·→ 그대로 사용) → NEXT_SIBLING_CHAPTER(main↔main, sub↔sub)
+          // Issue136: NEXT_CHAPTER(파일 순서, ↓·→ 그대로 사용) → NEXT_SIBLING_CHAPTER(main↔main, sub↔sub)
           // Issue114·K5: sibling 부재(마지막 main, 또는 마지막 sub의 부모도 마지막) → 동작 없음 (한쪽 끝)
           if (NEXT_SIBLING_CHAPTER && NEXT_SIBLING_CHAPTER !== 'index.html') {
             window.location.href = NEXT_SIBLING_CHAPTER + '?fwd=1';
