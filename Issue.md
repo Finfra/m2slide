@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 139
+* Issue HWM: 141
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -17,6 +17,49 @@
 # 🌱 이슈후보
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
 # 🔥 진행중
+
+## Issue141. _contents head_left/head_right 시스템 슬롯 + outline depth + breadcrumb (등록: 2026-05-10)
+* 목적: `_contents` layout 상단에 AGENDA.md outline 컨텍스트를 좌/우 분리 자동 표시. 발표 도중 청중이 현재 챕터 위치를 시각화. d{N}/now/none 옵션 + breadcrumb 알고리즘.
+* design: `_doc_design/head.md`
+* plan: `_doc_work/plan/head-slots-contents-layout_plan.md`
+* task: `_doc_work/tasks/head-slots-contents-layout_task.md`
+* 상세:
+    - `_contents` layout 상단에 `.contents-head-bar` 신규 영역 (좌/우 분리)
+    - `_config.yml`: `head_left: d1` / `head_right: now` 디폴트
+    - 옵션 `d{N}` (절대 depth) | `now` (breadcrumb) | `none` (비표시)
+    - AGENDA.md 임의 depth 확장 지원 (####, ##### 등). plain heading 무시
+    - now 알고리즘: 다른 head 옵션이 d{m}이면 d{m+1}부터 현재까지 ` > ` 연결
+    - 적용 layout: `_contents`만 (`_contents_no_title`·`_agenda` 미적용)
+    - theme: default + default_lec 양쪽
+* 카테고리: Frontend (layout) + Generator (lib/agenda.js, lib/html-builder.js, lib/config.js)
+* 구현 명세:
+    - 신규: `lib/_internal/head-resolver.js` (순수 함수 분리)
+    - `lib/agenda.js`에 `getOutlinePath(fileName, agendaPath)` → `string[]` 추가
+    - `lib/config.js`에 head_left/head_right 파싱 (default `d1`/`now`)
+    - `lib/html-builder.js:497 generateHTML` 진입부에서 outlinePath 1회 계산 + 모든 slide 객체에 부착
+    - `generateSlideHTML` vars 주입: `_resolveHeadSlot(option, otherOption, outlinePath, ' > ')`
+    - HTML: `<div class="contents-head-bar"><div class="contents-head-left">...</div><div class="contents-head-right">...</div></div>` (기존 `.contents-header` 위)
+    - CSS: theme의 `slide.css`에 추가 (base.css 가드 회피). 빈 슬롯 3중 안전망 (`_stripEmptyWrappers` + `:empty` + `:has()`)
+    - 신규 테스트 4파일: agenda.test.js (4) + config.test.js (4) + head-resolver.test.js (2) + integration.test.js (3)
+* 검증:
+    - 신규 13 케이스 + 기존 19 회귀 무영향 = 32 PASS
+    - 빌드 검증: `m2SlideStyle1_single` (single mode head-bar 미표시), `m2SlideStyle2_chapter` (chapter outline 자동), `layoutTest` (시각 회귀 없음)
+    - 옵션 교차 4종: `now/none`, `d2/now`, `none/none`, `d99/now`
+    - guide-line 모드 라벨 가시화
+
+## Issue140. `toc_placeholder: true` Map Slide 미삽입 회귀 (Issue58 도입) (등록: 2026-05-10)
+* 목적: AGENDA.md에 서브섹션이 없는 평탄 H1-only 구조 프로젝트(예: `m2SlideStyle2_chapter`)에서 `toc_placeholder: true` 설정에도 Map Slide(`<section id="toc-placeholder">` + markmap SVG)가 삽입되지 않는 회귀 해결.
+* 상세:
+    - 회귀 도입: 9ed3298 (Issue58, 2026-05-02) — `hasTocItems` 게이트 신설 ("H3 없으면 `_toc` 미포함")
+    - 후속 변경: 7c4adda(Issue137), 2044cc5(Issue138)에서 게이트 유지
+    - 현 동작: [lib/html-builder.js:591](lib/html-builder.js#L591) `if (_cfg.tocPlaceholder && hasTocItems && ...)` 게이트 때문에 `m2SlideStyle2_chapter`의 모든 챕터에서 Map Slide 누락
+    - 빌드 확인: `grep 'id="toc-placeholder"' Projects/m2SlideStyle2_chapter/slide/*.html` → 0건
+    - 사용자 시나리오: `03-data-visualization.html#/4` 마지막 슬라이드 → → 키 → `04-images-media.html?fwd=1` 진입 시 `#/0`이 Cards Page만 표시되고 Map Slide 부재
+* 구현 명세:
+    - [lib/html-builder.js:591](lib/html-builder.js#L591) Map Slide 게이트에서 `hasTocItems` 제거 → `if (_cfg.tocPlaceholder && !options.skipTocPlaceholder)`
+    - [lib/html-builder.js:163-167](lib/html-builder.js#L163-L167) `hasTocInDeck` 오프셋 계산을 `_cfg.tocPlaceholder` 기반으로 변경 (Map Slide가 #/0을 점유하면 슬라이드 인덱스 +1 시프트 필요)
+    - markmap 데이터(`tocData`)는 `generateTOCFromFile`이 파일 자체의 H1/H2를 항상 파싱하므로 AGENDA.md 서브섹션 없어도 Map Slide markmap은 정상 렌더
+    - 검증: `m2SlideStyle2_chapter` 빌드 후 `id="toc-placeholder"` 7개 챕터 HTML 모두 존재 확인 + 브라우저에서 markmap SVG 렌더 확인
 
 # 📕 중요
 
