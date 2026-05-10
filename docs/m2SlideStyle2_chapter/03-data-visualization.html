@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Single Mode Example</title>
+  <title>3. 데이터 시각화 (Mermaid)</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META=null;/*M2_CHAPTER_META_PLACEHOLDER*/</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"3","slideOffset":4,"totalSlides":14};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1222,7 +1222,7 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1778423184936">
+  <link rel="stylesheet" href="css/custom.css?v=1778423217779">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1390,7 +1390,7 @@ html.ratio-fill .agenda-frame {
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
   </style>
 </head>
-<body class="top-align-mode  media-enlarge-fit" data-nav-indicator="both" style="
+<body class="  media-enlarge-fit" data-nav-indicator="both" style="
   --global-font-family: Pretendard, sans-serif;
   --title-font-family: GmarketSansBold;
   --title-font-weight: 50;
@@ -1434,188 +1434,14 @@ html.ratio-fill .agenda-frame {
   <div class="reveal ratio-3-2">
     <div class="slides">
 
-<section class="layout-_cover">
-  <div class="cover-header">
-    <h1 class="cover-title">Single Mode Example</h1>
-    <div class="cover-subtitle">한 개의 md파일에서 테스트.</div>
-    
-  </div>
-
-  <div class="cover-body">
-    <div class="cover-instructor">
-      <span class="cover-instructor-name">남중구 (핀프라)</span>
-      <span class="cover-instructor-contact">nowage@gmail.com</span>
-    </div>
-
-    <div class="cover-meta">
-      
-      <span class="cover-version">1.1.0</span>
-    </div>
-  </div>
-
-  
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">1. 텍스트 레이아웃</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="3">
-<li class="chapter-card"><a href="#/3">기본 텍스트 스타일</a></li>
-<li class="chapter-card"><a href="#/4">중첩 리스트</a></li>
-<li class="chapter-card"><a href="#/5">번호 있는 리스트</a></li>
-</ul></div>
-</section>
-
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">1. 텍스트 레이아웃</div>
-    
-  </div>
-  <h2 class="title">기본 텍스트 스타일</h2>
-  <div class="contents-body">
-
-<ul>
-<li class="bullet-dot">이것은 기본 리스트 아이템입니다.</li>
-<li class="bullet-dot"><strong>굵은 글씨</strong>와 *이탤릭체*를 지원합니다.</li>
-<li class="bullet-dot"><code>인라인 코드</code>도 사용할 수 있습니다.</li>
-<li class="bullet-dot">> 인용문(Blockquote) 스타일입니다.</li>
-</ul></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">1. 텍스트 레이아웃</div>
-    
-  </div>
-  <h2 class="title">중첩 리스트</h2>
-  <div class="contents-body">
-
-<ul>
-<li class="bullet-dot">레벨 1
-<ul>
-<ul>
-<li class="bullet-dash">레벨 2
-<ul>
-<ul>
-<li class="bullet-dash">레벨 3
-<ul>
-<ul>
-<li class="bullet-dot">레벨 4</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">1. 텍스트 레이아웃</div>
-    
-  </div>
-  <h2 class="title">번호 있는 리스트</h2>
-  <div class="contents-body">
-
-<ol>
-<li>첫 번째 항목</li>
-<li>두 번째 항목</li>
-<li>세 번째 항목
-<ol>
-<ol>
-<li>중첩된 항목 1</li>
-<li>중첩된 항목 2</li>
-</ol>
-</li>
-</ol>
-</li>
-</ol></div>
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">2. 코드 및 신택스 하이라이팅</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="2">
-<li class="chapter-card"><a href="#/7">JavaScript 코드 예시</a></li>
-<li class="chapter-card"><a href="#/8">Python 코드 예시</a></li>
-</ul></div>
-</section>
-
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">2. 코드 및 신택스 하이라이팅</div>
-    
-  </div>
-  <h2 class="title">JavaScript 코드 예시</h2>
-  <div class="contents-body">
-
-<pre class="code-wrapper"><code class="language-javascript hljs">function helloWorld() {
-  console.log("Hello, m2Slide!");
-  const number = 42;
-  return number * 2;
-}</code></pre></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">2. 코드 및 신택스 하이라이팅</div>
-    
-  </div>
-  <h2 class="title">Python 코드 예시</h2>
-  <div class="contents-body">
-
-<pre class="code-wrapper"><code class="language-python hljs">def fibonacci(n):
-    if n &lt;= 1:
-        return n
-    else:
-        return fibonacci(n-1) + fibonacci(n-2)
-
-print(fibonacci(10))</code></pre></div>
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
+      <section id="toc-placeholder" class="layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">3. 데이터 시각화 (Mermaid)</h1>
   </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="3">
-<li class="chapter-card"><a href="#/10">플로우차트 (Flowchart)</a></li>
-<li class="chapter-card"><a href="#/11">시퀀스 다이어그램 (Sequence Diagram)</a></li>
-<li class="chapter-card"><a href="#/12">클래스 다이어그램 (Class Diagram)</a></li>
-</ul></div>
-</section>
-
+  <div class="toc-markmap">
+    <svg class="toc-mindmap-svg"></svg>
+  </div>
+      </section>
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
@@ -1688,467 +1514,6 @@ classDiagram
         +run()
     }
 </div></div>
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">4. 이미지 및 미디어</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="4">
-<li class="chapter-card"><a href="#/14">개요</a></li>
-<li class="chapter-card"><a href="#/15">4.1. 이미지</a></li>
-<li class="chapter-card"><a href="#/18">4.2. 리스트</a></li>
-<li class="chapter-card"><a href="#/20">4.2.1. 리스트[서브 Chapter 테스트용.]</a></li>
-</ul></div>
-</section>
-
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">4. 이미지 및 미디어</div>
-    
-  </div>
-  <h2 class="title">개요</h2>
-  <div class="contents-body">
-
-<ul>
-<li class="bullet-dot">테스트 용도</li>
-<li class="bullet-dot">중간 노드임.</li>
-</ul></div>
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="2" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">4.1. 이미지</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="2">
-<li class="chapter-card"><a href="#/16">이미지 Only</a></li>
-<li class="chapter-card"><a href="#/17">기본 이미지 배치 (Scenery)</a></li>
-</ul></div>
-</section>
-
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">4. 이미지 및 미디어</div>
-    <div class="contents-head-right">4.1. 이미지</div>
-  </div>
-  <h3 class="title">이미지 Only</h3>
-  <div class="contents-body">
-
-<div class="media-container"><img src="./img/scenery.png" alt="Scenery"></div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">4. 이미지 및 미디어</div>
-    <div class="contents-head-right">4.1. 이미지</div>
-  </div>
-  <h3 class="title">기본 이미지 배치 (Scenery)</h3>
-  <div class="contents-body">
-
-<div class="m2-cols">
-<div class="m2-col">
-<div class="media-container"><img src="./img/scenery.png" alt="Scenery"></div>
-</div>
-<div class="m2-col">
-
-<ul>
-<li class="bullet-dot">이미지 아래 텍스트</li>
-</ul>
-</div>
-</div></div>
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="2" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">4.2. 리스트</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="1">
-<li class="chapter-card"><a href="#/19">리스트 Only</a></li>
-</ul></div>
-</section>
-
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">4. 이미지 및 미디어</div>
-    <div class="contents-head-right">4.2. 리스트</div>
-  </div>
-  <h3 class="title">리스트 Only</h3>
-  <div class="contents-body">
-
-<ul>
-<li class="bullet-dot">매출이 상승하고 있습니다.</li>
-<li class="bullet-dot">1분기 대비 2분기 20% 성장</li>
-<li class="bullet-dot">3분기 예측치 달성 무난</li>
-<li class="bullet-dot">이미지가 있을 때 텍스트가 어떻게 배치되는지 확인</li>
-</ul></div>
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="2" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">4.2.1. 리스트[서브 Chapter 테스트용.]</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="1">
-<li class="chapter-card"><a href="#/21">리스트 Only[서브 Chapter 테스트용.]</a></li>
-</ul></div>
-</section>
-
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">4. 이미지 및 미디어</div>
-    <div class="contents-head-right">4.2. 리스트 > 4.2.1. 리스트[서브 Chapter 테스트용.]</div>
-  </div>
-  <h3 class="title">리스트 Only[서브 Chapter 테스트용.]</h3>
-  <div class="contents-body">
-
-<div class="m2-cols">
-<div class="m2-col">
-<ul>
-<li class="bullet-dot">매출이 상승하고 있습니다.</li>
-<li class="bullet-dot">1분기 대비 2분기 20% 성장</li>
-<li class="bullet-dot">3분기 예측치 달성 무난</li>
-<li class="bullet-dot">이미지가 있을 때 텍스트가 어떻게 배치되는지 확인</li>
-</ul>
-
-<h3 class="title">이미지와 리스트 (Chart)</h3>
-
-
-<ul>
-<li class="bullet-dot">매출이 상승하고 있습니다.</li>
-<li class="bullet-dot">1분기 대비 2분기 20% 성장</li>
-<li class="bullet-dot">3분기 예측치 달성 무난</li>
-<li class="bullet-dot">이미지가 있을 때 텍스트가 어떻게 배치되는지 확인</li>
-</ul>
-</div>
-<div class="m2-col">
-<div class="media-container"><img src="./img/chart.png" alt="Right Image"></div>
-</div>
-</div></div>
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">5. 레이아웃 예제 (DIV 활용)</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="7">
-<li class="chapter-card"><a href="#/23">2분할 레이아웃 - 1단계</a></li>
-<li class="chapter-card"><a href="#/24">2분할 레이아웃 - 1단계 [좌이미지]</a></li>
-<li class="chapter-card"><a href="#/25">2분할 레이아웃 - 2단계</a></li>
-<li class="chapter-card"><a href="#/26">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div</a></li>
-<li class="chapter-card"><a href="#/27">3분할 레이아웃 (카드 형태) - Pandoc 펜스 div</a></li>
-<li class="chapter-card"><a href="#/28">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev</a></li>
-<li class="chapter-card"><a href="#/29">3분할 레이아웃 (카드 형태) - div</a></li>
-</ul></div>
-</section>
-
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
-    <div class="contents-head-right">2분할 레이아웃 - 1단계</div>
-  </div>
-  <h2 class="title">2분할 레이아웃 - 1단계 </h2>
-  <div class="contents-body">
-<div class="m2-cols">
-<div class="m2-col">
-<ul>
-<li class="bullet-dot">왼쪽 텍스트 영역<br>-HTML DIV 태그를 사용하여<br>-원하는 레이아웃을 직접 구성할 수 있습니다.<br>-flexbox 스타일을 활용하세요.</li>
-</ul>
-
-</div>
-<div class="m2-col">
-<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
-</div>
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
-    <div class="contents-head-right">2분할 레이아웃 - 1단계 [좌이미지]</div>
-  </div>
-  <h2 class="title">2분할 레이아웃 - 1단계 [좌이미지]</h2>
-  <div class="contents-body">
-
-<div class="m2-cols">
-<div class="m2-col">
-<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
-</div>
-<div class="m2-col">
-
-<ul>
-<li class="bullet-dot">왼쪽 텍스트 영역<br>-HTML DIV 태그를 사용하여<br>-원하는 레이아웃을 직접 구성할 수 있습니다.<br>-flexbox 스타일을 활용하세요.</li>
-</ul>
-</div>
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
-    <div class="contents-head-right">2분할 레이아웃 - 2단계</div>
-  </div>
-  <h2 class="title">2분할 레이아웃 - 2단계</h2>
-  <div class="contents-body">
-<div class="m2-cols">
-<div class="m2-col">
-<ul>
-<li class="bullet-dot">왼쪽 텍스트 영역<br>-HTML DIV 태그를 사용하여<br>-원하는 레이아웃을 직접 구성할 수 있습니다.<br>-flexbox 스타일을 활용하세요.</li>
-</ul>
-</div>
-<div class="m2-col">
-<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
-</div>
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
-    <div class="contents-head-right">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div</div>
-  </div>
-  <h2 class="title">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div</h2>
-  <div class="contents-body">
-
-<div class="m2-cols columns">
-<div class="m2-col column" style="flex: 0 0 48%; max-width: 48%">
-<ul>
-<li class="bullet-dot">왼쪽 텍스트 영역
-<ul>
-<li class="bullet-dash">HTML DIV 태그를 사용하여</li>
-<li class="bullet-dash">원하는 레이아웃을 직접 구성할 수 있습니다.</li>
-<li class="bullet-dash">flexbox 스타일을 활용하세요.</li>
-</ul>
-</li>
-</ul>
-</div>
-<div class="m2-col column" style="flex: 0 0 48%; max-width: 48%">
-<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
-</div>
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
-    <div class="contents-head-right">3분할 레이아웃 (카드 형태) - Pandoc 펜스 div</div>
-  </div>
-  <h2 class="title">3분할 레이아웃 (카드 형태) - Pandoc 펜스 div</h2>
-  <div class="contents-body">
-
-<div class="m2-cols columns">
-<div class="m2-col column card">
-<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
-</div>
-<div class="m2-col column card">
-<ul>
-<li class="bullet-dot">왼쪽 텍스트 영역
-<ul>
-<li class="bullet-dash">HTML DIV 태그를 사용하여</li>
-<li class="bullet-dash">원하는 레이아웃을 직접 구성할 수 있습니다.</li>
-<li class="bullet-dash">flexbox 스타일을 활용하세요.</li>
-</ul>
-</li>
-</ul>
-</div>
-<div class="m2-col column card">
-<div class="media-container"><img src="./img/scenery.png" alt="Chart"></div>
-</div>
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
-    <div class="contents-head-right">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev</div>
-  </div>
-  <h2 class="title">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev </h2>
-  <div class="contents-body">
-
-<div style="display: flex; align-items: center; justify-content: space-between;">
-  <div style="width: 48%;">
-<p>    <h3>왼쪽 텍스트 영역</h3></p>
-<p>    <ul></p>
-<p>      <li>HTML DIV 태그를 사용하여</li></p>
-<p>      <li>원하는 레이아웃을 직접 구성할 수 있습니다.</li></p>
-<p>      <li>flexbox 스타일을 활용하세요.</li></p>
-<p>    </ul></p>
-  </div>
-  <div style="width: 48%;">
-<p>    <img src="./img/chart.png" alt="Chart" style="width: 100%; border-radius: 10px;"></p>
-  </div>
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
-    <div class="contents-head-right">3분할 레이아웃 (카드 형태) - div</div>
-  </div>
-  <h2 class="title">3분할 레이아웃 (카드 형태) - div</h2>
-  <div class="contents-body">
-
-<div style="display: flex; justify-content: space-around;">
-  <div style="width: 30%; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
-<p>    <h4>Card 1</h4></p>
-<p>    <p>첫 번째 카드의 내용입니다.</p></p>
-  </div>
-  <div style="width: 30%; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
-<p>    <h4>Card 2</h4></p>
-<p>    <p>두 번째 카드의 내용입니다.</p></p>
-  </div>
-  <div style="width: 30%; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
-<p>    <h4>Card 3</h4></p>
-<p>    <p>세 번째 카드의 내용입니다.</p></p>
-  </div>
-</div></div>
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">6. 테이블 및 이미지 혼합</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="2">
-<li class="chapter-card"><a href="#/31">기본 테이블</a></li>
-<li class="chapter-card"><a href="#/32">이미지가 포함된 테이블</a></li>
-</ul></div>
-</section>
-
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">6. 테이블 및 이미지 혼합</div>
-    
-  </div>
-  <h2 class="title">기본 테이블</h2>
-  <div class="contents-body">
-
-<table>
-<thead>
-<tr><th style="text-align:left">헤더 1</th><th style="text-align:center">헤더 2</th><th style="text-align:right">헤더 3</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align:left">왼쪽 정렬</td><td style="text-align:center">중앙 정렬</td><td style="text-align:right">오른쪽 정렬</td></tr>
-<tr><td style="text-align:left">데이터 1</td><td style="text-align:center">데이터 2</td><td style="text-align:right">데이터 3</td></tr>
-<tr><td style="text-align:left">내용 A</td><td style="text-align:center">내용 B</td><td style="text-align:right">내용 C</td></tr>
-</tbody>
-</table></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">6. 테이블 및 이미지 혼합</div>
-    
-  </div>
-  <h2 class="title">이미지가 포함된 테이블</h2>
-  <div class="contents-body">
-
-<table>
-<thead>
-<tr><th style="text-align:center">아이콘</th><th style="text-align:left">이름</th><th style="text-align:left">설명</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align:center"><img src="./img/icon.png" alt="Icon"></td><td style="text-align:left"><strong>Robot</strong></td><td style="text-align:left">AI Assistant</td></tr>
-<tr><td style="text-align:center"><img src="./img/icon.png" alt="Icon"></td><td style="text-align:left"><strong>User</strong></td><td style="text-align:left">Human Operator</td></tr>
-<tr><td style="text-align:center"><img src="./img/icon.png" alt="Icon"></td><td style="text-align:left"><strong>System</strong></td><td style="text-align:left">Control Unit</td></tr>
-</tbody>
-</table>
-
-<ul>
-<li class="bullet-dot">테이블 셀 내부에 마크다운 이미지 문법을 사용하여 아이콘을 넣을 수 있습니다.</li>
-</ul></div>
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">7. m2Slide 기능 소개</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="2">
-<li class="chapter-card"><a href="#/34">네비게이션</a></li>
-<li class="chapter-card"><a href="#/35">마무리</a></li>
-</ul></div>
-</section>
-
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">7. m2Slide 기능 소개</div>
-    
-  </div>
-  <h2 class="title">네비게이션</h2>
-  <div class="contents-body">
-
-<ul>
-<li class="bullet-dot"><strong>ESC</strong>: 전체 슬라이드 오버뷰</li>
-<li class="bullet-dot"><strong>Space/화살표</strong>: 슬라이드 이동</li>
-<li class="bullet-dot">슬라이드 하단 프로그레스 바 확인</li>
-</ul></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">7. m2Slide 기능 소개</div>
-    
-  </div>
-  <h2 class="title">마무리</h2>
-  <div class="contents-body">
-
-<ul>
-<li class="bullet-dot">m2Slide를 사용하여 멋진 프레젠테이션을 만드세요.</li>
-<li class="bullet-dot">Markdown으로 쉽고 빠르게 작성할 수 있습니다.</li>
-</ul></div>
 </section>
 
     </div>
@@ -2422,128 +1787,18 @@ classDiagram
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/2\">1. 텍스트 레이아웃</a>",
+                  "content": "<a href=\"#/2\">3. 데이터 시각화 (Mermaid)</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/3\">기본 텍스트 스타일</a>",
+                              "content": "<a href=\"#/3\">플로우차트 (Flowchart)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/4\">중첩 리스트</a>",
+                              "content": "<a href=\"#/4\">시퀀스 다이어그램 (Sequence Diagram)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/5\">번호 있는 리스트</a>",
-                              "children": []
-                        }
-                  ]
-            },
-            {
-                  "content": "<a href=\"#/6\">2. 코드 및 신택스 하이라이팅</a>",
-                  "children": [
-                        {
-                              "content": "<a href=\"#/7\">JavaScript 코드 예시</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/8\">Python 코드 예시</a>",
-                              "children": []
-                        }
-                  ]
-            },
-            {
-                  "content": "<a href=\"#/9\">3. 데이터 시각화 (Mermaid)</a>",
-                  "children": [
-                        {
-                              "content": "<a href=\"#/10\">플로우차트 (Flowchart)</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/11\">시퀀스 다이어그램 (Sequence Diagram)</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/12\">클래스 다이어그램 (Class Diagram)</a>",
-                              "children": []
-                        }
-                  ]
-            },
-            {
-                  "content": "<a href=\"#/13\">4. 이미지 및 미디어</a>",
-                  "children": [
-                        {
-                              "content": "<a href=\"#/14\">개요</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/15\">4.1. 이미지</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/18\">4.2. 리스트</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/20\">4.2.1. 리스트[서브 Chapter 테스트용.]</a>",
-                              "children": []
-                        }
-                  ]
-            },
-            {
-                  "content": "<a href=\"#/22\">5. 레이아웃 예제 (DIV 활용)</a>",
-                  "children": [
-                        {
-                              "content": "<a href=\"#/23\">2분할 레이아웃 - 1단계 </a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/24\">2분할 레이아웃 - 1단계 [좌이미지]</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/25\">2분할 레이아웃 - 2단계</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/26\">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/27\">3분할 레이아웃 (카드 형태) - Pandoc 펜스 div</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/28\">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev </a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/29\">3분할 레이아웃 (카드 형태) - div</a>",
-                              "children": []
-                        }
-                  ]
-            },
-            {
-                  "content": "<a href=\"#/30\">6. 테이블 및 이미지 혼합</a>",
-                  "children": [
-                        {
-                              "content": "<a href=\"#/31\">기본 테이블</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/32\">이미지가 포함된 테이블</a>",
-                              "children": []
-                        }
-                  ]
-            },
-            {
-                  "content": "<a href=\"#/33\">7. m2Slide 기능 소개</a>",
-                  "children": [
-                        {
-                              "content": "<a href=\"#/34\">네비게이션</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/35\">마무리</a>",
+                              "content": "<a href=\"#/5\">클래스 다이어그램 (Class Diagram)</a>",
                               "children": []
                         }
                   ]
@@ -2608,8 +1863,8 @@ classDiagram
         /* Issue: agenda(deriveOptions 기본값)와 동일 옵션으로 통일 — 일관된 시각언어
            기본값: paddingX:8, spacingHorizontal:80, spacingVertical:5, fitRatio:0.95 */
         var opts = window.markmap.deriveOptions
-          ? window.markmap.deriveOptions({ initialExpandLevel: 2 })
-          : { autoFit: true, fitRatio: 0.95, spacingHorizontal: 80, spacingVertical: 5, paddingX: 8, initialExpandLevel: 2 };
+          ? window.markmap.deriveOptions({ initialExpandLevel: 3 })
+          : { autoFit: true, fitRatio: 0.95, spacingHorizontal: 80, spacingVertical: 5, paddingX: 8, initialExpandLevel: 3 };
         opts.autoFit = true;  /* deriveOptions는 autoFit:false가 기본이므로 명시 */
         markmapInstance = window.markmap.Markmap.create(svg, opts, tocData);
         markmapInitialized = true;
@@ -2799,17 +2054,17 @@ classDiagram
     // M2SLIDE_COVER: 'true' | 'false' (cover_enabled, Single mode ← override 판정용)
     // PREV_CHAPTER: 이전 챕터 HTML 파일명 (chapter mode TOC slide ← 대상)
     // NEXT_CHAPTER: 다음 챕터 HTML 파일명 (chapter mode ↓ 대상, key_navigation.md K9)
-    var M2SLIDE_MODE = 'single';
+    var M2SLIDE_MODE = 'chapter';
     var M2SLIDE_COVER = true;
     // Issue119: cover layout 이름 (_config.yml cover_layout, 기본 _cover). isCoverSlide() 판정에 사용.
     var M2SLIDE_COVER_LAYOUT = '_cover';
-    var PREV_CHAPTER = '';
-    var NEXT_CHAPTER = '';
+    var PREV_CHAPTER = '02-code-syntax.html';
+    var NEXT_CHAPTER = '04-images-media.html';
     // Issue136: ⇤/⇥ 단축키 전용 — main/sub 계층 인식 sibling 점프 (NEXT/PREV_CHAPTER는 sequential 파일 순서 그대로)
-    var PREV_SIBLING_CHAPTER = '';
-    var NEXT_SIBLING_CHAPTER = '';
+    var PREV_SIBLING_CHAPTER = '02-code-syntax.html';
+    var NEXT_SIBLING_CHAPTER = '04-images-media.html';
     // Issue87: ⇟ PgDown(마지막 페이지 직행) — Single mode은 '' (deck last로 자체 계산)
-    var LAST_CHAPTER = '';
+    var LAST_CHAPTER = '07-m2slide-features.html';
     function isCoverSlide(slide) {
       if (!slide) return false;
       return slide.classList && slide.classList.contains('layout-' + M2SLIDE_COVER_LAYOUT);
@@ -3246,14 +2501,14 @@ classDiagram
       if (event.key === 'ArrowRight' || event.keyCode === 39) {
         var totalSlides = Reveal.getTotalSlides();
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
-        var hasNextChapter = '' !== '';
+        var hasNextChapter = '04-images-media.html' !== '';
         if (currentSlideNumber >= totalSlides) {
           if (hasNextChapter) {
             if (lastSlideMessageShown) {
               lastSlideMessage.style.display = 'none';
               lastSlideMessageShown = false;
               // Issue104: 다음 챕터 진입은 forward — ?fwd=1 시그널
-              window.location.href = '?fwd=1';
+              window.location.href = '04-images-media.html?fwd=1';
             } else {
               event.preventDefault();
               lastSlideMessage.style.display = 'block';

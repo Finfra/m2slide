@@ -18,7 +18,6 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
-  <link rel="stylesheet" href="https://unpkg.com/open-props"/>
   <style data-m2slide-base="true">
 /* =========================================================================
    m2slide base.css — 모든 테마 공통 기본 스타일 (Issue64 도입)
@@ -1223,7 +1222,7 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1778312223561">
+  <link rel="stylesheet" href="css/custom.css?v=1778423299760">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1438,7 +1437,7 @@ html.ratio-fill .agenda-frame {
 <section class="layout-_cover">
   <div class="cover-header">
     <h1 class="cover-title">Mermaid Samples</h1>
-    
+    <div class="cover-subtitle">Markdown에 포함된 Mermaid Diagram</div>
     
   </div>
 
@@ -1457,14 +1456,17 @@ html.ratio-fill .agenda-frame {
   
 </section>
 
-<section data-heading-level="1" class="layout-_toc title-slide">
+<!--
+  Issue138: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
+  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
+-->
+<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">Mermaid Samples</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
-  </div>
-  
   <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="30">
 <li class="chapter-card"><a href="#/3">Paragraph and Diagram</a></li>
 <li class="chapter-card"><a href="#/4">Flowchart</a></li>
@@ -1499,7 +1501,12 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
+
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Paragraph and Diagram</h2>
   <div class="contents-body">
 <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
@@ -1516,6 +1523,10 @@ graph TD;
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Flowchart</h2>
   <div class="contents-body">
 <div class="media-container mermaid">
@@ -1530,6 +1541,10 @@ flowchart TD
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Class</h2>
   <div class="contents-body">
 
@@ -1559,6 +1574,10 @@ classDiagram
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Sequence</h2>
   <div class="contents-body">
 
@@ -1572,6 +1591,10 @@ sequenceDiagram
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Entity Relationship</h2>
   <div class="contents-body">
 
@@ -1603,6 +1626,10 @@ erDiagram
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">State</h2>
   <div class="contents-body">
 
@@ -1618,6 +1645,10 @@ stateDiagram-v2
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Mindmap</h2>
   <div class="contents-body">
 
@@ -1643,6 +1674,10 @@ mindmap
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Architecture</h2>
   <div class="contents-body">
 <div class="media-container mermaid">
@@ -1661,6 +1696,10 @@ architecture-beta
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Block</h2>
   <div class="contents-body">
 
@@ -1683,6 +1722,10 @@ columns 1
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">C4</h2>
   <div class="contents-body">
 
@@ -1724,6 +1767,10 @@ C4Context
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Gantt</h2>
   <div class="contents-body">
 
@@ -1741,6 +1788,10 @@ gantt
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Git</h2>
   <div class="contents-body">
 
@@ -1764,6 +1815,10 @@ gitGraph
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Kanban</h2>
   <div class="contents-body">
 
@@ -1792,6 +1847,10 @@ kanban
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Packet</h2>
   <div class="contents-body">
 
@@ -1819,6 +1878,10 @@ packet
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Pie</h2>
   <div class="contents-body">
 
@@ -1831,6 +1894,10 @@ pie title Pets adopted by volunteers
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Quadrant</h2>
   <div class="contents-body">
 
@@ -1853,6 +1920,10 @@ quadrantChart
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Radar</h2>
   <div class="contents-body">
 
@@ -1871,6 +1942,10 @@ radar-beta
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Requirement</h2>
   <div class="contents-body">
 
@@ -1893,6 +1968,10 @@ requirementDiagram
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Sankey</h2>
   <div class="contents-body">
 
@@ -1972,6 +2051,10 @@ Wind,Electricity grid,289.366
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">StateDiagram </h2>
   <div class="contents-body">
 <div class="media-container mermaid">
@@ -1984,6 +2067,10 @@ stateDiagram
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Timeline</h2>
   <div class="contents-body">
 <ul>
@@ -2001,6 +2088,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Timeline (계속)</h2>
   <div class="contents-body">
 <ul>
@@ -2015,6 +2106,10 @@ timeline-beta
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">Treemap</h2>
   <div class="contents-body">
 <div class="media-container mermaid">
@@ -2030,6 +2125,10 @@ treemap-beta
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">User Journey</h2>
   <div class="contents-body">
 
@@ -2047,6 +2146,10 @@ journey
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">XY</h2>
   <div class="contents-body">
 
@@ -2061,6 +2164,10 @@ xychart-beta
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">blockdiag</h2>
   <div class="contents-body">
 
@@ -2070,6 +2177,10 @@ xychart-beta
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">seqdiag</h2>
   <div class="contents-body">
 
@@ -2079,6 +2190,10 @@ xychart-beta
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">actdiag</h2>
   <div class="contents-body">
 
@@ -2088,6 +2203,10 @@ xychart-beta
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title">nwdiag</h2>
   <div class="contents-body">
 
@@ -2097,6 +2216,10 @@ xychart-beta
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Mermaid Samples</div>
+    
+  </div>
   <h2 class="title"><code>ditaa</code> (ASCII → 그림 변환)</h2>
   <div class="contents-body">
 
@@ -2106,6 +2229,10 @@ xychart-beta
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Graphviz (DOT)</div>
+    
+  </div>
   <div class="contents-body"><h1 class="outline-title">Graphviz (DOT)</h1>
 
 <div class="media-container kroki">
@@ -2113,21 +2240,29 @@ xychart-beta
 </div></div>
 </section>
 
-<section data-heading-level="1" class="layout-_toc title-slide">
+<!--
+  Issue138: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
+  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
+-->
+<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">Vega</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
-  </div>
-  
   <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="2">
 <li class="chapter-card"><a href="#/35">Vega-lite</a></li>
 <li class="chapter-card"><a href="#/36">Vega</a></li>
 </ul></div>
 </section>
 
+
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Vega</div>
+    
+  </div>
   <h2 class="title">Vega-lite</h2>
   <div class="contents-body">
 <div class="media-container kroki">
@@ -2136,6 +2271,10 @@ xychart-beta
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Vega</div>
+    
+  </div>
   <h2 class="title">Vega</h2>
   <div class="contents-body">
 <div class="media-container kroki">
@@ -2143,14 +2282,17 @@ xychart-beta
 </div></div>
 </section>
 
-<section data-heading-level="1" class="layout-_toc title-slide">
+<!--
+  Issue138: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
+  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
+-->
+<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">PlantUML</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
-  </div>
-  
   <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="4">
 <li class="chapter-card"><a href="#/38">Class Diagram</a></li>
 <li class="chapter-card"><a href="#/39">Component Diagram</a></li>
@@ -2159,7 +2301,12 @@ xychart-beta
 </ul></div>
 </section>
 
+
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">PlantUML</div>
+    
+  </div>
   <h2 class="title">Class Diagram</h2>
   <div class="contents-body">
 <div class="media-container kroki">
@@ -2168,6 +2315,10 @@ xychart-beta
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">PlantUML</div>
+    
+  </div>
   <h2 class="title">Component Diagram</h2>
   <div class="contents-body">
 
@@ -2177,6 +2328,10 @@ xychart-beta
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">PlantUML</div>
+    
+  </div>
   <h2 class="title">Activity Diagram</h2>
   <div class="contents-body">
 <div style="display:flex; gap:20px;">
@@ -2196,6 +2351,10 @@ xychart-beta
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">PlantUML</div>
+    
+  </div>
   <h2 class="title">Use Case Diagram</h2>
   <div class="contents-body">
 
@@ -2357,7 +2516,7 @@ xychart-beta
 
 
     // Inject configuration
-    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":[]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
+    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"head_left":"d1","head_right":"now","head_breadcum":true,"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":[]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
 
     // Dynamic Styling and Resizing Script
     let observer; // Define observer at top level
@@ -2648,10 +2807,45 @@ xychart-beta
       return tocSlide.querySelector('.toc-mindmap-svg');
     }
 
+    /* Issue134 후속: refit을 외부 스코프로 끌어내 initial·slidechanged·resize 모든 호출 경로가
+       동일 monkey-patch 적용 fit을 사용하도록 통일. 이전엔 slidechanged 시 markmapInitialized=true
+       early-return 경로에서 raw fit()을 호출해 같은 페이지 내 슬라이드 이동 시 transform scale
+       영향으로 markmap이 작게 다시 그려지는 회귀 발생.
+
+       refit 핵심: markmap.fit()은 svg.getBoundingClientRect()로 컨테이너 크기를 측정하는데
+       reveal.js의 transform: scale이 부모(.slides)에 걸려 있어 BCR은 visual(scaled) 크기를 반환.
+       윈도우 높이가 작을수록 측정값이 작아져 markmap content가 작게 그려짐.
+       해결: fit 동안 svg.getBoundingClientRect를 일시 monkey-patch하여 offsetWidth/offsetHeight
+       (transform 적용 전 logical px)를 반환하도록 함. fit() 후 try/finally로 원복. */
+    function refitMarkmap(){
+      if (!markmapInstance || !markmapInstance.fit) return;
+      var svg = findTocSlideSvg();
+      if (!svg) return;
+      try {
+        var p = svg.parentNode;
+        var w = p ? p.offsetWidth : 0;
+        var h = p ? p.offsetHeight : 0;
+        if (w > 0 && h > 0) {
+          svg.setAttribute('width', w);
+          svg.setAttribute('height', h);
+          var origGBCR = svg.getBoundingClientRect.bind(svg);
+          svg.getBoundingClientRect = function(){
+            return { x: 0, y: 0, top: 0, left: 0, right: w, bottom: h, width: w, height: h };
+          };
+          try { markmapInstance.fit(); } finally { svg.getBoundingClientRect = origGBCR; }
+        } else {
+          markmapInstance.fit();
+        }
+      } catch(e){}
+    }
+
     function initTocMarkmapIfNeeded() {
       if (markmapInitialized) {
-        if (markmapInstance && markmapInstance.fit && !isPrintMode) {
-          requestAnimationFrame(function(){ try { markmapInstance.fit(); } catch(e){} });
+        /* Issue134 후속: raw fit() 대신 monkey-patch 적용 refitMarkmap 호출 + 다단 retry */
+        if (!isPrintMode) {
+          requestAnimationFrame(refitMarkmap);
+          setTimeout(refitMarkmap, 50);
+          setTimeout(refitMarkmap, 300);
         }
         return;
       }
@@ -2659,19 +2853,28 @@ xychart-beta
       var svg = findTocSlideSvg();
       if (!svg) return;
       try {
-        markmapInstance = window.markmap.Markmap.create(svg, {
-          autoFit: true,
-          fitRatio: 0.95,
-          spacingHorizontal: 80,
-          spacingVertical: 12,
-          paddingX: 40,
-          initialExpandLevel: 2
-        }, tocData);
+        /* Issue: agenda(deriveOptions 기본값)와 동일 옵션으로 통일 — 일관된 시각언어
+           기본값: paddingX:8, spacingHorizontal:80, spacingVertical:5, fitRatio:0.95 */
+        var opts = window.markmap.deriveOptions
+          ? window.markmap.deriveOptions({ initialExpandLevel: 2 })
+          : { autoFit: true, fitRatio: 0.95, spacingHorizontal: 80, spacingVertical: 5, paddingX: 8, initialExpandLevel: 2 };
+        opts.autoFit = true;  /* deriveOptions는 autoFit:false가 기본이므로 명시 */
+        markmapInstance = window.markmap.Markmap.create(svg, opts, tocData);
         markmapInitialized = true;
         if (!isPrintMode) {
-          setTimeout(function(){ if (markmapInstance && markmapInstance.fit) { try { markmapInstance.fit(); } catch(e){} } }, 50);
+          requestAnimationFrame(refitMarkmap);
+          setTimeout(refitMarkmap, 50);
+          setTimeout(refitMarkmap, 300);
+          setTimeout(refitMarkmap, 800);
+          /* Issue: 컨테이너 크기 변경(flex 재계산·reveal 슬라이드 전환 transform 완료) 시 자동 재맞춤 */
+          if (window.ResizeObserver) {
+            try {
+              var ro = new ResizeObserver(function(){ refitMarkmap(); });
+              ro.observe(svg.parentNode);
+            } catch(e){}
+          }
         } else {
-          setTimeout(function(){ if (markmapInstance && markmapInstance.fit) { try { markmapInstance.fit(); } catch(e){} } }, 1000);
+          setTimeout(refitMarkmap, 1000);
         }
       } catch(e) {
         console.warn('Markmap initialization failed:', e);
@@ -2695,9 +2898,8 @@ xychart-beta
 
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(function() {
-        if (markmapInstance && markmapInstance.fit) {
-          try { markmapInstance.fit(); } catch(e) {}
-        }
+        /* Issue135: window resize 핸들러도 monkey-patch 적용 refitMarkmap 사용 */
+        refitMarkmap();
         adjustGraphScrollHeights();
         fitSmallDiagrams();
         topBiasCurrentSlide();
@@ -2851,6 +3053,9 @@ xychart-beta
     var M2SLIDE_COVER_LAYOUT = '_cover';
     var PREV_CHAPTER = '';
     var NEXT_CHAPTER = '';
+    // Issue136: ⇤/⇥ 단축키 전용 — main/sub 계층 인식 sibling 점프 (NEXT/PREV_CHAPTER는 sequential 파일 순서 그대로)
+    var PREV_SIBLING_CHAPTER = '';
+    var NEXT_SIBLING_CHAPTER = '';
     // Issue87: ⇟ PgDown(마지막 페이지 직행) — Single mode은 '' (deck last로 자체 계산)
     var LAST_CHAPTER = '';
     function isCoverSlide(slide) {
@@ -2861,11 +3066,16 @@ xychart-beta
       if (!slide) return false;
       return slide.id === 'toc-placeholder';
     }
-    // Issue71: section anchor — layout-_toc class를 가지나 toc-placeholder id는 없는 슬라이드 (H1·H2 sub-section autoToc 모두 포함)
+    // Issue71: section anchor — layout-_toc 또는 layout-_cards class를 가진 슬라이드 (H1·H2 sub-section autoToc 모두 포함)
+    // Issue137: toc-placeholder id를 가진 슬라이드도 anchor 자격 보유.
+    // Issue138: Cards Page(layout-_cards)가 새 anchor 클래스. 기존 layout-_toc는 호환성 유지(#layout-_toc 명시 케이스).
+    // 2026-05-10: Single 모드 H1 슬라이드(autoToc 미변환, layout-_contents)도 data-heading-level 속성으로 anchor 자격 부여.
     function isAnchorSlide(slide) {
       if (!slide) return false;
-      if (!slide.classList || !slide.classList.contains('layout-_toc')) return false;
-      return slide.id !== 'toc-placeholder';
+      if (!slide.classList) return false;
+      if (slide.classList.contains('layout-_cards') || slide.classList.contains('layout-_toc')) return true;
+      if (slide.dataset && slide.dataset.headingLevel) return true;
+      return false;
     }
     // Issue92: H1 레벨 anchor만 sibling 점프(Home/End) 및 본문 ↑ 부모 lookup 대상
     // (H2 sub-section autoToc는 isAnchorSlide==true이지만 isH1Anchor==false → sibling/parent 후보에서 제외)
@@ -3198,17 +3408,20 @@ xychart-beta
         if (M2SLIDE_MODE === 'chapter') {
           stop();
           // Issue104: 이전 챕터 진입은 backward 방향 — ?back=1 시그널로 backward 애니메이션 재생
-          // Issue114: 첫 챕터(PREV_CHAPTER 빈값)는 agenda fallback (parent 진입)
-          if (PREV_CHAPTER) window.location.href = PREV_CHAPTER + '?back=1';
+          // Issue114: 첫 챕터(sibling 빈값)는 agenda fallback (parent 진입)
+          // Issue136: PREV_CHAPTER(파일 순서) → PREV_SIBLING_CHAPTER(main↔main, sub↔sub 계층 인식)
+          if (PREV_SIBLING_CHAPTER) window.location.href = PREV_SIBLING_CHAPTER + '?back=1';
           else window.location.href = 'agenda.html?back=1';
           return;
         }
         // Issue105: Single — 트리 탐색 sibling. enclosing anchor 레벨 N 기준 직전 anchor at level ≤ N
+        // Issue133: sibling 부재 시 agenda.html?back=1 fallback (Chapter Issue114 대칭)
         var curHForHome = Reveal.getIndices().h;
         var encLevelHome = getEnclosingAnchorLevel(curHForHome);
         var prevAnchorIdx = findPrevSiblingAnchorIndex(curHForHome, encLevelHome);
         stop();
         if (prevAnchorIdx >= 0) Reveal.slide(prevAnchorIdx, 0);
+        else window.location.href = 'agenda.html?back=1';
         return;
       }
 
@@ -3255,16 +3468,20 @@ xychart-beta
       // Issue92: '.' (Period) 를 fallback 으로 매핑 — Home/End 동일 사유
       // Issue92_1: ⌘+→ 도 End fallback — Keyboard Maestro 등이 End → ⌘ArrowRight 변환 시 호환
       if (event.key === 'End' || event.keyCode === 35 || event.code === 'Period' || (event.metaKey && event.key === 'ArrowRight')) {
+        // 2026-05-10: cover 슬라이드 End → agenda.html?fwd=1 (Single 모드 deck #/0 cover 슬라이드 + Chapter 모드 cover 슬라이드 양쪽 대칭)
+        // agenda Home → cover(index.html?back=1) 역방향 이동과 짝 (사용자 요청)
+        if (isCoverSlide(cur)) { stop(); window.location.href = 'agenda.html?fwd=1'; return; }
         if (M2SLIDE_MODE === 'chapter') {
           stop();
-          // 마지막 챕터(NEXT_CHAPTER 빈값/wrap)는 동작 없음 (K5)
-          if (NEXT_CHAPTER && NEXT_CHAPTER !== 'index.html') {
-            // Issue104: 다음 챕터 진입은 forward — ?fwd=1 시그널
-            window.location.href = NEXT_CHAPTER + '?fwd=1';
+          // Issue136: NEXT_CHAPTER(파일 순서, ↓·→ 그대로 사용) → NEXT_SIBLING_CHAPTER(main↔main, sub↔sub)
+          // Issue114·K5: sibling 부재(마지막 main, 또는 마지막 sub의 부모도 마지막) → 동작 없음 (한쪽 끝)
+          if (NEXT_SIBLING_CHAPTER && NEXT_SIBLING_CHAPTER !== 'index.html') {
+            window.location.href = NEXT_SIBLING_CHAPTER + '?fwd=1';
           }
           return;
         }
         // Issue105: Single — 트리 탐색 sibling. enclosing anchor 레벨 N 기준 직후 anchor at level ≤ N
+        // Issue139: sibling 부재 시 무동작 (Issue133 agenda fallback 제거 — Chapter 마지막 main End 무동작과 대칭)
         var curHForEnd = Reveal.getIndices().h;
         var encLevelEnd = getEnclosingAnchorLevel(curHForEnd);
         var nextAnchorIdx = findNextSiblingAnchorIndex(curHForEnd, encLevelEnd);

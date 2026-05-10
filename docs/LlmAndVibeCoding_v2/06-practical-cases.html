@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Single Mode Example</title>
+  <title>6. 실전 사례: 세대별 활용법</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META=null;/*M2_CHAPTER_META_PLACEHOLDER*/</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"6","slideOffset":24,"totalSlides":30};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1222,7 +1222,7 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1778423184936">
+  <link rel="stylesheet" href="css/custom.css?v=1778423137646">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1390,7 +1390,7 @@ html.ratio-fill .agenda-frame {
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
   </style>
 </head>
-<body class="top-align-mode  media-enlarge-fit" data-nav-indicator="both" style="
+<body class="  media-enlarge-fit" data-nav-indicator="both" style="
   --global-font-family: Pretendard, sans-serif;
   --title-font-family: GmarketSansBold;
   --title-font-weight: 50;
@@ -1434,721 +1434,558 @@ html.ratio-fill .agenda-frame {
   <div class="reveal ratio-3-2">
     <div class="slides">
 
-<section class="layout-_cover">
-  <div class="cover-header">
-    <h1 class="cover-title">Single Mode Example</h1>
-    <div class="cover-subtitle">한 개의 md파일에서 테스트.</div>
-    
-  </div>
-
-  <div class="cover-body">
-    <div class="cover-instructor">
-      <span class="cover-instructor-name">남중구 (핀프라)</span>
-      <span class="cover-instructor-contact">nowage@gmail.com</span>
-    </div>
-
-    <div class="cover-meta">
-      
-      <span class="cover-version">1.1.0</span>
-    </div>
-  </div>
-
-  
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
+      <section id="toc-placeholder" class="layout-_toc title-slide">
   <header class="toc-page-header">
-    <h1 class="toc-page-title">1. 텍스트 레이아웃</h1>
+    <h1 class="toc-page-title">6. 실전 사례: 세대별 활용법</h1>
   </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="3">
-<li class="chapter-card"><a href="#/3">기본 텍스트 스타일</a></li>
-<li class="chapter-card"><a href="#/4">중첩 리스트</a></li>
-<li class="chapter-card"><a href="#/5">번호 있는 리스트</a></li>
-</ul></div>
-</section>
-
+  <div class="toc-markmap">
+    <svg class="toc-mindmap-svg"></svg>
+  </div>
+      </section>
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">1. 텍스트 레이아웃</div>
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    <div class="contents-head-right">1세대 (IDE 기반) 활용 사례</div>
+  </div>
+  <h2 class="title">1세대 (IDE 기반) 활용 사례</h2>
+  <div class="contents-body">
+
+<h3 class="title">사례 1: React Todo 앱 개발 (Cursor) </h3>
+
+<p><strong>시나리오</strong>: React와 TypeScript로 간단한 Todo 앱 만들기</p>
+<p><br><br><br><br></p>
+<div class="media-container"><img src="img/cursor-logo.png" alt="Cursor"></div></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
     
   </div>
-  <h2 class="title">기본 텍스트 스타일</h2>
+  <h2 class="title">사례 1: React Todo 앱 (계속)</h2>
   <div class="contents-body">
 
-<ul>
-<li class="bullet-dot">이것은 기본 리스트 아이템입니다.</li>
-<li class="bullet-dot"><strong>굵은 글씨</strong>와 *이탤릭체*를 지원합니다.</li>
-<li class="bullet-dot"><code>인라인 코드</code>도 사용할 수 있습니다.</li>
-<li class="bullet-dot">> 인용문(Blockquote) 스타일입니다.</li>
-</ul></div>
+<p><strong>작업 과정</strong></p>
+<pre class="code-wrapper"><code class="hljs">1. Cursor에서 새 프로젝트 생성
+2. Cmd+K 누르고 요청:
+   "React와 TypeScript로 Todo 앱 만들어줘.
+    - 할 일 추가, 삭제, 완료 표시
+    - localStorage에 저장
+    - Tailwind CSS로 스타일링"
+
+3. AI가 자동 생성:
+   - App.tsx, TodoItem.tsx
+   - types/Todo.ts, hooks/useTodos.ts
+
+4. diff 모드로 확인 후 승인
+5. npm start로 즉시 실행</code></pre></div>
 </section>
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">1. 텍스트 레이아웃</div>
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
     
   </div>
-  <h2 class="title">중첩 리스트</h2>
-  <div class="contents-body">
-
-<ul>
-<li class="bullet-dot">레벨 1
-<ul>
-<ul>
-<li class="bullet-dash">레벨 2
-<ul>
-<ul>
-<li class="bullet-dash">레벨 3
-<ul>
-<ul>
-<li class="bullet-dot">레벨 4</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">1. 텍스트 레이아웃</div>
-    
-  </div>
-  <h2 class="title">번호 있는 리스트</h2>
-  <div class="contents-body">
-
-<ol>
-<li>첫 번째 항목</li>
-<li>두 번째 항목</li>
-<li>세 번째 항목
-<ol>
-<ol>
-<li>중첩된 항목 1</li>
-<li>중첩된 항목 2</li>
-</ol>
-</li>
-</ol>
-</li>
-</ol></div>
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">2. 코드 및 신택스 하이라이팅</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="2">
-<li class="chapter-card"><a href="#/7">JavaScript 코드 예시</a></li>
-<li class="chapter-card"><a href="#/8">Python 코드 예시</a></li>
-</ul></div>
-</section>
-
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">2. 코드 및 신택스 하이라이팅</div>
-    
-  </div>
-  <h2 class="title">JavaScript 코드 예시</h2>
-  <div class="contents-body">
-
-<pre class="code-wrapper"><code class="language-javascript hljs">function helloWorld() {
-  console.log("Hello, m2Slide!");
-  const number = 42;
-  return number * 2;
-}</code></pre></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">2. 코드 및 신택스 하이라이팅</div>
-    
-  </div>
-  <h2 class="title">Python 코드 예시</h2>
-  <div class="contents-body">
-
-<pre class="code-wrapper"><code class="language-python hljs">def fibonacci(n):
-    if n &lt;= 1:
-        return n
-    else:
-        return fibonacci(n-1) + fibonacci(n-2)
-
-print(fibonacci(10))</code></pre></div>
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">3. 데이터 시각화 (Mermaid)</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="3">
-<li class="chapter-card"><a href="#/10">플로우차트 (Flowchart)</a></li>
-<li class="chapter-card"><a href="#/11">시퀀스 다이어그램 (Sequence Diagram)</a></li>
-<li class="chapter-card"><a href="#/12">클래스 다이어그램 (Class Diagram)</a></li>
-</ul></div>
-</section>
-
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">3. 데이터 시각화 (Mermaid)</div>
-    
-  </div>
-  <h2 class="title">플로우차트 (Flowchart)</h2>
-  <div class="contents-body">
-
-<div class="media-container mermaid">
-graph TD
-    A[Start] --> B{Is it working?}
-    B -- Yes --> C[Great!]
-    B -- No --> D[Debug]
-    D --> B
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">3. 데이터 시각화 (Mermaid)</div>
-    
-  </div>
-  <h2 class="title">시퀀스 다이어그램 (Sequence Diagram)</h2>
-  <div class="contents-body">
-
-<div class="media-container mermaid">
-sequenceDiagram
-    participant Alice
-    participant Bob
-    Alice->>John: Hello John, how are you?
-    loop Healthcheck
-        John->>John: Fight against hypochondria
-    end
-    Note right of John: Rational thoughts <br/>prevail!
-    John-->>Alice: Great!
-    John->>Bob: How about you?
-    Bob-->>John: Jolly good!
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">3. 데이터 시각화 (Mermaid)</div>
-    
-  </div>
-  <h2 class="title">클래스 다이어그램 (Class Diagram)</h2>
-  <div class="contents-body">
-
-<div class="media-container mermaid">
-classDiagram
-    Animal <|-- Duck
-    Animal <|-- Fish
-    Animal <|-- Zebra
-    Animal : +int age
-    Animal : +String gender
-    Animal : +isMammal()
-    Animal : +mate()
-    class Duck{
-        +String beakColor
-        +swim()
-        +quack()
-    }
-    class Fish{
-        -int sizeInFeet
-        -canEat()
-    }
-    class Zebra{
-        +bool is_wild
-        +run()
-    }
-</div></div>
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">4. 이미지 및 미디어</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="4">
-<li class="chapter-card"><a href="#/14">개요</a></li>
-<li class="chapter-card"><a href="#/15">4.1. 이미지</a></li>
-<li class="chapter-card"><a href="#/18">4.2. 리스트</a></li>
-<li class="chapter-card"><a href="#/20">4.2.1. 리스트[서브 Chapter 테스트용.]</a></li>
-</ul></div>
-</section>
-
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">4. 이미지 및 미디어</div>
-    
-  </div>
-  <h2 class="title">개요</h2>
-  <div class="contents-body">
-
-<ul>
-<li class="bullet-dot">테스트 용도</li>
-<li class="bullet-dot">중간 노드임.</li>
-</ul></div>
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="2" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">4.1. 이미지</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="2">
-<li class="chapter-card"><a href="#/16">이미지 Only</a></li>
-<li class="chapter-card"><a href="#/17">기본 이미지 배치 (Scenery)</a></li>
-</ul></div>
-</section>
-
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">4. 이미지 및 미디어</div>
-    <div class="contents-head-right">4.1. 이미지</div>
-  </div>
-  <h3 class="title">이미지 Only</h3>
-  <div class="contents-body">
-
-<div class="media-container"><img src="./img/scenery.png" alt="Scenery"></div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">4. 이미지 및 미디어</div>
-    <div class="contents-head-right">4.1. 이미지</div>
-  </div>
-  <h3 class="title">기본 이미지 배치 (Scenery)</h3>
-  <div class="contents-body">
-
-<div class="m2-cols">
-<div class="m2-col">
-<div class="media-container"><img src="./img/scenery.png" alt="Scenery"></div>
-</div>
-<div class="m2-col">
-
-<ul>
-<li class="bullet-dot">이미지 아래 텍스트</li>
-</ul>
-</div>
-</div></div>
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="2" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">4.2. 리스트</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="1">
-<li class="chapter-card"><a href="#/19">리스트 Only</a></li>
-</ul></div>
-</section>
-
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">4. 이미지 및 미디어</div>
-    <div class="contents-head-right">4.2. 리스트</div>
-  </div>
-  <h3 class="title">리스트 Only</h3>
-  <div class="contents-body">
-
-<ul>
-<li class="bullet-dot">매출이 상승하고 있습니다.</li>
-<li class="bullet-dot">1분기 대비 2분기 20% 성장</li>
-<li class="bullet-dot">3분기 예측치 달성 무난</li>
-<li class="bullet-dot">이미지가 있을 때 텍스트가 어떻게 배치되는지 확인</li>
-</ul></div>
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="2" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">4.2.1. 리스트[서브 Chapter 테스트용.]</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="1">
-<li class="chapter-card"><a href="#/21">리스트 Only[서브 Chapter 테스트용.]</a></li>
-</ul></div>
-</section>
-
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">4. 이미지 및 미디어</div>
-    <div class="contents-head-right">4.2. 리스트 > 4.2.1. 리스트[서브 Chapter 테스트용.]</div>
-  </div>
-  <h3 class="title">리스트 Only[서브 Chapter 테스트용.]</h3>
-  <div class="contents-body">
-
-<div class="m2-cols">
-<div class="m2-col">
-<ul>
-<li class="bullet-dot">매출이 상승하고 있습니다.</li>
-<li class="bullet-dot">1분기 대비 2분기 20% 성장</li>
-<li class="bullet-dot">3분기 예측치 달성 무난</li>
-<li class="bullet-dot">이미지가 있을 때 텍스트가 어떻게 배치되는지 확인</li>
-</ul>
-
-<h3 class="title">이미지와 리스트 (Chart)</h3>
-
-
-<ul>
-<li class="bullet-dot">매출이 상승하고 있습니다.</li>
-<li class="bullet-dot">1분기 대비 2분기 20% 성장</li>
-<li class="bullet-dot">3분기 예측치 달성 무난</li>
-<li class="bullet-dot">이미지가 있을 때 텍스트가 어떻게 배치되는지 확인</li>
-</ul>
-</div>
-<div class="m2-col">
-<div class="media-container"><img src="./img/chart.png" alt="Right Image"></div>
-</div>
-</div></div>
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">5. 레이아웃 예제 (DIV 활용)</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="7">
-<li class="chapter-card"><a href="#/23">2분할 레이아웃 - 1단계</a></li>
-<li class="chapter-card"><a href="#/24">2분할 레이아웃 - 1단계 [좌이미지]</a></li>
-<li class="chapter-card"><a href="#/25">2분할 레이아웃 - 2단계</a></li>
-<li class="chapter-card"><a href="#/26">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div</a></li>
-<li class="chapter-card"><a href="#/27">3분할 레이아웃 (카드 형태) - Pandoc 펜스 div</a></li>
-<li class="chapter-card"><a href="#/28">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev</a></li>
-<li class="chapter-card"><a href="#/29">3분할 레이아웃 (카드 형태) - div</a></li>
-</ul></div>
-</section>
-
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
-    <div class="contents-head-right">2분할 레이아웃 - 1단계</div>
-  </div>
-  <h2 class="title">2분할 레이아웃 - 1단계 </h2>
-  <div class="contents-body">
-<div class="m2-cols">
-<div class="m2-col">
-<ul>
-<li class="bullet-dot">왼쪽 텍스트 영역<br>-HTML DIV 태그를 사용하여<br>-원하는 레이아웃을 직접 구성할 수 있습니다.<br>-flexbox 스타일을 활용하세요.</li>
-</ul>
-
-</div>
-<div class="m2-col">
-<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
-</div>
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
-    <div class="contents-head-right">2분할 레이아웃 - 1단계 [좌이미지]</div>
-  </div>
-  <h2 class="title">2분할 레이아웃 - 1단계 [좌이미지]</h2>
-  <div class="contents-body">
-
-<div class="m2-cols">
-<div class="m2-col">
-<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
-</div>
-<div class="m2-col">
-
-<ul>
-<li class="bullet-dot">왼쪽 텍스트 영역<br>-HTML DIV 태그를 사용하여<br>-원하는 레이아웃을 직접 구성할 수 있습니다.<br>-flexbox 스타일을 활용하세요.</li>
-</ul>
-</div>
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
-    <div class="contents-head-right">2분할 레이아웃 - 2단계</div>
-  </div>
-  <h2 class="title">2분할 레이아웃 - 2단계</h2>
-  <div class="contents-body">
-<div class="m2-cols">
-<div class="m2-col">
-<ul>
-<li class="bullet-dot">왼쪽 텍스트 영역<br>-HTML DIV 태그를 사용하여<br>-원하는 레이아웃을 직접 구성할 수 있습니다.<br>-flexbox 스타일을 활용하세요.</li>
-</ul>
-</div>
-<div class="m2-col">
-<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
-</div>
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
-    <div class="contents-head-right">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div</div>
-  </div>
-  <h2 class="title">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div</h2>
-  <div class="contents-body">
-
-<div class="m2-cols columns">
-<div class="m2-col column" style="flex: 0 0 48%; max-width: 48%">
-<ul>
-<li class="bullet-dot">왼쪽 텍스트 영역
-<ul>
-<li class="bullet-dash">HTML DIV 태그를 사용하여</li>
-<li class="bullet-dash">원하는 레이아웃을 직접 구성할 수 있습니다.</li>
-<li class="bullet-dash">flexbox 스타일을 활용하세요.</li>
-</ul>
-</li>
-</ul>
-</div>
-<div class="m2-col column" style="flex: 0 0 48%; max-width: 48%">
-<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
-</div>
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
-    <div class="contents-head-right">3분할 레이아웃 (카드 형태) - Pandoc 펜스 div</div>
-  </div>
-  <h2 class="title">3분할 레이아웃 (카드 형태) - Pandoc 펜스 div</h2>
-  <div class="contents-body">
-
-<div class="m2-cols columns">
-<div class="m2-col column card">
-<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
-</div>
-<div class="m2-col column card">
-<ul>
-<li class="bullet-dot">왼쪽 텍스트 영역
-<ul>
-<li class="bullet-dash">HTML DIV 태그를 사용하여</li>
-<li class="bullet-dash">원하는 레이아웃을 직접 구성할 수 있습니다.</li>
-<li class="bullet-dash">flexbox 스타일을 활용하세요.</li>
-</ul>
-</li>
-</ul>
-</div>
-<div class="m2-col column card">
-<div class="media-container"><img src="./img/scenery.png" alt="Chart"></div>
-</div>
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
-    <div class="contents-head-right">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev</div>
-  </div>
-  <h2 class="title">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev </h2>
-  <div class="contents-body">
-
-<div style="display: flex; align-items: center; justify-content: space-between;">
-  <div style="width: 48%;">
-<p>    <h3>왼쪽 텍스트 영역</h3></p>
-<p>    <ul></p>
-<p>      <li>HTML DIV 태그를 사용하여</li></p>
-<p>      <li>원하는 레이아웃을 직접 구성할 수 있습니다.</li></p>
-<p>      <li>flexbox 스타일을 활용하세요.</li></p>
-<p>    </ul></p>
-  </div>
-  <div style="width: 48%;">
-<p>    <img src="./img/chart.png" alt="Chart" style="width: 100%; border-radius: 10px;"></p>
-  </div>
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
-    <div class="contents-head-right">3분할 레이아웃 (카드 형태) - div</div>
-  </div>
-  <h2 class="title">3분할 레이아웃 (카드 형태) - div</h2>
-  <div class="contents-body">
-
-<div style="display: flex; justify-content: space-around;">
-  <div style="width: 30%; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
-<p>    <h4>Card 1</h4></p>
-<p>    <p>첫 번째 카드의 내용입니다.</p></p>
-  </div>
-  <div style="width: 30%; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
-<p>    <h4>Card 2</h4></p>
-<p>    <p>두 번째 카드의 내용입니다.</p></p>
-  </div>
-  <div style="width: 30%; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
-<p>    <h4>Card 3</h4></p>
-<p>    <p>세 번째 카드의 내용입니다.</p></p>
-  </div>
-</div></div>
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">6. 테이블 및 이미지 혼합</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="2">
-<li class="chapter-card"><a href="#/31">기본 테이블</a></li>
-<li class="chapter-card"><a href="#/32">이미지가 포함된 테이블</a></li>
-</ul></div>
-</section>
-
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">6. 테이블 및 이미지 혼합</div>
-    
-  </div>
-  <h2 class="title">기본 테이블</h2>
+  <h2 class="title">사례 1: 성과</h2>
   <div class="contents-body">
 
 <table>
 <thead>
-<tr><th style="text-align:left">헤더 1</th><th style="text-align:center">헤더 2</th><th style="text-align:right">헤더 3</th></tr>
+<tr><th>항목</th><th>결과</th></tr>
 </thead>
 <tbody>
-<tr><td style="text-align:left">왼쪽 정렬</td><td style="text-align:center">중앙 정렬</td><td style="text-align:right">오른쪽 정렬</td></tr>
-<tr><td style="text-align:left">데이터 1</td><td style="text-align:center">데이터 2</td><td style="text-align:right">데이터 3</td></tr>
-<tr><td style="text-align:left">내용 A</td><td style="text-align:center">내용 B</td><td style="text-align:right">내용 C</td></tr>
+<tr><td>소요 시간</td><td>약 5분</td></tr>
+<tr><td>기존 방식</td><td>약 30-40분</td></tr>
+<tr><td>생산성 향상</td><td><strong>6-8배</strong></td></tr>
+</tbody>
+</table>
+
+<p><strong>장점</strong></p>
+<ul>
+<li class="bullet-dot">실시간 UI 프리뷰</li>
+<li class="bullet-dot">컴포넌트 구조 시각적 확인</li>
+<li class="bullet-dot">즉시 브라우저에서 테스트</li>
+</ul></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
+  <h2 class="title">사례 2: API 통합 (Cline) <img src="img/cline-logo.png" alt="Cline"></h2>
+  <div class="contents-body">
+
+<p><strong>시나리오</strong>: 기존 React 앱에 REST API 연동 추가</p>
+
+<p><strong>작업 과정</strong></p>
+<pre class="code-wrapper"><code class="hljs">1. Cline 채팅 패널에서 요청:
+   "GitHub API를 사용해서 사용자 저장소 목록 가져오기.
+    - axios 사용
+    - React Query로 캐싱
+    - 로딩 및 에러 상태 처리"
+
+2. AI가 자동 작업:
+   - api/github.ts 생성
+   - hooks/useRepositories.ts 생성
+   - RepositoryList.tsx 컴포넌트 생성
+   - package.json에 의존성 추가 제안</code></pre></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
+  <h2 class="title">사례 2: 성과</h2>
+  <div class="contents-body">
+
+<table>
+<thead>
+<tr><th>항목</th><th>결과</th></tr>
+</thead>
+<tbody>
+<tr><td>소요 시간</td><td>약 7분</td></tr>
+<tr><td>기존 방식</td><td>약 45-60분</td></tr>
+<tr><td>생산성 향상</td><td><strong>6-8배</strong></td></tr>
+</tbody>
+</table>
+
+<p><strong>핵심 포인트</strong></p>
+<ul>
+<li class="bullet-dot">API 호출 로직 자동 생성</li>
+<li class="bullet-dot">에러 핸들링 자동 구현</li>
+<li class="bullet-dot">React Query 설정 완료</li>
+</ul></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    <div class="contents-head-right">2세대 (CLI 기반) 활용 사례</div>
+  </div>
+  <h2 class="title">2세대 (CLI 기반) 활용 사례</h2>
+  <div class="contents-body">
+
+<h3 class="title">사례 1: Express API 서버 (Claude Code) <img src="img/claude-logo.png" alt="Claude"></h3>
+
+<p><strong>시나리오</strong>: Node.js Express로 RESTful API 서버 개발</p></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
+  <h2 class="title">사례 1: Express API 서버 (계속)</h2>
+  <div class="contents-body">
+
+<p><strong>작업 과정</strong></p>
+<pre class="code-wrapper"><code class="language-bash hljs">$ claude
+
+&gt; Express로 블로그 API 서버 만들어줘.
+  - 게시글 CRUD
+  - 사용자 인증 (JWT)
+  - MongoDB 연동
+  - 입력 검증
+  - 에러 핸들링 미들웨어
+
+[Claude가 작업 시작]
+✓ server.js, routes/posts.js, routes/auth.js
+✓ middleware/auth.js, models/Post.js, models/User.js
+✓ .env.example, package.json, README.md</code></pre></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
+  <h2 class="title">사례 1: Express API 서버 (계속)</h2>
+  <div class="contents-body">
+
+<pre class="code-wrapper"><code class="language-bash hljs">&gt; 테스트 코드도 작성해줘
+
+✓ __tests__/posts.test.js
+✓ __tests__/auth.test.js
+✓ jest.config.js
+
+&gt; npm install 실행하고 서버 시작해줘
+
+[npm install 실행]
+[서버 시작됨]
+Server running on port 3000</code></pre></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
+  <h2 class="title">사례 1: 성과</h2>
+  <div class="contents-body">
+
+<table>
+<thead>
+<tr><th>항목</th><th>결과</th></tr>
+</thead>
+<tbody>
+<tr><td>소요 시간</td><td>약 10분</td></tr>
+<tr><td>기존 방식</td><td>약 2-3시간</td></tr>
+<tr><td>생산성 향상</td><td><strong>12-18배</strong></td></tr>
+</tbody>
+</table>
+
+<p><strong>장점</strong></p>
+<ul>
+<li class="bullet-dot">멀티파일 자동 생성</li>
+<li class="bullet-dot">보일러플레이트 자동 처리</li>
+<li class="bullet-dot">테스트 코드까지 완성</li>
+<li class="bullet-dot">즉시 실행 가능</li>
+</ul></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
+  <h2 class="title">사례 2: AWS 인프라 구성 (Gemini CLI) <img src="img/gemini-logo.png" alt="Gemini"></h2>
+  <div class="contents-body">
+
+<p><strong>시나리오</strong>: Terraform으로 AWS EC2 + RDS 인프라 구성</p>
+<ul>
+<li class="bullet-dot">cf) <a href="https://finfra.kr/jg/2025/08/12/2%ec%84%b8%eb%8c%80-vibe-coding-ai-%eb%8f%84%ea%b5%ac%eb%a5%bc-%ed%99%9c%ec%9a%a9%ed%95%9c-%ed%81%b4%eb%9d%bc%ec%9a%b0%eb%93%9c-%ec%9d%b8%ed%94%84%eb%9d%bc-%ec%9e%90%eb%8f%99%ed%99%94/">2세대 Vibe Coding : AI 도구를 활용한 클라우드 인프라 자동화</a></li>
+</ul></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
+  <h2 class="title">사례 2: AWS 인프라 구성 (계속)</h2>
+  <div class="contents-body">
+
+<p><strong>작업 과정</strong></p>
+<pre class="code-wrapper"><code class="language-bash hljs">$ gemini
+
+&gt; AWS에 프로덕션 환경 인프라 구성해줘:
+  - VPC, 서브넷, 인터넷 게이트웨이
+  - EC2 인스턴스 (t3.medium, 2개)
+  - RDS PostgreSQL (Multi-AZ)
+  - 로드 밸런서, 보안 그룹 설정
+  - Terraform 코드로 작성
+
+[Gemini가 Terraform 코드 생성]
+✓ main.tf, variables.tf, outputs.tf
+✓ vpc.tf, ec2.tf, rds.tf, security-groups.tf</code></pre></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
+  <h2 class="title">사례 2: AWS 인프라 구성 (계속)</h2>
+  <div class="contents-body">
+
+<pre class="code-wrapper"><code class="language-bash hljs">&gt; terraform init하고 plan 보여줘
+
+[terraform init 실행]
+[terraform plan 실행 및 결과 표시]
+Plan: 15 to add, 0 to change, 0 to destroy.
+
+&gt; apply해줘
+
+[terraform apply 실행]
+Apply complete! Resources: 15 added</code></pre></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
+  <h2 class="title">사례 2: 성과</h2>
+  <div class="contents-body">
+
+<table>
+<thead>
+<tr><th>항목</th><th>결과</th></tr>
+</thead>
+<tbody>
+<tr><td>소요 시간</td><td>약 15분</td></tr>
+<tr><td>기존 방식</td><td>약 3-4시간</td></tr>
+<tr><td>생산성 향상</td><td><strong>12-16배</strong></td></tr>
+</tbody>
+</table>
+
+<p><strong>핵심 포인트</strong></p>
+<ul>
+<li class="bullet-dot">복잡한 인프라 코드 자동 생성</li>
+<li class="bullet-dot">베스트 프랙티스 자동 적용</li>
+<li class="bullet-dot">즉시 배포 가능</li>
+</ul></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
+  <h2 class="title">비교: 사용자 인증 기능 추가</h2>
+  <div class="contents-body">
+
+<p><strong>1세대 (Cursor) 접근</strong></p>
+<pre class="code-wrapper"><code class="hljs">1. IDE에서 프로젝트 열기
+2. Cmd+K: "JWT 기반 사용자 인증 추가"
+3. 시각적으로 변경사항 확인
+   - Login.tsx 수정 확인
+   - auth.service.ts 생성 확인
+4. Accept All
+5. 브라우저에서 로그인 폼 확인</code></pre>
+
+<p><strong>적합</strong>: 프론트엔드 중심 작업, UI 피드백 필요</p></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
+  <h2 class="title">비교: 사용자 인증 기능 추가 (계속)</h2>
+  <div class="contents-body">
+
+<p><strong>2세대 (Claude Code) 접근</strong></p>
+<pre class="code-wrapper"><code class="language-bash hljs">$ claude
+
+&gt; 사용자 인증 기능 추가해줘:
+  - JWT 토큰 발급
+  - Refresh 토큰
+  - 비밀번호 해싱 (bcrypt)
+  - Rate limiting
+  - 로그인 시도 제한
+
+[모든 파일 자동 수정 및 생성]
+[테스트 코드 자동 생성]
+[npm test 자동 실행]</code></pre>
+
+<p><strong>적합</strong>: 백엔드 전체 로직, 테스트 자동화</p></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
+  <h2 class="title">생산성 비교: 블로그 플랫폼</h2>
+  <div class="contents-body">
+
+<table>
+<thead>
+<tr><th>작업</th><th>전통</th><th>Cursor</th><th>Claude Code</th></tr>
+</thead>
+<tbody>
+<tr><td>프로젝트 설정</td><td>30분</td><td>5분</td><td>3분</td></tr>
+<tr><td>데이터 모델</td><td>1시간</td><td>15분</td><td>10분</td></tr>
+<tr><td>CRUD API</td><td>4시간</td><td>1시간</td><td>30분</td></tr>
+<tr><td>프론트엔드 UI</td><td>6시간</td><td>2시간</td><td>-</td></tr>
+<tr><td>인증</td><td>3시간</td><td>45분</td><td>20분</td></tr>
+<tr><td>테스트</td><td>4시간</td><td>1시간</td><td>30분</td></tr>
+<tr><td>배포 설정</td><td>2시간</td><td>1시간</td><td>15분</td></tr>
+<tr><td><strong>총합</strong></td><td><strong>20.5시간</strong></td><td><strong>6시간</strong></td><td><strong>1.8시간</strong></td></tr>
 </tbody>
 </table></div>
 </section>
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">6. 테이블 및 이미지 혼합</div>
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
     
   </div>
-  <h2 class="title">이미지가 포함된 테이블</h2>
+  <h2 class="title">생산성 향상 분석</h2>
   <div class="contents-body">
 
-<table>
-<thead>
-<tr><th style="text-align:center">아이콘</th><th style="text-align:left">이름</th><th style="text-align:left">설명</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align:center"><img src="./img/icon.png" alt="Icon"></td><td style="text-align:left"><strong>Robot</strong></td><td style="text-align:left">AI Assistant</td></tr>
-<tr><td style="text-align:center"><img src="./img/icon.png" alt="Icon"></td><td style="text-align:left"><strong>User</strong></td><td style="text-align:left">Human Operator</td></tr>
-<tr><td style="text-align:center"><img src="./img/icon.png" alt="Icon"></td><td style="text-align:left"><strong>System</strong></td><td style="text-align:left">Control Unit</td></tr>
-</tbody>
-</table>
-
+<p><strong>Cursor (1세대)</strong></p>
 <ul>
-<li class="bullet-dot">테이블 셀 내부에 마크다운 이미지 문법을 사용하여 아이콘을 넣을 수 있습니다.</li>
-</ul></div>
-</section>
+<li class="bullet-dot">약 <strong>3.4배</strong> 빠름</li>
+<li class="bullet-dot">시각적 피드백 장점</li>
+<li class="bullet-dot">UI 중심 작업에 최적</li>
+</ul>
 
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">7. m2Slide 기능 소개</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="2">
-<li class="chapter-card"><a href="#/34">네비게이션</a></li>
-<li class="chapter-card"><a href="#/35">마무리</a></li>
-</ul></div>
-</section>
-
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">7. m2Slide 기능 소개</div>
-    
-  </div>
-  <h2 class="title">네비게이션</h2>
-  <div class="contents-body">
-
+<p><strong>Claude Code (2세대)</strong></p>
 <ul>
-<li class="bullet-dot"><strong>ESC</strong>: 전체 슬라이드 오버뷰</li>
-<li class="bullet-dot"><strong>Space/화살표</strong>: 슬라이드 이동</li>
-<li class="bullet-dot">슬라이드 하단 프로그레스 바 확인</li>
+<li class="bullet-dot">약 <strong>11.3배</strong> 빠름</li>
+<li class="bullet-dot">완전 자동화 가능</li>
+<li class="bullet-dot">백엔드/인프라에 최적</li>
 </ul></div>
 </section>
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">7. m2Slide 기능 소개</div>
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
     
   </div>
-  <h2 class="title">마무리</h2>
+  <h2 class="title">실전 팁: 1세대 (IDE)</h2>
   <div class="contents-body">
 
+<p><strong>효율적인 프롬프트</strong></p>
+
+<p>❌ 나쁜 예: "컴포넌트 만들어줘"</p>
+
+<p>✅ 좋은 예:</p>
+<pre class="code-wrapper"><code class="hljs">"사용자 프로필 카드 컴포넌트 만들어줘.
+ - props: name, email, avatar, bio
+ - Tailwind CSS 사용
+ - 클릭 시 상세 페이지로 이동
+ - 반응형 디자인"</code></pre></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
+  <h2 class="title">실전 팁: 1세대 (계속)</h2>
+  <div class="contents-body">
+
+<p><strong>Composer 모드 활용</strong></p>
 <ul>
-<li class="bullet-dot">m2Slide를 사용하여 멋진 프레젠테이션을 만드세요.</li>
-<li class="bullet-dot">Markdown으로 쉽고 빠르게 작성할 수 있습니다.</li>
+<li class="bullet-dot">여러 파일을 한번에 수정</li>
+<li class="bullet-dot"><code>@파일명</code>으로 특정 파일 참조</li>
+<li class="bullet-dot">프로젝트 전체 맥락 활용</li>
+</ul>
+
+<p><strong>단축키 마스터</strong></p>
+<ul>
+<li class="bullet-dot"><code>Cmd/Ctrl + K</code>: 프롬프트 입력</li>
+<li class="bullet-dot"><code>Cmd/Ctrl + L</code>: 전체 프로젝트 검색</li>
+<li class="bullet-dot"><code>Cmd/Ctrl + Shift + P</code>: 명령 팔레트</li>
 </ul></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">작은 단위로 분할</div>
+    
+  </div>
+  <h2 class="title">실전 팁: 2세대 (CLI)</h2>
+  <div class="contents-body">
+
+<p><strong>명확한 작업 단위</strong></p>
+
+<pre class="code-wrapper"><code class="language-bash hljs"># 작은 단위로 분할
+❌ "전체 애플리케이션 만들어줘"
+
+✅ "먼저 데이터 모델 만들어줘"
+✅ "이제 CRUD API 만들어줘"
+✅ "테스트 코드 추가해줘"</code></pre></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 바로 커밋</div>
+    
+  </div>
+  <h2 class="title">실전 팁: 2세대 (계속)</h2>
+  <div class="contents-body">
+
+<p><strong>Git 커밋 자주 하기</strong></p>
+<pre class="code-wrapper"><code class="language-bash hljs"># AI 작업 후 바로 커밋
+$ git add .
+$ git commit -m "feat: Add user authentication"
+
+# 문제 발생 시 쉽게 롤백
+$ git reset --hard HEAD^</code></pre>
+
+<p><strong>자동화 스크립트 활용</strong></p>
+<pre class="code-wrapper"><code class="language-bash hljs">#!/bin/bash
+claude &lt;&lt; EOF
+프로젝트 분석해서 README.md 업데이트해줘
+테스트 실행해줘
+커버리지 리포트 생성해줘
+EOF</code></pre></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 바로 커밋</div>
+    
+  </div>
+  <h2 class="title">복합 사례: 실시간 채팅 앱</h2>
+  <div class="contents-body">
+
+<p><strong>1단계: 백엔드 (Claude Code) - 10분</strong></p>
+<pre class="code-wrapper"><code class="language-bash hljs">&gt; Socket.IO 기반 채팅 서버 만들어줘:
+  - 실시간 메시지 전송
+  - 채팅방 관리
+  - MongoDB에 메시지 저장</code></pre>
+
+<p><strong>2단계: 프론트엔드 (Cursor) - 15분</strong></p>
+<pre class="code-wrapper"><code class="hljs">Cmd+K: "Socket.IO 클라이언트로 채팅 UI 만들어줘"</code></pre>
+
+<p><strong>3단계: 배포 (Claude Code) - 10분</strong></p>
+<pre class="code-wrapper"><code class="language-bash hljs">&gt; Docker Compose로 컨테이너화해줘
+&gt; AWS ECS 배포 설정해줘</code></pre></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 바로 커밋</div>
+    
+  </div>
+  <h2 class="title">복합 사례: 성과</h2>
+  <div class="contents-body">
+
+<p><strong>총 소요 시간</strong>: 약 35분</p>
+<p><strong>전통 방식</strong>: 약 10-15시간</p>
+<p><strong>생산성 향상</strong>: <strong>17-25배</strong></p></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 바로 커밋</div>
+    
+  </div>
+  <h2 class="title">주의사항</h2>
+  <div class="contents-body">
+
+<p><strong>보안 체크리스트</strong></p>
+<ul>
+<li class="bullet-dot">SQL Injection 방어 확인</li>
+<li class="bullet-dot">XSS 방어 확인</li>
+<li class="bullet-dot">인증/인가 로직 검증</li>
+<li class="bullet-dot">민감 정보 하드코딩 여부</li>
+<li class="bullet-dot">API 키 노출 여부</li>
+</ul>
+
+<p><strong>품질 체크리스트</strong></p>
+<ul>
+<li class="bullet-dot">에러 핸들링 적절성</li>
+<li class="bullet-dot">테스트 커버리지</li>
+<li class="bullet-dot">코드 가독성</li>
+<li class="bullet-dot">성능 최적화 여부</li>
+<li class="bullet-dot">문서화 완성도</li>
+</ul></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 바로 커밋</div>
+    
+  </div>
+  <h2 class="title">다음 단계</h2>
+  <div class="contents-body">
+
+<p><strong>상세 도입 로드맵은 7장 참조</strong></p>
+
+<ol>
+<li>작은 프로젝트부터 시작</li>
+<li>점진적 확대</li>
+<li>팀 협업 및 베스트 프랙티스 구축</li>
+</ol></div>
 </section>
 
     </div>
@@ -2422,128 +2259,106 @@ classDiagram
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/2\">1. 텍스트 레이아웃</a>",
+                  "content": "<a href=\"#/2\">6. 실전 사례: 세대별 활용법</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/3\">기본 텍스트 스타일</a>",
+                              "content": "<a href=\"#/3\">1세대 (IDE 기반) 활용 사례</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/4\">중첩 리스트</a>",
+                              "content": "<a href=\"#/4\">사례 1: React Todo 앱 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/5\">번호 있는 리스트</a>",
-                              "children": []
-                        }
-                  ]
-            },
-            {
-                  "content": "<a href=\"#/6\">2. 코드 및 신택스 하이라이팅</a>",
-                  "children": [
-                        {
-                              "content": "<a href=\"#/7\">JavaScript 코드 예시</a>",
+                              "content": "<a href=\"#/5\">사례 1: 성과</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/8\">Python 코드 예시</a>",
-                              "children": []
-                        }
-                  ]
-            },
-            {
-                  "content": "<a href=\"#/9\">3. 데이터 시각화 (Mermaid)</a>",
-                  "children": [
-                        {
-                              "content": "<a href=\"#/10\">플로우차트 (Flowchart)</a>",
+                              "content": "<a href=\"#/6\">사례 2: API 통합 (Cline) ![Cline](img/cline-logo.png)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/11\">시퀀스 다이어그램 (Sequence Diagram)</a>",
+                              "content": "<a href=\"#/7\">사례 2: 성과</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/12\">클래스 다이어그램 (Class Diagram)</a>",
-                              "children": []
-                        }
-                  ]
-            },
-            {
-                  "content": "<a href=\"#/13\">4. 이미지 및 미디어</a>",
-                  "children": [
-                        {
-                              "content": "<a href=\"#/14\">개요</a>",
+                              "content": "<a href=\"#/8\">2세대 (CLI 기반) 활용 사례</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/15\">4.1. 이미지</a>",
+                              "content": "<a href=\"#/9\">사례 1: Express API 서버 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/18\">4.2. 리스트</a>",
+                              "content": "<a href=\"#/10\">사례 1: Express API 서버 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/20\">4.2.1. 리스트[서브 Chapter 테스트용.]</a>",
-                              "children": []
-                        }
-                  ]
-            },
-            {
-                  "content": "<a href=\"#/22\">5. 레이아웃 예제 (DIV 활용)</a>",
-                  "children": [
-                        {
-                              "content": "<a href=\"#/23\">2분할 레이아웃 - 1단계 </a>",
+                              "content": "<a href=\"#/11\">사례 1: 성과</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/24\">2분할 레이아웃 - 1단계 [좌이미지]</a>",
+                              "content": "<a href=\"#/12\">사례 2: AWS 인프라 구성 (Gemini CLI) ![Gemini](img/gemini-logo.png)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/25\">2분할 레이아웃 - 2단계</a>",
+                              "content": "<a href=\"#/13\">사례 2: AWS 인프라 구성 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/26\">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div</a>",
+                              "content": "<a href=\"#/14\">사례 2: AWS 인프라 구성 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/27\">3분할 레이아웃 (카드 형태) - Pandoc 펜스 div</a>",
+                              "content": "<a href=\"#/15\">사례 2: 성과</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/28\">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev </a>",
+                              "content": "<a href=\"#/16\">비교: 사용자 인증 기능 추가</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/29\">3분할 레이아웃 (카드 형태) - div</a>",
-                              "children": []
-                        }
-                  ]
-            },
-            {
-                  "content": "<a href=\"#/30\">6. 테이블 및 이미지 혼합</a>",
-                  "children": [
-                        {
-                              "content": "<a href=\"#/31\">기본 테이블</a>",
+                              "content": "<a href=\"#/17\">비교: 사용자 인증 기능 추가 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/32\">이미지가 포함된 테이블</a>",
-                              "children": []
-                        }
-                  ]
-            },
-            {
-                  "content": "<a href=\"#/33\">7. m2Slide 기능 소개</a>",
-                  "children": [
-                        {
-                              "content": "<a href=\"#/34\">네비게이션</a>",
+                              "content": "<a href=\"#/18\">생산성 비교: 블로그 플랫폼</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/35\">마무리</a>",
+                              "content": "<a href=\"#/19\">생산성 향상 분석</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/20\">실전 팁: 1세대 (IDE)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/21\">실전 팁: 1세대 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/22\">실전 팁: 2세대 (CLI)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/23\">실전 팁: 2세대 (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/24\">복합 사례: 실시간 채팅 앱</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/25\">복합 사례: 성과</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/26\">주의사항</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/27\">다음 단계</a>",
                               "children": []
                         }
                   ]
@@ -2608,8 +2423,8 @@ classDiagram
         /* Issue: agenda(deriveOptions 기본값)와 동일 옵션으로 통일 — 일관된 시각언어
            기본값: paddingX:8, spacingHorizontal:80, spacingVertical:5, fitRatio:0.95 */
         var opts = window.markmap.deriveOptions
-          ? window.markmap.deriveOptions({ initialExpandLevel: 2 })
-          : { autoFit: true, fitRatio: 0.95, spacingHorizontal: 80, spacingVertical: 5, paddingX: 8, initialExpandLevel: 2 };
+          ? window.markmap.deriveOptions({ initialExpandLevel: 3 })
+          : { autoFit: true, fitRatio: 0.95, spacingHorizontal: 80, spacingVertical: 5, paddingX: 8, initialExpandLevel: 3 };
         opts.autoFit = true;  /* deriveOptions는 autoFit:false가 기본이므로 명시 */
         markmapInstance = window.markmap.Markmap.create(svg, opts, tocData);
         markmapInitialized = true;
@@ -2799,17 +2614,17 @@ classDiagram
     // M2SLIDE_COVER: 'true' | 'false' (cover_enabled, Single mode ← override 판정용)
     // PREV_CHAPTER: 이전 챕터 HTML 파일명 (chapter mode TOC slide ← 대상)
     // NEXT_CHAPTER: 다음 챕터 HTML 파일명 (chapter mode ↓ 대상, key_navigation.md K9)
-    var M2SLIDE_MODE = 'single';
+    var M2SLIDE_MODE = 'chapter';
     var M2SLIDE_COVER = true;
     // Issue119: cover layout 이름 (_config.yml cover_layout, 기본 _cover). isCoverSlide() 판정에 사용.
     var M2SLIDE_COVER_LAYOUT = '_cover';
-    var PREV_CHAPTER = '';
-    var NEXT_CHAPTER = '';
+    var PREV_CHAPTER = '05-generation-comparison.html';
+    var NEXT_CHAPTER = '07-adoption-roadmap.html';
     // Issue136: ⇤/⇥ 단축키 전용 — main/sub 계층 인식 sibling 점프 (NEXT/PREV_CHAPTER는 sequential 파일 순서 그대로)
-    var PREV_SIBLING_CHAPTER = '';
-    var NEXT_SIBLING_CHAPTER = '';
+    var PREV_SIBLING_CHAPTER = '05-generation-comparison.html';
+    var NEXT_SIBLING_CHAPTER = '07-adoption-roadmap.html';
     // Issue87: ⇟ PgDown(마지막 페이지 직행) — Single mode은 '' (deck last로 자체 계산)
-    var LAST_CHAPTER = '';
+    var LAST_CHAPTER = '08-qa-closing.html';
     function isCoverSlide(slide) {
       if (!slide) return false;
       return slide.classList && slide.classList.contains('layout-' + M2SLIDE_COVER_LAYOUT);
@@ -3246,14 +3061,14 @@ classDiagram
       if (event.key === 'ArrowRight' || event.keyCode === 39) {
         var totalSlides = Reveal.getTotalSlides();
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
-        var hasNextChapter = '' !== '';
+        var hasNextChapter = '07-adoption-roadmap.html' !== '';
         if (currentSlideNumber >= totalSlides) {
           if (hasNextChapter) {
             if (lastSlideMessageShown) {
               lastSlideMessage.style.display = 'none';
               lastSlideMessageShown = false;
               // Issue104: 다음 챕터 진입은 forward — ?fwd=1 시그널
-              window.location.href = '?fwd=1';
+              window.location.href = '07-adoption-roadmap.html?fwd=1';
             } else {
               event.preventDefault();
               lastSlideMessage.style.display = 'block';
