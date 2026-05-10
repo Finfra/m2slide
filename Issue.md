@@ -18,43 +18,6 @@
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
 # 🔥 진행중
 
-## Issue138. TOC Slide layout 분리 — Chapter Map(`_toc_map`) vs Chapter Cards(`_toc_cards`) (등록: 2026-05-09)
-* 목적: 같은 `layout-_toc` 클래스가 두 가지 시각적 결과(markmap 마인드맵 vs anchor 카드 리스트)를 내는 의미적 불일치 해소. CSS `:not(#id)` 부정 selector + JS id 매칭 분기를 layout 클래스 자체 분리로 명확화. Glossary "Chapter Map"·"Chapter Cards" 용어와 layout 이름 일치 (`_toc_map`/`_toc_cards`)
-* 상세:
-    - 재현: `Projects/LlmAndVibeCoding/slide/02-llm-tool-evolution.html` 빌드 결과 — `#/0`(`#toc-placeholder`)는 markmap만, `#/2`는 카드 리스트만 표시. 두 슬라이드 모두 `class="layout-_toc title-slide"` 동일
-    - 현재 분기 메커니즘:
-        1. CSS `theme/default/slide.css:747-756` §6.5 `:has(> .toc-body:not(:empty))` + §6.6 `:not(#toc-placeholder)`로 `.toc-markmap` 영역 표시/숨김
-        2. JS `initTocMarkmapIfNeeded`가 `#toc-placeholder` id 매칭 시에만 markmap SVG 채움
-        3. 결과: 같은 layout 클래스인데 id 유무 + autoToc 주입 여부로 서로 다른 시각적 결과
-    - 의미적 문제: 두 변형은 본질적으로 다른 layout(markmap UI vs cards UI)인데 같은 클래스명 공유 → 디자인 변형 추가 시(예: grid+markmap, icon cards 등) selector 분기가 누적될수록 복잡도 폭증
-    - Glossary 정의: [`_doc_design/Glossary.md`](_doc_design/Glossary.md) "Chapter Map"·"Chapter Cards" 두 변형 용어 등록 완료 (2026-05-09)
-    - Issue137 의존: Issue137(id 마커 이름 분리 + 잔여 빈 슬라이드 정리)이 선행되면 같은 페이지에 _toc 슬라이드가 하나만 남게 되어 본 이슈 작업이 단순화됨. 단 Issue137이 layout 클래스 자체 분리는 다루지 않으므로 본 이슈 별도 필요
-* 카테고리: Theme (theme/default/layouts/, theme/default/slide.css) + Generator (lib/html-builder.js autoToc 주입 로직)
-* 구현 명세:
-    - 1단계 — layout 파일 분리:
-        - `theme/default/layouts/_toc.html` → 두 파일로 분기 또는 alias
-            - `_toc_map.html` (Chapter Map): markmap SVG 영역 + 다운로드 버튼 (placeholder 슬라이드용)
-            - `_toc_cards.html` (Chapter Cards): toc-cards ul.chapter-list--cards (autoToc 주입용)
-        - 기존 `_toc.html`은 alias로 유지하거나 deprecated 처리 (사용자 호환)
-    - 2단계 — html-builder.js autoToc 주입 클래스 변경:
-        - autoToc 로직(Issue58, `lib/html-builder.js:514-543`)이 주입하는 `<section class="layout-_toc title-slide">` → `class="layout-_toc_cards title-slide"`로 변경
-        - placeholder 슬라이드는 `class="layout-_toc_map title-slide"` 사용 (또는 기본 `_toc` 유지하되 의미 명확화 주석 추가)
-    - 3단계 — CSS selector 정리 (`theme/default/slide.css` §6.5, §6.6):
-        - `.layout-_toc:has(> .toc-body:not(:empty))` → `.layout-_toc_cards`로 직접 매칭
-        - `.layout-_toc:not(#toc-placeholder)` → 동일하게 `.layout-_toc_cards`로 단순화
-        - 부정 selector 제거 → 가독성 향상
-    - 4단계 — JS 렌더 로직 명확화:
-        - `initTocMarkmapIfNeeded`가 `#toc-placeholder` id 대신 `.layout-_toc_map` 클래스 매칭으로 변경 검토 (id는 anchor 용도로 별도 의미 있음 → Issue137 결과 본 후 결정)
-    - 5단계 — Glossary 동기화:
-        - `_doc_design/Glossary.md` "Chapter Map"·"Chapter Cards" 행에 새 layout 이름(`_toc_map`/`_toc_cards`) 명시
-        - 기존 "TOC Slide" 섹션 분기 메커니즘 설명 업데이트
-    - 6단계 — 검증:
-        - LlmAndVibeCoding `02-llm-tool-evolution.html` 빌드 후 `#/0`/`#/2` layout 클래스 분리 확인
-        - 대표 프로젝트: `m2SlideStyle2_chapter` (autoToc 활성), `m2SlideStyle1_single` (영향 없음 회귀)
-        - 시각 회귀: 두 슬라이드 렌더링 결과가 기존과 동일한지 (단지 클래스 이름만 변경)
-* 의존성: Issue137(id 마커 + 잔여 슬라이드 정리)과 동일 도메인 — Issue137 선행 후 본 이슈 진행 권장. 또는 두 이슈 통합 처리 가능
-* plan: TBD (실제 fix 단계에서 작성 결정)
-
 # 📕 중요
 
 # 📙 일반
@@ -108,6 +71,34 @@
 
 
 # ✅ 완료
+
+## Issue138. Cards Page / Map Slide 의미 분리 — `_cards.html` 신규 + Map Slide layout 제거 + 두 옵션 분리 (등록: 2026-05-09, 해결: 2026-05-10, commit: 2044cc5) ✅
+* 목적: 같은 `layout-_toc` 클래스가 두 가지 시각적 결과(markmap vs cards)를 내는 의미적 불일치 해소. Glossary 분류 원칙(layout 있음 = Page, layout 없음 = Slide)에 맞춰 명명·구조 정리. TOC Page = 상위 명칭, Cards Page = `_cards.html` layout cards 변형, Map Slide = layout 없는 svg 슬라이드. `toc_placeholder` / `cards_placeholder` 두 옵션으로 각각 독립 활성
+* 상세:
+    - 재현: `Projects/LlmAndVibeCoding/slide/02-llm-tool-evolution.html` — `#/0`(`#toc-placeholder`)는 markmap만, `#/2`는 cards만. 두 슬라이드 모두 `class="layout-_toc title-slide"` 공유
+    - 명명 결정 (2026-05-10):
+        - **TOC Page** (페이지) = Chapter deck 내 목차 페이지의 상위 명칭 (향후 변형 확장 카테고리)
+        - **Cards Page** (페이지) = TOC Page의 cards 변형. layout `_cards.html` (신규). autoToc 자동 주입
+        - **Map Slide** (슬라이드) = `<section id="toc-placeholder" class="layout-_toc">` + svg 직접 (cards 영역 없음)
+    - 옵션 결정 (2026-05-10):
+        - `toc_placeholder: true` → Map Slide 자동 삽입 (글로벌 default true)
+        - `cards_placeholder: true` → Cards Page 자동 삽입 (글로벌 default true)
+        - 둘 다 true면 Map Slide #/0 + Cards Page #/1 두 슬라이드 생성
+* 해결:
+    - `theme/default/layouts/_cards.html` 신규 (cards 슬롯, `class="layout-_cards layout-_toc"` 동시 부여 — 기존 CSS 호환)
+    - `theme/default/layouts/_toc.html` 단순화: markmap 영역만 (Cards 슬롯 제거, Map Slide 전용)
+    - `lib/slide-parser.js:403`: autoToc 변환 layout `_toc` → `_cards`
+    - `lib/html-builder.js` Step 8: Map Slide(`isMapSlide` 플래그) + Cards Page(`_cards` layout) 분리 생성. parser autoToc 슬라이드 우선 + isTitle 중복 제거
+    - `lib/html-builder.js` generateSlideHTML: isMapSlide 슬라이드는 `<section id="toc-placeholder" class="layout-_toc">` + `<svg>` 직접 출력 (guide-line-mode 좌하단 라벨 `_toc` 표시)
+    - `lib/html-builder.js` isAnchorSlide JS hook: `layout-_cards` OR `layout-_toc` 매칭으로 anchor 식별 확장
+    - `lib/config.js`+`_config.org.yml`: `cardsPlaceholder` 옵션 신규 (기본 true)
+    - `Projects/LlmAndVibeCoding/_config.yml`: `toc_placeholder: true` + `cards_placeholder: true` 명시
+* 검증:
+    - LlmAndVibeCoding 02·03·04 빌드: Map Slide(`<section id="toc-placeholder" class="layout-_toc">`) + Cards Page(`<section data-heading-level="1" class="layout-_cards layout-_toc">`) 두 슬라이드 분리 확인
+    - 01-opening (서브챕터 없음): hasTocItems=false라 Map Slide 미생성, parser autoToc Cards Page만 (의도된 동작)
+    - m2SlideStyle1_single (single mode): Cards Page 자동 생성, 회귀 없음
+    - m2SlideStyle2_chapter: 빌드 성공
+* 의존성: Issue137(commit `7c4adda`) 완료
 
 ## Issue137. `toc_placeholder` 옵션 vs `id="toc-placeholder"` 마커 이름 충돌 + 빈 placeholder 잔여 슬라이드 (등록: 2026-05-09, 해결: 2026-05-09, commit: 7c4adda) ✅
 * 목적: `_config.yml`의 `toc_placeholder: false`를 설정해도 chapter 모드의 일부 메인 챕터 HTML에 `id="toc-placeholder"` 빈 슬라이드가 강제 삽입되는 혼란 해소. 옵션 의미 명확화 + 잔여 빈 placeholder 슬라이드 정리
