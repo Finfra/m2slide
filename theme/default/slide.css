@@ -212,12 +212,12 @@
   pointer-events: none;
 }
 
-/* .title underline(::after) — 우상단 puffer 회피용 right: 10% 유지 */
+/* .title underline(::after) — Issue143: puffer가 title 밴드 내부로 이동했으므로 right:0 풀폭 복원 */
 .reveal section.layout-_contents > .title::after {
   top: auto;
   bottom: -12px;  /* 박스 외부 아래 (hr 10px + 2px 여유) */
   left: 0;
-  right: 10%;
+  right: 0;
 }
 
 /* contents 레이아웃 H2 제목 위치 — 제목 텍스트 vertical center를 우상단
@@ -235,11 +235,7 @@
   padding-bottom: 0.76em;
 }
 
-/* 우상단 puffer(8%)와 underline 충돌 회피 — underline이 puffer 좌측 직전까지만
-   그어지도록 right: 10% (puffer는 우측 ~12% 영역 점유) */
-.reveal section.layout-_contents .contents-body > .title::after {
-  right: 10%;
-}
+/* Issue143: puffer가 title 밴드 내부로 이동, underline 풀폭 가능 (right:0 base 유지) */
 
 /* Issue90: .title의 margin-bottom(title_contents_gap)이 다음 sibling의 기본 margin-top과
    margin collapse로 사라지는 문제 해결 — collapse 방지를 위해 .title 직후 sibling의
@@ -352,15 +348,19 @@
 /* Issue80 §2.1: cover-meta 박스 스타일 제거 — version·lecture_date를 우상단 absolute로 (§6에서 position·박스 제거 정의) */
 
 /* 4.2 contents: puffer2s 우상단 (작게)
-   Issue80 §2.5: _contents_no_title도 동일 마스코트 적용
-   background-position-y: 40px(절대값) — 상단 가로선(top:12 + height:10 = 22px)과 마스코트 분리 보장 */
-.reveal section.layout-_contents,
-.reveal section.layout-contents-full,
-.reveal section.layout-_contents_no_title {
+   Issue143: 섹션 절대 위치(96% 28px) 제거 → title 밴드(첫번째↔두번째 hr 사이) 내부로 이동.
+   기존 절대 위치는 Issue141 contents-head-bar(head_right) 텍스트와 중첩됨.
+   title 자체에 background를 두면 ::before(top hr)·::after(bottom hr) 사이에 자연 배치되고,
+   head-bar(font-size 0.5em, padding 8px)와도 분리됨.
+   _contents_no_title은 title 부재 → puffer 미표시(후속 결정시 별도 처리).
+   주의: html-builder가 H2~H6 `.title`을 section 직속 자식으로 끌어올리므로
+   selector는 `.contents-body > .title`이 아니라 `> .title` (section 직속)로 작성해야 함. */
+.reveal section.layout-_contents > .title,
+.reveal section.layout-contents-full > .title {
   background-image: url('../theme-img/finfraPuffer2s.png');
   background-repeat: no-repeat;
-  background-position: 96% 28px;
-  background-size: 8% auto;
+  background-position: right 4% center;
+  background-size: auto 119%;  /* Issue143 후속: 90% → 108% (20%) → 119% (+10%) */
 }
 
 .reveal section.layout-_contents .contents-header,

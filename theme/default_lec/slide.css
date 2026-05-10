@@ -191,15 +191,17 @@
 }
 
 /* 4.2 contents: puffer2s 우상단 (작게)
-   Issue97 (Issue80 §2.5 + Issue86 동기): _contents_no_title도 동일 마스코트 적용 +
-   background-position-y: 28px(절대값) — 상단 가로선(top:12 + height:2 = 14px)과 마스코트 분리 */
-.reveal section.layout-_contents,
-.reveal section.layout-contents-full,
-.reveal section.layout-_contents_no_title {
+   Issue143: 섹션 절대 위치(96% 28px) 제거 → title 밴드(첫번째↔두번째 hr 사이) 내부로 이동.
+   Issue141 contents-head-bar(head_right) 텍스트와의 중첩 회피.
+   _contents_no_title은 title 부재 → puffer 미표시.
+   주의: html-builder가 H2~H6 `.title`을 section 직속 자식으로 끌어올리므로
+   selector는 `> .title` (section 직속)로 작성. */
+.reveal section.layout-_contents > .title,
+.reveal section.layout-contents-full > .title {
   background-image: url('../theme-img/finfraPuffer2s.png');
   background-repeat: no-repeat;
-  background-position: 96% 28px;
-  background-size: 9% auto;
+  background-position: right 4% center;
+  background-size: auto 119%;  /* Issue143 후속: 90% → 108% (20%) → 119% (+10%) */
 }
 
 /* Issue97 (Issue80 §2.5 동기): _contents_no_title — 헤더 영역 없음, 본문이 위까지 차지 */
