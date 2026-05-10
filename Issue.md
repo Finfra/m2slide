@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 138
+* Issue HWM: 139
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -17,6 +17,22 @@
 # 🌱 이슈후보
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
 # 🔥 진행중
+
+## Issue139. End 키 → agenda fallback 제거 (모든 모드) (등록: 2026-05-10)
+* 목적: 마지막 챕터/anchor 또는 Cover 페이지에서 End 키 누르면 `agenda.html`로 돌아가는 fallback 동작 제거. End는 "다음 sibling 점프" 의미만 남기고 boundary에서는 무동작.
+* 상세:
+    - Issue133(2026-05-09)에서 추가된 Single 모드 End boundary fallback (`html-builder.js:1828`) 되돌리기
+    - Issue114에서 추가된 Cover 페이지 End → agenda fall-through (`html-builder.js:2128-2133`) 제거
+    - Chapter 모드는 이미 마지막 main 챕터에서 End 무동작이므로 변경 없음
+    - Home 키는 변경하지 않음 (사용자 요청 범위 외)
+* 카테고리: Frontend (키 네비게이션)
+* 구현 명세:
+    - `lib/html-builder.js:1828` Single 분기 End 핸들러: `else window.location.href = 'agenda.html?fwd=1';` 제거 (sibling 부재 시 무동작)
+    - `lib/html-builder.js:2128-2133` Cover 페이지 End 핸들러: `e.preventDefault(); e.stopImmediatePropagation();`만 남기고 `window.location.href = 'agenda.html?fwd=1';` 제거 (또는 블록 통째로 제거 — 무동작 처리는 ↑/⇤/← 블록에 통합 가능)
+    - `_doc_design/key_navigation.md` (있다면) End 단축키 표 갱신: Single 마지막 anchor·Cover End → 무동작
+* 검증:
+    - 빌드된 산출물에서 End 핸들러에 `agenda.html?fwd=1` 문자열 부재 확인 (Cover/Single deck 양쪽)
+    - 회귀: Chapter 모드 마지막 main End 무동작 유지, Home/← 동작 무영향, ⇥/`.`/⌘+→ 트리거 모두 동일 처리
 
 # 📕 중요
 
