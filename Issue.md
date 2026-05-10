@@ -43,24 +43,23 @@
 
 # 📙 일반
 
-## Issue129. `default_background_transition` 회귀 테스트 (등록: 2026-05-06)
-* 목적: `_config.yml` `animation.default_background_transition` 옵션이 모든 슬라이드에 background transition을 적용하는지 회귀 테스트 마련
-* 상세:
-    - Issue117에서 슬라이드별 `#background-transition-{name}` 디렉티브 추가됨
-    - 글로벌 default(`animation.default_background_transition`) 동작은 검증 미흡
-    - 향후 `#background-image-*` 디렉티브 또는 frontmatter `background_image:` 도입(Issue117_1 후보) 시 함께 검증 필요
-* 카테고리: Frontend
-* 구현 명세:
-    - 테스트 fixture 프로젝트에 슬라이드 2장 이상 + 각 슬라이드 background-color 차등
-    - `_config.yml`에 `animation.default_background_transition: zoom` 등 적용
-    - 빌드 후 출력 HTML에서 `<section data-background-color="...">` 존재 + `Reveal.initialize` 옵션의 `backgroundTransition` 값 확인
-    - background-image 디렉티브 도입 시 fixture 확장
-* 의존성: background-image 또는 frontmatter `background_image` 기능 도입(Issue117_1 후보)이 선행되면 더 의미 있음. 단독으로도 부분 검증 가능
-
 # 📗 선택
 
 
 # ✅ 완료
+
+## Issue129. `default_background_transition` 회귀 테스트 (등록: 2026-05-06, 해결: 2026-05-10, commit: e214b43) ✅
+* 목적: `_config.yml` `animation.default_background_transition` 옵션이 모든 슬라이드에 background transition을 적용하는지 회귀 테스트 마련.
+* 카테고리: Frontend (테스트)
+* 해결:
+    - `lib/__tests__/animation.test.js` 신규 (12 케이스, 182 lines)
+    - 단위: config 파싱(디폴트 fade·화이트리스트 6종·invalid fallback) + 슬라이드 디렉티브 파싱(`#background-transition-*`, `#background-color-*` hex/name)
+    - 통합: tmp fixture 빌드 후 HTML grep — Reveal.initialize `backgroundTransition` 옵션 주입(zoom/fade/slide/convex/concave 5종) + 슬라이드별 `data-background-color`/`data-background-transition` 속성 + Issue120 가드(none → m2-page-fade-in keyframes·body.m2-cross-loaded selector 미주입)
+* Walkthrough:
+    - `node --test lib/__tests__/animation.test.js` → 12/12 pass
+    - 전체 회귀 (`agenda + config + head-resolver + markdown + animation`) → 43/43 pass
+* 의존성: background-image 디렉티브 또는 frontmatter `background_image:`(Issue117_1 후보) 도입 시 fixture 확장 가능 — 본 테스트는 transition 영역만 우선 커버
+* 영향 범위: lib/__tests__/animation.test.js (신규, 다른 파일 영향 없음)
 
 ## Issue144. `cards_placeholder: false` 옵션이 parser 단계 autoToc 변환을 막지 못함 (등록: 2026-05-10, 해결: 2026-05-10, commit: b2bd80a, <후속 splice 변경>) ✅
 * 목적: `_config.yml` `cards_placeholder: false` 시 Cards Page 슬라이드 자체가 deck에 출력되지 않아야 함 (디자인만 contents로 바꾸는 게 아니라 슬라이드 자체 미출력).
