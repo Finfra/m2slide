@@ -62,22 +62,28 @@
 
 # ✅ 완료
 
-## Issue144. `cards_placeholder: false` 옵션이 parser 단계 autoToc 변환을 막지 못함 (등록: 2026-05-10, 해결: 2026-05-10, commit: b2bd80a) ✅
-* 목적: `_config.yml`에 `cards_placeholder: false`로 설정해도 H1+하위 H2 children 구조 슬라이드가 여전히 `_cards` layout(autoToc 카드 그리드)으로 렌더링됨. 옵션의 의미상 false면 Cards Page 출력이 완전히 차단되어 일반 contents 슬라이드로 표시되어야 함.
+## Issue144. `cards_placeholder: false` 옵션이 parser 단계 autoToc 변환을 막지 못함 (등록: 2026-05-10, 해결: 2026-05-10, commit: b2bd80a, <후속 splice 변경>) ✅
+* 목적: `_config.yml` `cards_placeholder: false` 시 Cards Page 슬라이드 자체가 deck에 출력되지 않아야 함 (디자인만 contents로 바꾸는 게 아니라 슬라이드 자체 미출력).
 * 카테고리: Generator
 * 상세:
     - 재현: `Projects/LlmAndVibeCoding/_config.yml`에 `cards_placeholder: false` 설정 + `./m2slide.sh LlmAndVibeCoding` 빌드
-    - 결과: `slide/01-opening.html` 첫 슬라이드(`#/0`)가 `class="layout-_cards layout-_toc"` autoToc 카드 그리드로 렌더링 (옵션 false 무시)
+    - 1차(b2bd80a) 시점 결과: `slide/01-opening.html` 첫 슬라이드(`#/0`)가 `class="layout-_cards layout-_toc"` autoToc 카드 그리드로 렌더링 (옵션 false 무시)
     - 원인: `lib/slide-parser.js:409`의 autoToc 변환 로직이 옵션 검사 없이 H1+H2 children 구조를 발견하면 무조건 `s.layout = '_cards'; s.autoToc = true`로 변환
     - `lib/html-builder.js:631`의 `if (_cfg.cardsPlaceholder ...)` 게이트는 prepend(신규 _cards 슬라이드 삽입) 경로만 막고, 이미 parser가 만들어 놓은 autoToc 슬라이드는 통과
 * 해결:
-    - `lib/html-builder.js`에 parseMarkdownFile 호출 직후 `!_cfg.cardsPlaceholder` 일 때 `slides` 순회하여 `s.autoToc && s.layout === '_cards'`인 항목 revert (`s.layout = null`, `s.autoToc = false`).
-    - headingLevel·children 보존하여 Home/End/⇤/⇥ sibling 점프 anchor 기능 유지.
+    - 1차(b2bd80a, revert 방식): `!_cfg.cardsPlaceholder` 일 때 autoToc `_cards` 슬라이드를 일반 contents 슬라이드로 revert (`s.layout = null`, `s.autoToc = false`).
+    - **2차(splice 방식, 사용자 의도 반영)**: revert가 아니라 `slides.splice(i, 1)`로 deck에서 완전 제거. 사용자 의도는 "카드 디자인 비활성"이 아니라 "Cards Page 슬라이드 자체 미출력".
+    - 후속 H2 anchor 슬라이드의 `data-heading-level=2`는 유지되어 ⇤/⇥ sibling 점프 정상.
+    - 부가 효과: H1 슬라이드 안에 image/H2/bullets 등 함께 작성된 콘텐츠도 사라짐 → 보존 필요 시 `---` 분리로 별도 슬라이드 작성 권장 (Glossary.md 명세).
 * Walkthrough:
-    - LlmAndVibeCoding(cards_placeholder=false) 빌드 → `01-opening.html` 첫 슬라이드 `layout-_contents` 정상 렌더링 (`layout-_cards` class 부재).
-    - m2SlideStyle2_chapter(cards_placeholder=true) 회귀 빌드 → `layout-_cards layout-_toc title-slide` 정상 유지.
-    - m2SlideStyle1_single, layoutTest 빌드 성공.
-* 영향 범위: lib/html-builder.js
+    - LlmAndVibeCoding(cards_placeholder=false) 빌드 → `01-opening.html` H1 슬라이드 사라짐 (`data-heading-level="1"` 0건).
+    - m2SlideStyle2_chapter(cards_placeholder=false) 빌드 → 02-code-syntax.html 5개→4개 슬라이드(#/1 H1 제거).
+    - m2SlideStyle1_single, layoutTest(default true) 회귀 통과 → cards 정상 표시.
+* 설계 문서 갱신:
+    - `_doc_design/Glossary.md` Cards Page 섹션에 false 동작 명세 추가
+    - `_doc_design/chapter-single-mode.md` 모드 비교 표에 cards_placeholder 게이트 명시
+    - `_config.org.yml` + 프로젝트 `_config.yml` 주석 명확화 (true/false 동작 양쪽 기술)
+* 영향 범위: lib/html-builder.js, _doc_design/Glossary.md, _doc_design/chapter-single-mode.md, _config.org.yml, Projects/{LlmAndVibeCoding,m2SlideStyle2_chapter}/_config.yml
 
 ## Issue132. ePub 분할 레이아웃(2/3분할 카드) 렌더링 버그 (등록: 2026-05-06, 해결: 2026-05-10, commit: 9d3de29) ✅
 * 목적: HTML 출력에서 정상 동작하는 2분할/3분할 레이아웃이 EPUB 출력에서 깨지는 문제 수정

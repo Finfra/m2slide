@@ -28,6 +28,9 @@ date: 2026-05-02
 | `_agenda.html`           | 레이아웃  | Agenda Page standalone 전용 레이아웃 (`<body>` 직속, reveal.js 미포함)                   |
 | `#layout-{name}` 메타    | 마크다운  | 슬라이드 첫 줄 layout override 지시자. 출력 HTML에서 제거됨                              |
 | `::: columns :::` 슬롯   | 마크다운  | Pandoc 표준 N분할. `{.column width="N%"}` 속성으로 비율 제어                             |
+| `head_left` 슬롯         | 시스템 슬롯 | `_contents` layout 상단 좌측 헤더 (좌측 정렬). 옵션 `_config.yml: head_left: d{N}\|now\|none` (default `d1`). H1=d1, numbering 있는 H2=ancestor chain. 상세: [`head.md`](head.md) |
+| `head_right` 슬롯        | 시스템 슬롯 | `_contents` layout 상단 우측 헤더 (우측 정렬). 동일 옵션 (default `now` — breadcrumb). 상세: [`head.md`](head.md) |
+| `head_breadcum` 옵션     | 설정 키    | `_config.yml`의 `now` breadcrumb master toggle. `true` (default) / `false` (전역 비활성화). `d{N}` 절대 depth는 영향 없음. 상세: [`head.md`](head.md) |
 | `nosplit`                | 마크다운  | `<!-- nosplit -->` 주석으로 슬라이드 단위 자동 2분할 비활성화                            |
 | `!` prefix               | 마크다운  | `#!layout-{name}` — 마크맵 TOC 목록 제외 슬라이드 (Orientation 슬라이드)                 |
 | 마름모 네비게이션        | UI        | 우측 하단 `</>` 사이에 `^/v` 4방향 화살표를 다이아몬드 형태로 배치 + 페이지 번호 정중앙. |
@@ -92,6 +95,7 @@ Chapter deck 내부에 삽입되는 **목차 페이지의 상위 명칭**. 현�
 * 표시: 같은 챕터 내 후속 슬라이드들을 `.chapter-card` 박스로 카드화
 * CSS: `.toc-page-header` + `.toc-cards ul.chapter-list--cards` (현재 `.layout-_toc` selector 호환 위해 layout-_toc class 동시 부여)
 * 클릭 동작: 카드 → 해당 anchor로 이동 (`href="#/N"`)
+* **`cards_placeholder: false` 동작 (Issue144)**: parser(`slide-parser.js`)가 H1+H2 children 구조에서 자동 생성한 autoToc `_cards` 슬라이드를 **deck에서 완전히 제거**. "카드 디자인만 비활성"이 아니라 "Cards Page 슬라이드 자체 미출력". 첫 슬라이드 안에 H1과 함께 작성한 image·H2·bullets 등 부가 콘텐츠도 함께 사라지므로, 콘텐츠를 보존하려면 별도 슬라이드(`---` 분리)로 옮길 것. 후속 H2 anchor의 `data-heading-level=2`는 유지되어 ⇤/⇥ sibling 점프 정상 동작.
 
 ## Map Slide
 
@@ -176,6 +180,22 @@ Chapter 모드에서 챕터 파일 순서·계층을 정의하는 인덱스 파�
 * 시스템 슬롯: `{{title}}`, `{{content}}`, `{{markmap}}`
 * 사용자 슬롯: 템플릿 정의에 따라 임의 이름 사용 가능 (예: `{{leftPanel}}`, `{{rightPanel}}`)
 * Slidev 호환 단축: `::right::` 한 줄로 좌/우 2분할
+
+### Header 시스템 슬롯 (`head_left` / `head_right`) — Issue141
+
+`_contents` layout 상단에 outline 컨텍스트를 좌/우 자동 표시하는 시스템 슬롯. `_agenda`의 `toc-page-header`와 시각적으로 동일한 위치. 사용자 마크다운 입력용 아님 (빌드 시 자동 주입). 영속 SSOT: [`head.md`](head.md).
+
+* CSS 클래스: `.contents-head-bar` > `.contents-head-left` (좌측 정렬, font-weight 600) + `.contents-head-right` (우측 정렬, opacity 0.75)
+* `_config.yml` 옵션:
+    - `head_left` (default `d1`) / `head_right` (default `now`): 허용값 `d1`~`d99` (절대 depth) | `now` (현재 위치 breadcrumb) | `none` (비표시)
+    - `head_breadcum` (default `true`): `now` breadcrumb master toggle. `false` 시 `now` → 빈 (좌/우 동일). `d{N}` 절대 depth는 영향 없음
+* outline 알고리즘 (single + chapter mode 통일):
+    - H1 = d1 (메인 챕터, `slide.chapterTitle`)
+    - **numbering 있는** H2 = ancestor chain (예 `4.2.1.`의 부모 `4.2.` 자동 매칭)
+    - numbering 없는 H2 → outline 제외 (출력 비움)
+    - H3+ → outline 제외 (contents-title이 슬라이드 제목 표시)
+    - AGENDA.md outline은 head-bar에 미사용 (entry·navigation·markmap 전용)
+* 빈 슬롯 자동 비표시: `_stripEmptyWrappers` + CSS `:empty` + `:has()` 3중 안전망
 
 ## `_toc.html` / `_agenda.html` 레이아웃
 
