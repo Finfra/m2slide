@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 144
+* Issue HWM: 146
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -13,6 +13,7 @@
 * 결정: 현행 `fs.cpSync` 방식 유지
 * 이유: `slide/` 폴더를 통째로 삭제 후 재생성하는 빌드 패턴이 잦음
 
+## Kroki 서버
 
 # 🌱 이슈후보
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
@@ -20,6 +21,33 @@
 # 🚧 진행중
 
 # 📕 중요
+
+## Issue146. inline code 백틱 내 HTML 미이스케이프로 `<!-- ... -->`·`<div ...>` 내용 누락 (등록: 2026-05-10)
+* 목적: 슬라이드 마크다운에서 `` `<!-- .slide: ... -->` `` 또는 `` `<div data-fragment-index>` `` 같이 `<`/`>` 포함 inline code가 브라우저에서 사라지거나 레이아웃이 깨지는 문제 해결.
+* 카테고리: Generator (Frontend 영향)
+* 재현:
+    - `Projects/animationTest/animationTest.md` L14-17 (0. 검증 목적 슬라이드)
+    - 빌드 후 `Projects/animationTest/slide/index.html`에 `<code><!-- .slide: ... --></code>` 그대로 출력 → 브라우저가 HTML 주석으로 해석해 내용 삼킴
+    - `<code><div data-fragment-index></code>`는 실제 `<div>` 태그로 열려 문단 강제 줄바꿈 발생
+* 상세:
+    - `lib/markdown.js:749` `processInline()` 의 inline code 치환:
+      `text = text.replace(/`([^`]+)`/g, '<code>$1</code>');`
+      → 백틱 내용을 그대로 `<code>`로 감쌈. `<`, `>`, `&` 미이스케이프
+    - `escapeHtml()` 헬퍼는 [`lib/markdown.js:118`](lib/m2slide/lib/markdown.js#L118)에 이미 정의됨
+* 구현 명세:
+    - `lib/markdown.js` line 768 치환을 다음과 같이 수정:
+      ```js
+      text = text.replace(/`([^`]+)`/g, (m, code) => `<code>${escapeHtml(code)}</code>`);
+      ```
+    - 검증:
+        1. `./m2slide.sh animationTest` 빌드 성공
+        2. `slide/index.html`에 `&lt;!-- .slide:` `&lt;div data-fragment-index&gt;` 형태로 이스케이프 확인
+        3. 브라우저에서 0. 검증 목적 슬라이드 렌더링 결과 확인 (3가지 syntax 모두 정상 표시)
+        4. 회귀: 기존 `` `#layout-*` `` 등 단순 inline code도 정상 표시 유지
+    - 부작용 점검:
+        - `lib/__tests__/markdown.test.js` 19개 케이스 통과 확인
+        - 다른 프로젝트(`m2SlideStyle1_single`, `m2SlideStyle2_chapter`) 빌드 회귀 점검
+* 복잡도: 단순 (1 file 1 line)
 
 # 📙 일반
 
@@ -327,6 +355,42 @@
     - 대표 프로젝트 4개 모두 재빌드: LlmAndVibeCoding, m2SlideStyle1_single, m2SlideStyle2_chapter, layoutTest
 
 # ⏸️ 보류
+
+## Issue145. Fragment 단계별 등장 + 색 강조 동시 적용 syntax 부재 (등록: 2026-05-10, 보류: 2026-05-10)
+* 목적: 한 요소에 두 개의 fragment-index를 거는 reveal.js 표준 패턴(등장 → 다음 단계에서 색 강조)을 m2slide 마크다운으로 자연스럽게 표현할 수 있게 함. 현재 인라인 attribute `{.fragment .highlight-red}`는 단일 class 세트만 li/p에 주입하므로 등장과 색 강조를 분리 적용할 수 없음.
+* 카테고리: Generator
+* 보류 사유: 사용자 결정 — 진행하지 않는 것으로 보류. 현재 raw HTML 우회 경로가 존재하고 사용 빈도가 낮아 우선순위 후순위. 재개 시 본 문서의 구현 명세 그대로 활용 가능.
+* 재개 조건:
+    - 사용자 명시 요청 또는 fragment-index 다단계 요구 사례 누적
+    - reveal.js markdown syntax 호환성 강화가 다른 이슈와 묶여 일괄 처리 가능한 시점
+* 상세:
+    - 위치: `lib/markdown.js` `extractInlineClasses()` (L96-123) + list/paragraph 적용부 (L419-423, L495-, L661-)
+    - 케이스 1: `Projects/animationTest/animationTest.md` L42-45 — reveal.js 표준 주석 `<!-- .element: class="..." -->` 가 그대로 텍스트로 출력되어 무효 (m2slide는 reveal.js markdown 플러그인을 사용하지 않음). 산출 `slide/index.html` L1493-1496에서 주석이 `<li>` 본문에 그대로 포함된 상태 확인
+    - 케이스 2: `Projects/animationTest/animationTest.md` L51-55 — `{.fragment .highlight-red}` 적용 시 reveal.js 사양상 `.highlight-*`는 처음부터 visible. 결과적으로 step 0에서 첫 번째·세 번째 항목만 보이고 두 번째 자리에 빈 공간 발생 (사양 동작이지만 사용자 의도 표현 한계)
+    - reveal.js 사양 근거: `.fragment.highlight-{red,green,blue,...}` selector는 `opacity:1; visibility:inherit` 시작 + `.visible` 단계에서 `color` 변경 (등장 효과 아님)
+    - 사용자 요구 시나리오: "두 번째 항목 등장 → 세 번째 항목 등장 → 세 번째 항목 빨간색 강조" 같은 3단계 fragment-index 시나리오
+    - 현재 우회: raw HTML로 `<ul>` 전체를 작성 + `<span class="fragment highlight-red" data-fragment-index="N">` 중첩 — 가독성·유지보수 저하
+* 구현 명세 (재개 시):
+    - **옵션 A (권장)**: reveal.js 표준 주석 syntax 지원
+        - 패턴: `<!-- .element: class="fragment fade-up" data-fragment-index="2" -->` 를 직전 li/p에 매칭하여 class 병합 + data-* 속성 주입
+        - 매칭 정규식 후보: 라인 끝 또는 li/p 종료 직전의 `<!--\s*\.element:\s*([^>]*?)\s*-->` 캡처 → attribute 토큰 분리 (`class="..."`, `data-*="..."`)
+        - 적용 지점: `convertMarkdownToHTML()` 내 list 항목 처리 직후 후처리 단계, paragraph 종결 직전 후처리 단계
+        - 장점: reveal.js 표준 호환, fragment-index·data-autoslide·data-background-* 등 모든 속성 자유 지정, 학습 곡선 낮음
+    - **옵션 B (보조)**: 인라인 attribute에 `key=value` 토큰 확장
+        - `{.fragment .highlight-red data-fragment-index=3}` 형태로 attribute key=value 토큰 허용
+        - `parseLayoutAttrs()` (L126~) 패턴 재사용 가능 — 이미 width=, height= 토큰 처리 중
+        - 옵션 A와 충돌 없이 보조로 도입 가능
+    - **옵션 C (선택)**: chained class 표기 — `{.fragment}{.highlight-red data-fragment-index=2}` 시 한 요소에 여러 fragment를 자동으로 wrapping `<span>`으로 감싸는 syntax sugar
+    - 우선순위: 옵션 A → B → C 순서로 단계 도입. 옵션 A만으로도 사용자 요구 시나리오 충족
+    - 기존 `{.fragment .highlight-red}` 동작은 호환성을 위해 유지 (deprecation 없음)
+    - 보호 규칙 추가: 코드 인라인 안의 `<!-- ... -->`, code block 내부의 주석은 매칭 제외
+* 검증 (재개 시):
+    - `node --test lib/__tests__/markdown.test.js` 통과 (신규 테스트 케이스 포함)
+    - `./m2slide.sh animationTest` 빌드 후 `slide/index.html`에서 fragment-index·class 정확 주입 확인
+    - 브라우저 수동 확인: step 진행 시 의도 단계 등장·색 강조 순서 일치
+* 후속 작업 (재개 시):
+    - `.claude/rules/md-m2slide-rules.md` "단계별 등장 — Pandoc inline attribute (Issue118)" 섹션에 옵션 A 신규 syntax 사례 추가
+    - `Projects/animationTest/animationTest.md` 슬라이드 3·4 갱신 — 신규 syntax 데모로 전환
 
 ## Issue42. `slide_ratio` 옵션 완전 제거 (보류: 2026-05-01)
 * 목적: theme 시스템 도입 후 사실상 단일 분기(`none`)만 사용되는 `slide_ratio` 옵션을 코드·CSS·설정에서 완전 제거

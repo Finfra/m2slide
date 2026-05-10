@@ -66,6 +66,8 @@ else
 fi
 
 rm -rf "$prj_path/slide"
+# kroki SVG 캐시는 lib/kroki/(source-of-truth)에 보관되므로 slide/ 삭제 후에도 영향 없음.
+# 빌드 시 lib/markdown.js의 fetchKrokiSvgCached가 자동으로 lib/kroki/ → slide/kroki/ 복사함.
 ./m2slide.sh "$prj_path"
 if [ -f "$prj_path/slide/index.html" ]; then
     open -a "Google Chrome" "$prj_path/slide/index.html"
