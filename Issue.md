@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 141
+* Issue HWM: 142
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -19,40 +19,10 @@
 
 # 🔥 진행중
 
-## Issue141. _contents head_left/head_right 시스템 슬롯 + outline depth + breadcrumb (등록: 2026-05-10)
-* 목적: `_contents` layout 상단에 AGENDA.md outline 컨텍스트를 좌/우 분리 자동 표시. 발표 도중 청중이 현재 챕터 위치를 시각화. d{N}/now/none 옵션 + breadcrumb 알고리즘.
-* design: `_doc_design/head.md`
-* plan: `_doc_work/plan/head-slots-contents-layout_plan.md`
-* task: `_doc_work/tasks/head-slots-contents-layout_task.md`
-* 상세:
-    - `_contents` layout 상단에 `.contents-head-bar` 신규 영역 (좌/우 분리)
-    - `_config.yml`: `head_left: d1` / `head_right: now` 디폴트
-    - 옵션 `d{N}` (절대 depth) | `now` (breadcrumb) | `none` (비표시)
-    - AGENDA.md 임의 depth 확장 지원 (####, ##### 등). plain heading 무시
-    - now 알고리즘: 다른 head 옵션이 d{m}이면 d{m+1}부터 현재까지 ` > ` 연결
-    - 적용 layout: `_contents`만 (`_contents_no_title`·`_agenda` 미적용)
-    - theme: default + default_lec 양쪽
-* 카테고리: Frontend (layout) + Generator (lib/agenda.js, lib/html-builder.js, lib/config.js)
-* 구현 명세:
-    - 신규: `lib/_internal/head-resolver.js` (순수 함수 분리)
-    - `lib/agenda.js`에 `getOutlinePath(fileName, agendaPath)` → `string[]` 추가
-    - `lib/config.js`에 head_left/head_right 파싱 (default `d1`/`now`)
-    - `lib/html-builder.js:497 generateHTML` 진입부에서 outlinePath 1회 계산 + 모든 slide 객체에 부착
-    - `generateSlideHTML` vars 주입: `_resolveHeadSlot(option, otherOption, outlinePath, ' > ')`
-    - HTML: `<div class="contents-head-bar"><div class="contents-head-left">...</div><div class="contents-head-right">...</div></div>` (기존 `.contents-header` 위)
-    - CSS: theme의 `slide.css`에 추가 (base.css 가드 회피). 빈 슬롯 3중 안전망 (`_stripEmptyWrappers` + `:empty` + `:has()`)
-    - 신규 테스트 4파일: agenda.test.js (4) + config.test.js (4) + head-resolver.test.js (2) + integration.test.js (3)
-* 검증:
-    - 신규 13 케이스 + 기존 19 회귀 무영향 = 32 PASS
-    - 빌드 검증: `m2SlideStyle1_single` (single mode head-bar 미표시), `m2SlideStyle2_chapter` (chapter outline 자동), `layoutTest` (시각 회귀 없음)
-    - 옵션 교차 4종: `now/none`, `d2/now`, `none/none`, `d99/now`
-    - guide-line 모드 라벨 가시화
-
 # 📕 중요
 
 # 📙 일반
 
-## Issue129. `default_background_transition` 회귀 테스트 (등록: 2026-05-06)
 * 목적: `_config.yml` `animation.default_background_transition` 옵션이 모든 슬라이드에 background transition을 적용하는지 회귀 테스트 마련
 * 상세:
     - Issue117에서 슬라이드별 `#background-transition-{name}` 디렉티브 추가됨
@@ -101,6 +71,49 @@
 
 
 # ✅ 완료
+
+## Issue142. `head_breadcum` master toggle 코드 구현 (등록: 2026-05-10, 해결: 2026-05-10, commit: 88bfa08) ✅
+* 목적: `_doc_design/head.md`에 정의된 `head_breadcum: true` master toggle 옵션을 코드에 적용
+* 해결 (Issue141 작업 내에서 함께 구현, commit 88bfa08):
+    - `lib/config.js`: `head_breadcum` boolean 파싱 추가 (default `true`, `true/yes/1` → true, `false/no/0` → false, invalid → default + warn)
+    - `lib/_internal/head-resolver.js:_resolveHeadSlot`: 5번째 인자 `headBreadcum = true` 추가. `now` 분기 진입 시 `if (!headBreadcum) return '';` 검사
+    - `lib/html-builder.js:generateSlideHTML`: `_resolveHeadSlot` 호출부 2개에 `cfg.styleConfig.head_breadcum` 5번째 인자 전달
+    - 테스트: config.test.js 1 케이스 + head-resolver.test.js 1 케이스 추가
+    - 빌드 검증: `head_breadcum: false` 토글 시 `now` 옵션 빈 → strip 확인 (m2SlideStyle1_single)
+* 의존성: Issue141 (head-bar 구현)에 통합되어 종결
+
+## Issue141. _contents head_left/head_right 시스템 슬롯 + outline depth + breadcrumb (등록: 2026-05-10, 해결: 2026-05-10, commit: 7f9a416..e79357a) ✅
+* 목적: `_contents` layout 상단에 outline 컨텍스트를 좌/우 분리 자동 표시. 발표 도중 청중이 현재 챕터 위치를 시각화. d{N}/now/none 옵션 + breadcrumb 알고리즘 + head_breadcum master toggle.
+* design: `_doc_design/head.md` (영속 SSOT)
+* plan: `_doc_work/plan/head-slots-contents-layout_plan.md`
+* task: `_doc_work/tasks/head-slots-contents-layout_task.md`
+* 해결:
+    - 신규 모듈 `lib/_internal/head-resolver.js` — `_resolveHeadSlot(option, otherOption, outlinePath, separator, headBreadcum)` 순수 함수
+    - `lib/agenda.js` — `getOutlinePath(fileName, agendaPath)` 함수 추가 (현재 head-bar에서는 미사용, 향후 활용 여지)
+    - `lib/config.js` — `head_left` (default `d1`) / `head_right` (default `now`) / `head_breadcum` (default `true`) 파싱 + invalid fallback
+    - `lib/html-builder.js:530-577` — single/chapter mode 통일 알고리즘. 슬라이드 자체 H1/H2 + numbering 자동 추론
+        - H1 = d1 (chapterTitle), numbering 있는 H2의 부모 numbering 매칭으로 ancestor trail 구성
+        - H3+ = 슬라이드 제목·부제 (outline 제외, contents-title이 표시)
+        - numbering 없는 H2 = outline 제외 (출력 비움 정책)
+    - `theme/default + theme/default_lec`: `_contents.html` head-bar div + `slide.css` flex 좌/우 정렬 + 빈 슬롯 3중 안전망 (_stripEmptyWrappers + :empty + :has())
+    - `_config.org.yml`: 디폴트 3개 키 추가
+    - 신규 테스트 4파일: agenda.test.js (4) + config.test.js (5) + head-resolver.test.js (3) + integration.test.js (3) = 15 케이스
+* 검증:
+    - 전체 34 케이스 PASS (신규 15 + 기존 19 회귀 무영향)
+    - 시각 검증: m2SlideStyle1_single (single, numbering 추론 정확), m2SlideStyle2_chapter (chapter, single과 동일 결과)
+    - 옵션 교차 검증: `head_left=d1/head_right=now` (default), `head_breadcum: false` toggle
+    - 빈 슬롯 자동 strip 확인 (single mode H1 없는 슬라이드 + cover/agenda 빌드)
+* 정책 진화 (사용자 컨펌 다중):
+    - 초기: AGENDA.md outline 기반
+    - → single mode H1만 챕터로 인정
+    - → H2 sub-챕터 d2 추가
+    - → H3까지 outline 인정 + head_breadcum master toggle 도입
+    - → numbering 자동 추론 (4.2.1의 부모 4.2 자동 매칭)
+    - → numbering 없는 H2 outline 제외
+    - → 최종: single/chapter mode 통일 알고리즘 (AGENDA.md outline은 head-bar에서 미사용)
+* 후속 (별도 이슈 후보):
+    - Task 10 문서화 (Glossary, theme_layout_default, md-m2slide-rules) — 미완료
+    - Issue142: `head_breadcum` master toggle 코드 구현 (이미 본 이슈에서 구현 완료 — Issue142 별도 종결 필요)
 
 ## Issue140. `toc_placeholder: true` Map Slide 미삽입 회귀 (Issue58 도입) (등록: 2026-05-10, 해결: 2026-05-10, commit: 453f423) ✅
 * 목적: AGENDA.md에 서브섹션이 없는 평탄 H1-only 구조 프로젝트(예: `m2SlideStyle2_chapter`)에서 `toc_placeholder: true` 설정에도 Map Slide(`<section id="toc-placeholder">` + markmap SVG)가 삽입되지 않는 회귀 해결.
