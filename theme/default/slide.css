@@ -144,6 +144,13 @@
   pointer-events: none;
 }
 
+/* Issue131: _contents 레이아웃 제목을 본문 .title(소제목)과 동일 크기로 위계 균형.
+   base.css의 .reveal section.layout-_contents .contents-title { font-size: 2.8em } override.
+   --title-font-size(1.5em) 변수 사용으로 SSOT 일관성 확보. */
+.reveal section.layout-_contents .contents-title {
+  font-size: var(--title-font-size, 1.5em);
+}
+
 /* 본문 H2.title도 §3 제목 처리 — theme_default_layout: contents 환경에서
    본문 H2가 contents-body 내부에 .title로 배치될 때 hr.png 밑줄(가운데 바) 적용
    Issue90: margin-bottom 명시하지 않음 — base.css의 .reveal .title rule

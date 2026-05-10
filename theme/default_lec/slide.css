@@ -129,6 +129,13 @@
   display: none !important;
 }
 
+/* Issue131: _contents 레이아웃 제목을 본문 .title(소제목)과 동일 크기로 위계 균형.
+   base.css의 .reveal section.layout-_contents .contents-title { font-size: 2.8em } override.
+   --title-font-size(1.5em) 변수 사용으로 SSOT 일관성 확보. */
+.reveal section.layout-_contents .contents-title {
+  font-size: var(--title-font-size, 1.5em);
+}
+
 /* =========================================================================
    4. 마스코트 배경 — finfra* 이미지 (theme/{name}/img/ → slide/theme-img/)
    ========================================================================= */
