@@ -144,6 +144,13 @@
   pointer-events: none;
 }
 
+/* Issue131: _contents 레이아웃 제목을 본문 .title(소제목)과 동일 크기로 위계 균형.
+   base.css의 .reveal section.layout-_contents .contents-title { font-size: 2.8em } override.
+   --title-font-size(1.5em) 변수 사용으로 SSOT 일관성 확보. */
+.reveal section.layout-_contents .contents-title {
+  font-size: var(--title-font-size, 1.5em);
+}
+
 /* 본문 H2.title도 §3 제목 처리 — theme_default_layout: contents 환경에서
    본문 H2가 contents-body 내부에 .title로 배치될 때 hr.png 밑줄(가운데 바) 적용
    Issue90: margin-bottom 명시하지 않음 — base.css의 .reveal .title rule
@@ -205,12 +212,12 @@
   pointer-events: none;
 }
 
-/* .title underline(::after) — 우상단 puffer 회피용 right: 10% 유지 */
+/* .title underline(::after) — Issue143: puffer가 title 밴드 내부로 이동했으므로 right:0 풀폭 복원 */
 .reveal section.layout-_contents > .title::after {
   top: auto;
   bottom: -12px;  /* 박스 외부 아래 (hr 10px + 2px 여유) */
   left: 0;
-  right: 10%;
+  right: 0;
 }
 
 /* contents 레이아웃 H2 제목 위치 — 제목 텍스트 vertical center를 우상단
@@ -228,11 +235,7 @@
   padding-bottom: 0.76em;
 }
 
-/* 우상단 puffer(8%)와 underline 충돌 회피 — underline이 puffer 좌측 직전까지만
-   그어지도록 right: 10% (puffer는 우측 ~12% 영역 점유) */
-.reveal section.layout-_contents .contents-body > .title::after {
-  right: 10%;
-}
+/* Issue143: puffer가 title 밴드 내부로 이동, underline 풀폭 가능 (right:0 base 유지) */
 
 /* Issue90: .title의 margin-bottom(title_contents_gap)이 다음 sibling의 기본 margin-top과
    margin collapse로 사라지는 문제 해결 — collapse 방지를 위해 .title 직후 sibling의
@@ -299,6 +302,10 @@
   padding: 0;
   font-family: inherit;
   font-size: inherit;
+  /* 긴 줄 자동 줄바꿈 — 가로 스크롤 대신 wrap. 줄바꿈 문자는 보존(pre-wrap). */
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .reveal section[class*="layout-"] .contents-body > .media-container {
@@ -339,21 +346,25 @@
 }
 
 .reveal section.layout-_cover .cover-title {
-  font-size: clamp(1.2em, 5vw, 3.4em);
+  font-size: clamp(2.5em, 8vw, 6em);
 }
 
 /* Issue80 §2.1: cover-meta 박스 스타일 제거 — version·lecture_date를 우상단 absolute로 (§6에서 position·박스 제거 정의) */
 
 /* 4.2 contents: puffer2s 우상단 (작게)
-   Issue80 §2.5: _contents_no_title도 동일 마스코트 적용
-   background-position-y: 40px(절대값) — 상단 가로선(top:12 + height:10 = 22px)과 마스코트 분리 보장 */
-.reveal section.layout-_contents,
-.reveal section.layout-contents-full,
-.reveal section.layout-_contents_no_title {
+   Issue143: 섹션 절대 위치(96% 28px) 제거 → title 밴드(첫번째↔두번째 hr 사이) 내부로 이동.
+   기존 절대 위치는 Issue141 contents-head-bar(head_right) 텍스트와 중첩됨.
+   title 자체에 background를 두면 ::before(top hr)·::after(bottom hr) 사이에 자연 배치되고,
+   head-bar(font-size 0.5em, padding 8px)와도 분리됨.
+   _contents_no_title은 title 부재 → puffer 미표시(후속 결정시 별도 처리).
+   주의: html-builder가 H2~H6 `.title`을 section 직속 자식으로 끌어올리므로
+   selector는 `.contents-body > .title`이 아니라 `> .title` (section 직속)로 작성해야 함. */
+.reveal section.layout-_contents > .title,
+.reveal section.layout-contents-full > .title {
   background-image: url('../theme-img/finfraPuffer2s.png');
   background-repeat: no-repeat;
-  background-position: 96% 28px;
-  background-size: 8% auto;
+  background-position: right 4% center;
+  background-size: auto 119%;  /* Issue143 후속: 90% → 108% (20%) → 119% (+10%) */
 }
 
 .reveal section.layout-_contents .contents-header,
@@ -1118,4 +1129,69 @@ body.agenda-page .agenda-frame {
   color: rgba(140, 90, 200, 1) !important;
   line-height: 1.3 !important;
   z-index: 9999 !important;
+}
+
+/* =========================================================================
+   Issue141. Contents Head Bar — _contents layout 상단 좌/우 시스템 슬롯
+   - {{head_left}}, {{head_right}}: outline d{N} 단일 또는 now breadcrumb
+   - 정렬: head_left=left, head_right=right
+   - breadcrumb 길어질 수 있으므로 줄바꿈 허용 + 작은 폰트
+   - 양쪽 모두 빈 시 _stripEmptyWrappers + CSS :empty/:has() 3중 방어
+   - 영속 설계 SSOT: _doc_design/head.md
+   ========================================================================= */
+.reveal section.layout-_contents > .contents-head-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 28px 0 28px;
+  margin: 0;
+  font-size: 0.5em;
+  color: rgba(0, 0, 0, 0.6);
+  font-family: var(--global-font-family, sans-serif);
+  min-height: 0;
+  line-height: 1.3;
+}
+.reveal section.layout-_contents > .contents-head-bar > .contents-head-left {
+  text-align: left;
+  flex: 1 1 50%;
+  font-weight: 600;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.reveal section.layout-_contents > .contents-head-bar > .contents-head-right {
+  text-align: right;
+  flex: 1 1 50%;
+  opacity: 0.75;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+/* 빈 슬롯 안전망 */
+.reveal section.layout-_contents > .contents-head-bar:empty {
+  display: none;
+}
+.reveal section.layout-_contents > .contents-head-bar:has(> .contents-head-left:empty):has(> .contents-head-right:empty) {
+  display: none;
+}
+
+/* Issue141: contents-head-bar guide-line 라벨 */
+.guide-line-mode .reveal section.layout-_contents > .contents-head-bar {
+  outline: 2px dashed rgba(0, 130, 200, 0.7);
+  outline-offset: -2px;
+  position: relative;
+}
+.guide-line-mode .reveal section.layout-_contents > .contents-head-bar::before {
+  content: "contents-head-bar";
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 10px;
+  color: rgba(0, 130, 200, 1);
+  background: rgba(255, 255, 255, 0.85);
+  padding: 1px 4px;
+  z-index: 10;
+}
+.guide-line-mode .reveal section.layout-_contents > .contents-head-bar > .contents-head-left,
+.guide-line-mode .reveal section.layout-_contents > .contents-head-bar > .contents-head-right {
+  outline: 1px dotted rgba(180, 80, 0, 0.7);
 }

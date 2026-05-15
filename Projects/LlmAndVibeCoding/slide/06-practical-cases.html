@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"6","slideOffset":62,"totalSlides":93};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"6","slideOffset":24,"totalSlides":30};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1222,7 +1222,7 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1778374440908">
+  <link rel="stylesheet" href="css/custom.css?v=1778419321660">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1390,7 +1390,7 @@ html.ratio-fill .agenda-frame {
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
   </style>
 </head>
-<body class=" guide-line-mode media-enlarge-fit" data-nav-indicator="both" style="
+<body class="  media-enlarge-fit" data-nav-indicator="both" style="
   --global-font-family: Pretendard, sans-serif;
   --title-font-family: GmarketSansBold;
   --title-font-weight: 50;
@@ -1434,48 +1434,20 @@ html.ratio-fill .agenda-frame {
   <div class="reveal ratio-3-2">
     <div class="slides">
 
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
+      <section id="toc-placeholder" class="layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">6. 실전 사례: 세대별 활용법</h1>
   </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="25">
-<li class="chapter-card"><a href="#/2">1세대 (IDE 기반) 활용 사례</a></li>
-<li class="chapter-card"><a href="#/3">사례 1: React Todo 앱 (계속)</a></li>
-<li class="chapter-card"><a href="#/4">사례 1: 성과</a></li>
-<li class="chapter-card"><a href="#/5">사례 2: API 통합 (Cline) ![Cline](img/cline-logo.png)</a></li>
-<li class="chapter-card"><a href="#/6">사례 2: 성과</a></li>
-<li class="chapter-card"><a href="#/7">2세대 (CLI 기반) 활용 사례</a></li>
-<li class="chapter-card"><a href="#/8">사례 1: Express API 서버 (계속)</a></li>
-<li class="chapter-card"><a href="#/9">사례 1: Express API 서버 (계속)</a></li>
-<li class="chapter-card"><a href="#/10">사례 1: 성과</a></li>
-<li class="chapter-card"><a href="#/11">사례 2: AWS 인프라 구성 (Gemini CLI) ![Gemini](img/gemini-logo.png)</a></li>
-<li class="chapter-card"><a href="#/12">사례 2: AWS 인프라 구성 (계속)</a></li>
-<li class="chapter-card"><a href="#/13">사례 2: AWS 인프라 구성 (계속)</a></li>
-<li class="chapter-card"><a href="#/14">사례 2: 성과</a></li>
-<li class="chapter-card"><a href="#/15">비교: 사용자 인증 기능 추가</a></li>
-<li class="chapter-card"><a href="#/16">비교: 사용자 인증 기능 추가 (계속)</a></li>
-<li class="chapter-card"><a href="#/17">생산성 비교: 블로그 플랫폼</a></li>
-<li class="chapter-card"><a href="#/18">생산성 향상 분석</a></li>
-<li class="chapter-card"><a href="#/19">실전 팁: 1세대 (IDE)</a></li>
-<li class="chapter-card"><a href="#/20">실전 팁: 1세대 (계속)</a></li>
-<li class="chapter-card"><a href="#/21">실전 팁: 2세대 (CLI)</a></li>
-<li class="chapter-card"><a href="#/22">실전 팁: 2세대 (계속)</a></li>
-<li class="chapter-card"><a href="#/23">복합 사례: 실시간 채팅 앱</a></li>
-<li class="chapter-card"><a href="#/24">복합 사례: 성과</a></li>
-<li class="chapter-card"><a href="#/25">주의사항</a></li>
-<li class="chapter-card"><a href="#/26">다음 단계</a></li>
-</ul></div>
-</section>
-
+  <div class="toc-markmap">
+    <svg class="toc-mindmap-svg"></svg>
+  </div>
+      </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    <div class="contents-head-right">1세대 (IDE 기반) 활용 사례</div>
+  </div>
   <h2 class="title">1세대 (IDE 기반) 활용 사례</h2>
   <div class="contents-body">
 
@@ -1487,6 +1459,10 @@ html.ratio-fill .agenda-frame {
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
   <h2 class="title">사례 1: React Todo 앱 (계속)</h2>
   <div class="contents-body">
 
@@ -1507,6 +1483,10 @@ html.ratio-fill .agenda-frame {
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
   <h2 class="title">사례 1: 성과</h2>
   <div class="contents-body">
 
@@ -1530,6 +1510,10 @@ html.ratio-fill .agenda-frame {
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
   <h2 class="title">사례 2: API 통합 (Cline) <img src="img/cline-logo.png" alt="Cline"></h2>
   <div class="contents-body">
 
@@ -1550,6 +1534,10 @@ html.ratio-fill .agenda-frame {
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
   <h2 class="title">사례 2: 성과</h2>
   <div class="contents-body">
 
@@ -1573,6 +1561,10 @@ html.ratio-fill .agenda-frame {
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    <div class="contents-head-right">2세대 (CLI 기반) 활용 사례</div>
+  </div>
   <h2 class="title">2세대 (CLI 기반) 활용 사례</h2>
   <div class="contents-body">
 
@@ -1582,6 +1574,10 @@ html.ratio-fill .agenda-frame {
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
   <h2 class="title">사례 1: Express API 서버 (계속)</h2>
   <div class="contents-body">
 
@@ -1602,6 +1598,10 @@ html.ratio-fill .agenda-frame {
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
   <h2 class="title">사례 1: Express API 서버 (계속)</h2>
   <div class="contents-body">
 
@@ -1619,6 +1619,10 @@ Server running on port 3000</code></pre></div>
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
   <h2 class="title">사례 1: 성과</h2>
   <div class="contents-body">
 
@@ -1643,6 +1647,10 @@ Server running on port 3000</code></pre></div>
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
   <h2 class="title">사례 2: AWS 인프라 구성 (Gemini CLI) <img src="img/gemini-logo.png" alt="Gemini"></h2>
   <div class="contents-body">
 
@@ -1653,6 +1661,10 @@ Server running on port 3000</code></pre></div>
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
   <h2 class="title">사례 2: AWS 인프라 구성 (계속)</h2>
   <div class="contents-body">
 
@@ -1672,6 +1684,10 @@ Server running on port 3000</code></pre></div>
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
   <h2 class="title">사례 2: AWS 인프라 구성 (계속)</h2>
   <div class="contents-body">
 
@@ -1688,6 +1704,10 @@ Apply complete! Resources: 15 added</code></pre></div>
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
   <h2 class="title">사례 2: 성과</h2>
   <div class="contents-body">
 
@@ -1711,6 +1731,10 @@ Apply complete! Resources: 15 added</code></pre></div>
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
   <h2 class="title">비교: 사용자 인증 기능 추가</h2>
   <div class="contents-body">
 
@@ -1727,6 +1751,10 @@ Apply complete! Resources: 15 added</code></pre></div>
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
   <h2 class="title">비교: 사용자 인증 기능 추가 (계속)</h2>
   <div class="contents-body">
 
@@ -1748,6 +1776,10 @@ Apply complete! Resources: 15 added</code></pre></div>
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
   <h2 class="title">생산성 비교: 블로그 플랫폼</h2>
   <div class="contents-body">
 
@@ -1769,6 +1801,10 @@ Apply complete! Resources: 15 added</code></pre></div>
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
   <h2 class="title">생산성 향상 분석</h2>
   <div class="contents-body">
 
@@ -1788,6 +1824,10 @@ Apply complete! Resources: 15 added</code></pre></div>
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
   <h2 class="title">실전 팁: 1세대 (IDE)</h2>
   <div class="contents-body">
 
@@ -1804,6 +1844,10 @@ Apply complete! Resources: 15 added</code></pre></div>
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">6. 실전 사례: 세대별 활용법</div>
+    
+  </div>
   <h2 class="title">실전 팁: 1세대 (계속)</h2>
   <div class="contents-body">
 
@@ -1823,6 +1867,10 @@ Apply complete! Resources: 15 added</code></pre></div>
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">작은 단위로 분할</div>
+    
+  </div>
   <h2 class="title">실전 팁: 2세대 (CLI)</h2>
   <div class="contents-body">
 
@@ -1837,6 +1885,10 @@ Apply complete! Resources: 15 added</code></pre></div>
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 바로 커밋</div>
+    
+  </div>
   <h2 class="title">실전 팁: 2세대 (계속)</h2>
   <div class="contents-body">
 
@@ -1858,6 +1910,10 @@ EOF</code></pre></div>
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 바로 커밋</div>
+    
+  </div>
   <h2 class="title">복합 사례: 실시간 채팅 앱</h2>
   <div class="contents-body">
 
@@ -1876,6 +1932,10 @@ EOF</code></pre></div>
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 바로 커밋</div>
+    
+  </div>
   <h2 class="title">복합 사례: 성과</h2>
   <div class="contents-body">
 
@@ -1885,6 +1945,10 @@ EOF</code></pre></div>
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 바로 커밋</div>
+    
+  </div>
   <h2 class="title">주의사항</h2>
   <div class="contents-body">
 
@@ -1908,6 +1972,10 @@ EOF</code></pre></div>
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 바로 커밋</div>
+    
+  </div>
   <h2 class="title">다음 단계</h2>
   <div class="contents-body">
 
@@ -2073,7 +2141,7 @@ EOF</code></pre></div>
 
 
     // Inject configuration
-    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":[]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
+    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"head_left":"d1","head_right":"now","head_breadcum":true,"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":[]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
 
     // Dynamic Styling and Resizing Script
     let observer; // Define observer at top level
@@ -2191,34 +2259,30 @@ EOF</code></pre></div>
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">6. 실전 사례: 세대별 활용법</a>",
+                  "content": "<a href=\"#/2\">6. 실전 사례: 세대별 활용법</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/2\">1세대 (IDE 기반) 활용 사례</a>",
+                              "content": "<a href=\"#/3\">1세대 (IDE 기반) 활용 사례</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/3\">사례 1: React Todo 앱 (계속)</a>",
+                              "content": "<a href=\"#/4\">사례 1: React Todo 앱 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/4\">사례 1: 성과</a>",
+                              "content": "<a href=\"#/5\">사례 1: 성과</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/5\">사례 2: API 통합 (Cline) ![Cline](img/cline-logo.png)</a>",
+                              "content": "<a href=\"#/6\">사례 2: API 통합 (Cline) ![Cline](img/cline-logo.png)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/6\">사례 2: 성과</a>",
+                              "content": "<a href=\"#/7\">사례 2: 성과</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/7\">2세대 (CLI 기반) 활용 사례</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/8\">사례 1: Express API 서버 (계속)</a>",
+                              "content": "<a href=\"#/8\">2세대 (CLI 기반) 활용 사례</a>",
                               "children": []
                         },
                         {
@@ -2226,15 +2290,15 @@ EOF</code></pre></div>
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/10\">사례 1: 성과</a>",
+                              "content": "<a href=\"#/10\">사례 1: Express API 서버 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/11\">사례 2: AWS 인프라 구성 (Gemini CLI) ![Gemini](img/gemini-logo.png)</a>",
+                              "content": "<a href=\"#/11\">사례 1: 성과</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/12\">사례 2: AWS 인프라 구성 (계속)</a>",
+                              "content": "<a href=\"#/12\">사례 2: AWS 인프라 구성 (Gemini CLI) ![Gemini](img/gemini-logo.png)</a>",
                               "children": []
                         },
                         {
@@ -2242,55 +2306,59 @@ EOF</code></pre></div>
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/14\">사례 2: 성과</a>",
+                              "content": "<a href=\"#/14\">사례 2: AWS 인프라 구성 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/15\">비교: 사용자 인증 기능 추가</a>",
+                              "content": "<a href=\"#/15\">사례 2: 성과</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/16\">비교: 사용자 인증 기능 추가 (계속)</a>",
+                              "content": "<a href=\"#/16\">비교: 사용자 인증 기능 추가</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/17\">생산성 비교: 블로그 플랫폼</a>",
+                              "content": "<a href=\"#/17\">비교: 사용자 인증 기능 추가 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/18\">생산성 향상 분석</a>",
+                              "content": "<a href=\"#/18\">생산성 비교: 블로그 플랫폼</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/19\">실전 팁: 1세대 (IDE)</a>",
+                              "content": "<a href=\"#/19\">생산성 향상 분석</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/20\">실전 팁: 1세대 (계속)</a>",
+                              "content": "<a href=\"#/20\">실전 팁: 1세대 (IDE)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/21\">실전 팁: 2세대 (CLI)</a>",
+                              "content": "<a href=\"#/21\">실전 팁: 1세대 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/22\">실전 팁: 2세대 (계속)</a>",
+                              "content": "<a href=\"#/22\">실전 팁: 2세대 (CLI)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/23\">복합 사례: 실시간 채팅 앱</a>",
+                              "content": "<a href=\"#/23\">실전 팁: 2세대 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/24\">복합 사례: 성과</a>",
+                              "content": "<a href=\"#/24\">복합 사례: 실시간 채팅 앱</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/25\">주의사항</a>",
+                              "content": "<a href=\"#/25\">복합 사례: 성과</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/26\">다음 단계</a>",
+                              "content": "<a href=\"#/26\">주의사항</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/27\">다음 단계</a>",
                               "children": []
                         }
                   ]
@@ -2568,10 +2636,13 @@ EOF</code></pre></div>
     // Issue71: section anchor — layout-_toc 또는 layout-_cards class를 가진 슬라이드 (H1·H2 sub-section autoToc 모두 포함)
     // Issue137: toc-placeholder id를 가진 슬라이드도 anchor 자격 보유.
     // Issue138: Cards Page(layout-_cards)가 새 anchor 클래스. 기존 layout-_toc는 호환성 유지(#layout-_toc 명시 케이스).
+    // 2026-05-10: Single 모드 H1 슬라이드(autoToc 미변환, layout-_contents)도 data-heading-level 속성으로 anchor 자격 부여.
     function isAnchorSlide(slide) {
       if (!slide) return false;
       if (!slide.classList) return false;
-      return slide.classList.contains('layout-_cards') || slide.classList.contains('layout-_toc');
+      if (slide.classList.contains('layout-_cards') || slide.classList.contains('layout-_toc')) return true;
+      if (slide.dataset && slide.dataset.headingLevel) return true;
+      return false;
     }
     // Issue92: H1 레벨 anchor만 sibling 점프(Home/End) 및 본문 ↑ 부모 lookup 대상
     // (H2 sub-section autoToc는 isAnchorSlide==true이지만 isH1Anchor==false → sibling/parent 후보에서 제외)
@@ -2964,6 +3035,9 @@ EOF</code></pre></div>
       // Issue92: '.' (Period) 를 fallback 으로 매핑 — Home/End 동일 사유
       // Issue92_1: ⌘+→ 도 End fallback — Keyboard Maestro 등이 End → ⌘ArrowRight 변환 시 호환
       if (event.key === 'End' || event.keyCode === 35 || event.code === 'Period' || (event.metaKey && event.key === 'ArrowRight')) {
+        // 2026-05-10: cover 슬라이드 End → agenda.html?fwd=1 (Single 모드 deck #/0 cover 슬라이드 + Chapter 모드 cover 슬라이드 양쪽 대칭)
+        // agenda Home → cover(index.html?back=1) 역방향 이동과 짝 (사용자 요청)
+        if (isCoverSlide(cur)) { stop(); window.location.href = 'agenda.html?fwd=1'; return; }
         if (M2SLIDE_MODE === 'chapter') {
           stop();
           // Issue136: NEXT_CHAPTER(파일 순서, ↓·→ 그대로 사용) → NEXT_SIBLING_CHAPTER(main↔main, sub↔sub)
@@ -2974,13 +3048,12 @@ EOF</code></pre></div>
           return;
         }
         // Issue105: Single — 트리 탐색 sibling. enclosing anchor 레벨 N 기준 직후 anchor at level ≤ N
-        // Issue133: sibling 부재 시 agenda.html?fwd=1 fallback (Chapter Issue114 대칭)
+        // Issue139: sibling 부재 시 무동작 (Issue133 agenda fallback 제거 — Chapter 마지막 main End 무동작과 대칭)
         var curHForEnd = Reveal.getIndices().h;
         var encLevelEnd = getEnclosingAnchorLevel(curHForEnd);
         var nextAnchorIdx = findNextSiblingAnchorIndex(curHForEnd, encLevelEnd);
         stop();
         if (nextAnchorIdx >= 0) Reveal.slide(nextAnchorIdx, 0);
-        else window.location.href = 'agenda.html?fwd=1';
         return;
       }
 
@@ -3079,35 +3152,6 @@ EOF</code></pre></div>
       });
     })();
   </script>
-  <div id="m2-guide-layout-label" style="
-    position: fixed;
-    bottom: 10px;
-    left: 10px;
-    color: #8b00ff;
-    font-size: 12px;
-    font-weight: bold;
-    font-family: monospace;
-    background: rgba(255,255,255,0.85);
-    padding: 3px 10px;
-    border-radius: 4px;
-    border: 4px double #8b00ff;
-    pointer-events: none;
-    z-index: 9999;
-  "></div>
-  <script>
-  (function(){
-    function updateLayoutLabel() {
-      var label = document.getElementById('m2-guide-layout-label');
-      if (!label) return;
-      var cur = Reveal.getCurrentSlide();
-      if (!cur) { label.textContent = ''; return; }
-      var cls = cur.className || '';
-      var m = cls.match(/\blayout-([\w-]+)/);
-      label.textContent = m ? m[1] : '(plain)';
-    }
-    Reveal.on('ready', updateLayoutLabel);
-    Reveal.on('slidechanged', updateLayoutLabel);
-  })();
-  </script>
+
 </body>
 </html>

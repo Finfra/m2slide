@@ -1,18 +1,22 @@
 # Ignore all files and directories in Projects folder only (not recursive)
 /*
 
-# But allow project directories (add new projects here)
-!/LlmAndVibeCoding/
-
 # Track this .gitignore file itself
 !/.gitignore
 
 # Track README.md (markdown writing guidelines)
 !/README.md
 
-# Example: To add another project, uncomment the line below
-# !/AnotherProject/
-!/MermaidExample/
+# Allow all project directories (제외: animationTest, z_just_test)
+!/LayoutTest/
+!/LlmAndVibeCoding/
+!/LlmAndVibeCoding_v2/
 !/m2SlideStyle1_single/
 !/m2SlideStyle2_chapter/
+!/MermaidExample/
+
+# Excluded (intentionally ignored)
+# /animationTest/
+# /z_just_test/
+
 !/slide.css.md

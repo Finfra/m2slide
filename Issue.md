@@ -118,10 +118,10 @@
     - m2SlideStyle2_chapter(cards_placeholder=false) 빌드 → 02-code-syntax.html 5개→4개 슬라이드(#/1 H1 제거).
     - m2SlideStyle1_single, layoutTest(default true) 회귀 통과 → cards 정상 표시.
 * 설계 문서 갱신:
-    - `_doc_design/Glossary.md` Cards Page 섹션에 false 동작 명세 추가
-    - `_doc_design/chapter-single-mode.md` 모드 비교 표에 cards_placeholder 게이트 명시
+    - `_doc_arch/Glossary.md` Cards Page 섹션에 false 동작 명세 추가
+    - `_doc_arch/chapter-single-mode.md` 모드 비교 표에 cards_placeholder 게이트 명시
     - `_config.org.yml` + 프로젝트 `_config.yml` 주석 명확화 (true/false 동작 양쪽 기술)
-* 영향 범위: lib/html-builder.js, _doc_design/Glossary.md, _doc_design/chapter-single-mode.md, _config.org.yml, Projects/{LlmAndVibeCoding,m2SlideStyle2_chapter}/_config.yml
+* 영향 범위: lib/html-builder.js, _doc_arch/Glossary.md, _doc_arch/chapter-single-mode.md, _config.org.yml, Projects/{LlmAndVibeCoding,m2SlideStyle2_chapter}/_config.yml
 
 ## Issue132. ePub 분할 레이아웃(2/3분할 카드) 렌더링 버그 (등록: 2026-05-06, 해결: 2026-05-10, commit: 9d3de29) ✅
 * 목적: HTML 출력에서 정상 동작하는 2분할/3분할 레이아웃이 EPUB 출력에서 깨지는 문제 수정
@@ -154,7 +154,7 @@
     - 브라우저(Chrome) 시각 확인 — 제목과 본문 H2.title 크기 균일
 
 ## Issue142. `head_breadcum` master toggle 코드 구현 (등록: 2026-05-10, 해결: 2026-05-10, commit: 88bfa08) ✅
-* 목적: `_doc_design/head.md`에 정의된 `head_breadcum: true` master toggle 옵션을 코드에 적용
+* 목적: `_doc_arch/head.md`에 정의된 `head_breadcum: true` master toggle 옵션을 코드에 적용
 * 해결 (Issue141 작업 내에서 함께 구현, commit 88bfa08):
     - `lib/config.js`: `head_breadcum` boolean 파싱 추가 (default `true`, `true/yes/1` → true, `false/no/0` → false, invalid → default + warn)
     - `lib/_internal/head-resolver.js:_resolveHeadSlot`: 5번째 인자 `headBreadcum = true` 추가. `now` 분기 진입 시 `if (!headBreadcum) return '';` 검사
@@ -165,7 +165,7 @@
 
 ## Issue141. _contents head_left/head_right 시스템 슬롯 + outline depth + breadcrumb (등록: 2026-05-10, 해결: 2026-05-10, commit: 7f9a416..e79357a) ✅
 * 목적: `_contents` layout 상단에 outline 컨텍스트를 좌/우 분리 자동 표시. 발표 도중 청중이 현재 챕터 위치를 시각화. d{N}/now/none 옵션 + breadcrumb 알고리즘 + head_breadcum master toggle.
-* design: `_doc_design/head.md` (영속 SSOT)
+* design: `_doc_arch/head.md` (영속 SSOT)
 * plan: `_doc_work/plan/head-slots-contents-layout_plan.md`
 * task: `_doc_work/tasks/head-slots-contents-layout_task.md`
 * 해결:
@@ -193,8 +193,8 @@
     - → numbering 없는 H2 outline 제외
     - → 최종: single/chapter mode 통일 알고리즘 (AGENDA.md outline은 head-bar에서 미사용)
 * Task 10 문서화 완료 (commit dc405f1 후속):
-    - `_doc_design/Glossary.md` — Header 시스템 슬롯 표·상세 섹션 최종 정책 반영
-    - `_doc_design/theme_layout_default.md` — `_contents` 슬롯 표에 head_left/head_right 추가 + DOM 스키마 갱신
+    - `_doc_arch/Glossary.md` — Header 시스템 슬롯 표·상세 섹션 최종 정책 반영
+    - `_doc_arch/theme_layout_default.md` — `_contents` 슬롯 표에 head_left/head_right 추가 + DOM 스키마 갱신
     - `.claude/rules/md-m2slide-rules.md` — Header 시스템 슬롯 섹션(§1.5) 신규 추가 (옵션·알고리즘·예시·toggle)
 
 ## Issue140. `toc_placeholder: true` Map Slide 미삽입 회귀 (Issue58 도입) (등록: 2026-05-10, 해결: 2026-05-10, commit: 453f423) ✅
@@ -295,7 +295,7 @@
     - `lib/agenda.js` 신규 함수: `getNextSiblingChapter`·`getPrevSiblingChapter` (level-aware walk — entry level N 기준 step 방향 첫 `level ≤ N` 매치 반환)
     - `lib/html-builder.js`: `PREV_SIBLING_CHAPTER`/`NEXT_SIBLING_CHAPTER` 변수 주입, Chapter ⇤/⇥ 핸들러를 sibling 변수로 교체. ↓·→ sequential 이동은 기존 `NEXT_CHAPTER`(파일 순서) 유지
     - Chapter ⇥ boundary는 K5 무동작 정책 유지 (마지막 main이 명확한 종착점). Chapter ⇤ boundary는 Issue114 첫 챕터 → `agenda?back=1` parent fallback 유지
-    - `_doc_design/key_navigation.md` 단축키 표·K4·K5·구현 매핑·변경 이력 갱신
+    - `_doc_arch/key_navigation.md` 단축키 표·K4·K5·구현 매핑·변경 이력 갱신
 * 검증:
     - 빌드된 `02-llm-tool-evolution.html`에 `NEXT_SIBLING_CHAPTER='03-vibecoding-concept.html'` 주입 (sub 02.1~02.3 skip)
     - 02.1 → NEXT=02.2 / PREV=02 (부모 fall-up)
@@ -312,7 +312,7 @@
 * 카테고리: Frontend (키 네비게이션)
 * 구현 명세:
     - `lib/html-builder.js` Single 분기 Home/End 핸들러에서 `prevAnchorIdx < 0` / `nextAnchorIdx < 0`일 때 `window.location.href = 'agenda.html?back=1'` / `'agenda.html?fwd=1'` 분기 추가
-    - `_doc_design/key_navigation.md` ⇤/⇥ 단축키 표 Single 컬럼 + K5 결정 + 변경 이력 갱신
+    - `_doc_arch/key_navigation.md` ⇤/⇥ 단축키 표 Single 컬럼 + K5 결정 + 변경 이력 갱신
 * 검증:
     - 빌드된 `index.html` 키 핸들러 line 2987(`?back=1`), 3050(`?fwd=1`) Issue133 fallback 주입 확인
     - 브라우저 수동: single mode 첫·마지막 anchor에서 Home/End → agenda 이동

@@ -56,10 +56,22 @@ fi
 
 # 기본 동작: 프로젝트 빌드 + 브라우저 열기
 _arg="${1:-m2SlideStyle1_single}"
-# Projects/ prefix 또는 ./Projects/ prefix가 이미 포함된 경우 그대로 사용
-if [[ "$_arg" == Projects/* || "$_arg" == ./Projects/* ]]; then
-    export prj_path="./$_arg"
-    export prj_name="${_arg#Projects/}"
+# 인자 형태별 분기:
+#   1) 절대 경로 (/...)           → 그대로 사용 (lib/m2slide 외부 프로젝트 지원)
+#   2) Projects/* 또는 ./Projects/* → 상대 경로 그대로 사용
+#   3) 그 외 단순 이름            → ./Projects/<name> 으로 해석
+if [[ "$_arg" == /* ]]; then
+    if [ ! -d "$_arg" ]; then
+        echo "❌ Error: Absolute path does not exist: $_arg" >&2
+        exit 1
+    fi
+    export prj_path="$_arg"
+    prj_name="$(basename "$_arg")"
+    export prj_name
+elif [[ "$_arg" == Projects/* || "$_arg" == ./Projects/* ]]; then
+    export prj_path="./${_arg#./}"
+    export prj_name="${_arg#./}"
+    export prj_name="${prj_name#Projects/}"
 else
     export prj_name="$_arg"
     export prj_path=./Projects/$prj_name

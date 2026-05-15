@@ -35,7 +35,7 @@
 
 ## Issue126. `_config.yml background:` 글로벌 배경 옵션 — none/#hex/image/video 4종 자동 판정 (등록: 2026-05-05, 해결: 2026-05-05, commit: a75adbc) ✅
 * 카테고리: Generator / Frontend
-* design: [`_doc_design/background.md`](_doc_design/background.md) (5개 레이어 SSOT, #3 자리)
+* design: [`_doc_arch/background.md`](_doc_arch/background.md) (5개 레이어 SSOT, #3 자리)
 * 목적: 프로젝트 단위 배경을 `_config.yml`에 1줄로 지정. 값 패턴 자동 판정으로 색상·이미지·비디오 통합 처리.
 * Walkthrough:
     - **`lib/config.js`**: `defaultConfig`에 `background: 'none'` / `backgroundType` / `backgroundFilename` 추가. `applyConfig`에 `background:` 파서 신설 — YAML 따옴표 처리(`"#FFFFFF"`) + hex의 `#` 보존(주석 분리 회피) + 4종 정규식 판정. 그 외 값은 warn 후 무시.
@@ -107,7 +107,7 @@
 * 해결:
     - **`lib/slide-parser.js`** (commit `7d3130c`): `extractDirectives(rawSlideText)` 신설. `_emptyDirectives()` 객체에 layout / transition / transitionSpeed / backgroundColor / backgroundTransition / autoAnimate / autoslide 7종 필드. 화이트리스트는 `lib/config.js` `VALID_TRANSITIONS`/`VALID_TRANSITION_SPEEDS`와 동기화. 기존 `extractLayoutMeta()`는 `extractDirectives()` 호출 후 `{ layout, text }`로 변환하여 Issue81 호환 유지. `parseMarkdownFile()`에서 추출된 directives를 slide 객체에 부여.
     - **`lib/html-builder.js`** (commit `7d3130c`): `_applyDirectiveAttrs(html, directives)` 헬퍼 추가. `generatePlainSlideHTML`/`generateSlideHTML` 두 경로 모두에서 첫 `<section>` 태그에 `data-transition`/`data-transition-speed`/`data-background-color`/`data-background-transition`/`data-auto-animate`(값 없는 attribute)/`data-autoslide` 변환 주입. reveal.js 표준 동작에 따라 슬라이드별 `data-*`가 글로벌 `Reveal.initialize` 옵션보다 자동 우선.
-    - **H2 다음 디렉티브 매칭** (commit `6f34f65`): SSOT 명세(_doc_design/animation.md) 형태 `## 제목 / #transition-zoom / #auto-animate / 본문` 슬라이드에서 H2가 첫 비공백 라인이라 디렉티브 매칭이 실패하던 회귀 fix. `extractDirectives()`에 H1~H6 헤더 + 빈 라인 skip 후 디렉티브 매칭 시도하는 분기 추가. Case 1 (Issue81 호환: 첫 비공백 라인이 디렉티브)도 그대로 동작.
+    - **H2 다음 디렉티브 매칭** (commit `6f34f65`): SSOT 명세(_doc_arch/animation.md) 형태 `## 제목 / #transition-zoom / #auto-animate / 본문` 슬라이드에서 H2가 첫 비공백 라인이라 디렉티브 매칭이 실패하던 회귀 fix. `extractDirectives()`에 H1~H6 헤더 + 빈 라인 skip 후 디렉티브 매칭 시도하는 분기 추가. Case 1 (Issue81 호환: 첫 비공백 라인이 디렉티브)도 그대로 동작.
     - **`Projects/animationTest/animationTest.md`**: 6종 디렉티브 검증 슬라이드 추가.
     - **`noteForHuman.md` + `.claude/rules/md-m2slide-rules.md`**: 디렉티브 표 + 화이트리스트 + 글로벌 관계 + H2 위/다음 두 형태 모두 동작 명시.
     - **스코프 외 (Issue117_1 후보)**: `#background-image-*` (경로 정규식 한계 — frontmatter 또는 인용부호 syntax로 별도 검토).
@@ -156,7 +156,7 @@
     - `lib/config.js`: `coverLayout: '_cover'` 기본값 + `cover_layout: <name>` 파서 (화이트리스트 `^_?[a-z][a-z0-9-]*$`, theme_default_layout과 동일).
     - `lib/html-builder.js`: single 모드 cover 주입(L473)·chapter 모드 `generateCoverHTML`·클라이언트 `isCoverSlide()` 판정 모두 `_cfg.coverLayout` 기반으로 변경 (`M2SLIDE_COVER_LAYOUT` 변수 신규 노출).
     - 검증: m2SlideStyle1_single에 임시로 `cover_layout: blank` 적용 후 산출물 첫 슬라이드 `<section class="layout-_blank">` 정상 교체 확인. 원복 후 `layout-_cover` 복귀. m2SlideStyle1_single, m2SlideStyle2_chapter, layoutTest 빌드 회귀 없음.
-    - 문서: `.claude/rules/md-m2slide-rules.md` "Cover 슬라이드 자동 주입" 섹션에 cover_layout override 항목 추가 + `_doc_design/chapter-single-mode.md`에 `cover_layout` 동작 표 신규.
+    - 문서: `.claude/rules/md-m2slide-rules.md` "Cover 슬라이드 자동 주입" 섹션에 cover_layout override 항목 추가 + `_doc_arch/chapter-single-mode.md`에 `cover_layout` 동작 표 신규.
 
 ## Issue111. 슬라이드 전환·요소 애니메이션 옵션 정리 (등록: 2026-05-05, 해결: 2026-05-05, commit: 45e897c, 1d72147, 7d3130c) ✅
 * 카테고리: Frontend
@@ -165,7 +165,7 @@
     - **Issue117** (이슈후보) — 슬라이드 단위 애니메이션 디렉티브 (`#transition-*` 등)
     - **Issue118** (이슈후보) — Pandoc `{.fragment}` inline attribute 파서
 * 해결:
-    - **Phase 1·2 — 검증·SSOT 문서**: `Projects/animationTest/` 신설하여 reveal.js markdown plugin syntax(`<!-- .slide: ... -->`, `<!-- .element: ... -->`, `{.fragment}`) 통과 여부 빌드+grep 검증 → 모두 텍스트로만 보존되고 section/element attribute로 변환되지 않음 확인. [`_doc_design/animation.md`](_doc_design/animation.md)에 결과·향후 syntax 설계 SSOT 작성.
+    - **Phase 1·2 — 검증·SSOT 문서**: `Projects/animationTest/` 신설하여 reveal.js markdown plugin syntax(`<!-- .slide: ... -->`, `<!-- .element: ... -->`, `{.fragment}`) 통과 여부 빌드+grep 검증 → 모두 텍스트로만 보존되고 section/element attribute로 변환되지 않음 확인. [`_doc_arch/animation.md`](_doc_arch/animation.md)에 결과·향후 syntax 설계 SSOT 작성.
     - **Phase 3 — 글로벌 옵션 노출** (commit `45e897c`):
         - **`lib/config.js`**: `VALID_TRANSITIONS = ['none','fade','slide','convex','concave','zoom']` + `VALID_TRANSITION_SPEEDS = ['default','fast','slow']` 화이트리스트. `cfg.animation = { defaultTransition: 'slide', defaultTransitionSpeed: 'default', defaultBackgroundTransition: 'fade' }` 기본값. `applyConfig`에 `animation:` 섹션 파서 + 잘못된 값 console.warn + default fallback (`nav_indicator` 패턴과 동일).
         - **`lib/html-builder.js`**: `generateHTML` deck 핸들러의 `Reveal.initialize` 하드코딩 `transition: 'slide'`/`backgroundTransition: 'fade'`를 `_cfg.animation.*` 기반 동적 주입으로 교체. `transitionSpeed` 새로 노출. `generateCoverHTML`/`generateAgendaHTML`은 의도적으로 `transition: 'none'` 유지 (Issue110 cover/agenda 진입 애니메이션 미적용 정책 보존).
@@ -233,7 +233,7 @@
     - Issue92 fallback 키(`,`/`.`/⌘+←/⌘+→) 모두 새 매트릭스 적용.
 * 검증: `m2SlideStyle2_chapter` 빌드 후 3개 핸들러(`index.html`/`agenda.html`/`01-text-layout.html`)에 Issue114 마커 정상 주입 확인. 사용자 키 동작 확인 후 종결.
 
-> 매트릭스 갱신: [`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) (gitignore — 로컬 SSOT) Cover/Agenda/첫 챕터 행 + 단축키 섹션 boundary fallback 명시.
+> 매트릭스 갱신: [`_doc_arch/key_navigation.md`](_doc_arch/key_navigation.md) (gitignore — 로컬 SSOT) Cover/Agenda/첫 챕터 행 + 단축키 섹션 boundary fallback 명시.
 
 ## Issue112. 챕터모드 페이지 번호 전체 기준 + breadcrumb 챕터 번호 제공 (등록: 2026-05-05, 해결: 2026-05-05, commit: a5c7f03, 7a805ac) ✅
 * 카테고리: Frontend
@@ -340,7 +340,7 @@
 
 ## Issue70. 키 네비게이션 체계 정리 — Single ←·Chapter ↑·Chapter 챕터 간 ← (등록: 2026-05-03, 해결: 2026-05-03, commit: fa43351) ✅
 * 목적: m2slide 키보드(swipe/drag 포함) 네비게이션을 페이지 계층 기반 단일 매트릭스로 정리하고, 사용자 보고 4건(Single ↑/←, Chapter ↑/←) 해결
-* design: `_doc_design/key_navigation.md`
+* design: `_doc_arch/key_navigation.md`
 * plan: `_doc_work/plan/key_navigation_plan.md`
 * task: `_doc_work/tasks/key_navigation_task.md`
 * 카테고리: Frontend, Generator
@@ -364,12 +364,12 @@
     - Phase 4: Single mode + cover_enabled + `idx.h===1` ← → `agenda.html` (Cover 우회). `M2SLIDE_COVER` 변수 신규
     - Phase 5: 근본 원인 — m2SlideStyle2_chapter `AGENDA.md`가 H2 subsection 없음 → `getSubsections()=[]` → toc-placeholder 미생성 → `findTocSlideIndex()=-1` → 핸들러 silent fail. **Fix**: chapter mode + tocIdx===-1 시 `agenda.html` graceful fallback
     - Phase 6: 3개 프로젝트 빌드 + HTML 변수 주입 검증 통과 (브라우저 12 시나리오는 후속 사용자 검증)
-    - Phase 7: `_doc_design/chapter-single-mode.md` cross-reference 추가
+    - Phase 7: `_doc_arch/chapter-single-mode.md` cross-reference 추가
 * 변경 파일:
     - `lib/agenda.js`: `getPrevChapter` + `_getAdjacentChapter` 추가
     - `lib/html-builder.js`: `PREV_CHAPTER`/`M2SLIDE_COVER` 주입, `Reveal.on('ready')` `?last=1` 핸들러, ↑/← graceful fallback
-    - `_doc_design/key_navigation.md` (신규 SSOT, gitignored)
-    - `_doc_design/chapter-single-mode.md` (cross-reference, gitignored)
+    - `_doc_arch/key_navigation.md` (신규 SSOT, gitignored)
+    - `_doc_arch/chapter-single-mode.md` (cross-reference, gitignored)
 
 ## Issue66. cover 페이지 Reveal.initialize 하드코딩으로 slide_ratio 무효화 (등록: 2026-05-03, 해결: 2026-05-03, commit: bffd865) ✅
 * 목적: chapter 모드 진입 페이지(`index.html`, cover_enabled=true)에서 `slide_ratio` 설정이 사실상 무시되고 항상 `fill`처럼 동작하는 버그 수정
@@ -503,7 +503,7 @@
     - `lib/config.js` `slideRatioNumeric()` 헬퍼: `none` 분기 제거. 사전 화이트리스트 검증으로 잘못된 값 도달 불가
     - `lib/html-builder.js` / `lib/css/base.css`: 코드 주석에서 `none` 단독 명시 제거. Issue65 표기로 정리
     - `_config.org.yml`: `slide_ratio` 주석을 `16:9 | 3:2 | fill`로 갱신
-    - `_doc_design/css.md`: §3.4.2 표 갱신 (4행 → 3행 + 그 외 throw), 변경 이력에 Issue65 추가
+    - `_doc_arch/css.md`: §3.4.2 표 갱신 (4행 → 3행 + 그 외 throw), 변경 이력에 Issue65 추가
     - 마이그레이션: `Projects/LlmAndVibeCoding_test/_config.yml` `none` → `"16:9"` (Projects/* 는 gitignored)
 * 검증:
     - `m2SlideStyle1_single` (`"16:9"`)  → `ratio-16-9` + 1920×1080 ✅
@@ -538,7 +538,7 @@
     - `lib/css/base.css`: `.reveal .slides section { padding: var(--slide-inner-padding) }` → 콘텐츠↔슬라이드 대칭 여백 (요구 [6])
     - `slideRatioNumeric`: `'fill' → 'auto'` 케이스 추가
     - ratio class 체계: `ratio-none` 폐기 → `ratio-fill` 신규 (CSS 분기), `ratio-16-9`/`ratio-3-2` 유지
-    - `_doc_design/css.md`: §3.4 "Slide_ratio 기반 기하 체계" 신규 + Reveal.js 매핑 표 + 책임 분담 표
+    - `_doc_arch/css.md`: §3.4 "Slide_ratio 기반 기하 체계" 신규 + Reveal.js 매핑 표 + 책임 분담 표
 * 검증:
     - `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest` 3개 프로젝트 빌드 성공 + ratio-16-9 클래스 + 1920×1080 dimensions 확인
     - 헬퍼 단위 테스트 (`16:9`, `3:2`, `none`, `fill`, `4:3`) 통과
@@ -569,7 +569,7 @@
     - `theme/default/slide.css`: 1422 → 403줄 (71% 감소). 이미지·색상 등 테마 고유만 보존
     - `theme/nowage/slide.css`: default와 동일 (cp 동기화). 차별화는 후속 이슈
     - `_config.org.yml`: 72 → 35줄 (style 50 → 8줄, 84% 감소)
-    - `_doc_design/css.md`: 임시 "리팩터링 계획" 섹션 제거 + 영구 목록 3종 (base.css/slide.css/_config.yml) + 변경 이력 행
+    - `_doc_arch/css.md`: 임시 "리팩터링 계획" 섹션 제거 + 영구 목록 3종 (base.css/slide.css/_config.yml) + 변경 이력 행
     - `README.md`: base.css 폴더 구조, CSS 우선순위, 신규 테마 작성 가이드 추가
 * 검증:
     - `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest` 3개 프로젝트 빌드 성공
@@ -579,7 +579,7 @@
 * 후속 이슈 후보: default minimal 분화, nowage 차별화
 
 ## Issue62. cover-title 반응형 크기 조정 및 CSS 구현 설계 문서화 (등록: 2026-05-02, 해결: 2026-05-02, commit: b12a8db, 789947d) ✅
-* 목적: cover 슬라이드 제목이 뷰포트 너비에 따라 줄바꿈 없이 최대 크기로 표시되도록 수정. CSS 구현 형태 SSOT(`_doc_design/css.md`) 작성.
+* 목적: cover 슬라이드 제목이 뷰포트 너비에 따라 줄바꿈 없이 최대 크기로 표시되도록 수정. CSS 구현 형태 SSOT(`_doc_arch/css.md`) 작성.
 * 카테고리: Theme / Frontend
 * 복잡도: 중간
 * 상세:
@@ -588,10 +588,10 @@
     - 원인: `font-size: 3.4em` (136px) — 좁은 뷰포트에서 30자 제목이 줄바꿈됨
     - 수정: `clamp(1.2em, 5vw, 3.4em)` 적용 (7vw → 5vw; 30자 × 0.6em 공식 적용)
     - `layout-cover` section에 `min-height: 100vh !important` 추가 — flex push로 instructor 하단 고정
-    - `_doc_design/css.md` 생성: CSS 변수 체계·반응형 타이포그래피·레이아웃 패턴 SSOT
+    - `_doc_arch/css.md` 생성: CSS 변수 체계·반응형 타이포그래피·레이아웃 패턴 SSOT
 * 구현 명세:
     - `theme/default/slide.css`, `theme/nowage/slide.css`: clamp(1.2em, 5vw, 3.4em) + min-height: 100vh
-    - `_doc_design/css.md`: 변수 체계, 5vw 공식, 섹션 높이 규칙, 금지 사항 정의
+    - `_doc_arch/css.md`: 변수 체계, 5vw 공식, 섹션 높이 규칙, 금지 사항 정의
 
 ## Issue61. title_contents_gap이 media-enlarge-fit 모드 + H3 슬라이드에서 미적용 (등록: 2026-05-02, 해결: 2026-05-02, commit: 4e418c2, 789947d, 8db51ae) ✅
 * 목적: `title_contents_gap` 설정이 `media_container_enlarge: fit` 모드에서 시각적으로 적용되지 않는 원인 수정
@@ -692,7 +692,7 @@
 * 복잡도: 복잡 (plan + task 필수, CSS 인접 영역, 키 네비게이션 재정의 포함)
 * plan: `_doc_work/plan/chapter-single-mode-unify_plan.md`
 * task: `_doc_work/tasks/chapter-single-mode-unify_task.md`
-* design: `_doc_design/chapter-single-mode.md`
+* design: `_doc_arch/chapter-single-mode.md`
 * 상세:
     - 현재 single 모드는 `{ProjectName}.html` 단독 + `#toc-container` 오버레이로 마크맵 표시. chapter 모드는 `index.html`에 마크맵 + 다운로드 헤더(인라인 CSS).
     - 두 모드 모두 `index.html`은 cover slide(`#/0`) 표시. cover에서 →/↓ 키로 `agenda.html` 이동
@@ -738,7 +738,7 @@
     - **QR 렌더링 v1**: 정적 이미지(`qr_code_path`) `<img>` + URL 텍스트(`qr_url`). `onerror` fallback으로 미존재 이미지 숨김
     - **이름 정정**: 이슈 본문의 `QGCode` → 이슈48에서 이미 `qr_code_path`로 표준화 완료
     - **룰 동기화**: `.claude/rules/md-m2slide-rules.md` "Cover 슬라이드 자동 주입" 절 추가
-    - **설계 SSOT 갱신**: `_doc_design/meta-yml.md`에 cover 정책·변수표·QR 렌더링 v1/v2 계획 추가
+    - **설계 SSOT 갱신**: `_doc_arch/meta-yml.md`에 cover 정책·변수표·QR 렌더링 v1/v2 계획 추가
 * 검증:
     - A. meta.yml 부재: cover 미주입 (기존 5개 프로젝트 backward compat ✓)
     - B. meta.yml 있으나 `cover_enabled` 부재: cover 미주입 ✓
@@ -754,7 +754,7 @@
 * 카테고리: Build (config 시스템)
 * 복잡도: 중간
 * 해결:
-    - **설계 SSOT**: `_doc_design/meta-yml.md` 작성 — v1 스키마 + 필드 카테고리 + 단계적 도입 계획 정의
+    - **설계 SSOT**: `_doc_arch/meta-yml.md` 작성 — v1 스키마 + 필드 카테고리 + 단계적 도입 계획 정의
     - **구현**: `lib/generate-slides.js`에 `PROJECT_META` 글로벌 + `loadProjectMeta(projectDir)` 함수 추가, `loadConfig()` 직후 호출
     - **선택적 로드**: `meta.yml` 미존재 시 silent skip — backward compatible (5개 기존 프로젝트 모두 영향 없음 확인)
     - **명명 정정**: 참고 출처의 `QGCodePath` → `qr_code_path` (오타 보정), `part1_subtitle` → `part_subtitle` (일반화)
@@ -821,10 +821,10 @@
     - `lib/generate-slides.js` (`generateTOCFromFile` slideIndex 초기화 분기 +8줄)
 
 ## Issue47. keynote-nowage-theme 시각 디자인 적용 (등록: 2026-05-02, 해결: 2026-05-02, commit: 1dc825a) ✅
-* 목적: `_doc_design/keynote-nowage-theme/` 디자인 이미지 9종(cover, contents, contents-noTopMargin, chapter-toc, chapter, exercise, exercise-small, blank, closing)에 정의된 keynote 시각 언어를 `theme/nowage`에 반영. 단순 구조 위주였던 기존 테마에 마스코트·노랑 강조선·페이지 번호·sketch 풍 타이포 등 결합.
+* 목적: `_doc_arch/keynote-nowage-theme/` 디자인 이미지 9종(cover, contents, contents-noTopMargin, chapter-toc, chapter, exercise, exercise-small, blank, closing)에 정의된 keynote 시각 언어를 `theme/nowage`에 반영. 단순 구조 위주였던 기존 테마에 마스코트·노랑 강조선·페이지 번호·sketch 풍 타이포 등 결합.
 * 카테고리: Theme (테마 시각 디자인)
 * 상세:
-    - 디자인 SSOT: `_doc_design/keynote-nowage-theme/*.png` + `img/finfra*.png`
+    - 디자인 SSOT: `_doc_arch/keynote-nowage-theme/*.png` + `img/finfra*.png`
     - 핵심 시각 요소: 노랑 강조색(#F5C518) 상/하단 가로선, 제목 하단 `hr.png` 브러시 밑줄, 우하단 페이지 번호, 레벨별 마커(● → ─ → ▶ → •), 마스코트(puffer/butterfly/cat) layout별 배치
     - 자산 파이프라인 신설: `theme/{name}/img/` → `slide/theme-img/` 자동 복사 — 사용자 프로젝트의 `img/`와 충돌 없음
 * 구현 명세:
@@ -858,13 +858,13 @@
     - `Issue.md` (Issue47 등록 + 종결)
 
 ## Issue45. layout 이름 정규화 정책 문서·회귀 검증 정합성 점검 (등록: 2026-05-02, 해결: 2026-05-02, commit: ea56fa1) ✅
-* 목적: Issue41(코드 수정) 머지 후 layout 이름 정규화 정책을 코드·룰 문서·회귀 테스트 3축에서 일관 유지 + `_doc_design/`에 영속 정책 문서화
+* 목적: Issue41(코드 수정) 머지 후 layout 이름 정규화 정책을 코드·룰 문서·회귀 테스트 3축에서 일관 유지 + `_doc_arch/`에 영속 정책 문서화
 * 구현 명세:
-    - **정책 SSOT 문서화**: `_doc_design/layout.md`에 "Layout 이름 표기 정책" 섹션 신규 추가
+    - **정책 SSOT 문서화**: `_doc_arch/layout.md`에 "Layout 이름 표기 정책" 섹션 신규 추가
         * 영역 분리표 (사용자 작성 / 사용자 슬라이드 / 시스템 자동 감지 / 파일 시스템)
         * Alias 정규화 동작 명시 (Issue41 `_registerLayoutTemplate()` 헬퍼)
         * 회귀 보장 요소 4종 명시 (코드 alias, 경고 dedup, 룰 문서, lint-config)
-    - **룰 문서 동기화**: `.claude/rules/md-m2slide-rules.md` `## 1. 슬라이드별 layout override`에 "Layout 이름 표기 규칙" 서브 섹션 추가 — `_doc_design/layout.md` cross-link
+    - **룰 문서 동기화**: `.claude/rules/md-m2slide-rules.md` `## 1. 슬라이드별 layout override`에 "Layout 이름 표기 규칙" 서브 섹션 추가 — `_doc_arch/layout.md` cross-link
     - **회귀 테스트 자동화**: `m2slideDo.sh`에 `--lint-config` 옵션 추가
         * `theme/*/layouts/*.html` 파일 시스템 스캔으로 사용 가능 layout 수집 (underscore alias 포함)
         * `Projects/*/_config.yml`의 `theme_default_layout` 값을 BSD-호환 sed로 추출
@@ -874,7 +874,7 @@
         * `m2SlideStyle1_single` (`theme_default_layout: contents`) 정상 동작
         * lint-config 실증: layoutTest 사용자 로컬 config의 stale `2.1.contents` 참조를 정확히 검출 (Issue38 표준화 이전 잔재 — 사용자 로컬 영역이라 미수정)
 * 변경 파일:
-    - `_doc_design/layout.md` (Layout 이름 표기 정책 섹션 +60줄)
+    - `_doc_arch/layout.md` (Layout 이름 표기 정책 섹션 +60줄)
     - `.claude/rules/md-m2slide-rules.md` (Layout 이름 표기 규칙 서브 섹션 +12줄)
     - `m2slideDo.sh` (`--lint-config` 옵션 + usage 주석)
 
@@ -982,7 +982,7 @@
         * `parseMarkdownFile()` 자동 감지 분기에 video-only → `layout = '_blank'` + `autoFullVideo = true`
         * `generateSlideHTML()` `autoFullVideo` 처리 → `layout-blank--full-video` modifier
     - `theme/default/slide.css` (+ `theme/nowage/slide.css`): `.layout-blank--full-video .blank-body video` 셀렉터 (`width/height: 100%`, `object-fit: contain`)
-    - `_doc_design/video-default.md`: 영속 설계 SSOT (8개 프리셋 매핑 + video-only 풀스크린 정책)
+    - `_doc_arch/video-default.md`: 영속 설계 SSOT (8개 프리셋 매핑 + video-only 풀스크린 정책)
     - 우선순위: `_blank` (image-only / video-only) > `_contents_no_title` (title-empty) > 기본 layout
     - 사용자 명시 `#layout-*` override는 항상 우선
 * 회귀 검증:
@@ -1054,7 +1054,7 @@
 * **목적**: `resource/` 단일 CSS 구조를 `theme/{name}/` 디렉토리 기반 + HTML 템플릿 layout 시스템으로 전환
 * plan: `_doc_work/plan/theme_plan.md`
 * task: `_doc_work/tasks/theme_task.md`
-* design: `_doc_design/theme.md`
+* design: `_doc_arch/theme.md`
 * **상세**:
     - `resource/slide.css` → `theme/default/slide.css` 이동
     - `_config.yml`에 `theme:`, `theme_default_layout:` 키 신규 도입 (`slide_css:` 하위 호환 유지)
@@ -1101,7 +1101,7 @@
 ## Issue34. 다분할 레이아웃 마크다운 단축 표기 지원 (2026-05-01 해결, commit: bfdd1c0) ✅
 * **목적**: 좌/우·상/하·N분할·그리드 레이아웃을 최소 지시자 마크다운으로 작성 가능하게 함
 * **task**: `_doc_work/tasks/layout-multi-column_task.md`
-* **design**: `_doc_design/layout.md`
+* **design**: `_doc_arch/layout.md`
 * **상세**:
     - 1단계 휴리스틱: 한 슬라이드에 리스트+이미지 공존 시 좌/우 자동 2분할 (raw `<div>`가 있으면 자동 스킵)
     - 2단계 Slidev 슬롯 `::right::`: 좌/우 2분할 명시 단축 표기
@@ -1159,7 +1159,7 @@
 * **상세**:
     - `convert.sh` → `m2slide.sh` (git mv)
     - 내부 참조 파일 업데이트: `_config.org.yml`, `README.md`, `Projects/README.md`, `Projects/LlmAndVibeCoding/README.md`, `Projects/LlmAndVibeCoding2/README.md`, `Projects/m2SlideStyle1_single/_config.yml`, `Projects/m2SlideStyle2_chapter/_config.yml`, `Projects/MarkdownGraph/_config.yml`, `lib/deploy.sh`
-    - 외부 참조 파일 업데이트: `lib/slide_capture/prepare_project.sh`, `_tool/scenario_ramyeon_all.sh`, `_doc_design/pipeline_steps.md`, `lib/README.md`, `_doc_work/work_m2slide.md`, `_doc_work/scenario_ramyeon.md`, provision 문서
+    - 외부 참조 파일 업데이트: `lib/slide_capture/prepare_project.sh`, `_tool/scenario_ramyeon_all.sh`, `_doc_arch/pipeline_steps.md`, `lib/README.md`, `_doc_work/work_m2slide.md`, `_doc_work/scenario_ramyeon.md`, provision 문서
 
 ## Issue24. Slide 폴더 포터블화 (상대 경로 및 리소스 포함 문제 해결) (2025-12-07 해결, commit: 40e8bc4)
 * `generate-slides.js` 수정: `SLIDE_CSS_REL`로 지정된 CSS 파일과 `config.yml`의 `font_import`에 지정된 로컬 폰트 파일을 `slide/css/` 폴더로 자동 복사.
@@ -1326,7 +1326,7 @@
             - level ≤ 현재 → -1 반환 (scope 종료)
     - ↓ 핸들러 anchor 분기 갱신: `findFirstChildAnchorIndex(idxD, encLv)` 결과 ≥ 0 → 그곳 / -1 → 기존 `idxD + 1` 동작
     - Single/Chapter 모드 공통 적용
-    - 설계 동기: [`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) Issue106 항목 (Single/Chapter 매트릭스, K3, 변경 이력)
+    - 설계 동기: [`_doc_arch/key_navigation.md`](_doc_arch/key_navigation.md) Issue106 항목 (Single/Chapter 매트릭스, K3, 변경 이력)
 * 효과:
     - #/12 (H1 "4. 이미지 및 미디어") ↓ → #/14 (H2 "4.1") — content "개요"(#/13) skip
     - #/14 (H2 "4.1", 자식 없음) ↓ → #/15 content (회귀 없음)
@@ -1346,7 +1346,7 @@
     - Home 핸들러 Single 분기: `findPrevH1AnchorIndex` → `findPrevSiblingAnchorIndex(curH, encLevel)`
     - End 핸들러 Single 분기: `findNextH1AnchorIndex` → `findNextSiblingAnchorIndex(curH, encLevel)`
     - Chapter 모드는 변경 없음 (deck 단위 점프 유지)
-    - 설계 동기: [`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) Issue105 항목 (단축키 동작 표·K4·변경 이력)
+    - 설계 동기: [`_doc_arch/key_navigation.md`](_doc_arch/key_navigation.md) Issue105 항목 (단축키 동작 표·K4·변경 이력)
 * 효과:
     - H2 anchor 간 sibling 이동 가능 (예: `4.1 ↔ 4.2`)
     - H2 마지막 sibling에서 ⇥ → 부모 H1의 다음 H1 sibling으로 자연 fall-up (트리 탐색)
@@ -1369,7 +1369,7 @@
     - `M2SLIDE_MODE === 'chapter'`: 기존 Chapter fall-through 유지
     - `else` (Single): `findNextH1AnchorIndex(Reveal.getIndices().h)` → ≥0이면 `Reveal.slide(idx, 0)`. 마지막 H1 섹션은 무동작
     - 메시지·확인 없이 1회 누름 (양 모드 공통)
-    - [`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) Single 모드 매트릭스·K7·변경 이력 동기 갱신
+    - [`_doc_arch/key_navigation.md`](_doc_arch/key_navigation.md) Single 모드 매트릭스·K7·변경 이력 동기 갱신
 * 검증:
     - `m2SlideStyle1_single` 빌드 산출물 `index.html`에 leaf branch Single 분기 코드 부착 확인 (`leafNextH1 = findNextH1AnchorIndex(...)`)
     - `m2SlideStyle2_chapter` 빌드 산출물에도 동일 분기 부착 (Chapter 분기 우선) — 회귀 없음
@@ -1415,7 +1415,7 @@
 
 ## Issue99. Chapter 모드 본문(leaf)에서 ↓ 키 무동작 — 다음 챕터 fall-through 미구현 (등록: 2026-05-04, 해결: 2026-05-04, commit: 68eb82b) ✅
 * 카테고리: Frontend
-* 목적: [`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) "본문 leaf ↓ → 다음 챕터 첫 슬라이드(TOC slide, 메시지 없음·1회)" 설계가 코드에 반영되지 않음. `02-code-syntax.html?last=1#/2`에서 ↓ 무반응 — `→ →`(2회·메시지) 만 다음 챕터로 이동
+* 목적: [`_doc_arch/key_navigation.md`](_doc_arch/key_navigation.md) "본문 leaf ↓ → 다음 챕터 첫 슬라이드(TOC slide, 메시지 없음·1회)" 설계가 코드에 반영되지 않음. `02-code-syntax.html?last=1#/2`에서 ↓ 무반응 — `→ →`(2회·메시지) 만 다음 챕터로 이동
 * 상세:
     - 재현: `Projects/m2SlideStyle2_chapter/slide/01-text-layout.html#/2` 또는 `#/3`에서 ↓ 누름 → 무반응
     - 기대: `02-code-syntax.html` 첫 슬라이드(TOC slide, `#/0`)로 즉시 이동, 메시지 없음
@@ -1433,7 +1433,7 @@
 
 ## Issue100. 본문 leaf에서 ↑ 키가 직속 부모(H2 sub-anchor) 건너뛰고 H1 anchor로 점프 (등록: 2026-05-04, 해결: 2026-05-04, commit: 68eb82b) ✅
 * 카테고리: Frontend
-* 목적: `Projects/m2SlideStyle1_single/slide/index.html#/15` (H2 sub-anchor `#/14` 직후 본문 leaf) 에서 ↑ 키 누름 시 #/14가 아닌 #/12 (H1 anchor "4. 이미지 및 미디어")로 점프. 직속 부모 의미 위반. `_doc_design/key_navigation.md` 설계의 ↑=parent 규칙에서 H2 sub-anchor도 부모 후보에 포함되어야 함
+* 목적: `Projects/m2SlideStyle1_single/slide/index.html#/15` (H2 sub-anchor `#/14` 직후 본문 leaf) 에서 ↑ 키 누름 시 #/14가 아닌 #/12 (H1 anchor "4. 이미지 및 미디어")로 점프. 직속 부모 의미 위반. `_doc_arch/key_navigation.md` 설계의 ↑=parent 규칙에서 H2 sub-anchor도 부모 후보에 포함되어야 함
 * 근본 원인: [`lib/html-builder.js`](lib/html-builder.js) `findPrevAnchorIndex` (Issue92에서 H1만 매칭하는 `isH1Anchor`로 변경됨) — Home/End sibling 점프와 ↑ parent 점프가 같은 함수를 공유하여 H2 sub-anchor가 ↑ 후보에서도 제외됨. Issue92는 sibling 점프(Home/End)에서 H2를 제외하려는 의도였으나 ↑ parent 점프까지 영향
 * 구현 명세 (실행):
     - 함수 분리: `findPrevH1AnchorIndex`/`findNextH1AnchorIndex` (Home/End sibling, ↓ TOC→첫 H1 — `isH1Anchor` 유지) + `findPrevAnyAnchorIndex` (↑ parent — `isAnchorSlide` 사용으로 H2 sub-anchor 포함)
@@ -1474,7 +1474,7 @@
         - `_cover` 슬라이드에서 slide-number/controls/progress hide selector 추가
         - `_contents` puffer position 96% 6% → 96% 28px + `_contents_no_title` 추가
         - `_contents_no_title > .contents-body { padding-top: 0; margin-top: 0 }` 추가
-    - **설계 문서 (`_doc_design/theme_layout_lec.md`, gitignored)**:
+    - **설계 문서 (`_doc_arch/theme_layout_lec.md`, gitignored)**:
         - §3.1: cover-meta 우상단 absolute 명시 (Issue80 동기) + min-height 100% 명시
         - §5.1: hr.png 옵션 3 결정(default 전용, lec은 단색 2px 유지) 명시 + page-number/controls/progress 위치 정책 명시
 * 검증:
@@ -1558,7 +1558,7 @@
 * 목적: Single 모드에서 ⇤ Home / ⇥ End 가 설계 의도(인접 H1 anchor 점프)와 다르게 동작 + 일부 macOS 환경에서 Home/End keydown 이벤트가 페이지까지 도달하지 않아 키 자체가 무반응. 두 문제 모두 해결하여 발표 중 sibling 챕터 점프를 안정적으로 보장
 * 상세:
     - 증상1: `Projects/m2SlideStyle1_single` `index.html#/12` (H1 `4. 이미지 및 미디어`) 에서 ⇥ End 가 `#/14` (H2 `4.1. 이미지`) 로 잡힘. 사용자 기대치는 다음 H1 인 `#/20` (`5. 레이아웃 예제`). ⇤ Home 도 H2 sub-anchor (`#/14`, `#/17`) 가 후보에 들어가 H1 점프 의미 훼손
-    - 원인1: `lib/html-builder.js` `findPrevAnchorIndex` / `findNextAnchorIndex` 가 `isAnchorSlide` (`layout-_toc` + `id !== 'toc-placeholder'`) 만 검사. 설계 ([`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) L87) 는 "직전/직후 **H1 anchor**" 명시이나 코드는 H2 sub-section autoToc 까지 모두 매칭
+    - 원인1: `lib/html-builder.js` `findPrevAnchorIndex` / `findNextAnchorIndex` 가 `isAnchorSlide` (`layout-_toc` + `id !== 'toc-placeholder'`) 만 검사. 설계 ([`_doc_arch/key_navigation.md`](_doc_arch/key_navigation.md) L87) 는 "직전/직후 **H1 anchor**" 명시이나 코드는 H2 sub-section autoToc 까지 모두 매칭
     - 원인2: `lib/slide-parser.js` autoToc 분기는 헤딩 레벨에 무관하게 (children 존재 시) `layout: '_toc'` 로 wrap. 렌더된 section에 heading level 정보가 없어 키 핸들러가 H1 vs H2 구분 불가
     - 증상2: 사용자 환경 (macOS) 에서 물리적 Home/End 키를 눌러도 window 최상위 capture phase 에서도 keydown 자체가 잡히지 않음 (PgUp/PgDown 은 정상 도달). 진단 페이지 `_doc_work/key-test.html` 로 확인. 원인은 OS·키보드·리매핑 도구 단계 추정 — 우리 코드로는 해결 불가
 * 구현 명세:
@@ -1566,7 +1566,7 @@
     - `lib/html-builder.js` `generateSlideHTML` 에서 `slide.autoToc && slide.headingLevel` 인 section 에 `data-heading-level="${level}"` 속성 주입
     - 키 핸들러 (`generateHTML` 본문 deck) 에 `isH1Anchor` 헬퍼 추가 — `isAnchorSlide` + `dataset.headingLevel === '1'`. `findPrevAnchorIndex` / `findNextAnchorIndex` 가 `isH1Anchor` 사용. `isAnchorSlide` 자체는 ↑/↓ parent/child 의미 유지 위해 그대로 (H2 sub-section TOC 도 anchor 로 인정)
     - Home/End 핸들러에 fallback 매칭 추가: `event.code === 'Comma'` / `event.code === 'Period'` (`,` / `.`). cover 핸들러 ([`generateCoverHTML`](lib/html-builder.js)) 와 agenda 핸들러 ([`generateAgendaHTML`](lib/html-builder.js)) 에도 동일 fallback 적용 (no-op 매핑 확장). `event.code` 기반이라 Shift·한글 IME 무관
-    - 설계 문서 [`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) 키 정의 표 / 핵심 원칙 / 변경 이력 갱신 — `,`·`.` fallback 명시
+    - 설계 문서 [`_doc_arch/key_navigation.md`](_doc_arch/key_navigation.md) 키 정의 표 / 핵심 원칙 / 변경 이력 갱신 — `,`·`.` fallback 명시
 * 검증:
     - 빌드 3종 (`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`) 모두 성공
     - `Projects/m2SlideStyle1_single/slide/index.html` H1 anchor (`data-heading-level="1"`) 7개 (#/1, #/5, #/8, #/12, #/20, #/28, #/31), H2 sub-anchor (`data-heading-level="2"`) 2개 (#/14, #/17) 분리 확인
@@ -1623,11 +1623,11 @@
     4. K12("K3/K4 swap 사유")를 결정사항 표 외 "변경 이력" 섹션으로 분리
     5. K11 표현 정리 ("hijack 인지" → "Reveal 기본 동작 override")
     6. 후속 검토 항목 추가 — Chapter 모드에서 같은 챕터 내 H1 anchor sibling 점프 수단 부재 (긴 챕터 UX 개선 후보)
-* 검증: `_doc_design/key_navigation.md` 표/매트릭스/mermaid/결정사항 모순 없음, Issue87 구현과 동기 commit
+* 검증: `_doc_arch/key_navigation.md` 표/매트릭스/mermaid/결정사항 모순 없음, Issue87 구현과 동기 commit
 
 ## Issue87. key_navigation 설계 반영 — 9키 네비게이션 체계 구현 (등록: 2026-05-04, 해결: 2026-05-04, commit: a44b7b6) ✅
 * 카테고리: Frontend + Generator
-* 목적: [`_doc_design/key_navigation.md`](_doc_design/key_navigation.md) SSOT를 빌드 산출물에 반영. ↑/↓를 페이지 계층 parent/child 이동, ⇤/⇥를 sibling 점프, ⇞/⇟를 끝단 직행으로 매핑한 9키 네비게이션 체계 구현
+* 목적: [`_doc_arch/key_navigation.md`](_doc_arch/key_navigation.md) SSOT를 빌드 산출물에 반영. ↑/↓를 페이지 계층 parent/child 이동, ⇤/⇥를 sibling 점프, ⇞/⇟를 끝단 직행으로 매핑한 9키 네비게이션 체계 구현
 * 구현 명세:
     - **키 매핑 (2026-05-04 swap 후 최종)**:
         - ↑/↓ = 페이지 계층 parent/child 이동 (수직)
@@ -1682,7 +1682,7 @@
 ## Issue80. theme_layout_default.md §2 레이아웃 변경 결정사항 default theme 적용 (등록: 2026-05-04, 해결: 2026-05-04, commit: a268ad4) ✅
 * 카테고리: Theme
 * 선행: Issue84 완료 (commit 568f456) — fallback 동작 명세 확보 후 진행
-* 목적: `_doc_design/theme_layout_default.md` §2에 명세된 레이아웃 설계 결정사항 6종을 `theme/default/` 실제 layout HTML·`slide.css`에 반영. 설계 SSOT ↔ 빌드 산출물 정합성 회복
+* 목적: `_doc_arch/theme_layout_default.md` §2에 명세된 레이아웃 설계 결정사항 6종을 `theme/default/` 실제 layout HTML·`slide.css`에 반영. 설계 SSOT ↔ 빌드 산출물 정합성 회복
 * 상세:
     - `_cover` (§2.1): cover-meta 박스 제거 + 우상단 absolute 이동 (version·lecture_date 작게). instructor 검정·중앙 하단 한 줄(`cover-body display:block; text-align:center`). `<span class="cover-label">강사:</span>` 제거
     - `_agenda` (§2.2): standalone wrapper(`div.layout-_agenda`)에 `position: relative` + 상단 노랑 가로선(`::before` top 12px) + 우상단 puffer2s 마스코트 신규. `.toc-page-downloads`에 `margin-right: 9%` 추가하여 puffer2s 영역과 분리
@@ -1698,9 +1698,9 @@
 ## Issue84. 설계 문서 `theme.md` §2 `slide_css:` 우선순위 표 정정 (등록: 2026-05-04, 해결: 2026-05-04, commit: 568f456) ✅
 * 목적: `theme.md` §2가 `slide_css:`를 단순 "우선순위 1 (최우선)"으로 기술하나, 실제 코드(`lib/config.js:241-260`)는 "`slide_css:` 지정 + 파일 존재 시 최우선, 미존재 시 `theme:` fallback"으로 동작. 동작 조건 누락된 spec 정정
 * 상세:
-    - `_doc_design/theme.md` §2 표에 "파일 존재 시 우선" 조건 명시
+    - `_doc_arch/theme.md` §2 표에 "파일 존재 시 우선" 조건 명시
     - 표 아래에 fallback 동작 보강: `slide_css:` 지정 파일 미존재 시 → `theme:`로 fallback (silent failure 방지) + `theme:` 미존재 시 default fallback + warning
-* 검증: 문서 변경만 (gitignored `_doc_design/`). `lib/config.js` 동작과 기재 일치 재확인
+* 검증: 문서 변경만 (gitignored `_doc_arch/`). `lib/config.js` 동작과 기재 일치 재확인
 
 ## Issue83. 설계 문서 `theme_layout.md` §5.1·§11.2·§15 `_toc` 자동 적용 조건 정정 (등록: 2026-05-04, 해결: 2026-05-04, commit: 568f456) ✅
 * 목적: `theme_layout.md` §5.1·§11.2가 "첫 슬라이드 자동 `_toc` 적용"으로만 기술하나, 실제 코드(`lib/html-builder.js:341`)는 Issue58 이후 "AGENDA.md 서브챕터(H3) 존재 시"에만 `_toc` 적용. Issue58 변경분 미반영 정정
@@ -1708,17 +1708,17 @@
     - §5.1: 적용 조건 3개(`_toc.html` 존재 + `hasTocItems` + `!skipTocPlaceholder`) 명시. single mode/서브챕터 없는 chapter는 미적용 + `isTitle` 슬라이드 제거 명시
     - §11.2: 처리 흐름 7단계로 재구성, 조건 검사·기존 isTitle 교체·fallback 분리 명시
     - §15 검증 기준 7,8,8a 분리 — 적용 케이스/미적용 케이스/예외 fallback
-* 검증: 문서 변경만 (gitignored `_doc_design/`). chapter-single-mode.md와 정합성 유지
+* 검증: 문서 변경만 (gitignored `_doc_arch/`). chapter-single-mode.md와 정합성 유지
 
 ## Issue82. `lib/layout.js` dead `_WARNED_MISSING_LAYOUTS` 제거 + 설계 문서 §4.4 정정 (등록: 2026-05-04, 해결: 2026-05-04, commit: ee70b2a) ✅
 * 목적: `theme_layout.md` §4.4가 회귀 보장 요소로 기재한 `_WARNED_MISSING_LAYOUTS` Set이 실제로는 `lib/layout.js:58`에 dead code로 남아있고, 실제 dedup은 `lib/html-builder.js`의 `_warnedMissingLayouts`가 담당. 코드·문서 모두 실태에 정렬
 * 상세:
     - `lib/layout.js`에서 `_WARNED_MISSING_LAYOUTS` Set 선언 제거 + Issue41 코멘트 정리 (Issue82 코멘트로 갱신)
-    - `_doc_design/theme_layout.md` §4.4 회귀 보장 요소 표기 정정: `lib/layout.js _registerLayoutTemplate()` + `lib/html-builder.js _warnedMissingLayouts`
+    - `_doc_arch/theme_layout.md` §4.4 회귀 보장 요소 표기 정정: `lib/layout.js _registerLayoutTemplate()` + `lib/html-builder.js _warnedMissingLayouts`
 * 검증: 4개 프로젝트 빌드 회귀 없음 (m2SlideStyle1_single, m2SlideStyle2_chapter, layoutTest, LlmAndVibeCoding)
 
 ## Issue81. 슬라이드 layout 메타 `#layout-` prefix 정식 지원 (등록: 2026-05-04, 해결: 2026-05-04, commit: c27ae5d) ✅
-* 목적: 설계 문서(`_doc_design/theme_layout.md` §6, §6.2 + `.claude/rules/md-m2slide-rules.md` 다수 예제)는 `#layout-name` syntax를 명시하나 실제 코드(`lib/slide-parser.js` `extractLayoutMeta`)는 `#name` 형태만 인식하여 모든 문서·예제가 동작하지 않던 상태. spec ↔ code 정합성 회복
+* 목적: 설계 문서(`_doc_arch/theme_layout.md` §6, §6.2 + `.claude/rules/md-m2slide-rules.md` 다수 예제)는 `#layout-name` syntax를 명시하나 실제 코드(`lib/slide-parser.js` `extractLayoutMeta`)는 `#name` 형태만 인식하여 모든 문서·예제가 동작하지 않던 상태. spec ↔ code 정합성 회복
 * 상세:
     - `extractLayoutMeta` regex 확장: `^#(_?[a-z][a-z0-9-]*)\s*$` → `^#(?:layout-)?(_?[a-z][a-z0-9-]*)\s*$`
     - `#layout-name` 정식 + `#name` alias 양쪽 모두 인식. 기존 프로젝트 회귀 0
@@ -1738,7 +1738,7 @@
     - 코드: `lib/config.js` `loadProjectMeta(projectDir, inputDir, cfg)` 시그니처 확장, `resolveMetaSourcePath()` 신규 (mode별 출처 결정). `lib/generate-slides.js` 호출부를 inputDir 결정 후로 이동
     - 6개 프로젝트 frontmatter 마이그레이션 (instructor_name·instructor_contact·version·release_date·created_at·created_by 등)
     - 부수 작업: `nowage` 테마 → `default_lec` rename(강의용 공식 테마, git 추적 등록), `lib/html-builder.js` keydown 핸들러 리팩터링(stop()/gotoTocOrAgenda() 헬퍼 추출)
-    - 문서 갱신: `_doc_design/{meta-yml,Glossary,chapter-single-mode,theme_layout,theme_layout_default}.md`, `.claude/rules/md-m2slide-rules.md`, `CLAUDE.md`, `README.md`
+    - 문서 갱신: `_doc_arch/{meta-yml,Glossary,chapter-single-mode,theme_layout,theme_layout_default}.md`, `.claude/rules/md-m2slide-rules.md`, `CLAUDE.md`, `README.md`
 * 검증:
     - 6개 프로젝트 전수 빌드 통과 — 콘솔 `✅ Project meta loaded from frontmatter: ...`
     - cover 슬라이드 `cover-instructor-name`에 frontmatter 값 정상 치환 (`남중구 (핀프라)`)
@@ -1748,14 +1748,14 @@
 * 목적: Issue73에서 추가된 번호 prefix layout 6종(`2.2.contents-full`, `2.3.contents-split`, `4.2.chapter`, `6.1.exercise`, `6.2.exercise-small`, `9.1.closing`)을 폐기하고, 시각 디자인 SSOT(과거 `layout_default.md`)를 `theme_layout_default.md`에 통합하여 default theme 단일 진입점으로 단순화함
 * 상세:
     - 폐기 대상: `theme/default/layouts/` 번호 prefix HTML 6개 (`git rm` 처리)
-    - `_doc_design/layout_default.md` → `theme_layout_default.md` §7 "디자인 방향성"·§8 "변경 가이드라인" 머징 후 삭제
-    - 부수 작업(범위 확장): layout HTML class를 파일명 기준 `_` prefix 유지 표기로 정렬 (`layout-cover` → `layout-_cover` 등) — `_doc_design/theme_layout.md` §4.2/§4.3 규정 정렬
+    - `_doc_arch/layout_default.md` → `theme_layout_default.md` §7 "디자인 방향성"·§8 "변경 가이드라인" 머징 후 삭제
+    - 부수 작업(범위 확장): layout HTML class를 파일명 기준 `_` prefix 유지 표기로 정렬 (`layout-cover` → `layout-_cover` 등) — `_doc_arch/theme_layout.md` §4.2/§4.3 규정 정렬
     - `lib/css/base.css`, `theme/default/slide.css`, `lib/html-builder.js`의 selector·생성 클래스명 일괄 갱신
 * 검증:
     - 빌드 검증: `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest` 모두 통과
     - 산출물 HTML에서 `layout-_<name>` 클래스 정상 출력 확인 (8건 이상)
     - 폐기된 번호 prefix layout 6종은 어떤 프로젝트에서도 미참조 (grep 0건)
-    - `layout_default.md` 잔존 참조 0건 (`_doc_design/`·`_doc_work/`·`.claude/`·`Issue.md`)
+    - `layout_default.md` 잔존 참조 0건 (`_doc_arch/`·`_doc_work/`·`.claude/`·`Issue.md`)
 
 ## Issue77. markmap fold 인디케이터 원 크기 30% 축소 (등록: 2026-05-03, 해결: 2026-05-03, commit: a29a0fa) ✅
 * 목적: agenda 페이지 markmap 서브챕터 fold 인디케이터 원이 너무 크게 표시되는 문제 해결
@@ -1786,13 +1786,13 @@
 * 사후 등록: Issue67 시각대(5/3 11:15~11:21) 잔재
 
 ## Issue73. theme/default/layouts/ 번호 prefix layout 6종 신규 추가 (등록: 2026-05-03, 해결: 2026-05-03, commit: da0cc88) ✅
-* 목적: 번호 prefix 컨벤션(`_doc_design/theme_layout.md`) 기반 layout 변형 추가
+* 목적: 번호 prefix 컨벤션(`_doc_arch/theme_layout.md`) 기반 layout 변형 추가
 * 상세:
     - 신규 6건: `2.2.contents-full.html` (전체 높이 contents), `2.3.contents-split.html` (좌/우 split), `4.2.chapter.html`, `6.1.exercise.html`, `6.2.exercise-small.html`, `9.1.closing.html`
     - 5/1 작성됐으나 어떤 이슈에도 포함되지 않은 잔재 → 사후 등록·수습
 
 ## Issue72. CSS `!important` 과도 사용 1차 최적화 (등록: 2026-05-03, 해결: 2026-05-03, commit: 05b7782) ✅
-* 목적: `_doc_design/css.md` SSOT 기반으로 CSS의 `!important` 과도 사용을 정리. **안정성**(specificity로 충분히 우선되는 케이스만 제거) + **수동 용이성**(사용자 override 가능성 회복) + **slide.css 최소화**가 목표
+* 목적: `_doc_arch/css.md` SSOT 기반으로 CSS의 `!important` 과도 사용을 정리. **안정성**(specificity로 충분히 우선되는 케이스만 제거) + **수동 용이성**(사용자 override 가능성 회복) + **slide.css 최소화**가 목표
 * plan: (단순/중간 — plan 파일 미생성, 본 이슈 본문 명세로 충분)
 * 상세:
     - 현황: `lib/css/base.css` 64건 + `theme/default/slide.css` 51건 + `theme/nowage/slide.css` 46건 = **161건** `!important` 사용
@@ -1812,7 +1812,7 @@
 * 비고: 커밋 `05b7782`에는 사용자의 이전 미커밋 작업(`theme/default/slide.css` toc-page 색상·배경 변경)이 함께 포함됨 (사용자 동의 하 일괄 커밋)
 
 ## Issue71. ↑ 키 H1 section anchor 단위 이동 + Home 키 도입 (등록: 2026-05-03, 해결: 2026-05-03, commit: d54eab7) ✅
-* 목적: `_doc_design/key_navigation.md` v1에서 후속 검토로 분리되었던 "본문 → H1 section anchor → Agenda" 4단계 페이지 계층(Single)·5단계(Chapter) 구현. 동시에 Home 키를 도입해 어디서든 1키로 Agenda 진입 가능하게 함
+* 목적: `_doc_arch/key_navigation.md` v1에서 후속 검토로 분리되었던 "본문 → H1 section anchor → Agenda" 4단계 페이지 계층(Single)·5단계(Chapter) 구현. 동시에 Home 키를 도입해 어디서든 1키로 Agenda 진입 가능하게 함
 * plan: (단순/중간 — plan 파일 미생성, 본 이슈 본문 명세로 충분)
 * 상세:
     - 현재 동작: Single 본문에서 ↑ → 즉시 `agenda.html` 직행. H1 section 슬라이드(layout-_toc.autoToc)를 거치지 않음
@@ -1820,7 +1820,7 @@
     - 마크다운 파서(`lib/slide-parser.js:243-269`)는 이미 H1 children이 있는 슬라이드를 `layout: '_toc'` + `autoToc: true`로 자동 분류 중. 따라서 별도 H1 식별 로직 불필요 — layout 클래스만 활용
     - chapter mode `#/toc-placeholder` 슬라이드와 구분: id가 `toc-placeholder`면 chapter 시작 TOC, 그 외 `layout-_toc`면 H1 section anchor
 * 구현 명세:
-    - `_doc_design/key_navigation.md` 매트릭스 갱신 (K4 v1을 H1 anchor 단위로 승격, Chapter 모드도 본문→H1→TOC 단계 추가, Home 키 행 추가)
+    - `_doc_arch/key_navigation.md` 매트릭스 갱신 (K4 v1을 H1 anchor 단위로 승격, Chapter 모드도 본문→H1→TOC 단계 추가, Home 키 행 추가)
     - `lib/html-builder.js` deck `keydown` 핸들러:
         - 본문 슬라이드(layout-_toc 아님)에서 ↑ 시 같은 deck 내 자기보다 앞쪽의 가장 가까운 `layout-_toc`(toc-placeholder 제외) 인덱스 찾아 `Reveal.slide(idx, 0)` — 없으면 기존 폴백(Single agenda / Chapter toc-placeholder / agenda)
         - autoToc 슬라이드(layout-_toc + id≠toc-placeholder)에서 ↑ 시 Single → agenda.html, Chapter → 같은 deck `#/toc-placeholder`(있으면) → 없으면 agenda

@@ -1,7 +1,7 @@
 ---
 name: key_navigation
 description: m2slide 키보드 네비게이션 SSOT — Single/Chapter 모드, 페이지 계층, 9개 키 동작 명세
-date: 2026-05-04
+date: 2026-05-10
 ---
 
 # 목적
@@ -94,18 +94,19 @@ m2slide 빌드 산출물에서 키보드(또는 swipe·click)로 이동하는 �
 
 | 키  | 동작                          | Single                                                                                                                              | Chapter                                          |
 | :-- | :---------------------------- | :---------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------- |
-| ⇤   | 이전 sibling — 트리 탐색      | 같은 deck 내 직전 anchor at `level ≤ N` (N = enclosing anchor level). H2 first sibling이면 부모 H1로 fall-up. 첫 anchor 도달 시 → **agenda.html?back=1** (Issue133 fallback) | **계층 인식 sibling**(Issue136): main에서 ⇤ → 직전 main(중간 sub skip), sub에서 ⇤ → 같은 부모의 직전 sub(첫 sub면 부모 main으로 fall-up). 부재 시 → **agenda.html?back=1**(Issue114). Cover에선 동작 없음 (최상위), Agenda에선 cover_enabled=true 시 Cover 이동 |
-| ⇥   | 다음 sibling — 트리 탐색      | 같은 deck 내 직후 anchor at `level ≤ N`. H2 last sibling이면 부모의 다음 H1 sibling으로 fall-up. 마지막 anchor 도달 시 → **agenda.html?fwd=1** (Issue133 fallback) | **계층 인식 sibling**(Issue136): main에서 ⇥ → 직후 main(중간 sub skip), sub에서 ⇥ → 같은 부모의 직후 sub(마지막 sub면 부모의 다음 main으로 fall-up). 마지막 main(또는 마지막 sub의 부모도 마지막)인 경우 **동작 없음**(K5, Issue114 line 108). Cover에선 **agenda.html?fwd=1** (Issue114 fall-through), Agenda에선 첫 챕터 TOC (Issue114) |
+| ⇤   | 이전 sibling — 트리 탐색      | 같은 deck 내 직전 anchor at `level ≤ N` (N = enclosing anchor level). H2 first sibling이면 부모 H1로 fall-up. 첫 anchor 도달 시 → **agenda.html?back=1** (Issue133 fallback). Cover 슬라이드(Single deck #/0)에선 동작 없음 (최상위) | **계층 인식 sibling**(Issue136): main에서 ⇤ → 직전 main(중간 sub skip), sub에서 ⇤ → 같은 부모의 직전 sub(첫 sub면 부모 main으로 fall-up). 부재 시 → **agenda.html?back=1**(Issue114). Cover에선 동작 없음 (최상위), Agenda에선 cover_enabled=true 시 Cover 이동 |
+| ⇥   | 다음 sibling — 트리 탐색      | 같은 deck 내 직후 anchor at `level ≤ N`. H2 last sibling이면 부모의 다음 H1 sibling으로 fall-up. 마지막 anchor 도달 시 → **동작 없음** (Issue139, Chapter 마지막 main과 대칭). 단 Cover 슬라이드(Single deck #/0)에선 → **agenda.html?fwd=1** (2026-05-10 Cover 부분 복원, Agenda Home → Cover 대칭) | **계층 인식 sibling**(Issue136): main에서 ⇥ → 직후 main(중간 sub skip), sub에서 ⇥ → 같은 부모의 직후 sub(마지막 sub면 부모의 다음 main으로 fall-up). 마지막 main(또는 마지막 sub의 부모도 마지막)인 경우 **동작 없음**(K5, Issue114 line 108). Cover에선 → **agenda.html?fwd=1** (Issue114 fall-through, Issue139 제거 후 2026-05-10 복원), Agenda에선 첫 챕터 TOC (Issue114) |
 | ⇞   | Agenda Page 직행              | 어디서든 `agenda.html`                                                                                                              | 어디서든 `agenda.html`                           |
 | ⇟   | 마지막 페이지 직행            | deck 마지막 슬라이드                                                                                                                | 마지막 챕터의 마지막 본문 슬라이드 (`?last=1`)   |
 
 * ⇤/⇥는 sibling 단위 점프이므로 ↑(parent) 동작과 90도 직교 — Home/End의 "양 끝 이동" 의미 반영
 * **Issue114 boundary fallback (chapter 모드)**: sibling 부재 시 트리 한 단계 위·아래로 fall-through
-    - Cover ⇥ → Agenda (다음 sibling 부재 → child)
+    - Cover ⇥ → Agenda (다음 sibling 부재 → child) — Issue139에서 제거 후 **2026-05-10 복원**(Agenda Home → Cover 대칭)
     - Agenda ⇤ → Cover (sibling 없는 메타 페이지 → parent, cover_enabled=true 한정)
     - Agenda ⇥ → 첫 챕터 TOC (sibling 없는 메타 페이지 → child)
     - 첫 챕터 ⇤ → Agenda (이전 sibling 없음 → parent fallback)
     - Cover ⇤ / 마지막 챕터 ⇥ : 동작 없음 (한쪽 끝)
+* **Single 모드 Cover 슬라이드 ⇥ fall-through (2026-05-10 신규)**: Single 모드는 Chapter와 달리 Cover가 별도 페이지가 아닌 deck `#/0` 슬라이드. 이 Cover 슬라이드에서 ⇥ End는 → `agenda.html?fwd=1`로 fall-through(Chapter Cover 페이지 ⇥ 동작과 동일 정책). Cover 외 Single deck H1/본문 슬라이드의 ⇥ boundary는 Issue139 정책 그대로(다음 sibling 부재 시 동작 없음)
 
 # 구현 매핑
 
@@ -164,7 +165,7 @@ flowchart TD
 | K2   | Chapter TOC slide에서 ←       | 이전 챕터 마지막 슬라이드 (없으면 Agenda 폴백)             |
 | K3   | ↑/↓ 의미                      | 페이지 계층 parent / child 이동 (수직). ↓ from anchor: **첫 자식 sub-anchor (level > 현재) 있으면 그곳, 없으면 직후 슬라이드** — 자식 sub-anchor가 outline 우선 (Issue106). ↓ from leaf 본문: K7 (fall-through) |
 | K4   | ⇤/⇥ 의미                      | 이전/다음 sibling — 트리 탐색 (수평). Single: enclosing anchor 레벨 N 기준 같은 deck 내 prev/next anchor at `level ≤ N` (H1↔H1, H2↔H2, …; 같은 레벨 끝에서 자연 fall-up하여 부모 sibling으로). Chapter (Issue136 갱신): AGENDA.md main(`##`)/sub(`###`) 계층 인식 sibling — main↔main(중간 sub skip), sub↔sub(같은 부모 scope). sub 끝에서 부모의 다음 main으로 자연 fall-up |
-| K5   | 첫/마지막 sibling에서 ⇤·⇥     | Chapter: ⇤는 첫 main에서 → `agenda.html?back=1`(Issue114 parent fallback). ⇥는 마지막 main에서 **동작 없음**(K5 한쪽 끝, Issue114 line 108). Cover ⇤도 최상위로 동작 없음. Single: 양쪽 모두 agenda fallback (⇤ → `agenda.html?back=1`, ⇥ → `agenda.html?fwd=1` — Issue133) |
+| K5   | 첫/마지막 sibling에서 ⇤·⇥     | Chapter: ⇤는 첫 main에서 → `agenda.html?back=1`(Issue114 parent fallback). ⇥는 마지막 main에서 **동작 없음**(K5 한쪽 끝, Issue114 line 108). Cover 페이지에서 ⇤는 최상위로 동작 없음, ⇥는 → `agenda.html?fwd=1`(2026-05-10 복원). Single: ⇤는 첫 anchor에서 → `agenda.html?back=1`(Issue133 유지). ⇥는 마지막 anchor에서 **동작 없음**(Issue139 — Chapter 마지막 main과 대칭). 단 Cover 슬라이드(deck `#/0`)에서 ⇥는 → `agenda.html?fwd=1`(2026-05-10 신규, Chapter Cover ⇥와 동일 정책) |
 | K6   | Cover에서 ↑                   | 동작 없음 (최상위)                                         |
 | K7   | 본문(leaf)에서 ↓              | leaf fall-through: child 부재 시 다음 sibling 가지로 이동. Chapter 모드 → 다음 챕터 첫 슬라이드(TOC slide), Single 모드 → 다음 H1 anchor. 메시지·확인 없이 1회 누름. 다음 sibling 부재(마지막 챕터/마지막 H1 섹션) 시 동작 없음 |
 | K8   | 이전 챕터 ← 진입 위치         | 마지막 본문 슬라이드 (`?last=1`)                           |
@@ -174,6 +175,8 @@ flowchart TD
 
 # 변경 이력
 
+* **2026-05-10 (Cover ⇥ 부분 복원, 사용자 요청)**: Issue139가 제거했던 Cover ⇥ → Agenda fall-through를 **Cover 페이지·슬라이드에 한해** 복원. Agenda Home → Cover의 역방향 이동(⇥/Home 대칭)을 회복하기 위함. Chapter Cover 페이지 + Single deck `#/0` cover 슬라이드 양쪽 모두 ⇥ End/`.`/⌘+→ → `agenda.html?fwd=1`. Cover 외 deck 슬라이드(H1 anchor·본문)의 ⇥ boundary는 Issue139 정책 유지(다음 sibling 부재 시 동작 없음). 구현: `lib/html-builder.js` 일반 deck End 핸들러에 `if (isCoverSlide(cur))` fall-through 추가, Cover 페이지 핸들러는 Issue139 무동작 가지를 fall-through로 교체. 부수 변경: `isAnchorSlide`가 `data-heading-level` dataset 슬라이드도 anchor로 인식하도록 확장(Single 모드 H1 anchor 호환 보강). K5·Issue114 boundary fallback 표 갱신.
+* **2026-05-10 (Issue139)**: Single·Chapter 모든 모드에서 ⇥ End → agenda fallback 일괄 제거. Issue133(Single), Issue114(Cover) 양쪽에서 도입한 fall-through 모두 무효화. K5 정책: ⇥ 마지막 sibling에서 동작 없음(한쪽 끝). 후속(Cover만) 재복원은 위 항목 참조.
 * **2026-05-09 (Issue136)**: Chapter 모드 ⇤/⇥를 계층 인식 sibling 점프로 변경. AGENDA.md의 main(`##`)/sub(`###`) 구분을 인식하여 main↔main(중간 sub skip), sub↔sub(같은 부모 scope) 이동. sub 끝에서 부모의 다음/이전 main으로 자연 fall-up. 직전 동작(`getNextChapter`로 다음 *파일* 직행)은 ↓ leaf-fallthrough·→ 마지막 슬라이드 등 sequential 이동에만 유지. 신규 함수 `agenda.js: getNextSiblingChapter`·`getPrevSiblingChapter`. K4 결정 갱신. ⇤ boundary는 Issue114 첫 챕터 → `agenda.html?back=1` parent fallback 유지, ⇥ boundary는 K5(마지막 main 무동작) 유지 — Single 모드 Issue133과 의도적으로 비대칭(Chapter는 마지막 main이 명확한 종착점)
 * **2026-05-09 (Issue133)**: Single 모드 ⇤/⇥ boundary fallback 추가. 첫 anchor 도달 시 ⇤ → `agenda.html?back=1`, 마지막 anchor 도달 시 ⇥ → `agenda.html?fwd=1`로 fall-through. Chapter 모드 Issue114 boundary fallback과 정책 대칭. K5 결정 갱신: Single은 양쪽 모두 agenda fallback (Chapter는 Cover ⇤ / 마지막 챕터 ⇥는 무동작 유지). 구현: `lib/html-builder.js` Single 분기 Home/End 핸들러에서 `prevAnchorIdx`/`nextAnchorIdx` < 0 시 `window.location.href` 분기 추가
 * **2026-05-04 (Issue106)**: ↓ from anchor (H1/H2/…) 동작 정밀화. 기존 "직후 슬라이드 (본문)" → **자식 sub-anchor 우선** 정책. anchor 슬라이드에서 ↓ 누름 시:

@@ -313,7 +313,7 @@ theme/
         └── ...
 ```
 
-**CSS 우선순위** (낮음 → 높음): CDN(reset/reveal/highlight/open-props) → `lib/css/base.css` (inline) → `theme/{name}/slide.css` (link) → `<body style>` (config 변수). 상세: `_doc_design/css.md`.
+**CSS 우선순위** (낮음 → 높음): CDN(reset/reveal/highlight/open-props) → `lib/css/base.css` (inline) → `theme/{name}/slide.css` (link) → `<body style>` (config 변수). 상세: `_doc_arch/css.md`.
 
 **신규 테마 작성 가이드**:
 * 최소 요구사항: `theme/{name}/slide.css` 생성 (빈 파일도 가능). `base.css`가 cover/contents/chapter/exercise/blank/closing/toc 골격 + `:root` 변수 기본값을 제공.

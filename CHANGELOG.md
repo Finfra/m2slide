@@ -104,7 +104,7 @@ deploy_formats: [epub]               # EPUB만
 
 ### 주요 변화 요약
 
-- **9키 네비게이션 SSOT 정립**: `_doc_design/key_navigation.md` — ←/→/↑/↓ 4방향 + ⇤/⇥/⇞/⇟ 4단축. Single/Chapter 모드 매트릭스 + K1~K11 결정사항
+- **9키 네비게이션 SSOT 정립**: `_doc_arch/key_navigation.md` — ←/→/↑/↓ 4방향 + ⇤/⇥/⇞/⇟ 4단축. Single/Chapter 모드 매트릭스 + K1~K11 결정사항
 - **트리 탐색 의미 도입**: ⇤/⇥는 enclosing anchor 레벨 N 기준 prev/next anchor at `level ≤ N` (H1↔H1, H2↔H2, …). leaf ↓는 fall-through (다음 챕터/다음 H1). anchor ↓는 자식 sub-anchor 우선
 - **Backward 트랜지션 애니메이션**: ← 챕터 이동 시 우측에서 슬라이드 진입(좌측 모션). `?back=1`/`?fwd=1` URL 시그널 + 자체 CSS keyframe
 - **Pandoc fenced div 호환**: `::: columns` / `::: rows` 정상 처리 + 2x2 그리드 균등 분할

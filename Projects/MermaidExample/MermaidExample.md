@@ -1,5 +1,6 @@
 ---
 title: Mermaid Samples
+subtitle: Markdown에 포함된 Mermaid Diagram 
 description: 
 date: Nov 29, 2025
 tags: []

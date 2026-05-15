@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>m2Slide2 : Chapter</title>
+  <title>Chapter Mode Example</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -1221,7 +1221,7 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1778376714658">
+  <link rel="stylesheet" href="css/custom.css?v=1778481110833">
   <style>
     /* 커버 페이지 전용: 컨트롤·슬라이드번호·프로그레스 숨김 */
     .reveal .controls, .reveal .progress, .reveal .slide-number { display: none !important; }
@@ -1239,7 +1239,7 @@ html.ratio-fill .agenda-frame {
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
   </style>
 </head>
-<body class="guide-line-mode" data-nav-indicator="both" style="
+<body data-nav-indicator="both" style="
   --global-font-family: Pretendard, sans-serif;
   --title-font-family: GmarketSansBold;
   --title-font-weight: 50;
@@ -1279,8 +1279,8 @@ html.ratio-fill .agenda-frame {
   <div class="slides">
 <section class="layout-_cover">
   <div class="cover-header">
-    <h1 class="cover-title">m2Slide2 : Chapter</h1>
-    
+    <h1 class="cover-title">Chapter Mode Example</h1>
+    <div class="cover-subtitle">Chapter별로 분리된 여러 파일로 슬라이드 생성.</div>
     
   </div>
 
@@ -1354,14 +1354,14 @@ Reveal.on('ready', function(){
 // Issue87 (2026-05-04 swap): Cover 페이지 키 매핑 (key_navigation.md 매트릭스)
 //   →/↓/Space → agenda.html (Cover의 child = Agenda)
 //   ↑/⇤/← : Cover 최상위·sibling 없음 → 동작 없음
-//   ⇥ End : 다음 sibling 없음 → 동작 없음 (Issue139: Issue114 agenda fall-through 제거)
+//   ⇥ End : agenda.html (Agenda Home → Cover 대칭 fall-through 복원, 사용자 요청 2026-05-10)
 //   ⇞ PgUp → agenda.html (어디서든 직행)
 //   ⇟ PgDown → LAST_CHAPTER?last=1 (chapter) / 동작 없음 (single — cover==index 자체가 deck)
 var COVER_LAST_CHAPTER = '07-m2slide-features.html';
 var COVER_MODE = 'chapter';
 // Issue89: capture phase — Reveal 기본 keymap이 Home/End를 가로채는 것 차단
 document.addEventListener('keydown', function(e) {
-  // Issue92_1: ⌘+→ 는 End fallback(Issue139: 무동작)으로 아래에서 처리, 일반 → 만 child 이동
+  // Issue92_1: ⌘+→ 는 End fallback(agenda fall-through)으로 아래에서 처리, 일반 → 만 child 이동
   if (((e.key === 'ArrowRight' || e.keyCode === 39) && !e.metaKey) ||
       e.key === 'ArrowDown' || e.keyCode === 40 ||
       e.key === ' ' || e.keyCode === 32) {
@@ -1377,12 +1377,11 @@ document.addEventListener('keydown', function(e) {
     }
     return;
   }
-  // Issue139: ⇥ End — Cover에서 동작 없음 (Issue114 agenda fall-through 제거)
-  // Issue92: '.' (Period) fallback / Issue92_1: ⌘+→ fallback 동일 무동작 처리
+  // ⇥ End — Cover → agenda.html (Agenda Home → Cover 대칭, 사용자 요청 2026-05-10)
+  // Issue92: '.' (Period) fallback / Issue92_1: ⌘+→ fallback 동일 처리
   if (e.key === 'End' || e.keyCode === 35 || e.code === 'Period' ||
       (e.metaKey && e.key === 'ArrowRight')) {
-    e.preventDefault(); e.stopImmediatePropagation();
-    return;
+    e.preventDefault(); e.stopImmediatePropagation(); window.location.href = 'agenda.html?fwd=1'; return;
   }
   // ↑(parent)·⇤(이전 sibling)·← : Cover 최상위·sibling 없음 → 동작 없음
   // Issue92: ',' (Comma) Home fallback — Cover Home은 동작 없음 유지
@@ -1396,35 +1395,6 @@ document.addEventListener('keydown', function(e) {
 }, true);
 document.querySelector('.reveal').addEventListener('click', function() { window.location.href = 'agenda.html?fwd=1'; });
 </script>
-<div id="m2-guide-layout-label" style="
-  position: fixed;
-  bottom: 10px;
-  left: 10px;
-  color: #8b00ff;
-  font-size: 12px;
-  font-weight: bold;
-  font-family: monospace;
-  background: rgba(255,255,255,0.85);
-  padding: 3px 10px;
-  border-radius: 4px;
-  border: 4px double #8b00ff;
-  pointer-events: none;
-  z-index: 9999;
-"></div>
-<script>
-(function(){
-  function updateLayoutLabel() {
-    var label = document.getElementById('m2-guide-layout-label');
-    if (!label) return;
-    var cur = Reveal.getCurrentSlide();
-    if (!cur) { label.textContent = ''; return; }
-    var cls = cur.className || '';
-    var m = cls.match(/\blayout-([\w-]+)/);
-    label.textContent = m ? m[1] : '(plain)';
-  }
-  Reveal.on('ready', updateLayoutLabel);
-  Reveal.on('slidechanged', updateLayoutLabel);
-})();
-</script>
+
 </body>
 </html>

@@ -393,6 +393,7 @@ open Projects/LlmAndVibeCoding/slide/01-opening.html
 | `issue-rules`         | m2slide 이슈 관리 규칙 (issue-g 기반)                                      |
 | `md-m2slide-rules`    | m2slide 마크다운 작성 규칙. 글로벌 `md-slide-rules` 기반 + 고유 확장     |
 | `apply-verify-rules`  | 코드·템플릿·CSS·콘텐츠 수정 후 빌드 → HTML 직접 검증 → 브라우저 표시 절차 |
+| `release-date-rules`  | 슬라이드 소스 `.md` 수정 시 frontmatter `release_date`를 오늘 날짜로 자동 갱신 |
 
 **슬라이드 마크다운 작성 시 의무 참조 순서**:
 1. `~/.claude/rules/md-rules.md` (일반 마크다운 기본)

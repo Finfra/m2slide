@@ -158,7 +158,7 @@
 }
 
 .reveal section.layout-_cover .cover-title {
-  font-size: clamp(1.2em, 5vw, 3.4em);
+  font-size: clamp(2.5em, 8vw, 6em);
 }
 
 /* Issue97 (Issue80 §2.1 동기): cover-meta — 우상단 absolute, 박스 없이 작게

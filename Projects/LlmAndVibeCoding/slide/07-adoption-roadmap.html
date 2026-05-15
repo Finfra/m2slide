@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"7","slideOffset":64,"totalSlides":93};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"7","slideOffset":26,"totalSlides":30};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1222,7 +1222,7 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1778374440911">
+  <link rel="stylesheet" href="css/custom.css?v=1778419321667">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1390,7 +1390,7 @@ html.ratio-fill .agenda-frame {
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
   </style>
 </head>
-<body class=" guide-line-mode media-enlarge-fit" data-nav-indicator="both" style="
+<body class="  media-enlarge-fit" data-nav-indicator="both" style="
   --global-font-family: Pretendard, sans-serif;
   --title-font-family: GmarketSansBold;
   --title-font-weight: 50;
@@ -1434,51 +1434,20 @@ html.ratio-fill .agenda-frame {
   <div class="reveal ratio-3-2">
     <div class="slides">
 
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
+      <section id="toc-placeholder" class="layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">7. (참고) 바이브 코딩 도입 로드맵</h1>
   </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="28">
-<li class="chapter-card"><a href="#/2">도입 단계별 가이드</a></li>
-<li class="chapter-card"><a href="#/3">1단계: 평가 및 준비 (1-2주)</a></li>
-<li class="chapter-card"><a href="#/4">1단계: 목표 설정</a></li>
-<li class="chapter-card"><a href="#/5">1단계: 도구 선택</a></li>
-<li class="chapter-card"><a href="#/6">2단계: 시작하기 (2-4주)</a></li>
-<li class="chapter-card"><a href="#/7">2단계: 기본 기능 익히기</a></li>
-<li class="chapter-card"><a href="#/8">2단계: 팀 파일럿 (Week 3-4)</a></li>
-<li class="chapter-card"><a href="#/9">3단계: 숙련도 향상 (1-2개월)</a></li>
-<li class="chapter-card"><a href="#/10">3단계: 고급 기능 (계속)</a></li>
-<li class="chapter-card"><a href="#/11">3단계: 팀 베스트 프랙티스</a></li>
-<li class="chapter-card"><a href="#/12">3단계: Git 커밋 규칙</a></li>
-<li class="chapter-card"><a href="#/13">4단계: 고급 활용 (2-3개월)</a></li>
-<li class="chapter-card"><a href="#/14">4단계: 팀 협업 패턴</a></li>
-<li class="chapter-card"><a href="#/15">4단계: 협업 패턴 (계속)</a></li>
-<li class="chapter-card"><a href="#/16">개인 개발자 도입 전략</a></li>
-<li class="chapter-card"><a href="#/17">소규모 팀 (2-5명) 도입</a></li>
-<li class="chapter-card"><a href="#/18">소규모 팀 (계속)</a></li>
-<li class="chapter-card"><a href="#/19">중형 팀 (6-20명) 도입</a></li>
-<li class="chapter-card"><a href="#/20">중형 팀 (계속)</a></li>
-<li class="chapter-card"><a href="#/21">대규모 조직 (20명+) 도입</a></li>
-<li class="chapter-card"><a href="#/22">대규모 조직 (계속)</a></li>
-<li class="chapter-card"><a href="#/23">주의사항</a></li>
-<li class="chapter-card"><a href="#/24">주의사항 (계속)</a></li>
-<li class="chapter-card"><a href="#/25">권장사항</a></li>
-<li class="chapter-card"><a href="#/26">권장사항 (계속)</a></li>
-<li class="chapter-card"><a href="#/27">성공 체크리스트</a></li>
-<li class="chapter-card"><a href="#/28">성공 체크리스트 (계속)</a></li>
-<li class="chapter-card"><a href="#/29">다음 단계</a></li>
-</ul></div>
-</section>
-
+  <div class="toc-markmap">
+    <svg class="toc-mindmap-svg"></svg>
+  </div>
+      </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. (참고) 바이브 코딩 도입 로드맵</div>
+    
+  </div>
   <h2 class="title">도입 단계별 가이드</h2>
   <div class="contents-body">
 
@@ -1507,6 +1476,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. (참고) 바이브 코딩 도입 로드맵</div>
+    <div class="contents-head-right">1단계: 평가 및 준비 (1-2주)</div>
+  </div>
   <h2 class="title">1단계: 평가 및 준비 (1-2주)</h2>
   <div class="contents-body">
 
@@ -1519,6 +1492,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. (참고) 바이브 코딩 도입 로드맵</div>
+    <div class="contents-head-right">1단계: 목표 설정</div>
+  </div>
   <h2 class="title">1단계: 목표 설정</h2>
   <div class="contents-body">
 
@@ -1539,6 +1516,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. (참고) 바이브 코딩 도입 로드맵</div>
+    <div class="contents-head-right">1단계: 도구 선택</div>
+  </div>
   <h2 class="title">1단계: 도구 선택</h2>
   <div class="contents-body">
 
@@ -1557,6 +1538,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. (참고) 바이브 코딩 도입 로드맵</div>
+    <div class="contents-head-right">2단계: 시작하기 (2-4주)</div>
+  </div>
   <h2 class="title">2단계: 시작하기 (2-4주)</h2>
   <div class="contents-body">
 
@@ -1570,6 +1555,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. (참고) 바이브 코딩 도입 로드맵</div>
+    <div class="contents-head-right">2단계: 기본 기능 익히기</div>
+  </div>
   <h2 class="title">2단계: 기본 기능 익히기</h2>
   <div class="contents-body">
 
@@ -1587,6 +1576,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. (참고) 바이브 코딩 도입 로드맵</div>
+    <div class="contents-head-right">2단계: 팀 파일럿 (Week 3-4)</div>
+  </div>
   <h2 class="title">2단계: 팀 파일럿 (Week 3-4)</h2>
   <div class="contents-body">
 
@@ -1606,6 +1599,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. (참고) 바이브 코딩 도입 로드맵</div>
+    <div class="contents-head-right">3단계: 숙련도 향상 (1-2개월)</div>
+  </div>
   <h2 class="title">3단계: 숙련도 향상 (1-2개월)</h2>
   <div class="contents-body">
 
@@ -1618,6 +1615,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. (참고) 바이브 코딩 도입 로드맵</div>
+    <div class="contents-head-right">3단계: 고급 기능 (계속)</div>
+  </div>
   <h2 class="title">3단계: 고급 기능 (계속)</h2>
   <div class="contents-body">
 
@@ -1630,6 +1631,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. (참고) 바이브 코딩 도입 로드맵</div>
+    <div class="contents-head-right">3단계: 팀 베스트 프랙티스</div>
+  </div>
   <h2 class="title">3단계: 팀 베스트 프랙티스</h2>
   <div class="contents-body">
 
@@ -1651,6 +1656,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 즉시 커밋</div>
+    <div class="contents-head-right">3단계: Git 커밋 규칙</div>
+  </div>
   <h2 class="title">3단계: Git 커밋 규칙</h2>
   <div class="contents-body">
 
@@ -1663,6 +1672,10 @@ git commit -m "AI: 사용자 인증 기능 추가"
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 즉시 커밋</div>
+    <div class="contents-head-right">4단계: 고급 활용 (2-3개월)</div>
+  </div>
   <h2 class="title">4단계: 고급 활용 (2-3개월)</h2>
   <div class="contents-body">
 
@@ -1688,6 +1701,10 @@ jobs:
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 즉시 커밋</div>
+    <div class="contents-head-right">4단계: 팀 협업 패턴</div>
+  </div>
   <h2 class="title">4단계: 팀 협업 패턴</h2>
   <div class="contents-body">
 
@@ -1711,6 +1728,10 @@ graph TB
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 즉시 커밋</div>
+    <div class="contents-head-right">4단계: 협업 패턴 (계속)</div>
+  </div>
   <h2 class="title">4단계: 협업 패턴 (계속)</h2>
   <div class="contents-body">
 
@@ -1730,6 +1751,10 @@ graph LR
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 즉시 커밋</div>
+    
+  </div>
   <h2 class="title">개인 개발자 도입 전략</h2>
   <div class="contents-body">
 
@@ -1754,6 +1779,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 즉시 커밋</div>
+    
+  </div>
   <h2 class="title">소규모 팀 (2-5명) 도입</h2>
   <div class="contents-body">
 
@@ -1771,6 +1800,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 즉시 커밋</div>
+    
+  </div>
   <h2 class="title">소규모 팀 (계속)</h2>
   <div class="contents-body">
 
@@ -1785,6 +1818,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 즉시 커밋</div>
+    
+  </div>
   <h2 class="title">중형 팀 (6-20명) 도입</h2>
   <div class="contents-body">
 
@@ -1802,6 +1839,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 즉시 커밋</div>
+    
+  </div>
   <h2 class="title">중형 팀 (계속)</h2>
   <div class="contents-body">
 
@@ -1822,6 +1863,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 즉시 커밋</div>
+    
+  </div>
   <h2 class="title">대규모 조직 (20명+) 도입</h2>
   <div class="contents-body">
 
@@ -1841,6 +1886,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 즉시 커밋</div>
+    
+  </div>
   <h2 class="title">대규모 조직 (계속)</h2>
   <div class="contents-body">
 
@@ -1859,6 +1908,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 즉시 커밋</div>
+    
+  </div>
   <h2 class="title">주의사항</h2>
   <div class="contents-body">
 
@@ -1880,6 +1933,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 즉시 커밋</div>
+    
+  </div>
   <h2 class="title">주의사항 (계속)</h2>
   <div class="contents-body">
 
@@ -1899,6 +1956,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 즉시 커밋</div>
+    
+  </div>
   <h2 class="title">권장사항</h2>
   <div class="contents-body">
 
@@ -1918,6 +1979,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 즉시 커밋</div>
+    
+  </div>
   <h2 class="title">권장사항 (계속)</h2>
   <div class="contents-body">
 
@@ -1937,6 +2002,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 즉시 커밋</div>
+    
+  </div>
   <h2 class="title">성공 체크리스트</h2>
   <div class="contents-body">
 
@@ -1958,6 +2027,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 즉시 커밋</div>
+    
+  </div>
   <h2 class="title">성공 체크리스트 (계속)</h2>
   <div class="contents-body">
 
@@ -1971,6 +2044,10 @@ timeline
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">AI 작업 후 즉시 커밋</div>
+    
+  </div>
   <h2 class="title">다음 단계</h2>
   <div class="contents-body">
 
@@ -2136,7 +2213,7 @@ timeline
 
 
     // Inject configuration
-    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":[]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
+    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"head_left":"d1","head_right":"now","head_breadcum":true,"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":[]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
 
     // Dynamic Styling and Resizing Script
     let observer; // Define observer at top level
@@ -2254,118 +2331,118 @@ timeline
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">7. (참고) 바이브 코딩 도입 로드맵</a>",
+                  "content": "<a href=\"#/2\">7. (참고) 바이브 코딩 도입 로드맵</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/2\">도입 단계별 가이드</a>",
+                              "content": "<a href=\"#/3\">도입 단계별 가이드</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/3\">1단계: 평가 및 준비 (1-2주)</a>",
+                              "content": "<a href=\"#/4\">1단계: 평가 및 준비 (1-2주)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/4\">1단계: 목표 설정</a>",
+                              "content": "<a href=\"#/5\">1단계: 목표 설정</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/5\">1단계: 도구 선택</a>",
+                              "content": "<a href=\"#/6\">1단계: 도구 선택</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/6\">2단계: 시작하기 (2-4주)</a>",
+                              "content": "<a href=\"#/7\">2단계: 시작하기 (2-4주)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/7\">2단계: 기본 기능 익히기</a>",
+                              "content": "<a href=\"#/8\">2단계: 기본 기능 익히기</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/8\">2단계: 팀 파일럿 (Week 3-4)</a>",
+                              "content": "<a href=\"#/9\">2단계: 팀 파일럿 (Week 3-4)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/9\">3단계: 숙련도 향상 (1-2개월)</a>",
+                              "content": "<a href=\"#/10\">3단계: 숙련도 향상 (1-2개월)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/10\">3단계: 고급 기능 (계속)</a>",
+                              "content": "<a href=\"#/11\">3단계: 고급 기능 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/11\">3단계: 팀 베스트 프랙티스</a>",
+                              "content": "<a href=\"#/12\">3단계: 팀 베스트 프랙티스</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/12\">3단계: Git 커밋 규칙</a>",
+                              "content": "<a href=\"#/13\">3단계: Git 커밋 규칙</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/13\">4단계: 고급 활용 (2-3개월)</a>",
+                              "content": "<a href=\"#/14\">4단계: 고급 활용 (2-3개월)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/14\">4단계: 팀 협업 패턴</a>",
+                              "content": "<a href=\"#/15\">4단계: 팀 협업 패턴</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/15\">4단계: 협업 패턴 (계속)</a>",
+                              "content": "<a href=\"#/16\">4단계: 협업 패턴 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/16\">개인 개발자 도입 전략</a>",
+                              "content": "<a href=\"#/17\">개인 개발자 도입 전략</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/17\">소규모 팀 (2-5명) 도입</a>",
+                              "content": "<a href=\"#/18\">소규모 팀 (2-5명) 도입</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/18\">소규모 팀 (계속)</a>",
+                              "content": "<a href=\"#/19\">소규모 팀 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/19\">중형 팀 (6-20명) 도입</a>",
+                              "content": "<a href=\"#/20\">중형 팀 (6-20명) 도입</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/20\">중형 팀 (계속)</a>",
+                              "content": "<a href=\"#/21\">중형 팀 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/21\">대규모 조직 (20명+) 도입</a>",
+                              "content": "<a href=\"#/22\">대규모 조직 (20명+) 도입</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/22\">대규모 조직 (계속)</a>",
+                              "content": "<a href=\"#/23\">대규모 조직 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/23\">주의사항</a>",
+                              "content": "<a href=\"#/24\">주의사항</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/24\">주의사항 (계속)</a>",
+                              "content": "<a href=\"#/25\">주의사항 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/25\">권장사항</a>",
+                              "content": "<a href=\"#/26\">권장사항</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/26\">권장사항 (계속)</a>",
+                              "content": "<a href=\"#/27\">권장사항 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/27\">성공 체크리스트</a>",
+                              "content": "<a href=\"#/28\">성공 체크리스트</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/28\">성공 체크리스트 (계속)</a>",
+                              "content": "<a href=\"#/29\">성공 체크리스트 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/29\">다음 단계</a>",
+                              "content": "<a href=\"#/30\">다음 단계</a>",
                               "children": []
                         }
                   ]
@@ -2643,10 +2720,13 @@ timeline
     // Issue71: section anchor — layout-_toc 또는 layout-_cards class를 가진 슬라이드 (H1·H2 sub-section autoToc 모두 포함)
     // Issue137: toc-placeholder id를 가진 슬라이드도 anchor 자격 보유.
     // Issue138: Cards Page(layout-_cards)가 새 anchor 클래스. 기존 layout-_toc는 호환성 유지(#layout-_toc 명시 케이스).
+    // 2026-05-10: Single 모드 H1 슬라이드(autoToc 미변환, layout-_contents)도 data-heading-level 속성으로 anchor 자격 부여.
     function isAnchorSlide(slide) {
       if (!slide) return false;
       if (!slide.classList) return false;
-      return slide.classList.contains('layout-_cards') || slide.classList.contains('layout-_toc');
+      if (slide.classList.contains('layout-_cards') || slide.classList.contains('layout-_toc')) return true;
+      if (slide.dataset && slide.dataset.headingLevel) return true;
+      return false;
     }
     // Issue92: H1 레벨 anchor만 sibling 점프(Home/End) 및 본문 ↑ 부모 lookup 대상
     // (H2 sub-section autoToc는 isAnchorSlide==true이지만 isH1Anchor==false → sibling/parent 후보에서 제외)
@@ -3039,6 +3119,9 @@ timeline
       // Issue92: '.' (Period) 를 fallback 으로 매핑 — Home/End 동일 사유
       // Issue92_1: ⌘+→ 도 End fallback — Keyboard Maestro 등이 End → ⌘ArrowRight 변환 시 호환
       if (event.key === 'End' || event.keyCode === 35 || event.code === 'Period' || (event.metaKey && event.key === 'ArrowRight')) {
+        // 2026-05-10: cover 슬라이드 End → agenda.html?fwd=1 (Single 모드 deck #/0 cover 슬라이드 + Chapter 모드 cover 슬라이드 양쪽 대칭)
+        // agenda Home → cover(index.html?back=1) 역방향 이동과 짝 (사용자 요청)
+        if (isCoverSlide(cur)) { stop(); window.location.href = 'agenda.html?fwd=1'; return; }
         if (M2SLIDE_MODE === 'chapter') {
           stop();
           // Issue136: NEXT_CHAPTER(파일 순서, ↓·→ 그대로 사용) → NEXT_SIBLING_CHAPTER(main↔main, sub↔sub)
@@ -3049,13 +3132,12 @@ timeline
           return;
         }
         // Issue105: Single — 트리 탐색 sibling. enclosing anchor 레벨 N 기준 직후 anchor at level ≤ N
-        // Issue133: sibling 부재 시 agenda.html?fwd=1 fallback (Chapter Issue114 대칭)
+        // Issue139: sibling 부재 시 무동작 (Issue133 agenda fallback 제거 — Chapter 마지막 main End 무동작과 대칭)
         var curHForEnd = Reveal.getIndices().h;
         var encLevelEnd = getEnclosingAnchorLevel(curHForEnd);
         var nextAnchorIdx = findNextSiblingAnchorIndex(curHForEnd, encLevelEnd);
         stop();
         if (nextAnchorIdx >= 0) Reveal.slide(nextAnchorIdx, 0);
-        else window.location.href = 'agenda.html?fwd=1';
         return;
       }
 
@@ -3154,35 +3236,6 @@ timeline
       });
     })();
   </script>
-  <div id="m2-guide-layout-label" style="
-    position: fixed;
-    bottom: 10px;
-    left: 10px;
-    color: #8b00ff;
-    font-size: 12px;
-    font-weight: bold;
-    font-family: monospace;
-    background: rgba(255,255,255,0.85);
-    padding: 3px 10px;
-    border-radius: 4px;
-    border: 4px double #8b00ff;
-    pointer-events: none;
-    z-index: 9999;
-  "></div>
-  <script>
-  (function(){
-    function updateLayoutLabel() {
-      var label = document.getElementById('m2-guide-layout-label');
-      if (!label) return;
-      var cur = Reveal.getCurrentSlide();
-      if (!cur) { label.textContent = ''; return; }
-      var cls = cur.className || '';
-      var m = cls.match(/\blayout-([\w-]+)/);
-      label.textContent = m ? m[1] : '(plain)';
-    }
-    Reveal.on('ready', updateLayoutLabel);
-    Reveal.on('slidechanged', updateLayoutLabel);
-  })();
-  </script>
+
 </body>
 </html>

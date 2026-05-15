@@ -302,6 +302,10 @@
   padding: 0;
   font-family: inherit;
   font-size: inherit;
+  /* 긴 줄 자동 줄바꿈 — 가로 스크롤 대신 wrap. 줄바꿈 문자는 보존(pre-wrap). */
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .reveal section[class*="layout-"] .contents-body > .media-container {
@@ -342,7 +346,7 @@
 }
 
 .reveal section.layout-_cover .cover-title {
-  font-size: clamp(1.2em, 5vw, 3.4em);
+  font-size: clamp(2.5em, 8vw, 6em);
 }
 
 /* Issue80 §2.1: cover-meta 박스 스타일 제거 — version·lecture_date를 우상단 absolute로 (§6에서 position·박스 제거 정의) */

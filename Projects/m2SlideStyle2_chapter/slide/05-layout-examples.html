@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"5","slideOffset":13,"totalSlides":21};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"5","slideOffset":8,"totalSlides":14};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1222,7 +1222,7 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1778376714655">
+  <link rel="stylesheet" href="css/custom.css?v=1778481110829">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1390,7 +1390,7 @@ html.ratio-fill .agenda-frame {
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
   </style>
 </head>
-<body class=" guide-line-mode media-enlarge-fit" data-nav-indicator="both" style="
+<body class="  media-enlarge-fit" data-nav-indicator="both" style="
   --global-font-family: Pretendard, sans-serif;
   --title-font-family: GmarketSansBold;
   --title-font-weight: 50;
@@ -1434,30 +1434,20 @@ html.ratio-fill .agenda-frame {
   <div class="reveal ratio-3-2">
     <div class="slides">
 
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
+      <section id="toc-placeholder" class="layout-_toc title-slide">
   <header class="toc-page-header">
     <h1 class="toc-page-title">5. 레이아웃 예제 (DIV 활용)</h1>
   </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="7">
-<li class="chapter-card"><a href="#/2">2분할 레이아웃 - 1단계</a></li>
-<li class="chapter-card"><a href="#/3">2분할 레이아웃 - 1단계 [좌이미지]</a></li>
-<li class="chapter-card"><a href="#/4">2분할 레이아웃 - 2단계</a></li>
-<li class="chapter-card"><a href="#/5">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div</a></li>
-<li class="chapter-card"><a href="#/6">3분할 레이아웃 (카드 형태) - Pandoc 펜스 div</a></li>
-<li class="chapter-card"><a href="#/7">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev</a></li>
-<li class="chapter-card"><a href="#/8">3분할 레이아웃 (카드 형태) - div</a></li>
-</ul></div>
-</section>
-
+  <div class="toc-markmap">
+    <svg class="toc-mindmap-svg"></svg>
+  </div>
+      </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
+    <div class="contents-head-right">2분할 레이아웃 - 1단계</div>
+  </div>
   <h2 class="title">2분할 레이아웃 - 1단계</h2>
   <div class="contents-body">
 <div class="m2-cols">
@@ -1474,6 +1464,10 @@ html.ratio-fill .agenda-frame {
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
+    <div class="contents-head-right">2분할 레이아웃 - 1단계 [좌이미지]</div>
+  </div>
   <h2 class="title">2분할 레이아웃 - 1단계 [좌이미지]</h2>
   <div class="contents-body">
 
@@ -1491,6 +1485,10 @@ html.ratio-fill .agenda-frame {
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
+    <div class="contents-head-right">2분할 레이아웃 - 2단계</div>
+  </div>
   <h2 class="title">2분할 레이아웃 - 2단계</h2>
   <div class="contents-body">
 <div class="m2-cols">
@@ -1506,6 +1504,10 @@ html.ratio-fill .agenda-frame {
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
+    <div class="contents-head-right">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div</div>
+  </div>
   <h2 class="title">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div</h2>
   <div class="contents-body">
 
@@ -1528,6 +1530,10 @@ html.ratio-fill .agenda-frame {
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
+    <div class="contents-head-right">3분할 레이아웃 (카드 형태) - Pandoc 펜스 div</div>
+  </div>
   <h2 class="title">3분할 레이아웃 (카드 형태) - Pandoc 펜스 div</h2>
   <div class="contents-body">
 
@@ -1553,6 +1559,10 @@ html.ratio-fill .agenda-frame {
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
+    <div class="contents-head-right">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev</div>
+  </div>
   <h2 class="title">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev</h2>
   <div class="contents-body">
 
@@ -1572,6 +1582,10 @@ html.ratio-fill .agenda-frame {
 </section>
 
 <section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
+    <div class="contents-head-right">3분할 레이아웃 (카드 형태) - div</div>
+  </div>
   <h2 class="title">3분할 레이아웃 (카드 형태) - div</h2>
   <div class="contents-body">
 
@@ -1744,7 +1758,7 @@ html.ratio-fill .agenda-frame {
 
 
     // Inject configuration
-    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":[]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
+    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"head_left":"d1","head_right":"now","head_breadcum":true,"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":[]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
 
     // Dynamic Styling and Resizing Script
     let observer; // Define observer at top level
@@ -1862,34 +1876,34 @@ html.ratio-fill .agenda-frame {
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">5. 레이아웃 예제 (DIV 활용)</a>",
+                  "content": "<a href=\"#/2\">5. 레이아웃 예제 (DIV 활용)</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/2\">2분할 레이아웃 - 1단계</a>",
+                              "content": "<a href=\"#/3\">2분할 레이아웃 - 1단계</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/3\">2분할 레이아웃 - 1단계 [좌이미지]</a>",
+                              "content": "<a href=\"#/4\">2분할 레이아웃 - 1단계 [좌이미지]</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/4\">2분할 레이아웃 - 2단계</a>",
+                              "content": "<a href=\"#/5\">2분할 레이아웃 - 2단계</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/5\">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div</a>",
+                              "content": "<a href=\"#/6\">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/6\">3분할 레이아웃 (카드 형태) - Pandoc 펜스 div</a>",
+                              "content": "<a href=\"#/7\">3분할 레이아웃 (카드 형태) - Pandoc 펜스 div</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/7\">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev</a>",
+                              "content": "<a href=\"#/8\">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/8\">3분할 레이아웃 (카드 형태) - div</a>",
+                              "content": "<a href=\"#/9\">3분할 레이아웃 (카드 형태) - div</a>",
                               "children": []
                         }
                   ]
@@ -2167,10 +2181,13 @@ html.ratio-fill .agenda-frame {
     // Issue71: section anchor — layout-_toc 또는 layout-_cards class를 가진 슬라이드 (H1·H2 sub-section autoToc 모두 포함)
     // Issue137: toc-placeholder id를 가진 슬라이드도 anchor 자격 보유.
     // Issue138: Cards Page(layout-_cards)가 새 anchor 클래스. 기존 layout-_toc는 호환성 유지(#layout-_toc 명시 케이스).
+    // 2026-05-10: Single 모드 H1 슬라이드(autoToc 미변환, layout-_contents)도 data-heading-level 속성으로 anchor 자격 부여.
     function isAnchorSlide(slide) {
       if (!slide) return false;
       if (!slide.classList) return false;
-      return slide.classList.contains('layout-_cards') || slide.classList.contains('layout-_toc');
+      if (slide.classList.contains('layout-_cards') || slide.classList.contains('layout-_toc')) return true;
+      if (slide.dataset && slide.dataset.headingLevel) return true;
+      return false;
     }
     // Issue92: H1 레벨 anchor만 sibling 점프(Home/End) 및 본문 ↑ 부모 lookup 대상
     // (H2 sub-section autoToc는 isAnchorSlide==true이지만 isH1Anchor==false → sibling/parent 후보에서 제외)
@@ -2563,6 +2580,9 @@ html.ratio-fill .agenda-frame {
       // Issue92: '.' (Period) 를 fallback 으로 매핑 — Home/End 동일 사유
       // Issue92_1: ⌘+→ 도 End fallback — Keyboard Maestro 등이 End → ⌘ArrowRight 변환 시 호환
       if (event.key === 'End' || event.keyCode === 35 || event.code === 'Period' || (event.metaKey && event.key === 'ArrowRight')) {
+        // 2026-05-10: cover 슬라이드 End → agenda.html?fwd=1 (Single 모드 deck #/0 cover 슬라이드 + Chapter 모드 cover 슬라이드 양쪽 대칭)
+        // agenda Home → cover(index.html?back=1) 역방향 이동과 짝 (사용자 요청)
+        if (isCoverSlide(cur)) { stop(); window.location.href = 'agenda.html?fwd=1'; return; }
         if (M2SLIDE_MODE === 'chapter') {
           stop();
           // Issue136: NEXT_CHAPTER(파일 순서, ↓·→ 그대로 사용) → NEXT_SIBLING_CHAPTER(main↔main, sub↔sub)
@@ -2677,35 +2697,6 @@ html.ratio-fill .agenda-frame {
       });
     })();
   </script>
-  <div id="m2-guide-layout-label" style="
-    position: fixed;
-    bottom: 10px;
-    left: 10px;
-    color: #8b00ff;
-    font-size: 12px;
-    font-weight: bold;
-    font-family: monospace;
-    background: rgba(255,255,255,0.85);
-    padding: 3px 10px;
-    border-radius: 4px;
-    border: 4px double #8b00ff;
-    pointer-events: none;
-    z-index: 9999;
-  "></div>
-  <script>
-  (function(){
-    function updateLayoutLabel() {
-      var label = document.getElementById('m2-guide-layout-label');
-      if (!label) return;
-      var cur = Reveal.getCurrentSlide();
-      if (!cur) { label.textContent = ''; return; }
-      var cls = cur.className || '';
-      var m = cls.match(/\blayout-([\w-]+)/);
-      label.textContent = m ? m[1] : '(plain)';
-    }
-    Reveal.on('ready', updateLayoutLabel);
-    Reveal.on('slidechanged', updateLayoutLabel);
-  })();
-  </script>
+
 </body>
 </html>

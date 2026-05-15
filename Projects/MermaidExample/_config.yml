@@ -17,11 +17,11 @@ nav_indicator: both                 # both (default), diamond, page
 
 deploy_formats: [epub]              # /deploy-docs 시 함께 빌드·배포할 형식 ([epub, pdf, pptx])
 
-# Kroki 다이어그램 렌더링 서버 (self-hosted Docker)
-#   docker compose: /tmp/kroki/docker-compose.yml (yuzutech/kroki + kroki-blockdiag)
-#   기동: cd /tmp/kroki && docker compose up -d
-#   미기동 시 외부 https://kroki.io fallback. 빌드 시 SVG는 slide/kroki/에 영구 캐시됨.
-kroki_server: http://localhost:8000
+# Kroki 다이어그램 렌더링 서버 (공식 외부 서버 사용)
+#   빌드 시 SVG는 slide/kroki/에 영구 캐시됨 — 캐시 hit 시 외부 호출 0.
+#   self-hosted Docker로 전환 시: kroki_server: http://localhost:8000
+#     (docker compose 셋업 필요 — yuzutech/kroki + kroki-blockdiag)
+kroki_server: https://kroki.io
 
 style:
   theContents:
