@@ -1,3 +1,29 @@
+<!-- @meta
+description: 강의용 2분할 layout. 좌·우 컬럼에 이미지+텍스트 또는 비교 콘텐츠 배치.
+recommended_for:
+  - 이미지 + 설명 텍스트 슬라이드
+  - 비교·대조 슬라이드
+  - 코드 + 결과 슬라이드
+not_recommended_for:
+  - 단일 콘텐츠 슬라이드
+  - 풀스크린 이미지
+slots:
+  - title
+  - left
+  - right
+example: |
+  ## 모듈 분리 비교
+
+  ::: left
+  Before
+  ![이전](./img/before.png)
+  :::
+
+  ::: right
+  After
+  ![이후](./img/after.png)
+  :::
+-->
 <section class="layout-split-image-text">
   <div class="split-header">
     <h1 class="split-title">{{title}}</h1>

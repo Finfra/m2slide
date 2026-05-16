@@ -1,3 +1,21 @@
+<!-- @meta
+description: 제목 없이 본문만 표시하는 layout. 코드·인용·연속 슬라이드의 후속 페이지에 적합.
+recommended_for:
+  - 코드 블록 풀스크린 슬라이드
+  - 긴 인용·발췌
+  - 제목 생략 본문 (앞 슬라이드 제목 유지 컨텍스트)
+not_recommended_for:
+  - 신규 섹션 시작 슬라이드
+  - 제목 강조가 필요한 본문
+slots:
+  - content
+example: |
+  ```js
+  function helloWorld() {
+    return 'hello';
+  }
+  ```
+-->
 <section class="layout-_contents_no_title">
   <div class="contents-body">{{content}}</div>
 </section>

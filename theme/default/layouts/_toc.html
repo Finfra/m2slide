@@ -1,3 +1,17 @@
+<!-- @meta
+description: Map Slide 전용 layout. markmap 마인드맵 시각화로 챕터 구조를 표시. 시스템 layout이며 사용자 슬라이드가 직접 지정하지 않음.
+recommended_for:
+  - 챕터 모드 첫 슬라이드 자동 적용 (시스템)
+  - 자동 생성 목차 마인드맵
+not_recommended_for:
+  - 사용자 본문 슬라이드 (수동 지정 불가)
+  - Cards Page용 (`_cards` 별도)
+slots:
+  - title
+  - markmap
+example: |
+  (시스템 자동 적용 — 사용자가 #layout-_toc 직접 작성 금지)
+-->
 <!--
   Issue138: Map Slide 전용 layout — markmap svg 영역만 보유.
   Cards Page는 `_cards.html`로 분리(Issue138 신규). _toc.html은 markmap 시각화 전담.

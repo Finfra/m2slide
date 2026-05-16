@@ -1,3 +1,25 @@
+<!-- @meta
+description: 일반 본문 슬라이드. H2 제목 + 리스트·단락 본문. head-bar(좌/우)와 divider를 포함한 기본 layout.
+recommended_for:
+  - 일반 본문 슬라이드
+  - 리스트가 있는 슬라이드
+  - 텍스트 단락 슬라이드
+  - 챕터 outline 표시가 필요한 슬라이드
+not_recommended_for:
+  - 표지·섹션 표지 (cover 사용)
+  - 제목 없는 풀스크린 이미지 (blank 사용)
+slots:
+  - title
+  - content
+  - head_left
+  - head_right
+example: |
+  ## 모듈 분리 전략
+
+  * 진입점 분리
+  * 책임별 파일 그룹화
+  * 공통 유틸 추출
+-->
 <section class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">{{head_left}}</div>

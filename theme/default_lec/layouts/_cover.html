@@ -1,3 +1,28 @@
+<!-- @meta
+description: 강의용 표지 layout. 제목 + 부제 + 강사 + 강의일·버전 + QR. cover_enabled=true 시 자동 주입.
+recommended_for:
+  - 강의 첫 슬라이드 (표지)
+  - 챕터 시작 표지
+  - 발표자·강의일 메타 표시
+not_recommended_for:
+  - 본문 콘텐츠 슬라이드
+slots:
+  - title
+  - subtitle
+  - part_subtitle
+  - instructor_name
+  - instructor_contact
+  - lecture_date
+  - version
+  - qr_code_path
+  - qr_url
+example: |
+  ## 강의 제목
+
+  ::: subtitle
+  부제목
+  :::
+-->
 <section class="layout-cover">
   <div class="cover-header">
     <h1 class="cover-title">{{title}}</h1>

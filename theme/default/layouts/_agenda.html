@@ -1,3 +1,17 @@
+<!-- @meta
+description: 챕터 모드 메인 index.html에 표시되는 전체 강의 목차 layout. markmap + 다운로드 버튼 영역. 시스템 layout이며 사용자 슬라이드 지정 불가.
+recommended_for:
+  - 챕터 모드 index.html 자동 적용 (시스템)
+  - EPUB·PDF·PPTX 다운로드 버튼 노출
+not_recommended_for:
+  - 일반 슬라이드 (사용자 수동 지정 금지)
+slots:
+  - title
+  - markmap
+  - downloadButtons
+example: |
+  (시스템 자동 적용 — chapter 모드 index 페이지 전용)
+-->
 <div class="layout-_agenda">
   <header class="toc-page-header">
     <h1 class="toc-page-title">{{title}}</h1>

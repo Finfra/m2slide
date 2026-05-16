@@ -2,9 +2,16 @@
 # Usage:
 #   ./run.sh [ProjectName]            # 빌드 후 Chrome으로 열기 (default: m2SlideStyle1_single)
 #   ./run.sh --lint-config            # 모든 Projects/*/_config.yml의 theme_default_layout 값 검증
+#   ./run.sh --lint-layouts           # 모든 theme/*/layouts/*.html @meta frontmatter 검증
 
 export m2slide_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$m2slide_path" || exit 1
+
+# --lint-layouts: 모든 theme HTML layout 파일의 @meta frontmatter 검증 (Issue154)
+if [ "${1:-}" = "--lint-layouts" ]; then
+    node lib/lint-layouts.js
+    exit $?
+fi
 
 # --lint-config: 모든 프로젝트의 theme_default_layout 값을 스캔하여 미존재 layout 검출
 if [ "${1:-}" = "--lint-config" ]; then

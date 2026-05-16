@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 153
+* Issue HWM: 156
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -24,9 +24,60 @@
 
 # 🚧 진행중
 
+## Issue154. theme HTML layout 파일에 description frontmatter 주입 (등록: 2026-05-17, 진행: 2026-05-17)
+* 목적: `theme/{default,default_lec}/layouts/*.html` 각 layout에 표준화된 메타(description, recommended_for, slots, example)를 HTML 주석 `<!-- @meta ... -->` 형식으로 주입. 후속 Issue155 layout-selector LLM agent의 layout discovery 입력 품질 보장 선행 작업.
+* plan: `_doc_work/plan/layout-description-frontmatter_plan.md`
+* task: `_doc_work/tasks/layout-description-frontmatter_task.md`
+* 카테고리: Theme
+* 진행: Task 1 (메타 스키마 + 설계 문서 갱신) 진행 중
+
 # 📕 중요
 
 # 📙 일반
+
+## Issue155. m2slide layout-selector LLM agent 구현 (단계 6) (등록: 2026-05-17)
+* 목적: `_doc_arch/authoring-pipeline.md` 단계 6 (layout selector)를 LLM agent로 구현. 슬라이드 소스 `.md` → `.ppt.md` 파생본 변환, 각 슬라이드에 `#layout-*` 메타 주입. PowerPoint Designer 추천 능력을 markdown SSOT + reveal.js 출력에 이식.
+* plan: `_doc_work/plan/layout-selector-agent_plan.md`
+* task: `_doc_work/tasks/layout-selector-agent_task.md`
+* depends: Issue154
+* 카테고리: Generator (agent)
+* 상세:
+    - `.claude/agents/layout-selector.md` 신규 — sonnet model, 5개 system prompt 섹션
+    - `lib/layout-selector-applier.js` + 단위 테스트 (JSON → .ppt.md 변환, 사용자 수동 메타 보존)
+    - 3개 대표 프로젝트(`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `LayoutTest`) 단독 검증
+    - 수동 rubric 평가 80%+ 달성 (정확/수용/오류 3등급)
+    - 재현성 회귀 fixture (snapshot 70%+ 매칭, sonnet temp 0)
+    - 비용 측정 (~$0.002/슬라이드 예상)
+    - `_doc_arch/authoring-pipeline.md` 단계 6 운영 상태 갱신
+* 구현 명세:
+    - 우선순위 규약: 사용자 수동 `#layout-*` > agent 명시 > 자동 감지(Issue27_1·27_2) > `theme_default_layout`
+    - 출력: 슬라이드 첫 비공백 줄에 `#layout-{name}` 주입 (Issue117_1 디렉티브 영역 규약)
+    - 재실행 플래그: 기본(수동 보존) / `--force`(전체 재추천) / `--skip`(CI용)
+    - 출력 형식: JSON `{"slides":[{"index":N,"layout":"_x","reason":"..."}]}` (LLM hallucination 방어: theme/layouts/에 없는 layout명은 stderr 경고 + skip)
+* Out of scope (별 design): 단계 7 slot designer 통합, Issue117 디렉티브 추천, `m2slide.sh --auto-layout` 통합, 챕터 간 일관성 검증
+* 영향: authoring-pipeline 단계 6 todo → 운영 전환
+
+## Issue156. new-project SCAR 업데이트 + authoring-pipeline 오케스트레이션 agent 추가 (등록: 2026-05-17)
+* 목적: `_doc_arch/authoring-pipeline.md` 단계 1~9 전체 프로세스를 자동으로 이어 진행하는 orchestrator agent 신규 + 글로벌 `/new-project` SCAR가 m2slide 타입 프로젝트 초기화 시 본 agent를 연결하도록 업데이트. Issue155로 단계 6이 운영 전환되어 전 단계가 agent/skill로 채워질 준비가 되었으므로 파이프라인 전체를 한 번에 구동할 진입점 마련.
+* depends: Issue155
+* 카테고리: Generator (agent) + Project (SCAR)
+* 상세:
+    - `.claude/agents/authoring-pipeline.md` 신규 (sonnet) — 단계 1~9 순차 실행, 각 단계 산출물 검증 후 다음 단계 진입, 사람 검토 체크포인트 (단계 4 md 생성, 단계 5 media, 단계 7 slot designer) 지원
+    - 단계별 위임 대상 (예정): 1=info-filler, 2=refs-collector, 3=agenda-designer, 4=md-updater, 5=media-creater, 6=layout-selector(Issue155), 7=slot-designer, 8=`m2slide.sh`, 9=`md2tts`
+    - 글로벌 `/new-project` SCAR 업데이트 — m2slide 프로젝트 타입(신규 또는 기존 타입 2 확장) 추가 시 골격 생성 직후 `authoring-pipeline` agent 호출 안내 출력
+    - 글로벌 SCAR 변경은 `~/.claude/Issue.md`에 별도 이슈 등록 후 처리 (글로벌 SCAR 변경 규칙 준수). 본 이슈는 m2slide 측 agent 신설 + 사용자 가이드 문서화에 집중
+    - `_doc_arch/authoring-pipeline.md` "도구" 절에 orchestrator agent 운영 상태 반영
+* 구현 명세:
+    - 입력: `Projects/<Name>/` 경로 (필수), `--from-stage N` (특정 단계부터 재개), `--to-stage N` (특정 단계까지만), `--dry-run`
+    - 종료 조건: 마지막 지정 단계 산출물 검증 통과 시 종료. 단계 실패 시 1회 재시도 후 사용자 보고 + 중단 (Opus 4.7 실행 제약 준수)
+    - 체크포인트: 사람 검토 단계는 산출물 생성 후 사용자 승인 대기. `--no-checkpoint` 플래그로 자동 진행 가능 (CI용)
+    - 진행 로그: `_doc_work/pipeline/<Name>_run_<timestamp>.md`에 단계별 시작·종료·산출물 경로 기록
+    - 의존 단계: Issue155(단계 6) 완료가 전체 운영의 hard prerequisite. Issue155 미완료 상태에서는 단계 6를 skip + 사용자 수동 보완 안내
+* Out of scope:
+    - 단계 1~5, 7의 개별 agent 구현 (각각 별도 이슈로 분리 — 본 이슈는 orchestrator skeleton + 위임 인터페이스만 정의)
+    - 글로벌 `/new-project` 실제 수정 (`~/.claude/Issue.md`로 분리)
+    - 단계 10 (videoMaker 영상 렌더링) 통합
+* 영향: authoring-pipeline 단계 진입점 단일화, m2slide 타입 신규 프로젝트 onboarding 자동화 기반 마련
 
 # 📗 선택
 
