@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 148
+* Issue HWM: 149
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -14,6 +14,10 @@
 * 이유: `slide/` 폴더를 통째로 삭제 후 재생성하는 빌드 패턴이 잦음
 * 영상등 기타 리소스 파일도 마찬가지. 
 
+## 개별 에니메이션 지원
+* 결정: 로우나 값 단위의 개별 에니메이션 기능 지원
+* 이유: VideoMaker Project에서 영상 플레이시 필요.
+* 진행: Issue149로 reveal.js 표준 `<!-- .element: class="..." -->` 주석 syntax 지원 추가 완료 (Pandoc `{.fragment}`와 병존)
 
 # 🌱 이슈후보
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
@@ -27,6 +31,30 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue149. reveal.js 표준 `<!-- .element: class="..." -->` 주석 syntax 지원 (등록: 2026-05-16, 해결: 2026-05-16, commit: TBD) ✅
+* 목적: animationTest L43-47 등에서 사용한 reveal.js 표준 fragment 주석 syntax를 m2slide 자체 파서가 처리하여 `<li>`/`<p>` class에 주입. 기존 Pandoc `{.fragment}` syntax(Issue118)와 병존. 결정사항 "개별 에니메이션 지원"의 일환.
+* 카테고리: Generator (lib/markdown.js)
+* 재현 (수정 전):
+    - `Projects/animationTest/animationTest.md` L43-47: `* 두 번째 항목 <!-- .element: class="fragment fade-up" -->`
+    - 빌드 결과 `slide/index.html` line 1512: `<li class="bullet-dot">두 번째 항목 <!-- .element: class="fragment fade-up" --></li>` — 주석이 텍스트로 잔존, class 미적용
+* 해결:
+    - [`lib/markdown.js:129`](lib/markdown.js#L129) `extractInlineClasses(text)`에 reveal 패턴 매칭 추가 (Pandoc 패턴 매칭 전에 시도)
+    - 정규식: `^(.*?)\s*<!--\s*\.element:\s*class\s*=\s*["']([^"']+)["']\s*-->\s*$`
+    - 매칭 시 `{ classes: [tokens], remaining: before }` 반환 → 기존 3 호출 위치(unordered/ordered/paragraph li, p) 자동 동작
+    - 단/이중 따옴표 모두 허용, trailing 공백 흡수
+    - 코드 인라인 보호: before 백틱 종결 시 매칭 안 함 (Pandoc 동일 정책)
+    - `lib/__tests__/markdown.test.js` reveal 케이스 11개 추가 (extractInlineClasses 7 + convertMarkdownToHTML 통합 4)
+    - `.claude/rules/md-m2slide-rules.md` 정책 갱신 — 기존 "미지원" 문구를 syntax 비교 표로 교체
+* Walkthrough:
+    - TDD 30/30 통과 (`node --test lib/__tests__/markdown.test.js`) — Issue118 19 + Issue149 11
+    - animationTest 재빌드 후 `slide/index.html` line 1512-1514:
+        - `<li class="bullet-dot fragment fade-up">두 번째 항목</li>`
+        - `<li class="bullet-dot fragment highlight-blue">세 번째 항목</li>`
+        - `<li class="bullet-dot fragment grow">네 번째 항목</li>`
+    - Pandoc syntax(L55-57) 회귀 없음 — line 1530-1531 정상 출력 유지
+    - 회귀 빌드: m2SlideStyle1_single, m2SlideStyle2_chapter, LayoutTest, MermaidExample 모두 성공
+* 영향 범위: lib/markdown.js, lib/__tests__/markdown.test.js(ignored), .claude/rules/md-m2slide-rules.md(ignored)
 
 ## Issue148. 지원 slot을 `data/slot.yml`로 카탈로그화 (열린 구조) (등록: 2026-05-16, 해결: 2026-05-16, commit: 26324d4) ✅
 * 목적: 현재 m2slide가 지원하는 slot(시스템·Pandoc 예약·사용자 정의)을 `data/slot.yml` SSOT로 정리하여 향후 slot 추가 시 참조 가능한 열린 구조 확보.
