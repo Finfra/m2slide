@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 152
+* Issue HWM: 153
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -31,6 +31,20 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue153. authoring-pipeline.md에 slot 카탈로그 4 yml + 통합 guide 반영 (등록: 2026-05-16, 해결: 2026-05-16, commit: TBD) ✅
+* 목적: Issue148~152로 추가된 `data/slot_*.yml` 4 SSOT + `_doc_arch/slot_guide.md` 통합 가이드를 저작 파이프라인 문서(`authoring-pipeline.md`)에 반영.
+* 카테고리: Project (docs)
+* 해결:
+    - 단계 6 (layout selector) layout 화이트리스트 안내 옆에 slot 카탈로그 4 yml + 통합 guide 링크 추가
+    - 단계 7 (slot designer) "산출물" 절에 inline class syntax(Pandoc/reveal) 두 형식 명시
+    - 단계 7에 "슬롯 카탈로그 (SSOT)" 표 신설 — 4 카테고리(meta/pandoc/animation/user) 각 yml 링크 + 대상 설명
+    - 단계 7 "도구"·"검증"에 Pandoc 예약명 충돌 차단(`PANDOC_LAYOUT_RESERVED`) + animation 테스트(30 케이스) 명시
+    - 문서 끝 "참조" 섹션에 theme/theme_layout + slot 4 yml + 통합 guide 링크 추가
+* Walkthrough:
+    - 코드 미수정 — 빌드 영향 없음
+    - 문서 일관성: slot 4 yml은 항상 통합 guide와 함께 노출, 책임 분리(m2slide syntax vs reveal.js 클래스 효과)는 slot_guide.md가 단독 소유
+* 영향 범위: _doc_arch/authoring-pipeline.md (ignored)
 
 ## Issue152. slot_animation.yml에서 reveal.js 자체 fragment 클래스 카탈로그 제거 (등록: 2026-05-16, 해결: 2026-05-16, commit: 5fbe41a) ✅
 * 목적: `data/slot_animation.yml`은 m2slide가 직접 처리하는 inline class syntax만 정의. reveal.js 자체가 옵션으로 처리하는 fragment 클래스 카탈로그(`fragment`/`fade-up`/`grow`/`highlight-*` 등 15개)는 m2slide 책임 아님 → 제거. `Projects/animationTest/animationTest.md` L55-57처럼 진짜 슬롯 애니메이션 syntax만 포함.
