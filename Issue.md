@@ -32,7 +32,7 @@
 
 # ✅ 완료
 
-## Issue152. slot_animation.yml에서 reveal.js 자체 fragment 클래스 카탈로그 제거 (등록: 2026-05-16, 해결: 2026-05-16, commit: TBD) ✅
+## Issue152. slot_animation.yml에서 reveal.js 자체 fragment 클래스 카탈로그 제거 (등록: 2026-05-16, 해결: 2026-05-16, commit: 5fbe41a) ✅
 * 목적: `data/slot_animation.yml`은 m2slide가 직접 처리하는 inline class syntax만 정의. reveal.js 자체가 옵션으로 처리하는 fragment 클래스 카탈로그(`fragment`/`fade-up`/`grow`/`highlight-*` 등 15개)는 m2slide 책임 아님 → 제거. `Projects/animationTest/animationTest.md` L55-57처럼 진짜 슬롯 애니메이션 syntax만 포함.
 * 카테고리: Project (data/, docs)
 * 해결:
