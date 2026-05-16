@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 147
+* Issue HWM: 148
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -12,8 +12,8 @@
 ## img 폴더 이중 복사 유지 (소스 `img/` + 빌드 `slide/img/`)
 * 결정: 현행 `fs.cpSync` 방식 유지
 * 이유: `slide/` 폴더를 통째로 삭제 후 재생성하는 빌드 패턴이 잦음
+* 영상등 기타 리소스 파일도 마찬가지. 
 
-## Kroki 서버
 
 # 🌱 이슈후보
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
@@ -26,8 +26,26 @@
 
 # 📗 선택
 
-
 # ✅ 완료
+
+## Issue148. 지원 slot을 `data/slot.yml`로 카탈로그화 (열린 구조) (등록: 2026-05-16, 해결: 2026-05-16, commit: TBD) ✅
+* 목적: 현재 m2slide가 지원하는 slot(시스템·Pandoc 예약·사용자 정의)을 `data/slot.yml` SSOT로 정리하여 향후 slot 추가 시 참조 가능한 열린 구조 확보.
+* 카테고리: Project (data/, docs)
+* 상세:
+    - 시스템 슬롯(템플릿 placeholder `{{...}}`): title, subtitle, part_subtitle, content, cards, markmap, downloadButtons, head_left, head_right, instructor_name, instructor_contact, lecture_date, version, qr_code_path, qr_url
+    - Pandoc 예약(`extractSlots`에서 슬롯 추출 제외): columns, column, rows, row — `preprocessPandocDiv`로 별도 처리
+    - 사용자 정의 슬롯(Pandoc fenced div `::: name`): 임의 `[a-z][a-zA-Z0-9-]*` 매칭. layout 템플릿의 `{{name}}` placeholder로 치환. ex) leftPanel, rightPanel, left, right
+* 해결:
+    - `data/slot.yml` 신규: schema_version=1, system(15), pandoc_reserved(4), user_defined_pattern(regex + 예시 4) 3-카테고리 카탈로그
+    - 각 system slot에 name·desc·source·layouts 필드 부여 — 어느 layout 템플릿에서 쓰이는지 역추적 가능
+    - `_doc_arch/theme_layout.md` "표준 슬롯" 섹션에 SSOT 링크 추가
+    - `.claude/rules/md-m2slide-rules.md` "참고" 섹션에 SSOT 링크 추가
+    - 파서 변경 없음 — 문서/카탈로그 목적. 기존 `extractSlots` 정규식이 이미 열린 구조 (`[a-z][a-zA-Z0-9-]*`)
+* Walkthrough:
+    - YAML 검증: `python3 -c "import yaml; yaml.safe_load(open('data/slot.yml'))"` 통과 (system 15, pandoc_reserved 4, user examples 4)
+    - layout placeholder 매핑은 `grep -oE '\{\{[a-zA-Z_][a-zA-Z0-9_]*\}\}' theme/*/layouts/*.html` 결과로 추출
+    - `data/`, `_doc_arch/`, `.claude/`가 `.gitignore`에 들어가 있어 SSOT 파일들은 push되지 않음 (사용자 결정: 현재 ignore 정책 유지, Issue.md만 추적)
+* 영향 범위: data/slot.yml(신규, ignored), _doc_arch/theme_layout.md(ignored), .claude/rules/md-m2slide-rules.md(ignored)
 
 ## Issue147. `cards_placeholder: false` + `toc_placeholder: true` 조합에서 `id="toc-placeholder"` 중복 생성 (등록: 2026-05-10, 해결: 2026-05-10, commit: 2300788) ✅
 * 목적: Chapter 모드에서 두 옵션 조합 시 동일 id를 가진 슬라이드 2장이 연속 생성되어 `#/toc-placeholder` 진입 후 → 키 이동 시 URL hash가 변하지 않는 문제 해결.
