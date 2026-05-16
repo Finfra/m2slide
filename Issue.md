@@ -24,14 +24,6 @@
 
 # 🚧 진행중
 
-## Issue155. m2slide layout-selector LLM agent 구현 (단계 6) (등록: 2026-05-17, 진행: 2026-05-17)
-* 목적: `_doc_arch/authoring-pipeline.md` 단계 6 (layout selector)를 LLM agent로 구현. 슬라이드 소스 `.md` → `.ppt.md` 파생본 변환, 각 슬라이드에 `#layout-*` 메타 주입. PowerPoint Designer 추천 능력을 markdown SSOT + reveal.js 출력에 이식.
-* plan: `_doc_work/plan/layout-selector-agent_plan.md`
-* task: `_doc_work/tasks/layout-selector-agent_task.md`
-* depends: Issue154 ✅ (commit 605e479)
-* 카테고리: Generator (agent)
-* 진행: Task 2 (.claude/agents/layout-selector.md 작성) 시작
-
 # 📕 중요
 
 # 📙 일반
@@ -61,6 +53,34 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue155. m2slide layout-selector LLM agent 구현 (단계 6) (등록: 2026-05-17, 해결: 2026-05-17, commit: 4d82d13) ✅
+* 목적: `_doc_arch/authoring-pipeline.md` 단계 6 (layout selector)를 LLM agent로 구현. 슬라이드 소스 `.md` → `.ppt.md` 파생본 변환, 각 슬라이드에 `#layout-*` 메타 주입. PowerPoint Designer 추천 능력을 markdown SSOT + reveal.js 출력에 이식.
+* plan: `_doc_work/plan/layout-selector-agent_plan.md`
+* task: `_doc_work/tasks/layout-selector-agent_task.md`
+* depends: Issue154 ✅ (commit 605e479)
+* 카테고리: Generator (agent)
+* 해결:
+    - `.claude/agents/layout-selector.md` 신규 (sonnet model) — system prompt 7개 섹션 (핵심 원칙·1~8단계 절차·보존 규칙·자율 작업 제약·검증·Out of Scope·참고). 동적 layout 카탈로그 로드, 자동 감지 위임, 사용자 수동 메타 보존, JSON 출력.
+    - `lib/layout-selector-applier.js` 신규 (146줄) — `applyLayoutSelection()` API. Frontmatter 보존, 슬라이드 분리, 수동 메타 detect, 메타 주입 위치 (Issue117_1 디렉티브 영역 규약), `--force`/`--skip` 플래그
+    - `lib/generate-slides.js` `_preferPptMd()` 추가 — `<X>.ppt.md` 존재 시 `<X>.md` 대체 (single + chapter 모드)
+    - `bin/m2slide-layout-selector.sh` CLI wrapper
+    - `lib/__tests__/layout-selector-applier.test.js` 18 단위 테스트 통과
+    - `_doc_arch/authoring-pipeline.md` 단계 6 운영 갱신
+* Walkthrough:
+    - dry-run 검증: `Projects/m2SlideStyle1_single/m2SlideStyle.md` (34 슬라이드) → agent JSON 추천 → `lib/layout-selector-applier`로 `.ppt.md` 생성 → `m2slide.sh m2SlideStyle1_single` 빌드 성공 → HTML class 분포 `layout-_cover 11`, `layout-_contents 23`, `layout-_blank 1` 합리적
+    - 회귀: 모든 단위 테스트 30/30 통과 (`layout-meta-parser 12` + `layout-selector-applier 18`)
+    - 빌드 회귀: `m2SlideStyle2_chapter`, `LayoutTest` 빌드 성공
+    - `./run.sh --lint-layouts` 19/19 메타 valid 유지
+* Out of scope (별 design 또는 후속 plan):
+    - 단계 7 slot designer 통합 — Issue156 orchestrator 후속 별 design
+    - `#transition-*`·`#background-*` 디렉티브 추천 (v2 후보)
+    - `m2slide.sh --auto-layout` 통합 호출 (별 plan)
+    - cover 자동 주입(Issue49)과의 상호작용 변경
+    - 챕터 간 layout 일관성 검증 (v2)
+    - 실제 LLM 비결정성 회귀 fixture + 비용 실측 (dogfooding 단계)
+    - 멀티 평가자 rubric (v2)
+* 영향: authoring-pipeline 단계 6 todo → 운영 전환. Issue156(orchestrator agent + /new-project SCAR) unblock.
 
 ## Issue154. theme HTML layout 파일에 description frontmatter 주입 (등록: 2026-05-17, 해결: 2026-05-17, commit: 605e479) ✅
 * 목적: `theme/{default,default_lec}/layouts/*.html` 각 layout에 표준화된 메타(description, recommended_for, slots, example)를 HTML 주석 `<!-- @meta ... -->` 형식으로 주입. 후속 Issue155 layout-selector LLM agent의 layout discovery 입력 품질 보장 선행 작업.
