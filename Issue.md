@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 149
+* Issue HWM: 150
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -31,6 +31,26 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue150. `data/slot.yml` 4분할 + guide md 분리 (등록: 2026-05-16, 해결: 2026-05-16, commit: TBD) ✅
+* 목적: 단일 `data/slot.yml`을 카테고리별 4 파일로 분리해 관심사 분리·확장성 향상. 가이드도 yml별 md로 분리. Issue148 후속.
+* 카테고리: Project (data/, docs)
+* 구조 (4 yml + 4 guide):
+    - `data/slot_meta.yml` — 빌더 자동 주입 시스템·메타 슬롯 15개 (title/content/subtitle/part_subtitle/cards/markmap/downloadButtons/head_left/head_right/instructor_name/instructor_contact/lecture_date/version/qr_code_path/qr_url)
+    - `data/slot_pandoc.yml` — Pandoc 예약 4개 (columns/column/rows/row) + 충돌 방지 메모
+    - `data/slot_animation.yml` — 개별 element 애니메이션: Issue118 Pandoc `{.fragment}` + Issue149 reveal `<!-- .element: ... -->` syntax 정의 + reveal fragment 클래스 카탈로그 15개 (fragment/fade-*/grow/shrink/highlight-*/current-visible/semi-fade-out) + 보호 규칙 + 테스트 메타
+    - `data/slot_user.yml` — 사용자 정의 슬롯 패턴 (regex + naming + Slidev 호환 + 충돌 방지 + 예시 4)
+* 해결:
+    - 기존 `data/slot.yml` 삭제 후 위 4 yml 신규
+    - 각 yml에 schema_version=1, category, last_updated 메타 필드
+    - `_doc_arch/slot_meta_guide.md` / `slot_pandoc_guide.md` / `slot_animation_guide.md` / `slot_user_guide.md` 4 guide 신규 (Frontmatter + 형제 가이드 상호 링크)
+    - `_doc_arch/theme_layout.md` SSOT 단일 → 4분할 링크로 갱신
+    - `.claude/rules/md-m2slide-rules.md` "참고" SSOT 링크 4분할로 갱신
+* Walkthrough:
+    - 4 yml 모두 `yaml.safe_load` 통과 (category 키 정상 매핑)
+    - 가이드 4개 형제 상호 링크 검증
+    - 빌드 영향 없음 — parser/builder 코드 미수정 (문서/데이터만)
+* 영향 범위: data/(4 신규+1 삭제, ignored), _doc_arch/slot_*_guide.md(4 신규, ignored), _doc_arch/theme_layout.md(ignored), .claude/rules/md-m2slide-rules.md(ignored)
 
 ## Issue149. reveal.js 표준 `<!-- .element: class="..." -->` 주석 syntax 지원 (등록: 2026-05-16, 해결: 2026-05-16, commit: 7a76d62) ✅
 * 목적: animationTest L43-47 등에서 사용한 reveal.js 표준 fragment 주석 syntax를 m2slide 자체 파서가 처리하여 `<li>`/`<p>` class에 주입. 기존 Pandoc `{.fragment}` syntax(Issue118)와 병존. 결정사항 "개별 에니메이션 지원"의 일환.
