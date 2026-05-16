@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 151
+* Issue HWM: 152
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -31,6 +31,21 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue152. slot_animation.yml에서 reveal.js 자체 fragment 클래스 카탈로그 제거 (등록: 2026-05-16, 해결: 2026-05-16, commit: TBD) ✅
+* 목적: `data/slot_animation.yml`은 m2slide가 직접 처리하는 inline class syntax만 정의. reveal.js 자체가 옵션으로 처리하는 fragment 클래스 카탈로그(`fragment`/`fade-up`/`grow`/`highlight-*` 등 15개)는 m2slide 책임 아님 → 제거. `Projects/animationTest/animationTest.md` L55-57처럼 진짜 슬롯 애니메이션 syntax만 포함.
+* 카테고리: Project (data/, docs)
+* 해결:
+    - `data/slot_animation.yml`에서 `fragment_classes:` 섹션 제거 (15개 reveal 표준 클래스 목록)
+    - 책임 분리 주석 추가 — "m2slide(이 파일): inline class 추출·주입 syntax / reveal.js: 클래스 자체 시각 효과"
+    - syntax/protection_rules/applies_to/tests 유지 — m2slide 파서 책임 영역
+    - `_doc_arch/slot_guide.md` "reveal.js 표준 fragment 클래스 카탈로그" 절 제거
+    - 책임 분리 인용블록 + L55-57 예시로 교체 + reveal 공식 링크 안내
+* Walkthrough:
+    - yml `yaml.safe_load` 통과 (keys: schema_version/category/last_updated/syntax/protection_rules/applies_to/tests, `fragment_classes` 없음)
+    - syntax 2건 유지 (Pandoc + reveal_element)
+    - 코드 미수정 — 빌드 영향 없음
+* 영향 범위: data/slot_animation.yml(ignored), _doc_arch/slot_guide.md(ignored)
 
 ## Issue151. slot guide 4 md → 1 md 통합 (등록: 2026-05-16, 해결: 2026-05-16, commit: db27074) ✅
 * 목적: Issue150에서 분리한 `_doc_arch/slot_{meta,pandoc,animation,user}_guide.md` 4 파일을 단일 `_doc_arch/slot_guide.md`로 통합. 가이드는 한 곳에서 관리.
