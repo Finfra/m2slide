@@ -24,31 +24,17 @@
 
 # 🚧 진행중
 
-# 📕 중요
-
-# 📙 일반
-
-## Issue155. m2slide layout-selector LLM agent 구현 (단계 6) (등록: 2026-05-17)
+## Issue155. m2slide layout-selector LLM agent 구현 (단계 6) (등록: 2026-05-17, 진행: 2026-05-17)
 * 목적: `_doc_arch/authoring-pipeline.md` 단계 6 (layout selector)를 LLM agent로 구현. 슬라이드 소스 `.md` → `.ppt.md` 파생본 변환, 각 슬라이드에 `#layout-*` 메타 주입. PowerPoint Designer 추천 능력을 markdown SSOT + reveal.js 출력에 이식.
 * plan: `_doc_work/plan/layout-selector-agent_plan.md`
 * task: `_doc_work/tasks/layout-selector-agent_task.md`
-* depends: Issue154
+* depends: Issue154 ✅ (commit 605e479)
 * 카테고리: Generator (agent)
-* 상세:
-    - `.claude/agents/layout-selector.md` 신규 — sonnet model, 5개 system prompt 섹션
-    - `lib/layout-selector-applier.js` + 단위 테스트 (JSON → .ppt.md 변환, 사용자 수동 메타 보존)
-    - 3개 대표 프로젝트(`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `LayoutTest`) 단독 검증
-    - 수동 rubric 평가 80%+ 달성 (정확/수용/오류 3등급)
-    - 재현성 회귀 fixture (snapshot 70%+ 매칭, sonnet temp 0)
-    - 비용 측정 (~$0.002/슬라이드 예상)
-    - `_doc_arch/authoring-pipeline.md` 단계 6 운영 상태 갱신
-* 구현 명세:
-    - 우선순위 규약: 사용자 수동 `#layout-*` > agent 명시 > 자동 감지(Issue27_1·27_2) > `theme_default_layout`
-    - 출력: 슬라이드 첫 비공백 줄에 `#layout-{name}` 주입 (Issue117_1 디렉티브 영역 규약)
-    - 재실행 플래그: 기본(수동 보존) / `--force`(전체 재추천) / `--skip`(CI용)
-    - 출력 형식: JSON `{"slides":[{"index":N,"layout":"_x","reason":"..."}]}` (LLM hallucination 방어: theme/layouts/에 없는 layout명은 stderr 경고 + skip)
-* Out of scope (별 design): 단계 7 slot designer 통합, Issue117 디렉티브 추천, `m2slide.sh --auto-layout` 통합, 챕터 간 일관성 검증
-* 영향: authoring-pipeline 단계 6 todo → 운영 전환
+* 진행: Task 2 (.claude/agents/layout-selector.md 작성) 시작
+
+# 📕 중요
+
+# 📙 일반
 
 ## Issue156. new-project SCAR 업데이트 + authoring-pipeline 오케스트레이션 agent 추가 (등록: 2026-05-17)
 * 목적: `_doc_arch/authoring-pipeline.md` 단계 1~9 전체 프로세스를 자동으로 이어 진행하는 orchestrator agent 신규 + 글로벌 `/new-project` SCAR가 m2slide 타입 프로젝트 초기화 시 본 agent를 연결하도록 업데이트. Issue155로 단계 6이 운영 전환되어 전 단계가 agent/skill로 채워질 준비가 되었으므로 파이프라인 전체를 한 번에 구동할 진입점 마련.
