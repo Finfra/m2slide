@@ -24,13 +24,6 @@
 
 # 🚧 진행중
 
-## Issue154. theme HTML layout 파일에 description frontmatter 주입 (등록: 2026-05-17, 진행: 2026-05-17)
-* 목적: `theme/{default,default_lec}/layouts/*.html` 각 layout에 표준화된 메타(description, recommended_for, slots, example)를 HTML 주석 `<!-- @meta ... -->` 형식으로 주입. 후속 Issue155 layout-selector LLM agent의 layout discovery 입력 품질 보장 선행 작업.
-* plan: `_doc_work/plan/layout-description-frontmatter_plan.md`
-* task: `_doc_work/tasks/layout-description-frontmatter_task.md`
-* 카테고리: Theme
-* 진행: Task 1 (메타 스키마 + 설계 문서 갱신) 진행 중
-
 # 📕 중요
 
 # 📙 일반
@@ -82,6 +75,27 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue154. theme HTML layout 파일에 description frontmatter 주입 (등록: 2026-05-17, 해결: 2026-05-17, commit: 605e479) ✅
+* 목적: `theme/{default,default_lec}/layouts/*.html` 각 layout에 표준화된 메타(description, recommended_for, slots, example)를 HTML 주석 `<!-- @meta ... -->` 형식으로 주입. 후속 Issue155 layout-selector LLM agent의 layout discovery 입력 품질 보장 선행 작업.
+* plan: `_doc_work/plan/layout-description-frontmatter_plan.md`
+* task: `_doc_work/tasks/layout-description-frontmatter_task.md`
+* 카테고리: Theme
+* 해결:
+    - `lib/layout-meta-parser.js` 신규 — zero-dep mini-YAML parser (parseLayoutMeta/loadAllLayouts), 메타 누락 시 silent fallback, YAML 오류 시 throw
+    - `lib/lint-layouts.js` + `run.sh --lint-layouts` 플래그 — 모든 `theme/*/layouts/*.html` @meta 검증, rc=0/1
+    - `lib/layout.js` `_stripMetaBlock()` — 빌드 시 @meta 블록을 layout 템플릿에서 제거 (산출 HTML에 노출 안 함)
+    - `theme/default/layouts/*.html` 7개 + `theme/default_lec/layouts/*.html` 12개 = 총 19개 layout에 @meta 주입
+    - `_doc_arch/theme_layout.md` §16 신설 (스키마·작성 정책·fallback·검증)
+    - `_doc_arch/authoring-pipeline.md` 단계 6 입력에 @meta 참조 추가
+    - `lib/__tests__/layout-meta-parser.test.js` 12 단위 테스트 통과
+* Walkthrough:
+    - 검증: `node --test lib/__tests__/layout-meta-parser.test.js` 12/12 통과
+    - `./run.sh --lint-layouts` 19/19 메타 valid, `./run.sh --lint-config` 회귀 없음
+    - 3개 대표 프로젝트(`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `LayoutTest`) 빌드 성공
+    - HTML 산출물에 @meta 누출 없음 (`grep -c "@meta" slide/*.html` = 0)
+    - HTML `class="layout-*"` 적용 정상 (m2SlideStyle1_single index.html 45회)
+* 영향: 후속 Issue155 unblock (layout-selector agent의 layout discovery 입력 품질 보강)
 
 ## Issue153. authoring-pipeline.md에 slot 카탈로그 4 yml + 통합 guide 반영 (등록: 2026-05-16, 해결: 2026-05-16, commit: 94cbef1) ✅
 * 목적: Issue148~152로 추가된 `data/slot_*.yml` 4 SSOT + `_doc_arch/slot_guide.md` 통합 가이드를 저작 파이프라인 문서(`authoring-pipeline.md`)에 반영.
