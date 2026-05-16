@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 150
+* Issue HWM: 151
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -31,6 +31,21 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue151. slot guide 4 md → 1 md 통합 (등록: 2026-05-16, 해결: 2026-05-16, commit: TBD) ✅
+* 목적: Issue150에서 분리한 `_doc_arch/slot_{meta,pandoc,animation,user}_guide.md` 4 파일을 단일 `_doc_arch/slot_guide.md`로 통합. 가이드는 한 곳에서 관리.
+* 카테고리: Project (docs)
+* 해결:
+    - `_doc_arch/slot_guide.md` 신규 — H1 섹션 4개(meta/pandoc/animation/user)로 통합. 통합 참조 섹션에 4 yml + 구현 위치 + reveal.js 공식 링크
+    - `_doc_arch/slot_meta_guide.md`, `slot_pandoc_guide.md`, `slot_animation_guide.md`, `slot_user_guide.md` 4 파일 삭제
+    - `data/slot_*.yml` 4건의 "가이드:" 주석을 통합 경로로 갱신
+    - `_doc_arch/theme_layout.md` SSOT 링크 갱신 — 4 yml + 1 통합 guide 구조 명시
+    - `.claude/rules/md-m2slide-rules.md` 참조 링크 동일 패턴 갱신
+* Walkthrough:
+    - yml 4건 `yaml.safe_load` 통과
+    - `ls _doc_arch/slot*.md` → `slot_guide.md` 단독 존재 확인
+    - 빌드 영향 없음 (코드 미수정)
+* 영향 범위: _doc_arch/slot_guide.md(신규, ignored), 4 guide md(삭제, ignored), data/slot_*.yml(주석 갱신, ignored), _doc_arch/theme_layout.md(ignored), .claude/rules/md-m2slide-rules.md(ignored)
 
 ## Issue150. `data/slot.yml` 4분할 + guide md 분리 (등록: 2026-05-16, 해결: 2026-05-16, commit: 5e9070d) ✅
 * 목적: 단일 `data/slot.yml`을 카테고리별 4 파일로 분리해 관심사 분리·확장성 향상. 가이드도 yml별 md로 분리. Issue148 후속.
