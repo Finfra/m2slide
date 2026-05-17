@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 156
+* Issue HWM: 157
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -24,10 +24,6 @@
 
 # 🚧 진행중
 
-# 📕 중요
-
-# 📙 일반
-
 ## Issue156. new-project SCAR 업데이트 + authoring-pipeline 오케스트레이션 agent 추가 (등록: 2026-05-17)
 * 목적: `_doc_arch/authoring-pipeline.md` 단계 1~9 전체 프로세스를 자동으로 이어 진행하는 orchestrator agent 신규 + 글로벌 `/new-project` SCAR가 m2slide 타입 프로젝트 초기화 시 본 agent를 연결하도록 업데이트. Issue155로 단계 6이 운영 전환되어 전 단계가 agent/skill로 채워질 준비가 되었으므로 파이프라인 전체를 한 번에 구동할 진입점 마련.
 * depends: Issue155
@@ -49,6 +45,33 @@
     - 글로벌 `/new-project` 실제 수정 (`~/.claude/Issue.md`로 분리)
     - 단계 10 (videoMaker 영상 렌더링) 통합
 * 영향: authoring-pipeline 단계 진입점 단일화, m2slide 타입 신규 프로젝트 onboarding 자동화 기반 마련
+
+# 📕 중요
+
+# 📙 일반
+
+## Issue157. authoring-pipeline 단계 1~9 전체 통합 추적 umbrella task (등록: 2026-05-17)
+* 목적: `_doc_arch/authoring-pipeline.md` 10단계(1 기획 ~ 10 렌더링) 중 m2slide 책임 영역인 단계 1~9 전체 구현 상태를 단일 산출물에서 추적 가능하도록 umbrella plan/task 신규. 현재 단계별로 분산된 8개 arch + 10개 plan + 9개 task를 한눈에 매핑하여 누락 단계·미연결 산출물·후속 의존 이슈 식별을 용이하게 함.
+* plan: `_doc_work/plan/authoring-pipeline_plan.md`
+* task: `_doc_work/tasks/authoring-pipeline_task.md`
+* 카테고리: Project (nPTiR 메타 추적)
+* 상세:
+    - 단계별 매핑 표: 단계 1~10 × (arch SSOT, plan, task, 운영 상태, 담당 이슈) 행렬 정리
+    - 단계별 운영 상태 분류: `운영`(단계 6·8·9·10) / `todo`(단계 1·2·3·4·5·7)
+    - 미연결 plan/task 식별: `slide_ratio_layout_plan/task`, `slide_ratio_none_removal_plan` 등 `arch:` 미연결 산출물 후속 처리 가이드
+    - 의존 이슈 체인 도식: Issue155(단계 6 완료) → Issue156(orchestrator agent) → 본 이슈(전체 추적) → 단계별 후속 이슈 분기
+    - `_doc_arch/authoring-pipeline.md` 백링크 양방향성 유지 — 본 task가 새로 추가될 때 arch 파일 "관련 작업" 섹션도 갱신
+* 구현 명세:
+    - 산출물 1: `_doc_work/plan/authoring-pipeline_plan.md` (경량 — 추적 정책 + 매핑 규칙 정의)
+    - 산출물 2: `_doc_work/tasks/authoring-pipeline_task.md` (실행 체크리스트 + 10단계 진척 추적 표)
+    - frontmatter: 양쪽 모두 `arch: _doc_arch/authoring-pipeline.md` + `issue: Issue157`
+    - 종료 조건: 본 이슈 자체는 단계별 후속 이슈 완료 시점에 종결하지 않음. 매핑 표 신규 entry 발생 시(예: 새 arch/plan/task) task 갱신 의무만 부과 → 장기 운영 추적 문서 성격
+    - 갱신 트리거: 단계별 후속 이슈 (Issue158+, info-filler, refs-collector, agenda-designer 등)가 등록·종결될 때마다 본 task의 매핑 표 동기화
+* Out of scope:
+    - 단계별 개별 agent/skill 구현 (각 단계별 별도 이슈)
+    - Issue156 orchestrator agent 자체 구현 (위임 인터페이스만 본 task에서 참조)
+    - 단계 10 영상 렌더링 (videoMaker_arch.md 위임)
+* 영향: nPTiR 파이프라인 전체 가시성 확보. 단계별 implementation gap 조기 발견 가능. Issue156 orchestrator agent의 운영 근거 자료로 활용.
 
 # 📗 선택
 
