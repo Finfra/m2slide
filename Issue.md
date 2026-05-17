@@ -24,10 +24,6 @@
 
 # 🚧 진행중
 
-# 📕 중요
-
-# 📙 일반
-
 ## Issue157. authoring-pipeline 단계 1~9 전체 통합 추적 umbrella task (등록: 2026-05-17)
 * 목적: `_doc_arch/authoring-pipeline.md` 10단계(1 기획 ~ 10 렌더링) 중 m2slide 책임 영역인 단계 1~9 전체 구현 상태를 단일 산출물에서 추적 가능하도록 umbrella plan/task 신규. 현재 단계별로 분산된 8개 arch + 10개 plan + 9개 task를 한눈에 매핑하여 누락 단계·미연결 산출물·후속 의존 이슈 식별을 용이하게 함.
 * plan: `_doc_work/plan/authoring-pipeline_plan.md`
@@ -51,13 +47,11 @@
     - 단계 10 영상 렌더링 (videoMaker_arch.md 위임)
 * 영향: nPTiR 파이프라인 전체 가시성 확보. 단계별 implementation gap 조기 발견 가능. Issue156 orchestrator agent의 운영 근거 자료로 활용.
 
-# 📗 선택
-
-# ✅ 완료
+# 📕 중요
 
 ## Issue156. new-project SCAR 업데이트 + authoring-pipeline 오케스트레이션 agent 추가 (등록: 2026-05-17, 해결: 2026-05-17, commit: 624d201) ✅
 * 목적: `_doc_arch/authoring-pipeline.md` 단계 1~9 전체 프로세스를 자동으로 이어 진행하는 orchestrator agent 신규 + 글로벌 `/new-project` SCAR가 m2slide 타입 프로젝트 초기화 시 본 agent를 연결하도록 업데이트. Issue155로 단계 6이 운영 전환되어 전 단계가 agent/skill로 채워질 준비가 되었으므로 파이프라인 전체를 한 번에 구동할 진입점 마련.
-* depends: Issue155 ✅ (commit 4d82d13)
+* depends: Issue155 ✅ (commit 4d82d13), Issue157 ⏳ (선행 권고였으나 선행 누락 — 본 이슈 종결 후 사용자 회고 지적. 후속 운영에서 Issue157 umbrella plan/task의 매핑 표가 본 orchestrator의 단계별 위임 대상 SSOT로 작동해야 하므로, Issue157 완료 시 orchestrator의 "단계별 위임 매핑" 표를 Issue157 plan과 동기화 검증 필요)
 * 카테고리: Generator (agent) + Project (SCAR)
 * 해결:
     - `.claude/agents/authoring-pipeline.md` 신규 (sonnet model) — 단계 1~9 순차 실행 orchestrator. system prompt 8개 섹션 (핵심 원칙·입력·위임 매핑·핵심 절차·자율 작업 제약·검증·Out of Scope·참고). 위임 매핑 표로 운영(6·8·9) / todo(1·2·3·4·5·7) 단계 분류
@@ -79,6 +73,12 @@
     - 병렬 단계 실행 (v2 후보)
     - 단계별 산출물의 git commit 자동화
 * 영향: authoring-pipeline 단계 진입점 단일화. m2slide 타입 신규 프로젝트 onboarding 자동화 기반 마련. 단계 1~5·7 후속 agent 구현 시 본 orchestrator의 위임 매핑 표만 갱신하면 즉시 통합 가능.
+
+# 📙 일반
+
+# 📗 선택
+
+# ✅ 완료
 
 ## Issue155. m2slide layout-selector LLM agent 구현 (단계 6) (등록: 2026-05-17, 해결: 2026-05-17, commit: 4d82d13) ✅
 * 목적: `_doc_arch/authoring-pipeline.md` 단계 6 (layout selector)를 LLM agent로 구현. 슬라이드 소스 `.md` → `.ppt.md` 파생본 변환, 각 슬라이드에 `#layout-*` 메타 주입. PowerPoint Designer 추천 능력을 markdown SSOT + reveal.js 출력에 이식.
