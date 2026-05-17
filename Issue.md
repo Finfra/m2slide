@@ -24,28 +24,6 @@
 
 # 🚧 진행중
 
-## Issue156. new-project SCAR 업데이트 + authoring-pipeline 오케스트레이션 agent 추가 (등록: 2026-05-17)
-* 목적: `_doc_arch/authoring-pipeline.md` 단계 1~9 전체 프로세스를 자동으로 이어 진행하는 orchestrator agent 신규 + 글로벌 `/new-project` SCAR가 m2slide 타입 프로젝트 초기화 시 본 agent를 연결하도록 업데이트. Issue155로 단계 6이 운영 전환되어 전 단계가 agent/skill로 채워질 준비가 되었으므로 파이프라인 전체를 한 번에 구동할 진입점 마련.
-* depends: Issue155
-* 카테고리: Generator (agent) + Project (SCAR)
-* 상세:
-    - `.claude/agents/authoring-pipeline.md` 신규 (sonnet) — 단계 1~9 순차 실행, 각 단계 산출물 검증 후 다음 단계 진입, 사람 검토 체크포인트 (단계 4 md 생성, 단계 5 media, 단계 7 slot designer) 지원
-    - 단계별 위임 대상 (예정): 1=info-filler, 2=refs-collector, 3=agenda-designer, 4=md-updater, 5=media-creater, 6=layout-selector(Issue155), 7=slot-designer, 8=`m2slide.sh`, 9=`md2tts`
-    - 글로벌 `/new-project` SCAR 업데이트 — m2slide 프로젝트 타입(신규 또는 기존 타입 2 확장) 추가 시 골격 생성 직후 `authoring-pipeline` agent 호출 안내 출력
-    - 글로벌 SCAR 변경은 `~/.claude/Issue.md`에 별도 이슈 등록 후 처리 (글로벌 SCAR 변경 규칙 준수). 본 이슈는 m2slide 측 agent 신설 + 사용자 가이드 문서화에 집중
-    - `_doc_arch/authoring-pipeline.md` "도구" 절에 orchestrator agent 운영 상태 반영
-* 구현 명세:
-    - 입력: `Projects/<Name>/` 경로 (필수), `--from-stage N` (특정 단계부터 재개), `--to-stage N` (특정 단계까지만), `--dry-run`
-    - 종료 조건: 마지막 지정 단계 산출물 검증 통과 시 종료. 단계 실패 시 1회 재시도 후 사용자 보고 + 중단 (Opus 4.7 실행 제약 준수)
-    - 체크포인트: 사람 검토 단계는 산출물 생성 후 사용자 승인 대기. `--no-checkpoint` 플래그로 자동 진행 가능 (CI용)
-    - 진행 로그: `_doc_work/pipeline/<Name>_run_<timestamp>.md`에 단계별 시작·종료·산출물 경로 기록
-    - 의존 단계: Issue155(단계 6) 완료가 전체 운영의 hard prerequisite. Issue155 미완료 상태에서는 단계 6를 skip + 사용자 수동 보완 안내
-* Out of scope:
-    - 단계 1~5, 7의 개별 agent 구현 (각각 별도 이슈로 분리 — 본 이슈는 orchestrator skeleton + 위임 인터페이스만 정의)
-    - 글로벌 `/new-project` 실제 수정 (`~/.claude/Issue.md`로 분리)
-    - 단계 10 (videoMaker 영상 렌더링) 통합
-* 영향: authoring-pipeline 단계 진입점 단일화, m2slide 타입 신규 프로젝트 onboarding 자동화 기반 마련
-
 # 📕 중요
 
 # 📙 일반
@@ -76,6 +54,31 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue156. new-project SCAR 업데이트 + authoring-pipeline 오케스트레이션 agent 추가 (등록: 2026-05-17, 해결: 2026-05-17, commit: 624d201) ✅
+* 목적: `_doc_arch/authoring-pipeline.md` 단계 1~9 전체 프로세스를 자동으로 이어 진행하는 orchestrator agent 신규 + 글로벌 `/new-project` SCAR가 m2slide 타입 프로젝트 초기화 시 본 agent를 연결하도록 업데이트. Issue155로 단계 6이 운영 전환되어 전 단계가 agent/skill로 채워질 준비가 되었으므로 파이프라인 전체를 한 번에 구동할 진입점 마련.
+* depends: Issue155 ✅ (commit 4d82d13)
+* 카테고리: Generator (agent) + Project (SCAR)
+* 해결:
+    - `.claude/agents/authoring-pipeline.md` 신규 (sonnet model) — 단계 1~9 순차 실행 orchestrator. system prompt 8개 섹션 (핵심 원칙·입력·위임 매핑·핵심 절차·자율 작업 제약·검증·Out of Scope·참고). 위임 매핑 표로 운영(6·8·9) / todo(1·2·3·4·5·7) 단계 분류
+    - 단계별 위임 대상: 6=`layout-selector` agent (Issue155), 8=`m2slide.sh` script, 9=`md2tts` agent. todo 단계는 stub 모드 (산출물 존재 시 검증만, 없으면 사용자 수동 작성 안내)
+    - 사람 체크포인트: 단계 4 md 생성, 단계 5 media, 단계 7 slot designer 종료 후 사용자 검토 요청 (`--no-checkpoint`로 생략 가능)
+    - 산출물 검증 게이트: 단계별 존재·무결성 확인 후 다음 단계 진입. 단계 6 `./run.sh --lint-config` / 단계 8 `slide/*.html` placeholder grep / 단계 9 `wc -l` 일치
+    - 실패 정책: 1회 재시도 후 중단 + 사용자 보고 (Opus 4.7 실행 제약 준수)
+    - 진행 로그: `_doc_work/pipeline/<Name>_run_<timestamp>.md`에 단계별 시작·종료·산출물·검증 결과 기록
+    - `_doc_arch/authoring-pipeline.md` "오케스트레이터" 절 신설 (개요 직후) — 위치·책임·입력·체크포인트·로그·운영/todo 분류·실패 정책·글로벌 SCAR 분리 명시
+* Walkthrough:
+    - 검증: `./run.sh --lint-config` 8 프로젝트 ✓ / `./run.sh --lint-layouts` 19/19 메타 valid (회귀 없음)
+    - agent 파일 frontmatter 정상 (sonnet, tools: Read/Write/Edit/Bash/Glob/Grep/Task, color: blue)
+    - SSOT 백링크 검증: `_doc_arch/authoring-pipeline.md` grep "Issue156" 1건 + agent 파일 grep "authoring-pipeline" 8건
+    - 문서 영향만 — 빌드 산출물 변경 없음 (apply-verify-rules 예외 조항: 마크다운·문서 파일 수정만)
+* Out of scope (별 이슈로 분리):
+    - 단계 1~5·7의 개별 agent/skill 구현 (info-filler, refs-collector, agenda-designer, md-updater, media-creater, slot-designer)
+    - 글로벌 `/new-project` SCAR 실제 수정 — `~/.claude/Issue.md`로 분리 (글로벌 SCAR 변경 규칙 준수)
+    - 단계 10 (videoMaker 영상 렌더링) 통합 — `run.sh`가 별도 진입점
+    - 병렬 단계 실행 (v2 후보)
+    - 단계별 산출물의 git commit 자동화
+* 영향: authoring-pipeline 단계 진입점 단일화. m2slide 타입 신규 프로젝트 onboarding 자동화 기반 마련. 단계 1~5·7 후속 agent 구현 시 본 orchestrator의 위임 매핑 표만 갱신하면 즉시 통합 가능.
 
 ## Issue155. m2slide layout-selector LLM agent 구현 (단계 6) (등록: 2026-05-17, 해결: 2026-05-17, commit: 4d82d13) ✅
 * 목적: `_doc_arch/authoring-pipeline.md` 단계 6 (layout selector)를 LLM agent로 구현. 슬라이드 소스 `.md` → `.ppt.md` 파생본 변환, 각 슬라이드에 `#layout-*` 메타 주입. PowerPoint Designer 추천 능력을 markdown SSOT + reveal.js 출력에 이식.
