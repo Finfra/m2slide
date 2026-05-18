@@ -24,30 +24,6 @@
 
 # 🚧 진행중
 
-## Issue167. authoring-pipeline v1 제거 — v2 단독 SSOT 통합 (등록: 2026-05-18)
-* 목적: v2(Issue166)로 데이터-주도 SCAR + Projects/<Name>/_pipeline/ 영속 추적 완비됨. v1과 병존 시 fallback 경로 + dual SSOT 유지 부담 → v1 완전 제거하고 v2를 단독 SSOT로 통합. v1의 단계별 상세 내용(입력·산출물·도구·검증)은 v2에 흡수.
-* 카테고리: Build (파이프라인 인프라)
-* 상세:
-    - v1 SSOT(`_doc_arch/authoring-pipeline.md`)를 deprecation notice + v2 redirect로 축소
-    - v2 SSOT(`_doc_arch/authoring-pipeline_v2.md`)에 단계 1~9 상세 통합 — 자기-완결 SSOT
-    - SCAR(`m2.md`, `authoring-pipeline.md`)에서 "v1 fallback" 라벨 제거. 산출물 기반 초기 추론 알고리즘은 신규 프로젝트 초기화용으로 유지하되 "v1" 명칭 제거
-    - v1 fallback 로그 경로 `_doc_work/pipeline/<Name>_run_<timestamp>.md` 참조 제거 (운영 메타는 항상 `Projects/<Name>/_pipeline/`)
-    - plan/task/report 문서에서 v1/v2 dual 표 → v2 단일 표로 통합
-* 구현 명세:
-    - 산출물 1: `_doc_arch/authoring-pipeline_v2.md` 확장 — v1의 단계 1~9 상세 명세 통합
-    - 산출물 2: `_doc_arch/authoring-pipeline.md` 축소 — deprecation notice 한 줄 + v2 redirect
-    - 산출물 3: SCAR 갱신 — `m2.md`, `authoring-pipeline.md` v1 라벨 제거
-    - 산출물 4: plan/task/report dual 표 → 단일 표 통합
-    - 검증: 단위 테스트 7/7 유지, 회귀 빌드, v1 ref grep 결과 0건
-* Out of scope:
-    - SCAR 6개 (info-filler 등) v2 패턴 전환 — 각 단계별 후속 이슈
-    - v1 SSOT 물리 삭제 — deprecation notice 유지 (이력 보존)
-    - state.yml 부재 시 산출물 기반 추론 알고리즘 — v2 정식 기능으로 유지
-* 영향:
-    - dual SSOT 부담 해소 → 문서 유지 단순화
-    - SCAR 본문에서 v1/v2 분기 제거 → 코드 가독성 향상
-    - Issue165 umbrella의 "v1 참고" 절도 v2 단일 표로 통합
-
 # 📕 중요
 
 # 📙 일반
@@ -55,6 +31,20 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue167. authoring-pipeline v1 제거 — v2 단독 SSOT 통합 (등록: 2026-05-18, 해결: 2026-05-18, commit: d4ca868) ✅
+* 목적: v2(Issue166)로 데이터-주도 SCAR + `Projects/<Name>/_pipeline/` 영속 추적 완비됨. v1과 병존 시 fallback 경로 + dual SSOT 유지 부담 → v1 완전 제거하고 v2를 단독 SSOT로 통합.
+* 카테고리: Build (파이프라인 인프라)
+* 산출물:
+    - `_doc_arch/authoring-pipeline.md` (549 → 49 lines) — deprecation notice + v2 redirect 표
+    - `_doc_arch/authoring-pipeline_v2.md` 확장 — 단계 1~9 상세 명세 통합 (자기-완결)
+    - SCAR 갱신: `.claude/commands/m2.md`, `.claude/agents/authoring-pipeline.md` — v1 fallback 라벨 제거
+    - plan/task: "v1 시대 참고" → "보조 arch" 절로 재정의
+    - report: `_doc_work/report/authoring-pipeline-v1-deprecation_issue167_report.md` 신규
+* 검증:
+    - 단위 7/7 PASS
+    - v1 ref 잔존 = deprecation notice·역사적 기록(report) 한정
+    - SSOT/SCAR/plan에서 v1 코드/운영 ref 0건
 
 ## Issue165. `/m2` 라우터 기준 authoring-pipeline 단계 1~9 전체 통합 추적 umbrella task (등록: 2026-05-18, 해결: 2026-05-18, commit: f704852) ✅
 * 목적: Issue157 umbrella를 승계하여 Issue164(`/m2` 라우터) + Issue166(v2 인프라) 완료 후의 매핑 기준으로 plan/task 재정렬.
