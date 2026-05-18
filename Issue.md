@@ -24,35 +24,6 @@
 
 # 🚧 진행중
 
-## Issue165. `/m2` 라우터 기준 authoring-pipeline 단계 1~9 전체 통합 추적 umbrella task (등록: 2026-05-18)
-* 목적: Issue157 umbrella(orchestrator agent 중심)를 승계하여, Issue164 `/m2` 라우터 커맨드를 운영 진입점으로 한 새로운 매핑·추적 기준 수립. 단계별 산출물(arch/plan/task/agent/skill)과 `/m2 init|continue|run|build|status|list` 6개 subcommand의 단계 위임 관계를 한 표에서 관리. **2026-05-18 갱신**: Issue166(v2 구현) 완료 후 매핑 표를 v2 기준(데이터-주도 SCAR + state.yml/artifacts/)으로 재정렬.
-* depends: Issue166 ✅ (commit dac9db9) — 선행 해소 → 본 이슈 진행 가능
-* plan: `_doc_work/plan/authoring-pipeline_plan.md`
-* task: `_doc_work/tasks/authoring-pipeline_task.md`
-* 카테고리: Project (nPTiR 메타 추적)
-* 상세:
-    - 단계별 매핑 표: 단계 1~10 × (arch SSOT, plan, task, 운영 상태, 담당 이슈, `/m2` subcommand 매핑) 행렬
-    - 단계별 운영 상태 분류: `운영`(단계 6·8·9·10) / `todo`(단계 1·2·3·4·5·7)
-    - `/m2` subcommand ↔ 단계 매핑: `init` → 단계 1, `continue` → resume 감지 후 1~9 순차, `run --from N --to M` → 임의 범위, `build` → 단계 8, `status` → 진행 상황 보고, `list` → 모든 프로젝트
-    - 미연결 plan/task 식별 + arch 백링크 양방향성 유지
-    - 의존 이슈 체인: Issue157(승계 대상) → Issue164(/m2 라우터) → 본 이슈 → 단계별 후속 이슈
-* 구현 명세:
-    - 산출물 1: `_doc_work/plan/authoring-pipeline_plan.md` 갱신 — `/m2` 라우터 진입점 + subcommand 매핑 표 추가
-    - 산출물 2: `_doc_work/tasks/authoring-pipeline_task.md` 갱신 — 10단계 진척 표에 `/m2` subcommand 컬럼 추가
-    - frontmatter: 양쪽 `arch: _doc_arch/authoring-pipeline.md` + `issue: Issue165`
-    - 종료 조건: 장기 운영 추적 문서. 단계별 후속 이슈 등록·종결 시마다 매핑 표 동기화 의무만 부과
-    - 갱신 트리거: 새 arch/plan/task 등장, `/m2` subcommand 추가, 단계별 agent/skill 신설 시 본 task 갱신
-* Out of scope:
-    - 단계별 개별 agent/skill 구현 (각 단계별 별도 이슈)
-    - Issue164 `/m2` 라우터 본체 구현 (Issue164에서 처리)
-    - 단계 10 영상 렌더링 (`videoMaker_arch.md` 위임)
-* 영향: nPTiR 파이프라인 전체 가시성을 `/m2` 라우터 mental model에 정렬. Issue157 대비 사용자 진입 동사(init/continue/run/build) 관점으로 단계 매핑 → 운영 추적성 향상.
-* 관련:
-    - 승계 대상: Issue157 (완료)
-    - 운영 진입점 이슈: Issue164
-    - 설계 SSOT: `_doc_arch/authoring-pipeline.md`
-    - orchestrator agent: `.claude/agents/authoring-pipeline.md`
-
 # 📕 중요
 
 # 📙 일반
@@ -60,6 +31,17 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue165. `/m2` 라우터 기준 authoring-pipeline 단계 1~9 전체 통합 추적 umbrella task (등록: 2026-05-18, 해결: 2026-05-18, commit: f704852) ✅
+* 목적: Issue157 umbrella를 승계하여 Issue164(`/m2` 라우터) + Issue166(v2 인프라) 완료 후의 매핑 기준으로 plan/task 재정렬.
+* depends: Issue166 ✅ (commit dac9db9)
+* 산출물:
+    - `_doc_work/plan/authoring-pipeline_plan.md` 갱신 — v2 진입점 절 + 단계별 매핑 표에 data 폴더/artifacts 경로/SCAR v2 전환 컬럼 추가
+    - `_doc_work/tasks/authoring-pipeline_task.md` 갱신 — v2 SCAR 전환 추적 표 신설
+    - `_doc_work/report/authoring-pipeline_issue165_report.md` 신규
+* 후속:
+    - 6개 SCAR(info-filler, agenda-designer, md-updater, media-creater, layout-selector, slot-designer) v2 패턴 전환 후속 이슈 (각 단계별)
+    - 본 umbrella는 후속 이슈 종결 시마다 v2 전환 추적 표 ⏳ → ✅ 갱신 의무
 
 ## Issue166. authoring-pipeline v2 구현 — 데이터-주도 SCAR + /pm 무중단 History/Artifacts (등록: 2026-05-18, 해결: 2026-05-18, commit: dac9db9) ✅
 * 목적: [v2 SSOT](_doc_arch/authoring-pipeline_v2.md) 3가지 핵심 변경(데이터-주도 SCAR / Info.md=사용자 요청 SSOT / `/pm` 무중단 History·Artifacts) 통합.
