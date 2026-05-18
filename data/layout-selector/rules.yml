@@ -1,0 +1,67 @@
+# layout-selector가 슬라이드별 layout 추천 시 사용하는 규칙.
+# 사용자는 본 파일을 수정하여 새 규칙 추가 / 우선순위 변경 가능.
+---
+version: 1
+
+# 우선순위 (위부터 매칭):
+#   1. 사용자 수동 #layout-* (코드에서 처리, 본 파일 미적용)
+#   2. 본 파일의 rules
+#   3. 자동 감지 (image-only / empty-title)
+#   4. theme_default_layout
+
+rules:
+  - id: cover_first_slide
+    condition: "slide_index == 0 and chapter_index == 0"
+    layout: cover
+    priority: 100
+
+  - id: agenda_after_cover
+    condition: "slide_index == 0 and is_chapter_mode and chapter_index > 0"
+    layout: agenda
+    priority: 90
+
+  - id: image_only
+    condition: "has_image and not has_title and not has_text"
+    layout: blank
+    priority: 80
+
+  - id: full_image_with_caption
+    condition: "has_image and has_short_caption and not has_bullets"
+    layout: image_caption
+    priority: 75
+
+  - id: two_column_text_image
+    condition: "has_text and has_image and bullet_count >= 3"
+    layout: two_column
+    priority: 70
+
+  - id: code_block
+    condition: "has_code and code_lines > 5"
+    layout: code
+    priority: 70
+
+  - id: comparison_table
+    condition: "has_table and table_rows >= 3"
+    layout: table
+    priority: 65
+
+  - id: quote
+    condition: "has_blockquote and text_length < 200"
+    layout: quote
+    priority: 60
+
+  - id: section_header
+    condition: "has_h1_only or chapter_intro"
+    layout: section
+    priority: 55
+
+  - id: default_contents
+    condition: "always"
+    layout: contents
+    priority: 0
+
+# 휴리스틱 임계값
+thresholds:
+  short_caption_words: 10
+  bullets_long: 5
+  code_lines_long: 15

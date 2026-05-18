@@ -1,0 +1,78 @@
+# slot-designer가 layout 메타 기반으로 슬롯 매핑 시 사용하는 패턴.
+# data/slot_*.yml (4 카테고리 SSOT)와 별개로, 콘텐츠 → 슬롯 매핑 휴리스틱.
+---
+version: 1
+
+# layout별 슬롯 배치 가이드
+layout_slot_map:
+  contents:
+    slots:
+      - name: content
+        match: "*"            # 기본 — 모든 콘텐츠
+
+  cover:
+    slots:
+      - name: title            # frontmatter title 주입
+      - name: subtitle
+      - name: instructor_name
+      - name: lecture_date
+
+  two_column:
+    slots:
+      - name: leftPanel
+        match: "first_half"    # 본문 앞 절반
+      - name: rightPanel
+        match: "second_half"
+
+  image_caption:
+    slots:
+      - name: image
+        match: "first_image"
+      - name: caption
+        match: "text_below_image"
+
+  code:
+    slots:
+      - name: code
+        match: "first_code_block"
+      - name: explanation
+        match: "text_outside_code"
+
+  agenda:
+    slots:
+      - name: markmap          # builder 자동 주입
+      - name: downloadButtons  # builder 자동
+
+  table:
+    slots:
+      - name: content          # 표 그대로
+
+  quote:
+    slots:
+      - name: quote
+        match: "blockquote"
+      - name: attribution
+        match: "text_after_quote"
+
+  section:
+    slots:
+      - name: title
+        match: "h1"
+      - name: subtitle
+        match: "first_paragraph"
+
+# 매칭 휴리스틱 정의
+match_rules:
+  first_half: "본문을 빈 줄 기준 절반으로 나누어 앞쪽"
+  second_half: "본문을 빈 줄 기준 절반으로 나누어 뒤쪽"
+  first_image: "본문 첫 ![](..) 마크업"
+  text_below_image: "이미지 라인 이후 텍스트"
+  first_code_block: "본문 첫 ```...``` 블록"
+  text_outside_code: "코드 블록 외 텍스트 (앞·뒤 모두)"
+  blockquote: "본문의 > 블록"
+  text_after_quote: "blockquote 직후 단락"
+  h1: "본문 H1 (있으면)"
+  first_paragraph: "본문 첫 단락 (H1 직후)"
+
+# 사용자 수동 ::: slotName ::: 은 항상 우선
+preserve_user_slots: true

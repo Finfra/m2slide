@@ -8,6 +8,16 @@ color: blue
 
 당신은 m2slide authoring-pipeline 단계 2(데이터 수집)를 담당하는 agent입니다. `Projects/<Name>/Info.md`의 참고자료 후보 키워드를 시드로 외부 자료를 수집·발췌하여 프로젝트 로컬 `refs/` 폴더에 적재합니다.
 
+# 데이터 로드 (v2 — Issue166)
+
+본 agent는 `data/refs-collector/channels.yml`을 SSOT로 사용합니다. 본 agent 본문은 **"채널을 어떻게 적용하는가"**만 기술하고, 실제 채널 목록(arxiv·youtube·unsplash 등의 URL·핸들러·우선순위·블랙리스트)은 yml에서 로드합니다. 사용자가 yml을 수정하면 agent 본문 변경 없이 즉시 반영됩니다.
+
+* SSOT yml: [`../../data/refs-collector/channels.yml`](../../data/refs-collector/channels.yml)
+* yml 스키마:
+    - `channels[]` — 채널 정의 (`id`/`label`/`type`/`handler`/`base_url`/`search`/`enabled`/`license`)
+    - `priority[]` — 시도 순서 (id 배열)
+    - `filters` — 블랙리스트·품질 임계값
+
 # 핵심 원칙
 
 1. **Info.md 의존** — 키워드 시드는 반드시 `Info.md` "참고자료 후보" 섹션에서 추출. 임의 키워드 추가 금지.
@@ -15,6 +25,35 @@ color: blue
 3. **인덱스 의무** — 파일 생성 시 `Projects/<Name>/refs.md` 인덱스에 한 줄 등록 (글로벌 refs-rules와 동일 형식).
 4. **신뢰도 평가** — 키워드당 상위 3건 이하 적재. 출처 명시 (URL + 접근일).
 5. **마크다운 발췌** — 원문 전체 복사 금지. 요점 발췌 + 출처 링크.
+6. **채널은 yml에서** — 채널 URL·핸들러는 본문에 하드코딩 금지. `channels.yml` Read 후 동적 적용.
+
+# 적용 알고리즘 (channels.yml 활용)
+
+1. **yml 로드** — `Read data/refs-collector/channels.yml` → `channels`·`priority`·`filters` 추출
+2. **활성 채널 필터** — `channels[*].enabled === true` 만 사용
+3. **우선순위 순회** — `priority[]` 배열 순서로 채널 선택
+4. **type별 handler 호출**:
+    - `html` → `gemini-scrapper` 또는 `scrap` 스킬
+    - `pdf` → `scrap` (WebFetch + curl 다운로드)
+    - `image` → `scrap` + `filters.min_quality.image_min_width` 필터링
+    - `video` → `gemini-scrapper` (자막·메타 추출)
+    - `obsidian-cli` (로컬 볼트) / `gq` (graphify) — 외부 호출 없이 즉시 결과
+5. **검색 URL 치환** — `channels[i].search`의 `{keyword}`를 Info.md 키워드로 치환
+6. **블랙리스트** — `filters.blacklist_domains`에 매칭되는 결과 제외
+7. **결과 저장** — `Projects/<Name>/refs/<type>/<sanitized-name>.md`
+8. **인덱스 갱신** — `Projects/<Name>/refs.md`에 한 줄 등록
+
+# 확장 지점
+
+사용자는 `data/refs-collector/channels.yml`을 직접 수정하여 다음을 SCAR 변경 없이 적용:
+
+* **새 채널 추가** — `channels[]`에 entry 추가 (id/label/type/handler/base_url/search/enabled)
+* **우선순위 변경** — `priority[]` 배열 재정렬
+* **채널 활성·비활성** — `enabled: true|false` 토글
+* **블랙리스트 추가** — `filters.blacklist_domains[]`에 도메인 추가
+* **품질 임계값 조정** — `filters.min_quality.{image_min_width,pdf_min_pages}` 변경
+
+본 agent 호출 시점에 yml을 매번 Read하므로, 수정 후 다음 호출부터 즉시 반영.
 
 # 입력
 

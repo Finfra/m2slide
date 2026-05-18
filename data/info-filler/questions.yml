@@ -1,0 +1,57 @@
+# info-filler가 사용자에게 묻는 인터뷰 질문 시드.
+# 각 질문은 Info.md의 한 섹션에 대응. 순서 보존.
+# 사용자는 이 파일을 수정하여 분야별 질문 추가/제거 가능.
+---
+version: 1
+questions:
+  - id: topic
+    label: 주제
+    prompt: "영상의 주제를 한 줄로 요약해주세요."
+    required: true
+    example: "LLM 도구 진화와 바이브 코딩 세대 구분"
+
+  - id: audience
+    label: 청중
+    prompt: "대상 청중과 전제 지식 수준을 알려주세요."
+    required: true
+    example: "주니어~시니어 개발자, AI 도구 사용 경험 1년 미만"
+
+  - id: duration
+    label: 러닝타임
+    prompt: "예상 영상 길이(분)? 30분 이하 = single mode, 초과 = chapter mode 권장."
+    required: true
+    example: "30"
+
+  - id: tone
+    label: 발표 톤
+    prompt: "강의·내레이션·대화·튜토리얼 중 어떤 톤?"
+    required: true
+    example: "강의"
+
+  - id: outline
+    label: 목차 outline
+    prompt: "1차 챕터·섹션 리스트 (있으면). 없으면 agenda-designer가 자동 생성."
+    required: false
+    example: |
+      1. 오프닝
+      2. 진화 흐름
+      3. 세대 구분
+      4. 미래 전망
+
+  - id: key_messages
+    label: 핵심 메시지
+    prompt: "강조할 결론·주장 3~5개."
+    required: true
+    example: "CLI 기반 도구가 차세대 표준"
+
+  - id: refs_seed
+    label: 참고 출처 키워드
+    prompt: "데이터 수집 단계 검색 시드. 키워드·도메인·전문 출처 명시."
+    required: true
+    example: "Claude Code, Cursor, AI agent CLI"
+
+  - id: deadline
+    label: 데드라인
+    prompt: "발표 또는 게시 마감일? (YYYY-MM-DD)"
+    required: false
+    example: "2026-06-15"

@@ -1,0 +1,52 @@
+# md-updater가 사용하는 본문 작성 스타일 가이드.
+# 사용자는 본 파일을 수정하여 분야별·청중별 스타일 추가 가능.
+---
+version: 1
+
+styles:
+  - id: formal_lecture
+    label: 공식 강의체
+    tone: 강의
+    person: 3인칭
+    rules:
+      - "~함, ~임 (줄임체)"
+      - "전문 용어 영어 표기 유지"
+      - "예시는 'ex)' 사용"
+      - "강조는 **bold**, 인용은 > blockquote"
+    forbidden:
+      - "여러분"
+      - "오늘"
+      - "Let's"
+
+  - id: casual_tutorial
+    label: 캐주얼 튜토리얼
+    tone: 튜토리얼
+    person: 2인칭 허용
+    rules:
+      - "~해보세요, ~하면 됩니다"
+      - "실습 결과 스크린샷 권장"
+      - "코드 블록 언어 지정 필수"
+    encouraged:
+      - "단계별 번호"
+      - "체크포인트 질문"
+
+  - id: keynote_punchy
+    label: 키노트 강조체
+    tone: 내레이션
+    person: 3인칭
+    rules:
+      - "한 슬라이드 = 한 메시지"
+      - "헤드라인 6어 이내"
+      - "본문 3 bullet 이하"
+    forbidden:
+      - "장황한 설명"
+      - "여러 단락"
+
+# 슬라이드당 콘텐츠 양 제한
+content_limits:
+  bullets_max: 7
+  bullet_depth_max: 2
+  code_lines_max: 20
+  table_cols_max: 5
+  table_rows_max: 7
+  paragraph_sentences_max: 3

@@ -1,0 +1,73 @@
+# agenda-designer가 사용하는 outline 패턴.
+# 청중·톤·러닝타임에 따라 적절한 챕터 구조 자동 선택.
+# 사용자는 본 파일을 수정하여 새 패턴 추가 가능.
+---
+version: 1
+
+patterns:
+  - id: lecture_30min
+    label: 30분 강의
+    duration_max: 30
+    tone: 강의
+    mode: chapter
+    chapters:
+      - "오프닝 / 동기"
+      - "배경 / 현황"
+      - "핵심 개념"
+      - "사례 분석"
+      - "결론 / Q&A"
+
+  - id: tutorial_60min
+    label: 60분 튜토리얼
+    duration_min: 30
+    duration_max: 90
+    tone: 튜토리얼
+    mode: chapter
+    chapters:
+      - "소개"
+      - "환경 준비"
+      - "기본 실습"
+      - "심화 실습"
+      - "트러블슈팅"
+      - "정리"
+
+  - id: keynote_15min
+    label: 짧은 키노트
+    duration_max: 15
+    tone: 내레이션
+    mode: single
+    sections:
+      - "Hook (1슬라이드)"
+      - "Problem (2~3슬라이드)"
+      - "Solution (3~5슬라이드)"
+      - "Call to Action"
+
+  - id: technical_deep_dive
+    label: 기술 심층 분석
+    duration_min: 45
+    tone: 강의
+    mode: chapter
+    chapters:
+      - "Why this matters"
+      - "Prior art"
+      - "Architecture"
+      - "Implementation details"
+      - "Benchmarks / 결과"
+      - "Limitations"
+      - "Future work"
+
+# 자동 선택 규칙
+selection_rules:
+  - if: "duration <= 15"
+    use: keynote_15min
+  - if: "duration <= 30 and tone == 강의"
+    use: lecture_30min
+  - if: "tone == 튜토리얼"
+    use: tutorial_60min
+  - default: lecture_30min
+
+# 챕터당 슬라이드 수 가이드라인 (Agenda_detail.md 작성 시)
+slides_per_chapter:
+  min: 3
+  max: 10
+  optimal: 5

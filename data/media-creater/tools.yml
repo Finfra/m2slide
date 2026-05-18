@@ -1,0 +1,59 @@
+# media-creater가 사용하는 미디어 생성 도구 매핑.
+# 본문 분석으로 적합한 도구 선택. 사용자는 새 도구 추가 가능.
+---
+version: 1
+
+tools:
+  - id: mermaid_inline
+    type: diagram
+    handler: inline_codeblock
+    triggers:
+      - "flowchart"
+      - "sequenceDiagram"
+      - "classDiagram"
+      - "stateDiagram"
+      - "erDiagram"
+      - "gantt"
+    output: inline             # ```mermaid 블록 그대로
+    fallback: img/{name}.svg   # 인라인 실패 시 mmdc로 SVG 생성
+
+  - id: mermaid_svg
+    type: diagram
+    handler: mmdc              # mermaid-cli
+    triggers: ["complex_diagram"]
+    output_path: img/
+    output_format: svg
+
+  - id: excalidraw
+    type: hand_drawn
+    handler: excalidraw-for-code
+    triggers:
+      - "architecture"
+      - "system_overview"
+    output_path: img/
+    output_format: [svg, png]
+
+  - id: design_html
+    type: infographic
+    handler: design-html
+    triggers:
+      - "infographic"
+      - "complex_layout"
+    output_path: img/
+    output_format: [html, png]
+
+  - id: gemini_describe
+    type: image_caption
+    handler: gemini-image-describer
+    triggers: ["existing_image_needs_caption"]
+
+# 외부 이미지 출처 (수동 다운로드 시 참고)
+stock_sources:
+  - id: unsplash
+    url: https://unsplash.com
+    license: Unsplash License
+  - id: openverse
+    url: https://openverse.org
+    license: CC
+
+# 비디오 생성은 v1: 수동 녹화. v2 후보: screencast-cli

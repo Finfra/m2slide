@@ -1,0 +1,110 @@
+# refs-collector가 자료를 수집하는 채널 목록.
+# 사용자는 본 파일을 수정하여 새 채널 추가 / 우선순위 변경 / 비활성화 가능.
+# 각 채널은 type(html/pdf/image/video) + handler(어떤 도구로 가져올지) 명시.
+---
+version: 1
+
+channels:
+  # 논문·학술
+  - id: arxiv
+    label: arXiv
+    type: pdf
+    enabled: true
+    base_url: https://arxiv.org
+    handler: scrap            # WebFetch + curl 다운로드
+    search: "https://arxiv.org/search/?query={keyword}"
+    license: "arXiv 정책"
+
+  - id: google_scholar
+    label: Google Scholar
+    type: html
+    enabled: true
+    base_url: https://scholar.google.com
+    handler: gemini-scrapper
+    search: "https://scholar.google.com/scholar?q={keyword}"
+
+  # 영상
+  - id: youtube
+    label: YouTube
+    type: video
+    enabled: true
+    base_url: https://youtube.com
+    handler: gemini-scrapper   # 자막·메타 추출
+    search: "https://www.youtube.com/results?search_query={keyword}"
+
+  # 외부 슬라이드
+  - id: slideshare
+    label: SlideShare
+    type: pdf
+    enabled: false
+    base_url: https://www.slideshare.net
+    handler: scrap
+    search: "https://www.slideshare.net/search/slideshow?searchfrom=header&q={keyword}"
+
+  - id: speakerdeck
+    label: Speaker Deck
+    type: pdf
+    enabled: false
+    base_url: https://speakerdeck.com
+    handler: scrap
+    search: "https://speakerdeck.com/search?q={keyword}"
+
+  # 이미지
+  - id: unsplash
+    label: Unsplash
+    type: image
+    enabled: true
+    base_url: https://unsplash.com
+    handler: scrap
+    search: "https://unsplash.com/s/photos/{keyword}"
+    license: Unsplash License
+
+  - id: openverse
+    label: Openverse (CC)
+    type: image
+    enabled: true
+    base_url: https://openverse.org
+    handler: scrap
+    search: "https://openverse.org/search?q={keyword}"
+    license: Creative Commons
+
+  # 웹 일반
+  - id: web_search
+    label: 일반 웹 검색
+    type: html
+    enabled: true
+    handler: gemini-scrapper
+
+  # 사용자 정의 (로컬·내부)
+  - id: obsidian_vault
+    label: Obsidian Vault
+    type: html
+    enabled: true
+    handler: obsidian-cli
+    base_path: "~/_doc"
+
+  - id: graphify_kb
+    label: Graphify 지식 그래프
+    type: html
+    enabled: true
+    handler: gq           # /gq 래퍼
+
+# 우선순위 (위부터 시도)
+priority:
+  - graphify_kb           # 기존 지식 우선
+  - obsidian_vault
+  - arxiv
+  - youtube
+  - google_scholar
+  - web_search
+  - unsplash
+  - openverse
+
+# 필터 — 결과 제외 패턴
+filters:
+  blacklist_domains:
+    - example.com
+    - spam-site.com
+  min_quality:
+    image_min_width: 800
+    pdf_min_pages: 2
