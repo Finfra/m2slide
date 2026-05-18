@@ -25,34 +25,6 @@
 
 # 🚧 진행중
 
-## Issue169. info-filler v2 패턴 전환 — 데이터-주도 SCAR (등록: 2026-05-19)
-* 목적: Issue166 refs-collector reference 패턴을 info-filler agent에 적용. `data/info-filler/*.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환. SCAR 본문 하드코딩(7개 H1 섹션 명세, 필수/선택 필드 목록, 인터뷰 질문 표) → yml 이동. Issue165 umbrella 추적표 진척.
-* 카테고리: Build (파이프라인 SCAR)
-* depends: Issue166 ✅ (commit dac9db9)
-* 상세:
-    - 현 `.claude/agents/info-filler.md` 인터뷰 질문·필수 필드·산출물 명세가 SCAR 본문에 하드코딩
-    - `data/info-filler/` 시드 폴더 존재 (`questions.yml`, `examples/`, `templates/`) — Issue166에서 골격 생성됨
-    - 전환 후 사용자가 `data/info-filler/questions.yml` 수정으로 인터뷰 질문 커스터마이즈 가능해야 함
-* 구현 명세:
-    - SCAR에 3개 신규 절 추가 (Issue166 패턴):
-        1. "데이터 로드" — `data/info-filler/questions.yml` SSOT 명시 + 로드 방법
-        2. "적용 알고리즘" — yml 로드 후 인터뷰 흐름 매핑 + Info.md 생성 로직
-        3. "확장 지점" — 사용자가 yml 수정으로 변경 가능한 항목 명시 (질문 추가/삭제, 분야별 템플릿, 예시 등)
-    - SCAR 본문 하드코딩 제거:
-        - "필수 필드 수집 (기획)" 절의 7개 필드 표 → questions.yml 참조로 대체
-        - "선택 섹션 수집" 절의 4개 섹션 명세 → questions.yml `optional:` 절로 이동
-        - 인터뷰 질의 예시 → questions.yml의 `prompt:`/`example:` 필드 활용
-    - `data/info-filler/questions.yml` 보강 (현 시드 기반):
-        - `required:` / `optional:` 분리
-        - 각 질문에 `validation:` (정규식·필수 여부) 추가
-        - `dependencies:` (산출물 옵션 의존성 `output_video → output_tts_txt → output_subs_txt`) 정의
-    - `data/info-filler/templates/` 활용 — Info.md 생성 시 사용할 placeholder 템플릿 (Issue166 패턴 동일)
-    - `data/info-filler/examples/` 활용 — 분야별 예시 (선택)
-    - 검증:
-        - 단위: `lib/__tests__/info-filler-data.test.js` 신규 (yml 로드 + 스키마 검증)
-        - 회귀: 기존 `Projects/<Name>/Info.md` 생성 흐름 무변화 확인 (대표 프로젝트 1건)
-    - Issue165 umbrella task 표: 단계 1 SCAR 전환 ⏳ → ✅ + 후속 이슈 컬럼에 Issue169 기록 의무
-
 # 📕 중요
 
 # 📙 일반
@@ -60,6 +32,20 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue169. info-filler v2 패턴 전환 — 데이터-주도 SCAR (등록: 2026-05-19, 해결: 2026-05-19, commit: 2529153) ✅
+* 목적: Issue166 refs-collector reference 패턴을 info-filler agent에 적용. `data/info-filler/questions.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환.
+* 카테고리: Build (파이프라인 SCAR)
+* depends: Issue166 ✅ (commit dac9db9)
+* 산출물:
+    - `.claude/agents/info-filler.md` — 3개 신규 절(데이터 로드 / 적용 알고리즘 / 확장 지점) 추가 + 본문 하드코딩(7개 필드 표·선택 옵션 4개 섹션 명세) 제거 → yml 참조로 대체
+    - `data/info-filler/questions.yml` — v2 스키마 9개 최상위 키 (`planning`/`build_options`/`media_options`/`output_options`/`dependencies`/`tts_text_rules`/`validation_rules`/`interview_policy`/`report_template`)
+    - `_doc_work/tasks/authoring-pipeline_task.md` — 단계 1 SCAR 전환 표 ⏳ → ✅ Issue169 갱신
+* 검증:
+    - 단위 7/7 PASS (yml 스키마 + SCAR 절 존재 + 하드코딩 제거 확인)
+    - 회귀 빌드 OK (`./m2slide.sh m2SlideStyle1_single`)
+* 후속:
+    - Issue165 umbrella 남은 5개 SCAR 전환 (agenda-designer, md-updater, media-creater, layout-selector, slot-designer)
 
 ## Issue168. authoring-pipeline v1/v2 명명 제거 — 단일 SSOT 일원화 (등록: 2026-05-18, 해결: 2026-05-18, commit: d8f0a65) ✅
 * 목적: v1 실사용 없음. v1/v2 명명 전면 폐기. `authoring-pipeline_v2.md` → `authoring-pipeline.md`로 통합. 기존 deprecation stub 삭제. 본문·참조에서 모든 v1/v2 라벨 제거.
