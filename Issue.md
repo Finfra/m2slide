@@ -52,35 +52,6 @@
     - 설계 SSOT: `_doc_arch/authoring-pipeline.md`
     - orchestrator agent: `.claude/agents/authoring-pipeline.md`
 
-## Issue164. authoring-pipeline 진입점 `/m2` 라우터 커맨드 신규 (등록: 2026-05-18)
-* 목적: authoring-pipeline 단계 1~9를 손쉽게 시작·재개·부분 실행하는 단일 진입점을 Git-style subcommand 패턴(`/m2 init|continue|run|build|status|list`)으로 제공. 현재는 단계별 agent/skill을 사용자가 개별 호출해야 하므로 신규 프로젝트 시작·중단된 작업 재개·부분 단계 재실행이 번거로움. 단일 라우터 커맨드 도입으로 mental model 단순화 + 플래그 폭주 회피.
-* 카테고리: Build (커맨드·진입점)
-* 상세:
-    - 6개 subcommand 라우팅: `init`(단계 1 시작), `continue`(자동 resume → 끝까지), `run --from N --to M`(범위 실행), `build`(단계 8 한정), `status`(진행 상황 보고), `list`(모든 프로젝트)
-    - resume 자동 감지 알고리즘: `Projects/<Name>/` 산출물 존재 여부로 다음 미완 단계 추론 (1: Info.md, 2: refs/, 3: AGENDA.md, 4: *.md 본문, 5: img/, 6: *.ppt.md, 7: slot, 8: slide/*.html, 9: *.txt+*.tts.txt)
-    - 위임 우선: 실제 작업은 `authoring-pipeline` orchestrator agent + 각 단계 agent/skill이 수행. 라우터는 인자 파싱·resume 감지·위임만 담당
-    - 기존 진입점 호환: `./m2slide.sh` ≡ `/m2 build`, `/new-project` (글로벌) → `/m2 init` 내부 호출, authoring-pipeline agent 직접 호출은 power-user용으로 보존
-* 구현 명세:
-    - 산출물 1: `.claude/commands/m2.md` (단일 라우터, sonnet 모델)
-    - 인자 파싱: 첫 토큰=subcommand, 두 번째=<name>, 나머지에서 `--from N`/`--to M` 추출
-    - resume 감지 함수: `detectResumeStage(projectDir)` 단일 함수로 분리 → `continue`·`status`·`run` 공유
-    - 위임 인터페이스: orchestrator agent의 `--from-stage N --to-stage M` 플래그에 매핑
-    - 에러 처리: 알 수 없는 subcommand → `--help` 표시, `<name>` 미존재 → `init` 권장
-    - 검증 시나리오: `/m2 init` → `continue` → `build` end-to-end (graphify 또는 신규 테스트 프로젝트 사용)
-* Out of scope:
-    - 각 단계 agent/skill 자체 구현 (단계별 별도 이슈 — Issue157 umbrella 참조)
-    - 글로벌 `/new-project` SCAR 본체 수정 (변경 없이 호출만)
-    - 단계 10(영상 렌더링) — `./run.sh` 별도 운영
-* 영향:
-    - 사용자 진입 장벽 감소 (단일 동사로 의도 표현)
-    - Issue157 umbrella의 운영 진입점 명확화 — orchestrator agent를 라우터 뒤로 숨김
-    - 향후 `/m2 clean`·`/m2 doctor`·`/m2 export` 등 추가 동사 자연스러운 확장 가능
-* 관련:
-    - 설계 SSOT: `_doc_arch/authoring-pipeline.md` "작업 진입점 — /m2 라우터 커맨드" 섹션
-    - Usage 문서: `noteForHuman.md` "Usage — /m2 라우터 커맨드" 섹션
-    - 위임 대상 agent: `.claude/agents/authoring-pipeline.md`
-    - umbrella: Issue157 (단계별 추적)
-
 # 📕 중요
 
 # 📙 일반
@@ -88,6 +59,26 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue164. authoring-pipeline 진입점 `/m2` 라우터 커맨드 신규 (등록: 2026-05-18, 해결: 2026-05-18, commit: f2b2b5e) ✅
+* 목적: authoring-pipeline 단계 1~9를 손쉽게 시작·재개·부분 실행하는 단일 진입점을 Git-style subcommand 패턴(`/m2 init|continue|run|build|status|list`)으로 제공. mental model 단순화 + 플래그 폭주 회피.
+* 카테고리: Build (커맨드·진입점)
+* 산출물:
+    - `.claude/commands/m2.md` — 단일 라우터 커맨드 (sonnet)
+    - `_doc_arch/authoring-pipeline.md` — "작업 진입점 — /m2 라우터 커맨드" 섹션 + 관련 작업 표 갱신
+    - `noteForHuman.md` — "Usage — /m2 라우터 커맨드" 섹션 (subcommand 일람·시나리오·기존 진입점 관계)
+* 구현 요약:
+    - 6 subcommand: `init`/`continue`/`run`/`build`/`status`/`list` + `--help`
+    - resume 자동 감지: 10단계 산출물 검사 (Info.md → refs/ → AGENDA.md → *.md 본문 → img/ → *.ppt.md → slot → slide/*.html → *.txt+*.tts.txt)
+    - 위임 우선: 실제 단계 작업은 `.claude/agents/authoring-pipeline.md` orchestrator agent의 `--from-stage`/`--to-stage`에 매핑. 라우터는 인자 파싱·resume 감지·위임만 담당
+    - 기존 진입점 호환: `./m2slide.sh` ≡ `/m2 build`, `/new-project` (글로벌) → `/m2 init` 내부 호출
+* 검증:
+    - 산출물 4종 존재 확인 (command/SSOT/Usage/Issue 엔트리)
+    - 참조 cross-link grep 확인 (`/m2` 18건 noteForHuman, 24건 SSOT)
+    - 커맨드 spec — 빌드/UI 변경 없음 → apply-verify 미발동
+* 후속:
+    - umbrella 승계: Issue165 (단계별 추적 + `/m2` subcommand 컬럼 추가 예정)
+    - 단계별 agent/skill 미구현 단계는 stub 모드 (Issue157 → Issue165 추적)
 
 ## Issue157. authoring-pipeline 단계 1~9 전체 통합 추적 umbrella task (등록: 2026-05-17, 해결: 2026-05-18, 승계: Issue165) ✅
 * 목적: `_doc_arch/authoring-pipeline.md` 10단계 중 m2slide 책임 영역(단계 1~9) 전체 구현 상태를 단일 산출물에서 추적하는 umbrella plan/task 신규.
