@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 157
+* Issue HWM: 165
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -24,30 +24,77 @@
 
 # 🚧 진행중
 
-## Issue157. authoring-pipeline 단계 1~9 전체 통합 추적 umbrella task (등록: 2026-05-17)
-* 목적: `_doc_arch/authoring-pipeline.md` 10단계(1 기획 ~ 10 렌더링) 중 m2slide 책임 영역인 단계 1~9 전체 구현 상태를 단일 산출물에서 추적 가능하도록 umbrella plan/task 신규. 현재 단계별로 분산된 8개 arch + 10개 plan + 9개 task를 한눈에 매핑하여 누락 단계·미연결 산출물·후속 의존 이슈 식별을 용이하게 함.
+## Issue165. `/m2` 라우터 기준 authoring-pipeline 단계 1~9 전체 통합 추적 umbrella task (등록: 2026-05-18)
+* 목적: Issue157 umbrella(orchestrator agent 중심)를 승계하여, Issue164 `/m2` 라우터 커맨드를 운영 진입점으로 한 새로운 매핑·추적 기준 수립. 단계별 산출물(arch/plan/task/agent/skill)과 `/m2 init|continue|run|build|status|list` 6개 subcommand의 단계 위임 관계를 한 표에서 관리.
 * plan: `_doc_work/plan/authoring-pipeline_plan.md`
 * task: `_doc_work/tasks/authoring-pipeline_task.md`
 * 카테고리: Project (nPTiR 메타 추적)
 * 상세:
-    - 단계별 매핑 표: 단계 1~10 × (arch SSOT, plan, task, 운영 상태, 담당 이슈) 행렬 정리
+    - 단계별 매핑 표: 단계 1~10 × (arch SSOT, plan, task, 운영 상태, 담당 이슈, `/m2` subcommand 매핑) 행렬
     - 단계별 운영 상태 분류: `운영`(단계 6·8·9·10) / `todo`(단계 1·2·3·4·5·7)
-    - 미연결 plan/task 식별: `slide_ratio_layout_plan/task`, `slide_ratio_none_removal_plan` 등 `arch:` 미연결 산출물 후속 처리 가이드
-    - 의존 이슈 체인 도식: Issue155(단계 6 완료) → Issue156(orchestrator agent) → 본 이슈(전체 추적) → 단계별 후속 이슈 분기
-    - `_doc_arch/authoring-pipeline.md` 백링크 양방향성 유지 — 본 task가 새로 추가될 때 arch 파일 "관련 작업" 섹션도 갱신
+    - `/m2` subcommand ↔ 단계 매핑: `init` → 단계 1, `continue` → resume 감지 후 1~9 순차, `run --from N --to M` → 임의 범위, `build` → 단계 8, `status` → 진행 상황 보고, `list` → 모든 프로젝트
+    - 미연결 plan/task 식별 + arch 백링크 양방향성 유지
+    - 의존 이슈 체인: Issue157(승계 대상) → Issue164(/m2 라우터) → 본 이슈 → 단계별 후속 이슈
 * 구현 명세:
-    - 산출물 1: `_doc_work/plan/authoring-pipeline_plan.md` (경량 — 추적 정책 + 매핑 규칙 정의)
-    - 산출물 2: `_doc_work/tasks/authoring-pipeline_task.md` (실행 체크리스트 + 10단계 진척 추적 표)
-    - frontmatter: 양쪽 모두 `arch: _doc_arch/authoring-pipeline.md` + `issue: Issue157`
-    - 종료 조건: 본 이슈 자체는 단계별 후속 이슈 완료 시점에 종결하지 않음. 매핑 표 신규 entry 발생 시(예: 새 arch/plan/task) task 갱신 의무만 부과 → 장기 운영 추적 문서 성격
-    - 갱신 트리거: 단계별 후속 이슈 (Issue158+, info-filler, refs-collector, agenda-designer 등)가 등록·종결될 때마다 본 task의 매핑 표 동기화
+    - 산출물 1: `_doc_work/plan/authoring-pipeline_plan.md` 갱신 — `/m2` 라우터 진입점 + subcommand 매핑 표 추가
+    - 산출물 2: `_doc_work/tasks/authoring-pipeline_task.md` 갱신 — 10단계 진척 표에 `/m2` subcommand 컬럼 추가
+    - frontmatter: 양쪽 `arch: _doc_arch/authoring-pipeline.md` + `issue: Issue165`
+    - 종료 조건: 장기 운영 추적 문서. 단계별 후속 이슈 등록·종결 시마다 매핑 표 동기화 의무만 부과
+    - 갱신 트리거: 새 arch/plan/task 등장, `/m2` subcommand 추가, 단계별 agent/skill 신설 시 본 task 갱신
 * Out of scope:
     - 단계별 개별 agent/skill 구현 (각 단계별 별도 이슈)
-    - Issue156 orchestrator agent 자체 구현 (위임 인터페이스만 본 task에서 참조)
-    - 단계 10 영상 렌더링 (videoMaker_arch.md 위임)
-* 영향: nPTiR 파이프라인 전체 가시성 확보. 단계별 implementation gap 조기 발견 가능. Issue156 orchestrator agent의 운영 근거 자료로 활용.
+    - Issue164 `/m2` 라우터 본체 구현 (Issue164에서 처리)
+    - 단계 10 영상 렌더링 (`videoMaker_arch.md` 위임)
+* 영향: nPTiR 파이프라인 전체 가시성을 `/m2` 라우터 mental model에 정렬. Issue157 대비 사용자 진입 동사(init/continue/run/build) 관점으로 단계 매핑 → 운영 추적성 향상.
+* 관련:
+    - 승계 대상: Issue157 (완료)
+    - 운영 진입점 이슈: Issue164
+    - 설계 SSOT: `_doc_arch/authoring-pipeline.md`
+    - orchestrator agent: `.claude/agents/authoring-pipeline.md`
+
+## Issue164. authoring-pipeline 진입점 `/m2` 라우터 커맨드 신규 (등록: 2026-05-18)
+* 목적: authoring-pipeline 단계 1~9를 손쉽게 시작·재개·부분 실행하는 단일 진입점을 Git-style subcommand 패턴(`/m2 init|continue|run|build|status|list`)으로 제공. 현재는 단계별 agent/skill을 사용자가 개별 호출해야 하므로 신규 프로젝트 시작·중단된 작업 재개·부분 단계 재실행이 번거로움. 단일 라우터 커맨드 도입으로 mental model 단순화 + 플래그 폭주 회피.
+* 카테고리: Build (커맨드·진입점)
+* 상세:
+    - 6개 subcommand 라우팅: `init`(단계 1 시작), `continue`(자동 resume → 끝까지), `run --from N --to M`(범위 실행), `build`(단계 8 한정), `status`(진행 상황 보고), `list`(모든 프로젝트)
+    - resume 자동 감지 알고리즘: `Projects/<Name>/` 산출물 존재 여부로 다음 미완 단계 추론 (1: Info.md, 2: refs/, 3: AGENDA.md, 4: *.md 본문, 5: img/, 6: *.ppt.md, 7: slot, 8: slide/*.html, 9: *.txt+*.tts.txt)
+    - 위임 우선: 실제 작업은 `authoring-pipeline` orchestrator agent + 각 단계 agent/skill이 수행. 라우터는 인자 파싱·resume 감지·위임만 담당
+    - 기존 진입점 호환: `./m2slide.sh` ≡ `/m2 build`, `/new-project` (글로벌) → `/m2 init` 내부 호출, authoring-pipeline agent 직접 호출은 power-user용으로 보존
+* 구현 명세:
+    - 산출물 1: `.claude/commands/m2.md` (단일 라우터, sonnet 모델)
+    - 인자 파싱: 첫 토큰=subcommand, 두 번째=<name>, 나머지에서 `--from N`/`--to M` 추출
+    - resume 감지 함수: `detectResumeStage(projectDir)` 단일 함수로 분리 → `continue`·`status`·`run` 공유
+    - 위임 인터페이스: orchestrator agent의 `--from-stage N --to-stage M` 플래그에 매핑
+    - 에러 처리: 알 수 없는 subcommand → `--help` 표시, `<name>` 미존재 → `init` 권장
+    - 검증 시나리오: `/m2 init` → `continue` → `build` end-to-end (graphify 또는 신규 테스트 프로젝트 사용)
+* Out of scope:
+    - 각 단계 agent/skill 자체 구현 (단계별 별도 이슈 — Issue157 umbrella 참조)
+    - 글로벌 `/new-project` SCAR 본체 수정 (변경 없이 호출만)
+    - 단계 10(영상 렌더링) — `./run.sh` 별도 운영
+* 영향:
+    - 사용자 진입 장벽 감소 (단일 동사로 의도 표현)
+    - Issue157 umbrella의 운영 진입점 명확화 — orchestrator agent를 라우터 뒤로 숨김
+    - 향후 `/m2 clean`·`/m2 doctor`·`/m2 export` 등 추가 동사 자연스러운 확장 가능
+* 관련:
+    - 설계 SSOT: `_doc_arch/authoring-pipeline.md` "작업 진입점 — /m2 라우터 커맨드" 섹션
+    - Usage 문서: `noteForHuman.md` "Usage — /m2 라우터 커맨드" 섹션
+    - 위임 대상 agent: `.claude/agents/authoring-pipeline.md`
+    - umbrella: Issue157 (단계별 추적)
 
 # 📕 중요
+
+# 📙 일반
+
+# 📗 선택
+
+# ✅ 완료
+
+## Issue157. authoring-pipeline 단계 1~9 전체 통합 추적 umbrella task (등록: 2026-05-17, 해결: 2026-05-18, 승계: Issue165) ✅
+* 목적: `_doc_arch/authoring-pipeline.md` 10단계 중 m2slide 책임 영역(단계 1~9) 전체 구현 상태를 단일 산출물에서 추적하는 umbrella plan/task 신규.
+* 결과: Issue164 `/m2` 라우터 커맨드 신규로 운영 진입점이 orchestrator agent에서 라우터 subcommand로 전환됨에 따라 본 umbrella는 Issue165로 승계. 매핑 표·추적 정책은 Issue165에서 `/m2` subcommand 컬럼 추가로 재정렬.
+* 산출물: `_doc_work/plan/authoring-pipeline_plan.md`, `_doc_work/tasks/authoring-pipeline_task.md` (Issue165가 계속 갱신)
+* 카테고리: Project (nPTiR 메타 추적)
+* 종결 사유: 운영 진입점 변경에 따른 추적 기준 재수립 → Issue165 승계
 
 ## Issue156. new-project SCAR 업데이트 + authoring-pipeline 오케스트레이션 agent 추가 (등록: 2026-05-17, 해결: 2026-05-17, commit: 624d201) ✅
 * 목적: `_doc_arch/authoring-pipeline.md` 단계 1~9 전체 프로세스를 자동으로 이어 진행하는 orchestrator agent 신규 + 글로벌 `/new-project` SCAR가 m2slide 타입 프로젝트 초기화 시 본 agent를 연결하도록 업데이트. Issue155로 단계 6이 운영 전환되어 전 단계가 agent/skill로 채워질 준비가 되었으므로 파이프라인 전체를 한 번에 구동할 진입점 마련.
@@ -74,11 +121,35 @@
     - 단계별 산출물의 git commit 자동화
 * 영향: authoring-pipeline 단계 진입점 단일화. m2slide 타입 신규 프로젝트 onboarding 자동화 기반 마련. 단계 1~5·7 후속 agent 구현 시 본 orchestrator의 위임 매핑 표만 갱신하면 즉시 통합 가능.
 
-# 📙 일반
+## Issue163. authoring-pipeline 단계 7 — slot-designer agent 신설 (등록: 2026-05-17, 해결: 2026-05-17, commit: acb4816) ✅
+* 산출: `.claude/agents/slot-designer.md` (sonnet) — `.ppt.md` 슬라이드별 layout 메타 read → slot fenced div 자동 매핑. data/slot_*.yml 4종 카탈로그 활용. 사용자 수동 slot 보존.
+* depends: Issue155 (단계 6 layout-selector + `.ppt.md`)
+* 검증: frontmatter 5필드, 카탈로그 4종 read, 빌드 후 placeholder 미잔존 grep 정책 명세화
 
-# 📗 선택
+## Issue162. authoring-pipeline 단계 5 — media-creater agent 신설 (등록: 2026-05-17, 해결: 2026-05-17, commit: acb4816) ✅
+* 산출: `.claude/agents/media-creater.md` (sonnet) — 본문 분석 → mermaid 인라인 삽입 / img placeholder + 생성 명세 / excalidraw 별도 파일. gemini-image-describer 등 외부 스킬 위임 정책 명세화.
+* depends: Issue161
+* 보조: `make-mermaid`, `excalidraw-diagram`, `mermaid-diagram` 스킬 위임 표
 
-# ✅ 완료
+## Issue161. authoring-pipeline 단계 4 — md-updater skill 신설 (등록: 2026-05-17, 해결: 2026-05-17, commit: acb4816) ✅
+* 산출: `.claude/skills/md-updater/SKILL.md` — AGENDA 골격 + refs/ 기반 슬라이드 본문 자동 작성. 사람 검토 체크포인트, 빌드 lint 실패 시 1회 자동 수정.
+* depends: Issue160
+* 준수: md-rules + md-slide-rules + md-m2slide-rules 3단계 규칙 + release-date-rules 자동 갱신
+
+## Issue160. authoring-pipeline 단계 3 — agenda-designer agent 신설 (등록: 2026-05-17, 해결: 2026-05-17, commit: acb4816) ✅
+* 산출: `.claude/agents/agenda-designer.md` (sonnet) — Info.md + refs/ → AGENDA.md(chapter) 또는 single skeleton 자동 작성. 분량·goals 기반 mode 자동 판정.
+* depends: Issue159
+* 규칙: chapter mode 인라인 링크 형식(`## [제목](./파일.md)`), single mode frontmatter `type: ppt` 검증
+
+## Issue159. authoring-pipeline 단계 2 — refs-collector agent 신설 (등록: 2026-05-17, 해결: 2026-05-17, commit: acb4816) ✅
+* 산출: `.claude/agents/refs-collector.md` (sonnet) — Info.md refs_seed → WebSearch + WebFetch → Projects/<Name>/refs/*.md 적재 + refs.md 인덱스 자동 갱신. 글로벌 refs-rules 준수.
+* depends: Issue158
+* 위임: `scrap` skill, `gemini-scrapper`, `obsidian-cli` 가용 시 우선 활용
+
+## Issue158. authoring-pipeline 단계 1 — info-filler agent 신설 (등록: 2026-05-17, 해결: 2026-05-17, commit: acb4816) ✅
+* 산출: `_doc_arch/info.md` SSOT (Info.md 스키마 7개 H1 섹션) + `.claude/agents/info-filler.md` (sonnet) — 인터뷰형 대화로 Info.md 자동 생성. 후속 단계 입력 SSOT.
+* depends: Issue157 (umbrella)
+* 검증: frontmatter 3필드 + 본문 7개 H1 섹션 + 필수 필드(주제·청중·분량) 비어있지 않음
 
 ## Issue155. m2slide layout-selector LLM agent 구현 (단계 6) (등록: 2026-05-17, 해결: 2026-05-17, commit: 4d82d13) ✅
 * 목적: `_doc_arch/authoring-pipeline.md` 단계 6 (layout selector)를 LLM agent로 구현. 슬라이드 소스 `.md` → `.ppt.md` 파생본 변환, 각 슬라이드에 `#layout-*` 메타 주입. PowerPoint Designer 추천 능력을 markdown SSOT + reveal.js 출력에 이식.
