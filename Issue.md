@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 166
+* Issue HWM: 167
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -23,6 +23,30 @@
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
 
 # 🚧 진행중
+
+## Issue167. authoring-pipeline v1 제거 — v2 단독 SSOT 통합 (등록: 2026-05-18)
+* 목적: v2(Issue166)로 데이터-주도 SCAR + Projects/<Name>/_pipeline/ 영속 추적 완비됨. v1과 병존 시 fallback 경로 + dual SSOT 유지 부담 → v1 완전 제거하고 v2를 단독 SSOT로 통합. v1의 단계별 상세 내용(입력·산출물·도구·검증)은 v2에 흡수.
+* 카테고리: Build (파이프라인 인프라)
+* 상세:
+    - v1 SSOT(`_doc_arch/authoring-pipeline.md`)를 deprecation notice + v2 redirect로 축소
+    - v2 SSOT(`_doc_arch/authoring-pipeline_v2.md`)에 단계 1~9 상세 통합 — 자기-완결 SSOT
+    - SCAR(`m2.md`, `authoring-pipeline.md`)에서 "v1 fallback" 라벨 제거. 산출물 기반 초기 추론 알고리즘은 신규 프로젝트 초기화용으로 유지하되 "v1" 명칭 제거
+    - v1 fallback 로그 경로 `_doc_work/pipeline/<Name>_run_<timestamp>.md` 참조 제거 (운영 메타는 항상 `Projects/<Name>/_pipeline/`)
+    - plan/task/report 문서에서 v1/v2 dual 표 → v2 단일 표로 통합
+* 구현 명세:
+    - 산출물 1: `_doc_arch/authoring-pipeline_v2.md` 확장 — v1의 단계 1~9 상세 명세 통합
+    - 산출물 2: `_doc_arch/authoring-pipeline.md` 축소 — deprecation notice 한 줄 + v2 redirect
+    - 산출물 3: SCAR 갱신 — `m2.md`, `authoring-pipeline.md` v1 라벨 제거
+    - 산출물 4: plan/task/report dual 표 → 단일 표 통합
+    - 검증: 단위 테스트 7/7 유지, 회귀 빌드, v1 ref grep 결과 0건
+* Out of scope:
+    - SCAR 6개 (info-filler 등) v2 패턴 전환 — 각 단계별 후속 이슈
+    - v1 SSOT 물리 삭제 — deprecation notice 유지 (이력 보존)
+    - state.yml 부재 시 산출물 기반 추론 알고리즘 — v2 정식 기능으로 유지
+* 영향:
+    - dual SSOT 부담 해소 → 문서 유지 단순화
+    - SCAR 본문에서 v1/v2 분기 제거 → 코드 가독성 향상
+    - Issue165 umbrella의 "v1 참고" 절도 v2 단일 표로 통합
 
 # 📕 중요
 
