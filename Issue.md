@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 167
+* Issue HWM: 168
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -24,6 +24,27 @@
 
 # 🚧 진행중
 
+## Issue168. authoring-pipeline v1/v2 명명 제거 — 단일 SSOT 일원화 (등록: 2026-05-18)
+* 목적: v1 실사용 없었으므로 v1/v2 명명 전면 폐기. `authoring-pipeline.md` → `authoring-pipeline.md`로 통합. 기존 deprecation stub `authoring-pipeline.md` 삭제. 본문에서 모든 v1/v2 라벨 제거. 단일 SSOT로 진행.
+* 카테고리: Build (파이프라인 인프라)
+* 상세:
+    - `_doc_arch/authoring-pipeline.md` (deprecation stub) 삭제
+    - `_doc_arch/authoring-pipeline.md` 본문에서 v1/v2 라벨 제거
+    - `_doc_arch/authoring-pipeline.md` → `_doc_arch/authoring-pipeline.md`로 rename
+    - 모든 참조 갱신 (plan/task/report/SCAR/Issue.md/noteForHuman.md)
+    - rename 룰 준수 (사전 grep → rename → 참조 갱신 → 사후 검증 → 단일 commit)
+* 구현 명세:
+    - 산출물: 단일 SSOT `_doc_arch/authoring-pipeline.md`
+    - 검증: `grep -rn "authoring-pipeline_v2\|v1 SSOT\|v2 SSOT" .` 결과 0건 (역사적 commit 메시지 제외)
+    - 단위 테스트 7/7 유지
+* Out of scope:
+    - 단계 구조·기능 변경 (명명 정리만)
+    - data 폴더·인프라 모듈 코드 변경
+* 영향:
+    - dual 명명 부담 해소
+    - 신규 사용자 진입 장벽 감소 (v1/v2 비교 컨텍스트 학습 불필요)
+    - Issue166/167 commit 메시지·report는 역사적 기록으로 보존 (변경 안 함)
+
 # 📕 중요
 
 # 📙 일반
@@ -37,7 +58,7 @@
 * 카테고리: Build (파이프라인 인프라)
 * 산출물:
     - `_doc_arch/authoring-pipeline.md` (549 → 49 lines) — deprecation notice + v2 redirect 표
-    - `_doc_arch/authoring-pipeline_v2.md` 확장 — 단계 1~9 상세 명세 통합 (자기-완결)
+    - `_doc_arch/authoring-pipeline.md` 확장 — 단계 1~9 상세 명세 통합 (자기-완결)
     - SCAR 갱신: `.claude/commands/m2.md`, `.claude/agents/authoring-pipeline.md` — v1 fallback 라벨 제거
     - plan/task: "v1 시대 참고" → "보조 arch" 절로 재정의
     - report: `_doc_work/report/authoring-pipeline-v1-deprecation_issue167_report.md` 신규
@@ -58,10 +79,10 @@
     - 본 umbrella는 후속 이슈 종결 시마다 v2 전환 추적 표 ⏳ → ✅ 갱신 의무
 
 ## Issue166. authoring-pipeline v2 구현 — 데이터-주도 SCAR + /pm 무중단 History/Artifacts (등록: 2026-05-18, 해결: 2026-05-18, commit: dac9db9) ✅
-* 목적: [v2 SSOT](_doc_arch/authoring-pipeline_v2.md) 3가지 핵심 변경(데이터-주도 SCAR / Info.md=사용자 요청 SSOT / `/pm` 무중단 History·Artifacts) 통합.
+* 목적: [v2 SSOT](_doc_arch/authoring-pipeline.md) 3가지 핵심 변경(데이터-주도 SCAR / Info.md=사용자 요청 SSOT / `/pm` 무중단 History·Artifacts) 통합.
 * 카테고리: Build (파이프라인 인프라)
 * 산출물:
-    - `_doc_arch/authoring-pipeline_v2.md` — v2 SSOT 설계
+    - `_doc_arch/authoring-pipeline.md` — v2 SSOT 설계
     - `data/{info-filler,refs-collector,agenda-designer,md-updater,media-creater,layout-selector,slot-designer}/` — 단계별 시드 yml 7종
     - `lib/pipeline-state.js` — state.yml 관리 + lock
     - `lib/pipeline-history.js` — append-only 로그
