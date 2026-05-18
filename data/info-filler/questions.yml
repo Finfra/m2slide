@@ -1,57 +1,266 @@
-# info-filler가 사용자에게 묻는 인터뷰 질문 시드.
-# 각 질문은 Info.md의 한 섹션에 대응. 순서 보존.
-# 사용자는 이 파일을 수정하여 분야별 질문 추가/제거 가능.
+# info-filler v2 SSOT — 인터뷰 질문·옵션·의존성·검증 규칙.
+# 사용자가 본 파일을 수정하면 SCAR 본문 변경 없이 즉시 반영됨 (agent가 호출 시점에 매번 Read).
+# 스키마는 _doc_arch/info.md 표준 양식과 1:1 매핑.
 ---
-version: 1
-questions:
-  - id: topic
-    label: 주제
-    prompt: "영상의 주제를 한 줄로 요약해주세요."
-    required: true
-    example: "LLM 도구 진화와 바이브 코딩 세대 구분"
+version: 2
 
-  - id: audience
-    label: 청중
-    prompt: "대상 청중과 전제 지식 수준을 알려주세요."
-    required: true
-    example: "주니어~시니어 개발자, AI 도구 사용 경험 1년 미만"
+# ============================================================================
+# 1. 기획 — 필수/선택 인터뷰 질문 (Info.md 본문 H1 섹션 대응)
+# ============================================================================
+planning:
+  required:
+    - id: topic
+      label: 주제
+      section: 주제
+      prompt: "이 프로젝트의 주제를 한 줄로 요약해주세요."
+      example: "LLM 도구 진화와 바이브 코딩 세대 구분"
+      validation:
+        type: string
+        min_length: 5
 
-  - id: duration
-    label: 러닝타임
-    prompt: "예상 영상 길이(분)? 30분 이하 = single mode, 초과 = chapter mode 권장."
-    required: true
-    example: "30"
+    - id: audience
+      label: 청중
+      section: 청중
+      prompt: "주 청중과 전제 지식 수준을 알려주세요."
+      example: "주니어~시니어 개발자, AI 도구 사용 경험 1년 미만"
+      validation:
+        type: string
+        min_length: 5
 
-  - id: tone
-    label: 발표 톤
-    prompt: "강의·내레이션·대화·튜토리얼 중 어떤 톤?"
-    required: true
-    example: "강의"
+    - id: duration
+      label: 분량
+      section: 분량
+      prompt: "강의·발표 분량은 몇 분인가요? (30분 이하 = single 권장, 초과 = chapter 권장)"
+      example: "30"
+      validation:
+        type: integer
+        min: 1
+        max: 600
 
-  - id: outline
-    label: 목차 outline
-    prompt: "1차 챕터·섹션 리스트 (있으면). 없으면 agenda-designer가 자동 생성."
-    required: false
-    example: |
-      1. 오프닝
-      2. 진화 흐름
-      3. 세대 구분
-      4. 미래 전망
+    - id: tone
+      label: 스타일
+      section: 발표 스타일
+      prompt: "발표 톤은? (강의·내레이션·대화·튜토리얼 등)"
+      example: "강의"
+      validation:
+        type: enum
+        values: [강의, 내레이션, 대화, 튜토리얼, 발표, 기타]
 
-  - id: key_messages
-    label: 핵심 메시지
-    prompt: "강조할 결론·주장 3~5개."
-    required: true
-    example: "CLI 기반 도구가 차세대 표준"
+    - id: goals
+      label: 학습 목표
+      section: 학습 목표
+      prompt: "청중이 얻을 핵심 메시지·학습 목표 3~7개를 알려주세요."
+      example:
+        - "CLI 기반 도구가 차세대 표준임을 이해"
+        - "세대 구분 기준 식별 가능"
+      validation:
+        type: list
+        min_items: 3
+        max_items: 7
 
-  - id: refs_seed
-    label: 참고 출처 키워드
-    prompt: "데이터 수집 단계 검색 시드. 키워드·도메인·전문 출처 명시."
-    required: true
-    example: "Claude Code, Cursor, AI agent CLI"
+    - id: refs_seed
+      label: 참고자료 후보
+      section: 참고자료 후보
+      prompt: "참고할 자료의 키워드를 알려주세요 (refs-collector 검색에 사용)."
+      example:
+        - "Claude Code"
+        - "Cursor"
+        - "AI agent CLI"
+      validation:
+        type: list
+        min_items: 1
 
-  - id: deadline
-    label: 데드라인
-    prompt: "발표 또는 게시 마감일? (YYYY-MM-DD)"
-    required: false
-    example: "2026-06-15"
+    - id: deadline
+      label: 데드라인
+      section: 데드라인
+      prompt: "강의·녹화·배포 데드라인은 언제인가요? (YYYY-MM-DD)"
+      example: "2026-06-15"
+      validation:
+        type: date_iso
+
+  optional:
+    - id: outline
+      label: 목차 outline
+      prompt: "1차 챕터·섹션 리스트 (있으면). 없으면 agenda-designer가 자동 생성."
+      example: |
+        1. 오프닝
+        2. 진화 흐름
+        3. 세대 구분
+        4. 미래 전망
+
+# ============================================================================
+# 2. 빌드 옵션 (단계 3·4·6·8 — Info.md "빌드 옵션" H1 섹션)
+# ============================================================================
+build_options:
+  - id: mode
+    prompt: "single | chapter | auto"
+    default: auto
+    description: "auto = duration ≥30분 + goals ≥5개면 chapter, 아니면 single"
+    values: [single, chapter, auto]
+
+  - id: theme
+    prompt: "theme/{이름}/ 디렉토리"
+    default: default
+    description: "사용 가능 theme: default, default_lec, nowage 등 (theme/ 폴더 참조)"
+
+  - id: theme_default_layout
+    prompt: "기본 layout"
+    default: contents
+
+  - id: cover_enabled
+    prompt: "첫 슬라이드 cover 자동 주입?"
+    default: false
+    values: [true, false]
+
+  - id: cover_layout
+    prompt: "cover layout 이름 (cover_enabled=true일 때만)"
+    default: _cover
+    conditional: { cover_enabled: true }
+
+  - id: markmap_depth
+    prompt: "TOC 마인드맵 펼침 깊이"
+    default: 2
+    validation: { type: integer, min: 1, max: 6 }
+
+# ============================================================================
+# 3. 미디어 계획 (단계 5 — Info.md "미디어 계획" H1 섹션)
+# ============================================================================
+media_options:
+  - id: use_mermaid
+    prompt: "mermaid 다이어그램 사용?"
+    default: true
+
+  - id: use_excalidraw
+    prompt: "excalidraw 다이어그램 사용?"
+    default: false
+
+  - id: use_html_infographic
+    prompt: "HTML infographic 사용?"
+    default: false
+
+  - id: use_video_demo
+    prompt: "시연 영상 삽입?"
+    default: false
+    description: "수동 녹화"
+
+  - id: ai_image_style_guide
+    prompt: "AI 이미지 생성 시 톤·스타일 가이드 한 줄 (선택)"
+    default: ""
+    example: "minimal flat illustration, blue tone"
+
+# ============================================================================
+# 4. 산출물 계획 (단계 8·9 — Info.md "산출물 계획" H1 섹션)
+# m2slide 책임 범위 — TTS 합성·MP4 렌더링은 상위 videoMaker 책임이라 제외.
+# ============================================================================
+output_options:
+  - id: output_html
+    prompt: "Reveal.js HTML 슬라이드 생성?"
+    default: true
+
+  - id: output_epub
+    prompt: "EPUB 전자책 동시 생성?"
+    default: false
+
+  - id: output_subs_txt
+    prompt: "자막용 .txt 생성? (영상 또는 자막 작업 시 필요)"
+    default: false
+
+  - id: output_tts_txt
+    prompt: "TTS 합성용 .tts.txt 생성? (음성 합성 입력)"
+    default: false
+    notice: "true 응답 시 output_subs_txt 자동 true (의존성 규칙)"
+
+# ============================================================================
+# 5. 산출물 의존성 — 자동 보정 규칙
+# ============================================================================
+dependencies:
+  - if: { output_tts_txt: true }
+    then: { output_subs_txt: true }
+    reason: ".tts.txt는 .txt에서 파생 (txt2tts agent 변환)"
+
+  # videoMaker 책임 영역 (info-filler 미수집이나 참조용):
+  # - if: { output_video: true }
+  #   then: { output_tts_txt: true }
+
+# ============================================================================
+# 6. TTS 텍스트 규칙 — output_tts_txt: true일 때만 질의
+# 콘텐츠 정책만 수집 (발음 변환·TTS 엔진·speaker는 videoMaker 책임)
+# ============================================================================
+tts_text_rules:
+  conditional: { output_tts_txt: true }
+
+  visual_assets:
+    notice: |
+      이미지·표·코드·다이어그램·URL은 .tts.txt에 자동 포함되지 않습니다.
+      영상에서 음성으로 설명되려면 슬라이드 본문에 텍스트로 풀어 적어야 합니다.
+    items:
+      - asset: 이미지
+        prompt: "이미지 처리 방침 (한 줄)"
+        example: "모든 이미지 위에 한 줄 도입부 추가"
+      - asset: 표
+        prompt: "표 처리 방침"
+        example: "표 직전에 핵심 결론 1문장"
+      - asset: 코드
+        prompt: "코드 블록 처리 방침"
+        example: "코드 의도·핵심 라인만 자연어"
+      - asset: 다이어그램
+        prompt: "다이어그램(mermaid 등) 처리 방침"
+        example: "흐름을 3~5문장으로 풀어쓰기"
+      - asset: URL
+        prompt: "URL 처리 방침"
+        example: "자세한 내용은 자막 참고"
+
+  extra_narration:
+    prompt: |
+      특정 슬라이드에 본문 외 별도 내레이션을 덧붙일 필요가 있나요?
+      형식: 슬라이드 식별자(챕터.번호 또는 제목) → 내레이션 텍스트
+      없으면 skip 응답.
+    default: []
+
+  exclude:
+    prompt: |
+      .tts.txt 생성 시 제외할 콘텐츠 유형이 있나요?
+      ex) "코드 블록 전체", "발표자 노트", "부록 챕터"
+      없으면 skip 응답.
+    default: []
+
+# ============================================================================
+# 7. 종료 검증 — 5. 검증 절에서 사용
+# ============================================================================
+validation_rules:
+  required_frontmatter: [name, description, date]
+  required_sections: [주제, 청중, 분량, 발표 스타일, 학습 목표, 참고자료 후보, 데드라인]
+  optional_sections: [빌드 옵션, 미디어 계획, 산출물 계획, TTS 텍스트 규칙]
+  required_filled: [topic, audience, duration]   # 빈 값 금지
+  list_min:
+    goals: 1          # 표준 양식 권고는 3이나 보류 시 1 허용
+    refs_seed: 1
+  consistency_checks:
+    - rule: "output_tts_txt=true → output_subs_txt=true"
+
+# ============================================================================
+# 8. 인터뷰 진행 정책
+# ============================================================================
+interview_policy:
+  followup_max: 1               # 미응답 필드당 follow-up 1회
+  default_on_skip: true         # "모르겠다"·"건너뛰자" 응답 시 default 적용 후 진행
+  preserve_existing: true       # 비파괴 갱신 — 기존 사용자 작성 값 변경 금지
+  config_yml_priority: true     # _config.yml 값이 있으면 default 후보로 사용
+  range_for_chapter_mode:
+    duration_min: 30
+    goals_min: 5
+
+# ============================================================================
+# 9. 종료 보고 템플릿
+# ============================================================================
+report_template: |
+  Info.md 생성 완료: Projects/<Name>/Info.md
+  - 주제: {topic}
+  - 청중: {audience}
+  - 분량: {duration} 분
+  - mode: {mode} (자동 판정 또는 사용자 지정)
+  - 산출물: {output_summary}
+  - TTS 텍스트 규칙: 시각 자산 정책 {N1}개 / 추가 내레이션 {N2}개 / 제외 {N3}개
+  - 필수 필드: {모두 충족 | 일부 보류}
+  - 다음 단계: refs-collector agent 호출 권장
+  - 참고: TTS 합성·MP4 렌더링은 상위 videoMaker(run.sh) 책임
