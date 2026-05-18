@@ -24,27 +24,6 @@
 
 # 🚧 진행중
 
-## Issue168. authoring-pipeline v1/v2 명명 제거 — 단일 SSOT 일원화 (등록: 2026-05-18)
-* 목적: v1 실사용 없었으므로 v1/v2 명명 전면 폐기. `authoring-pipeline.md` → `authoring-pipeline.md`로 통합. 기존 deprecation stub `authoring-pipeline.md` 삭제. 본문에서 모든 v1/v2 라벨 제거. 단일 SSOT로 진행.
-* 카테고리: Build (파이프라인 인프라)
-* 상세:
-    - `_doc_arch/authoring-pipeline.md` (deprecation stub) 삭제
-    - `_doc_arch/authoring-pipeline.md` 본문에서 v1/v2 라벨 제거
-    - `_doc_arch/authoring-pipeline.md` → `_doc_arch/authoring-pipeline.md`로 rename
-    - 모든 참조 갱신 (plan/task/report/SCAR/Issue.md/noteForHuman.md)
-    - rename 룰 준수 (사전 grep → rename → 참조 갱신 → 사후 검증 → 단일 commit)
-* 구현 명세:
-    - 산출물: 단일 SSOT `_doc_arch/authoring-pipeline.md`
-    - 검증: `grep -rn "authoring-pipeline_v2\|v1 SSOT\|v2 SSOT" .` 결과 0건 (역사적 commit 메시지 제외)
-    - 단위 테스트 7/7 유지
-* Out of scope:
-    - 단계 구조·기능 변경 (명명 정리만)
-    - data 폴더·인프라 모듈 코드 변경
-* 영향:
-    - dual 명명 부담 해소
-    - 신규 사용자 진입 장벽 감소 (v1/v2 비교 컨텍스트 학습 불필요)
-    - Issue166/167 commit 메시지·report는 역사적 기록으로 보존 (변경 안 함)
-
 # 📕 중요
 
 # 📙 일반
@@ -52,6 +31,23 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue168. authoring-pipeline v1/v2 명명 제거 — 단일 SSOT 일원화 (등록: 2026-05-18, 해결: 2026-05-18, commit: d8f0a65) ✅
+* 목적: v1 실사용 없음. v1/v2 명명 전면 폐기. `authoring-pipeline_v2.md` → `authoring-pipeline.md`로 통합. 기존 deprecation stub 삭제. 본문·참조에서 모든 v1/v2 라벨 제거.
+* 카테고리: Build (파이프라인 인프라)
+* 산출물:
+    - `_doc_arch/authoring-pipeline.md` — 단일 SSOT (v2 파일 rename)
+    - 구 v1 deprecation stub `_doc_arch/authoring-pipeline.md` 삭제
+    - 모든 참조 일괄 갱신 (plan/task/report/SCAR/Issue.md)
+    - 본문 v1/v2 라벨 정리 (frontmatter name·H2·표 컬럼·후보 라벨)
+    - report: `_doc_work/report/authoring-pipeline-naming-unification_issue168_report.md`
+* 검증:
+    - 단위 7/7 PASS
+    - 회귀 빌드 OK
+    - 작동 문서 v1/v2 라벨 grep 결과 0건
+* 후속:
+    - 6개 SCAR 데이터-주도 패턴 전환 (각 단계별 별도 이슈)
+    - Issue166/167 역사적 plan/task/report 파일은 보존
 
 ## Issue167. authoring-pipeline v1 제거 — v2 단독 SSOT 통합 (등록: 2026-05-18, 해결: 2026-05-18, commit: d4ca868) ✅
 * 목적: v2(Issue166)로 데이터-주도 SCAR + `Projects/<Name>/_pipeline/` 영속 추적 완비됨. v1과 병존 시 fallback 경로 + dual SSOT 유지 부담 → v1 완전 제거하고 v2를 단독 SSOT로 통합.
