@@ -24,34 +24,9 @@
 
 # 🚧 진행중
 
-## Issue166. authoring-pipeline v2 구현 — 데이터-주도 SCAR + /pm 무중단 History/Artifacts (등록: 2026-05-18)
-* 목적: [v2 SSOT](_doc_arch/authoring-pipeline_v2.md) 3가지 핵심 변경(데이터-주도 SCAR / Info.md=사용자 요청 SSOT / `/pm` 무중단 History·Artifacts)을 m2slide 저작 파이프라인에 통합. 사용자가 SCAR 본문 수정 없이 `data/<단계>/*.yml`만 수정하여 채널·패턴·룰 갱신 가능. `/pm` 또는 `/m2 continue` 무중단 운영.
-* plan: `_doc_work/plan/authoring-pipeline-v2_plan.md`
-* task: `_doc_work/tasks/authoring-pipeline-v2_task.md`
-* 카테고리: Build (파이프라인 인프라)
-* 상세:
-    - v2 SSOT + data/ 시드 yml 작성 완료 (선행)
-    - `_doc_work/pipeline/<Name>/{state.yml, history.md, artifacts/}` 영속 추적 인프라 (`lib/pipeline-state.js` / `pipeline-history.js` / `pipeline-artifacts.js`)
-    - `/m2` 라우터 v2 통합 — state.yml 우선 읽기, 부재 시 v1 fallback
-    - orchestrator agent v2 갱신 — data/ 폴더 인지 + state/artifacts/history 자동 갱신
-    - sample SCAR 1개 v2 패턴 적용 (refs-collector — 데이터-주도 reference)
-    - v1 호환성 유지 (state.yml 부재 시 산출물 검사 fallback)
-* 구현 명세:
-    - 산출물: v2 SSOT, data/ 시드, lib/pipeline-*.js 3종, /m2 + authoring-pipeline + refs-collector SCAR 갱신
-    - 검증: 단위(pipeline-state round-trip + lock), 통합(`Projects/v2test/` end-to-end), 회귀(기존 프로젝트 빌드)
-    - 종료 조건: 모든 산출물 검증 PASS + commit hash + Issue165 depends에 Issue166 추가 + report 작성
-* Out of scope:
-    - 나머지 6개 SCAR(info-filler, agenda-designer, md-updater, media-creater, layout-selector, slot-designer) v2 패턴 전환 — 각 단계별 후속 이슈
-    - `data/<단계>/overrides/<project>.yml` 프로젝트별 override 메커니즘 (v3 후보)
-    - cross-process lock 강화 (v3 후보)
-* 영향:
-    - 사용자가 SCAR 변경 없이 채널·패턴·룰 갱신 가능 → 회귀 위험 감소
-    - `/pm`·`/m2 continue` 무중단 운영 → 장시간 파이프라인의 중단 후 재개 안정성 향상
-    - Issue165의 umbrella 기준이 v2로 전환 → Issue166 종결 후 Issue165 매핑 표 v2 재정렬
-
 ## Issue165. `/m2` 라우터 기준 authoring-pipeline 단계 1~9 전체 통합 추적 umbrella task (등록: 2026-05-18)
 * 목적: Issue157 umbrella(orchestrator agent 중심)를 승계하여, Issue164 `/m2` 라우터 커맨드를 운영 진입점으로 한 새로운 매핑·추적 기준 수립. 단계별 산출물(arch/plan/task/agent/skill)과 `/m2 init|continue|run|build|status|list` 6개 subcommand의 단계 위임 관계를 한 표에서 관리. **2026-05-18 갱신**: Issue166(v2 구현) 완료 후 매핑 표를 v2 기준(데이터-주도 SCAR + state.yml/artifacts/)으로 재정렬.
-* depends: Issue166 ⏳ (v2 인프라 구현 선행 필수)
+* depends: Issue166 ✅ (commit dac9db9) — 선행 해소 → 본 이슈 진행 가능
 * plan: `_doc_work/plan/authoring-pipeline_plan.md`
 * task: `_doc_work/tasks/authoring-pipeline_task.md`
 * 카테고리: Project (nPTiR 메타 추적)
@@ -85,6 +60,26 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue166. authoring-pipeline v2 구현 — 데이터-주도 SCAR + /pm 무중단 History/Artifacts (등록: 2026-05-18, 해결: 2026-05-18, commit: dac9db9) ✅
+* 목적: [v2 SSOT](_doc_arch/authoring-pipeline_v2.md) 3가지 핵심 변경(데이터-주도 SCAR / Info.md=사용자 요청 SSOT / `/pm` 무중단 History·Artifacts) 통합.
+* 카테고리: Build (파이프라인 인프라)
+* 산출물:
+    - `_doc_arch/authoring-pipeline_v2.md` — v2 SSOT 설계
+    - `data/{info-filler,refs-collector,agenda-designer,md-updater,media-creater,layout-selector,slot-designer}/` — 단계별 시드 yml 7종
+    - `lib/pipeline-state.js` — state.yml 관리 + lock
+    - `lib/pipeline-history.js` — append-only 로그
+    - `lib/pipeline-artifacts.js` — 단계별 스냅샷
+    - `.claude/commands/m2.md`, `.claude/agents/authoring-pipeline.md`, `.claude/agents/refs-collector.md` 갱신 (refs-collector는 v2 패턴 reference)
+    - `_doc_work/plan/authoring-pipeline-v2_plan.md`, `_doc_work/tasks/authoring-pipeline-v2_task.md`
+    - report: `_doc_work/report/authoring-pipeline-v2_issue166_report.md`
+* 검증:
+    - 단위 7/7 PASS (`lib/__tests__/pipeline-v2.test.js`)
+    - 통합 `Projects/v2test/` end-to-end — state.yml/history.md/artifacts/ 정상 생성
+    - 회귀 `m2SlideStyle1_single` 빌드 — 변화 없음
+* 후속:
+    - Issue165 depends에 본 이슈 추가 → 종결과 함께 해소 → Issue165 진행 가능
+    - 나머지 6개 SCAR v2 패턴 전환은 각 단계별 후속 이슈
 
 ## Issue164. authoring-pipeline 진입점 `/m2` 라우터 커맨드 신규 (등록: 2026-05-18, 해결: 2026-05-18, commit: f2b2b5e) ✅
 * 목적: authoring-pipeline 단계 1~9를 손쉽게 시작·재개·부분 실행하는 단일 진입점을 Git-style subcommand 패턴(`/m2 init|continue|run|build|status|list`)으로 제공. mental model 단순화 + 플래그 폭주 회피.
