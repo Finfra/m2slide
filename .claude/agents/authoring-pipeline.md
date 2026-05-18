@@ -12,7 +12,7 @@ color: blue
 
 # v2 인프라 통합 (Issue166)
 
-`--v2` 플래그 또는 `_doc_work/pipeline/<Name>/state.yml` 존재 시 v2 모드로 동작:
+`--v2` 플래그 또는 `Projects/<Name>/_pipeline/state.yml` 존재 시 v2 모드로 동작:
 
 * **state.yml 기반 resume** — `lib/pipeline-state.js`의 `loadState/saveState/markStageComplete` 사용
 * **lock 검증** — 시작 시 `acquireLock`, 종료 시 `releaseLock` 호출
