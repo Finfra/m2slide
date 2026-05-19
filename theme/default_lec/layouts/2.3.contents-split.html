@@ -1,5 +1,5 @@
 <!-- @meta
-description: 강의용 2분할 layout. 좌·우 컬럼에 이미지+텍스트 또는 비교 콘텐츠 배치.
+description: 강의용 2분할 layout. 좌·우 컬럼에 이미지+텍스트 또는 비교 콘텐츠 배치. H2 제목은 {{content}}로 자동 헤더 영역에 렌더링.
 recommended_for:
   - 이미지 + 설명 텍스트 슬라이드
   - 비교·대조 슬라이드
@@ -8,7 +8,7 @@ not_recommended_for:
   - 단일 콘텐츠 슬라이드
   - 풀스크린 이미지
 slots:
-  - title
+  - content
   - left
   - right
 example: |
@@ -26,7 +26,7 @@ example: |
 -->
 <section class="layout-split-image-text">
   <div class="split-header">
-    <h1 class="split-title">{{title}}</h1>
+    {{content}}
     <div class="split-divider"></div>
   </div>
   <div class="split-row">

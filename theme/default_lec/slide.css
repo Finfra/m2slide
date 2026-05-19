@@ -750,3 +750,22 @@ body.agenda-page .agenda-frame {
 .reveal section.layout-_contents > .contents-head-bar:has(> .contents-head-left:empty):has(> .contents-head-right:empty) {
   display: none;
 }
+
+/* =========================================================================
+   Split-image-text layout — H2 title 자동 렌더 ({{content}} 경유)
+   - layout 템플릿이 {{content}}를 split-header에 넣으면 H2가 <h2 class="title">로 변환되어 들어옴
+   - font-size·sketch 효과는 base.css의 .reveal .title + §3 통합 selector에서 받음
+   - 여기서는 split-header 내부 위치만 보정
+   ========================================================================= */
+.reveal section.layout-split-image-text .split-header > h2.title,
+.reveal section.layout-split-image-text .split-header > h3.title {
+  margin: 0 auto;
+}
+
+/* list-style 충돌 해결 (모든 layout 적용)
+   - base.css .bullet-dot { list-style-type: disc } + ul > li::before "●" 동시 적용 → 마커 중복
+   - layout 영역 내부 모든 li는 ul > li::before가 SSOT, list-style 강제 none */
+.reveal section[class*="layout-"] li.bullet-dot,
+.reveal section[class*="layout-"] li.bullet-dash {
+  list-style-type: none;
+}
