@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 175
+* Issue HWM: 176
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -32,6 +32,22 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue176. default_lec contents-split layout — H2 title 미주입 + bullet 마커 중복 fix (등록: 2026-05-19, 해결: 2026-05-19, commit: 3786fd7) ✅
+* 목적: `#layout-contents-split` 슬라이드에서 H2 제목이 split-header에 안 나타나고 본문 list 마커가 두 개씩(`•` + `●`) 보이던 회귀 수정. graphify 프로젝트 슬라이드 검증 중 발견.
+* 카테고리: Theme (default_lec — 2.3.contents-split layout + slide.css)
+* 상세:
+    - 원인1 (title 누락): `2.3.contents-split.html` 템플릿이 `{{title}}` 사용하지만 slide-parser `extractFirstH1`은 H1만 매칭 → H2 슬라이드에서 `slide.title` 항상 빈 값
+    - 원인2 (bullet 중복): base.css `.bullet-dot { list-style-type: disc }` (line 290) + `[class*="layout-"] ul > li::before "●"` (line 1106) 동시 적용. ul `list-style: none` 있어도 li 레벨 list-style-type이 disc 복귀시켜 native 마커 + ::before 마커 둘 다 렌더
+* 구현 명세:
+    - `theme/default_lec/layouts/2.3.contents-split.html`: `<h1 class="split-title">{{title}}</h1>` → `{{content}}` 치환. H2 자동 `<h2 class="title">` 변환되어 split-header 주입. slots 메타도 `title` → `content` 갱신
+    - `theme/default_lec/slide.css`: `.layout-split-image-text .split-header > h2.title, > h3.title { margin: 0 auto }` 위치 보정만 추가. font-size·sketch 효과는 base.css `.reveal .title` (1.5em) + §3 통합 selector에서 자연 상속
+    - `theme/default_lec/slide.css`: `section[class*="layout-"] li.bullet-dot, li.bullet-dash { list-style-type: none }` 글로벌 layout 영역 적용. `ul > li::before`가 마커 SSOT, native list-style 무력화
+    - base.css 미수정 (theme 단독 fix)
+* 검증:
+    - 빌드 `./m2slide.sh graphify` 성공
+    - `Projects/graphify/slide/index.html` 라인 1469 `<h2 class="title">graphify가 해결하는 문제</h2>` 정상 split-header 주입
+    - bullet 단일 마커 (`●` 만) 렌더
 
 ## Issue175. Info.md `design_mood` 필드 추가 — 그래픽 디자인 톤 SSOT (등록: 2026-05-19, 해결: 2026-05-19, commit: fd6f458) ✅
 * 목적: `image_style`(AI 이미지 한정)과 별개로, 슬라이드 전반의 시각 디자인 톤(ex: "라이트 테마, 밝은 분위기, 파스텔 컬러")을 사전 수집할 자유 문자열 필드를 미디어 계획 섹션에 추가. theme 선택·layout 추천·미디어 생성 모두 hint로 소비.
