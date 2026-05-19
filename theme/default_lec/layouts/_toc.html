@@ -1,16 +1,20 @@
 <!-- @meta
-description: 강의용 Map Slide layout. markmap + 카드 영역 동시 보유. 챕터 모드 첫 슬라이드 시스템 자동 적용.
+description: 강의용 Map Slide layout. markmap 마인드맵 시각화로 챕터 구조를 표시. 시스템 layout이며 사용자 슬라이드 지정 불가.
 recommended_for:
   - 챕터 모드 첫 슬라이드 자동 적용 (시스템)
-  - 마인드맵 + 카드 동시 노출
+  - 자동 생성 목차 마인드맵
 not_recommended_for:
   - 사용자 본문 슬라이드 (수동 지정 금지)
+  - Cards Page용 (`_cards` 별도)
 slots:
   - title
   - markmap
-  - cards
 example: |
-  (시스템 자동 적용 — chapter 모드 toc/cards page 전용)
+  (시스템 자동 적용 — 사용자가 #layout-_toc 직접 작성 금지)
+-->
+<!--
+  Issue138/Issue177: Map Slide 전용 layout — markmap svg 영역만 보유.
+  Cards Page는 `_cards.html`로 분리. _toc.html은 markmap 시각화 전담.
 -->
 <section class="layout-_toc title-slide">
   <header class="toc-page-header">
@@ -19,5 +23,4 @@ example: |
   <div class="toc-markmap">
     <svg class="toc-mindmap-svg"></svg>
   </div>
-  <div class="toc-cards">{{cards}}</div>
 </section>

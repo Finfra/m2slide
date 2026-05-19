@@ -153,8 +153,96 @@ slide_patterns:
           - {summary_3}
       * **다음 단계**: {next_action}
 
+  # Issue177: 강의 특화 패턴 — default_lec 번호 layouts 매핑 (chapter, exercise-small)
+  - id: chapter_intro
+    label: 챕터 진입 (학습 목표)
+    triggers: [챕터, Chapter, 학습 목표, 진입, 시작]
+    body_template: |
+      ## {chapter_title}
+
+      * **학습 목표**
+          - {goal_1}
+          - {goal_2}
+          - {goal_3}
+      * **선수 지식**: {prerequisites}
+    layout_hint: chapter
+
+  - id: exercise_check
+    label: 짧은 체크·Quiz
+    triggers: [체크, Check, Quiz, 퀴즈, 확인]
+    body_template: |
+      ## {check_title}
+
+      * {question_or_check}
+
+      > {hint_or_answer}
+    layout_hint: exercise-small
+
+  - id: qna_closing
+    label: Q&A·마무리
+    triggers: [qna, "q&a", 질의응답, 질문]
+    body_template: |
+      ## Q&A
+
+      * 질문 환영
+      * **연락처**: {instructor_contact}
+      * **자료**: {qr_url}
+
+  - id: exercise_closing
+    label: 실습 마무리
+    triggers: [실습, 연습, exercise, practice]
+    body_template: |
+      ## 실습
+
+      * **과제**: {exercise_task}
+      * **참고**: {exercise_hint}
+      * **제출**: {submission_method}
+
+  - id: wrap_narration
+    label: 내레이션 마무리
+    triggers: [마무리, 끝, closing, wrap]
+    body_template: |
+      ## 마무리
+
+      * {closing_message_1}
+      * {closing_message_2}
+
 # ============================================================================
-# 3. 콘텐츠 양 제한 (슬라이드 한 장당)
+# 3. Info.md tone별 마지막 슬라이드 자동 추가 정책
+# ============================================================================
+# md-updater는 본문 채움이 원칙이나, tone별로 명시된 closing 슬라이드는
+# 마지막 H2 슬라이드 뒤에 append 허용 (header_preservation 예외 — closing_append 항목).
+# 사용자가 마지막 슬라이드를 직접 작성했으면(키워드 매칭 시) 중복 추가 안 함.
+closing_slide_policy:
+  enabled: true
+  detection:
+    skip_if_last_h2_matches_triggers: true   # 마지막 H2 제목이 closing pattern triggers 매칭 시 skip
+  tone_mapping:
+    - tone: 강의
+      append_pattern: qna_closing
+    - tone: 발표
+      append_pattern: qna_closing
+    - tone: 대화
+      append_pattern: qna_closing
+    - tone: 튜토리얼
+      append_pattern: exercise_closing
+    - tone: 내레이션
+      append_pattern: wrap_narration
+    - tone: 기타
+      append_pattern: null   # 추가 안 함
+  chapter_mode_target: last_chapter_only   # chapter mode 시 마지막 챕터에만 append
+  single_mode_target: end_of_file
+  variables_source:
+    instructor_contact: "frontmatter.instructor_contact || Info.md.instructor_contact"
+    qr_url: "frontmatter.qr_url || ''"
+    exercise_task: "Info.md.goals[-1] || ''"
+    exercise_hint: "''"
+    submission_method: "''"
+    closing_message_1: "Info.md.goals[0] || ''"
+    closing_message_2: "Info.md.goals[-1] || ''"
+
+# ============================================================================
+# 4. 콘텐츠 양 제한 (슬라이드 한 장당)
 # ============================================================================
 content_limits:
   bullets_max: 7
@@ -167,7 +255,7 @@ content_limits:
   images_per_slide: 2
 
 # ============================================================================
-# 4. md 규칙 준수 (3-tier — 글로벌 + 슬라이드 공통 + m2slide 특화)
+# 5. md 규칙 준수 (3-tier — 글로벌 + 슬라이드 공통 + m2slide 특화)
 # ============================================================================
 md_rules_compliance:
   - source: "~/.claude/rules/md-rules.md"
@@ -180,7 +268,7 @@ md_rules_compliance:
     apply: [release_date_auto_update]
 
 # ============================================================================
-# 5. 사용자 검토 체크포인트 (chapter mode 챕터별 / single mode 전체 1회)
+# 6. 사용자 검토 체크포인트 (chapter mode 챕터별 / single mode 전체 1회)
 # ============================================================================
 checkpoint:
   chapter_mode:
@@ -204,7 +292,7 @@ checkpoint:
     max_iterations: 3
 
 # ============================================================================
-# 6. 빌드 검증 게이트 (lint + build)
+# 7. 빌드 검증 게이트 (lint + build)
 # ============================================================================
 validation_rules:
   build_lint:
@@ -233,23 +321,27 @@ validation_rules:
       desc: "한 슬라이드 bullets_max 이하"
 
 # ============================================================================
-# 7. 헤더 보존 정책 (agenda-designer 산출물 비파괴)
+# 8. 헤더 보존 정책 (agenda-designer 산출물 비파괴)
 # ============================================================================
 header_preservation:
   preserve: [h1, h2]   # 단계 3에서 작성된 헤더 유지
   modify_allowed: [body, h3_and_below]
   scope: "본문(슬라이드 콘텐츠) + H3 이하 서브 헤더만 수정"
   reject_if_h1_h2_changed: true
+  exceptions:
+    - id: closing_append
+      desc: "closing_slide_policy 정책에 따른 마지막 closing 슬라이드 H2 append 허용"
+      reference: closing_slide_policy
 
 # ============================================================================
-# 8. layout 메타 미주입 정책 (단계 6 layout-selector 책임)
+# 9. layout 메타 미주입 정책 (단계 6 layout-selector 책임)
 # ============================================================================
 layout_meta_policy:
   inject_layout_directive: false  # #layout-* 메타는 본 skill 책임 아님
   reason: "단계 6 layout-selector가 layout 메타 주입을 담당"
 
 # ============================================================================
-# 9. 종료 보고 양식
+# 10. 종료 보고 양식
 # ============================================================================
 report_template: |
   ## md-updater 완료

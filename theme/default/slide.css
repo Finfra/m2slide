@@ -264,9 +264,12 @@
 /* Mermaid SVG가 슬라이드 영역을 초과하여 잘리는 문제 해결
    - mermaid가 SVG에 inline width/height를 설정하므로 max-* 와 auto로 강제 fit
    - .contents-body를 flex column으로 만들고 .media-container에 flex-grow 1으로
-     남은 영역 가득 차게 하여 SVG의 max-height: 100% 기준 영역 확보 */
+     남은 영역 가득 차게 하여 SVG의 max-height: 100% 기준 영역 확보
+   - alias: layout-contents(underscore 없음) + layout-_contents 양쪽 매칭 (Issue141 정책 동일) */
 .reveal section.layout-_contents > .contents-body,
-.reveal section.layout-_contents_no_title > .contents-body {
+.reveal section.layout-contents > .contents-body,
+.reveal section.layout-_contents_no_title > .contents-body,
+.reveal section.layout-contents_no_title > .contents-body {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -277,8 +280,12 @@
    (agenda .toc-mindmap-svg transparent 정책과 일관) */
 .reveal section.layout-_contents > .contents-body,
 .reveal section.layout-_contents > .contents-header,
+.reveal section.layout-contents > .contents-body,
+.reveal section.layout-contents > .contents-header,
 .reveal section.layout-_contents_no_title > .contents-body,
-.reveal section.layout-_contents_no_title > .contents-header {
+.reveal section.layout-_contents_no_title > .contents-header,
+.reveal section.layout-contents_no_title > .contents-body,
+.reveal section.layout-contents_no_title > .contents-header {
   background: transparent !important;
 }
 /* Issue98: pre/pre code 의 transparent 강제 제거 — github.css `.hljs` 배경(#f6f8fa) 살림 */
@@ -360,6 +367,7 @@
    주의: html-builder가 H2~H6 `.title`을 section 직속 자식으로 끌어올리므로
    selector는 `.contents-body > .title`이 아니라 `> .title` (section 직속)로 작성해야 함. */
 .reveal section.layout-_contents > .title,
+.reveal section.layout-contents > .title,
 .reveal section.layout-contents-full > .title {
   background-image: url('../theme-img/finfraPuffer2s.png');
   background-repeat: no-repeat;
@@ -368,13 +376,15 @@
 }
 
 .reveal section.layout-_contents .contents-header,
+.reveal section.layout-contents .contents-header,
 .reveal section.layout-contents-full .contents-header {
   padding: 1.2em 0 0.6em 0;
   text-align: center;
 }
 
 /* Issue80 §2.5: _contents_no_title — 헤더 영역 없음, 본문이 위까지 차지 */
-.reveal section.layout-_contents_no_title > .contents-body {
+.reveal section.layout-_contents_no_title > .contents-body,
+.reveal section.layout-contents_no_title > .contents-body {
   padding-top: 0;
   margin-top: 0;
 }

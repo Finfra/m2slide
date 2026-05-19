@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 176
+* Issue HWM: 177
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -24,6 +24,31 @@
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
 
 # 🚧 진행중
+
+## Issue177. default_lec 전체 재구성 — default 구조 통일 + md-updater 단계 4 호환 (등록: 2026-05-19)
+* 목적: default 테마가 신버전(slide.css 1207L, Issue113/130/131/138/141/143/154/176 누적)으로 진화하면서 default_lec(774L)와 구조 불일치 발생. default_lec를 default 구조로 통일하고 강의 특화 부분만 override 레이어로 분리. 동시에 authoring-pipeline 단계 4(md-updater)가 default_lec 호환 슬라이드 패턴을 잘 생성하도록 styles.yml 정합.
+* 카테고리: Theme (default_lec) + Generator (md-updater data)
+* 상세:
+    - **현재 불일치 (정밀 diff)**:
+        - `_blank.html`: default `class="layout-_blank"` vs default_lec `class="layout-blank"` (underscore 불일치)
+        - `_contents.html`: default `layout-_contents` vs default_lec `layout-contents`
+        - `_contents_no_title.html`: default `layout-_contents_no_title` vs default_lec `layout-contents` (**BUG — 잘못된 class 부여**)
+        - `_cover.html`: WIP 이미 `layout-cover` → `layout-_cover` 수정 중
+        - `_toc.html`: default는 markmap 전용으로 분리(Issue138), default_lec는 `toc-cards` 결합형 유지 → 분리 필요
+        - `_cards.html`: default 신규 (Issue138), default_lec 누락
+        - `_agenda.html`: 구조 차이 (instructor_name 위치, downloadButtons 위치)
+        - `slide.css`: default 1207L, default_lec 774L — Issue113/130/131/138/141/143/154/176 백포팅 필요
+    - **번호 layouts** (강의 특화): `2.2.contents-full`, `2.3.contents-split`, `4.2.chapter`, `6.1.exercise`, `6.2.exercise-small`, `9.1.closing` → 보존하되 신규 base CSS와 호환
+    - **md-updater 단계 4**: `data/md-updater/styles.yml`의 `slide_patterns`에 강의 특화 패턴(chapter_intro, exercise, closing) 추가 → layout-selector가 default_lec 번호 layouts로 매핑 가능
+* 구현 명세:
+    - **Issue177_1**: default_lec 시스템 layouts class 정규화 (`layout-_*` underscore 일관 적용)
+    - **Issue177_2**: `_contents_no_title.html` BUG 수정 (잘못된 class 교체)
+    - **Issue177_3**: `_cards.html` default_lec 추가 + `_toc.html` markmap 전용으로 분리 (Issue138 백포팅)
+    - **Issue177_4**: `_agenda.html` default 구조 동기화 (instructor_name·downloadButtons 위치)
+    - **Issue177_5**: `slide.css` 백포팅 — Issue113/130/131/138/141/143/154/176 누락분 + 강의 override 레이어 분리
+    - **Issue177_6**: 번호 layouts(`2.2`/`2.3`/`4.2`/`6.1`/`6.2`/`9.1`) 신규 base CSS와 충돌 점검·수정
+    - **Issue177_7**: `data/md-updater/styles.yml`에 강의 특화 slide_patterns 추가 (chapter_intro, exercise_lab, closing_summary)
+    - **Issue177_8**: 빌드 검증 (`m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `LayoutTest`) + `/htm`으로 사용자 검토 페이지 띄움
 
 # 📕 중요
 

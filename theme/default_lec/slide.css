@@ -136,6 +136,64 @@
   font-size: var(--title-font-size, 1.5em);
 }
 
+/* Issue177 (default §3 백포팅): Mermaid SVG가 슬라이드 영역을 초과하여 잘리는 문제 해결
+   - mermaid가 SVG에 inline width/height를 설정하므로 max-* 와 auto로 강제 fit
+   - .contents-body를 flex column으로 만들고 .media-container에 flex-grow 1으로
+     남은 영역 가득 차게 하여 SVG의 max-height: 100% 기준 영역 확보 */
+.reveal section.layout-_contents > .contents-body,
+.reveal section.layout-_contents_no_title > .contents-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Issue177 (default §3 백포팅): _contents/_contents_no_title 본문·헤더 투명 배경
+   우상단 puffer 마스코트가 본문 뒤로 보이도록 명시적 transparent 적용 */
+.reveal section.layout-_contents > .contents-body,
+.reveal section.layout-_contents > .contents-header,
+.reveal section.layout-_contents_no_title > .contents-body,
+.reveal section.layout-_contents_no_title > .contents-header {
+  background: transparent !important;
+}
+
+/* Issue101 백포팅: 코드 박스 자체 스타일 — CDN github.css 의존 제거.
+   github.css는 토큰 색상(.hljs-keyword 등)만 담당, 박스(배경·패딩·radius·폰트)는 자체 정의. */
+.reveal section[class*="layout-"] .code-wrapper {
+  background: var(--code-bg, #f6f8fa);
+  padding: 0.8em 1em;
+  border-radius: 6px;
+  border: 1px solid var(--code-border, #e1e4e8);
+  font-family: var(--code-font-family, 'SF Mono', Monaco, Menlo, Consolas, 'Courier New', monospace);
+  font-size: 0.85em;
+  line-height: 1.45;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  overflow: auto;
+}
+.reveal section[class*="layout-"] .code-wrapper code {
+  background: transparent;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.reveal section[class*="layout-"] .contents-body > .media-container {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.reveal section[class*="layout-"] .mermaid svg,
+.reveal section[class*="layout-"] .media-container svg {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain;
+}
+
 /* =========================================================================
    4. 마스코트 배경 — finfra* 이미지 (theme/{name}/img/ → slide/theme-img/)
    ========================================================================= */
@@ -197,6 +255,7 @@
    주의: html-builder가 H2~H6 `.title`을 section 직속 자식으로 끌어올리므로
    selector는 `> .title` (section 직속)로 작성. */
 .reveal section.layout-_contents > .title,
+.reveal section.layout-contents > .title,
 .reveal section.layout-contents-full > .title {
   background-image: url('../theme-img/finfraPuffer2s.png');
   background-repeat: no-repeat;
@@ -205,12 +264,14 @@
 }
 
 /* Issue97 (Issue80 §2.5 동기): _contents_no_title — 헤더 영역 없음, 본문이 위까지 차지 */
-.reveal section.layout-_contents_no_title > .contents-body {
+.reveal section.layout-_contents_no_title > .contents-body,
+.reveal section.layout-contents_no_title > .contents-body {
   padding-top: 0;
   margin-top: 0;
 }
 
 .reveal section.layout-_contents .contents-header,
+.reveal section.layout-contents .contents-header,
 .reveal section.layout-contents-full .contents-header {
   padding: 1.2em 0 0.6em 0;
   text-align: center;
@@ -373,6 +434,12 @@
   margin: 0;
   padding: 0 12px;
   overflow: hidden;
+}
+
+/* Issue138/Issue177 백포팅: autoToc로 자동 생성된 layout-_toc 슬라이드(_cards 등)는
+   #toc-placeholder 없이 빈 SVG가 남아 큰 빈 박스만 보임 → 빈 markmap 영역 숨김. */
+.reveal section.layout-_toc:not(#toc-placeholder) > .toc-markmap {
+  display: none;
 }
 .toc-mindmap-svg {
   width: 100%;
