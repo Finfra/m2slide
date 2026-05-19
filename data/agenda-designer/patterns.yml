@@ -1,9 +1,73 @@
-# agenda-designer가 사용하는 outline 패턴.
-# 청중·톤·러닝타임에 따라 적절한 챕터 구조 자동 선택.
-# 사용자는 본 파일을 수정하여 새 패턴 추가 가능.
+# agenda-designer v2 SSOT — mode 판정·챕터 수·outline 패턴·산출물 템플릿·검증 규칙.
+# 사용자가 본 파일을 수정하면 SCAR 본문 변경 없이 즉시 반영됨 (agent가 호출 시점에 매번 Read).
+# Issue170 (Issue169 info-filler 패턴 적용).
 ---
-version: 1
+version: 2
 
+# ============================================================================
+# 1. mode 판정 규칙 — Info.md duration/goals → chapter/single
+# ============================================================================
+mode_decision:
+  rules:
+    - id: chapter_long_with_goals
+      if: "duration >= 30 and goals_count >= 5"
+      mode: chapter
+    - id: single_short
+      if: "duration < 30"
+      mode: single
+    - id: chapter_many_goals
+      if: "duration == null and goals_count >= 7"
+      mode: chapter
+    - id: default_fallback
+      default: true
+      mode: chapter
+  user_override:
+    priority: highest        # --mode 인자 우선
+    flags: [--mode chapter, --mode single]
+  ambiguous_action: ask_user # 규칙 모호 시 1회 질의
+
+# ============================================================================
+# 2. 챕터 수·챕터당 슬라이드 권장 (분량 기반)
+# ============================================================================
+chapter_count:
+  ranges:
+    - duration_max: 15
+      chapters: { min: 1, max: 1, optimal: 1 }
+      slides_per_chapter: { min: 5, max: 8 }
+    - duration_min: 15
+      duration_max: 30
+      chapters: { min: 1, max: 1, optimal: 1 }
+      slides_per_chapter: { min: 8, max: 12 }
+    - duration_min: 30
+      duration_max: 60
+      chapters: { min: 3, max: 5, optimal: 4 }
+      slides_per_chapter: { min: 5, max: 8 }
+    - duration_min: 60
+      duration_max: 90
+      chapters: { min: 5, max: 7, optimal: 6 }
+      slides_per_chapter: { min: 5, max: 8 }
+    - duration_min: 90
+      chapters: { min: 7, max: 10, optimal: 8 }
+      slides_per_chapter: { min: 5, max: 8 }
+
+# ============================================================================
+# 3. 기본 outline (분야 무관 fallback — 10 단계)
+# ============================================================================
+default_outline:
+  - { n: 1,  title: "도입 (Cover + 소개)" }
+  - { n: 2,  title: "문제 정의·동기" }
+  - { n: 3,  title: "핵심 개념" }
+  - { n: 4,  title: "아키텍처·구조" }
+  - { n: 5,  title: "사용 흐름" }
+  - { n: 6,  title: "산출물·결과" }
+  - { n: 7,  title: "실전·사례" }
+  - { n: 8,  title: "장단점·비교" }
+  - { n: 9,  title: "응용·확장" }
+  - { n: 10, title: "정리·다음 단계" }
+
+# ============================================================================
+# 4. 분야별 outline 패턴 (selection_rules로 자동 선택)
+# ============================================================================
 patterns:
   - id: lecture_30min
     label: 30분 강의
@@ -56,7 +120,6 @@ patterns:
       - "Limitations"
       - "Future work"
 
-# 자동 선택 규칙
 selection_rules:
   - if: "duration <= 15"
     use: keynote_15min
@@ -64,10 +127,110 @@ selection_rules:
     use: lecture_30min
   - if: "tone == 튜토리얼"
     use: tutorial_60min
-  - default: lecture_30min
+  - if: "tone == 강의 and duration >= 45"
+    use: technical_deep_dive
+  - default: default_outline   # fallback
 
-# 챕터당 슬라이드 수 가이드라인 (Agenda_detail.md 작성 시)
-slides_per_chapter:
-  min: 3
-  max: 10
-  optimal: 5
+# ============================================================================
+# 5. 산출물 템플릿 (Write 대상 양식)
+# ============================================================================
+templates:
+  # AGENDA.md (chapter mode 메타 출처)
+  agenda:
+    frontmatter:
+      title: "{topic}"
+      subtitle: "{subtitle}"
+      author: "{author}"
+      date: "{today}"
+      type: ppt
+    body_format_h2: "## [{n}. {chapter_title}](./{nn}-{slug}.md)"
+    body_format_h3: "### [{n}.{m} {sub_title}](./{nn}.{m}-{slug}.md)"
+
+  # 챕터별 .md 파일 (헤더 골격만)
+  chapter:
+    frontmatter:
+      title: "{chapter_title}"
+      type: ppt
+    body_format_slide: "## 슬라이드 제목 {slide_n}"
+    slide_separator: "---"
+
+  # single mode .md 파일
+  single:
+    frontmatter:
+      title: "{topic}"
+      subtitle: "{subtitle}"
+      author: ""
+      date: "{today}"
+      type: ppt
+    body_h1: "# {topic}"
+    body_format_slide: "## {section_title}"
+    slide_separator: "---"
+
+# ============================================================================
+# 6. 챕터 파일명 규칙
+# ============================================================================
+file_naming:
+  chapter_pattern: "{nn}-{slug}.md"           # 01-intro.md
+  sub_chapter_pattern: "{nn}.{m}-{slug}.md"   # 01.1-greeting.md
+  numbering:
+    style: zero_padded
+    digits: 2
+  slug:
+    style: kebab_case
+    max_length: 30
+    transliteration: english       # 한글 → 영문 음역 또는 의역 (사용자 검토)
+
+# ============================================================================
+# 7. 검증 규칙
+# ============================================================================
+validation_rules:
+  chapter:
+    - id: agenda_inline_link_format
+      desc: "AGENDA.md H2/H3 행은 '## [제목](./파일.md)' 형식"
+      pattern: "^(#{2,3}) \\[.+\\]\\(\\./[^)]+\\.md\\)"
+    - id: all_links_exist
+      desc: "AGENDA.md 모든 링크 대상 파일 실존"
+    - id: chapter_frontmatter_required
+      desc: "각 챕터 파일 frontmatter title + type:ppt 필수"
+      fields: [title, type]
+  single:
+    - id: single_frontmatter_required
+      desc: "single .md frontmatter title + type:ppt 필수"
+      fields: [title, type]
+    - id: h2_slide_separator
+      desc: "슬라이드 구분은 '---' 단독 줄"
+    - id: h1_no_duplicate_with_title
+      desc: "frontmatter title과 본문 H1 중복 금지 (md-slide-rules)"
+  shared:
+    - id: md_slide_rules_compliant
+      desc: "~/.claude/rules/md-slide-rules.md 준수"
+    - id: md_m2slide_rules_compliant
+      desc: ".claude/rules/md-m2slide-rules.md 준수"
+
+# ============================================================================
+# 8. 사용자 검토 체크포인트
+# ============================================================================
+checkpoint:
+  template: |
+    agenda-designer 산출물 검토 요청:
+    - mode: {mode}
+    - 챕터/슬라이드 수: {count}
+    - 위치: {paths}
+
+    승인하면 단계 4 md-updater로 진행합니다. 수정 필요하면 알려주세요.
+  skip_flag: "--no-checkpoint"      # orchestrator가 전파
+  on_reject:
+    action: ask_user_modifications
+    max_iterations: 3
+
+# ============================================================================
+# 9. 종료 보고 양식
+# ============================================================================
+report_template: |
+  ## agenda-designer 완료
+  * mode: {mode} (판정 근거: {decision_reason})
+  * 챕터 수: {chapter_count} (권장 범위: {recommended_range})
+  * 산출 파일: {file_count}개
+      - {agenda_path}
+      - {chapter_paths}
+  * 다음 단계: 단계 4 md-updater (--no-checkpoint 미지정 시 사용자 승인 대기)

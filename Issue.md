@@ -29,21 +29,6 @@
 
 # 📙 일반
 
-## Issue170. agenda-designer 데이터-주도 SCAR 전환 (등록: 2026-05-19)
-* 목적: Issue169 info-filler 패턴을 agenda-designer agent에 적용. `data/agenda-designer/patterns.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환.
-* 카테고리: Build (파이프라인 SCAR)
-* depends: Issue169 ✅ (commit 2529153)
-* 상세:
-    - 현재 `.claude/agents/agenda-designer.md` 본문에 mode 판정 표·outline 패턴 하드코딩
-    - `data/agenda-designer/patterns.yml` (73줄, 시드) 존재하나 SCAR 미참조
-    - Issue169 패턴(데이터 로드 / 적용 알고리즘 / 확장 지점 3개 절) 적용 필요
-* 구현 명세:
-    - patterns.yml 스키마 확장 (mode_decision_rules, outline_patterns, chapter_naming_rules 등)
-    - SCAR 본문 하드코딩 제거 → yml 참조로 대체
-    - 신규 절: `# 데이터 로드` / `# 적용 알고리즘` / `# 확장 지점`
-    - _doc_arch/authoring-pipeline.md 단계 3 표 ⏳ → ✅ Issue170 갱신
-    - 회귀 빌드 검증 (`./m2slide.sh m2SlideStyle1_single`, `m2SlideStyle2_chapter`)
-
 ## Issue171. md-updater 데이터-주도 SCAR 전환 (등록: 2026-05-19)
 * 목적: Issue169 info-filler 패턴을 md-updater skill에 적용. `data/md-updater/styles.yml` + `templates/`을 SSOT로 하는 데이터-주도 SCAR로 전환.
 * 카테고리: Build (파이프라인 SCAR)
@@ -105,6 +90,21 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue170. agenda-designer 데이터-주도 SCAR 전환 (등록: 2026-05-19, 해결: 2026-05-19) ✅
+* 목적: Issue169 info-filler 패턴을 agenda-designer agent에 적용. `data/agenda-designer/patterns.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환.
+* 카테고리: Build (파이프라인 SCAR)
+* depends: Issue169 ✅ (commit 2529153)
+* 산출물:
+    - `.claude/agents/agenda-designer.md` — 3개 신규 절(데이터 로드 / 적용 알고리즘 / 확장 지점) 추가 + 본문 하드코딩(mode 판정 표·챕터 수 권장 표·기본 outline 10단계·산출물 템플릿) 제거 → yml 참조로 대체
+    - `data/agenda-designer/patterns.yml` v2 — 9개 최상위 키 (`mode_decision`/`chapter_count`/`default_outline`/`patterns[]`/`selection_rules[]`/`templates`/`file_naming`/`validation_rules`/`checkpoint`/`report_template`)
+    - `_doc_arch/authoring-pipeline.md` 단계 3 표 ⏳ → ✅ Issue170 갱신
+* 검증:
+    - YAML parse OK (11 keys)
+    - SCAR 3개 신규 절 존재 확인
+    - 하드코딩 제거 확인 (mode 판정 표·outline 10단계 grep 0건)
+    - 회귀 빌드 OK (`./m2slide.sh m2SlideStyle1_single`)
+* 후속: Issue171~174 (md-updater/media-creater/layout-selector/slot-designer)
 
 ## Issue169. info-filler v2 패턴 전환 — 데이터-주도 SCAR (등록: 2026-05-19, 해결: 2026-05-19, commit: 2529153) ✅
 * 목적: Issue166 refs-collector reference 패턴을 info-filler agent에 적용. `data/info-filler/questions.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환.
