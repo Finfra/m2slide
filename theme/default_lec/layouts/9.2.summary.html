@@ -1,0 +1,26 @@
+<!-- @meta
+description: 강의용 학습 정리·요약 layout. 콘텐츠 가독성 우선. closing(축제·마무리)과 분리.
+recommended_for:
+  - 학습 정리·요약 슬라이드
+  - 핵심 포인트 회고
+  - 다음 단계 안내 (closing보다 콘텐츠 중심)
+not_recommended_for:
+  - Q&A·마무리 슬라이드 (closing 사용)
+  - 챕터 진입 슬라이드 (chapter 사용)
+slots:
+  - title
+  - content
+example: |
+  ## 오늘 학습한 내용
+
+  * graphify가 무엇인가
+      - 코드·문서 → knowledge graph
+  * 토큰 절약 전략
+  * CLI 실전
+-->
+<section class="layout-summary">
+  <div class="summary-header">
+    <h1 class="summary-title">{{title}}</h1>
+  </div>
+  <div class="summary-body">{{content}}</div>
+</section>

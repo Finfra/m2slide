@@ -123,14 +123,24 @@ pattern_rules:
     priority: 65
     reason_template: "짧은 체크 포인트"
 
-  - id: closing_summary
-    condition: "title_matches('결론|마무리|정리|Q&A|다음 단계|Conclusion|Summary|Closing')"
+  # Issue179: closing_summary 분리 — summary_recap(학습 정리·요약) vs qna_closing(Q&A·마무리)
+  - id: summary_recap
+    condition: "title_matches('정리|요약|핵심|복습|학습한 내용|오늘 학습|Recap|Summary|Review')"
     triggers:
-      title_keywords: ["결론", "마무리", "정리", "Q&A", "다음 단계", "Conclusion", "Summary", "Closing"]
+      title_keywords: ["정리", "요약", "핵심", "복습", "학습한 내용", "오늘 학습", "Recap", "Summary", "Review"]
+    layout: summary
+    layout_fallback: contents
+    priority: 82
+    reason_template: "학습 정리·요약 (콘텐츠 가독성 우선)"
+
+  - id: qna_closing
+    condition: "title_matches('결론|마무리|Q&A|다음 단계|Conclusion|Closing|Next Steps')"
+    triggers:
+      title_keywords: ["결론", "마무리", "Q&A", "다음 단계", "Conclusion", "Closing", "Next Steps"]
     layout: closing
     layout_fallback: contents
     priority: 80
-    reason_template: "마무리·정리·Q&A"
+    reason_template: "마무리·Q&A·다음 단계"
 
   - id: default_contents
     condition: "always"

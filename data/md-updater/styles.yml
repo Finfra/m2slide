@@ -143,7 +143,7 @@ slide_patterns:
 
   - id: summary_next
     label: 정리·다음 단계
-    triggers: [정리, 요약, 다음, summary, conclusion, next]
+    triggers: [정리, 요약, 다음, summary, conclusion, next, 학습한 내용, 복습, recap, review]
     body_template: |
       ## {slide_title}
 
@@ -152,6 +152,7 @@ slide_patterns:
           - {summary_2}
           - {summary_3}
       * **다음 단계**: {next_action}
+    layout_hint: summary   # Issue179: 학습 정리·요약 전용 layout (default_lec)
 
   # Issue177: 강의 특화 패턴 — default_lec 번호 layouts 매핑 (chapter, exercise-small)
   - id: chapter_intro

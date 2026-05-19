@@ -259,7 +259,7 @@ graphify update .
 # 정리 & 다음 단계
 
 ## 오늘 학습한 내용
-#layout-closing
+#layout-summary
 
 * **graphify가 무엇인가**
     - 코드·문서 → knowledge graph (EXTRACTED + INFERRED edge)

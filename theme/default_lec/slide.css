@@ -93,6 +93,7 @@
 .reveal section[class*="layout-"] .exercise-title,
 .reveal section[class*="layout-"] .blank-title,
 .reveal section[class*="layout-"] .closing-title,
+.reveal section[class*="layout-"] .summary-title,
 .reveal section[class*="layout-"] .toc-title {
   font-weight: 900;
   letter-spacing: -0.01em;
@@ -111,6 +112,7 @@
 .reveal section[class*="layout-"] .exercise-title::after,
 .reveal section[class*="layout-"] .blank-title::after,
 .reveal section[class*="layout-"] .closing-title::after,
+.reveal section[class*="layout-"] .summary-title::after,
 .reveal section[class*="layout-"] .toc-title::after {
   content: "";
   position: absolute;
@@ -377,6 +379,34 @@
   margin-top: auto;
   margin-bottom: 6%;
   font-size: 1.4em;
+}
+
+/* 4.7.5 summary (Issue179): 학습 정리·요약 — 콘텐츠 가독성 우선
+   closing(축제·중앙 정렬·큰 마스코트)과 분리. 마스코트는 작게 우상단·우하단 코너에만.
+   본문은 좌정렬·top-align 으로 핵심 리스트가 한눈에 보이게. */
+.reveal section.layout-summary {
+  background-image:
+    url('../theme-img/finfraCat.png'),
+    url('../theme-img/finfraButterfly.png');
+  background-repeat: no-repeat, no-repeat;
+  background-position: 94% 8%, 96% 94%;
+  background-size: 10% auto, 9% auto;
+  text-align: left;
+}
+
+.reveal section.layout-summary .summary-header {
+  padding: 2% 0 1.5% 0;
+  text-align: center;
+}
+
+.reveal section.layout-summary .summary-title {
+  font-size: 2.4em;
+}
+
+.reveal section.layout-summary .summary-body {
+  padding: 0 6% 0 5%;
+  font-size: 1.05em;
+  line-height: 1.5;
 }
 
 /* 4.8 blank: 장식 없음 (상하 노랑선만) */
@@ -827,6 +857,23 @@ body.agenda-page .agenda-frame {
 .reveal section.layout-split-image-text .split-header > h2.title,
 .reveal section.layout-split-image-text .split-header > h3.title {
   margin: 0 auto;
+}
+
+/* split-row 수직 정렬 보정
+   - base.css 기본은 align-items: flex-start (좌·우 컬럼 상단 정렬) → 짧은 텍스트 + 작은 이미지
+     조합에서 split-row 하단에 큰 빈 공간 발생.
+   - 컬럼 중앙 정렬로 빈 공간을 위·아래 균등 분배하여 시각적 균형 확보.
+   - 우측 이미지가 컬럼 폭에 fit하도록 max-height: 100% 추가 (max-width와 함께 컬럼 경계 내 유지). */
+.reveal section.layout-split-image-text .split-row {
+  align-items: center;
+}
+
+.reveal section.layout-split-image-text .split-left img,
+.reveal section.layout-split-image-text .split-right img,
+.reveal section.layout-split-image-text .split-left svg,
+.reveal section.layout-split-image-text .split-right svg {
+  max-height: 100%;
+  object-fit: contain;
 }
 
 /* list-style 충돌 해결 (모든 layout 적용)

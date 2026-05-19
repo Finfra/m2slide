@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 178
+* Issue HWM: 179
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -24,6 +24,24 @@
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
 
 # 🚧 진행중
+
+## Issue179. default_lec summary layout — 학습 정리·요약 전용 layout 분리 (등록: 2026-05-19)
+* 목적: 현재 `closing` layout이 Q&A·마무리·정리·요약을 모두 떠맡고 있어 강의 흐름상 "오늘 학습한 내용" 슬라이드가 closing(puffer1 거대 마스코트, 중앙 큰 타이틀, 축제 느낌) 디자인으로 표현됨. summary는 콘텐츠 가독성이 우선이므로 별도 layout 필요. graphify slide 17(`오늘 학습한 내용`)이 적용 대상.
+* 카테고리: Theme (default_lec) + Generator (layout-selector / md-updater data)
+* 상세:
+    - 신규 layout: `theme/default_lec/layouts/9.2.summary.html`
+        - class `layout-summary`, slots `title` + `content`
+        - 디자인: 콘텐츠 중심 (마스코트 작게, 본문 좌정렬·top-align, title 위쪽 고정)
+    - `theme/default_lec/slide.css`: `.layout-summary` 규칙 추가 (closing과 분리)
+    - `data/slot_meta.yml`: title/content layouts에 `9.2.summary` 추가
+    - `data/layout-selector/rules.yml`: `closing_summary` 규칙을 `summary_recap`(정리/요약/다음 단계 → summary)와 `qna_closing`(마무리/Q&A/Closing → closing) 두 개로 분리
+    - `data/md-updater/styles.yml`: `summary_next` pattern에 `layout_hint: summary` 추가
+    - 적용: `Projects/graphify/graphify.ppt.md` 슬라이드 17 `#layout-closing` → `#layout-summary` (오늘 학습한 내용)
+    - 슬라이드 18(다음 단계)은 closing 유지 (마무리·다음 단계 안내 성격)
+* 구현 명세:
+    - layout html은 `_contents`와 closing의 중간 — 본문 영역 넓게, title은 sketch 밑줄 유지
+    - 마스코트: 작은 cat 우상단 + 작은 butterfly 우하단 (puffer 제외, 정리 슬라이드는 차분)
+    - 빌드 검증: `./m2slide.sh graphify` → `slide/index.html` 17번 슬라이드 `class="layout-summary"` + 본문 가독성 확인
 
 # 📕 중요
 
