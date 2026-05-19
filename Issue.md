@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 169
+* Issue HWM: 174
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -28,6 +28,79 @@
 # 📕 중요
 
 # 📙 일반
+
+## Issue170. agenda-designer 데이터-주도 SCAR 전환 (등록: 2026-05-19)
+* 목적: Issue169 info-filler 패턴을 agenda-designer agent에 적용. `data/agenda-designer/patterns.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환.
+* 카테고리: Build (파이프라인 SCAR)
+* depends: Issue169 ✅ (commit 2529153)
+* 상세:
+    - 현재 `.claude/agents/agenda-designer.md` 본문에 mode 판정 표·outline 패턴 하드코딩
+    - `data/agenda-designer/patterns.yml` (73줄, 시드) 존재하나 SCAR 미참조
+    - Issue169 패턴(데이터 로드 / 적용 알고리즘 / 확장 지점 3개 절) 적용 필요
+* 구현 명세:
+    - patterns.yml 스키마 확장 (mode_decision_rules, outline_patterns, chapter_naming_rules 등)
+    - SCAR 본문 하드코딩 제거 → yml 참조로 대체
+    - 신규 절: `# 데이터 로드` / `# 적용 알고리즘` / `# 확장 지점`
+    - _doc_arch/authoring-pipeline.md 단계 3 표 ⏳ → ✅ Issue170 갱신
+    - 회귀 빌드 검증 (`./m2slide.sh m2SlideStyle1_single`, `m2SlideStyle2_chapter`)
+
+## Issue171. md-updater 데이터-주도 SCAR 전환 (등록: 2026-05-19)
+* 목적: Issue169 info-filler 패턴을 md-updater skill에 적용. `data/md-updater/styles.yml` + `templates/`을 SSOT로 하는 데이터-주도 SCAR로 전환.
+* 카테고리: Build (파이프라인 SCAR)
+* depends: Issue170
+* 상세:
+    - 현재 `.claude/skills/md-updater/SKILL.md` 본문에 스타일 가이드·검증 게이트 하드코딩
+    - `data/md-updater/styles.yml` (52줄, 시드) + `templates/` 존재하나 SCAR 미참조
+* 구현 명세:
+    - styles.yml 스키마 확장 (tone_styles, bullet_density_rules, code_block_rules, validation_rules)
+    - SCAR 본문 하드코딩 제거 → yml 참조로 대체
+    - 신규 절 3종 (데이터 로드 / 적용 알고리즘 / 확장 지점)
+    - 단계 4 표 ⏳ → ✅ Issue171 갱신
+    - 회귀 빌드 검증
+
+## Issue172. media-creater 데이터-주도 SCAR 전환 (등록: 2026-05-19)
+* 목적: Issue169 info-filler 패턴을 media-creater agent에 적용. `data/media-creater/tools.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환.
+* 카테고리: Build (파이프라인 SCAR)
+* depends: Issue171
+* 상세:
+    - 현재 `.claude/agents/media-creater.md` 본문에 도구 매핑(mermaid/excalidraw/design-html) 하드코딩
+    - `data/media-creater/tools.yml` (59줄, 시드) 존재하나 SCAR 미참조
+* 구현 명세:
+    - tools.yml 스키마 확장 (tool_capabilities, selection_rules, output_conventions)
+    - SCAR 본문 하드코딩 제거 → yml 참조로 대체
+    - 신규 절 3종
+    - 단계 5 표 ⏳ → ✅ Issue172 갱신
+    - 회귀 빌드 검증
+
+## Issue173. layout-selector 데이터-주도 SCAR 전환 (등록: 2026-05-19)
+* 목적: Issue169 info-filler 패턴을 layout-selector agent에 적용. `data/layout-selector/rules.yml` + `overrides/`를 SSOT로 하는 데이터-주도 SCAR로 전환.
+* 카테고리: Build (파이프라인 SCAR)
+* depends: Issue172
+* 상세:
+    - 현재 `.claude/agents/layout-selector.md` 본문에 layout 추천 규칙 하드코딩
+    - `data/layout-selector/rules.yml` (67줄, 시드) + `overrides/` 존재하나 SCAR 미참조
+* 구현 명세:
+    - rules.yml 스키마 확장 (content_pattern_rules, layout_capability_map, theme_compatibility)
+    - SCAR 본문 하드코딩 제거 → yml 참조로 대체
+    - 신규 절 3종 (overrides 병합 로직 포함)
+    - 단계 6 표 ⏳ → ✅ Issue173 갱신
+    - 회귀 빌드 검증
+
+## Issue174. slot-designer 데이터-주도 SCAR 전환 (등록: 2026-05-19)
+* 목적: Issue169 info-filler 패턴을 slot-designer agent에 적용. `data/slot-designer/patterns.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환. 단계 3~7 SCAR 전환 마무리.
+* 카테고리: Build (파이프라인 SCAR)
+* depends: Issue173
+* 상세:
+    - 현재 `.claude/agents/slot-designer.md` 본문에 layout↔slot 매핑 하드코딩
+    - `data/slot-designer/patterns.yml` (78줄, 시드) 존재하나 SCAR 미참조
+    - `data/slot_*.yml` 4종 (meta/pandoc/animation/user) 카탈로그와 연계 검토
+* 구현 명세:
+    - patterns.yml 스키마 확장 (layout_slot_map, slot_priority_rules, user_slot_preservation)
+    - SCAR 본문 하드코딩 제거 → yml 참조로 대체
+    - 신규 절 3종
+    - 단계 7 표 ⏳ → ✅ Issue174 갱신
+    - `_doc_arch/authoring-pipeline.md` "# 후속 작업" 절: 5개 SCAR → 0개 (전환 완료)
+    - 회귀 빌드 검증
 
 # 📗 선택
 
