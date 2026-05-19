@@ -152,6 +152,9 @@ thresholds:
 # ============================================================================
 # 4. theme 화이트리스트·discovery
 # ============================================================================
+# Issue175: Info.md `design_mood` (전반 그래픽 톤, ex: "라이트 테마, 밝은 분위기")는
+#   LLM agent가 theme 후보 선정 시 hint로 참고. 예: design_mood에 "다크"가 포함되면
+#   dark variant theme이 있으면 우선. 명시 규칙은 두지 않음 (LLM 자유 판단 + theme/ 폴더 Glob 결과 결합).
 theme_discovery:
   command: "node -e \"console.log(JSON.stringify(require('./lib/layout-meta-parser').loadAllLayouts('theme/{theme_name}'), null, 2))\""
   fallback_theme: default        # theme이 default 외이고 일부 layout 누락 시 default도 함께 로드

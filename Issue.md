@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 174
+* Issue HWM: 175
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -24,6 +24,21 @@
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
 
 # 🚧 진행중
+
+## Issue175. Info.md `design_mood` 필드 추가 — 그래픽 디자인 톤 SSOT (등록: 2026-05-19)
+* 목적: `image_style`(AI 이미지 한정)과 별개로, 슬라이드 전반의 시각 디자인 톤(ex: "라이트 테마, 밝은 분위기, 파스텔 컬러")을 사전 수집할 자유 문자열 필드를 미디어 계획 섹션에 추가. theme 선택·layout 추천·미디어 생성 모두 hint로 소비.
+* 카테고리: Build (파이프라인 SCAR — info-filler 데이터-주도)
+* 상세:
+    - 필드명: `design_mood` (단일 자유 문자열, default 빈 값)
+    - 위치: Info.md 미디어 계획 H1 섹션, `image_style` 위
+    - 사용자 결정 (2026-05-19 HTML form): 미디어 계획 / design_mood / 단일 자유 문자열
+* 구현 명세:
+    - `data/Info.template.md` 미디어 계획 섹션에 `* design_mood:` 라인 추가 (`image_style` 위)
+    - `data/info-filler/questions.yml` `media_options[]` 에 `id: design_mood` entry 추가 (default `""`, example `"라이트 테마, 밝은 분위기, 파스텔 컬러"`)
+    - `_doc_arch/info.md` "미디어 계획" 표에 `design_mood` 행 추가 + 단계별 사용 표에 hint 명시 (agenda-designer/layout-selector/media-creater 참고)
+    - `data/media-creater/tools.yml` `info_field_map` 신규 섹션 (style/color_tone placeholder → Info.md `image_style`/`design_mood` 매핑, fallback chain 정의) + spec_template 주석 갱신
+    - `data/layout-selector/rules.yml` theme_discovery 섹션에 design_mood hint 주석 (LLM agent theme 후보 선정 시 참고)
+    - SCAR 본문 하드코딩 없음 (info-filler agent는 yml만 Read하므로 agent.md 변경 불필요)
 
 # 📕 중요
 

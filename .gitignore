@@ -117,9 +117,10 @@ Temporary Items
 !/theme/default/
 !/theme/default_lec/
 
-# data: .gitkeep만 추적, 그 외 사용자 데이터는 추적 제외
+# data: .gitkeep + SSOT 템플릿만 추적, 그 외 사용자 데이터는 추적 제외
 /data/*
 !/data/.gitkeep
+!/data/Info.template.md
 
 # Backup files
 *.bak

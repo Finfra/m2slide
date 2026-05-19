@@ -143,10 +143,17 @@ media_options:
     default: false
     description: "수동 녹화"
 
+  - id: design_mood
+    prompt: "슬라이드 전반의 그래픽 디자인 톤 한 줄 (선택). theme 선택·layout 추천·이미지 생성 모두 hint로 소비됨."
+    default: ""
+    example: "라이트 테마, 밝은 분위기, 파스텔 컬러"
+    description: "image_style보다 상위 — 전체 시각 톤. 미지정 시 theme/layout default 적용"
+
   - id: ai_image_style_guide
     prompt: "AI 이미지 생성 시 톤·스타일 가이드 한 줄 (선택)"
     default: ""
     example: "minimal flat illustration, blue tone"
+    description: "design_mood와 별개 — AI 이미지 생성 한정. design_mood가 있으면 그를 baseline으로 삼되 본 필드로 세부 override 가능"
 
 # ============================================================================
 # 4. 산출물 계획 (단계 8·9 — Info.md "산출물 계획" H1 섹션)
