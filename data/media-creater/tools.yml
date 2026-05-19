@@ -1,8 +1,12 @@
-# media-creater가 사용하는 미디어 생성 도구 매핑.
-# 본문 분석으로 적합한 도구 선택. 사용자는 새 도구 추가 가능.
+# media-creater v2 SSOT — 시각화 도구·패턴 매핑·생성 명세·검증·체크포인트.
+# 사용자가 본 파일을 수정하면 SCAR 본문 변경 없이 즉시 반영됨 (agent가 호출 시점에 매번 Read).
+# Issue172 (Issue169 info-filler 패턴 적용).
 ---
-version: 1
+version: 2
 
+# ============================================================================
+# 1. 미디어 생성 도구 카탈로그
+# ============================================================================
 tools:
   - id: mermaid_inline
     type: diagram
@@ -14,8 +18,11 @@ tools:
       - "stateDiagram"
       - "erDiagram"
       - "gantt"
+      - "pie"
+      - "mindmap"
     output: inline             # ```mermaid 블록 그대로
     fallback: img/{name}.svg   # 인라인 실패 시 mmdc로 SVG 생성
+    delegate_skill: make-mermaid
 
   - id: mermaid_svg
     type: diagram
@@ -23,6 +30,7 @@ tools:
     triggers: ["complex_diagram"]
     output_path: img/
     output_format: svg
+    delegate_skill: make-mermaid
 
   - id: excalidraw
     type: hand_drawn
@@ -30,8 +38,10 @@ tools:
     triggers:
       - "architecture"
       - "system_overview"
+      - "freeform_diagram"
     output_path: img/
-    output_format: [svg, png]
+    output_format: [svg, png, excalidraw]
+    delegate_skill: excalidraw-diagram
 
   - id: design_html
     type: infographic
@@ -42,12 +52,143 @@ tools:
     output_path: img/
     output_format: [html, png]
 
+  - id: image_placeholder
+    type: photo
+    handler: placeholder_png
+    triggers:
+      - "photo"
+      - "ui_screenshot"
+      - "real_image"
+    output_path: img/
+    output_format: png
+    delegate_skill: gemini-image-describer
+    spec_dir: _doc_work/media/      # 외부 생성 위임 명세 위치
+
   - id: gemini_describe
     type: image_caption
     handler: gemini-image-describer
     triggers: ["existing_image_needs_caption"]
 
-# 외부 이미지 출처 (수동 다운로드 시 참고)
+# ============================================================================
+# 2. 본문 패턴 → 도구 매핑 (Selection Rules)
+# ============================================================================
+content_pattern_rules:
+  - id: sequential_steps
+    label: 순차 단계·프로세스
+    body_patterns: ["단계", "절차", "프로세스", "step", "process", "flow", "흐름"]
+    recommended_tool: mermaid_inline
+    mermaid_type: "flowchart LR"
+
+  - id: time_sequence
+    label: 시간 순서·이벤트
+    body_patterns: ["시간", "이벤트", "통신", "interaction", "sequence"]
+    recommended_tool: mermaid_inline
+    mermaid_type: "sequenceDiagram"
+
+  - id: hierarchy_tree
+    label: 계층·트리
+    body_patterns: ["계층", "트리", "구조", "hierarchy", "tree", "분류"]
+    recommended_tool: mermaid_inline
+    mermaid_type: "graph TD"
+
+  - id: class_relation
+    label: 클래스·관계
+    body_patterns: ["클래스", "관계", "class", "relation", "schema"]
+    recommended_tool: mermaid_inline
+    mermaid_type: "classDiagram"
+
+  - id: state_transition
+    label: 상태 전이
+    body_patterns: ["상태", "전이", "state", "transition"]
+    recommended_tool: mermaid_inline
+    mermaid_type: "stateDiagram-v2"
+
+  - id: ratio_distribution
+    label: 비율·분포 (수치 있음)
+    body_patterns: ["비율", "분포", "percent", "ratio", "%"]
+    recommended_tool: mermaid_inline
+    mermaid_type: "pie"
+
+  - id: freeform_architecture
+    label: 자유형 다이어그램·복잡 구조
+    body_patterns: ["아키텍처", "architecture", "system", "전체 구조"]
+    recommended_tool: excalidraw
+
+  - id: photo_screenshot
+    label: 사진·실사·UI 스크린샷
+    body_patterns: ["사진", "스크린샷", "이미지", "photo", "screenshot"]
+    recommended_tool: image_placeholder
+
+  - id: infographic_layout
+    label: 인포그래픽 (HTML 기반)
+    body_patterns: ["인포그래픽", "infographic", "complex_layout"]
+    recommended_tool: design_html
+
+# ============================================================================
+# 3. 처리 정책
+# ============================================================================
+processing_policy:
+  body_preservation: true     # 본문 텍스트 변경 금지. mermaid 코드블록·이미지 placeholder만 추가
+  mermaid_placement: "after_last_bullet"  # 본문 마지막 또는 의미상 적절한 위치
+  image_reference_format: "![{alt_text}](./img/{slide_id}.{ext})"
+  syntax_validation:
+    mermaid:
+      check_start_keyword: true
+      check_closing_backticks: true
+      external_validation_command: "mmdc --version"  # mmdc 가용 시
+      auto_fix_attempts: 1
+  placeholder_generation:
+    method: "1x1 transparent PNG"
+    command: "convert -size 1x1 xc:transparent {path}"
+    fallback: "cp lib/m2slide/data/placeholder.png {path}"
+
+# ============================================================================
+# 4. 생성 명세 frontmatter 양식 (외부 도구 위임용)
+# ============================================================================
+spec_template:
+  frontmatter:
+    name: "{slide_id}"
+    description: "이미지 생성 명세"
+    date: "{today}"
+    target: "img/{slide_id}.png"
+  body_format: |
+    # 슬라이드
+
+    {slide_title}
+
+    {body_excerpt}
+
+    # 이미지 명세
+
+    * 스타일: {style}
+    * 색상 톤: {color_tone}
+    * 핵심 요소: {key_elements}
+    * 크기: 1920×1080
+
+    # 생성 도구 위임
+
+    * {delegate_skill} 또는 사용자 수동 작업
+
+# ============================================================================
+# 5. 검증 규칙
+# ============================================================================
+validation_rules:
+  - id: mermaid_syntax
+    desc: "mermaid 코드블록 시작 키워드 + 종결 백틱 매칭"
+    on_failure:
+      retry_count: 1
+      escalate_to_user_after: 2
+  - id: image_placeholder_exists
+    desc: "img/{slide_id}.png 파일 실존"
+  - id: spec_frontmatter_complete
+    desc: "_doc_work/media/{slide_id}.md frontmatter 4개 필드 모두 존재"
+    fields: [name, description, date, target]
+  - id: alt_text_required
+    desc: "모든 이미지 참조에 alt 텍스트 존재"
+
+# ============================================================================
+# 6. 외부 이미지 출처 (수동 다운로드 시 참고)
+# ============================================================================
 stock_sources:
   - id: unsplash
     url: https://unsplash.com
@@ -56,4 +197,41 @@ stock_sources:
     url: https://openverse.org
     license: CC
 
-# 비디오 생성은 v1: 수동 녹화. v2 후보: screencast-cli
+# ============================================================================
+# 7. 사용자 검토 체크포인트
+# ============================================================================
+checkpoint:
+  template: |
+    media-creater 산출 검토:
+    - mermaid 인라인 삽입: {mermaid_count}건
+    - excalidraw 생성 대기: {excalidraw_count}건
+    - 이미지 생성 명세: {image_spec_count}건 (생성 도구 위임 대기)
+    - 산출 위치: {paths}
+
+    다음 단계 진행 가능? 또는 mermaid 코드 수정 필요?
+  skip_flag: "--no-checkpoint"
+  on_reject:
+    action: ask_user_modifications
+    max_iterations: 3
+
+# ============================================================================
+# 8. 종료 보고 양식
+# ============================================================================
+report_template: |
+  ## media-creater 완료
+  * 처리 슬라이드: {total_slides}
+  * 시각화 후보 식별: {candidate_count}
+      - mermaid 인라인: {mermaid_count}
+      - excalidraw: {excalidraw_count}
+      - 이미지 placeholder: {image_count}
+      - design-html: {html_count}
+  * 외부 위임 명세 생성: {spec_count}건 ({spec_dir})
+  * 검증: mermaid syntax {mermaid_status} / placeholder {placeholder_status}
+  * 다음 단계: 단계 6 layout-selector
+
+# ============================================================================
+# 9. 비디오 정책
+# ============================================================================
+video_policy:
+  v1: manual_recording        # 사용자 수동 녹화
+  v2_candidate: screencast-cli

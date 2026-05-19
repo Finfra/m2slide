@@ -29,20 +29,6 @@
 
 # 📙 일반
 
-## Issue172. media-creater 데이터-주도 SCAR 전환 (등록: 2026-05-19)
-* 목적: Issue169 info-filler 패턴을 media-creater agent에 적용. `data/media-creater/tools.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환.
-* 카테고리: Build (파이프라인 SCAR)
-* depends: Issue171
-* 상세:
-    - 현재 `.claude/agents/media-creater.md` 본문에 도구 매핑(mermaid/excalidraw/design-html) 하드코딩
-    - `data/media-creater/tools.yml` (59줄, 시드) 존재하나 SCAR 미참조
-* 구현 명세:
-    - tools.yml 스키마 확장 (tool_capabilities, selection_rules, output_conventions)
-    - SCAR 본문 하드코딩 제거 → yml 참조로 대체
-    - 신규 절 3종
-    - 단계 5 표 ⏳ → ✅ Issue172 갱신
-    - 회귀 빌드 검증
-
 ## Issue173. layout-selector 데이터-주도 SCAR 전환 (등록: 2026-05-19)
 * 목적: Issue169 info-filler 패턴을 layout-selector agent에 적용. `data/layout-selector/rules.yml` + `overrides/`를 SSOT로 하는 데이터-주도 SCAR로 전환.
 * 카테고리: Build (파이프라인 SCAR)
@@ -76,6 +62,21 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue172. media-creater 데이터-주도 SCAR 전환 (등록: 2026-05-19, 해결: 2026-05-19) ✅
+* 목적: Issue169 info-filler 패턴을 media-creater agent에 적용. `data/media-creater/tools.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환.
+* 카테고리: Build (파이프라인 SCAR)
+* depends: Issue171 ✅
+* 산출물:
+    - `.claude/agents/media-creater.md` — 3개 신규 절(데이터 로드 / 적용 알고리즘 / 확장 지점) 추가 + 본문 하드코딩(시각화 패턴 매핑 표·생성 명세 양식·체크포인트 메시지) 제거 → yml 참조로 대체
+    - `data/media-creater/tools.yml` v2 — 10개 최상위 키 (`tools[]`/`content_pattern_rules[]`/`processing_policy`/`spec_template`/`validation_rules[]`/`stock_sources[]`/`checkpoint`/`report_template`/`video_policy`)
+    - `_doc_arch/authoring-pipeline.md` 단계 5 표 ⏳ → ✅ Issue172 갱신
+* 검증:
+    - YAML parse OK (10 keys)
+    - SCAR 3개 신규 절 존재
+    - 하드코딩 제거 확인
+    - 회귀 빌드 OK (`./m2slide.sh m2SlideStyle1_single`)
+* 후속: Issue173~174 (layout-selector/slot-designer)
 
 ## Issue171. md-updater 데이터-주도 SCAR 전환 (등록: 2026-05-19, 해결: 2026-05-19) ✅
 * 목적: Issue169 info-filler 패턴을 md-updater skill에 적용. `data/md-updater/styles.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환.
