@@ -25,24 +25,6 @@
 
 # 🚧 진행중
 
-## Issue179. default_lec summary layout — 학습 정리·요약 전용 layout 분리 (등록: 2026-05-19)
-* 목적: 현재 `closing` layout이 Q&A·마무리·정리·요약을 모두 떠맡고 있어 강의 흐름상 "오늘 학습한 내용" 슬라이드가 closing(puffer1 거대 마스코트, 중앙 큰 타이틀, 축제 느낌) 디자인으로 표현됨. summary는 콘텐츠 가독성이 우선이므로 별도 layout 필요. graphify slide 17(`오늘 학습한 내용`)이 적용 대상.
-* 카테고리: Theme (default_lec) + Generator (layout-selector / md-updater data)
-* 상세:
-    - 신규 layout: `theme/default_lec/layouts/9.2.summary.html`
-        - class `layout-summary`, slots `title` + `content`
-        - 디자인: 콘텐츠 중심 (마스코트 작게, 본문 좌정렬·top-align, title 위쪽 고정)
-    - `theme/default_lec/slide.css`: `.layout-summary` 규칙 추가 (closing과 분리)
-    - `data/slot_meta.yml`: title/content layouts에 `9.2.summary` 추가
-    - `data/layout-selector/rules.yml`: `closing_summary` 규칙을 `summary_recap`(정리/요약/다음 단계 → summary)와 `qna_closing`(마무리/Q&A/Closing → closing) 두 개로 분리
-    - `data/md-updater/styles.yml`: `summary_next` pattern에 `layout_hint: summary` 추가
-    - 적용: `Projects/graphify/graphify.ppt.md` 슬라이드 17 `#layout-closing` → `#layout-summary` (오늘 학습한 내용)
-    - 슬라이드 18(다음 단계)은 closing 유지 (마무리·다음 단계 안내 성격)
-* 구현 명세:
-    - layout html은 `_contents`와 closing의 중간 — 본문 영역 넓게, title은 sketch 밑줄 유지
-    - 마스코트: 작은 cat 우상단 + 작은 butterfly 우하단 (puffer 제외, 정리 슬라이드는 차분)
-    - 빌드 검증: `./m2slide.sh graphify` → `slide/index.html` 17번 슬라이드 `class="layout-summary"` + 본문 가독성 확인
-
 # 📕 중요
 
 # 📙 일반
@@ -50,6 +32,18 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue179. default_lec summary layout — 학습 정리·요약 전용 layout 분리 (등록: 2026-05-19, 해결: 2026-05-19, commit: 07b02b1) ✅
+* 목적: 현재 `closing` layout이 Q&A·마무리·정리·요약을 모두 떠맡고 있어 강의 흐름상 "오늘 학습한 내용" 슬라이드가 closing(puffer1 거대 마스코트, 중앙 큰 타이틀, 축제 느낌) 디자인으로 표현됨. summary는 콘텐츠 가독성이 우선이므로 별도 layout 필요. graphify slide 17(`오늘 학습한 내용`)이 적용 대상.
+* 카테고리: Theme (default_lec) + Generator (layout-selector / md-updater data)
+* 상세:
+    - 신규 layout: `theme/default_lec/layouts/9.2.summary.html` (class `layout-summary`, slots `title` + `content`)
+    - `theme/default_lec/slide.css §4.7.5`: cat·butterfly 작은 코너 마스코트 + 좌정렬·top-align body, title 2.4em (closing 3.6em 대비 컴팩트)
+    - `data/slot_meta.yml`: title/content layouts에 `9.2.summary` 추가
+    - `data/layout-selector/rules.yml`: `closing_summary` 규칙을 `summary_recap`(정리·요약·학습한 내용·Recap → summary)과 `qna_closing`(마무리·Q&A·다음 단계·Closing → closing) 두 개로 분리
+    - `data/md-updater/styles.yml`: `summary_next` pattern에 `layout_hint: summary` + triggers에 "학습한 내용", "복습", "recap", "review" 추가
+    - 적용: `Projects/graphify/graphify.ppt.md` slide 17 `#layout-closing` → `#layout-summary`. slide 18(다음 단계)은 closing 유지
+* 검증: graphify + m2SlideStyle1_single + m2SlideStyle2_chapter 빌드 회귀 없음. graphify slide 17 HTML 출력 `<section class="layout-summary">` + `summary-title` + `summary-body` 구조 확인 (file:// 17번 슬라이드 브라우저 검증)
 
 ## Issue178. graphify mermaid syntax — `[/graphify . 빌드]` 평행사변형 토큰 충돌 fix (등록: 2026-05-19, 해결: 2026-05-19, commit: 9f70f93) ✅
 * 목적: graphify slide 15 (`코드베이스 탐색 워크플로`) mermaid 렌더 실패. 노드 라벨 `B[/graphify . 빌드]`의 `[/`가 평행사변형 시작 토큰으로 해석되나 종결 `/]` 없어 parser fail → 원본 텍스트 노출.
