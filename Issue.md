@@ -25,21 +25,6 @@
 
 # 🚧 진행중
 
-## Issue178. graphify.md mermaid syntax error — `[/graphify . 빌드]` 평행사변형 토큰 충돌 (등록: 2026-05-19)
-* 목적: graphify 프로젝트 slide 15 (`코드베이스 탐색 워크플로`) mermaid 다이어그램 렌더 실패. 노드 라벨 `B[/graphify . 빌드]`의 `[/`가 mermaid 평행사변형 노드 시작 토큰으로 해석되나 종결 `/]` 없어 parser fail → 원본 텍스트 노출.
-* 카테고리: Project (graphify content)
-* 상세:
-    - 파일: `Projects/graphify/graphify.md:210`
-    - mermaid 노드 형태 충돌:
-        - `[text]` 사각형
-        - `[/text/]` 평행사변형 (시작·종결 슬래시 필요)
-    - `B[/graphify . 빌드]` 시작 `[/`, 종결 `]` → 어느 형태에도 매칭 안 됨
-    - 다른 mermaid 블록(라인 18·48·82·112)은 슬래시 없어 정상
-* 구현 명세:
-    - `B[/graphify . 빌드]` → `B["/graphify . 빌드"]` (따옴표 wrap)
-    - mermaid는 따옴표 안 텍스트를 raw string 처리. 슬래시·점·특수문자 안전
-    - `./m2slide.sh graphify` 재빌드 후 slide 15 mermaid SVG 렌더 확인
-
 # 📕 중요
 
 # 📙 일반
@@ -47,6 +32,19 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue178. graphify mermaid syntax — `[/graphify . 빌드]` 평행사변형 토큰 충돌 fix (등록: 2026-05-19, 해결: 2026-05-19, commit: 9f70f93) ✅
+* 목적: graphify slide 15 (`코드베이스 탐색 워크플로`) mermaid 렌더 실패. 노드 라벨 `B[/graphify . 빌드]`의 `[/`가 평행사변형 시작 토큰으로 해석되나 종결 `/]` 없어 parser fail → 원본 텍스트 노출.
+* 카테고리: Project (graphify content)
+* 상세:
+    - 파일: `Projects/graphify/graphify.md:210`, `graphify.ppt.md:232` (실제 빌드 source)
+    - mermaid 노드 형태: `[text]` 사각형 / `[/text/]` 평행사변형 (시작·종결 슬래시 필요)
+    - `B[/graphify . 빌드]` 시작 `[/`, 종결 `]` → 매칭 안 됨
+    - 다른 mermaid 블록(라인 18·48·82·112)은 슬래시 없어 정상
+* 구현 명세:
+    - `B[/graphify . 빌드]` → `B["/graphify . 빌드"]` (따옴표 wrap)
+    - mermaid 따옴표 내부 raw string 처리 → 슬래시·점·특수문자 안전
+    - `./m2slide.sh graphify` 재빌드 후 slide 15 mermaid SVG 렌더 확인 완료
 
 ## Issue177. default_lec 전체 재구성 — default 구조 통일 + md-updater 단계 4 호환 (등록: 2026-05-19, 해결: 2026-05-19, commit: e501eed) ✅
 * 목적: default 테마가 신버전(slide.css 1207L, Issue113/130/131/138/141/143/154/176 누적)으로 진화하면서 default_lec(774L)와 구조 불일치 발생. default_lec를 default 구조로 통일하고 강의 특화 부분만 override 레이어로 분리. 동시에 authoring-pipeline 단계 4(md-updater)가 default_lec 호환 슬라이드 패턴을 잘 생성하도록 styles.yml 정합.
