@@ -29,20 +29,6 @@
 
 # 📙 일반
 
-## Issue173. layout-selector 데이터-주도 SCAR 전환 (등록: 2026-05-19)
-* 목적: Issue169 info-filler 패턴을 layout-selector agent에 적용. `data/layout-selector/rules.yml` + `overrides/`를 SSOT로 하는 데이터-주도 SCAR로 전환.
-* 카테고리: Build (파이프라인 SCAR)
-* depends: Issue172
-* 상세:
-    - 현재 `.claude/agents/layout-selector.md` 본문에 layout 추천 규칙 하드코딩
-    - `data/layout-selector/rules.yml` (67줄, 시드) + `overrides/` 존재하나 SCAR 미참조
-* 구현 명세:
-    - rules.yml 스키마 확장 (content_pattern_rules, layout_capability_map, theme_compatibility)
-    - SCAR 본문 하드코딩 제거 → yml 참조로 대체
-    - 신규 절 3종 (overrides 병합 로직 포함)
-    - 단계 6 표 ⏳ → ✅ Issue173 갱신
-    - 회귀 빌드 검증
-
 ## Issue174. slot-designer 데이터-주도 SCAR 전환 (등록: 2026-05-19)
 * 목적: Issue169 info-filler 패턴을 slot-designer agent에 적용. `data/slot-designer/patterns.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환. 단계 3~7 SCAR 전환 마무리.
 * 카테고리: Build (파이프라인 SCAR)
@@ -62,6 +48,21 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue173. layout-selector 데이터-주도 SCAR 전환 (등록: 2026-05-19, 해결: 2026-05-19) ✅
+* 목적: Issue169 info-filler 패턴을 layout-selector agent에 적용. `data/layout-selector/rules.yml` + `overrides/`를 SSOT로 하는 데이터-주도 SCAR로 전환.
+* 카테고리: Build (파이프라인 SCAR)
+* depends: Issue172 ✅
+* 산출물:
+    - `.claude/agents/layout-selector.md` — 3개 신규 절(데이터 로드 / 적용 알고리즘 / 확장 지점) 추가 + 본문 하드코딩(슬라이드 패턴 표·Semantic 신호·휴리스틱 임계값·실행 제약) 제거 → yml 참조로 대체
+    - `data/layout-selector/rules.yml` v2 — 14개 최상위 키 (`priority_policy`/`pattern_rules[]`/`thresholds`/`theme_discovery`/`auto_detection_delegation`/`output_format`/`ppt_md_generation`/`preservation_rules`/`validation_rules`/`checkpoint`/`execution_constraints`/`report_template`/`overrides`)
+    - `_doc_arch/authoring-pipeline.md` 단계 6 표 ⏳ → ✅ Issue173 갱신
+* 검증:
+    - YAML parse OK (14 keys)
+    - SCAR 3개 신규 절 존재
+    - 하드코딩 제거 확인
+    - 회귀 빌드 OK (`./m2slide.sh m2SlideStyle2_chapter`)
+* 후속: Issue174 (slot-designer, 단계 7 마지막)
 
 ## Issue172. media-creater 데이터-주도 SCAR 전환 (등록: 2026-05-19, 해결: 2026-05-19) ✅
 * 목적: Issue169 info-filler 패턴을 media-creater agent에 적용. `data/media-creater/tools.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환.

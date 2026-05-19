@@ -1,67 +1,279 @@
-# layout-selector가 슬라이드별 layout 추천 시 사용하는 규칙.
-# 사용자는 본 파일을 수정하여 새 규칙 추가 / 우선순위 변경 가능.
+# layout-selector v2 SSOT — 슬라이드 패턴 매핑·우선순위·화이트리스트·자동 감지 위임·검증·체크포인트.
+# 사용자가 본 파일을 수정하면 SCAR 본문 변경 없이 즉시 반영됨 (agent가 호출 시점에 매번 Read).
+# Issue173 (Issue169 info-filler 패턴 적용).
 ---
-version: 1
+version: 2
 
-# 우선순위 (위부터 매칭):
-#   1. 사용자 수동 #layout-* (코드에서 처리, 본 파일 미적용)
-#   2. 본 파일의 rules
-#   3. 자동 감지 (image-only / empty-title)
-#   4. theme_default_layout
+# ============================================================================
+# 1. 우선순위 정책 (위부터 매칭)
+# ============================================================================
+priority_policy:
+  - id: user_manual_layout
+    desc: "사용자 수동 #layout-* (코드에서 처리, 본 파일 미적용)"
+    priority: 1000
+    enforced_by: agent_code  # detect 단계에서 보존, --force 명시해야만 덮어쓰기
+  - id: agent_recommendation
+    desc: "본 yml의 pattern_rules[] 매칭"
+    priority: 100
+    enforced_by: data_driven_rules
+  - id: auto_detection
+    desc: "m2slide 자동 감지 (image-only / empty-title)"
+    priority: 10
+    enforced_by: m2slide_runtime  # generate-slides.js
+  - id: theme_default
+    desc: "_config.yml theme_default_layout"
+    priority: 1
+    enforced_by: m2slide_runtime
 
-rules:
+# ============================================================================
+# 2. 슬라이드 패턴 → layout 추천 규칙
+# ============================================================================
+pattern_rules:
   - id: cover_first_slide
     condition: "slide_index == 0 and chapter_index == 0"
+    triggers:
+      content_signals: ["title_large", "subtitle", "author"]
     layout: cover
     priority: 100
+    reason_template: "표지 슬라이드 (제목 + 부제 + 발표자)"
 
   - id: agenda_after_cover
     condition: "slide_index == 0 and is_chapter_mode and chapter_index > 0"
     layout: agenda
     priority: 90
+    reason_template: "챕터 진입 (agenda 슬라이드)"
+
+  - id: chapter_start_with_goals
+    condition: "is_chapter_mode and slide_index == 0 and has_goals_list"
+    triggers:
+      title_keywords: ["챕터", "Chapter", "학습 목표"]
+    layout: chapter
+    layout_fallback: contents
+    priority: 85
+    reason_template: "챕터 시작 (큰 제목 + 학습 목표 리스트)"
 
   - id: image_only
     condition: "has_image and not has_title and not has_text"
     layout: blank
     priority: 80
+    auto_detect_delegated: true   # m2slide 자동 감지가 처리 — agent 명시 생략
+    reason_template: "단독 이미지 (자동 감지 위임)"
 
   - id: full_image_with_caption
     condition: "has_image and has_short_caption and not has_bullets"
     layout: image_caption
     priority: 75
+    reason_template: "이미지 + 짧은 캡션"
 
   - id: two_column_text_image
     condition: "has_text and has_image and bullet_count >= 3"
     layout: two_column
+    layout_fallback: contents-split
     priority: 70
+    reason_template: "좌우 비교 콘텐츠 (multi-column)"
 
   - id: code_block
     condition: "has_code and code_lines > 5"
     layout: code
+    layout_fallback: contents
     priority: 70
+    reason_template: "코드 블록 위주"
+
+  - id: empty_title_with_content
+    condition: "has_empty_title and has_content"
+    layout: contents_no_title
+    priority: 65
+    auto_detect_delegated: true
+    reason_template: "빈 제목 + 본문 (자동 감지 위임)"
 
   - id: comparison_table
     condition: "has_table and table_rows >= 3"
     layout: table
+    layout_fallback: contents
     priority: 65
+    reason_template: "비교 표"
 
   - id: quote
     condition: "has_blockquote and text_length < 200"
     layout: quote
+    layout_fallback: contents
     priority: 60
+    reason_template: "인용 슬라이드"
 
   - id: section_header
     condition: "has_h1_only or chapter_intro"
     layout: section
+    layout_fallback: contents
     priority: 55
+    reason_template: "섹션 헤더"
+
+  - id: exercise_lab
+    condition: "title_matches('실습|Lab|Exercise')"
+    triggers:
+      title_keywords: ["실습", "Lab", "Exercise"]
+    layout: exercise
+    layout_fallback: contents
+    priority: 70
+    reason_template: "실습 지시 슬라이드 (단계별 코드)"
+
+  - id: exercise_small
+    condition: "title_matches('체크|Check|Quiz') and content_length < 500"
+    layout: exercise-small
+    layout_fallback: contents
+    priority: 65
+    reason_template: "짧은 체크 포인트"
+
+  - id: closing_summary
+    condition: "title_matches('결론|마무리|정리|Q&A|다음 단계|Conclusion|Summary|Closing')"
+    triggers:
+      title_keywords: ["결론", "마무리", "정리", "Q&A", "다음 단계", "Conclusion", "Summary", "Closing"]
+    layout: closing
+    layout_fallback: contents
+    priority: 80
+    reason_template: "마무리·정리·Q&A"
 
   - id: default_contents
     condition: "always"
     layout: contents
     priority: 0
+    reason_template: "일반 본문 (H2 + 리스트·단락)"
 
-# 휴리스틱 임계값
+# ============================================================================
+# 3. 휴리스틱 임계값
+# ============================================================================
 thresholds:
   short_caption_words: 10
   bullets_long: 5
   code_lines_long: 15
+  table_rows_long: 3
+  quote_text_length: 200
+  exercise_small_content_length: 500
+
+# ============================================================================
+# 4. theme 화이트리스트·discovery
+# ============================================================================
+theme_discovery:
+  command: "node -e \"console.log(JSON.stringify(require('./lib/layout-meta-parser').loadAllLayouts('theme/{theme_name}'), null, 2))\""
+  fallback_theme: default        # theme이 default 외이고 일부 layout 누락 시 default도 함께 로드
+  layout_name_pattern: "^_?[a-z][a-z0-9-]*$"   # alias 정규식 (underscore 양쪽 허용)
+  hallucinated_layout_action: skip_with_warning   # 카탈로그 외 layout 이름 — stderr 경고 + skip
+
+# ============================================================================
+# 5. 자동 감지 위임 케이스
+# ============================================================================
+auto_detection_delegation:
+  # 다음 케이스는 m2slide 런타임(generate-slides.js)이 자동 감지하므로 agent는 layout 명시 안 함
+  cases:
+    - id: image_only_no_title
+      condition: "제목 없음 + 이미지 1개만 + 기타 콘텐츠 없음"
+      runtime_layout: _blank
+    - id: empty_title_with_content
+      condition: "제목 빈 (## 단독) + 본문 있음"
+      runtime_layout: _contents_no_title
+  policy: skip_recommendation     # JSON 출력에서 해당 슬라이드 index 누락
+
+# ============================================================================
+# 6. JSON 출력 형식 (stdout)
+# ============================================================================
+output_format:
+  type: json
+  schema:
+    input: "<input_file_path>"
+    theme: "<theme_name>"
+    total_slides: "<int>"
+    manual_preserved: "<int[]>"     # 사용자 수동 #layout-* 보유 슬라이드 index
+    auto_detect_delegated: "<int[]>"  # m2slide 자동 감지 위임 슬라이드 index
+    slides:
+      - { index: "<int>", layout: "<name>", reason: "<korean_1line>" }
+
+# ============================================================================
+# 7. .ppt.md 파생 정책 (재실행 모드)
+# ============================================================================
+ppt_md_generation:
+  default_mode: preserve_manual    # 사용자 수동 보존 + 나머지 재추천
+  modes:
+    - id: default
+      desc: "기존 .ppt.md 있으면 사용자 수동 슬라이드만 보존, 나머지 재추천"
+      flag: null
+    - id: force
+      desc: "사용자 수동까지 포함 전체 재추천 (일관성 재검증 시)"
+      flag: --force
+    - id: skip
+      desc: "기존 .ppt.md 있으면 즉시 종료 (rc=0, CI용)"
+      flag: --skip
+    - id: dry_run
+      desc: "파일 쓰기 없이 JSON만 stdout 출력"
+      flag: --dry-run
+
+# ============================================================================
+# 8. 보존 규칙 (절대 변경 금지)
+# ============================================================================
+preservation_rules:
+  - slide_body_text          # 코드 블록·리스트·이미지·표 등 모든 콘텐츠
+  - frontmatter              # 파일 시작 --- ~ --- 사이 전체
+  - slide_separator_position # 슬라이드 구분자 --- 위치
+  - user_manual_layout_meta  # 사용자 작성 #layout-*
+  - user_directives          # #transition-*, #background-color-*, #background-image-*, #auto-animate, #autoslide-*
+
+# ============================================================================
+# 9. 검증 규칙
+# ============================================================================
+validation_rules:
+  - id: layout_in_whitelist
+    desc: "추천 layout 이름이 theme_discovery 카탈로그에 존재"
+    on_failure: skip_recommendation_with_warning
+  - id: ppt_md_build_success
+    desc: "./m2slide.sh <Name> 빌드 성공 (rc=0)"
+  - id: html_class_layout_applied
+    desc: "HTML 산출물에 class=\"layout-*\" 적용"
+    check_command: "grep -c 'class=\"layout-' Projects/{name}/slide/*.html"
+  - id: apply_verify_rules_compliant
+    desc: "m2slide apply-verify-rules 자동 발동"
+
+# ============================================================================
+# 10. 사용자 검토 체크포인트
+# ============================================================================
+checkpoint:
+  template: |
+    layout-selector 산출 검토:
+    - 처리 슬라이드: {total}
+    - agent 추천: {agent_count}
+    - 사용자 수동 보존: {manual_count}
+    - 자동 감지 위임: {auto_count}
+    - layout 분포: {layout_distribution}
+    - 산출 파일: {paths}
+
+    다음 단계 진행 가능? 또는 layout 재추천 필요?
+  skip_flag: "--no-checkpoint"
+  on_reject:
+    action: ask_user_modifications
+    max_iterations: 3
+
+# ============================================================================
+# 11. 자율 작업 제약 (Opus 4.7 실행 룰)
+# ============================================================================
+execution_constraints:
+  max_external_commands_per_file: 5     # node·m2slide.sh 등 외부 명령 호출
+  max_slides_per_loop: 200              # 그 이상은 사용자에게 분할 안내
+  manual_meta_protection: enforced      # --force 명시 없으면 절대 덮어쓰지 않음
+  hallucinated_layout_action: skip_with_warning
+
+# ============================================================================
+# 12. 종료 보고 양식
+# ============================================================================
+report_template: |
+  ## layout-selector 완료
+  * 처리: {total_slides}장 (agent {agent_count} / 수동 {manual_count} / 자동 위임 {auto_count})
+  * 생성 파일: {output_files}
+  * layout 분포: {layout_distribution}
+  * 검증: build {build_status} / class 적용 {class_status}
+  * 다음 단계: 단계 7 slot-designer
+
+# ============================================================================
+# 13. 프로젝트별 override 메커니즘
+# ============================================================================
+overrides:
+  enabled: true
+  path: data/layout-selector/overrides/{project_name}.yml
+  merge_strategy: deep_merge  # 프로젝트 override가 기본 rules 위에 덮어씀
+  schema_compat: v2           # overrides도 본 yml과 동일 스키마
