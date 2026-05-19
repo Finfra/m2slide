@@ -1,7 +1,7 @@
 ---
 title: md-updater
-description: authoring-pipeline 단계 4(md 생성) — AGENDA 골격 + refs/ 기반으로 슬라이드 본문(불릿·표·코드블록)을 자동 채우는 skill. 사용자 검토 체크포인트 필수. md-rules + md-slide-rules + md-m2slide-rules 모두 준수. 빌드 lint 실패 시 1회 자동 수정.
-date: 2026-05-17
+description: authoring-pipeline 단계 4(md 생성) — AGENDA 골격 + refs/ 기반으로 슬라이드 본문(불릿·표·코드블록)을 자동 채우는 skill. 스타일·슬라이드 유형 패턴·콘텐츠 제한·검증 게이트·체크포인트는 data/md-updater/styles.yml에서 로드(v2 데이터-주도). md-rules + md-slide-rules + md-m2slide-rules 모두 준수. 빌드 lint 실패 시 1회 자동 수정.
+date: 2026-05-19
 ---
 
 # 목적
@@ -11,118 +11,182 @@ m2slide authoring-pipeline 단계 4를 담당하는 skill. 단계 3 agenda-desig
 # 트리거
 
 * `/md-update <ProjectName>` 커맨드 또는 `md-updater` skill 직접 호출
-* Issue156 orchestrator agent의 단계 4 위임
+* orchestrator agent의 단계 4 위임
+
+# 데이터 로드 (v2 — Issue171)
+
+본 skill은 `data/md-updater/styles.yml`을 SSOT로 사용합니다. 본 skill 본문은 **"본문을 어떻게 작성·검증·체크포인트하는가"**만 기술하고, 실제 정책(스타일·슬라이드 유형 패턴·콘텐츠 제한·검증 규칙·체크포인트 메시지)은 yml에서 로드합니다. 사용자가 yml을 수정하면 skill 본문 변경 없이 즉시 반영됩니다.
+
+* SSOT yml: [`../../../data/md-updater/styles.yml`](../../../data/md-updater/styles.yml)
+* yml 최상위 키:
+    - `styles[]` — 분야별 본문 스타일 (formal_lecture/casual_tutorial/keynote_punchy/conversational)
+    - `style_selection_rules[]` — Info.md tone → style 자동 매핑
+    - `slide_patterns[]` — 슬라이드 유형별 본문 템플릿 (intro·concept·comparison·process·code·result·summary)
+    - `content_limits` — 슬라이드당 콘텐츠 양 제한 (bullets/code_lines/table 등)
+    - `md_rules_compliance[]` — 준수해야 할 3-tier 룰 파일 매핑
+    - `checkpoint` — chapter/single mode별 체크포인트 메시지 + skip_flag
+    - `validation_rules` — 빌드 lint + content checks
+    - `header_preservation` — H1/H2 헤더 보존 정책
+    - `layout_meta_policy` — layout 메타 미주입 정책
+    - `report_template` — 종료 보고 양식
+
+* 보조 자산:
+    - `data/md-updater/templates/` — 슬라이드 유형별 보조 템플릿 (선택, 현재 빈 폴더)
 
 # 핵심 원칙
 
-1. **헤더 보존** — agenda-designer가 작성한 H1/H2 헤더는 절대 변경 금지. 본문만 추가.
-2. **3단계 규칙 준수** — md-rules(일반) + md-slide-rules(슬라이드 공통) + md-m2slide-rules(m2slide 특화) 모두 충족.
-3. **사람 검토 루프** — 챕터별 본문 작성 후 사용자 승인 대기. orchestrator `--no-checkpoint` 시 일괄 진행.
-4. **빌드 lint 재시도** — `./run.sh --lint-layouts` 실패 시 1회 자동 수정 시도, 2회 실패 시 사용자 보고.
-5. **layout 메타 미주입** — `#layout-*` 메타는 단계 6 layout-selector 책임. 본 skill은 본문 텍스트만.
+1. **데이터-주도** — 스타일·패턴·제한·검증 모두 yml에서 Read. SCAR 본문 하드코딩 금지.
+2. **헤더 보존** — `header_preservation` 정책 적용. agenda-designer가 작성한 H1/H2 절대 변경 금지. 본문 + H3 이하만 추가.
+3. **3단계 규칙 준수** — `md_rules_compliance[]`에 명시된 글로벌 + 슬라이드 공통 + m2slide 특화 룰 모두 충족.
+4. **사람 검토 루프** — `checkpoint.chapter_mode.per_chapter: true` 적용. orchestrator `--no-checkpoint` 시 일괄 진행.
+5. **빌드 lint 재시도** — `validation_rules.build_lint` 실패 시 `retry_count: 1` 자동 수정, 2회 실패 시 사용자 보고.
+6. **layout 메타 미주입** — `layout_meta_policy.inject_layout_directive: false`. `#layout-*` 메타는 단계 6 layout-selector 책임.
+
+# 적용 알고리즘 (styles.yml 활용)
+
+1. **yml 로드** — `Read data/md-updater/styles.yml` → 전체 키 추출
+2. **입력 분석** — `Read Info.md` → `topic`, `audience`, `tone`, `goals[]` 추출. `Read AGENDA.md` 또는 `<Name>.md` → 챕터·슬라이드 헤더 목록 추출. `Glob refs/*.md` → 키워드별 발췌 인덱싱
+3. **mode 판정** — `markdown/AGENDA.md` 존재 → chapter, 단일 `<Name>.md` + frontmatter `type: ppt` → single
+4. **스타일 선택** — `style_selection_rules[]` 순차 평가 → `styles[].id` 매칭. tone 없으면 `default: formal_lecture`
+5. **슬라이드 분류** — 각 H2 슬라이드 제목의 키워드 매칭으로 `slide_patterns[].triggers`에서 적합한 패턴 선택. 미매칭 시 일반 불릿 본문
+6. **본문 작성**:
+    - 선택된 `slide_patterns[].body_template`에 변수 치환
+    - `styles[].rules`·`forbidden` 적용 (어조·금지 표현)
+    - `content_limits` 준수 (bullets_max·code_lines_max 등)
+7. **헤더 보존 검증** — `header_preservation`에 따라 H1/H2 변경 여부 확인. 변경 시 reject + 재작성
+8. **md 규칙 검증** — `md_rules_compliance[]` 항목별 자동 검사
+9. **체크포인트** — `checkpoint.chapter_mode.per_chapter: true`이면 챕터별, single mode는 전체 1회
+10. **빌드 검증** — `validation_rules.build_lint` + `build_compile` 순차 실행
+11. **종료 보고** — `report_template` 양식
+
+# 확장 지점
+
+사용자는 `data/md-updater/styles.yml`을 직접 수정하여 다음을 SCAR 변경 없이 적용:
+
+* **신규 스타일 추가** — `styles[]`에 entry 추가 (id/label/tone/person/rules/forbidden)
+* **tone 매핑 변경** — `style_selection_rules[]`에 if/use entry 추가·수정
+* **슬라이드 유형 패턴 추가** — `slide_patterns[]`에 entry 추가 (triggers + body_template)
+* **콘텐츠 제한 조정** — `content_limits.bullets_max`·`code_lines_max` 등 변경
+* **3-tier 룰 매핑 변경** — `md_rules_compliance[]` source 추가
+* **체크포인트 메시지** — `checkpoint.chapter_mode.template` 또는 `single_mode.template` 변경
+* **검증 게이트** — `validation_rules.content_checks[]` 항목 추가
+* **헤더 보존 정책** — `header_preservation.modify_allowed` 변경 (예: H3까지 보존)
+* **종료 보고 양식** — `report_template` 변경
+* **보조 템플릿** — `data/md-updater/templates/<slide_type>.md` 추가 → `slide_patterns[].body_template_file: ...` 참조
+
+본 skill 호출 시점에 yml을 매번 Read하므로, 수정 후 다음 호출부터 즉시 반영.
 
 # 입력
 
-* 필수: `Projects/<Name>/Info.md`, `Projects/<Name>/markdown/AGENDA.md` 또는 `<Name>.md` skeleton
+* 필수: `Projects/<Name>/Info.md` (단계 1 산출 — `topic`/`audience`/`tone`/`goals[]`)
+* 필수: `Projects/<Name>/markdown/AGENDA.md` (chapter mode) 또는 `<Name>.md` skeleton (single mode) (단계 3 산출)
+* 필수: [`data/md-updater/styles.yml`](../../../data/md-updater/styles.yml) (스타일·패턴·검증 SSOT)
 * 선택: `Projects/<Name>/refs/*.md` (본문 작성 시 발췌 활용)
+* 선택: orchestrator 인자 `--no-checkpoint`
 
 # 산출물
 
-* chapter mode: `Projects/<Name>/markdown/XX-title.md` 본문 완성본
+* chapter mode: `Projects/<Name>/markdown/{nn}-{slug}.md` 본문 완성본 (H1/H2 보존, 본문 추가)
 * single mode: `Projects/<Name>/<Name>.md` 본문 완성본
 
 # 처리 흐름
 
-## 1. 입력 분석
+## 1. 입력 검증
+
+* `Projects/<Name>/Info.md` 존재 확인. 없으면 단계 1 위임 권고
+* `markdown/AGENDA.md` 또는 `<Name>.md` skeleton 존재 확인. 없으면 단계 3 위임 권고
+* yml [`data/md-updater/styles.yml`](../../../data/md-updater/styles.yml) 존재 확인. 없으면 작업 중단 (yml SSOT)
+
+## 2. Info.md + AGENDA 파싱
 
 ```
-Read Info.md → topic, audience, style, goals 추출
+Read Info.md → topic, audience, tone, goals[] 추출
 Read AGENDA.md 또는 <Name>.md → 챕터·슬라이드 헤더 목록 추출
-Read refs/*.md → 키워드별 발췌 내용 인덱싱
+Glob refs/*.md → 키워드별 발췌 인덱싱
 ```
 
-## 2. mode 판정
+## 3. mode + 스타일 판정
 
 * `markdown/AGENDA.md` 존재 → chapter mode
 * 단일 `<Name>.md` + frontmatter `type: ppt` → single mode
 * 모호 시 사용자 질의
+* `style_selection_rules[]` 순차 평가 → 스타일 ID 결정
 
-## 3. 슬라이드별 본문 작성
+## 4. 슬라이드별 본문 작성
 
-각 H2 슬라이드에 대해 다음 순서로 본문 채움:
+각 H2 슬라이드:
 
-| 슬라이드 유형          | 본문 패턴                                                             |
-| :--------------------- | :-------------------------------------------------------------------- |
-| 도입·인사              | 환영 메시지 + 학습 목표 3~5개 불릿                                    |
-| 개념 설명              | 정의 → 비유 → 예시 3단계 불릿                                         |
-| 비교·대조              | 표 (3~5열, 5~7행)                                                     |
-| 프로세스·흐름          | 순차 불릿 또는 mermaid placeholder (단계 5에서 변환)                  |
-| 코드·명령              | 코드블록 (언어 지정 필수)                                             |
-| 산출물·결과            | 스크린샷 placeholder + 설명 불릿                                      |
-| 정리·다음 단계         | 핵심 요약 3~5개 + 후속 자료 링크                                      |
+1. 제목 키워드를 `slide_patterns[].triggers`와 매칭 → 패턴 선택
+2. `body_template`에 변수 치환 (refs 발췌, Info.md goals 등 활용)
+3. `styles[].rules` 적용 (어조), `forbidden` 회피
+4. `content_limits` 준수
 
-## 4. md 규칙 준수
+## 5. 헤더 보존 + md 규칙 검증
 
-* Frontmatter 보존 + `release_date` 자동 갱신 (m2slide release-date-rules)
-* 불릿: 1단계 `*`, 2단계 `-`
-* 표: border-collapse + 공백 패딩 정렬
-* 슬라이드 한 장에 7±2 항목 이내 (md-slide-rules)
-* 코드블록 언어 지정 필수
-* 이미지 alt 텍스트 필수
+* `header_preservation` 정책 검사: H1/H2 변경 여부 — 변경 시 reject + 재작성
+* `md_rules_compliance[]` 항목별 자동 검사
 
-## 5. 사용자 검토 체크포인트
+## 6. 사용자 검토 체크포인트
 
-chapter mode는 챕터별 1회 검토:
+* chapter mode: `checkpoint.chapter_mode.template` (챕터별 1회)
+* single mode: `checkpoint.single_mode.template` (전체 1회)
+* `--no-checkpoint` 시 일괄 진행
+* 사용자 응답:
+    - "승인" → 다음 챕터 또는 단계 5로
+    - "수정" → `on_reject.action: ask_user_feedback` (`max_iterations: 3`)
+    - 중단 → 작업 보류 (다음 호출 시 재개)
 
-```
-챕터 1 (01-intro.md) 본문 작성 완료. 검토 요청.
+## 7. 빌드 검증
 
-승인 → 다음 챕터
-수정 요청 → 사용자 피드백 반영 후 재작성
-중단 → 작업 보류 (다음 호출 시 재개)
-```
+* `validation_rules.build_lint.command` (`./run.sh --lint-layouts`) 실행
+    - 실패 시 `retry_count: 1` 자동 수정 시도
+    - 2회 실패 시 사용자 보고 + 중단
+* `validation_rules.build_compile.command` (`./m2slide.sh <Name>`) 실행
+    - 실패 시 즉시 사용자 보고
+* `content_checks[]` 자동 검사
 
-single mode는 전체 1회 검토.
+## 8. 종료 보고
 
-## 6. 빌드 검증
+`report_template` 양식. 변수 치환:
 
-```bash
-./run.sh --lint-layouts
-./m2slide.sh <ProjectName>
-```
-
-* lint 실패 → 오류 메시지 분석 → 1회 자동 수정
-* 빌드 실패 → 사용자 보고
-* HTML 산출물 검증 (apply-verify-rules 준수)
+* `{mode}` / `{chapter_count}` / `{slide_count}` / `{style_id}` / `{style_label}`
+* `{filled_count}` — 본문 작성 완료 슬라이드 수
+* `{lint_status}` / `{build_status}` / `{checkpoint_status}`
 
 # 검증 체크리스트
 
-- [ ] 모든 H2 슬라이드 본문 채워짐
-- [ ] frontmatter `release_date` 오늘 날짜
-- [ ] `./run.sh --lint-layouts` 통과
-- [ ] `./m2slide.sh <Name>` 빌드 성공
-- [ ] 슬라이드 구분자 `---` 일관성
-- [ ] 코드블록 언어 지정
-- [ ] 이미지 alt 텍스트
+- [ ] 모든 H2 슬라이드 본문 채워짐 (`content_checks.all_h2_slides_have_body`)
+- [ ] frontmatter `release_date` 오늘 날짜 (`md_rules_compliance` release-date-rules)
+- [ ] `./run.sh --lint-layouts` 통과 (`validation_rules.build_lint`)
+- [ ] `./m2slide.sh <Name>` 빌드 성공 (`validation_rules.build_compile`)
+- [ ] 슬라이드 구분자 `---` 일관성 (`content_checks.slide_separator_consistency`)
+- [ ] 코드블록 언어 지정 (`content_checks.code_block_language_specified`)
+- [ ] 이미지 alt 텍스트 (`content_checks.image_alt_text_required`)
+- [ ] H1/H2 헤더 변경 없음 (`header_preservation`)
 - [ ] 사용자 검토 승인 (orchestrator `--no-checkpoint` 미지정 시)
 
 # Out of scope
 
-* H1/H2 헤더 변경 — agenda-designer 책임
-* 다이어그램·이미지 생성 — Issue162 media-creater 책임
-* layout 메타 주입 — 단계 6 layout-selector 책임
+* H1/H2 헤더 변경 — 단계 3 agenda-designer 책임
+* 다이어그램·이미지 생성 — 단계 5 media-creater 책임 (mermaid placeholder는 본문에 둘 수 있으나 실제 생성은 단계 5)
+* layout 메타 주입 — 단계 6 layout-selector 책임 (`layout_meta_policy.inject_layout_directive: false`)
 * slot 매핑 — 단계 7 slot-designer 책임
 
 # 종료 조건
 
 * 모든 슬라이드 본문 작성 + 빌드 검증 통과 + 사용자 승인
 * 빌드 lint 2회 연속 실패 시 사용자 보고 + 중단
+* `checkpoint.on_reject.max_iterations`(3회) 초과 시 중단
 
 # 참조
 
-* m2slide 마크다운 규칙: [`../../.claude/rules/md-m2slide-rules.md`](../../rules/md-m2slide-rules.md)
-* release-date 규칙: [`../../.claude/rules/release-date-rules.md`](../../rules/release-date-rules.md)
-* apply-verify 규칙: [`../../.claude/rules/apply-verify-rules.md`](../../rules/apply-verify-rules.md)
+* SSOT yml: [`data/md-updater/styles.yml`](../../../data/md-updater/styles.yml) (스타일·패턴·검증)
+* 글로벌 md 규칙: [`~/.claude/rules/md-rules.md`](../../../../../.claude/rules/md-rules.md)
+* 슬라이드 공통 규칙: [`~/.claude/rules/md-slide-rules.md`](../../../../../.claude/rules/md-slide-rules.md)
+* m2slide 마크다운 규칙: [`../../rules/md-m2slide-rules.md`](../../rules/md-m2slide-rules.md)
+* release-date 규칙: [`../../rules/release-date-rules.md`](../../rules/release-date-rules.md)
+* apply-verify 규칙: [`../../rules/apply-verify-rules.md`](../../rules/apply-verify-rules.md)
 * 파이프라인: [`../../../_doc_arch/authoring-pipeline.md`](../../../_doc_arch/authoring-pipeline.md) 단계 4
 * umbrella task: [`../../../_doc_work/tasks/authoring-pipeline_task.md`](../../../_doc_work/tasks/authoring-pipeline_task.md)
-* 담당 이슈: Issue161 (depends: Issue160)
+* v2 패턴 reference: [`../../agents/info-filler.md`](../../agents/info-filler.md) (Issue169), [`../../agents/agenda-designer.md`](../../agents/agenda-designer.md) (Issue170)
+* 담당 이슈: Issue161 (운영) / Issue171 (v2 데이터-주도 전환)

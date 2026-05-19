@@ -1,8 +1,12 @@
-# md-updater가 사용하는 본문 작성 스타일 가이드.
-# 사용자는 본 파일을 수정하여 분야별·청중별 스타일 추가 가능.
+# md-updater v2 SSOT — 본문 작성 스타일·슬라이드 유형별 패턴·콘텐츠 제한·검증 게이트·체크포인트.
+# 사용자가 본 파일을 수정하면 SCAR 본문 변경 없이 즉시 반영됨 (skill이 호출 시점에 매번 Read).
+# Issue171 (Issue169 info-filler 패턴 적용).
 ---
-version: 1
+version: 2
 
+# ============================================================================
+# 1. 분야별·청중별 본문 스타일 (tone → 본문 어조·구조)
+# ============================================================================
 styles:
   - id: formal_lecture
     label: 공식 강의체
@@ -42,11 +46,217 @@ styles:
       - "장황한 설명"
       - "여러 단락"
 
-# 슬라이드당 콘텐츠 양 제한
+  - id: conversational
+    label: 대화형
+    tone: 대화
+    person: 1·2인칭 혼용
+    rules:
+      - "질문→답변 구조"
+      - "구어체 일부 허용"
+      - "예시 다수 (사례 위주)"
+
+# tone → style 자동 매핑 (Info.md tone과 매칭)
+style_selection_rules:
+  - if: "tone == 강의"
+    use: formal_lecture
+  - if: "tone == 튜토리얼"
+    use: casual_tutorial
+  - if: "tone == 내레이션"
+    use: keynote_punchy
+  - if: "tone == 대화"
+    use: conversational
+  - default: formal_lecture
+
+# ============================================================================
+# 2. 슬라이드 유형별 본문 패턴
+# ============================================================================
+slide_patterns:
+  - id: intro_greeting
+    label: 도입·인사
+    triggers: [도입, 인사, 오프닝, opening, intro]
+    body_template: |
+      ## {slide_title}
+
+      * {welcome_message}
+      * **학습 목표**
+          - {goal_1}
+          - {goal_2}
+          - {goal_3}
+
+  - id: concept_explain
+    label: 개념 설명
+    triggers: [개념, 정의, concept, definition]
+    body_template: |
+      ## {slide_title}
+
+      * **정의**: {definition}
+      * **비유**: {analogy}
+      * **예시**: {example}
+
+  - id: comparison_table
+    label: 비교·대조
+    triggers: [비교, 대조, 차이, comparison, vs]
+    body_template: |
+      ## {slide_title}
+
+      | 항목 | A | B |
+      | :--- | :--- | :--- |
+      | {row_1_label} | {a_1} | {b_1} |
+      | {row_2_label} | {a_2} | {b_2} |
+
+  - id: process_flow
+    label: 프로세스·흐름
+    triggers: [흐름, 단계, 순서, flow, process, pipeline]
+    body_template: |
+      ## {slide_title}
+
+      ```mermaid
+      graph LR
+        A[{step_1}] --> B[{step_2}] --> C[{step_3}]
+      ```
+
+      * {note_1}
+      * {note_2}
+
+  - id: code_command
+    label: 코드·명령
+    triggers: [코드, 명령, command, code, example]
+    body_template: |
+      ## {slide_title}
+
+      ```{language}
+      {code_content}
+      ```
+
+      * **출력**: {output}
+
+  - id: result_screenshot
+    label: 산출물·결과
+    triggers: [결과, 산출물, 스크린샷, result, output]
+    body_template: |
+      ## {slide_title}
+
+      ![{alt_text}](./img/{screenshot}.png)
+
+      * {observation_1}
+      * {observation_2}
+
+  - id: summary_next
+    label: 정리·다음 단계
+    triggers: [정리, 요약, 다음, summary, conclusion, next]
+    body_template: |
+      ## {slide_title}
+
+      * **핵심 요약**
+          - {summary_1}
+          - {summary_2}
+          - {summary_3}
+      * **다음 단계**: {next_action}
+
+# ============================================================================
+# 3. 콘텐츠 양 제한 (슬라이드 한 장당)
+# ============================================================================
 content_limits:
   bullets_max: 7
+  bullets_min: 1
   bullet_depth_max: 2
   code_lines_max: 20
   table_cols_max: 5
   table_rows_max: 7
   paragraph_sentences_max: 3
+  images_per_slide: 2
+
+# ============================================================================
+# 4. md 규칙 준수 (3-tier — 글로벌 + 슬라이드 공통 + m2slide 특화)
+# ============================================================================
+md_rules_compliance:
+  - source: "~/.claude/rules/md-rules.md"
+    apply: [frontmatter, bullet, table]
+  - source: "~/.claude/rules/md-slide-rules.md"
+    apply: [slide_separator, h2_slide_title, code_block_language]
+  - source: ".claude/rules/md-m2slide-rules.md"
+    apply: [layout_meta_skip, slot_div, agenda_inline_link]
+  - source: ".claude/rules/release-date-rules.md"
+    apply: [release_date_auto_update]
+
+# ============================================================================
+# 5. 사용자 검토 체크포인트 (chapter mode 챕터별 / single mode 전체 1회)
+# ============================================================================
+checkpoint:
+  chapter_mode:
+    per_chapter: true
+    template: |
+      챕터 {n} ({chapter_path}) 본문 작성 완료. 검토 요청.
+
+      승인 → 다음 챕터
+      수정 요청 → 사용자 피드백 반영 후 재작성
+      중단 → 작업 보류 (다음 호출 시 재개)
+  single_mode:
+    once_after_all: true
+    template: |
+      전체 슬라이드 본문 작성 완료. 검토 요청.
+
+      승인 → 단계 5 media-creater로 진행
+      수정 요청 → 피드백 반영 후 재작성
+  skip_flag: "--no-checkpoint"
+  on_reject:
+    action: ask_user_feedback
+    max_iterations: 3
+
+# ============================================================================
+# 6. 빌드 검증 게이트 (lint + build)
+# ============================================================================
+validation_rules:
+  build_lint:
+    command: "./run.sh --lint-layouts"
+    on_failure:
+      retry_count: 1
+      auto_fix: true
+      escalate_to_user_after: 2
+  build_compile:
+    command: "./m2slide.sh {project_name}"
+    on_failure:
+      retry_count: 0
+      escalate_to_user: true
+  content_checks:
+    - id: all_h2_slides_have_body
+      desc: "모든 H2 슬라이드에 본문 1줄 이상"
+    - id: frontmatter_release_date_today
+      desc: "frontmatter release_date가 오늘 날짜"
+    - id: slide_separator_consistency
+      desc: "슬라이드 사이 '---' 단독 줄 일관성"
+    - id: code_block_language_specified
+      desc: "모든 코드블록 언어 지정"
+    - id: image_alt_text_required
+      desc: "모든 이미지 alt 텍스트 존재"
+    - id: bullet_count_within_limit
+      desc: "한 슬라이드 bullets_max 이하"
+
+# ============================================================================
+# 7. 헤더 보존 정책 (agenda-designer 산출물 비파괴)
+# ============================================================================
+header_preservation:
+  preserve: [h1, h2]   # 단계 3에서 작성된 헤더 유지
+  modify_allowed: [body, h3_and_below]
+  scope: "본문(슬라이드 콘텐츠) + H3 이하 서브 헤더만 수정"
+  reject_if_h1_h2_changed: true
+
+# ============================================================================
+# 8. layout 메타 미주입 정책 (단계 6 layout-selector 책임)
+# ============================================================================
+layout_meta_policy:
+  inject_layout_directive: false  # #layout-* 메타는 본 skill 책임 아님
+  reason: "단계 6 layout-selector가 layout 메타 주입을 담당"
+
+# ============================================================================
+# 9. 종료 보고 양식
+# ============================================================================
+report_template: |
+  ## md-updater 완료
+  * mode: {mode}
+  * 챕터/슬라이드 수: {chapter_count} / {slide_count}
+  * 적용 스타일: {style_id} ({style_label})
+  * 본문 작성 슬라이드: {filled_count}
+  * 빌드 검증: lint {lint_status} / build {build_status}
+  * 사용자 검토: {checkpoint_status}
+  * 다음 단계: 단계 5 media-creater (--no-checkpoint 미지정 시 사용자 승인 대기)

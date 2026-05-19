@@ -29,20 +29,6 @@
 
 # 📙 일반
 
-## Issue171. md-updater 데이터-주도 SCAR 전환 (등록: 2026-05-19)
-* 목적: Issue169 info-filler 패턴을 md-updater skill에 적용. `data/md-updater/styles.yml` + `templates/`을 SSOT로 하는 데이터-주도 SCAR로 전환.
-* 카테고리: Build (파이프라인 SCAR)
-* depends: Issue170
-* 상세:
-    - 현재 `.claude/skills/md-updater/SKILL.md` 본문에 스타일 가이드·검증 게이트 하드코딩
-    - `data/md-updater/styles.yml` (52줄, 시드) + `templates/` 존재하나 SCAR 미참조
-* 구현 명세:
-    - styles.yml 스키마 확장 (tone_styles, bullet_density_rules, code_block_rules, validation_rules)
-    - SCAR 본문 하드코딩 제거 → yml 참조로 대체
-    - 신규 절 3종 (데이터 로드 / 적용 알고리즘 / 확장 지점)
-    - 단계 4 표 ⏳ → ✅ Issue171 갱신
-    - 회귀 빌드 검증
-
 ## Issue172. media-creater 데이터-주도 SCAR 전환 (등록: 2026-05-19)
 * 목적: Issue169 info-filler 패턴을 media-creater agent에 적용. `data/media-creater/tools.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환.
 * 카테고리: Build (파이프라인 SCAR)
@@ -90,6 +76,21 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue171. md-updater 데이터-주도 SCAR 전환 (등록: 2026-05-19, 해결: 2026-05-19) ✅
+* 목적: Issue169 info-filler 패턴을 md-updater skill에 적용. `data/md-updater/styles.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환.
+* 카테고리: Build (파이프라인 SCAR)
+* depends: Issue170 ✅
+* 산출물:
+    - `.claude/skills/md-updater/SKILL.md` — 3개 신규 절(데이터 로드 / 적용 알고리즘 / 확장 지점) 추가 + 본문 하드코딩(슬라이드 유형별 본문 패턴 표·검증 체크리스트·체크포인트 메시지) 제거 → yml 참조로 대체
+    - `data/md-updater/styles.yml` v2 — 11개 최상위 키 (`styles[]`/`style_selection_rules[]`/`slide_patterns[]`/`content_limits`/`md_rules_compliance[]`/`checkpoint`/`validation_rules`/`header_preservation`/`layout_meta_policy`/`report_template`)
+    - `_doc_arch/authoring-pipeline.md` 단계 4 표 ⏳ → ✅ Issue171 갱신
+* 검증:
+    - YAML parse OK (11 keys)
+    - SCAR 3개 신규 절 존재
+    - 하드코딩 제거 확인
+    - 회귀 빌드 OK (`./m2slide.sh m2SlideStyle2_chapter`)
+* 후속: Issue172~174 (media-creater/layout-selector/slot-designer)
 
 ## Issue170. agenda-designer 데이터-주도 SCAR 전환 (등록: 2026-05-19, 해결: 2026-05-19) ✅
 * 목적: Issue169 info-filler 패턴을 agenda-designer agent에 적용. `data/agenda-designer/patterns.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환.
