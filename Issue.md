@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 177
+* Issue HWM: 178
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -24,6 +24,21 @@
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
 
 # 🚧 진행중
+
+## Issue178. graphify.md mermaid syntax error — `[/graphify . 빌드]` 평행사변형 토큰 충돌 (등록: 2026-05-19)
+* 목적: graphify 프로젝트 slide 15 (`코드베이스 탐색 워크플로`) mermaid 다이어그램 렌더 실패. 노드 라벨 `B[/graphify . 빌드]`의 `[/`가 mermaid 평행사변형 노드 시작 토큰으로 해석되나 종결 `/]` 없어 parser fail → 원본 텍스트 노출.
+* 카테고리: Project (graphify content)
+* 상세:
+    - 파일: `Projects/graphify/graphify.md:210`
+    - mermaid 노드 형태 충돌:
+        - `[text]` 사각형
+        - `[/text/]` 평행사변형 (시작·종결 슬래시 필요)
+    - `B[/graphify . 빌드]` 시작 `[/`, 종결 `]` → 어느 형태에도 매칭 안 됨
+    - 다른 mermaid 블록(라인 18·48·82·112)은 슬래시 없어 정상
+* 구현 명세:
+    - `B[/graphify . 빌드]` → `B["/graphify . 빌드"]` (따옴표 wrap)
+    - mermaid는 따옴표 안 텍스트를 raw string 처리. 슬래시·점·특수문자 안전
+    - `./m2slide.sh graphify` 재빌드 후 slide 15 mermaid SVG 렌더 확인
 
 # 📕 중요
 
