@@ -25,7 +25,15 @@
 
 # 🚧 진행중
 
-## Issue175. Info.md `design_mood` 필드 추가 — 그래픽 디자인 톤 SSOT (등록: 2026-05-19)
+# 📕 중요
+
+# 📙 일반
+
+# 📗 선택
+
+# ✅ 완료
+
+## Issue175. Info.md `design_mood` 필드 추가 — 그래픽 디자인 톤 SSOT (등록: 2026-05-19, 해결: 2026-05-19, commit: fd6f458) ✅
 * 목적: `image_style`(AI 이미지 한정)과 별개로, 슬라이드 전반의 시각 디자인 톤(ex: "라이트 테마, 밝은 분위기, 파스텔 컬러")을 사전 수집할 자유 문자열 필드를 미디어 계획 섹션에 추가. theme 선택·layout 추천·미디어 생성 모두 hint로 소비.
 * 카테고리: Build (파이프라인 SCAR — info-filler 데이터-주도)
 * 상세:
@@ -38,15 +46,8 @@
     - `_doc_arch/info.md` "미디어 계획" 표에 `design_mood` 행 추가 + 단계별 사용 표에 hint 명시 (agenda-designer/layout-selector/media-creater 참고)
     - `data/media-creater/tools.yml` `info_field_map` 신규 섹션 (style/color_tone placeholder → Info.md `image_style`/`design_mood` 매핑, fallback chain 정의) + spec_template 주석 갱신
     - `data/layout-selector/rules.yml` theme_discovery 섹션에 design_mood hint 주석 (LLM agent theme 후보 선정 시 참고)
+    - `.gitignore` data/Info.template.md SSOT 추적 예외 추가 (`!/data/Info.template.md`)
     - SCAR 본문 하드코딩 없음 (info-filler agent는 yml만 Read하므로 agent.md 변경 불필요)
-
-# 📕 중요
-
-# 📙 일반
-
-# 📗 선택
-
-# ✅ 완료
 
 ## Issue174. slot-designer 데이터-주도 SCAR 전환 (등록: 2026-05-19, 해결: 2026-05-19) ✅
 * 목적: Issue169 info-filler 패턴을 slot-designer agent에 적용. `data/slot-designer/patterns.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환. **단계 3~7 SCAR 전환 마무리** — 단계 1~7 데이터-주도 SCAR 전환 종료.
