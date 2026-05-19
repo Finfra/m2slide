@@ -1,78 +1,248 @@
-# slot-designer가 layout 메타 기반으로 슬롯 매핑 시 사용하는 패턴.
-# data/slot_*.yml (4 카테고리 SSOT)와 별개로, 콘텐츠 → 슬롯 매핑 휴리스틱.
+# slot-designer v2 SSOT — layout 슬롯 매핑·휴리스틱·우선순위·검증·체크포인트.
+# 사용자가 본 파일을 수정하면 SCAR 본문 변경 없이 즉시 반영됨 (agent가 호출 시점에 매번 Read).
+# Issue174 (Issue169 info-filler 패턴 적용).
+#
+# 본 yml은 콘텐츠 → 슬롯 매핑 휴리스틱 정책.
+# slot 이름·정의 자체의 SSOT는 data/slot_*.yml (4 카테고리: meta/pandoc/animation/user).
 ---
-version: 1
+version: 2
 
-# layout별 슬롯 배치 가이드
+# ============================================================================
+# 1. slot 카탈로그 우선순위 (4종 SSOT 결합)
+# ============================================================================
+catalog_priority:
+  - id: meta
+    path: data/slot_meta.yml
+    desc: "시스템 slot (title·content·markmap 등) — builder 자동 주입"
+    priority: 100
+    read_only: true
+  - id: pandoc
+    path: data/slot_pandoc.yml
+    desc: "Pandoc 표준 (columns·column·row 등) — 호환성 layer"
+    priority: 80
+  - id: animation
+    path: data/slot_animation.yml
+    desc: "애니메이션 slot"
+    priority: 60
+  - id: user
+    path: data/slot_user.yml
+    desc: "사용자 정의 slot (leftPanel·rightPanel·cards 등)"
+    priority: 40
+
+# ============================================================================
+# 2. layout별 슬롯 배치 가이드 (layout name → slot 매핑)
+# ============================================================================
 layout_slot_map:
   contents:
     slots:
-      - name: content
-        match: "*"            # 기본 — 모든 콘텐츠
+      - { name: content, match: "*" }     # 기본 — 모든 콘텐츠
 
   cover:
     slots:
-      - name: title            # frontmatter title 주입
-      - name: subtitle
-      - name: instructor_name
-      - name: lecture_date
+      - { name: title,           source: frontmatter.title }
+      - { name: subtitle,        source: frontmatter.subtitle }
+      - { name: instructor_name, source: frontmatter.instructor_name }
+      - { name: lecture_date,    source: frontmatter.lecture_date }
+      - { name: version,         source: frontmatter.version }
+      - { name: qr_code_path,    source: frontmatter.qr_code_path }
+      - { name: qr_url,          source: frontmatter.qr_url }
 
   two_column:
     slots:
-      - name: leftPanel
-        match: "first_half"    # 본문 앞 절반
-      - name: rightPanel
-        match: "second_half"
+      - { name: leftPanel,  match: first_half }
+      - { name: rightPanel, match: second_half }
+
+  contents-split:
+    slots:
+      - { name: leftPanel,  match: first_half }
+      - { name: rightPanel, match: second_half }
 
   image_caption:
     slots:
-      - name: image
-        match: "first_image"
-      - name: caption
-        match: "text_below_image"
+      - { name: image,   match: first_image }
+      - { name: caption, match: text_below_image }
 
   code:
     slots:
-      - name: code
-        match: "first_code_block"
-      - name: explanation
-        match: "text_outside_code"
+      - { name: code,        match: first_code_block }
+      - { name: explanation, match: text_outside_code }
 
   agenda:
     slots:
-      - name: markmap          # builder 자동 주입
-      - name: downloadButtons  # builder 자동
+      - { name: markmap,         source: builder_auto }
+      - { name: downloadButtons, source: builder_auto }
 
   table:
     slots:
-      - name: content          # 표 그대로
+      - { name: content, match: "*" }
 
   quote:
     slots:
-      - name: quote
-        match: "blockquote"
-      - name: attribution
-        match: "text_after_quote"
+      - { name: quote,       match: blockquote }
+      - { name: attribution, match: text_after_quote }
 
   section:
     slots:
-      - name: title
-        match: "h1"
-      - name: subtitle
-        match: "first_paragraph"
+      - { name: title,    match: h1 }
+      - { name: subtitle, match: first_paragraph }
 
-# 매칭 휴리스틱 정의
+  exercise:
+    slots:
+      - { name: title,       match: h2 }
+      - { name: instruction, match: first_paragraph }
+      - { name: code,        match: first_code_block }
+      - { name: hint,        match: blockquote }
+
+  exercise-small:
+    slots:
+      - { name: title,    match: h2 }
+      - { name: question, match: "*" }
+
+  closing:
+    slots:
+      - { name: summary, match: bullet_list }
+      - { name: next,    match: text_after_bullets }
+
+  chapter:
+    slots:
+      - { name: title,    match: h1 }
+      - { name: goals,    match: bullet_list }
+
+# ============================================================================
+# 3. 매칭 휴리스틱 정의
+# ============================================================================
 match_rules:
-  first_half: "본문을 빈 줄 기준 절반으로 나누어 앞쪽"
-  second_half: "본문을 빈 줄 기준 절반으로 나누어 뒤쪽"
-  first_image: "본문 첫 ![](..) 마크업"
-  text_below_image: "이미지 라인 이후 텍스트"
-  first_code_block: "본문 첫 ```...``` 블록"
-  text_outside_code: "코드 블록 외 텍스트 (앞·뒤 모두)"
-  blockquote: "본문의 > 블록"
-  text_after_quote: "blockquote 직후 단락"
-  h1: "본문 H1 (있으면)"
-  first_paragraph: "본문 첫 단락 (H1 직후)"
+  first_half:           "본문을 빈 줄 기준 절반으로 나누어 앞쪽"
+  second_half:          "본문을 빈 줄 기준 절반으로 나누어 뒤쪽"
+  first_image:          "본문 첫 ![](..) 마크업"
+  text_below_image:     "이미지 라인 이후 텍스트"
+  first_code_block:     "본문 첫 ```...``` 블록"
+  text_outside_code:    "코드 블록 외 텍스트 (앞·뒤 모두)"
+  blockquote:           "본문의 > 블록"
+  text_after_quote:     "blockquote 직후 단락"
+  h1:                   "본문 H1 (있으면)"
+  h2:                   "본문 H2 (슬라이드 제목)"
+  first_paragraph:      "본문 첫 단락 (헤더 직후)"
+  bullet_list:          "본문의 * / - 리스트"
+  text_after_bullets:   "리스트 직후 단락"
+  star:                 "모든 본문 콘텐츠 (* 와일드카드)"
 
-# 사용자 수동 ::: slotName ::: 은 항상 우선
-preserve_user_slots: true
+# ============================================================================
+# 4. 본문 분할 휴리스틱 (slot 미정의 시 fallback)
+# ============================================================================
+content_split_rules:
+  - id: text_plus_image
+    body_pattern: "텍스트 + 이미지 1개"
+    slot_mapping: { leftPanel: text, rightPanel: image }
+  - id: two_lists_comparison
+    body_pattern: "리스트 2개 (좌/우 비교)"
+    slot_mapping: { leftPanel: first_list, rightPanel: second_list }
+  - id: table_plus_explanation
+    body_pattern: "테이블 + 설명"
+    slot_mapping: { leftPanel: explanation, rightPanel: table }
+  - id: three_column
+    body_pattern: "3분할 (텍스트·이미지·코드)"
+    slot_mapping: { use: pandoc_columns }   # ::: columns + ::: {.column width=...}
+  - id: card_grid
+    body_pattern: "카드형 그리드"
+    slot_mapping: { use: cards }
+
+# ============================================================================
+# 5. 사용자 수동 slot 보존 정책
+# ============================================================================
+preservation_policy:
+  preserve_user_slots: true     # 본문에 ::: slotName ... ::: 있으면 절대 건드리지 않음
+  detection_pattern: "^::: [a-zA-Z][a-zA-Z0-9_-]*$"
+  partial_application:
+    enabled: true
+    rule: "신규 추가만 허용, 기존 fenced div 변경 금지"
+  override_flag: --force-slots   # 사용자 수동까지 덮어쓰기 (드물게 사용)
+
+# ============================================================================
+# 6. 처리 정책
+# ============================================================================
+processing_policy:
+  body_preservation: true
+  source_priority: ".ppt.md > .md"   # layout-selector 산출 우선
+  inplace_modification: true         # .ppt.md in-place 수정 (.slot.md 파생 선택)
+  layout_meta_normalization: true    # underscore alias 처리 (`_contents` ↔ `contents`)
+
+# ============================================================================
+# 7. layout 템플릿 placeholder 추출
+# ============================================================================
+placeholder_discovery:
+  command: "grep -oE '\\{\\{[a-zA-Z][a-zA-Z0-9_-]*\\}\\}' theme/{theme_name}/layouts/{layout}.html"
+  system_slots_auto:           # 시스템 slot (본 agent 미관여)
+    - "{{title}}"
+    - "{{content}}"
+    - "{{markmap}}"
+    - "{{downloadButtons}}"
+  user_slots_target:           # 본 agent 매핑 대상
+    - "{{leftPanel}}"
+    - "{{rightPanel}}"
+    - "{{cards}}"
+    - "{{image}}"
+    - "{{caption}}"
+    - "{{code}}"
+    - "{{explanation}}"
+
+# ============================================================================
+# 8. 검증 규칙
+# ============================================================================
+validation_rules:
+  - id: ppt_md_input_exists
+    desc: ".ppt.md 입력 파일 존재 (layout-selector 산출)"
+  - id: catalog_4_loaded
+    desc: "slot_*.yml 4종 카탈로그 모두 로드"
+  - id: user_slot_preserved
+    desc: "사용자 수동 ::: slotName ::: 미변경"
+  - id: build_lint_pass
+    desc: "./run.sh --lint-layouts 통과"
+    on_failure:
+      retry_count: 1
+      escalate_to_user_after: 2
+  - id: build_compile_pass
+    desc: "./m2slide.sh <Name> 빌드 성공"
+  - id: no_placeholder_residue
+    desc: "빌드 후 HTML에 {{slotName}} placeholder 미잔존"
+    check_command: "grep -rE '\\{\\{[a-zA-Z]' Projects/{name}/slide/*.html | grep -v markmap"
+    expected: "결과 없음"
+
+# ============================================================================
+# 9. 사용자 검토 체크포인트
+# ============================================================================
+checkpoint:
+  template: |
+    slot-designer 산출 검토:
+    - 처리된 슬라이드: {total_slides}개
+    - 신규 slot 매핑: {new_slot_count}건
+    - 사용자 수동 slot 보존: {preserved_count}건
+    - 빌드 검증: {build_status}
+
+    다음 단계 (단계 8 m2slide.sh 빌드) 진행 가능?
+  skip_flag: "--no-checkpoint"
+  on_reject:
+    action: ask_user_modifications
+    max_iterations: 3
+
+# ============================================================================
+# 10. 종료 보고 양식
+# ============================================================================
+report_template: |
+  ## slot-designer 완료
+  * 처리 슬라이드: {total_slides}
+      - 신규 slot 매핑: {new_slot_count}
+      - 사용자 수동 보존: {preserved_count}
+      - 미매핑 발생: {unmapped_count}
+  * 카탈로그 로드: meta·pandoc·animation·user (4종)
+  * 검증: lint {lint_status} / build {build_status} / placeholder {placeholder_status}
+  * 다음 단계: 단계 8 m2slide.sh slide 생성
+
+# ============================================================================
+# 11. Out of scope
+# ============================================================================
+out_of_scope:
+  - "신규 slot 카탈로그 항목 추가 — data/slot_*.yml SSOT 변경은 별도 이슈"
+  - "layout 메타 변경 — 단계 6 layout-selector 책임"
+  - "본문 텍스트 변경 — 단계 4 md-updater 책임"
+  - "다이어그램·이미지 생성 — 단계 5 media-creater 책임"
