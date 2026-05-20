@@ -330,6 +330,23 @@
   object-fit: contain;
 }
 
+/* Issue183: component 슬롯 (chart/map/d3) — diagram 슬롯(.media-container)과 분리.
+   media-container 의 blanket svg/img 룰은 viewBox/replaced 콘텐츠를 가정하므로
+   viewBox 없는 raw SVG(d3)·타일 img(map) 를 깨뜨림. component 슬롯은 영역만 제공하고
+   사이징은 각 컴포넌트(디스패처 훅)가 책임진다. */
+.reveal section[class*="layout-"] .contents-body > .component-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.reveal section[class*="layout-"] .component-container > svg {
+  flex: 1 1 0;
+  width: 100% !important;
+  min-height: 0;
+}
+
 /* =========================================================================
    4. 마스코트 배경 — finfra* 이미지 (theme/{name}/img/ → slide/theme-img/)
    ========================================================================= */
