@@ -1,0 +1,126 @@
+# component-libraries.yml — 시각화 라이브러리 메타 SSOT (Issue180 Phase 0)
+# 스키마·디스패처 contract: _doc_arch/component-libraries.md
+# slide-components.md 라이브러리 표는 본 파일 status를 참조 (이중 SSOT 금지).
+# 로더: lib/component-registry.js (블록 스타일 전용 파서 — flow map 미사용).
+# 사용자가 본 파일을 수정하면 빌드 시 즉시 반영됨 (html-builder.js가 매 빌드 Read).
+---
+version: 1
+
+libraries:
+  # ==========================================================================
+  # 기존 적용 라이브러리
+  #   injection: unconditional — html-builder.js 정적 <script> 블록이 담당.
+  #   generic 디스패처는 이중 주입 방지를 위해 unconditional 항목을 skip.
+  # ==========================================================================
+  - id: revealjs
+    component: 프레젠테이션 프레임워크
+    stage: 8
+    injection: unconditional
+    status: applied
+    init_hook: null
+    cdn:
+      - type: js
+        url: https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.js
+    detect_fenced_lang: []
+    detect_inline: []
+
+  - id: markmap
+    component: TOC 마인드맵
+    stage: 8
+    injection: unconditional
+    status: applied
+    init_hook: null
+    cdn:
+      - type: js
+        url: https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js
+    detect_fenced_lang: []
+    detect_inline: []
+
+  - id: mermaid
+    component: 도형
+    stage: 5
+    injection: unconditional
+    status: applied
+    init_hook: null
+    cdn:
+      - type: js
+        url: https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js
+    detect_fenced_lang: []
+    detect_inline: []
+
+  - id: d3
+    component: 인포그래픽
+    stage: 5
+    injection: unconditional
+    status: applied
+    init_hook: d3_dispatch
+    cdn:
+      - type: js
+        url: https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js
+    detect_fenced_lang:
+      - "d3"
+    detect_inline: []
+
+  # ==========================================================================
+  # 신규 코어 라이브러리 (Issue181 수식·차트·아이콘 / Issue182 지도·인포그래픽)
+  #   injection: conditional — generic 디스패처가 detect 신호 매칭 시 주입.
+  #   코어 5종 전부 status: applied (Phase 1~2 완료).
+  # ==========================================================================
+  - id: katex
+    component: 수식
+    stage: 4
+    injection: conditional
+    status: applied
+    init_hook: katex_autorender
+    cdn:
+      - type: css
+        url: https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css
+      - type: js
+        url: https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js
+      - type: js
+        url: https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js
+    detect_fenced_lang: []
+    detect_inline:
+      - "$$"
+      - "\\("
+
+  - id: chartjs
+    component: 차트
+    stage: 5
+    injection: conditional
+    status: applied
+    init_hook: chart_dispatch
+    cdn:
+      - type: js
+        url: https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js
+    detect_fenced_lang:
+      - "chart"
+    detect_inline: []
+
+  - id: fontawesome
+    component: 아이콘
+    stage: 4
+    injection: conditional
+    status: applied
+    init_hook: null
+    cdn:
+      - type: css
+        url: https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.6.0/css/all.min.css
+    detect_fenced_lang: []
+    detect_inline:
+      - "fa-solid"
+
+  - id: leaflet
+    component: 지도
+    stage: 5
+    injection: conditional
+    status: applied
+    init_hook: map_dispatch
+    cdn:
+      - type: css
+        url: https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css
+      - type: js
+        url: https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js
+    detect_fenced_lang:
+      - "map"
+    detect_inline: []

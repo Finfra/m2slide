@@ -69,6 +69,42 @@ tools:
     handler: gemini-image-describer
     triggers: ["existing_image_needs_caption"]
 
+  - id: chart_inline
+    type: chart
+    handler: inline_codeblock
+    library: chartjs                 # ⇐ component-libraries.yml id 참조 (Issue181)
+    triggers:
+      - "bar_chart"
+      - "line_chart"
+      - "pie_chart"
+      - "비교 수치"
+      - "추세"
+    output: fenced                   # ```chart 블록 그대로 유지 — 코어 디스패처가 Chart.js 렌더
+    fenced_lang: chart
+
+  - id: map_inline
+    type: map
+    handler: inline_codeblock
+    library: leaflet                 # ⇐ component-libraries.yml id 참조 (Issue182)
+    triggers:
+      - "지도"
+      - "위치"
+      - "지리"
+      - "경로"
+    output: fenced                   # ```map 블록 — 코어 디스패처가 Leaflet 렌더
+    fenced_lang: map
+
+  - id: d3_inline
+    type: infographic
+    handler: inline_codeblock
+    library: d3                      # ⇐ component-libraries.yml id 참조 (Issue182)
+    triggers:
+      - "인포그래픽"
+      - "커스텀 시각화"
+      - "관계도"
+    output: fenced                   # ```d3 블록 — 코어 디스패처가 d3 렌더
+    fenced_lang: d3
+
 # ============================================================================
 # 2. 본문 패턴 → 도구 매핑 (Selection Rules)
 # ============================================================================
@@ -123,6 +159,21 @@ content_pattern_rules:
     label: 인포그래픽 (HTML 기반)
     body_patterns: ["인포그래픽", "infographic", "complex_layout"]
     recommended_tool: design_html
+
+  - id: numeric_chart
+    label: 수치 데이터 차트 (막대·꺾은선·원형)
+    body_patterns: ["막대 그래프", "꺾은선", "차트", "chart", "데이터 비교", "추세 그래프"]
+    recommended_tool: chart_inline
+
+  - id: geo_map
+    label: 지리·위치 지도
+    body_patterns: ["지도", "위치", "지리", "경로", "map"]
+    recommended_tool: map_inline
+
+  - id: custom_infographic
+    label: 커스텀 데이터 시각화 (d3)
+    body_patterns: ["커스텀 시각화", "관계도", "네트워크 그래프", "d3"]
+    recommended_tool: d3_inline
 
 # ============================================================================
 # 3. 처리 정책

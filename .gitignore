@@ -121,6 +121,7 @@ Temporary Items
 /data/*
 !/data/.gitkeep
 !/data/Info.template.md
+!/data/component-libraries.yml
 
 # Backup files
 *.bak

@@ -8,12 +8,14 @@
 !/README.md
 
 # Allow all project directories (제외: animationTest, z_just_test)
+!/ComponentTest/
 !/LayoutTest/
 !/LlmAndVibeCoding/
 !/LlmAndVibeCoding_v2/
 !/m2SlideStyle1_single/
 !/m2SlideStyle2_chapter/
 !/MermaidExample/
+!/graphify/
 
 # Excluded (intentionally ignored)
 # /animationTest/
