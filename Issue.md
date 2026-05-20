@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 179
+* Issue HWM: 183
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -25,6 +25,25 @@
 
 # 🚧 진행중
 
+## Issue183. media-container 슬롯 설계 결함 — diagram/component 슬롯 분리 (등록: 2026-05-20)
+* 목적: `media-container` 단일 슬롯이 이질적 콘텐츠 5종(mermaid·kroki·chart·map·d3)을 수용하면서 암묵 계약("콘텐츠는 자체 스케일 기하 viewBox/replaced 보유")을 명시하지 않아, 계약 위반 컴포넌트마다 깨지거나 per-component 해킹이 필요한 구조적 결함을 해소. d3 인포그래픽이 슬라이드를 안 채우는 증상(ComponentTest #/8)의 근본 원인.
+* depends: Issue182 ✅ (d3·map applied 경로)
+* 카테고리: Theme (슬롯 CSS 계약) + Generator (`markdown.js` fenced 디스패처) + Asset (component-hooks)
+* 상세:
+    - 현상: `markdown.js`가 chart/map/d3 fenced를 mermaid와 동일한 `<div class="media-container" data-component="X">`로 변환 → `slide.css`의 `.media-container svg{width:100%!important;height:100%!important}` blanket 룰 적용
+    - 결함 1 (d3): d3 사용자 코드가 `viewBox` 없는 raw SVG 생성 → blanket 룰이 SVG 요소만 늘리고 좌표계는 안 늘림 → 콘텐츠가 좌상단 고정·슬라이드 미충전
+    - 결함 2 (map): `.media-container img` 룰이 Leaflet 타일 `<img>`를 0크기로 클로버 → `map_dispatch.js`가 `el.classList.remove("media-container")` 런타임 해킹으로 회피 (같은 결함의 1차 증거)
+    - mermaid(viewBox)·kroki(replaced `<img>`)·chart(canvas responsive)는 계약을 우연히 만족하여 동작
+* 구현 명세:
+    - 슬롯 타입 분리(B안): diagram 슬롯(`media-container`, viewBox 가정 — mermaid·kroki) vs component 슬롯(`component-container` 등, 컴포넌트가 자체 사이징 책임 — chart·map·d3)
+    - `markdown.js` fenced 핸들러: `componentLangs` 매칭 시 component 슬롯 클래스로 emit (mermaid·kroki는 기존 `media-container` 유지)
+    - `slide.css`: `.media-container svg` blanket 룰 scope를 diagram 슬롯 전용으로 축소. component 슬롯은 별도 사이징 룰(컨테이너 flex-fill + 컴포넌트별 룰)
+    - `d3_dispatch.js`: 사용자 코드 실행 후 SVG에 `viewBox` 없으면 width/height attr 기반 자동 주입 (component 슬롯 CSS가 비례 확대 가능하게)
+    - `map_dispatch.js`: `classList.remove("media-container")` 해킹 제거 (애초에 다른 슬롯이므로 불필요)
+    - `chart_dispatch.js`: 영향 검토 (canvas responsive는 component 슬롯에서도 동작 확인)
+    - SSOT `_doc_arch/component-libraries.md`에 "슬롯 계약" 절 추가 — diagram/component 슬롯 정의·각 슬롯의 콘텐츠 계약 명시
+    - 검증: `node --test` 전 통과 + `ComponentTest` 빌드 후 chart·map·d3 슬라이드 HTML 직접 검증 (콘텐츠 슬라이드 충전 확인) + mermaid·kroki 사용 프로젝트 회귀 0
+
 # 📕 중요
 
 # 📙 일반
@@ -32,6 +51,51 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue182. 슬라이드 구성요소 라이브러리 Phase 2 — 지도·인포그래픽 (등록: 2026-05-20, 해결: 2026-05-20, commit: ef8baef) ✅
+* 목적: Issue180 Phase 0 인프라 위에 데이터 시각화 구성요소 2종(지도·인포그래픽)을 적용. `component-libraries.yml`의 leaflet `planned → applied`, d3 `planned → applied`(인포그래픽 직접 사용 경로 신설로 `🚧 → ✅` 승격).
+* plan: `_doc_work/plan/slide-components_plan.md`
+* task: `_doc_work/tasks/slide-components_task.md`
+* depends: Issue180 (Phase 0 인프라)
+* 카테고리: Generator (`markdown.js` fenced 디스패처 generic화) + Asset (component-hooks)
+* 상세:
+    - 지도(Leaflet): `` ```map `` fenced + `lib/component-hooks/map_dispatch.js` 훅 (OpenStreetMap 타일)
+    - 인포그래픽(d3): `` ```d3 `` fenced + `lib/component-hooks/d3_dispatch.js` 훅 (d3 기존 로드분 재사용, CDN 추가 불필요)
+    - `markdown.js` fenced 핸들러를 레지스트리 주도 generic 디스패처로 전환 (chart 하드코딩 제거)
+    - 디스패처 수정: unconditional 라이브러리도 init_hook은 detect 매칭 시 주입 (d3 대응)
+    - `data/media-creater/tools.yml` map_inline·d3_inline 도구 + `md-m2slide-rules.md` 등재
+    - `ComponentTest`에 지도·인포그래픽 슬라이드 추가
+* 검증: `node --test lib/__tests__/component-libraries.test.js` 20/20 통과 (phase2 그룹 — leaflet·d3 applied, getComponentFencedLangs, ```map/```d3 fenced 변환, 디스패처 주입). `ComponentTest` 빌드 OK. m2SlideStyle1_single 회귀 0.
+
+## Issue181. 슬라이드 구성요소 라이브러리 Phase 1 — 수식·아이콘·차트 (등록: 2026-05-20, 해결: 2026-05-20, commit: ef8baef) ✅
+* 목적: Issue180 Phase 0 인프라(레지스트리·generic 디스패처) 위에 강의 최빈 구성요소 3종(수식·아이콘·차트)을 적용. `component-libraries.yml`의 katex·fontawesome·chartjs를 `planned → applied` 전환.
+* plan: `_doc_work/plan/slide-components_plan.md`
+* task: `_doc_work/tasks/slide-components_task.md`
+* depends: Issue180 (Phase 0 인프라)
+* 카테고리: Generator (`markdown.js` 인라인 변환·fenced 디스패처) + Asset (component-hooks)
+* 상세:
+    - 수식(KaTeX): `lib/component-hooks/katex_autorender.js` 훅 + `markdown.js` `$$…$$`·`\(…\)` 보존 검증
+    - 아이콘(Font Awesome): `markdown.js` inline `:fa-name:` → `<i>` 변환
+    - 차트(chart.js): `` ```chart `` fenced → `data-component="chart"` div + `chart_dispatch` 훅
+    - `data/media-creater/tools.yml` chart_inline 도구 + `data/md-updater/styles.yml` component_syntax 등재
+    - `ComponentTest`에 수식·아이콘·차트 슬라이드 추가
+* 검증: `node --test` 20/20 통과 (phase1 그룹 — katex·chartjs·fontawesome applied, ```chart fenced→`data-component` div, `:fa-name:`→`<i>` 코드 스팬 보존, `$$…$$`·`\(…\)` 마커 보존). `ComponentTest` 빌드 OK.
+
+## Issue180. 슬라이드 구성요소 라이브러리 Phase 0 — 레지스트리·generic fenced 디스패처 인프라 (등록: 2026-05-20, 해결: 2026-05-20, commit: ef8baef) ✅
+* 목적: 시각화 라이브러리 표의 미적용 항목 중 강의 코어 5종(수식·차트·아이콘·지도·인포그래픽)을 적용하기 위한 기반 인프라 구축. Phase 0는 레지스트리 + generic fenced 디스패처를 **신규 모듈·신규 경로로만** 추가하여 기존 코드(mermaid 경로·기존 4종 CDN 주입)를 비파괴로 유지. Phase 1·2의 단독 선행 의존.
+* plan: `_doc_work/plan/slide-components_plan.md`
+* task: `_doc_work/tasks/slide-components_task.md`
+* 카테고리: Generator (`html-builder.js` 디스패처) + Build (레지스트리 인프라) + Asset (`component-libraries.yml`)
+* 상세:
+    - `_doc_arch/component-libraries.md` 신규 — 구현 아키텍처 SSOT (레지스트리 스키마·문법 컨벤션·디스패처 contract·파이프라인 배정)
+    - `data/component-libraries.yml` 신규 — 라이브러리 메타 SSOT (코어 5종 + 기존 4종 status)
+    - `lib/component-registry.js` + `lib/component-hooks/` 디렉토리 신설
+    - `lib/html-builder.js` — generic fenced 디스패처 신설 (mermaid 경로 비파괴 공존) + 신규 라이브러리 조건 주입
+    - `_doc_arch/authoring-pipeline.md` 트리 갱신
+    - `Projects/ComponentTest/` 샘플 scaffold + `lib/__tests__/component-libraries.test.js` + fixtures 테스트 하니스
+* 구현 명세:
+    - additive 무회귀 원칙 — mermaid·markmap·기존 CDN 주입 코드 무수정. 회귀 0 구조적 보장
+* 검증: `node --test` 20/20 통과 (phase0 그룹 — registry 파싱, planned→빈 주입, applied conditional detect 매칭, css→head/js→body, 미등록 fenced 무에러). `ComponentTest`·`m2SlideStyle1_single` 빌드 회귀 0. `data/component-libraries.yml`·`_doc_arch/component-libraries.md` SSOT는 `.gitignore` 예외 + force-add로 추적.
 
 ## Issue179. default_lec summary layout — 학습 정리·요약 전용 layout 분리 (등록: 2026-05-19, 해결: 2026-05-19, commit: 07b02b1) ✅
 * 목적: 현재 `closing` layout이 Q&A·마무리·정리·요약을 모두 떠맡고 있어 강의 흐름상 "오늘 학습한 내용" 슬라이드가 closing(puffer1 거대 마스코트, 중앙 큰 타이틀, 축제 느낌) 디자인으로 표현됨. summary는 콘텐츠 가독성이 우선이므로 별도 layout 필요. graphify slide 17(`오늘 학습한 내용`)이 적용 대상.
