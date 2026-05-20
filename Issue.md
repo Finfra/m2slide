@@ -25,25 +25,6 @@
 
 # 🚧 진행중
 
-## Issue183. media-container 슬롯 설계 결함 — diagram/component 슬롯 분리 (등록: 2026-05-20)
-* 목적: `media-container` 단일 슬롯이 이질적 콘텐츠 5종(mermaid·kroki·chart·map·d3)을 수용하면서 암묵 계약("콘텐츠는 자체 스케일 기하 viewBox/replaced 보유")을 명시하지 않아, 계약 위반 컴포넌트마다 깨지거나 per-component 해킹이 필요한 구조적 결함을 해소. d3 인포그래픽이 슬라이드를 안 채우는 증상(ComponentTest #/8)의 근본 원인.
-* depends: Issue182 ✅ (d3·map applied 경로)
-* 카테고리: Theme (슬롯 CSS 계약) + Generator (`markdown.js` fenced 디스패처) + Asset (component-hooks)
-* 상세:
-    - 현상: `markdown.js`가 chart/map/d3 fenced를 mermaid와 동일한 `<div class="media-container" data-component="X">`로 변환 → `slide.css`의 `.media-container svg{width:100%!important;height:100%!important}` blanket 룰 적용
-    - 결함 1 (d3): d3 사용자 코드가 `viewBox` 없는 raw SVG 생성 → blanket 룰이 SVG 요소만 늘리고 좌표계는 안 늘림 → 콘텐츠가 좌상단 고정·슬라이드 미충전
-    - 결함 2 (map): `.media-container img` 룰이 Leaflet 타일 `<img>`를 0크기로 클로버 → `map_dispatch.js`가 `el.classList.remove("media-container")` 런타임 해킹으로 회피 (같은 결함의 1차 증거)
-    - mermaid(viewBox)·kroki(replaced `<img>`)·chart(canvas responsive)는 계약을 우연히 만족하여 동작
-* 구현 명세:
-    - 슬롯 타입 분리(B안): diagram 슬롯(`media-container`, viewBox 가정 — mermaid·kroki) vs component 슬롯(`component-container` 등, 컴포넌트가 자체 사이징 책임 — chart·map·d3)
-    - `markdown.js` fenced 핸들러: `componentLangs` 매칭 시 component 슬롯 클래스로 emit (mermaid·kroki는 기존 `media-container` 유지)
-    - `slide.css`: `.media-container svg` blanket 룰 scope를 diagram 슬롯 전용으로 축소. component 슬롯은 별도 사이징 룰(컨테이너 flex-fill + 컴포넌트별 룰)
-    - `d3_dispatch.js`: 사용자 코드 실행 후 SVG에 `viewBox` 없으면 width/height attr 기반 자동 주입 (component 슬롯 CSS가 비례 확대 가능하게)
-    - `map_dispatch.js`: `classList.remove("media-container")` 해킹 제거 (애초에 다른 슬롯이므로 불필요)
-    - `chart_dispatch.js`: 영향 검토 (canvas responsive는 component 슬롯에서도 동작 확인)
-    - SSOT `_doc_arch/component-libraries.md`에 "슬롯 계약" 절 추가 — diagram/component 슬롯 정의·각 슬롯의 콘텐츠 계약 명시
-    - 검증: `node --test` 전 통과 + `ComponentTest` 빌드 후 chart·map·d3 슬라이드 HTML 직접 검증 (콘텐츠 슬라이드 충전 확인) + mermaid·kroki 사용 프로젝트 회귀 0
-
 # 📕 중요
 
 # 📙 일반
@@ -51,6 +32,25 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue183. media-container 슬롯 설계 결함 — diagram/component 슬롯 분리 (등록: 2026-05-20, 해결: 2026-05-20, commit: 6bbaa8e) ✅
+* 목적: `media-container` 단일 슬롯이 이질적 콘텐츠 5종(mermaid·kroki·chart·map·d3)을 수용하면서 암묵 계약("콘텐츠는 자체 스케일 기하 viewBox/replaced 보유")을 명시하지 않아, 계약 위반 컴포넌트마다 깨지거나 per-component 해킹이 필요한 구조적 결함을 해소. d3 인포그래픽이 슬라이드를 안 채우는 증상(ComponentTest #/8)의 근본 원인.
+* depends: Issue182 ✅ (d3·map applied 경로)
+* 카테고리: Theme (슬롯 CSS 계약) + Generator (`markdown.js` fenced 디스패처) + Asset (component-hooks)
+* 상세:
+    - 현상: `markdown.js`가 chart/map/d3 fenced를 mermaid와 동일한 `<div class="media-container" data-component="X">`로 변환 → `slide.css`의 `.media-container svg{width:100%!important;height:100%!important}` blanket 룰 적용
+    - 결함 1 (d3): d3 사용자 코드가 `viewBox` 없는 raw SVG 생성 → blanket 룰이 SVG 요소만 늘리고 좌표계는 안 늘림 → 콘텐츠가 좌상단 고정·슬라이드 미충전
+    - 결함 2 (map): `.media-container img` 룰이 Leaflet 타일 `<img>`를 0크기로 클로버 → `map_dispatch.js`가 `el.classList.remove("media-container")` 런타임 해킹으로 회피
+    - mermaid(viewBox)·kroki(replaced `<img>`)·chart(canvas responsive)는 계약을 우연히 만족하여 동작
+* 구현 명세 (해결):
+    - 슬롯 타입 분리(B안): diagram 슬롯(`.media-container`, viewBox/replaced 가정 — mermaid·kroki) vs component 슬롯(`.component-container`, 컴포넌트 자체 사이징 책임 — chart·map·d3)
+    - `markdown.js` fenced 핸들러: `componentLangs` 매칭 시 `.component-container` emit (mermaid·kroki는 `.media-container` 유지) — ef8baef 선반영
+    - `slide.css` ×2: `.component-container` 슬롯 룰 추가 (flex 영역만 제공). `.media-container svg` blanket 룰은 클래스 분리로 diagram 슬롯 전용 자연 격리
+    - `d3_dispatch.js`: 렌더 후 `viewBox` 없는 SVG에 width/height attr 기반 `viewBox` 자동 주입 — ef8baef 선반영
+    - `map_dispatch.js`: `classList.remove("media-container")` 해킹 제거 — ef8baef 선반영
+    - `chart_dispatch.js`: 무수정 (canvas responsive는 component 슬롯에서도 동작 확인)
+    - `_doc_arch/component-libraries.md`에 "슬롯 계약" 절 추가 — diagram/component 슬롯 정의·콘텐츠 계약 명시
+* 검증: `node --test` 126/126 통과 (Issue183 테스트 3종 추가). `ComponentTest` 빌드 — chart·d3·map → `.component-container`, mermaid → `.media-container`. `MermaidExample` 회귀 0 (mermaid 25·kroki 12 모두 `.media-container`).
 
 ## Issue182. 슬라이드 구성요소 라이브러리 Phase 2 — 지도·인포그래픽 (등록: 2026-05-20, 해결: 2026-05-20, commit: ef8baef) ✅
 * 목적: Issue180 Phase 0 인프라 위에 데이터 시각화 구성요소 2종(지도·인포그래픽)을 적용. `component-libraries.yml`의 leaflet `planned → applied`, d3 `planned → applied`(인포그래픽 직접 사용 경로 신설로 `🚧 → ✅` 승격).
