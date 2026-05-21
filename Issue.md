@@ -77,7 +77,7 @@
     - 수식(KaTeX): `lib/component-hooks/katex_autorender.js` 훅 + `markdown.js` `$$…$$`·`\(…\)` 보존 검증
     - 아이콘(Font Awesome): `markdown.js` inline `:fa-name:` → `<i>` 변환
     - 차트(chart.js): `` ```chart `` fenced → `data-component="chart"` div + `chart_dispatch` 훅
-    - `data/media-creater/tools.yml` chart_inline 도구 + `data/md-updater/styles.yml` component_syntax 등재
+    - `data/media-creater/tools.yml` chart_inline 도구 + `data/md-builder/styles.yml` component_syntax 등재
     - `ComponentTest`에 수식·아이콘·차트 슬라이드 추가
 * 검증: `node --test` 20/20 통과 (phase1 그룹 — katex·chartjs·fontawesome applied, ```chart fenced→`data-component` div, `:fa-name:`→`<i>` 코드 스팬 보존, `$$…$$`·`\(…\)` 마커 보존). `ComponentTest` 빌드 OK.
 
@@ -99,13 +99,13 @@
 
 ## Issue179. default_lec summary layout — 학습 정리·요약 전용 layout 분리 (등록: 2026-05-19, 해결: 2026-05-19, commit: 07b02b1) ✅
 * 목적: 현재 `closing` layout이 Q&A·마무리·정리·요약을 모두 떠맡고 있어 강의 흐름상 "오늘 학습한 내용" 슬라이드가 closing(puffer1 거대 마스코트, 중앙 큰 타이틀, 축제 느낌) 디자인으로 표현됨. summary는 콘텐츠 가독성이 우선이므로 별도 layout 필요. graphify slide 17(`오늘 학습한 내용`)이 적용 대상.
-* 카테고리: Theme (default_lec) + Generator (layout-selector / md-updater data)
+* 카테고리: Theme (default_lec) + Generator (layout-selector / md-builder data)
 * 상세:
     - 신규 layout: `theme/default_lec/layouts/9.2.summary.html` (class `layout-summary`, slots `title` + `content`)
     - `theme/default_lec/slide.css §4.7.5`: cat·butterfly 작은 코너 마스코트 + 좌정렬·top-align body, title 2.4em (closing 3.6em 대비 컴팩트)
     - `data/slot_meta.yml`: title/content layouts에 `9.2.summary` 추가
     - `data/layout-selector/rules.yml`: `closing_summary` 규칙을 `summary_recap`(정리·요약·학습한 내용·Recap → summary)과 `qna_closing`(마무리·Q&A·다음 단계·Closing → closing) 두 개로 분리
-    - `data/md-updater/styles.yml`: `summary_next` pattern에 `layout_hint: summary` + triggers에 "학습한 내용", "복습", "recap", "review" 추가
+    - `data/md-builder/styles.yml`: `summary_next` pattern에 `layout_hint: summary` + triggers에 "학습한 내용", "복습", "recap", "review" 추가
     - 적용: `Projects/graphify/graphify.ppt.md` slide 17 `#layout-closing` → `#layout-summary`. slide 18(다음 단계)은 closing 유지
 * 검증: graphify + m2SlideStyle1_single + m2SlideStyle2_chapter 빌드 회귀 없음. graphify slide 17 HTML 출력 `<section class="layout-summary">` + `summary-title` + `summary-body` 구조 확인 (file:// 17번 슬라이드 브라우저 검증)
 
@@ -122,9 +122,9 @@
     - mermaid 따옴표 내부 raw string 처리 → 슬래시·점·특수문자 안전
     - `./m2slide.sh graphify` 재빌드 후 slide 15 mermaid SVG 렌더 확인 완료
 
-## Issue177. default_lec 전체 재구성 — default 구조 통일 + md-updater 단계 4 호환 (등록: 2026-05-19, 해결: 2026-05-19, commit: e501eed) ✅
-* 목적: default 테마가 신버전(slide.css 1207L, Issue113/130/131/138/141/143/154/176 누적)으로 진화하면서 default_lec(774L)와 구조 불일치 발생. default_lec를 default 구조로 통일하고 강의 특화 부분만 override 레이어로 분리. 동시에 authoring-pipeline 단계 4(md-updater)가 default_lec 호환 슬라이드 패턴을 잘 생성하도록 styles.yml 정합.
-* 카테고리: Theme (default_lec) + Generator (md-updater data)
+## Issue177. default_lec 전체 재구성 — default 구조 통일 + md-builder 단계 4 호환 (등록: 2026-05-19, 해결: 2026-05-19, commit: e501eed) ✅
+* 목적: default 테마가 신버전(slide.css 1207L, Issue113/130/131/138/141/143/154/176 누적)으로 진화하면서 default_lec(774L)와 구조 불일치 발생. default_lec를 default 구조로 통일하고 강의 특화 부분만 override 레이어로 분리. 동시에 authoring-pipeline 단계 4(md-builder)가 default_lec 호환 슬라이드 패턴을 잘 생성하도록 styles.yml 정합.
+* 카테고리: Theme (default_lec) + Generator (md-builder data)
 * 상세:
     - **현재 불일치 (정밀 diff)**:
         - `_blank.html`: default `class="layout-_blank"` vs default_lec `class="layout-blank"` (underscore 불일치)
@@ -136,7 +136,7 @@
         - `_agenda.html`: 구조 차이 (instructor_name 위치, downloadButtons 위치)
         - `slide.css`: default 1207L, default_lec 774L — Issue113/130/131/138/141/143/154/176 백포팅 필요
     - **번호 layouts** (강의 특화): `2.2.contents-full`, `2.3.contents-split`, `4.2.chapter`, `6.1.exercise`, `6.2.exercise-small`, `9.1.closing` → 보존
-    - **md-updater 단계 4**: `data/md-updater/styles.yml`의 `slide_patterns`에 강의 특화 패턴 추가 → layout-selector가 default_lec 번호 layouts로 매핑 가능
+    - **md-builder 단계 4**: `data/md-builder/styles.yml`의 `slide_patterns`에 강의 특화 패턴 추가 → layout-selector가 default_lec 번호 layouts로 매핑 가능
 * 구현 명세:
     - **Issue177_1**: default_lec 시스템 layouts class 정규화 (`layout-_*` underscore 일관 적용) ✅
     - **Issue177_2**: `_contents_no_title.html` BUG 수정 (잘못된 class 교체) ✅
@@ -144,7 +144,7 @@
     - **Issue177_4**: `_agenda.html` default 구조 동기화 (instructor_name·downloadButtons 위치) ✅
     - **Issue177_5**: `slide.css` 백포팅 — Mermaid SVG fit + Issue101 code-wrapper + _contents transparent + Issue138 toc-markmap hide ✅
     - **Issue177_6**: 번호 layouts 호환 점검 — base CSS와 충돌 없음 확인 ✅
-    - **Issue177_7**: `data/md-updater/styles.yml`에 `chapter_intro` + `exercise_check` 패턴 추가 ✅
+    - **Issue177_7**: `data/md-builder/styles.yml`에 `chapter_intro` + `exercise_check` 패턴 추가 ✅
     - **Issue177_8**: 빌드 검증 — graphify(default_lec/single) + m2SlideStyle1_single + m2SlideStyle2_chapter + LayoutTest 모두 회귀 없음 ✅
 * 검증:
     - graphify (default_lec): 모든 class underscore 정규화 확인 (`layout-_blank`, `layout-_contents`, `layout-_cover`, `layout-closing`, `layout-split-image-text`)
@@ -229,13 +229,13 @@
     - 회귀 빌드 OK (`./m2slide.sh m2SlideStyle1_single`)
 * 후속: Issue173~174 (layout-selector/slot-designer)
 
-## Issue171. md-updater 데이터-주도 SCAR 전환 (등록: 2026-05-19, 해결: 2026-05-19) ✅
-* 목적: Issue169 info-filler 패턴을 md-updater skill에 적용. `data/md-updater/styles.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환.
+## Issue171. md-builder 데이터-주도 SCAR 전환 (등록: 2026-05-19, 해결: 2026-05-19) ✅
+* 목적: Issue169 info-filler 패턴을 md-builder skill에 적용. `data/md-builder/styles.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환.
 * 카테고리: Build (파이프라인 SCAR)
 * depends: Issue170 ✅
 * 산출물:
-    - `.claude/skills/md-updater/SKILL.md` — 3개 신규 절(데이터 로드 / 적용 알고리즘 / 확장 지점) 추가 + 본문 하드코딩(슬라이드 유형별 본문 패턴 표·검증 체크리스트·체크포인트 메시지) 제거 → yml 참조로 대체
-    - `data/md-updater/styles.yml` v2 — 11개 최상위 키 (`styles[]`/`style_selection_rules[]`/`slide_patterns[]`/`content_limits`/`md_rules_compliance[]`/`checkpoint`/`validation_rules`/`header_preservation`/`layout_meta_policy`/`report_template`)
+    - `.claude/skills/md-builder/SKILL.md` — 3개 신규 절(데이터 로드 / 적용 알고리즘 / 확장 지점) 추가 + 본문 하드코딩(슬라이드 유형별 본문 패턴 표·검증 체크리스트·체크포인트 메시지) 제거 → yml 참조로 대체
+    - `data/md-builder/styles.yml` v2 — 11개 최상위 키 (`styles[]`/`style_selection_rules[]`/`slide_patterns[]`/`content_limits`/`md_rules_compliance[]`/`checkpoint`/`validation_rules`/`header_preservation`/`layout_meta_policy`/`report_template`)
     - `_doc_arch/authoring-pipeline.md` 단계 4 표 ⏳ → ✅ Issue171 갱신
 * 검증:
     - YAML parse OK (11 keys)
@@ -257,7 +257,7 @@
     - SCAR 3개 신규 절 존재 확인
     - 하드코딩 제거 확인 (mode 판정 표·outline 10단계 grep 0건)
     - 회귀 빌드 OK (`./m2slide.sh m2SlideStyle1_single`)
-* 후속: Issue171~174 (md-updater/media-creater/layout-selector/slot-designer)
+* 후속: Issue171~174 (md-builder/media-creater/layout-selector/slot-designer)
 
 ## Issue169. info-filler v2 패턴 전환 — 데이터-주도 SCAR (등록: 2026-05-19, 해결: 2026-05-19, commit: 2529153) ✅
 * 목적: Issue166 refs-collector reference 패턴을 info-filler agent에 적용. `data/info-filler/questions.yml`을 SSOT로 하는 데이터-주도 SCAR로 전환.
@@ -271,7 +271,7 @@
     - 단위 7/7 PASS (yml 스키마 + SCAR 절 존재 + 하드코딩 제거 확인)
     - 회귀 빌드 OK (`./m2slide.sh m2SlideStyle1_single`)
 * 후속:
-    - Issue165 umbrella 남은 5개 SCAR 전환 (agenda-designer, md-updater, media-creater, layout-selector, slot-designer)
+    - Issue165 umbrella 남은 5개 SCAR 전환 (agenda-designer, md-builder, media-creater, layout-selector, slot-designer)
 
 ## Issue168. authoring-pipeline v1/v2 명명 제거 — 단일 SSOT 일원화 (등록: 2026-05-18, 해결: 2026-05-18, commit: d8f0a65) ✅
 * 목적: v1 실사용 없음. v1/v2 명명 전면 폐기. `authoring-pipeline_v2.md` → `authoring-pipeline.md`로 통합. 기존 deprecation stub 삭제. 본문·참조에서 모든 v1/v2 라벨 제거.
@@ -312,7 +312,7 @@
     - `_doc_work/tasks/authoring-pipeline_task.md` 갱신 — v2 SCAR 전환 추적 표 신설
     - `_doc_work/report/authoring-pipeline_issue165_report.md` 신규
 * 후속:
-    - 6개 SCAR(info-filler, agenda-designer, md-updater, media-creater, layout-selector, slot-designer) v2 패턴 전환 후속 이슈 (각 단계별)
+    - 6개 SCAR(info-filler, agenda-designer, md-builder, media-creater, layout-selector, slot-designer) v2 패턴 전환 후속 이슈 (각 단계별)
     - 본 umbrella는 후속 이슈 종결 시마다 v2 전환 추적 표 ⏳ → ✅ 갱신 의무
 
 ## Issue166. authoring-pipeline v2 구현 — 데이터-주도 SCAR + /pm 무중단 History/Artifacts (등록: 2026-05-18, 해결: 2026-05-18, commit: dac9db9) ✅
@@ -320,7 +320,7 @@
 * 카테고리: Build (파이프라인 인프라)
 * 산출물:
     - `_doc_arch/authoring-pipeline.md` — v2 SSOT 설계
-    - `data/{info-filler,refs-collector,agenda-designer,md-updater,media-creater,layout-selector,slot-designer}/` — 단계별 시드 yml 7종
+    - `data/{info-filler,refs-collector,agenda-designer,md-builder,media-creater,layout-selector,slot-designer}/` — 단계별 시드 yml 7종
     - `lib/pipeline-state.js` — state.yml 관리 + lock
     - `lib/pipeline-history.js` — append-only 로그
     - `lib/pipeline-artifacts.js` — 단계별 스냅샷
@@ -380,7 +380,7 @@
     - SSOT 백링크 검증: `_doc_arch/authoring-pipeline.md` grep "Issue156" 1건 + agent 파일 grep "authoring-pipeline" 8건
     - 문서 영향만 — 빌드 산출물 변경 없음 (apply-verify-rules 예외 조항: 마크다운·문서 파일 수정만)
 * Out of scope (별 이슈로 분리):
-    - 단계 1~5·7의 개별 agent/skill 구현 (info-filler, refs-collector, agenda-designer, md-updater, media-creater, slot-designer)
+    - 단계 1~5·7의 개별 agent/skill 구현 (info-filler, refs-collector, agenda-designer, md-builder, media-creater, slot-designer)
     - 글로벌 `/new-project` SCAR 실제 수정 — `~/.claude/Issue.md`로 분리 (글로벌 SCAR 변경 규칙 준수)
     - 단계 10 (videoMaker 영상 렌더링) 통합 — `run.sh`가 별도 진입점
     - 병렬 단계 실행 (v2 후보)
@@ -397,8 +397,8 @@
 * depends: Issue161
 * 보조: `make-mermaid`, `excalidraw-diagram`, `mermaid-diagram` 스킬 위임 표
 
-## Issue161. authoring-pipeline 단계 4 — md-updater skill 신설 (등록: 2026-05-17, 해결: 2026-05-17, commit: acb4816) ✅
-* 산출: `.claude/skills/md-updater/SKILL.md` — AGENDA 골격 + refs/ 기반 슬라이드 본문 자동 작성. 사람 검토 체크포인트, 빌드 lint 실패 시 1회 자동 수정.
+## Issue161. authoring-pipeline 단계 4 — md-builder skill 신설 (등록: 2026-05-17, 해결: 2026-05-17, commit: acb4816) ✅
+* 산출: `.claude/skills/md-builder/SKILL.md` — AGENDA 골격 + refs/ 기반 슬라이드 본문 자동 작성. 사람 검토 체크포인트, 빌드 lint 실패 시 1회 자동 수정.
 * depends: Issue160
 * 준수: md-rules + md-slide-rules + md-m2slide-rules 3단계 규칙 + release-date-rules 자동 갱신
 
