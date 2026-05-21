@@ -179,6 +179,15 @@
   min-height: 0;
   overflow: hidden;
 }
+/* Issue198: htmlArt 가 columns 슬롯(`::: {.column}`) 안에 있을 때 —
+   base.css `.m2-cols{align-items:center}` 가 컬럼 높이를 콘텐츠 기준으로
+   붕괴시켜 `.m2-col`(flex column) 안 `.m2-htmlart`(flex:1 1 0, basis 0)가
+   0 높이가 됨. htmlArt 있는 columns 만 stretch 로 전환해 컬럼이 본문
+   높이를 받게 함 (base.css 미수정 — components.css override). */
+.reveal .m2-cols:has(.m2-htmlart),
+.reveal .columns:has(.m2-htmlart) {
+  align-items: stretch;
+}
 .reveal .m2-htmlart ul,
 .reveal .m2-htmlart ol {
   list-style: none;
