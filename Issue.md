@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 185
+* Issue HWM: 187
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -25,27 +25,6 @@
 
 # 🚧 진행중
 
-## Issue186. 심벌·이모지 사용 정의 data 파일 신설 — data/symbol-usage.yml + data/emoji-usage.yml (등록: 2026-05-21)
-* 목적: 슬라이드 본문에 쓰이는 심벌(Font Awesome `:fa-name:`)·이모지는 사용자 요청에 따라 계속 바뀌는 콘텐츠임에도, "어떤 상황에 무엇을 쓰는지" 정의한 data 파일이 없어 에이전트(특히 단계 4 md-builder)가 일관 참조할 SSOT가 부재. 데이터-주도 SCAR 원칙(에이전트=구현 플랫폼, 정책·콘텐츠는 `data/` 외부화)에 맞춰 2개 data 파일 신설.
-* 카테고리: Project (data/ SSOT) + Generator (에이전트 참조 연결)
-* 상세:
-    - `data/symbol-usage.yml` — 상황별 권장 Font Awesome 심벌 카탈로그
-    - `data/emoji-usage.yml` — 상황별 권장 이모지 카탈로그
-    - 단계 4 `md-builder`·단계 5 `media-creater`가 본문·미디어 작성 시 참조
-    - 설계문서 갱신: `authoring-pipeline.md` data 인벤토리, `slide-components.md`, `component-libraries.md`
-* 구현 명세:
-    - 출처: 볼트 `symbol.md`/`Emoji.md`를 큐레이션 (전체 덤프 아닌 사용 상황 매핑)
-    - `data/md-builder/styles.yml`에 참조 포인터 추가, md-builder skill 본문에 참조 단계 명시
-    - 심벌 = Font Awesome `:fa-name:` 컴포넌트 (유니코드 특수문자는 plain text 대안으로 병기)
-
-## Issue187. authoring-pipeline 전 agent의 사용자-변동 콘텐츠 data 외부화 커버리지 점검 (등록: 2026-05-21)
-* 목적: "에이전트=구현 플랫폼, 사용자 요청에 따라 바뀌는 콘텐츠는 `data/` 파일 참조 필수" 원칙이 9단계 전 agent에 일관 적용됐는지 점검. 누락 발견 시 data 파일 신설 또는 후속 이슈.
-* 카테고리: Project
-* 상세:
-    - 7개 agent(info-filler·refs-collector·agenda-designer·media-creater·layout-selector·slot-designer) + `md-builder` skill의 `data/<단계>/` 커버리지 점검
-    - 각 agent가 하드코딩한 사용자-변동 콘텐츠(예: 심벌·이모지·용어·채널 목록)가 data로 외부화됐는지 대조
-* 구현 명세: 점검표 작성 → 갭은 Issue186 또는 후속 이슈로 흡수
-
 # 📕 중요
 
 # 📙 일반
@@ -53,6 +32,29 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue187. authoring-pipeline 전 agent의 사용자-변동 콘텐츠 data 외부화 커버리지 점검 (등록: 2026-05-21, 해결: 2026-05-21, commit: 865c4fc) ✅
+* 목적: "에이전트=구현 플랫폼, 사용자 요청에 따라 바뀌는 콘텐츠는 `data/` 파일 참조 필수" 원칙이 9단계 전 agent에 일관 적용됐는지 점검.
+* 카테고리: Project
+* 상세:
+    - 7개 agent(info-filler·refs-collector·agenda-designer·media-creater·layout-selector·slot-designer) + `md-builder` skill의 `data/<단계>/` 커버리지 점검
+* 점검 결과:
+    - info-filler→`questions.yml`, refs-collector→`channels.yml`, agenda-designer→`patterns.yml`, md-builder→`styles.yml`, media-creater→`tools.yml`, layout-selector→`rules.yml`, slot-designer→`patterns.yml` — 7개 SCAR 전부 `data/<단계>/` SSOT 선언·로드 확인 (v2 데이터-주도 — Issue169~174 전환 완료)
+    - 유일 갭: 심벌·이모지는 특정 agent 단독 소유가 아닌 cross-stage 콘텐츠라 어느 `data/<단계>/` 폴더에도 없었음 → Issue186으로 top-level `data/symbol-usage.yml`·`data/emoji-usage.yml` 신설하여 해소
+    - 결론: 추가 신규 data 파일 불요. 점검 완료, 갭은 Issue186으로 흡수
+
+## Issue186. 심벌·이모지 사용 정의 data 파일 신설 — data/symbol-usage.yml + data/emoji-usage.yml (등록: 2026-05-21, 해결: 2026-05-21, commit: 865c4fc) ✅
+* 목적: 슬라이드 본문에 쓰이는 심벌(Font Awesome `:fa-name:`)·이모지는 사용자 요청에 따라 계속 바뀌는 콘텐츠임에도 "어떤 상황에 무엇을 쓰는지" 정의한 data 파일이 없어 에이전트(특히 단계 4 md-builder)가 일관 참조할 SSOT가 부재. 데이터-주도 SCAR 원칙(에이전트=구현 플랫폼, 정책·콘텐츠는 `data/` 외부화)에 맞춰 2개 data 파일 신설.
+* 카테고리: Project (data/ SSOT) + Generator (에이전트 참조 연결)
+* 상세:
+    - `data/symbol-usage.yml` — 상황별 권장 Font Awesome 심벌 카탈로그 (18 situation + 유니코드 대안)
+    - `data/emoji-usage.yml` — 상황별 권장 이모지 카탈로그 (18 situation + tone_guide)
+    - `md-builder`(단계 4)·`media-creater`(단계 5) 입력에 두 파일 등재, md-builder 본문 작성 알고리즘에 참조 규칙 추가
+    - 설계문서 갱신: `authoring-pipeline.md` data 인벤토리, `component-libraries.md`, `slide-components.md`
+    - `.gitignore` 신규 SSOT data yml 2종 화이트리스트
+* 구현 명세:
+    - 출처: 볼트 `symbol.md`/`Emoji.md`를 큐레이션 ("상황 → 권장" 매핑, 전체 덤프 아님)
+    - 심벌 = Font Awesome `:fa-name:` 컴포넌트 (유니코드 특수문자는 plain text 대안 병기)
 
 ## Issue184. 시각화 4도구 통합 — React artifact·HTML artifact(WordArt)·excalidraw·d3 콘텐츠 기반 자동 선택 (등록: 2026-05-21, 해결: 2026-05-21, commit: 2df139e) ✅
 * 목적: media-creater agent가 슬라이드 본문 성격에 따라 4종 시각화 도구를 `data/media-creater/tools.yml` 기준으로 자동 선택하도록 통합. React artifact(기본)·HTML artifact(WordArt 장식 텍스트)·excalidraw(복잡 다이어그램)·d3(그래프)를 콘텐츠 패턴에 매핑.
