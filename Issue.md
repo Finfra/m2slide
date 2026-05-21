@@ -25,30 +25,47 @@
 
 # 🚧 진행중
 
+## Issue186. 심벌·이모지 사용 정의 data 파일 신설 — data/symbol-usage.yml + data/emoji-usage.yml (등록: 2026-05-21)
+* 목적: 슬라이드 본문에 쓰이는 심벌(Font Awesome `:fa-name:`)·이모지는 사용자 요청에 따라 계속 바뀌는 콘텐츠임에도, "어떤 상황에 무엇을 쓰는지" 정의한 data 파일이 없어 에이전트(특히 단계 4 md-builder)가 일관 참조할 SSOT가 부재. 데이터-주도 SCAR 원칙(에이전트=구현 플랫폼, 정책·콘텐츠는 `data/` 외부화)에 맞춰 2개 data 파일 신설.
+* 카테고리: Project (data/ SSOT) + Generator (에이전트 참조 연결)
+* 상세:
+    - `data/symbol-usage.yml` — 상황별 권장 Font Awesome 심벌 카탈로그
+    - `data/emoji-usage.yml` — 상황별 권장 이모지 카탈로그
+    - 단계 4 `md-builder`·단계 5 `media-creater`가 본문·미디어 작성 시 참조
+    - 설계문서 갱신: `authoring-pipeline.md` data 인벤토리, `slide-components.md`, `component-libraries.md`
+* 구현 명세:
+    - 출처: 볼트 `symbol.md`/`Emoji.md`를 큐레이션 (전체 덤프 아닌 사용 상황 매핑)
+    - `data/md-builder/styles.yml`에 참조 포인터 추가, md-builder skill 본문에 참조 단계 명시
+    - 심벌 = Font Awesome `:fa-name:` 컴포넌트 (유니코드 특수문자는 plain text 대안으로 병기)
+
+## Issue187. authoring-pipeline 전 agent의 사용자-변동 콘텐츠 data 외부화 커버리지 점검 (등록: 2026-05-21)
+* 목적: "에이전트=구현 플랫폼, 사용자 요청에 따라 바뀌는 콘텐츠는 `data/` 파일 참조 필수" 원칙이 9단계 전 agent에 일관 적용됐는지 점검. 누락 발견 시 data 파일 신설 또는 후속 이슈.
+* 카테고리: Project
+* 상세:
+    - 7개 agent(info-filler·refs-collector·agenda-designer·media-creater·layout-selector·slot-designer) + `md-builder` skill의 `data/<단계>/` 커버리지 점검
+    - 각 agent가 하드코딩한 사용자-변동 콘텐츠(예: 심벌·이모지·용어·채널 목록)가 data로 외부화됐는지 대조
+* 구현 명세: 점검표 작성 → 갭은 Issue186 또는 후속 이슈로 흡수
+
 # 📕 중요
 
 # 📙 일반
 
-## Issue184. 시각화 4도구 통합 — React artifact·HTML artifact(WordArt)·excalidraw·d3 콘텐츠 기반 자동 선택 (등록: 2026-05-21)
-* 목적: media-creater agent가 슬라이드 본문 성격에 따라 4종 시각화 도구를 `data/media-creater/tools.yml` 기준으로 자동 선택하도록 통합. 기존 mermaid·chart·map 컴포넌트는 유지하되, 정형 컴포넌트로 표현하기 어려운 콘텐츠에 React artifact(기본)·HTML artifact(WordArt 장식 텍스트)·excalidraw(복잡 다이어그램)·d3(커스텀 시각화)를 단계적으로 매핑.
-* plan: `_doc_work/plan/visualization-4tools_plan.md`
-* 카테고리: Generator (`markdown.js` fenced 디스패처 + `component-registry.js`) + Asset (component-hooks, `component-libraries.yml`) + Theme (WordArt CSS) + Project (media-creater agent `tools.yml`)
-* depends: Issue183 ✅ (diagram/component 슬롯 분리 — 신규 컴포넌트는 `.component-container` 슬롯 계약 준수)
-* 상세:
-    - 도구 선택 기준 (사용자 지정):
-        - React artifact — **기본**(fallback). 인터랙티브 컴포넌트
-        - HTML artifact — Cards로 구현하기 복잡한 경우. **WordArt 장식 텍스트**(그라데이션·외곽선·그림자·곡선 효과)
-        - excalidraw — mermaid diagram으로 구현하기 너무 복잡한 경우
-        - d3 — 그래프·시각화에 가까운 경우
-    - excalidraw(`excalidraw` id)·d3(`d3_inline` id)는 `tools.yml`에 이미 존재 — 선택 기준만 갱신
-    - React artifact·HTML artifact는 신규 컴포넌트 — fenced lang(```react / ```html-artifact) + 디스패처 + 라이브러리 등록 필요
-    - React artifact: React+ReactDOM+Babel-standalone CDN 조건 주입(`injection: conditional`), JSX in-browser transpile. d3와 동일 수준 신뢰 처리(사용자 슬라이드 콘텐츠)
-    - HTML artifact: 순수 CSS WordArt 효과 — CDN 불필요. theme `slide.css`에 WordArt 유틸 클래스 추가
-* 구현 명세: `_doc_work/plan/visualization-4tools_plan.md` 참조 (5단계 — tools.yml 기준 → component-libraries.yml → 디스패처/hooks → WordArt CSS → md-m2slide-rules 문서화)
-
 # 📗 선택
 
 # ✅ 완료
+
+## Issue184. 시각화 4도구 통합 — React artifact·HTML artifact(WordArt)·excalidraw·d3 콘텐츠 기반 자동 선택 (등록: 2026-05-21, 해결: 2026-05-21, commit: 2df139e) ✅
+* 목적: media-creater agent가 슬라이드 본문 성격에 따라 4종 시각화 도구를 `data/media-creater/tools.yml` 기준으로 자동 선택하도록 통합. React artifact(기본)·HTML artifact(WordArt 장식 텍스트)·excalidraw(복잡 다이어그램)·d3(그래프)를 콘텐츠 패턴에 매핑.
+* plan: `_doc_work/plan/visualization-4tools_plan.md`
+* 카테고리: Generator (`markdown.js` fenced) + Asset (component-hooks, `component-libraries.yml`) + Theme (WordArt CSS) + Project (media-creater `tools.yml`·agent)
+* depends: Issue183 ✅ (diagram/component 슬롯 분리)
+* 구현 명세 (해결):
+    - **React artifact** (`` ```react ``): `component-libraries.yml`에 react 라이브러리 등록(React 18.3.1 UMD + ReactDOM + Babel-standalone, `injection: conditional`) → `componentLangs` 경로가 자동 라우팅. `react_dispatch.js` 신규 — Babel-standalone가 브라우저에서 JSX 변환 후 `ReactDOM.createRoot` 마운트. markdown.js 무수정.
+    - **HTML artifact** (`` ```wordart ``): `markdown.js`에 raw HTML passthrough 분기 추가(escape 없이 `.component-container.wordart-block` 통과). theme `slide.css` ×2에 `.wordart-*` 5종(그라데이션·외곽선·그림자·3D·발광) 순수 CSS. CDN·디스패처 없음 — `component-libraries.yml` 미등재.
+    - **excalidraw·d3**: `tools.yml`에 기존 등재 — 선택 기준(`content_pattern_rules`)만 갱신.
+    - **media-creater**: `tools.yml`에 `react_artifact`·`html_artifact` 도구 + `decorative_text` 룰 + `selection_policy`(`default_tool: react_artifact`) 추가. agent 본문 알고리즘에 "매칭 0건 → `selection_policy.default_tool` fallback" 단계 추가.
+* 검증: `node --test` 133/133 통과(Issue184 7종 추가). ComponentTest 빌드 + 브라우저 런타임 검증(playwright) — React counter/clock·WordArt 5효과·SVG 곡선 정상 렌더, console 에러 0(favicon 404 제외), 회귀 0(mermaid/d3/chart/map). 대표 3종 빌드 성공.
+* 비고: `_doc_arch/slide-components.md`·`.claude/rules/md-m2slide-rules.md` 문서 갱신은 디스크 반영되나 m2slide `.gitignore`(`_doc_arch`·`.claude`) 대상이라 커밋 제외 — 로컬 유지. plan은 markdown.js 변경 범위를 실제보다 크게 기술(실제: React=yml 등록만, wordart=4줄 분기).
 
 ## Issue185. authoring-pipeline 정책 글로벌↔프로젝트 cascade — L1 data/<단계>/*.yml + L2 Projects/<N>/_pipeline/policy/<단계>.yml (등록: 2026-05-21, 해결: 2026-05-21, commit: 050a60c, 586d339, 825bcbe, 3874521, cbe0cf9) ✅
 * 목적: 파이프라인 정책(`data/<단계>/*.yml`)이 글로벌 전용이라 "이 프로젝트만 카드를 넓게" 같은 프로젝트별 요청을 영구 저장할 자리가 없던 문제 해소. `_config.yml`이 쓰는 글로벌↔프로젝트 cascade 패턴을 정책 축에 도입. 렌더 설정·Info.md 불변.
