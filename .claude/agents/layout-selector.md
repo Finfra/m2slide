@@ -33,6 +33,23 @@ color: green
 * 보조 자산:
     - `data/layout-selector/overrides/<project>.yml` — 프로젝트별 override (선택, deep_merge)
 
+## 프로젝트 정책 cascade (L2)
+
+본 단계는 글로벌 정책(L1) 위에 프로젝트 override(L2)를 deep-merge하여 사용함.
+
+* L1: `data/layout-selector/rules.yml` (위 SSOT yml)
+* L2: `Projects/<Name>/_pipeline/policy/layout-selector.yml` (존재할 때만)
+
+병합 절차:
+
+1. L1 yml Read
+2. `Projects/<Name>/_pipeline/policy/layout-selector.yml` 존재 시 Read
+3. deep-merge — L2 키를 L1 위에 덮어씀 (scalar·매핑은 L2 값 우선, 리스트는 L2 값으로 치환)
+4. L2 키가 L1 스키마에 없으면(orphan) 경고 출력 후 해당 키 무시
+5. 병합 결과를 본 단계 동작 정책으로 사용
+
+L2 부재 시 L1 그대로 사용 (하위호환). 설계 SSOT: [`../../_doc_arch/pipeline-policy-cascade.md`](../../_doc_arch/pipeline-policy-cascade.md)
+
 # 핵심 원칙
 
 1. **데이터-주도** — 우선순위·패턴·검증 모두 yml에서 Read. SCAR 본문 하드코딩 금지.
@@ -237,6 +254,22 @@ node -e "console.log(JSON.stringify(require('./lib/layout-meta-parser').loadAllL
 * `#transition-*`, `#background-color-*` 등 슬라이드 단위 디렉티브 추천 (v2 후보)
 * cover 자동 주입(Issue49)·AGENDA.md 메타 출처 변경
 * 챕터 간 layout 분포 일관성 검증 (v2)
+
+# 정책 변경 요청 처리
+
+사용자가 본 단계 정책 변경을 요청하면:
+
+1. **분류** — 글로벌(전 프로젝트) vs 프로젝트(이번 영상만)
+    - "현재 프로젝트만"·"이번 영상" → 프로젝트 (L2)
+    - "미관상"·"앞으로 늘"·범용 개선 → 글로벌 (L1)
+    - 모호하면 사용자에게 질문
+2. **키 확인** — `data/layout-selector/rules.yml`에 해당 키 존재 여부
+    - 있음 → 글로벌은 `data/layout-selector/rules.yml` 값 수정 / 프로젝트는 `Projects/<Name>/_pipeline/policy/layout-selector.yml`에 키:값 기록
+    - 없음 → 스키마 자동 확장 (3)
+3. **스키마 자동 확장** — 새 키를 `data/layout-selector/rules.yml`에 보수적 기본값(기존 동작 불변)으로 추가. 글로벌 변경이므로 사용자 체크포인트 1회 확인 후 2의 "있음" 분기 진행
+4. **로그** — `Projects/<Name>/_pipeline/history.md`에 정책 변경 entry append
+
+상세: [`../../_doc_arch/pipeline-policy-cascade.md`](../../_doc_arch/pipeline-policy-cascade.md) `# 신규 요청 흐름`
 
 # 참조
 
