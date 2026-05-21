@@ -25,18 +25,6 @@
 
 # 🚧 진행중
 
-## Issue189. htmlArt 도해 시각 개선 — process 간격·화살표, cycle 비율, hierarchy 가로 트리 (등록: 2026-05-21)
-* 목적: Issue188 직후 사용자 피드백 반영. process는 박스 간격 부족·화살표 미가시, cycle은 너비 부족·노드 높이 과다로 원형 안 보임, hierarchy는 세로 트리라 markmap과 차별 없음 — htmlArt의 가치는 가로 표현.
-* arch: `_doc_arch/htmlArt.md`
-* 카테고리: Generator (`markdown.js`) + Theme (`default`·`default_lec` slide.css)
-* 상세:
-    - process: `> ul` gap 확대 + 화살표 크게·진하게 (`--htmlart-arrow` 변수 신설)
-    - cycle: 컨테이너 너비 확대 + 노드 높이 압축(서브텍스트 소형화)으로 원형 가독성 확보
-    - hierarchy: 세로 들여쓰기 트리 → **가로 트리**(좌→우 박스 노드 + 연결선). markmap과 역할 분리
-* 구현 명세:
-    - hierarchy 박스 노드: `markdown.js` preprocessPandocDiv가 htmlart hierarchy 블록의 bullet 텍스트를 `<span class="ha-node">`로 래핑 (bare text node는 박스 불가) — hierarchy 한정
-    - 검증: `Projects/htmlArtTest` 빌드 + 브라우저 렌더 + `node --test`
-
 # 📕 중요
 
 # 📙 일반
@@ -44,6 +32,16 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue189. htmlArt 도해 시각 개선 — process 간격·화살표, cycle 비율, hierarchy 가로 트리 (등록: 2026-05-21, 해결: 2026-05-21, commit: aa7cbae) ✅
+* 목적: Issue188 직후 사용자 피드백 반영. process 박스 간격 부족·화살표 미가시, cycle 너비 부족·노드 높이 과다로 원형 안 보임, hierarchy 세로 트리라 markmap과 차별 없음 — htmlArt 가치는 가로 표현.
+* arch: `_doc_arch/htmlArt.md`
+* 카테고리: Generator (`markdown.js`) + Theme (`default`·`default_lec` slide.css)
+* 구현 명세 (해결):
+    - process: `> ul` gap `26/30 → 34/64`, 화살표 `14px accent → 22px --htmlart-arrow`(rgba 0.5 진한 회색) — 가시성 확보
+    - cycle: 컨테이너 `470 → 540`, radius `170 → 205`, 노드 폭 `150 → 162`, 서브텍스트 `0.72 → 0.62em` — 노드 압축으로 원형 가독성 확보
+    - hierarchy: 세로 들여쓰기 트리 → **가로 트리**(좌→우 박스 노드 + 세로 bus 연결선). `markdown.js` preprocessPandocDiv가 htmlart hierarchy 블록 bullet 텍스트를 `<span class="ha-node">`로 래핑(bare text node 박스 불가 — hierarchy 한정). 세로 트리는 markmap 영역, htmlArt hierarchy는 가로 표현 목적
+* 검증: `node --test` 141/141 통과 (htmlArt 8 케이스 — ha-node 래핑 검증 추가). htmlArtTest 빌드 + process·cycle·hierarchy 브라우저 렌더 확인. m2SlideStyle1/2 회귀 0.
 
 ## Issue188. htmlArt core 구현 — `::: htmlart <type>` 파서 + theme CSS 4종 (등록: 2026-05-21, 해결: 2026-05-21, commit: 9b154b0) ✅
 * 목적: htmlArt 설계(`_doc_arch/htmlArt.md`)를 코드로 구현. 들여쓰기 아웃라인을 `::: htmlart <type>` fenced div로 감싸면 process·cycle·hierarchy·pyramid 구조 도해로 렌더. 스캐폴드(`Projects/htmlArtTest`)가 raw 텍스트로 표시되던 것을 실제 렌더로 전환.
