@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 183
+* Issue HWM: 185
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -29,9 +29,43 @@
 
 # 📙 일반
 
+## Issue184. 시각화 4도구 통합 — React artifact·HTML artifact(WordArt)·excalidraw·d3 콘텐츠 기반 자동 선택 (등록: 2026-05-21)
+* 목적: media-creater agent가 슬라이드 본문 성격에 따라 4종 시각화 도구를 `data/media-creater/tools.yml` 기준으로 자동 선택하도록 통합. 기존 mermaid·chart·map 컴포넌트는 유지하되, 정형 컴포넌트로 표현하기 어려운 콘텐츠에 React artifact(기본)·HTML artifact(WordArt 장식 텍스트)·excalidraw(복잡 다이어그램)·d3(커스텀 시각화)를 단계적으로 매핑.
+* plan: `_doc_work/plan/visualization-4tools_plan.md`
+* 카테고리: Generator (`markdown.js` fenced 디스패처 + `component-registry.js`) + Asset (component-hooks, `component-libraries.yml`) + Theme (WordArt CSS) + Project (media-creater agent `tools.yml`)
+* depends: Issue183 ✅ (diagram/component 슬롯 분리 — 신규 컴포넌트는 `.component-container` 슬롯 계약 준수)
+* 상세:
+    - 도구 선택 기준 (사용자 지정):
+        - React artifact — **기본**(fallback). 인터랙티브 컴포넌트
+        - HTML artifact — Cards로 구현하기 복잡한 경우. **WordArt 장식 텍스트**(그라데이션·외곽선·그림자·곡선 효과)
+        - excalidraw — mermaid diagram으로 구현하기 너무 복잡한 경우
+        - d3 — 그래프·시각화에 가까운 경우
+    - excalidraw(`excalidraw` id)·d3(`d3_inline` id)는 `tools.yml`에 이미 존재 — 선택 기준만 갱신
+    - React artifact·HTML artifact는 신규 컴포넌트 — fenced lang(```react / ```html-artifact) + 디스패처 + 라이브러리 등록 필요
+    - React artifact: React+ReactDOM+Babel-standalone CDN 조건 주입(`injection: conditional`), JSX in-browser transpile. d3와 동일 수준 신뢰 처리(사용자 슬라이드 콘텐츠)
+    - HTML artifact: 순수 CSS WordArt 효과 — CDN 불필요. theme `slide.css`에 WordArt 유틸 클래스 추가
+* 구현 명세: `_doc_work/plan/visualization-4tools_plan.md` 참조 (5단계 — tools.yml 기준 → component-libraries.yml → 디스패처/hooks → WordArt CSS → md-m2slide-rules 문서화)
+
 # 📗 선택
 
 # ✅ 완료
+
+## Issue185. authoring-pipeline 정책 글로벌↔프로젝트 cascade — L1 data/<단계>/*.yml + L2 Projects/<N>/_pipeline/policy/<단계>.yml (등록: 2026-05-21, 해결: 2026-05-21, commit: 050a60c, 586d339, 825bcbe, 3874521, cbe0cf9) ✅
+* 목적: 파이프라인 정책(`data/<단계>/*.yml`)이 글로벌 전용이라 "이 프로젝트만 카드를 넓게" 같은 프로젝트별 요청을 영구 저장할 자리가 없던 문제 해소. `_config.yml`이 쓰는 글로벌↔프로젝트 cascade 패턴을 정책 축에 도입. 렌더 설정·Info.md 불변.
+* plan: `_doc_work/plan/pipeline-policy-cascade_plan.md`
+* arch: `_doc_arch/pipeline-policy-cascade.md`
+* 카테고리: Project (authoring-pipeline 정책 cascade) + Generator (SCAR 데이터 로드 절차)
+* 상세:
+    - L1 글로벌 기본값 `data/<단계>/*.yml`(기존) + L2 프로젝트 override `Projects/<N>/_pipeline/policy/<단계>.yml`(신규) 2-레이어
+    - 각 단계 SCAR이 단계 진입 시 L1 Read → L2 deep-merge(프로젝트 우선)
+    - 기존 키로 표현 안 되는 신규 요청은 글로벌 스키마 자동 확장 → 키 정의는 항상 L1 1벌, merge 항상 결정적
+* 구현 명세 (해결):
+    - 설계 SSOT `_doc_arch/pipeline-policy-cascade.md` 신규
+    - 7개 단계 SCAR(info-filler/refs-collector/agenda-designer/md-builder/media-creater/layout-selector/slot-designer)에 "프로젝트 정책 cascade (L2)" + "정책 변경 요청 처리" 절차 삽입
+    - `authoring-pipeline.md`: 책임 분할 표 L2 row, 진행 단계 표 L2 주석, `_pipeline` 트리 `policy/`, 후속 작업 v3 후보 항목 대체
+    - 폐기된 v3 후보 잔재 `data/layout-selector/overrides/` 폴더 + dead yml 블록 제거
+* 검증: slot-designer cascade 트레이스(L2 우선 deep-merge) 통과, `m2SlideStyle1_single` 하위호환 빌드 성공, 통합 리뷰 머지 가능
+* 후속 후보: `layout-selector.md` frontmatter `title`+`name` 중복 (Issue173 기존 문제, md-rules 위반 — 본 이슈 범위 밖)
 
 ## Issue183. media-container 슬롯 설계 결함 — diagram/component 슬롯 분리 (등록: 2026-05-20, 해결: 2026-05-20, commit: 6bbaa8e) ✅
 * 목적: `media-container` 단일 슬롯이 이질적 콘텐츠 5종(mermaid·kroki·chart·map·d3)을 수용하면서 암묵 계약("콘텐츠는 자체 스케일 기하 viewBox/replaced 보유")을 명시하지 않아, 계약 위반 컴포넌트마다 깨지거나 per-component 해킹이 필요한 구조적 결함을 해소. d3 인포그래픽이 슬라이드를 안 채우는 증상(ComponentTest #/8)의 근본 원인.
