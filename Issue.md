@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 199
+* Issue HWM: 200
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -32,6 +32,17 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue200. htmlArt 노드 글자 크기 — 박스 비례 폰트로 확대 (등록: 2026-05-21, 해결: 2026-05-21, commit: e5824b5) ✅
+* 목적: htmlArt 4타입 도해의 노드 텍스트가 카드 컴포넌트 대비 상대적으로 작아 박스를 채우지 못함. 사용자가 카드 슬라이드와 나란히 비교하여 지적.
+* 카테고리: Generator (`htmlart_dispatch.js`)
+* 구현 (해결):
+    - 원인: `nodeBox` 폰트가 14px/11.5px 고정. SVG 텍스트는 viewBox 좌표계라 viewBox 가 클수록 화면에서 작아짐. 노드 박스를 키워도 viewBox 가 함께 커져 화면 글자 크기는 불변 → 폰트/노드 **비율** 자체를 키워야 함
+    - `nodeBox`: 고정 폰트 → 박스 비례. `titleFs = min(h*0.30, w*0.21, 44)`, `subFs = max(titleFs*0.66, 12)`. process·cycle·hierarchy 공용 헬퍼
+    - pyramid 밴드 `<text>`: 16px → 21px
+    - `word-break:keep-all` — 한글 어절 단위 줄바꿈(글자 중간 끊김 방지). hierarchy 긴 루트 라벨 대응
+    - padding 5/10 → 6/12, sub margin-top 2 → 3
+* 검증: `node --test` 144/144 통과. htmlArtTest 4타입 스크린샷 — 노드 제목·부제 텍스트가 박스를 카드 수준으로 채움. hierarchy 긴 루트 라벨(`m2slide 구성요소`)이 어절 경계로 2줄 정렬.
 
 ## Issue199. htmlArt columns 슬롯 안 도해 높이 0 붕괴 (등록: 2026-05-21, 해결: 2026-05-21, commit: 123e12c) ✅
 * 목적: `::: {.column}` 슬롯 안에 넣은 htmlArt 도해(htmlArtTest #/7 타입 교체 데모)가 raw 텍스트(`process:`·`pyramid:`)만 남고 SVG 가 0 높이로 사라짐. 사용자 브라우저 확인 중 발견.
