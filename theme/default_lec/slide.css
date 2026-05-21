@@ -1062,8 +1062,9 @@ body.agenda-page .agenda-frame {
 .reveal .htmlart-process > ul {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   align-items: stretch;
-  gap: 34px 64px;
+  gap: 30px 92px;
 }
 .reveal .htmlart-process > ul > li {
   flex: 1 1 0;
@@ -1078,12 +1079,12 @@ body.agenda-page .agenda-frame {
 .reveal .htmlart-process > ul > li:not(:last-child)::after {
   content: "";
   position: absolute;
-  right: -45px;
+  right: -59px;
   top: 50%;
   transform: translateY(-50%);
-  border-top: 13px solid transparent;
-  border-bottom: 13px solid transparent;
-  border-left: 22px solid var(--htmlart-arrow);
+  border-top: 16px solid transparent;
+  border-bottom: 16px solid transparent;
+  border-left: 27px solid var(--htmlart-arrow);
 }
 .reveal section[class*="layout-"] .htmlart-process > ul > li ul {
   margin: 7px 0 0 0;
@@ -1125,7 +1126,7 @@ body.agenda-page .agenda-frame {
   opacity: 0.9;
 }
 
-/* ── hierarchy — 가로 트리 (좌→우, 박스 노드 + 연결선) ──────────────── */
+/* ── hierarchy — 가로 트리 (좌→우 박스 노드 + 연결선) ──────────────── */
 /* 세로 트리는 markmap 영역 — htmlArt hierarchy 는 가로 표현이 목적 */
 .reveal .htmlart-hierarchy {
   font-size: 0.84em;
@@ -1158,25 +1159,23 @@ body.agenda-page .agenda-frame {
   color: var(--htmlart-fg);
   font-weight: 700;
 }
-/* 자식 컨테이너 — 부모 오른쪽, 세로 bus */
-.reveal section[class*="layout-"] .htmlart-hierarchy ul ul {
+/* 자식 컨테이너 — 부모 노드 오른쪽 */
+.reveal .htmlart-hierarchy li > ul {
   position: relative;
-  margin-left: 28px;
-  padding-left: 22px;
-  border-left: 2px solid var(--htmlart-box-border);
+  margin-left: 44px;
 }
-/* 부모 노드 → 자식 bus 가로 연결 */
-.reveal .htmlart-hierarchy ul ul::before {
+/* 부모 노드 → bus 가로 연결 */
+.reveal .htmlart-hierarchy li > ul::before {
   content: "";
   position: absolute;
-  left: -28px;
+  left: -44px;
   top: 50%;
-  width: 28px;
+  width: 22px;
   height: 2px;
   background: var(--htmlart-box-border);
 }
 /* bus → 각 자식 노드 가로 tick */
-.reveal section[class*="layout-"] .htmlart-hierarchy ul ul > li::before {
+.reveal section[class*="layout-"] .htmlart-hierarchy li > ul > li::before {
   content: "";
   position: absolute;
   left: -22px;
@@ -1185,12 +1184,25 @@ body.agenda-page .agenda-frame {
   height: 2px;
   background: var(--htmlart-box-border);
 }
+/* 세로 bus 세그먼트 — per-li, 첫·끝·단일 자식 트림 (트리 밖 돌출 방지) */
+.reveal section[class*="layout-"] .htmlart-hierarchy li > ul > li::after {
+  content: "";
+  position: absolute;
+  left: -22px;
+  top: -5px;
+  bottom: -5px;
+  width: 2px;
+  background: var(--htmlart-box-border);
+}
+.reveal section[class*="layout-"] .htmlart-hierarchy li > ul > li:first-child::after { top: 50%; }
+.reveal section[class*="layout-"] .htmlart-hierarchy li > ul > li:last-child::after { bottom: 50%; }
+.reveal section[class*="layout-"] .htmlart-hierarchy li > ul > li:only-child::after { display: none; }
 
 /* ── cycle — 원형 배치 (--htmlart-n 기반 등간격) ────────────────────── */
 .reveal .htmlart-cycle > ul {
   position: relative;
-  width: 540px;
-  height: 540px;
+  width: 600px;
+  height: 600px;
   margin: 0.2em auto;
 }
 .reveal .htmlart-cycle > ul::before {
@@ -1207,16 +1219,23 @@ body.agenda-page .agenda-frame {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 162px;
-  margin: -30px 0 0 -81px;
-  --htmlart-r: 205px;
+  width: 224px;
+  height: 100px;
+  margin: -50px 0 0 -112px;
+  --htmlart-r: 184px;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   background: var(--htmlart-box-bg);
   border: 2px solid var(--htmlart-accent);
-  border-radius: 36px;
-  padding: 7px 10px;
+  border-radius: 22px;
+  padding: 8px 14px;
   text-align: center;
   font-weight: 600;
+  font-size: 0.82em;
+  line-height: 1.2;
+  overflow: hidden;
   transform:
     rotate(calc(360deg * var(--htmlart-i, 0) / var(--htmlart-n, 1)))
     translateY(calc(-1 * var(--htmlart-r)))
@@ -1231,10 +1250,11 @@ body.agenda-page .agenda-frame {
 .reveal .htmlart-cycle > ul > li:nth-child(7) { --htmlart-i: 6; }
 .reveal .htmlart-cycle > ul > li:nth-child(8) { --htmlart-i: 7; }
 .reveal section[class*="layout-"] .htmlart-cycle > ul > li ul {
-  margin: 1px 0 0 0;
+  margin: 3px 0 0 0;
   padding-left: 0;
   font-weight: 400;
-  font-size: 0.62em;
-  line-height: 1.25;
+  font-size: 0.66em;
+  line-height: 1.2;
+  white-space: nowrap;
   opacity: 0.8;
 }
