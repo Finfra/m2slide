@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 194
+* Issue HWM: 196
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -29,9 +29,30 @@
 
 # 📙 일반
 
+## Issue196. 카드 컴포넌트 여백 과다 (등록: 2026-05-21)
+* 목적: `::: cards` 카드 컴포넌트가 슬라이드 영역 대비 여백이 과다함. 카드 박스 사이 간격·카드 내부 padding·그리드 외곽 여백이 커서 콘텐츠가 작게 보임. htmlArt 도해도 전반적으로 같은 경향(도해 크기는 Issue195에서 별도 추적).
+* 카테고리: Theme (`theme/{name}/slide.css` `.m2-cards`) + 가능 시 Generator
+* 상세:
+    - htmlArtTest cycle 슬라이드 피드백 중 분리 등록 — 화살표·도해 채움(cycle)은 Issue195에서 처리, 본 이슈는 카드 여백에 집중
+    - 카드 그리드 `gap`, 카드 `li` padding, 제목 밴드 여백, 컨테이너 외곽 margin 점검
+    - `default`·`default_lec` 양 테마 `.m2-cards` 블록 대상
+* 구현 명세:
+    - `.m2-cards` 그리드 `gap`·카드 내부 padding 축소하여 카드가 슬라이드 폭을 더 채우게
+    - `--m2-card-columns` auto-fit 시 카드 최소폭(`minmax`) 재조정 검토
+    - 수정 후 layoutTest·componentTest 등 카드 사용 프로젝트 빌드 회귀 확인
+
 # 📗 선택
 
 # ✅ 완료
+
+## Issue195. htmlArt hierarchy 연결선 카드 관통 + 도해 크기 (등록: 2026-05-21, 해결: 2026-05-21, commit: c0cc712) ✅
+* 목적: Issue193 d3 렌더 후속 — (1) hierarchy 노드 박스 배경이 반투명(`rgba(0,0,0,.045)`)이라 뒤를 지나는 `d3.linkVertical` 연결선이 박스를 관통해 보임 (2) 4타입 도해가 슬라이드 영역 대비 작아 여백 과다.
+* 카테고리: Generator (`htmlart_dispatch.js`) + Theme (`components.css`)
+* 구현 (해결):
+    - `nodeBox` 비-accent 배경을 불투명 surface로 전환 — `theme/_shared/components.css` `.m2-htmlart`에 `--htmlart-surface`(불투명 `#f4f4f5`) 변수 추가 → 연결선이 박스 뒤로 가려짐
+    - hierarchy 연결선 edge-to-edge — 부모 박스 하단 ↔ 자식 박스 상단 연결(박스 내부 관통 제거)
+    - 4타입 도해 채움(꽉차게): hierarchy 노드·트리 간격 확대, cycle viewBox 노드 외곽 hug + 노드 212×108 + 화살표 marker 58u(`userSpaceOnUse`+`overflow:visible`)·stroke 10, pyramid/process 박스 확대, svg `max-height` 를 슬라이드 영역에 맞춰 조정
+* 검증: `node --test` 144/144 통과. htmlArtTest·graphify 빌드 회귀 0. Playwright 4타입 렌더 — hierarchy·pyramid·process·cycle overflow 전부 음수(슬라이드 영역 내, 클리핑 0).
 
 ## Issue193. htmlArt 렌더 백엔드 CSS → d3 SVG 전환 (등록: 2026-05-21, 해결: 2026-05-21, commit: 20cc48e) ✅
 * 목적: htmlArt 4타입(process/cycle/hierarchy/pyramid)이 순수 CSS 구현이라 Issue188~192 5개 이슈가 전부 시각 튜닝 반복으로 소진됨. cycle 원형 배치·hierarchy 연결선은 CSS로 좌표·곡선 계산이 불가능 — `nth-child` 8개 하드코딩, 고정 600px, 화살표 부재. 렌더 백엔드를 클라이언트 d3 SVG로 전환.
