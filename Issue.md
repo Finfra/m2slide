@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 197
+* Issue HWM: 198
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -32,6 +32,15 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue198. htmlArt 도해 letterbox — viewBox aspect 슬라이드 영역 미정합 + 컨테이너 fill 통일 (등록: 2026-05-21, 해결: 2026-05-21, commit: 6bd083a) ✅
+* 목적: Issue197(flex 잔여공간 채움) 후속. htmlArt 4타입 도해가 여전히 슬라이드 콘텐츠 영역의 30~64%만 채움. Playwright 측정으로 두 겹 원인 확정 — (1) `.m2-htmlart` 컨테이너가 `flex:1 1 0` 인데도 `margin:0.6em 0` 때문에 `.contents-body` 의 64%만 점유 (2) d3 SVG viewBox aspect 가 슬라이드 영역(~3:1)과 불일치하여 컨테이너 안에서 또 letterbox.
+* 카테고리: Generator (`htmlart_dispatch.js` viewBox) + Theme (`_shared/components.css`)
+* 구현 (해결):
+    - **P1 컨테이너 fill**: `theme/_shared/components.css` `.m2-htmlart` `margin:0.6em 0` 제거 — flex item margin 이 `.contents-body` 잔여공간을 별도 잠식해 도해 축소. 콘텐츠 컨테이너 fill 계약 주석 명시(`.media-container`·`.component-container` 와 동일)
+    - **P2 letterbox 제거**: `htmlart_dispatch.js` viewBox aspect 를 슬라이드 콘텐츠 영역(~3:1)에 정합 — process boxW 224→196·boxH 120→230·arrowGap 64→52·padY 18→28 (aspect 6.97→3.29), hierarchy nodeH 58→90·nodeSize 세로 +34→+96 (4.07→2.31), pyramid bandH 74→88 (2.99→2.58), cycle 무수정(1.17 이미 정합). `preserveAspectRatio` meet 유지(clip 0)
+* 검증: `node --test` 144/144 통과. htmlArtTest 4타입 콘텐츠 실채움 — process 32→65%·hierarchy 30→65%·pyramid 41→65%·cycle 64→65% (letterbox 제거로 4타입 균일화, 잔여 35%는 슬라이드 상단 bullet·padding 의 자연 점유분). aTest mermaid/chart/d3/map 회귀 0. process·hierarchy 스크린샷 시각 확인.
+* 비고: mermaid(`.media-container` 88%)·chart/map/d3(`.component-container` 88~92%)는 측정상 양호하여 무수정. excalidraw 등 외부 모듈은 사용자 명시로 범위 제외.
 
 ## Issue197. htmlArt 도해 크기 산정이 상단 텍스트 미반영 — 컨테이너 잔여공간 채움 (등록: 2026-05-21, 해결: 2026-05-21, commit: 412c194) ✅
 * 목적: htmlArt 4타입 도해 SVG 가 `max-height:Nvh`(고정 뷰포트 비율)로 크기를 정해, 같은 슬라이드 상단의 제목·bullet 텍스트가 점유한 높이를 반영하지 못함. vh 를 키우면 텍스트+도해 합계가 슬라이드를 초과해 잘리고(clip), 낮추면 도해가 작아짐. 4타입 공통 — Issue195 의 "max-height 상향"은 증상만 건드린 잘못된 처방.
