@@ -29,21 +29,20 @@
 
 # 📙 일반
 
-## Issue196. 카드 컴포넌트 여백 과다 (등록: 2026-05-21)
-* 목적: `::: cards` 카드 컴포넌트가 슬라이드 영역 대비 여백이 과다함. 카드 박스 사이 간격·카드 내부 padding·그리드 외곽 여백이 커서 콘텐츠가 작게 보임. htmlArt 도해도 전반적으로 같은 경향(도해 크기는 Issue195에서 별도 추적).
-* 카테고리: Theme (`theme/{name}/slide.css` `.m2-cards`) + 가능 시 Generator
-* 상세:
-    - htmlArtTest cycle 슬라이드 피드백 중 분리 등록 — 화살표·도해 채움(cycle)은 Issue195에서 처리, 본 이슈는 카드 여백에 집중
-    - 카드 그리드 `gap`, 카드 `li` padding, 제목 밴드 여백, 컨테이너 외곽 margin 점검
-    - `default`·`default_lec` 양 테마 `.m2-cards` 블록 대상
-* 구현 명세:
-    - `.m2-cards` 그리드 `gap`·카드 내부 padding 축소하여 카드가 슬라이드 폭을 더 채우게
-    - `--m2-card-columns` auto-fit 시 카드 최소폭(`minmax`) 재조정 검토
-    - 수정 후 layoutTest·componentTest 등 카드 사용 프로젝트 빌드 회귀 확인
-
 # 📗 선택
 
 # ✅ 완료
+
+## Issue196. 카드 컴포넌트 여백 과다 (등록: 2026-05-21, 해결: 2026-05-21, commit: 81b57b3) ✅
+* 목적: `::: cards` 카드 컴포넌트가 슬라이드 영역 대비 여백이 과다함. 카드 박스 사이 간격·카드 내부 padding·그리드 외곽 여백이 커서 콘텐츠가 작게 보임.
+* 카테고리: Theme (`theme/_shared/components.css` `.m2-cards`)
+* 구현 (해결):
+    - `theme/_shared/components.css` `.m2-cards` (Issue191 공통 추출 후 단일 SSOT — `default`·`default_lec` 양 테마 공유):
+        - 그리드 `gap` 18px → 10px, `margin` 0.5em → 0.25em
+        - `grid-template-columns` minmax 200px → 180px (`auto-fit` 시 카드가 슬라이드 폭을 더 채움)
+        - 제목 밴드 `strong` padding 10/18px → 7/14px
+        - 카드 본문 `ul`/`ol` padding 12/18px → 8/13px
+* 검증: aTest·m2SlideStyle1_single·m2SlideStyle2_chapter 빌드 회귀 0. `expandCssImports` 인라인 전개 후 산출물 custom.css에 `minmax(180px`·`gap: 10px` 반영 확인. Playwright — aTest 카드 슬라이드 6장 3열 렌더, grid overflow -49(슬라이드 영역 내, 클리핑 0).
 
 ## Issue195. htmlArt hierarchy 연결선 카드 관통 + 도해 크기 (등록: 2026-05-21, 해결: 2026-05-21, commit: c0cc712) ✅
 * 목적: Issue193 d3 렌더 후속 — (1) hierarchy 노드 박스 배경이 반투명(`rgba(0,0,0,.045)`)이라 뒤를 지나는 `d3.linkVertical` 연결선이 박스를 관통해 보임 (2) 4타입 도해가 슬라이드 영역 대비 작아 여백 과다.
