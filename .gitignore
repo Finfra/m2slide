@@ -112,10 +112,11 @@ Temporary Items
 .apdisk
 # config.yml
 
-# theme: default·default_lec만 추적, 그 외 사용자 커스텀은 추적 제외
+# theme: default·default_lec·_shared만 추적, 그 외 사용자 커스텀은 추적 제외
 /theme/*
 !/theme/default/
 !/theme/default_lec/
+!/theme/_shared/
 
 # data: .gitkeep + SSOT 템플릿만 추적, 그 외 사용자 데이터는 추적 제외
 /data/*
