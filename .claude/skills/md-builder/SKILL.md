@@ -1,6 +1,6 @@
 ---
-title: md-updater
-description: authoring-pipeline 단계 4(md 생성) — AGENDA 골격 + refs/ 기반으로 슬라이드 본문(불릿·표·코드블록)을 자동 채우는 skill. 스타일·슬라이드 유형 패턴·콘텐츠 제한·검증 게이트·체크포인트는 data/md-updater/styles.yml에서 로드(v2 데이터-주도). md-rules + md-slide-rules + md-m2slide-rules 모두 준수. 빌드 lint 실패 시 1회 자동 수정.
+title: md-builder
+description: authoring-pipeline 단계 4(md 생성) — AGENDA 골격 + refs/ 기반으로 슬라이드 본문(불릿·표·코드블록)을 자동 채우는 skill. 스타일·슬라이드 유형 패턴·콘텐츠 제한·검증 게이트·체크포인트는 data/md-builder/styles.yml에서 로드(v2 데이터-주도). md-rules + md-slide-rules + md-m2slide-rules 모두 준수. 빌드 lint 실패 시 1회 자동 수정.
 date: 2026-05-19
 ---
 
@@ -10,28 +10,29 @@ m2slide authoring-pipeline 단계 4를 담당하는 skill. 단계 3 agenda-desig
 
 # 트리거
 
-* `/md-update <ProjectName>` 커맨드 또는 `md-updater` skill 직접 호출
+* `/md-build <ProjectName>` 커맨드 또는 `md-builder` skill 직접 호출
 * orchestrator agent의 단계 4 위임
 
 # 데이터 로드 (v2 — Issue171)
 
-본 skill은 `data/md-updater/styles.yml`을 SSOT로 사용합니다. 본 skill 본문은 **"본문을 어떻게 작성·검증·체크포인트하는가"**만 기술하고, 실제 정책(스타일·슬라이드 유형 패턴·콘텐츠 제한·검증 규칙·체크포인트 메시지)은 yml에서 로드합니다. 사용자가 yml을 수정하면 skill 본문 변경 없이 즉시 반영됩니다.
+본 skill은 `data/md-builder/styles.yml`을 SSOT로 사용합니다. 본 skill 본문은 **"본문을 어떻게 작성·검증·체크포인트하는가"**만 기술하고, 실제 정책(스타일·슬라이드 유형 패턴·콘텐츠 제한·검증 규칙·체크포인트 메시지)은 yml에서 로드합니다. 사용자가 yml을 수정하면 skill 본문 변경 없이 즉시 반영됩니다.
 
-* SSOT yml: [`../../../data/md-updater/styles.yml`](../../../data/md-updater/styles.yml)
+* SSOT yml: [`../../../data/md-builder/styles.yml`](../../../data/md-builder/styles.yml)
 * yml 최상위 키:
     - `styles[]` — 분야별 본문 스타일 (formal_lecture/casual_tutorial/keynote_punchy/conversational)
     - `style_selection_rules[]` — Info.md tone → style 자동 매핑
-    - `slide_patterns[]` — 슬라이드 유형별 본문 템플릿 (intro·concept·comparison·process·code·result·summary)
+    - `slide_patterns[]` — 슬라이드 유형별 본문 템플릿 (intro·concept·comparison·process·code·result·summary·qna_closing·exercise_closing·wrap_narration)
+    - `closing_slide_policy` — Info.md tone별 마지막 슬라이드 자동 append 정책 (강의→Q&A, 튜토리얼→실습, 내레이션→마무리, 발표/대화→Q&A, 기타→none)
     - `content_limits` — 슬라이드당 콘텐츠 양 제한 (bullets/code_lines/table 등)
     - `md_rules_compliance[]` — 준수해야 할 3-tier 룰 파일 매핑
     - `checkpoint` — chapter/single mode별 체크포인트 메시지 + skip_flag
     - `validation_rules` — 빌드 lint + content checks
-    - `header_preservation` — H1/H2 헤더 보존 정책
+    - `header_preservation` — H1/H2 헤더 보존 정책 (closing_append 예외 포함)
     - `layout_meta_policy` — layout 메타 미주입 정책
     - `report_template` — 종료 보고 양식
 
 * 보조 자산:
-    - `data/md-updater/templates/` — 슬라이드 유형별 보조 템플릿 (선택, 현재 빈 폴더)
+    - `data/md-builder/templates/` — 슬라이드 유형별 보조 템플릿 (선택, 현재 빈 폴더)
 
 # 핵심 원칙
 
@@ -41,10 +42,11 @@ m2slide authoring-pipeline 단계 4를 담당하는 skill. 단계 3 agenda-desig
 4. **사람 검토 루프** — `checkpoint.chapter_mode.per_chapter: true` 적용. orchestrator `--no-checkpoint` 시 일괄 진행.
 5. **빌드 lint 재시도** — `validation_rules.build_lint` 실패 시 `retry_count: 1` 자동 수정, 2회 실패 시 사용자 보고.
 6. **layout 메타 미주입** — `layout_meta_policy.inject_layout_directive: false`. `#layout-*` 메타는 단계 6 layout-selector 책임.
+7. **마지막 closing 슬라이드 자동 append** — `closing_slide_policy.enabled: true`이면 Info.md `tone`별 매핑(tone_mapping)에 따라 마지막 H2 슬라이드 뒤에 closing 슬라이드 1개 append. `header_preservation.exceptions.closing_append` 예외로 H2 추가 허용. 마지막 H2가 이미 closing pattern triggers 매칭 시 skip (중복 방지).
 
 # 적용 알고리즘 (styles.yml 활용)
 
-1. **yml 로드** — `Read data/md-updater/styles.yml` → 전체 키 추출
+1. **yml 로드** — `Read data/md-builder/styles.yml` → 전체 키 추출
 2. **입력 분석** — `Read Info.md` → `topic`, `audience`, `tone`, `goals[]` 추출. `Read AGENDA.md` 또는 `<Name>.md` → 챕터·슬라이드 헤더 목록 추출. `Glob refs/*.md` → 키워드별 발췌 인덱싱
 3. **mode 판정** — `markdown/AGENDA.md` 존재 → chapter, 단일 `<Name>.md` + frontmatter `type: ppt` → single
 4. **스타일 선택** — `style_selection_rules[]` 순차 평가 → `styles[].id` 매칭. tone 없으면 `default: formal_lecture`
@@ -53,18 +55,20 @@ m2slide authoring-pipeline 단계 4를 담당하는 skill. 단계 3 agenda-desig
     - 선택된 `slide_patterns[].body_template`에 변수 치환
     - `styles[].rules`·`forbidden` 적용 (어조·금지 표현)
     - `content_limits` 준수 (bullets_max·code_lines_max 등)
-7. **헤더 보존 검증** — `header_preservation`에 따라 H1/H2 변경 여부 확인. 변경 시 reject + 재작성
-8. **md 규칙 검증** — `md_rules_compliance[]` 항목별 자동 검사
-9. **체크포인트** — `checkpoint.chapter_mode.per_chapter: true`이면 챕터별, single mode는 전체 1회
-10. **빌드 검증** — `validation_rules.build_lint` + `build_compile` 순차 실행
-11. **종료 보고** — `report_template` 양식
+7. **마지막 closing 슬라이드 append** — `closing_slide_policy.enabled: true`이고 Info.md `tone`이 `tone_mapping`에 매칭되면 마지막 H2 뒤에 매핑된 `append_pattern` body_template을 `---` 구분자와 함께 append. `chapter_mode_target: last_chapter_only` (chapter mode는 마지막 챕터 파일만). 마지막 H2 제목이 이미 해당 pattern의 triggers에 매칭 시 skip
+8. **헤더 보존 검증** — `header_preservation`에 따라 H1/H2 변경 여부 확인. `exceptions.closing_append`는 허용. 그 외 변경 시 reject + 재작성
+9. **md 규칙 검증** — `md_rules_compliance[]` 항목별 자동 검사
+10. **체크포인트** — `checkpoint.chapter_mode.per_chapter: true`이면 챕터별, single mode는 전체 1회
+11. **빌드 검증** — `validation_rules.build_lint` + `build_compile` 순차 실행
+12. **종료 보고** — `report_template` 양식
 
 # 확장 지점
 
-사용자는 `data/md-updater/styles.yml`을 직접 수정하여 다음을 SCAR 변경 없이 적용:
+사용자는 `data/md-builder/styles.yml`을 직접 수정하여 다음을 SCAR 변경 없이 적용:
 
 * **신규 스타일 추가** — `styles[]`에 entry 추가 (id/label/tone/person/rules/forbidden)
 * **tone 매핑 변경** — `style_selection_rules[]`에 if/use entry 추가·수정
+* **closing 슬라이드 정책 변경** — `closing_slide_policy.tone_mapping[]`에서 tone→pattern 매핑 추가·삭제·변경. 비활성화는 `closing_slide_policy.enabled: false`. 신규 closing pattern은 `slide_patterns[]`에 추가 후 매핑
 * **슬라이드 유형 패턴 추가** — `slide_patterns[]`에 entry 추가 (triggers + body_template)
 * **콘텐츠 제한 조정** — `content_limits.bullets_max`·`code_lines_max` 등 변경
 * **3-tier 룰 매핑 변경** — `md_rules_compliance[]` source 추가
@@ -72,7 +76,7 @@ m2slide authoring-pipeline 단계 4를 담당하는 skill. 단계 3 agenda-desig
 * **검증 게이트** — `validation_rules.content_checks[]` 항목 추가
 * **헤더 보존 정책** — `header_preservation.modify_allowed` 변경 (예: H3까지 보존)
 * **종료 보고 양식** — `report_template` 변경
-* **보조 템플릿** — `data/md-updater/templates/<slide_type>.md` 추가 → `slide_patterns[].body_template_file: ...` 참조
+* **보조 템플릿** — `data/md-builder/templates/<slide_type>.md` 추가 → `slide_patterns[].body_template_file: ...` 참조
 
 본 skill 호출 시점에 yml을 매번 Read하므로, 수정 후 다음 호출부터 즉시 반영.
 
@@ -80,7 +84,7 @@ m2slide authoring-pipeline 단계 4를 담당하는 skill. 단계 3 agenda-desig
 
 * 필수: `Projects/<Name>/Info.md` (단계 1 산출 — `topic`/`audience`/`tone`/`goals[]`)
 * 필수: `Projects/<Name>/markdown/AGENDA.md` (chapter mode) 또는 `<Name>.md` skeleton (single mode) (단계 3 산출)
-* 필수: [`data/md-updater/styles.yml`](../../../data/md-updater/styles.yml) (스타일·패턴·검증 SSOT)
+* 필수: [`data/md-builder/styles.yml`](../../../data/md-builder/styles.yml) (스타일·패턴·검증 SSOT)
 * 선택: `Projects/<Name>/refs/*.md` (본문 작성 시 발췌 활용)
 * 선택: orchestrator 인자 `--no-checkpoint`
 
@@ -95,7 +99,7 @@ m2slide authoring-pipeline 단계 4를 담당하는 skill. 단계 3 agenda-desig
 
 * `Projects/<Name>/Info.md` 존재 확인. 없으면 단계 1 위임 권고
 * `markdown/AGENDA.md` 또는 `<Name>.md` skeleton 존재 확인. 없으면 단계 3 위임 권고
-* yml [`data/md-updater/styles.yml`](../../../data/md-updater/styles.yml) 존재 확인. 없으면 작업 중단 (yml SSOT)
+* yml [`data/md-builder/styles.yml`](../../../data/md-builder/styles.yml) 존재 확인. 없으면 작업 중단 (yml SSOT)
 
 ## 2. Info.md + AGENDA 파싱
 
@@ -162,7 +166,8 @@ Glob refs/*.md → 키워드별 발췌 인덱싱
 - [ ] 슬라이드 구분자 `---` 일관성 (`content_checks.slide_separator_consistency`)
 - [ ] 코드블록 언어 지정 (`content_checks.code_block_language_specified`)
 - [ ] 이미지 alt 텍스트 (`content_checks.image_alt_text_required`)
-- [ ] H1/H2 헤더 변경 없음 (`header_preservation`)
+- [ ] H1/H2 헤더 변경 없음 (`header_preservation`) — `closing_append` 예외 외
+- [ ] tone 매칭 시 마지막 closing 슬라이드 1개 append됨 (`closing_slide_policy`), 중복 시 skip
 - [ ] 사용자 검토 승인 (orchestrator `--no-checkpoint` 미지정 시)
 
 # Out of scope
@@ -180,7 +185,7 @@ Glob refs/*.md → 키워드별 발췌 인덱싱
 
 # 참조
 
-* SSOT yml: [`data/md-updater/styles.yml`](../../../data/md-updater/styles.yml) (스타일·패턴·검증)
+* SSOT yml: [`data/md-builder/styles.yml`](../../../data/md-builder/styles.yml) (스타일·패턴·검증)
 * 글로벌 md 규칙: [`~/.claude/rules/md-rules.md`](../../../../../.claude/rules/md-rules.md)
 * 슬라이드 공통 규칙: [`~/.claude/rules/md-slide-rules.md`](../../../../../.claude/rules/md-slide-rules.md)
 * m2slide 마크다운 규칙: [`../../rules/md-m2slide-rules.md`](../../rules/md-m2slide-rules.md)

@@ -6,7 +6,7 @@ model: sonnet
 color: purple
 ---
 
-당신은 m2slide authoring-pipeline 단계 5(media creater)를 담당하는 agent입니다. md-updater가 완성한 슬라이드 본문에서 시각화 후보를 식별하고 적절한 media 형식을 결정합니다.
+당신은 m2slide authoring-pipeline 단계 5(media creater)를 담당하는 agent입니다. md-builder가 완성한 슬라이드 본문에서 시각화 후보를 식별하고 적절한 media 형식을 결정합니다.
 
 # 데이터 로드 (v2 — Issue172)
 

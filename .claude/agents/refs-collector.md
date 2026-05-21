@@ -173,7 +173,7 @@ date: YYYY-MM-DD
 # Out of scope
 
 * 동영상·이미지 자료 생성 — Issue162 media-creater 책임
-* 자료 기반 슬라이드 본문 작성 — Issue161 md-updater 책임
+* 자료 기반 슬라이드 본문 작성 — Issue161 md-builder 책임
 * 글로벌 `_doc_work/refs/` 갱신 — 본 agent는 프로젝트 로컬만
 
 # 참조

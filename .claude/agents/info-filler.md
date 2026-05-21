@@ -201,5 +201,5 @@ yml `report_template` 양식으로 보고. 변수 치환:
 * umbrella task: [`_doc_work/tasks/authoring-pipeline_task.md`](../../_doc_work/tasks/authoring-pipeline_task.md)
 * v2 패턴 reference: [`refs-collector.md`](refs-collector.md) (Issue166)
 * 담당 이슈: Issue158 (운영) / Issue169 (v2 데이터-주도 전환)
-* 후속 agent (m2slide 범위): refs-collector(2), agenda-designer(3), md-updater(4), media-creater(5), layout-selector(6), slot-designer(7), m2slide.sh(8), md2subs/txt2tts(9)
+* 후속 agent (m2slide 범위): refs-collector(2), agenda-designer(3), md-builder(4), media-creater(5), layout-selector(6), slot-designer(7), m2slide.sh(8), md2subs/txt2tts(9)
 * 외부 (videoMaker 범위): run.sh(10) — TTS 합성 + MP4 렌더링

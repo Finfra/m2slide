@@ -247,7 +247,7 @@ grep -rE '\{\{[a-zA-Z]' Projects/<Name>/slide/*.html | grep -v markmap
 
 * 신규 slot 카탈로그 항목 추가 — `data/slot_*.yml` SSOT 변경은 별도 이슈
 * layout 메타 변경 — 단계 6 layout-selector 책임
-* 본문 텍스트 변경 — 단계 4 md-updater 책임
+* 본문 텍스트 변경 — 단계 4 md-builder 책임
 * 다이어그램·이미지 생성 — 단계 5 media-creater 책임
 
 # 참조

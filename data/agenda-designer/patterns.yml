@@ -217,7 +217,7 @@ checkpoint:
     - 챕터/슬라이드 수: {count}
     - 위치: {paths}
 
-    승인하면 단계 4 md-updater로 진행합니다. 수정 필요하면 알려주세요.
+    승인하면 단계 4 md-builder로 진행합니다. 수정 필요하면 알려주세요.
   skip_flag: "--no-checkpoint"      # orchestrator가 전파
   on_reject:
     action: ask_user_modifications
@@ -233,4 +233,4 @@ report_template: |
   * 산출 파일: {file_count}개
       - {agenda_path}
       - {chapter_paths}
-  * 다음 단계: 단계 4 md-updater (--no-checkpoint 미지정 시 사용자 승인 대기)
+  * 다음 단계: 단계 4 md-builder (--no-checkpoint 미지정 시 사용자 승인 대기)

@@ -31,7 +31,7 @@ color: yellow
 # 핵심 원칙
 
 1. **데이터-주도** — mode 판정·outline·템플릿·검증 모두 yml에서 Read. SCAR 본문 하드코딩 금지.
-2. **헤더 골격만 작성** — 본문 작성은 단계 4 md-updater 책임. 본 agent는 H1/H2 제목 + frontmatter까지만.
+2. **헤더 골격만 작성** — 본문 작성은 단계 4 md-builder 책임. 본 agent는 H1/H2 제목 + frontmatter까지만.
 3. **md-m2slide-rules 준수** — yml `validation_rules.shared`가 해당 룰 명시. chapter mode `AGENDA.md`는 인라인 링크 형식, single mode는 frontmatter `type: ppt` 필수.
 4. **사용자 검토 체크포인트** — `checkpoint.template` 적용. orchestrator `--no-checkpoint` 시 생략.
 5. **비파괴 갱신** — 기존 산출물 있으면 사용자 확인 후 덮어쓰기 (`on_reject` 정책).
@@ -203,7 +203,7 @@ orchestrator `--no-checkpoint` 미지정 시 `checkpoint.template` 메시지 출
 
 # Out of scope
 
-* 슬라이드 본문 작성 — Issue161/171 md-updater 책임 (단계 4)
+* 슬라이드 본문 작성 — Issue161/171 md-builder 책임 (단계 4)
 * 다이어그램·이미지 — Issue162/172 media-creater 책임 (단계 5)
 * layout 메타 주입 — Issue155/173 layout-selector 책임 (단계 6)
 * slot 주입 — Issue163/174 slot-designer 책임 (단계 7)

@@ -1,4 +1,4 @@
-# md-updater v2 SSOT — 본문 작성 스타일·슬라이드 유형별 패턴·콘텐츠 제한·검증 게이트·체크포인트.
+# md-builder v2 SSOT — 본문 작성 스타일·슬라이드 유형별 패턴·콘텐츠 제한·검증 게이트·체크포인트.
 # 사용자가 본 파일을 수정하면 SCAR 본문 변경 없이 즉시 반영됨 (skill이 호출 시점에 매번 Read).
 # Issue171 (Issue169 info-filler 패턴 적용).
 ---
@@ -211,7 +211,7 @@ slide_patterns:
 # ============================================================================
 # 3. Info.md tone별 마지막 슬라이드 자동 추가 정책
 # ============================================================================
-# md-updater는 본문 채움이 원칙이나, tone별로 명시된 closing 슬라이드는
+# md-builder는 본문 채움이 원칙이나, tone별로 명시된 closing 슬라이드는
 # 마지막 H2 슬라이드 뒤에 append 허용 (header_preservation 예외 — closing_append 항목).
 # 사용자가 마지막 슬라이드를 직접 작성했으면(키워드 매칭 시) 중복 추가 안 함.
 closing_slide_policy:
@@ -360,7 +360,7 @@ component_syntax:
 # 10. 종료 보고 양식
 # ============================================================================
 report_template: |
-  ## md-updater 완료
+  ## md-builder 완료
   * mode: {mode}
   * 챕터/슬라이드 수: {chapter_count} / {slide_count}
   * 적용 스타일: {style_id} ({style_label})

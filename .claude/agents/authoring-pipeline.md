@@ -50,7 +50,7 @@ Projects/<Name>/                # 대상 프로젝트 경로 (필수)
 | 1    | 기획                | (예정) info-filler agent (Issue158)                        | 등록됨 (agent 미구현)  | `Projects/<Name>/Info.md` 존재 + 필수 슬롯 채움                     |
 | 2    | 데이터 수집         | (예정) refs-collector agent (Issue159)                     | 등록됨 (agent 미구현)  | `Projects/<Name>/refs/index.md` 존재 + 최소 1건 자료                |
 | 3    | 목차·장표 제목 설정 | (예정) agenda-designer agent (Issue160)                    | 등록됨 (agent 미구현)  | `markdown/AGENDA.md` 또는 `<Name>.md` skeleton 존재                 |
-| 4    | md 생성             | (예정) md-updater skill (Issue161)                         | 등록됨 (skill 미구현)  | `<Name>.md` 또는 `markdown/*.md` 존재 + frontmatter `type: ppt`     |
+| 4    | md 생성             | (예정) md-builder skill (Issue161)                         | 등록됨 (skill 미구현)  | `<Name>.md` 또는 `markdown/*.md` 존재 + frontmatter `type: ppt`     |
 | 5    | media creater       | (예정) media-creater agent (Issue162)                      | 등록됨 (agent 미구현)  | `.md` 내 `![](./img/...)` 참조 파일 모두 존재                       |
 | 6    | layout selector     | `.claude/agents/layout-selector` (Issue155)                | **운영**               | `<X>.ppt.md` 파생본 존재 + `#layout-*` 메타 화이트리스트 통과       |
 | 7    | slot designer       | (예정) slot-designer agent (Issue163)                      | 등록됨 (agent 미구현)  | `*.ppt.md` 내 `{{slotName}}` 미치환 없이 빌드 성공                  |
