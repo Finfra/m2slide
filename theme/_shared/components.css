@@ -172,6 +172,11 @@
   --htmlart-arrow: rgba(0, 0, 0, 0.5);
   margin: 0.6em 0;
   font-size: 0.92em;
+  /* Issue197: .contents-body(flex column)의 bullet 다음 잔여 세로 공간을 도해가 채움
+     — .media-container 와 동일 메커니즘. 비-flex 부모에선 무시(inline style fallback). */
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
 }
 .reveal .m2-htmlart ul,
 .reveal .m2-htmlart ol {
