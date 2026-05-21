@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 198
+* Issue HWM: 199
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -32,6 +32,15 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue199. htmlArt columns 슬롯 안 도해 높이 0 붕괴 (등록: 2026-05-21, 해결: 2026-05-21, commit: 123e12c) ✅
+* 목적: `::: {.column}` 슬롯 안에 넣은 htmlArt 도해(htmlArtTest #/7 타입 교체 데모)가 raw 텍스트(`process:`·`pyramid:`)만 남고 SVG 가 0 높이로 사라짐. 사용자 브라우저 확인 중 발견.
+* 카테고리: Theme (`_shared/components.css`) + Generator (`htmlart_dispatch.js`)
+* 구현 (해결):
+    - 원인: Issue197 이 svg 를 `height:100%` 로 통일 — flex 부모 전제. columns 컬럼은 base.css `.m2-cols{align-items:center}` 때문에 높이가 콘텐츠 기준으로 붕괴 → `.m2-col`(flex column) 안 `.m2-htmlart`(flex:1 1 0, basis 0)가 grow 공간 없어 0 → svg `height:100%` 가 0 참조
+    - `theme/_shared/components.css` — `.m2-cols:has(.m2-htmlart)` 를 `align-items:stretch` 로 override. htmlArt 있는 columns 만 컬럼을 본문 높이로 stretch (base.css 미수정 — 가드 회피, components.css specificity override)
+    - `htmlart_dispatch.js` — 렌더 후 svg viewBox 비율을 컨테이너 `aspect-ratio` inline 으로 부여 (비-flex 부모 완전 fallback. flex 부모에선 flex:1 우선해 무시)
+* 검증: `node --test` 144/144 통과. htmlArtTest #/7 columns 안 process·pyramid 도해 정상 렌더(elH 0→252px). contents-body 직속 htmlArt 회귀 0(process contentFill 65→67%). aTest·m2SlideStyle2_chapter 빌드 회귀 0.
 
 ## Issue198. htmlArt 도해 letterbox — viewBox aspect 슬라이드 영역 미정합 + 컨테이너 fill 통일 (등록: 2026-05-21, 해결: 2026-05-21, commit: 6bd083a) ✅
 * 목적: Issue197(flex 잔여공간 채움) 후속. htmlArt 4타입 도해가 여전히 슬라이드 콘텐츠 영역의 30~64%만 채움. Playwright 측정으로 두 겹 원인 확정 — (1) `.m2-htmlart` 컨테이너가 `flex:1 1 0` 인데도 `margin:0.6em 0` 때문에 `.contents-body` 의 64%만 점유 (2) d3 SVG viewBox aspect 가 슬라이드 영역(~3:1)과 불일치하여 컨테이너 안에서 또 letterbox.
