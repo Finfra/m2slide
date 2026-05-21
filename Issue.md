@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 188
+* Issue HWM: 189
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -24,6 +24,18 @@
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
 
 # 🚧 진행중
+
+## Issue189. htmlArt 도해 시각 개선 — process 간격·화살표, cycle 비율, hierarchy 가로 트리 (등록: 2026-05-21)
+* 목적: Issue188 직후 사용자 피드백 반영. process는 박스 간격 부족·화살표 미가시, cycle은 너비 부족·노드 높이 과다로 원형 안 보임, hierarchy는 세로 트리라 markmap과 차별 없음 — htmlArt의 가치는 가로 표현.
+* arch: `_doc_arch/htmlArt.md`
+* 카테고리: Generator (`markdown.js`) + Theme (`default`·`default_lec` slide.css)
+* 상세:
+    - process: `> ul` gap 확대 + 화살표 크게·진하게 (`--htmlart-arrow` 변수 신설)
+    - cycle: 컨테이너 너비 확대 + 노드 높이 압축(서브텍스트 소형화)으로 원형 가독성 확보
+    - hierarchy: 세로 들여쓰기 트리 → **가로 트리**(좌→우 박스 노드 + 연결선). markmap과 역할 분리
+* 구현 명세:
+    - hierarchy 박스 노드: `markdown.js` preprocessPandocDiv가 htmlart hierarchy 블록의 bullet 텍스트를 `<span class="ha-node">`로 래핑 (bare text node는 박스 불가) — hierarchy 한정
+    - 검증: `Projects/htmlArtTest` 빌드 + 브라우저 렌더 + `node --test`
 
 # 📕 중요
 

@@ -1360,6 +1360,7 @@ body.agenda-page .agenda-frame {
   --htmlart-fg: var(--kn-text, #ffffff);
   --htmlart-box-bg: rgba(0, 0, 0, 0.045);
   --htmlart-box-border: rgba(0, 0, 0, 0.16);
+  --htmlart-arrow: rgba(0, 0, 0, 0.5);
   margin: 0.6em 0;
   font-size: 0.92em;
 }
@@ -1384,7 +1385,7 @@ body.agenda-page .agenda-frame {
   display: flex;
   flex-wrap: wrap;
   align-items: stretch;
-  gap: 26px 30px;
+  gap: 34px 64px;
 }
 .reveal .htmlart-process > ul > li {
   flex: 1 1 0;
@@ -1399,12 +1400,12 @@ body.agenda-page .agenda-frame {
 .reveal .htmlart-process > ul > li:not(:last-child)::after {
   content: "";
   position: absolute;
-  right: -24px;
+  right: -45px;
   top: 50%;
   transform: translateY(-50%);
-  border-top: 9px solid transparent;
-  border-bottom: 9px solid transparent;
-  border-left: 14px solid var(--htmlart-accent);
+  border-top: 13px solid transparent;
+  border-bottom: 13px solid transparent;
+  border-left: 22px solid var(--htmlart-arrow);
 }
 .reveal section[class*="layout-"] .htmlart-process > ul > li ul {
   margin: 7px 0 0 0;
@@ -1446,33 +1447,63 @@ body.agenda-page .agenda-frame {
   opacity: 0.9;
 }
 
-/* ── hierarchy — 들여쓰기 트리 + 가이드선 ───────────────────────────── */
+/* ── hierarchy — 가로 트리 (좌→우, 박스 노드 + 연결선) ──────────────── */
+/* 세로 트리는 markmap 영역 — htmlArt hierarchy 는 가로 표현이 목적 */
 .reveal .htmlart-hierarchy {
-  font-size: 0.8em;
+  font-size: 0.84em;
+  overflow-x: auto;
 }
+.reveal .htmlart-hierarchy ul {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+.reveal section[class*="layout-"] .htmlart-hierarchy li {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
+  line-height: 1.35;
+}
+.reveal .htmlart-hierarchy .ha-node {
+  flex: 0 0 auto;
+  background: var(--htmlart-box-bg);
+  border: 1px solid var(--htmlart-box-border);
+  border-radius: 7px;
+  padding: 7px 14px;
+  white-space: nowrap;
+}
+.reveal .htmlart-hierarchy > ul > li > .ha-node {
+  background: var(--htmlart-accent);
+  color: var(--htmlart-fg);
+  font-weight: 700;
+}
+/* 자식 컨테이너 — 부모 오른쪽, 세로 bus */
 .reveal section[class*="layout-"] .htmlart-hierarchy ul ul {
-  margin-left: 9px;
-  padding-left: 18px;
+  position: relative;
+  margin-left: 28px;
+  padding-left: 22px;
   border-left: 2px solid var(--htmlart-box-border);
 }
-.reveal .htmlart-hierarchy li {
-  position: relative;
-  padding: 1px 0 1px 4px;
-  line-height: 1.32;
+/* 부모 노드 → 자식 bus 가로 연결 */
+.reveal .htmlart-hierarchy ul ul::before {
+  content: "";
+  position: absolute;
+  left: -28px;
+  top: 50%;
+  width: 28px;
+  height: 2px;
+  background: var(--htmlart-box-border);
 }
-.reveal .htmlart-hierarchy > ul > li {
-  font-weight: 600;
-}
-.reveal .htmlart-hierarchy ul ul > li {
-  padding-left: 16px;
-  font-weight: 400;
-}
+/* bus → 각 자식 노드 가로 tick */
 .reveal section[class*="layout-"] .htmlart-hierarchy ul ul > li::before {
   content: "";
   position: absolute;
-  left: 0;
-  top: 0.85em;
-  width: 11px;
+  left: -22px;
+  top: 50%;
+  width: 22px;
   height: 2px;
   background: var(--htmlart-box-border);
 }
@@ -1480,9 +1511,9 @@ body.agenda-page .agenda-frame {
 /* ── cycle — 원형 배치 (--htmlart-n 기반 등간격) ────────────────────── */
 .reveal .htmlart-cycle > ul {
   position: relative;
-  width: 470px;
-  height: 470px;
-  margin: 0.3em auto;
+  width: 540px;
+  height: 540px;
+  margin: 0.2em auto;
 }
 .reveal .htmlart-cycle > ul::before {
   content: "\21BB";
@@ -1498,14 +1529,14 @@ body.agenda-page .agenda-frame {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 150px;
-  margin: -32px 0 0 -75px;
-  --htmlart-r: 170px;
+  width: 162px;
+  margin: -30px 0 0 -81px;
+  --htmlart-r: 205px;
   box-sizing: border-box;
   background: var(--htmlart-box-bg);
   border: 2px solid var(--htmlart-accent);
-  border-radius: 40px;
-  padding: 9px 10px;
+  border-radius: 36px;
+  padding: 7px 10px;
   text-align: center;
   font-weight: 600;
   transform:
@@ -1522,9 +1553,10 @@ body.agenda-page .agenda-frame {
 .reveal .htmlart-cycle > ul > li:nth-child(7) { --htmlart-i: 6; }
 .reveal .htmlart-cycle > ul > li:nth-child(8) { --htmlart-i: 7; }
 .reveal section[class*="layout-"] .htmlart-cycle > ul > li ul {
-  margin: 2px 0 0 0;
+  margin: 1px 0 0 0;
   padding-left: 0;
   font-weight: 400;
-  font-size: 0.72em;
-  opacity: 0.85;
+  font-size: 0.62em;
+  line-height: 1.25;
+  opacity: 0.8;
 }
