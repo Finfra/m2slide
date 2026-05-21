@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 196
+* Issue HWM: 197
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -32,6 +32,16 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue197. htmlArt 도해 크기 산정이 상단 텍스트 미반영 — 컨테이너 잔여공간 채움 (등록: 2026-05-21, 해결: 2026-05-21, commit: 412c194) ✅
+* 목적: htmlArt 4타입 도해 SVG 가 `max-height:Nvh`(고정 뷰포트 비율)로 크기를 정해, 같은 슬라이드 상단의 제목·bullet 텍스트가 점유한 높이를 반영하지 못함. vh 를 키우면 텍스트+도해 합계가 슬라이드를 초과해 잘리고(clip), 낮추면 도해가 작아짐. 4타입 공통 — Issue195 의 "max-height 상향"은 증상만 건드린 잘못된 처방.
+* 카테고리: Generator (`htmlart_dispatch.js`) + Theme (`_shared/components.css`)
+* 구현 (해결):
+    - `theme/_shared/components.css` `.m2-htmlart` 에 `flex:1 1 0; min-height:0; overflow:hidden` 추가 — `.contents-body`(이미 flex column)의 bullet `<ul>` 다음 잔여 세로 공간을 도해가 차지(`.media-container` 와 동일 메커니즘). 비-flex 부모에선 무시(fallback)
+    - `htmlart_dispatch.js` 4타입 svg inline style 통일 — `height:auto;max-height:Nvh`(52/62/70/74) → `height:100%;max-height:92vh`. flex 컨테이너에선 잔여 공간 정확히 채움, 비-flex fallback 에선 aspect+92vh cap
+    - `preserveAspectRatio` 기본값(meet) → letterbox, clip 구조적으로 불가
+* 검증: `node -c` 통과. htmlArtTest 재빌드 성공. 산출물 index.html 에 `height:100%;max-height:92vh` 4건(4타입)·custom.css 에 `flex: 1 1 0` 반영 확인. 시각 확인은 Chrome 수동(Playwright 브라우저 잠금).
+* 비고: 디버깅 지식은 `_doc_work/debug_TECH.md` § htmlArt·SVG 컴포넌트 크기 에 사례 박제. Fix 커밋에 cycle ↻ 심벌 확대(Issue195 피드백 잔여)·hierarchy 노드 간격 조정 동반.
 
 ## Issue196. 카드 컴포넌트 여백 과다 (등록: 2026-05-21, 해결: 2026-05-21, commit: 81b57b3) ✅
 * 목적: `::: cards` 카드 컴포넌트가 슬라이드 영역 대비 여백이 과다함. 카드 박스 사이 간격·카드 내부 padding·그리드 외곽 여백이 커서 콘텐츠가 작게 보임.
