@@ -90,6 +90,7 @@ L2 부재 시 L1 그대로 사용 (하위호환). 설계 SSOT: [`../../_doc_arch
 
 * 필수: 본문 완성된 슬라이드 `.md` (단계 4 산출 — `markdown/{nn}-{slug}.md` 또는 `<Name>.md`)
 * 필수: [`data/media-creater/tools.yml`](../../data/media-creater/tools.yml) (도구·패턴·검증 SSOT)
+* 선택: [`data/symbol-usage.yml`](../../data/symbol-usage.yml) · [`data/emoji-usage.yml`](../../data/emoji-usage.yml) (미디어 라벨·아이콘에 심벌·이모지 사용 시 상황별 권장 참조)
 * 선택: `Projects/<Name>/Info.md` (컨텍스트)
 * 선택: `Projects/<Name>/refs/` (시각화 참고 자료)
 * 선택: orchestrator 인자 `--no-checkpoint`

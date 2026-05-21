@@ -1,0 +1,85 @@
+# data/emoji-usage.yml — 이모지 사용 정의 SSOT
+#
+# m2slide "이모지" 구성요소 = 유니코드 그림문자 (라이브러리·CDN 불필요, 브라우저 네이티브 렌더).
+# 슬라이드 본문에 이모지를 넣을 때 "어떤 상황에 무엇을 쓰는지"의 단일 출처.
+#
+# 소비처 (데이터-주도 SCAR): 단계 4 `md-builder`(본문 작성), 단계 5 `media-creater`(미디어 라벨).
+# 에이전트는 본 파일을 호출 시점에 Read → situation 매칭 → primary 우선 사용.
+# 사용자가 본 파일을 수정하면 SCAR 본문 변경 없이 다음 호출부터 즉시 반영.
+#
+# 설계 SSOT: _doc_arch/slide-components.md (Visual 계열 "이모지")
+---
+version: 1
+component: 이모지
+note: "유니코드 네이티브 — 라이브러리·CDN 불필요. 변환 단계 없이 그대로 표시"
+
+# 사용 원칙
+principles:
+  - "친근감·시각적 리듬 보조. 의미 전달이 아니라 분위기·강조 보조 수단"
+  - "공식 강의체 데크는 절제 (슬라이드당 1~2개), 캐주얼 튜토리얼은 허용 폭 넓음"
+  - "제목·핵심 포인트·상태 표시 위주. 본문 문장 중간 남발 금지"
+  - "situation에 매칭되는 이모지가 없으면 넣지 않음 (억지 삽입 금지)"
+  - "같은 의미는 데크 전체에서 동일 이모지로 통일"
+
+# 상황별 권장 이모지 — 에이전트는 situation 의미 매칭 후 primary 우선, 필요 시 alts에서 선택
+usages:
+  - situation: 강조·핵심 포인트
+    primary: "🎯"
+    alts: ["💡", "⭐"]
+  - situation: 시작·출발·런칭
+    primary: "🚀"
+    alts: ["✨"]
+  - situation: 완료·성공
+    primary: "✅"
+    alts: ["🎉", "👍"]
+  - situation: 경고·주의
+    primary: "⚠️"
+    alts: ["❗"]
+  - situation: 실패·오류·금지
+    primary: "❌"
+    alts: ["🚫"]
+  - situation: 아이디어·팁
+    primary: "💡"
+    alts: ["✨", "📌"]
+  - situation: 정보·참고
+    primary: "📌"
+    alts: ["📋", "ℹ️"]
+  - situation: 질문·궁금증
+    primary: "❓"
+    alts: ["🤔"]
+  - situation: 단계·체크리스트
+    primary: "✔️"
+    alts: ["1️⃣", "🔢"]
+  - situation: 파일·문서
+    primary: "📄"
+    alts: ["📁", "📚"]
+  - situation: 데이터·통계
+    primary: "📊"
+    alts: ["📈", "📉"]
+  - situation: 시간·일정
+    primary: "⏰"
+    alts: ["⏳", "📅"]
+  - situation: 도구·설정
+    primary: "🔧"
+    alts: ["⚙️"]
+  - situation: 코드·개발
+    primary: "💻"
+    alts: ["⌨️", "🖥️"]
+  - situation: 검색·탐색
+    primary: "🔍"
+    alts: ["👀"]
+  - situation: 주목·관심 유도
+    primary: "👀"
+    alts: ["📢"]
+  - situation: 인기·중요·강한 강조
+    primary: "🔥"
+    alts: ["💯"]
+  - situation: 학습·교육
+    primary: "📚"
+    alts: ["🎓", "✏️"]
+
+# 톤별 사용 가이드 — data/md-builder/styles.yml 의 styles[].tone 와 연동
+tone_guide:
+  formal_lecture: "상태(✅ ⚠️ ❌)·핵심(🎯) 위주, 슬라이드당 1~2개. 표정·감정 이모지 지양"
+  casual_tutorial: "감정·리듬 이모지 허용. 그래도 한 슬라이드 과다 금지"
+  reference_doc: "이모지 최소화 — 상태 표시 외 지양"

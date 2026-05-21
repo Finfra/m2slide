@@ -72,6 +72,7 @@ L2 부재 시 L1 그대로 사용 (하위호환). 설계 SSOT: [`../../../_doc_a
     - 선택된 `slide_patterns[].body_template`에 변수 치환
     - `styles[].rules`·`forbidden` 적용 (어조·금지 표현)
     - `content_limits` 준수 (bullets_max·code_lines_max 등)
+    - **심벌·이모지 삽입** — 본문에 심벌(`:fa-name:`)·이모지를 넣을 때 `data/symbol-usage.yml`·`data/emoji-usage.yml`의 `usages[].situation` 매핑을 참조. 매칭되는 situation이 없으면 삽입하지 않음(억지 금지). 개수·절제는 선택 tone과 `emoji-usage.yml.tone_guide`·`symbol-usage.yml.principles` 준수
 7. **마지막 closing 슬라이드 append** — `closing_slide_policy.enabled: true`이고 Info.md `tone`이 `tone_mapping`에 매칭되면 마지막 H2 뒤에 매핑된 `append_pattern` body_template을 `---` 구분자와 함께 append. `chapter_mode_target: last_chapter_only` (chapter mode는 마지막 챕터 파일만). 마지막 H2 제목이 이미 해당 pattern의 triggers에 매칭 시 skip
 8. **헤더 보존 검증** — `header_preservation`에 따라 H1/H2 변경 여부 확인. `exceptions.closing_append`는 허용. 그 외 변경 시 reject + 재작성
 9. **md 규칙 검증** — `md_rules_compliance[]` 항목별 자동 검사
@@ -102,6 +103,7 @@ L2 부재 시 L1 그대로 사용 (하위호환). 설계 SSOT: [`../../../_doc_a
 * 필수: `Projects/<Name>/Info.md` (단계 1 산출 — `topic`/`audience`/`tone`/`goals[]`)
 * 필수: `Projects/<Name>/markdown/AGENDA.md` (chapter mode) 또는 `<Name>.md` skeleton (single mode) (단계 3 산출)
 * 필수: [`data/md-builder/styles.yml`](../../../data/md-builder/styles.yml) (스타일·패턴·검증 SSOT)
+* 선택: [`data/symbol-usage.yml`](../../../data/symbol-usage.yml) · [`data/emoji-usage.yml`](../../../data/emoji-usage.yml) (본문 심벌·이모지 삽입 시 상황별 권장 SSOT)
 * 선택: `Projects/<Name>/refs/*.md` (본문 작성 시 발췌 활용)
 * 선택: orchestrator 인자 `--no-checkpoint`
 

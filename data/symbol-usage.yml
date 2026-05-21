@@ -1,0 +1,92 @@
+# data/symbol-usage.yml — 심벌(Font Awesome) 사용 정의 SSOT
+#
+# m2slide "심벌" 구성요소 = Font Awesome `:fa-{name}:` 인라인 마커.
+# 슬라이드 본문에 심벌을 넣을 때 "어떤 상황에 무엇을 쓰는지"의 단일 출처.
+#
+# 소비처 (데이터-주도 SCAR): 단계 4 `md-builder`(본문 작성), 단계 5 `media-creater`(미디어 라벨).
+# 에이전트는 본 파일을 호출 시점에 Read → situation 매칭 → primary 우선 사용.
+# 사용자가 본 파일을 수정하면 SCAR 본문 변경 없이 다음 호출부터 즉시 반영.
+#
+# 설계 SSOT: _doc_arch/slide-components.md (Visual 계열 "심벌"), _doc_arch/component-libraries.md
+# 라이브러리 등록: data/component-libraries.yml (id: fontawesome)
+---
+version: 1
+component: 심벌
+syntax: ":fa-{name}:"
+set: "Font Awesome 6 — solid"
+library: fontawesome
+
+# 사용 원칙 — 에이전트가 심벌 삽입 여부·개수를 판단하는 기준
+principles:
+  - "강조·목록 마커·상태 표시의 보조 수단. 본문 가독성을 해치지 않는 선에서 절제 사용"
+  - "공식 강의체 데크는 슬라이드당 2~3개 이하 권장"
+  - "같은 의미는 데크 전체에서 동일 심벌로 통일 (예: 완료는 항상 check-circle)"
+  - "situation에 매칭되는 심벌이 없으면 심벌을 넣지 않음 (억지 삽입 금지)"
+
+# 상황별 권장 심벌 — 에이전트는 situation 의미 매칭 후 primary 우선, 필요 시 alts에서 선택
+usages:
+  - situation: 시작·출발·런칭
+    primary: rocket
+    alts: [play, flag-checkered]
+  - situation: 완료·성공·확인
+    primary: circle-check
+    alts: [check, check-double]
+  - situation: 경고·주의
+    primary: triangle-exclamation
+    alts: [circle-exclamation]
+  - situation: 실패·오류·금지
+    primary: circle-xmark
+    alts: [ban, bug]
+  - situation: 핵심·목표·요점
+    primary: bullseye
+    alts: [star, thumbtack]
+  - situation: 아이디어·팁·인사이트
+    primary: lightbulb
+    alts: [wand-magic-sparkles]
+  - situation: 정보·참고
+    primary: circle-info
+    alts: [book, file-lines]
+  - situation: 질문·궁금증
+    primary: circle-question
+    alts: [comments]
+  - situation: 단계·순서·절차
+    primary: list-ol
+    alts: [arrow-right, forward-step]
+  - situation: 외부 링크·참조
+    primary: arrow-up-right-from-square
+    alts: [link]
+  - situation: 검색·탐색·분석
+    primary: magnifying-glass
+    alts: [chart-line]
+  - situation: 도구·설정·구성
+    primary: gear
+    alts: [wrench, sliders]
+  - situation: 시간·일정·기한
+    primary: clock
+    alts: [calendar, hourglass-half]
+  - situation: 데이터·통계
+    primary: chart-column
+    alts: [chart-line, database]
+  - situation: 코드·개발
+    primary: code
+    alts: [terminal, laptop-code]
+  - situation: 사용자·팀·청중
+    primary: users
+    alts: [user, user-group]
+  - situation: 보안·권한
+    primary: lock
+    alts: [shield-halved, key]
+  - situation: 경로·이동·플로우
+    primary: diagram-project
+    alts: [route, arrows-turn-right]
+
+# 유니코드 특수문자 대안 — Font Awesome 불필요, plain text로 직접 입력.
+# 라이브러리 로드 없이 가벼운 표기가 필요할 때 사용. 출처: 볼트 symbol.md.
+unicode_alt:
+  화살표: "→ ← ↑ ↓ ▶ ◀ ⇒ ↔"
+  별·강조: "★ ☆ ✦ ✸ ❖"
+  체크·박스: "✓ ✔ ☑ ☐ ☒"
+  글머리: "• ◦ ‣ ▸ ∙ ·"
+  도형: "■ □ ◆ ◇ ● ○ ▲ △"
+  수학: "± × ÷ ≠ ≤ ≥ ∞ ∴ √ ∑"
+  note: "유니코드 심벌은 폰트 의존 — 렌더 일관성이 중요하면 Font Awesome `:fa-name:` 우선"

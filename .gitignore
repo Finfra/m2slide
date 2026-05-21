@@ -122,6 +122,8 @@ Temporary Items
 !/data/.gitkeep
 !/data/Info.template.md
 !/data/component-libraries.yml
+!/data/symbol-usage.yml
+!/data/emoji-usage.yml
 
 # Backup files
 *.bak
