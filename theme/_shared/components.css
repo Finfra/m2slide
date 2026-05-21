@@ -225,33 +225,83 @@
   margin: 2px 0;
 }
 
-/* ── pyramid — 적층 밴드 (위 좁고 아래 넓음) ────────────────────────── */
+/* ── pyramid — 단일 삼각형 (좌) + 층별 상세 패널 (우) ───────────────────
+   각 층 = 등높이 행. 좌측 .pyr-band-label 이 clip-path 사다리꼴로 잘려
+   N개 행이 합쳐져 하나의 삼각형을 이룸. 하위 들여쓰기 항목은 우측 패널. */
 .reveal .htmlart-pyramid > ul {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 7px;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
+  gap: 3px;
 }
 .reveal .htmlart-pyramid > ul > li {
-  width: 100%;
-  background: var(--htmlart-accent);
-  color: var(--htmlart-fg);
-  text-align: center;
-  padding: 11px 18px;
-  border-radius: 6px;
-  font-weight: 600;
+  display: flex;
+  align-items: stretch;
+  flex: 1 1 0;
+  min-height: 88px;
 }
-.reveal .htmlart-pyramid > ul > li:nth-child(1) { width: 34%; }
-.reveal .htmlart-pyramid > ul > li:nth-child(2) { width: 52%; }
-.reveal .htmlart-pyramid > ul > li:nth-child(3) { width: 70%; }
-.reveal .htmlart-pyramid > ul > li:nth-child(4) { width: 86%; }
-.reveal .htmlart-pyramid > ul > li:nth-child(n+5) { width: 100%; }
-.reveal section[class*="layout-"] .htmlart-pyramid > ul > li ul {
-  margin: 3px 0 0 0;
-  padding-left: 0;
-  font-weight: 400;
-  font-size: 0.76em;
-  opacity: 0.9;
+/* 좌측: 삼각형 슬라이스 — 삼각형 모양은 ::before(clip-path)로 분리해
+   라벨 텍스트는 자르지 않음. 꼭대기 좁은 층의 라벨도 온전히 표시. */
+.reveal .htmlart-pyramid > ul > li > .pyr-band-label {
+  position: relative;
+  isolation: isolate;
+  flex: 0 0 46%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.1em;
+  line-height: 1.25;
+  color: var(--htmlart-fg);
+}
+.reveal .htmlart-pyramid > ul > li > .pyr-band-label::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--htmlart-accent);
+  clip-path: polygon(
+    calc(50% - 50% * var(--htmlart-i, 0) / var(--htmlart-n, 1)) 0,
+    calc(50% + 50% * var(--htmlart-i, 0) / var(--htmlart-n, 1)) 0,
+    calc(50% + 50% * (var(--htmlart-i, 0) + 1) / var(--htmlart-n, 1)) 100%,
+    calc(50% - 50% * (var(--htmlart-i, 0) + 1) / var(--htmlart-n, 1)) 100%
+  );
+}
+/* --htmlart-i 층 인덱스 주입 (cycle 과 동일 패턴, pyramid 한정) */
+.reveal .htmlart-pyramid > ul > li:nth-child(1) { --htmlart-i: 0; }
+.reveal .htmlart-pyramid > ul > li:nth-child(2) { --htmlart-i: 1; }
+.reveal .htmlart-pyramid > ul > li:nth-child(3) { --htmlart-i: 2; }
+.reveal .htmlart-pyramid > ul > li:nth-child(4) { --htmlart-i: 3; }
+.reveal .htmlart-pyramid > ul > li:nth-child(5) { --htmlart-i: 4; }
+.reveal .htmlart-pyramid > ul > li:nth-child(6) { --htmlart-i: 5; }
+.reveal .htmlart-pyramid > ul > li:nth-child(7) { --htmlart-i: 6; }
+.reveal .htmlart-pyramid > ul > li:nth-child(8) { --htmlart-i: 7; }
+/* 우측: 층별 상세 패널 — 하위 들여쓰기 항목 */
+.reveal section[class*="layout-"] .htmlart-pyramid > ul > li > ul {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 8px 14px 8px 24px;
+  border: 1px solid var(--htmlart-box-border);
+  background: var(--htmlart-box-bg);
+}
+.reveal .htmlart-pyramid > ul > li > ul > li {
+  position: relative;
+  font-size: 0.92em;
+  line-height: 1.4;
+}
+.reveal section[class*="layout-"] .htmlart-pyramid > ul > li > ul > li::before {
+  content: "•";
+  position: absolute;
+  left: -15px;
+  color: var(--htmlart-accent);
+  font-weight: 700;
 }
 
 /* ── hierarchy — 상하 조직도 (부모 위 · 자식 가로 행 아래 + 연결선) ─── */

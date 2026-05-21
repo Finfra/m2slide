@@ -46,7 +46,7 @@ types:
     smartart_category: pyramid
     input: "평면 리스트 — 최상위 항목 = 층, 1번째 = 꼭대기"
     sublevel: "하위 들여쓰기 = 층 보조 설명 (선택)"
-    visual: "적층 사다리꼴 밴드 (위 좁고 아래 넓음)"
+    visual: "단일 삼각형 (좌) + 층별 상세 패널 (우) — 층 = 등높이 행"
     recommend_count: "3-5 층"
 
 # ── 콘텐츠 신호 → htmlArt 타입 결정표 (fast-path, 위→아래 first-match) ──────
