@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 190
+* Issue HWM: 191
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -32,6 +32,20 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue191. 공통 컴포넌트 CSS 중복 제거 — theme/_shared/components.css 추출 + @import (등록: 2026-05-21, 해결: 2026-05-21, commit: 96e5861) ✅
+* 목적: htmlArt·cards·시각화 컴포넌트 CSS가 `theme/default/slide.css`·`theme/default_lec/slide.css` 두 파일에 byte-identical하게 매번 수동 복제됨. Issue188~190(htmlArt)에서 두 파일을 동시 복붙으로 동기화했으나, 두 theme이 독립 복사본(@import 없음)이라 누락 시 즉시 drift. 이미 발생한 문제(369줄 중복)와 앞으로 발생할 문제(공통 기능 추가 시마다 복붙) 동시 해결.
+* 카테고리: Theme + Build
+* 상세:
+    - 두 파일에서 완전 동일한 공통 컴포넌트 블록: component 슬롯/WordArt/error 66줄, cards 73줄, htmlArt 230줄 = 총 369줄
+    - 원인: `theme/{name}/slide.css`는 theme별 독립 파일. 공통 selector(`.m2-htmlart`·`.m2-cards`·component 슬롯)도 각 theme에 중복 작성
+    - 빌드 제약: `generate-slides.js`가 `slide.css` 단일 파일을 `slide/css/custom.css`로 `copyFileSync` → 순수 런타임 `@import`는 partial 미복사로 404
+* 구현 명세 (해결):
+    - `theme/_shared/components.css` 신규 (388줄) — 공통 컴포넌트 3블록 단일 SSOT. 색상은 theme `:root` 변수 상속 유지
+    - `default/slide.css`(1582→1213)·`default_lec/slide.css`(1260→891)에서 3블록 제거 + 헤더 주석 다음 `@import "../_shared/components.css";` 추가
+    - `generate-slides.js`: CSS 복사 단계(`copyFileSync`)를 `expandCssImports()` 재귀 인라인 전개로 교체. `@import` 정규식은 줄 시작·줄 끝 강제(`^[ \t]*@import...;$`)로 CSS 주석 내 오매칭 방지. 빌드 산출물은 단일 `custom.css` 유지 — 현행 동작 보존
+    - `.gitignore`: `theme/_shared/` 추적 whitelist 추가 (`/theme/*` 패턴 예외)
+* 검증: `node --test` 141/141 통과. default(htmlArtTest·m2SlideStyle1_single·m2SlideStyle2_chapter)·default_lec(graphify) 빌드 회귀 0. custom.css 잔여 @import 룰 0건, htmlArt/cards/wordart selector 정상 전개 확인.
 
 ## Issue190. htmlArt 도해 시각 정밀 조정 — process 간격, cycle 중심·노드, hierarchy 연결선 (등록: 2026-05-21, 해결: 2026-05-21, commit: e438512) ✅
 * 목적: Issue189 후속 피드백. process 박스 간격 부족, cycle ↻가 링 중심 아님·노드 폭 부족(텍스트 줄바꿈·클리핑), hierarchy 연결선이 트리 밖 돌출.
