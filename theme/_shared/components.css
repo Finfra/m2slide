@@ -254,28 +254,76 @@
   opacity: 0.9;
 }
 
-/* ── hierarchy — 가로 트리 (좌→우 박스 노드 + 연결선) ──────────────── */
-/* 세로 트리는 markmap 영역 — htmlArt hierarchy 는 가로 표현이 목적 */
+/* ── hierarchy — 상하 조직도 (부모 위 · 자식 가로 행 아래 + 연결선) ─── */
+/* 세로 들여쓰기 트리는 markmap 영역 — htmlArt hierarchy 는 부모를 위에 두고
+   자식을 가로로 펼치는 조직도 (PowerPoint Organization Chart 대응) */
 .reveal .htmlart-hierarchy {
-  font-size: 0.84em;
+  font-size: 0.82em;
   overflow-x: auto;
+  text-align: center;
 }
+/* 자식 컨테이너 — 가로 행 */
 .reveal .htmlart-hierarchy ul {
   display: flex;
-  flex-direction: column;
   justify-content: center;
-  gap: 10px;
+  position: relative;
+  padding-top: 16px;
 }
+.reveal .htmlart-hierarchy > ul {
+  padding-top: 0;
+}
+/* 부모 노드 → 자식 bus 세로 연결 */
+.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy ul::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2px;
+  height: 16px;
+  margin-left: -1px;
+  background: var(--htmlart-box-border);
+}
+.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy > ul::before {
+  display: none;
+}
+/* 각 노드 — 부모는 위, 자식 ul 은 아래 (세로 스택) */
 .reveal section[class*="layout-"] .htmlart-hierarchy li {
   position: relative;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  padding: 0;
+  padding: 24px 10px 0;
   line-height: 1.35;
 }
+.reveal section[class*="layout-"] .htmlart-hierarchy > ul > li {
+  padding-top: 0;
+}
+/* 가로 bus 반쪽 (border-top) + 세로 drop (::after border-left) */
+.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy li::before,
+.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy li::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 24px;
+  border-top: 2px solid var(--htmlart-box-border);
+}
+.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy li::before {
+  right: 50%;
+}
+.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy li::after {
+  left: 50%;
+  border-left: 2px solid var(--htmlart-box-border);
+}
+/* 첫·끝 자식 — 바깥쪽 가로 bus 제거 (세로 drop 은 유지) */
+.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy li:first-child::before { border-top: 0; }
+.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy li:last-child::after { border-top: 0; }
+/* 단일 자식 — bus 없이 세로 drop 만 */
+.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy li:only-child::before { display: none; }
+.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy li:only-child::after { border-top: 0; }
+/* 노드 박스 */
 .reveal .htmlart-hierarchy .ha-node {
-  flex: 0 0 auto;
+  display: inline-block;
   background: var(--htmlart-box-bg);
   border: 1px solid var(--htmlart-box-border);
   border-radius: 7px;
@@ -287,44 +335,6 @@
   color: var(--htmlart-fg);
   font-weight: 700;
 }
-/* 자식 컨테이너 — 부모 노드 오른쪽 */
-.reveal .htmlart-hierarchy li > ul {
-  position: relative;
-  margin-left: 44px;
-}
-/* 부모 노드 → bus 가로 연결 */
-.reveal .htmlart-hierarchy li > ul::before {
-  content: "";
-  position: absolute;
-  left: -44px;
-  top: 50%;
-  width: 22px;
-  height: 2px;
-  background: var(--htmlart-box-border);
-}
-/* bus → 각 자식 노드 가로 tick */
-.reveal section[class*="layout-"] .htmlart-hierarchy li > ul > li::before {
-  content: "";
-  position: absolute;
-  left: -22px;
-  top: 50%;
-  width: 22px;
-  height: 2px;
-  background: var(--htmlart-box-border);
-}
-/* 세로 bus 세그먼트 — per-li, 첫·끝·단일 자식 트림 (트리 밖 돌출 방지) */
-.reveal section[class*="layout-"] .htmlart-hierarchy li > ul > li::after {
-  content: "";
-  position: absolute;
-  left: -22px;
-  top: -5px;
-  bottom: -5px;
-  width: 2px;
-  background: var(--htmlart-box-border);
-}
-.reveal section[class*="layout-"] .htmlart-hierarchy li > ul > li:first-child::after { top: 50%; }
-.reveal section[class*="layout-"] .htmlart-hierarchy li > ul > li:last-child::after { bottom: 50%; }
-.reveal section[class*="layout-"] .htmlart-hierarchy li > ul > li:only-child::after { display: none; }
 
 /* ── cycle — 원형 배치 (--htmlart-n 기반 등간격) ────────────────────── */
 .reveal .htmlart-cycle > ul {
