@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 200
+* Issue HWM: 201
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -32,6 +32,14 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue201. htmlArt pyramid 우측 패널 제목 중복 (등록: 2026-05-22, 해결: 2026-05-22, commit: 7431c97) ✅
+* 목적: pyramid 도해의 우측 상세 패널 제목(`비전`·`전략`·`실행`)이 삼각형 밴드 라벨과 글자 그대로 중복. 사용자가 브라우저에서 발견.
+* 카테고리: Generator (`htmlart_dispatch.js`)
+* 구현 (해결):
+    - `renderPyramid`: 패널 `nodeBox` 호출의 title 인자를 `''` 로 — 패널은 subs(상세)만 표시. 삼각형 밴드와 같은 y 좌표라 시각 매칭됨
+    - `nodeBox`: title 빈 문자열이면 제목 div skip. title 없는 박스(패널)는 subs 가 본문이므로 `subFs` 를 `titleFs*0.66` → `*0.92` 로 키우고 opacity·margin 장식 생략
+* 검증: `node --test` 144/144 통과. htmlArtTest #/6 pyramid — 우측 패널이 `장기 방향`·`중기 계획`·`일상 작업`(상세)만 표시, 삼각형 밴드 라벨과 중복 제거. 스크린샷 확인.
 
 ## Issue200. htmlArt 노드 글자 크기 — 박스 비례 폰트로 확대 (등록: 2026-05-21, 해결: 2026-05-21, commit: e5824b5) ✅
 * 목적: htmlArt 4타입 도해의 노드 텍스트가 카드 컴포넌트 대비 상대적으로 작아 박스를 채우지 못함. 사용자가 카드 슬라이드와 나란히 비교하여 지적.
