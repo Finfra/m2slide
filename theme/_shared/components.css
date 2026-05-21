@@ -167,6 +167,7 @@
   --htmlart-accent: var(--kn-accent, #2b8a9d);
   --htmlart-fg: var(--kn-text, #ffffff);
   --htmlart-box-bg: rgba(0, 0, 0, 0.045);
+  --htmlart-surface: #f4f4f5;            /* 노드 박스 불투명 배경 — d3 연결선이 박스 뒤로 가려지게 (Issue195) */
   --htmlart-box-border: rgba(0, 0, 0, 0.16);
   --htmlart-arrow: rgba(0, 0, 0, 0.5);
   margin: 0.6em 0;
