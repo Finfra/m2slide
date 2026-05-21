@@ -147,3 +147,20 @@ libraries:
     detect_fenced_lang:
       - "react"
     detect_inline: []
+
+  # ==========================================================================
+  # htmlArt 구조 도해 렌더 백엔드 (Issue193) — CSS → SVG 전환.
+  #   `::: htmlart <type>` fenced div(data-htmlart)를 htmlart_dispatch 훅이 SVG로 렌더.
+  #   CDN 없음 — d3@7.9.0(markmap 의존성, 이미 로드)을 재사용. detect_inline 신호로
+  #   훅만 조건 주입. cycle 우선 구현, 잔여 타입(process/hierarchy/pyramid)은 점진 전환.
+  # ==========================================================================
+  - id: htmlart
+    component: 구조 도해
+    stage: 5
+    injection: conditional
+    status: applied
+    init_hook: htmlart_dispatch
+    cdn: []
+    detect_fenced_lang: []
+    detect_inline:
+      - "data-htmlart="

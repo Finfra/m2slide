@@ -29,9 +29,9 @@ types:
     smartart_category: cycle
     input: "평면 리스트 — 최상위 항목 = 순환 노드"
     sublevel: "하위 들여쓰기 = 노드 보조 설명 (선택)"
-    visual: "노드 원형 등간격 배치 + 순환 화살표"
+    visual: "노드 원형 등간격 배치 + 순환 곡선 화살표"
     recommend_count: "3-6 노드"
-    impl_note: "v1 타입 중 CSS 비용 최대 — 파서가 노드 수를 --htmlart-n 변수로 주입"
+    impl_note: "렌더 백엔드 d3 SVG (Issue193) — d3.pointRadial 원형 좌표 + d3.path().arc() 곡선 화살표. 노드 수 무제한"
 
   hierarchy:
     intent: "계층·트리·조직도·상하 보고 관계"
