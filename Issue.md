@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 187
+* Issue HWM: 188
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -24,6 +24,21 @@
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
 
 # 🚧 진행중
+
+## Issue188. htmlArt core 구현 — `::: htmlart <type>` 파서 + theme CSS 4종 (등록: 2026-05-21)
+* 목적: htmlArt 설계(`_doc_arch/htmlArt.md`)를 코드로 구현. 들여쓰기 아웃라인을 `::: htmlart <type>` fenced div로 감싸면 process·cycle·hierarchy·pyramid 구조 도해로 렌더. 스캐폴드(`Projects/htmlArtTest`)는 이미 존재하나 core 미구현이라 raw 텍스트로 표시되던 것을 실제 렌더로 전환.
+* arch: `_doc_arch/htmlArt.md`
+* 카테고리: Generator (`markdown.js` preprocessPandocDiv) + Theme (`default`·`default_lec` slide.css)
+* 상세:
+    - `markdown.js` preprocessPandocDiv에 `::: htmlart <type>` 분기 추가 → `<div class="m2-htmlart htmlart-<type>" data-htmlart="<type>" style="--htmlart-n:N">`
+    - `slide-parser.js` PANDOC_LAYOUT_RESERVED에 `htmlart` 추가 (슬롯 오추출 방지)
+    - `theme/default`·`default_lec` slide.css에 `.htmlart-{process,cycle,hierarchy,pyramid}` 4종 CSS (순수 CSS, theme 변수 상속, base.css `●` 마커 override)
+    - 타입 화이트리스트 검증 — 미지원/누락 타입은 `.component-error`, 빌드 비차단
+    - `data/htmlart/types.yml`·`smartart-catalog.yml` + media-creater `tools.yml` htmlart_catalog status `design→active`
+* 구현 명세:
+    - 입력: 들여쓰기 리스트 (2칸=1레벨, 기존 list 파서 재사용)
+    - cycle 등간격 배치용 `--htmlart-n` CSS 변수 주입 (top-level `*` 항목 수)
+    - 검증: `Projects/htmlArtTest` 빌드 + `node --test`
 
 # 📕 중요
 

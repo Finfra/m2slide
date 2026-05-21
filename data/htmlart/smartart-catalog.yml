@@ -1,0 +1,287 @@
+# data/htmlart/smartart-catalog.yml
+# PowerPoint SmartArt 전체 layout 참조 카탈로그 (193 layout, 9 카테고리).
+#
+# ⚠ "SmartArt" 는 Microsoft 상표. 본 파일은 설계 참조 자료다.
+#   m2slide 산출물(코드·CSS 클래스·문법 키워드·사용자 노출 명칭)에는 "SmartArt" 사용 금지 → htmlArt 사용.
+#
+# 에이전트 fast-path 는 data/htmlart/types.yml (htmlArt v1 타입 + 결정표).
+# 본 파일은 전체 참조·확장 출처 — 에이전트는 카테고리 인덱스만 보고 필요한 카테고리만 펼쳐 읽을 것.
+# 설계 SSOT: _doc_arch/htmlArt.md
+---
+meta:
+  source: "Microsoft Support — All SmartArt graphics, described"
+  source_url: https://support.microsoft.com/en-us/office/all-smartart-graphics-described-cf1a453b-de4a-4217-8da0-1aff97bb32cd
+  extracted: 2026-05-21
+  trademark: "SmartArt 는 Microsoft 상표. 산출물 코드·클래스명에 사용 금지 — htmlArt 사용."
+  layout_count: 193
+  duplication_note: "일부 layout 은 복수 카테고리에 중복 등재됨 (MS 원본 분류 충실 반영)."
+  purpose_lang: "용도 설명은 한국어 축약. MS 원문은 영어 — source_url 참조."
+
+# ── 카테고리 → htmlArt v1 타입 매핑 (에이전트 1차 인덱스) ──────────────────
+# null   = htmlArt 아님 (다른 구성요소로 처리)
+# v2     = htmlArt v2 후보 (현재 미채택)
+# legacy = MS 레거시 온라인 카테고리
+category_to_htmlart:
+  list:         null      # → ::: cards (비순차 박스 묶음)
+  process:      process   # ✅ htmlArt v1
+  cycle:        cycle     # ✅ htmlArt v1
+  hierarchy:    hierarchy # ✅ htmlArt v1
+  pyramid:      pyramid   # ✅ htmlArt v1
+  relationship: v2        # v2 후보 (venn·radial·target)
+  matrix:       v2        # v2 후보 (2×2 사분면)
+  picture:      null      # → Media 계열 (image_placeholder)
+  officecom:    legacy    # 레거시 — 대부분 타 카테고리 변형
+
+# ── 카테고리별 layout 카탈로그 ────────────────────────────────────────────
+categories:
+
+  list:
+    label: "List (목록형)"
+    category_purpose: "주요 항목을 색상 도형으로 강조. 비순차·그룹 정보 표현."
+    htmlart: null
+    htmlart_note: "비순차 박스 묶음은 ::: cards 가 담당 — htmlArt 미채택."
+    layouts:
+      Alternating Hexagon List: "상호 연결된 아이디어 시리즈"
+      Basic Block List: "비순차·그룹 정보 블록"
+      Bending Picture Accent List: "비순차·그룹 정보 블록 (그림)"
+      Continuous Picture List: "상호 연결된 정보 그룹 (그림)"
+      Descending Block List: "관련 아이디어·목록 그룹"
+      Detailed Process: "다량의 2단계 텍스트로 진행 표현"
+      Grouped List: "그룹·하위 그룹 정보"
+      Hierarchy List: "그룹 간 진행하는 계층 관계"
+      Horizontal Bullet List: "비순차·그룹 목록"
+      Horizontal Picture List: "비순차·그룹 정보 (그림)"
+      Increasing Circle Process: "내부가 커지는 단계 시리즈"
+      Lined List: "카테고리로 나뉜 다량 텍스트"
+      Picture Accent List: "그룹·관련 정보 (그림)"
+      Picture Caption List: "비순차·그룹 정보 블록 (그림)"
+      Pie Process: "파이 조각이 커지는 단계"
+      Plus and Minus: "두 아이디어의 장단점"
+      Pyramid List: "비례·상호연결·계층 관계"
+      Reverse List: "두 항목 간 전환"
+      Segmented Process: "진행·순차 단계"
+      Stacked List: "정보 그룹·작업 단계"
+      Square Accent List: "카테고리로 나뉜 정보 목록"
+      Tab List: "비순차·그룹 정보 블록"
+      Table Hierarchy: "위→아래로 구성된 정보 그룹"
+      Table List: "동등 가치의 그룹·관련 정보"
+      Target List: "상호 관련·중첩 정보"
+      Trapezoid List: "동등 가치의 그룹·관련 정보"
+      Varying Width List: "가중치 다른 항목 강조"
+      Vertical Box List: "여러 정보 그룹"
+      Vertical Block List: "정보 그룹·작업 단계"
+      Vertical Bracket List: "괄호로 묶인 정보 블록"
+      Vertical Bullet List: "비순차·그룹 정보 블록"
+      Vertical Chevron List: "진행·순차 단계"
+      Vertical Picture Accent List: "비순차·그룹 정보 블록 (그림)"
+      Vertical Picture List: "비순차·그룹 정보 블록 (그림)"
+      Vertical Accent List: "정보 목록"
+      Vertical Arrow List: "목표를 향한 진행·순차 단계"
+      Vertical Circle List: "순차·그룹 데이터"
+      Vertical Curved List: "곡선형 정보 목록"
+
+  process:
+    label: "Process (프로세스형)"
+    category_purpose: "방향성 흐름. 작업·워크플로의 순차 단계·국면·타임라인."
+    htmlart: process
+    layouts:
+      Accent Process: "진행·타임라인·순차 단계"
+      Alternating Flow: "정보 그룹·순차 단계"
+      Arrow Ribbon: "연결된 관련·대비 개념"
+      Ascending Picture Accent Process: "오름차순 그림+텍스트 시리즈"
+      Basic Bending Process: "작업의 진행·순차 단계"
+      Basic Chevron Process: "진행·타임라인·순차 단계"
+      Basic Process: "작업의 진행·순차 단계"
+      Basic Timeline: "작업·프로세스·워크플로의 순차 단계"
+      Chevron Accent Process: "작업·프로세스·워크플로의 순차 단계"
+      Chevron List: "여러 프로세스를 거치는 진행"
+      Circular Bending Process: "길거나 비선형인 단계 시퀀스"
+      Closed Chevron Process: "진행·타임라인·순차 단계"
+      Circle Accent Timeline: "일련의 이벤트·타임라인 정보"
+      Circle Arrow Process: "보조 텍스트가 있는 순차 항목"
+      Continuous Arrow Process: "타임라인·작업의 순차 단계"
+      Continuous Block Process: "작업의 진행·순차 단계"
+      Converging Arrows: "한 점으로 수렴하는 아이디어"
+      Converging Text: "전체로 병합되는 여러 단계·부분"
+      Descending Process: "내림차순 이벤트 시리즈"
+      Diverging Arrows: "바깥으로 진행하는 아이디어"
+      Equation: "계획을 나타내는 순차 단계·작업"
+      Funnel: "정보 필터링·부분 병합"
+      Gear: "맞물린 아이디어"
+      Increasing Arrows Process: "순차·중첩 단계"
+      Interconnected Block Process: "프로세스의 순차 단계"
+      Opposing Arrows: "대립·분기하는 두 아이디어"
+      Phased Process: "프로세스의 3단계"
+      Picture Accent Process: "작업·프로세스·워크플로의 순차 단계 (그림)"
+      Process Arrows: "프로세스·워크플로 설명 정보"
+      Process List: "여러 정보 그룹·단계"
+      Random to Result Process: "혼돈 아이디어 → 통일 목표"
+      Repeating Bending Process: "진행·순차 단계"
+      Staggered Process: "단계를 거친 하향 진행"
+      Step Down Process: "다단계 하향 프로세스"
+      Step Up Process: "오름차순 단계·목록 시리즈"
+      Sub-Step Process: "하위 단계가 있는 다단계 프로세스"
+      Timeline Pipe: "작업·프로세스·워크플로의 순차 단계"
+      Upward Arrow: "위로 향하는 진행·단계"
+      Vertical Bending Process: "진행·순차 단계"
+      Vertical Equation: "계획을 나타내는 순차 단계·작업"
+      Vertical Process: "위→아래 진행·순차 단계"
+
+  cycle:
+    label: "Cycle (주기형)"
+    category_purpose: "원형·반복 프로세스. 라이프사이클·반복 단계·중심 아이디어 순환."
+    htmlart: cycle
+    layouts:
+      Basic Cycle: "원형 흐름의 연속 단계"
+      Basic Pie: "개별 부분이 전체를 구성"
+      Basic Radial: "주기 안 중심 아이디어와의 관계"
+      Block Cycle: "원형 흐름의 연속 단계"
+      Circle Arrow Process: "보조 텍스트가 있는 순차 항목"
+      Continuous Cycle: "연속 단계 시퀀스"
+      Cycle Matrix: "중심 아이디어와의 주기적 관계"
+      Diverging Radial: "주기 안 중심 아이디어와의 관계"
+      Gear: "맞물린 아이디어"
+      Multidirectional Cycle: "임의 방향으로 발생하는 연속 단계"
+      Nondirectional Cycle: "원형 흐름의 연속 시퀀스"
+      Radial Cluster: "중심 아이디어·테마와 관련된 데이터"
+      Radial Cycle: "중심 아이디어와의 관계"
+      Radial Venn: "중첩 관계 + 중심 아이디어 관계"
+      Segmented Cycle: "원형 흐름의 진행·시퀀스"
+      Text Cycle: "원형 흐름의 연속 시퀀스"
+
+  hierarchy:
+    label: "Hierarchy (계층 구조형)"
+    category_purpose: "의사결정 트리·가계도·조직도. 계층·보고 관계."
+    htmlart: hierarchy
+    layouts:
+      Architecture Layout: "아래→위로 구성되는 계층 관계"
+      Circle Picture Hierarchy: "계층 정보·보고 관계 (그림)"
+      Half Circle Organization Chart: "계층 정보·보고 관계"
+      Hierarchy: "위→아래 진행하는 계층 관계"
+      Hierarchy List: "그룹 간 진행하는 계층 관계"
+      Horizontal Hierarchy: "수평 진행하는 계층 관계"
+      Horizontal Labeled Hierarchy: "수평 진행하는 계층 관계 (레이블)"
+      Horizontal Multi-Level Hierarchy: "다량의 계층 정보"
+      Horizontal Organization Chart: "수평 계층 정보"
+      Labeled Hierarchy: "위→아래 진행하는 계층 관계 (레이블)"
+      Lined List: "카테고리로 나뉜 다량 텍스트"
+      Name and Title Organization Chart: "계층 정보·보고 관계 (이름·직함)"
+      Organization Chart: "계층 정보·보고 관계"
+      Picture Organization Chart: "계층 정보·보고 관계 (그림)"
+      Table Hierarchy: "위→아래로 구성된 정보 그룹"
+
+  relationship:
+    label: "Relationship (관계형)"
+    category_purpose: "중첩·수렴·대비. 벤다이어그램·타깃(포함)·방사형(중심 관계)."
+    htmlart: v2
+    htmlart_note: "venn·radial·target 은 순수 CSS 비용이 큼 — htmlArt v2 후보."
+    layouts:
+      Arrow Ribbon: "연결된 관련·대비 개념"
+      Balance: "두 아이디어 비교·관계"
+      Basic Pie: "개별 부분이 전체를 구성"
+      Basic Radial: "주기 안 중심 아이디어와의 관계"
+      Basic Target: "포함·점층·계층 관계"
+      Basic Venn: "중첩·상호연결 관계"
+      Circle Relationship: "중심 아이디어와의/로부터의 관계"
+      Continuous Picture List: "상호 연결된 정보 그룹 (그림)"
+      Converging Arrows: "한 점으로 수렴하는 아이디어"
+      Converging Radial: "중심 아이디어로의 개념 관계"
+      Counterbalance Arrows: "대립하는 두 아이디어"
+      Cycle Matrix: "중심 아이디어와의 주기적 관계"
+      Diverging Arrows: "바깥으로 진행하는 아이디어"
+      Diverging Radial: "주기 안 중심 아이디어와의 관계"
+      Equation: "계획을 나타내는 순차 단계·작업"
+      Funnel: "정보 필터링·부분 병합"
+      Gear: "맞물린 아이디어"
+      Grouped List: "그룹·하위 그룹 정보"
+      Hierarchy List: "그룹 간 진행하는 계층 관계"
+      Linear Venn: "시퀀스 안 중첩 관계"
+      Nested Target: "포함 관계"
+      Nondirectional Cycle: "원형 흐름의 연속 시퀀스"
+      Opposing Arrows: "대립·분기하는 두 아이디어"
+      Opposing Ideas: "대립·대비하는 두 아이디어"
+      Picture Accent List: "그룹·관련 정보 (그림)"
+      Radial Cluster: "중심 아이디어·테마와 관련된 데이터"
+      Radial Cycle: "중심 아이디어와의 관계"
+      Radial List: "주기 안 중심 아이디어와의 관계"
+      Radial Venn: "중첩 관계 + 중심 아이디어 관계"
+      Segmented Pyramid: "포함·비례·상호연결 관계"
+      Stacked Venn: "중첩 관계"
+      Table Hierarchy: "위→아래로 구성된 정보 그룹"
+      Target List: "상호 관련·중첩 정보"
+      Vertical Equation: "계획을 나타내는 순차 단계·작업"
+
+  matrix:
+    label: "Matrix (행렬형)"
+    category_purpose: "정보 분류. 2차원 — 부분과 전체·중심 개념의 관계."
+    htmlart: v2
+    htmlart_note: "2×2 사분면 — 정확히 4항목 입력 규약 필요. htmlArt v2 후보."
+    layouts:
+      Basic Matrix: "사분면 내 구성요소 관계"
+      Cycle Matrix: "중심 아이디어와의 주기적 관계"
+      Grid Matrix: "두 축을 따른 개념 배치"
+      Titled Matrix: "네 사분면과 전체의 관계"
+
+  pyramid:
+    label: "Pyramid (피라미드형)"
+    category_purpose: "비례·계층 관계. 위→아래 또는 아래→위로 쌓는 정보."
+    htmlart: pyramid
+    layouts:
+      Basic Pyramid: "비례·상호연결·계층 관계"
+      Inverted Pyramid: "비례·상호연결 관계 (역방향)"
+      Pyramid List: "비례·상호연결·계층 관계"
+      Segmented Pyramid: "포함·비례·상호연결 관계"
+
+  picture:
+    label: "Picture (그림형)"
+    category_purpose: "이미지 강조 변형. 여러 카테고리 스타일에 사진 삽입."
+    htmlart: null
+    htmlart_note: "이미지는 Media 계열 — image_placeholder 가 담당. htmlArt 미채택."
+    layouts:
+      Accented Picture: "중심 사진 아이디어 + 관련 아이디어"
+      Alternating Picture Blocks: "위→아래 그림 시리즈"
+      Alternating Picture Circles: "텍스트가 있는 그림 세트"
+      Ascending Picture Accent Process: "오름차순 그림+텍스트 시리즈"
+      Bending Picture Accent List: "비순차·그룹 정보 블록 (그림)"
+      Bending Picture Blocks: "그림 시리즈"
+      Bending Picture Caption: "순차 그림 시리즈"
+      Bending Picture Caption List: "그림 시리즈"
+      Bending Picture Semi-Transparent Text: "그림 시리즈"
+      Bubble Picture List: "그림 시리즈"
+      Captioned Pictures: "다단계 텍스트가 있는 그림"
+      Circle Picture Hierarchy: "계층 정보·보고 관계 (그림)"
+      Circular Picture Callout: "중심 아이디어 + 하위·관련 항목"
+      Continuous Picture List: "상호 연결된 정보 그룹 (그림)"
+      Framed Text Picture: "1단계 텍스트가 있는 그림"
+      Hexagon Cluster: "설명 텍스트가 있는 그림"
+      Horizontal Picture List: "비순차·그룹 정보 (그림)"
+      Picture Accent Blocks: "블록 안 그림 그룹"
+      Picture Accent List: "그룹·관련 정보 (그림)"
+      Picture Accent Process: "작업·프로세스의 순차 단계 (그림)"
+      Picture Caption List: "비순차·그룹 정보 블록 (그림)"
+      Picture Grid: "정사각 그리드 위 그림"
+      Picture Lineup: "나란히 놓인 그림 시리즈"
+      Picture Strips: "위→아래 그림 시리즈"
+      Snapshot Picture List: "설명 텍스트가 있는 그림"
+      Spiral Picture: "캡션이 있는 최대 5개 그림"
+      Titled Picture Accent List: "액센트 그림이 있는 정보 목록"
+      Title Picture Lineup: "제목·설명이 있는 그림 시리즈"
+      Titled Picture Blocks: "그림 시리즈"
+      Vertical Picture Accent List: "비순차·그룹 정보 블록 (그림)"
+      Vertical Picture List: "비순차·그룹 정보 블록 (그림)"
+
+  officecom:
+    label: "Office.com (레거시 온라인)"
+    category_purpose: "MS 온라인 제공 레거시 layout. 대부분 타 카테고리 변형."
+    htmlart: legacy
+    layouts:
+      Circle Process: "프로세스의 순차 단계"
+      Converging Text: "전체로 병합되는 여러 단계·부분"
+      Hexagon Radial: "중심 아이디어와 관련된 순차 프로세스"
+      Interconnected Block Process: "프로세스의 순차 단계"
+      Picture Frame: "1단계 텍스트가 있는 그림"
+      Radial Picture List: "중심 아이디어와의 관계"
+      Tab List: "비순차·그룹 정보 블록"
+      Theme Picture Accent: "첫 그림이 중앙인 그림 그룹"
+      Theme Picture Alternating Accent: "첫 그림이 가장 큰 그림 그룹"
+      Theme Picture Grid: "첫 그림이 가장 큰 그림 그룹"

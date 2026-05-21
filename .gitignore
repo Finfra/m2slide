@@ -124,6 +124,8 @@ Temporary Items
 !/data/component-libraries.yml
 !/data/symbol-usage.yml
 !/data/emoji-usage.yml
+!/data/htmlart/
+!/data/htmlart/**
 
 # Backup files
 *.bak

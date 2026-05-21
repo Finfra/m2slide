@@ -1027,3 +1027,182 @@ body.agenda-page .agenda-frame {
 .reveal section[class*="layout-"] .m2-cards > ul > li > ul > li > ul > li::before {
   content: "-";
 }
+
+/* =========================================================================
+   htmlArt 구조 도해 — `::: htmlart <type>` fenced div (Issue188)
+   process · cycle · hierarchy · pyramid. 순수 CSS, theme 변수 상속.
+   설계 SSOT: _doc_arch/htmlArt.md
+   ========================================================================= */
+.reveal .m2-htmlart {
+  --htmlart-accent: var(--kn-accent, #2b8a9d);
+  --htmlart-fg: var(--kn-text, #ffffff);
+  --htmlart-box-bg: rgba(0, 0, 0, 0.045);
+  --htmlart-box-border: rgba(0, 0, 0, 0.16);
+  margin: 0.6em 0;
+  font-size: 0.92em;
+}
+.reveal .m2-htmlart ul,
+.reveal .m2-htmlart ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+/* base.css `●` 마커 무력화 (hierarchy 는 자체 ::before 로 재정의) */
+.reveal section[class*="layout-"] .m2-htmlart ul > li::before,
+.reveal section[class*="layout-"] .m2-htmlart ol > li::before {
+  content: none;
+}
+.reveal .m2-htmlart.component-error {
+  color: #c0392b;
+  font-size: 0.85em;
+}
+
+/* ── process — 가로 박스 체인 + 진행 화살표 ─────────────────────────── */
+.reveal .htmlart-process > ul {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 26px 30px;
+}
+.reveal .htmlart-process > ul > li {
+  flex: 1 1 0;
+  min-width: 110px;
+  position: relative;
+  background: var(--htmlart-box-bg);
+  border: 1px solid var(--htmlart-box-border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-weight: 600;
+}
+.reveal .htmlart-process > ul > li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  right: -24px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+  border-left: 14px solid var(--htmlart-accent);
+}
+.reveal section[class*="layout-"] .htmlart-process > ul > li ul {
+  margin: 7px 0 0 0;
+  padding-left: 0;
+  font-weight: 400;
+  font-size: 0.8em;
+  opacity: 0.82;
+}
+.reveal .htmlart-process > ul > li ul li {
+  margin: 2px 0;
+}
+
+/* ── pyramid — 적층 밴드 (위 좁고 아래 넓음) ────────────────────────── */
+.reveal .htmlart-pyramid > ul {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+}
+.reveal .htmlart-pyramid > ul > li {
+  width: 100%;
+  background: var(--htmlart-accent);
+  color: var(--htmlart-fg);
+  text-align: center;
+  padding: 11px 18px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+.reveal .htmlart-pyramid > ul > li:nth-child(1) { width: 34%; }
+.reveal .htmlart-pyramid > ul > li:nth-child(2) { width: 52%; }
+.reveal .htmlart-pyramid > ul > li:nth-child(3) { width: 70%; }
+.reveal .htmlart-pyramid > ul > li:nth-child(4) { width: 86%; }
+.reveal .htmlart-pyramid > ul > li:nth-child(n+5) { width: 100%; }
+.reveal section[class*="layout-"] .htmlart-pyramid > ul > li ul {
+  margin: 3px 0 0 0;
+  padding-left: 0;
+  font-weight: 400;
+  font-size: 0.76em;
+  opacity: 0.9;
+}
+
+/* ── hierarchy — 들여쓰기 트리 + 가이드선 ───────────────────────────── */
+.reveal .htmlart-hierarchy {
+  font-size: 0.8em;
+}
+.reveal section[class*="layout-"] .htmlart-hierarchy ul ul {
+  margin-left: 9px;
+  padding-left: 18px;
+  border-left: 2px solid var(--htmlart-box-border);
+}
+.reveal .htmlart-hierarchy li {
+  position: relative;
+  padding: 1px 0 1px 4px;
+  line-height: 1.32;
+}
+.reveal .htmlart-hierarchy > ul > li {
+  font-weight: 600;
+}
+.reveal .htmlart-hierarchy ul ul > li {
+  padding-left: 16px;
+  font-weight: 400;
+}
+.reveal section[class*="layout-"] .htmlart-hierarchy ul ul > li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.85em;
+  width: 11px;
+  height: 2px;
+  background: var(--htmlart-box-border);
+}
+
+/* ── cycle — 원형 배치 (--htmlart-n 기반 등간격) ────────────────────── */
+.reveal .htmlart-cycle > ul {
+  position: relative;
+  width: 470px;
+  height: 470px;
+  margin: 0.3em auto;
+}
+.reveal .htmlart-cycle > ul::before {
+  content: "\21BB";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.6em;
+  color: var(--htmlart-accent);
+  opacity: 0.5;
+}
+.reveal section[class*="layout-"] .htmlart-cycle > ul > li {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 150px;
+  margin: -32px 0 0 -75px;
+  --htmlart-r: 170px;
+  box-sizing: border-box;
+  background: var(--htmlart-box-bg);
+  border: 2px solid var(--htmlart-accent);
+  border-radius: 40px;
+  padding: 9px 10px;
+  text-align: center;
+  font-weight: 600;
+  transform:
+    rotate(calc(360deg * var(--htmlart-i, 0) / var(--htmlart-n, 1)))
+    translateY(calc(-1 * var(--htmlart-r)))
+    rotate(calc(-360deg * var(--htmlart-i, 0) / var(--htmlart-n, 1)));
+}
+.reveal .htmlart-cycle > ul > li:nth-child(1) { --htmlart-i: 0; }
+.reveal .htmlart-cycle > ul > li:nth-child(2) { --htmlart-i: 1; }
+.reveal .htmlart-cycle > ul > li:nth-child(3) { --htmlart-i: 2; }
+.reveal .htmlart-cycle > ul > li:nth-child(4) { --htmlart-i: 3; }
+.reveal .htmlart-cycle > ul > li:nth-child(5) { --htmlart-i: 4; }
+.reveal .htmlart-cycle > ul > li:nth-child(6) { --htmlart-i: 5; }
+.reveal .htmlart-cycle > ul > li:nth-child(7) { --htmlart-i: 6; }
+.reveal .htmlart-cycle > ul > li:nth-child(8) { --htmlart-i: 7; }
+.reveal section[class*="layout-"] .htmlart-cycle > ul > li ul {
+  margin: 2px 0 0 0;
+  padding-left: 0;
+  font-weight: 400;
+  font-size: 0.72em;
+  opacity: 0.85;
+}

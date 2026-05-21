@@ -1,0 +1,5 @@
+theme: default                  # theme/{name}/slide.css + layouts/
+auto_layout_detect: true        # image-only / empty-title 자동 layout 감지
+toc_placeholder: false          # 단일 페이지 모드 — 자동 TOC 미사용
+markmap_depth: 2                # Markmap 초기 펼침 깊이
+slide_ratio: "16:9"

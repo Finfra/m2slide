@@ -7,9 +7,9 @@
 # Track README.md (markdown writing guidelines)
 !/README.md
 
-# Allow all project directories (제외: animationTest, z_just_test)
-!/ComponentTest/
-!/LayoutTest/
+# Allow all project directories (제외: z_just_test)
+!/aTest/
+!/htmlArtTest/
 !/LlmAndVibeCoding/
 !/LlmAndVibeCoding_v2/
 !/m2SlideStyle1_single/
@@ -18,7 +18,6 @@
 !/graphify/
 
 # Excluded (intentionally ignored)
-# /animationTest/
 # /z_just_test/
 
 !/slide.css.md

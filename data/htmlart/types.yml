@@ -1,0 +1,92 @@
+# data/htmlart/types.yml
+# htmlArt v1 타입 정의 + 콘텐츠 신호 → 타입 결정표 (에이전트 fast-path SSOT).
+#
+# media-creater·md-builder 등 에이전트는 구조 도해 선택 시 본 파일을 1차 참조한다.
+# 전체 SmartArt 참조 카탈로그는 data/htmlart/smartart-catalog.yml.
+# 설계 SSOT: _doc_arch/htmlArt.md
+#
+# ⚠ "SmartArt" 는 Microsoft 상표 — 산출물에는 htmlArt 사용.
+---
+meta:
+  design_doc: _doc_arch/htmlArt.md
+  catalog: data/htmlart/smartart-catalog.yml
+  status: active          # core 구현 완료 (Issue188 — markdown.js preprocessPandocDiv + theme CSS)
+  syntax: "::: htmlart <type>"
+  input_model: "들여쓰기 아웃라인 (2칸 = 1레벨, ::: cards 본문과 동일)"
+
+# ── htmlArt v1 타입 (4종) ──────────────────────────────────────────────────
+types:
+  process:
+    intent: "순차 단계·진행·워크플로·타임라인"
+    smartart_category: process
+    input: "평면 리스트 — 최상위 항목 = 단계, 작성 순서 = 진행 순서"
+    sublevel: "하위 들여쓰기 = 단계 내부 보조 설명 (선택)"
+    visual: "가로 박스 체인 + 진행 방향 화살표"
+    recommend_count: "3-6 단계"
+
+  cycle:
+    intent: "순환·반복·라이프사이클·중심 아이디어 순환"
+    smartart_category: cycle
+    input: "평면 리스트 — 최상위 항목 = 순환 노드"
+    sublevel: "하위 들여쓰기 = 노드 보조 설명 (선택)"
+    visual: "노드 원형 등간격 배치 + 순환 화살표"
+    recommend_count: "3-6 노드"
+    impl_note: "v1 타입 중 CSS 비용 최대 — 파서가 노드 수를 --htmlart-n 변수로 주입"
+
+  hierarchy:
+    intent: "계층·트리·조직도·상하 보고 관계"
+    smartart_category: hierarchy
+    input: "중첩 리스트 — 들여쓰기 깊이 = 트리 깊이, 최상위 1개 = 루트(권장)"
+    sublevel: "중첩 = 자식 노드 (다단계)"
+    visual: "세로 조직도 + 부모-자식 연결선"
+    recommend_count: "깊이 3 이내·노드 12 이내"
+
+  pyramid:
+    intent: "비례·적층·토대→정점·우선순위 층"
+    smartart_category: pyramid
+    input: "평면 리스트 — 최상위 항목 = 층, 1번째 = 꼭대기"
+    sublevel: "하위 들여쓰기 = 층 보조 설명 (선택)"
+    visual: "적층 사다리꼴 밴드 (위 좁고 아래 넓음)"
+    recommend_count: "3-5 층"
+
+# ── 콘텐츠 신호 → htmlArt 타입 결정표 (fast-path, 위→아래 first-match) ──────
+# 에이전트는 슬라이드 본문 키워드를 위에서부터 대조하여 첫 매칭 타입을 채택한다.
+decision_table:
+  - htmlart: process
+    signal_ko: ["순차", "단계", "절차", "프로세스", "워크플로", "진행", "타임라인", "흐름"]
+    signal_en: ["step", "process", "flow", "sequential", "timeline", "workflow"]
+
+  - htmlart: cycle
+    signal_ko: ["순환", "반복", "주기", "라이프사이클", "되풀이", "다시 처음"]
+    signal_en: ["cycle", "loop", "recurring", "lifecycle", "iterative"]
+
+  - htmlart: hierarchy
+    signal_ko: ["계층", "트리", "조직도", "상하 관계", "부모-자식", "분류 구조"]
+    signal_en: ["hierarchy", "tree", "org chart", "parent-child"]
+
+  - htmlart: pyramid
+    signal_ko: ["비례", "적층", "토대", "정점", "우선순위 층", "피라미드", "단계별 비중"]
+    signal_en: ["pyramid", "proportional", "layered", "foundation"]
+
+# ── 경계 — htmlArt 아님 (다른 구성요소로 처리) ─────────────────────────────
+not_htmlart:
+  - signal: "비순차 박스 묶음·균질 항목 그리드"
+    use: "::: cards"
+  - signal: "관계도·벤다이어그램·네트워크·중심 방사형"
+    use: "d3_inline 또는 mermaid (htmlArt v2 후보: relationship)"
+  - signal: "2×2 사분면 분류"
+    use: "표 또는 d3_inline (htmlArt v2 후보: matrix)"
+  - signal: "사진·이미지 강조"
+    use: "image_placeholder (Media 계열)"
+
+# ── 검증 ──────────────────────────────────────────────────────────────────
+validation:
+  type_whitelist: [process, cycle, hierarchy, pyramid]
+  on_unsupported_type: "슬라이드에 .component-error 표시, 빌드 중단 안 함"
+  on_empty_body: "에러 메시지 표시"
+
+# ── 에이전트 사용 안내 ─────────────────────────────────────────────────────
+agent_usage:
+  fast_path: "decision_table 위→아래 first-match → htmlart 타입 결정"
+  fallback: "어느 신호도 미매칭 시 htmlArt 미적용 — 기존 도구(mermaid 등) 룰로 위임"
+  status_gate: "meta.status == active — core parser 구현 완료, htmlArt 출력 가능"
