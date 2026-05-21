@@ -25,23 +25,6 @@
 
 # 🚧 진행중
 
-## Issue193. htmlArt 렌더 백엔드 CSS → SVG(d3) 전환 (등록: 2026-05-21)
-* 목적: htmlArt 4타입(process/cycle/hierarchy/pyramid)이 순수 CSS 구현이라 Issue188~192 5개 이슈가 전부 시각 튜닝 반복으로 소진됨. 특히 cycle 원형 배치·hierarchy 연결선은 CSS로 좌표·곡선 계산이 불가능 — `nth-child` 8개 하드코딩(노드 수 상한), 고정 600px(비반응형), 화살표 부재. 렌더 백엔드를 SVG로 전환하여 좌표·연결선을 계산 기반으로 해결한다.
-* arch: `_doc_arch/htmlArt.md`
-* 카테고리: Generator + Theme
-* 상세:
-    - 신규 의존성 0 — d3@7.9.0 full bundle이 markmap 의존성으로 이미 unconditional 로드됨. cycle은 삼각함수만으로 충분하고, hierarchy/pyramid는 d3-hierarchy(tree)·d3-shape(link)를 활용 (둘 다 v7 번들 포함)
-    - `::: htmlart <type>` 문법·들여쓰기 입력 모델 유지. `preprocessPandocDiv` 출력(`data-htmlart` div + 내부 `<ul>`) 그대로 — graceful degradation(JS 미동작 시 list 표시)
-    - 신규 component hook `lib/component-hooks/htmlart_dispatch.js`: reveal ready 시 `div[data-htmlart]` 내부 ul 트리를 파싱하여 타입별 SVG 렌더 후 ul 교체
-    - `data/component-libraries.yml`에 `htmlart` 엔트리 추가 (`init_hook: htmlart_dispatch`, `detect_inline: data-htmlart=`, CDN 없음 — d3 재사용)
-    - 타입별 마이그레이션 순서: cycle(우선) → hierarchy → process → pyramid. 마이그레이션 완료 타입만 `theme/_shared/components.css` 해당 블록 제거
-* 구현 명세 (1차 — cycle PoC, 본 세션 선구현):
-    - cycle 타입 SVG 렌더 선구현. process/hierarchy/pyramid는 훅이 미처리 → 기존 CSS 유지 (점진 전환, 무회귀)
-    - cycle: N노드 원형 등간격 배치 + 노드 간 곡선 화살표(arc path + marker) + foreignObject 텍스트 박스(HTML 자동 줄바꿈). 노드 수 무제한 (CSS `nth-child` 8개 한계 제거)
-    - 색상은 `.m2-htmlart`가 정의한 CSS 변수(`--htmlart-accent` 등) 상속
-    - 잔여 3타입(hierarchy/pyramid/process) d3 레이아웃 기반 이관은 후속 작업
-* 검증 (1차): `node --test` 통과. htmlArtTest 빌드 후 cycle 슬라이드 SVG 렌더 + htmlart_dispatch 훅 주입 확인. process/cycle 외 타입 회귀 0.
-
 # 📕 중요
 
 # 📙 일반
@@ -49,6 +32,24 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue193. htmlArt 렌더 백엔드 CSS → d3 SVG 전환 (등록: 2026-05-21, 해결: 2026-05-21, commit: 20cc48e) ✅
+* 목적: htmlArt 4타입(process/cycle/hierarchy/pyramid)이 순수 CSS 구현이라 Issue188~192 5개 이슈가 전부 시각 튜닝 반복으로 소진됨. cycle 원형 배치·hierarchy 연결선은 CSS로 좌표·곡선 계산이 불가능 — `nth-child` 8개 하드코딩, 고정 600px, 화살표 부재. 렌더 백엔드를 클라이언트 d3 SVG로 전환.
+* arch: `_doc_arch/htmlArt.md`
+* 카테고리: Generator + Theme
+* 결정 (2026-05-21, 사용자 폼 응답): **전 타입 d3 API 통일** — 4타입 모두 d3 API 렌더.
+* 구현 (해결):
+    - 신규 component hook `lib/component-hooks/htmlart_dispatch.js` — reveal ready 시 `div[data-htmlart]` 내부 ul 트리 파싱 → 타입별 d3 SVG 렌더 후 ul 교체
+        - cycle: `d3.pointRadial` 원형 좌표 + `d3.path().arc()` 순환 곡선 화살표
+        - hierarchy: `d3.hierarchy` + `d3.tree().nodeSize()` 조직도 레이아웃 + `d3.linkVertical()` 연결선. 다중 루트 가상 루트 처리
+        - pyramid: `d3.scaleLinear` 층 너비 비례 + SVG `<polygon>` 적층 사다리꼴 + 우측 상세 패널
+        - process: `d3.range` 단계 박스 가로 체인 + 진행 방향 삼각 화살표 `<polygon>`
+    - `data/component-libraries.yml`에 `htmlart` 엔트리 (`init_hook: htmlart_dispatch`, `detect_inline: data-htmlart=`, CDN 없음 — d3@7.9.0 재사용. d3는 `html-builder.js` 정적 블록이 무조건 로드)
+    - `theme/_shared/components.css`의 타입별 htmlArt CSS 블록 전부 제거 — `.m2-htmlart` 공통 컨테이너(CSS 변수·component-error)만 잔존 (Issue194 pyramid clip-path CSS도 d3로 대체됨)
+    - `data/htmlart/types.yml` cycle impl_note d3 갱신, `lib/__tests__/component-libraries.test.js` htmlart 검증 3건
+    - 입력 모델(`::: htmlart <type>` + 들여쓰기 ul) 무변경 — graceful degradation(JS 미동작 시 list 노출)
+* 검증: `node --test` 144/144 통과. htmlArtTest 빌드 후 4타입 전부 d3 SVG 렌더 확인(Playwright — svg/foreignObject/polygon/path 카운트 + 에러 0, `stillUl` false). graphify(default_lec) 빌드 회귀 0.
+* 비고: `_doc_arch/htmlArt.md` 갱신은 `.gitignore` 대상이라 커밋 제외 — 로컬 유지 (Issue188 동일 정책).
 
 ## Issue194. htmlArt pyramid — 적층 밴드 → 단일 삼각형 + 상세 패널 (등록: 2026-05-21, 해결: 2026-05-21, commit: a7d026b) ✅
 * 목적: 기존 pyramid는 둥근 사각형 밴드를 폭만 키워 적층하는 방식이라 연속된 진짜 삼각형 모양이 형성되지 않음. 첨부된 PowerPoint 피라미드 SmartArt처럼 단일 삼각형(좌) + 층별 상세 패널(우) 구조로 재설계.
