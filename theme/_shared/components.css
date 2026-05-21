@@ -170,10 +170,11 @@
   --htmlart-surface: #f4f4f5;            /* 노드 박스 불투명 배경 — d3 연결선이 박스 뒤로 가려지게 (Issue195) */
   --htmlart-box-border: rgba(0, 0, 0, 0.16);
   --htmlart-arrow: rgba(0, 0, 0, 0.5);
-  margin: 0.6em 0;
   font-size: 0.92em;
-  /* Issue197: .contents-body(flex column)의 bullet 다음 잔여 세로 공간을 도해가 채움
-     — .media-container 와 동일 메커니즘. 비-flex 부모에선 무시(inline style fallback). */
+  /* Issue197/198: .contents-body(flex column)의 bullet 다음 잔여 세로 공간을 도해가 채움
+     — .media-container·.component-container 와 동일한 콘텐츠 컨테이너 fill 계약.
+     margin 금지 — flex item margin 은 잔여공간을 별도 잠식해 도해를 축소시킴(Issue198 P1).
+     비-flex 부모에선 무시(inline style fallback). */
   flex: 1 1 0;
   min-height: 0;
   overflow: hidden;
