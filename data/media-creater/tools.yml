@@ -102,12 +102,46 @@ tools:
       - "인포그래픽"
       - "커스텀 시각화"
       - "관계도"
+      - "그래프"
+      - "네트워크"
     output: fenced                   # ```d3 블록 — 코어 디스패처가 d3 렌더
     fenced_lang: d3
+
+  # Issue184 — 시각화 4도구 통합 (사용자 지정 선택 기준)
+  - id: react_artifact
+    type: interactive
+    handler: inline_codeblock
+    library: react                   # ⇐ component-libraries.yml id 참조 (Issue184)
+    triggers:
+      - "인터랙티브"
+      - "동적 UI"
+      - "상태 변화"
+      - "기본"
+    output: fenced                   # ```react 블록 — 코어 디스패처가 Babel+React 렌더
+    fenced_lang: react
+    note: "기본(fallback) 도구 — 다른 content_pattern_rules 미매칭 시 선택"
+
+  - id: html_artifact
+    type: decorative
+    handler: inline_codeblock        # ```wordart 블록 — raw HTML passthrough (CDN·hook 없음)
+    triggers:
+      - "장식 텍스트"
+      - "타이틀 강조"
+      - "WordArt"
+      - "Cards 초과"
+    output: fenced
+    fenced_lang: wordart
+    note: "WordArt 장식 텍스트 — Cards 로 표현하기 복잡한 경우. 순수 CSS(theme .wordart-*)"
 
 # ============================================================================
 # 2. 본문 패턴 → 도구 매핑 (Selection Rules)
 # ============================================================================
+# Issue184 4도구 선택 기준 (사용자 지정):
+#   - react_artifact : 기본(fallback) — selection_policy.default_tool
+#   - html_artifact  : Cards 로 구현하기 복잡한 경우
+#   - excalidraw     : mermaid diagram 으로 구현하기 너무 복잡한 경우
+#   - d3_inline      : 그래프·시각화에 가까운 경우
+# mermaid·chart·map 은 명시적 다이어그램/데이터 신호에 한해 기존 룰 유지.
 content_pattern_rules:
   - id: sequential_steps
     label: 순차 단계·프로세스
@@ -146,18 +180,25 @@ content_pattern_rules:
     mermaid_type: "pie"
 
   - id: freeform_architecture
-    label: 자유형 다이어그램·복잡 구조
-    body_patterns: ["아키텍처", "architecture", "system", "전체 구조"]
+    label: 자유형 다이어그램·복잡 구조 (mermaid 초과)
+    body_patterns: ["아키텍처", "architecture", "system", "전체 구조", "손그림", "스케치"]
     recommended_tool: excalidraw
+    note: "mermaid diagram 으로 구현하기 너무 복잡한 경우 (Issue184 기준)"
 
   - id: photo_screenshot
     label: 사진·실사·UI 스크린샷
     body_patterns: ["사진", "스크린샷", "이미지", "photo", "screenshot"]
     recommended_tool: image_placeholder
 
+  - id: decorative_text
+    label: 장식 텍스트·타이틀 강조 (Cards 초과)
+    body_patterns: ["장식 텍스트", "타이틀 강조", "WordArt", "강조 문구", "꾸민 제목"]
+    recommended_tool: html_artifact
+    note: "Cards 로 구현하기 복잡한 장식 HTML — WordArt 효과 (Issue184 기준)"
+
   - id: infographic_layout
     label: 인포그래픽 (HTML 기반)
-    body_patterns: ["인포그래픽", "infographic", "complex_layout"]
+    body_patterns: ["infographic", "complex_layout"]
     recommended_tool: design_html
 
   - id: numeric_chart
@@ -171,9 +212,23 @@ content_pattern_rules:
     recommended_tool: map_inline
 
   - id: custom_infographic
-    label: 커스텀 데이터 시각화 (d3)
-    body_patterns: ["커스텀 시각화", "관계도", "네트워크 그래프", "d3"]
+    label: 커스텀 데이터 시각화·그래프 (d3)
+    body_patterns: ["커스텀 시각화", "관계도", "네트워크 그래프", "그래프", "d3"]
     recommended_tool: d3_inline
+    note: "그래프·시각화에 가까운 경우 (Issue184 기준)"
+
+# ============================================================================
+# 2.5. 선택 정책 (Selection Policy) — Issue184
+# ============================================================================
+# media-creater agent 는 content_pattern_rules 를 순서대로 평가하여 첫 매칭 룰의
+# recommended_tool 을 채택한다. 어느 룰도 매칭되지 않으면 default_tool 을 사용한다.
+selection_policy:
+  evaluation: first_match            # content_pattern_rules 위→아래 첫 매칭 채택
+  default_tool: react_artifact       # 미매칭 시 기본 — 인터랙티브 React artifact
+  priority_note: |
+    mermaid·chart·map 룰이 명시적 다이어그램/데이터 신호를 먼저 흡수하고,
+    excalidraw(mermaid 초과)·html_artifact(Cards 초과)·d3(그래프) 가 그다음,
+    어느 것도 아니면 react_artifact 가 기본값으로 적용된다.
 
 # ============================================================================
 # 3. 처리 정책

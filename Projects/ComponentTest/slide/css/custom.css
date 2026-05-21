@@ -23,6 +23,11 @@
   --kn-accent-soft: #FFE15A;     /* 보조 노랑 */
   --kn-text: #111111;
   --kn-page-num-color: #777777;
+  /* 카드 컴포넌트(`::: cards`) 색상 — 테마 기존 변수 상속이 기본. 특정 색 지정 시 이 값만 교체 */
+  --m2-card-title-bg: var(--kn-accent);     /* 제목 밴드: 테마 accent 색 */
+  --m2-card-title-fg: var(--kn-text);       /* 제목 글자: 테마 텍스트 색 */
+  --m2-card-body-bg: rgba(0, 0, 0, 0.04);   /* 본문: 슬라이드 배경 위 옅은 틴트 */
+  --m2-card-border: rgba(0, 0, 0, 0.12);    /* 테두리: 옅은 중립색 */
 }
 
 /* 슬라이드 본문 색상 — 흰 배경, 검정 텍스트 (sky.css 의존 제거 후 명시) */
@@ -328,6 +333,72 @@
   max-width: none !important;
   max-height: none !important;
   object-fit: contain;
+}
+
+/* Issue183: component 슬롯 (chart/map/d3) — diagram 슬롯(.media-container)과 분리.
+   media-container 의 blanket svg/img 룰은 viewBox/replaced 콘텐츠를 가정하므로
+   viewBox 없는 raw SVG(d3)·타일 img(map) 를 깨뜨림. component 슬롯은 영역만 제공하고
+   사이징은 각 컴포넌트(디스패처 훅)가 책임진다. */
+.reveal section[class*="layout-"] .contents-body > .component-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.reveal section[class*="layout-"] .component-container > svg {
+  flex: 1 1 0;
+  width: 100% !important;
+  min-height: 0;
+}
+
+/* Issue184: WordArt — ```wordart fenced block (HTML artifact).
+   순수 CSS 장식 텍스트 효과. .wordart-block 슬롯 영역 안에서 자유 HTML 작성. */
+.reveal .wordart-block {
+  justify-content: center;
+  align-items: center;
+  gap: 0.4em;
+  text-align: center;
+}
+.reveal .wordart-block > * { margin: 0.1em 0; }
+.reveal .wordart-gradient {
+  background: linear-gradient(92deg, #2b8fb3, #6a3fb5 55%, #c0392b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  font-weight: 800;
+}
+.reveal .wordart-outline {
+  color: transparent;
+  -webkit-text-stroke: 2px #2b8fb3;
+  font-weight: 800;
+}
+.reveal .wordart-shadow {
+  color: #2b8fb3;
+  text-shadow: 3px 4px 6px rgba(0, 0, 0, 0.35);
+  font-weight: 800;
+}
+.reveal .wordart-3d {
+  color: #f0f0f0;
+  font-weight: 800;
+  text-shadow: 1px 1px 0 #b0b0b0, 2px 2px 0 #9a9a9a, 3px 3px 0 #848484,
+    4px 4px 0 #6e6e6e, 5px 6px 8px rgba(0, 0, 0, 0.4);
+}
+.reveal .wordart-glow {
+  color: #fff;
+  font-weight: 800;
+  text-shadow: 0 0 6px #2bd4ff, 0 0 14px #2bd4ff, 0 0 26px #1f9fd4;
+}
+
+/* component 렌더 실패 표시 (react_dispatch·d3_dispatch 공용) */
+.reveal .component-error {
+  color: #c0392b;
+  font-size: 0.7em;
+  padding: 0.6em 1em;
+  border: 1px dashed #c0392b;
+  border-radius: 6px;
+  background: rgba(192, 57, 43, 0.06);
 }
 
 /* =========================================================================
@@ -1204,4 +1275,77 @@ body.agenda-page .agenda-frame {
 .guide-line-mode .reveal section.layout-_contents > .contents-head-bar > .contents-head-left,
 .guide-line-mode .reveal section.layout-_contents > .contents-head-bar > .contents-head-right {
   outline: 1px dotted rgba(180, 80, 0, 0.7);
+}
+
+/* =========================================================================
+   카드 컴포넌트 — `::: cards` fenced div: 내부 리스트를 카드 그리드로 배치.
+   인포그래픽보다 단순한 "균질 항목 N개 병렬 제시"용 (slide-components.md Core 계열).
+   ========================================================================= */
+.reveal .m2-cards > ul,
+.reveal .m2-cards > ol {
+  display: grid;
+  /* --m2-card-columns: _config.yml card_columns 키로 주입 (기본 auto-fit). 프로젝트 한정 카드 폭 제어 */
+  grid-template-columns: repeat(var(--m2-card-columns, auto-fit), minmax(200px, 1fr));
+  gap: 18px;
+  list-style: none;
+  padding: 0;
+  margin: 0.5em 0;
+}
+/* 카드 박스 — 제목 밴드가 카드 폭을 꽉 채우도록 padding 0 + overflow hidden */
+.reveal .m2-cards > ul > li,
+.reveal .m2-cards > ol > li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--m2-card-body-bg, rgba(0, 0, 0, 0.04));
+  border: 1px solid var(--m2-card-border, rgba(0, 0, 0, 0.12));
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  line-height: 1.5;
+}
+/* 카드 제목 밴드 — 테마 컬러 변수. 제목은 `**볼드**`로 작성 */
+.reveal .m2-cards > ul > li > strong,
+.reveal .m2-cards > ol > li > strong {
+  display: block;
+  margin: 0;
+  padding: 10px 18px;
+  background: var(--m2-card-title-bg, var(--kn-accent));
+  color: var(--m2-card-title-fg, var(--kn-text));
+  text-align: center;
+  font-size: 1.05em;
+}
+/* 카드 본문 — 제목 아래 중첩 리스트 */
+.reveal .m2-cards li ul,
+.reveal .m2-cards li ol {
+  display: block;
+  list-style: none;
+  margin: 0;
+  padding: 12px 18px;
+}
+.reveal .m2-cards li ul ul,
+.reveal .m2-cards li ul ol {
+  padding: 2px 0 2px 1.4em;
+}
+.reveal .m2-cards li ul li {
+  list-style: none;
+  margin: 0.15em 0;
+}
+/* 카드 li 자체 마커 제거 (base.css §10 ● override) */
+.reveal section[class*="layout-"] .m2-cards > ul > li::before,
+.reveal section[class*="layout-"] .m2-cards > ol > li::before {
+  content: none;
+}
+/* 본문 bullet 규칙: 1단계 다항목 → · / 1단계 단일 항목 → 마커 없음 / 2단계 → - */
+.reveal section[class*="layout-"] .m2-cards > ul > li > ul > li::before {
+  content: "·";
+}
+.reveal section[class*="layout-"] .m2-cards > ul > li > ul > li:only-child::before {
+  content: none;
+}
+.reveal section[class*="layout-"] .m2-cards > ul > li > ul > li:only-child {
+  padding-left: 0;
+}
+.reveal section[class*="layout-"] .m2-cards > ul > li > ul > li > ul > li::before {
+  content: "-";
 }

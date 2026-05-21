@@ -14,8 +14,9 @@ color: purple
 
 * SSOT yml: [`../../data/media-creater/tools.yml`](../../data/media-creater/tools.yml)
 * yml 최상위 키:
-    - `tools[]` — 미디어 생성 도구 카탈로그 (mermaid_inline/mermaid_svg/excalidraw/design_html/image_placeholder/gemini_describe)
+    - `tools[]` — 미디어 생성 도구 카탈로그 (mermaid_inline/chart_inline/map_inline/d3_inline/react_artifact/html_artifact/excalidraw/image_placeholder 등)
     - `content_pattern_rules[]` — 본문 패턴 → 추천 도구 매핑 (sequential_steps/time_sequence/hierarchy_tree 등)
+    - `selection_policy` — 룰 평가 방식·기본 도구(`default_tool`) — 매칭 0건 시 fallback (Issue184)
     - `processing_policy` — body 보존·mermaid placement·syntax validation·placeholder 생성 정책
     - `spec_template` — 외부 생성 위임 명세 frontmatter·body 양식
     - `validation_rules[]` — mermaid syntax·placeholder 실존·spec frontmatter·alt 텍스트 검증
@@ -54,7 +55,7 @@ L2 부재 시 L1 그대로 사용 (하위호환). 설계 SSOT: [`../../_doc_arch
 1. **yml 로드** — `Read data/media-creater/tools.yml` → 전체 키 추출
 2. **본문 스캔** — `Glob Projects/<Name>/markdown/*.md` 또는 `<Name>.md` → 각 H2 슬라이드별 본문 추출
 3. **패턴 매칭** — 각 슬라이드 본문에 대해 `content_pattern_rules[].body_patterns` 키워드 매칭 → 후보 패턴 추출
-4. **도구 선택** — 매칭된 패턴의 `recommended_tool`로 `tools[]`에서 해당 entry 찾기
+4. **도구 선택** — 매칭된 패턴의 `recommended_tool`로 `tools[]`에서 해당 entry 찾기. **매칭된 패턴이 0건이면 `selection_policy.default_tool`을 채택** (Issue184 — 기본 fallback 도구)
 5. **산출물 생성**:
     - `tools[].output: inline` → 본문에 mermaid 코드블록 삽입 (`processing_policy.mermaid_placement`)
     - `tools[].output_path: img/` → 파일 생성 + 본문에 마크다운 참조 추가 (`processing_policy.image_reference_format`)
@@ -115,7 +116,8 @@ for each slide (H2 단위):
     body 추출
     for each rule in content_pattern_rules:
         if any body_pattern in body: 후보로 등록
-    선택: 가장 매칭 강도 높은 도구
+    if 후보 0건: 선택 = selection_policy.default_tool   # Issue184 — 기본 fallback
+    else:        선택 = 가장 매칭 강도 높은 도구
 ```
 
 ## 3. 도구별 산출물 생성

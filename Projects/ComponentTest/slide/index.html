@@ -1222,7 +1222,7 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1779273311135">
+  <link rel="stylesheet" href="css/custom.css?v=1779339508316">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1428,6 +1428,7 @@ html.ratio-fill .agenda-frame {
   --slide-ratio: 1.5;
   --slide-outer-padding: 0px;
   --slide-inner-padding: 0px;
+  --m2-card-columns: 3;
 ">
   <!-- Issue107: nav-up-btn 제거 — Reveal 기본 .controls .navigate-up/.navigate-down에 동작 위임 -->
   <!-- Issue55 Phase 7: #toc-container 오버레이 제거 — 마크맵은 _toc.html layout 내부 SVG 또는 agenda.html에서 렌더 -->
@@ -1470,14 +1471,20 @@ html.ratio-fill .agenda-frame {
   <header class="toc-page-header">
     <h1 class="toc-page-title">구성요소 라이브러리 테스트</h1>
   </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="7">
+  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="13">
 <li class="chapter-card"><a href="#/3">Mermaid 다이어그램 (회귀 기준)</a></li>
 <li class="chapter-card"><a href="#/4">수식 (KaTeX)</a></li>
-<li class="chapter-card"><a href="#/5">아이콘 (Font Awesome)</a></li>
-<li class="chapter-card"><a href="#/6">차트 (chart.js)</a></li>
-<li class="chapter-card"><a href="#/7">지도 (Leaflet)</a></li>
-<li class="chapter-card"><a href="#/8">인포그래픽 (d3)</a></li>
-<li class="chapter-card"><a href="#/9">Phase 진행 현황</a></li>
+<li class="chapter-card"><a href="#/5">심벌 (Font Awesome)</a></li>
+<li class="chapter-card"><a href="#/6">이모지 (Emoji)</a></li>
+<li class="chapter-card"><a href="#/7">차트 (chart.js)</a></li>
+<li class="chapter-card"><a href="#/8">지도 (Leaflet)</a></li>
+<li class="chapter-card"><a href="#/9">인포그래픽 (d3)</a></li>
+<li class="chapter-card"><a href="#/10">카드 (Cards)</a></li>
+<li class="chapter-card"><a href="#/11">React artifact</a></li>
+<li class="chapter-card"><a href="#/12">HTML artifact (WordArt)</a></li>
+<li class="chapter-card"><a href="#/13">React artifact — Hooks·리스트</a></li>
+<li class="chapter-card"><a href="#/14">HTML artifact — SVG 곡선 텍스트</a></li>
+<li class="chapter-card"><a href="#/15">Phase 진행 현황</a></li>
 </ul></div>
 </section>
 
@@ -1521,7 +1528,7 @@ graph TD
     <div class="contents-head-left">구성요소 라이브러리 테스트</div>
     
   </div>
-  <h2 class="title">아이콘 (Font Awesome)</h2>
+  <h2 class="title">심벌 (Font Awesome)</h2>
   <div class="contents-body">
 
 <ul>
@@ -1537,10 +1544,28 @@ graph TD
     <div class="contents-head-left">구성요소 라이브러리 테스트</div>
     
   </div>
+  <h2 class="title">이모지 (Emoji)</h2>
+  <div class="contents-body">
+
+<p>별도 라이브러리 없이 Unicode 문자로 직접 렌더된다.</p>
+
+<ul>
+<li class="bullet-dot">상태 표시 — 성공 ✅ / 경고 ⚠️ / 실패 ❌</li>
+<li class="bullet-dot">강조·분위기 — 🚀 🎯 💡 🔥</li>
+<li class="bullet-dot">목록 마커 보조 — 📁 📊 🗂 📌</li>
+<li class="bullet-dot">심벌(Font Awesome)과 달리 변환 단계 없이 그대로 표시</li>
+</ul></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
+    
+  </div>
   <h2 class="title">차트 (chart.js)</h2>
   <div class="contents-body">
 
-<div class="media-container" data-component="chart">
+<div class="component-container" data-component="chart">
 {
   "type": "bar",
   "data": {
@@ -1560,7 +1585,7 @@ graph TD
   <h2 class="title">지도 (Leaflet)</h2>
   <div class="contents-body">
 
-<div class="media-container" data-component="map">
+<div class="component-container" data-component="map">
 {
   "center": [37.5665, 126.9780],
   "zoom": 11,
@@ -1579,7 +1604,7 @@ graph TD
 
 <p>데이텀마다 막대 + 값 라벨 + 범주 라벨을 묶어 그린다 — d3 고유의 커스텀 SVG 조립.</p>
 
-<div class="media-container" data-component="d3">
+<div class="component-container" data-component="d3">
 const data = [
   { label: '1세대', value: 20 },
   { label: '2세대', value: 55 },
@@ -1605,13 +1630,166 @@ g.append('text')
     <div class="contents-head-left">구성요소 라이브러리 테스트</div>
     
   </div>
+  <h2 class="title">카드 (Cards)</h2>
+  <div class="contents-body">
+
+<p>리스트를 카드 그리드로 배치한다. 인포그래픽과 달리 균질한 항목을 단순 병렬 제시할 때 쓴다.</p>
+
+<div class="m2-cards cards">
+<ul>
+<li class="bullet-dot"><strong>수식</strong>
+<ul>
+<li class="bullet-dash">KaTeX 블록·인라인 LaTeX 렌더</li>
+</ul>
+</li>
+<li class="bullet-dot"><strong>심벌</strong>
+<ul>
+<li class="bullet-dash">Font Awesome <code>:fa-name:</code> 인라인</li>
+</ul>
+</li>
+<li class="bullet-dot"><strong>차트</strong>
+<ul>
+<li class="bullet-dash">chart.js 캔버스 그래프</li>
+<li class="bullet-dash">막대·선·원형 차트 지원</li>
+<li class="bullet-dash">실시간 데이터 갱신</li>
+</ul>
+</li>
+<li class="bullet-dot"><strong>지도</strong>
+<ul>
+<li class="bullet-dash">Leaflet OpenStreetMap 타일</li>
+</ul>
+</li>
+<li class="bullet-dot"><strong>인포그래픽</strong>
+<ul>
+<li class="bullet-dash">d3 커스텀 SVG 조립</li>
+</ul>
+</li>
+<li class="bullet-dot"><strong>이모지</strong>
+<ul>
+<li class="bullet-dash">Unicode 네이티브 문자</li>
+</ul>
+</li>
+</ul>
+</div></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
+    
+  </div>
+  <h2 class="title">React artifact</h2>
+  <div class="contents-body">
+
+<p>JSX로 작성하는 인터랙티브 컴포넌트. Babel-standalone가 브라우저에서 변환한다.</p>
+
+<div class="component-container" data-component="react">
+function Counter() {
+  const [n, setN] = React.useState(0);
+  return (
+    &lt;div style={{ textAlign: 'center', fontSize: '1.4rem' }}&gt;
+      &lt;p&gt;클릭 횟수: &lt;strong&gt;{n}&lt;/strong&gt;&lt;/p&gt;
+      &lt;button onClick={() =&gt; setN(n + 1)}&gt;+1&lt;/button&gt;
+      &lt;button onClick={() =&gt; setN(0)}&gt;리셋&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+render(&lt;Counter /&gt;);
+</div></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
+    
+  </div>
+  <h2 class="title">HTML artifact (WordArt)</h2>
+  <div class="contents-body">
+
+<p>Cards로 표현하기 복잡한 장식 텍스트. 순수 CSS WordArt 효과.</p>
+
+<div class="component-container wordart-block">
+<h2 class="wordart-gradient">그라데이션</h2>
+<h2 class="wordart-outline">외곽선</h2>
+<h2 class="wordart-shadow">그림자</h2>
+<h2 class="wordart-3d">입체 3D</h2>
+<h2 class="wordart-glow">네온 발광</h2>
+</div></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
+    
+  </div>
+  <h2 class="title">React artifact — Hooks·리스트</h2>
+  <div class="contents-body">
+
+<p><code>useEffect</code> 타이머와 배열 <code>map</code> 렌더링 검증.</p>
+
+<div class="component-container" data-component="react">
+function Clock() {
+  const [t, setT] = React.useState(new Date().toLocaleTimeString());
+  React.useEffect(() =&gt; {
+    const id = setInterval(() =&gt; setT(new Date().toLocaleTimeString()), 1000);
+    return () =&gt; clearInterval(id);
+  }, []);
+  const hooks = ['useState', 'useEffect', 'cleanup'];
+  return (
+    &lt;div style={{ textAlign: 'center' }}&gt;
+      &lt;p style={{ fontSize: '2rem', fontWeight: 'bold', color: '#2b8fb3' }}&gt;{t}&lt;/p&gt;
+      &lt;ul style={{ display: 'inline-block', textAlign: 'left' }}&gt;
+        {hooks.map((h, i) =&gt; &lt;li key={i}&gt;{h}&lt;/li&gt;)}
+      &lt;/ul&gt;
+    &lt;/div&gt;
+  );
+}
+render(&lt;Clock /&gt;);
+</div></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
+    
+  </div>
+  <h2 class="title">HTML artifact — SVG 곡선 텍스트</h2>
+  <div class="contents-body">
+
+<p>WordArt 클래스로 표현 불가한 곡선 텍스트는 본문에 inline SVG <code>textPath</code>로 작성.</p>
+
+<div class="component-container wordart-block">
+<svg viewBox="0 0 420 170" width="460">
+  <defs>
+    <linearGradient id="wa-grad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#2b8fb3"/>
+      <stop offset="55%" stop-color="#6a3fb5"/>
+      <stop offset="100%" stop-color="#c0392b"/>
+    </linearGradient>
+    <path id="wa-curve" d="M30,140 Q210,10 390,140" fill="none"/>
+  </defs>
+  <text font-size="40" font-weight="800" fill="url(#wa-grad)">
+    <textPath href="#wa-curve" startOffset="50%" text-anchor="middle">곡선 WordArt</textPath>
+  </text>
+</svg>
+</div></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
+    
+  </div>
   <h2 class="title">Phase 진행 현황</h2>
   <div class="contents-body">
 
 <ul>
 <li class="bullet-dot">Phase 0 — 레지스트리 + generic 디스패처 인프라</li>
-<li class="bullet-dot">Phase 1 — 수식·아이콘·차트 ✅</li>
-<li class="bullet-dot">Phase 2 — 지도·인포그래픽 (본 슬라이드까지) ✅</li>
+<li class="bullet-dot">Phase 1 — 수식·심벌·차트 ✅</li>
+<li class="bullet-dot">Phase 2 — 지도·인포그래픽 ✅</li>
+<li class="bullet-dot">Phase 3 — React artifact·HTML artifact(WordArt) (본 슬라이드까지) ✅</li>
+<li class="bullet-dot">emoji — Unicode 네이티브, 라이브러리 무관 ✅</li>
+<li class="bullet-dot">카드 — <code>::: cards</code> 리스트→카드 그리드, m2slide 자체 구현 ✅</li>
 </ul></div>
 </section>
 
@@ -1627,6 +1805,16 @@ g.append('text')
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
   <script>
 (function(){
+  function fitSvg(el){
+    var svg = el.querySelector("svg");
+    if (!svg || svg.getAttribute("viewBox")) return;
+    var vw = parseFloat(svg.getAttribute("width")) || svg.clientWidth || 480;
+    var vh = parseFloat(svg.getAttribute("height")) || svg.clientHeight || 270;
+    svg.setAttribute("viewBox", "0 0 " + vw + " " + vh);
+    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    svg.removeAttribute("width");
+    svg.removeAttribute("height");
+  }
   function render(){
     if (typeof d3 === "undefined") return;
     document.querySelectorAll("div[data-component=\"d3\"]").forEach(function(el){
@@ -1634,7 +1822,7 @@ g.append('text')
       var code = (el.textContent || "").trim();
       el.textContent = "";
       el.setAttribute("data-rendered", "1");
-      try { new Function("d3", "el", code)(d3, el); }
+      try { new Function("d3", "el", code)(d3, el); fitSvg(el); }
       catch(e){ el.innerHTML = "<div class=\"component-error\">d3 렌더 실패: " + e.message + "</div>"; }
     });
   }
@@ -1702,7 +1890,6 @@ g.append('text')
       catch(e){ el.innerHTML = "<div class=\"component-error\">map config JSON 파싱 실패</div>"; return; }
       el.textContent = "";
       el.setAttribute("data-rendered", "1");
-      el.classList.remove("media-container");
       fitHeight(el);
       try {
         var map = L.map(el).setView(cfg.center || [0,0], cfg.zoom || 2);
@@ -1728,6 +1915,31 @@ g.append('text')
   } else {
     document.addEventListener("DOMContentLoaded", renderAll);
   }
+})();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.26.4/babel.min.js"></script>
+  <script>
+(function(){
+  function render(){
+    if (typeof React === "undefined" || typeof ReactDOM === "undefined" || typeof Babel === "undefined") return;
+    document.querySelectorAll("div[data-component=\"react\"]").forEach(function(el){
+      if (el.getAttribute("data-rendered")) return;
+      var code = (el.textContent || "").trim();
+      el.textContent = "";
+      el.setAttribute("data-rendered", "1");
+      try {
+        var js = Babel.transform(code, { presets: ["react"] }).code;
+        var mount = function(element){ ReactDOM.createRoot(el).render(element); };
+        new Function("React", "ReactDOM", "el", "render", js)(React, ReactDOM, el, mount);
+      } catch(e){
+        el.innerHTML = "<div class=\"component-error\">React 렌더 실패: " + e.message + "</div>";
+      }
+    });
+  }
+  if (window.Reveal && Reveal.on) Reveal.on("ready", render);
+  else document.addEventListener("DOMContentLoaded", render);
 })();
   </script>
   <script>
@@ -1873,7 +2085,7 @@ g.append('text')
 
 
     // Inject configuration
-    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"head_left":"d1","head_right":"now","head_breadcum":true,"style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":[]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
+    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"head_left":"d1","head_right":"now","head_breadcum":true,"cardColumns":"3","style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":[]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
 
     // Dynamic Styling and Resizing Script
     let observer; // Define observer at top level
@@ -2002,23 +2214,47 @@ g.append('text')
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/5\">아이콘 (Font Awesome)</a>",
+                              "content": "<a href=\"#/5\">심벌 (Font Awesome)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/6\">차트 (chart.js)</a>",
+                              "content": "<a href=\"#/6\">이모지 (Emoji)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/7\">지도 (Leaflet)</a>",
+                              "content": "<a href=\"#/7\">차트 (chart.js)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/8\">인포그래픽 (d3)</a>",
+                              "content": "<a href=\"#/8\">지도 (Leaflet)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/9\">Phase 진행 현황</a>",
+                              "content": "<a href=\"#/9\">인포그래픽 (d3)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/10\">카드 (Cards)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/11\">React artifact</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/12\">HTML artifact (WordArt)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/13\">React artifact — Hooks·리스트</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/14\">HTML artifact — SVG 곡선 텍스트</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/15\">Phase 진행 현황</a>",
                               "children": []
                         }
                   ]
