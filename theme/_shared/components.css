@@ -91,11 +91,11 @@
 .reveal .m2-cards > ol {
   display: grid;
   /* --m2-card-columns: _config.yml card_columns 키로 주입 (기본 auto-fit). 프로젝트 한정 카드 폭 제어 */
-  grid-template-columns: repeat(var(--m2-card-columns, auto-fit), minmax(200px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(var(--m2-card-columns, auto-fit), minmax(180px, 1fr));
+  gap: 10px;
   list-style: none;
   padding: 0;
-  margin: 0.5em 0;
+  margin: 0.25em 0;
 }
 /* 카드 박스 — 제목 밴드가 카드 폭을 꽉 채우도록 padding 0 + overflow hidden */
 .reveal .m2-cards > ul > li,
@@ -115,7 +115,7 @@
 .reveal .m2-cards > ol > li > strong {
   display: block;
   margin: 0;
-  padding: 10px 18px;
+  padding: 7px 14px;
   background: var(--m2-card-title-bg, var(--kn-accent));
   color: var(--m2-card-title-fg, var(--kn-text));
   text-align: center;
@@ -127,7 +127,7 @@
   display: block;
   list-style: none;
   margin: 0;
-  padding: 12px 18px;
+  padding: 8px 13px;
 }
 .reveal .m2-cards li ul ul,
 .reveal .m2-cards li ul ol {
