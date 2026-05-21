@@ -281,12 +281,3 @@ report_template: |
   * layout 분포: {layout_distribution}
   * 검증: build {build_status} / class 적용 {class_status}
   * 다음 단계: 단계 7 slot-designer
-
-# ============================================================================
-# 13. 프로젝트별 override 메커니즘
-# ============================================================================
-overrides:
-  enabled: true
-  path: data/layout-selector/overrides/{project_name}.yml
-  merge_strategy: deep_merge  # 프로젝트 override가 기본 rules 위에 덮어씀
-  schema_compat: v2           # overrides도 본 yml과 동일 스키마

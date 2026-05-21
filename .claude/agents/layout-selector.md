@@ -28,10 +28,6 @@ color: green
     - `checkpoint` — 사용자 검토 메시지
     - `execution_constraints` — Opus 4.7 실행 제약
     - `report_template` — 종료 보고
-    - `overrides` — 프로젝트별 override 메커니즘 (`overrides/{project}.yml`)
-
-* 보조 자산:
-    - `data/layout-selector/overrides/<project>.yml` — 프로젝트별 override (선택, deep_merge)
 
 ## 프로젝트 정책 cascade (L2)
 
@@ -61,7 +57,7 @@ L2 부재 시 L1 그대로 사용 (하위호환). 설계 SSOT: [`../../_doc_arch
 
 # 적용 알고리즘 (rules.yml 활용)
 
-1. **yml 로드** — `Read data/layout-selector/rules.yml` → 전체 키 추출. `overrides.enabled: true`이고 `overrides/<project>.yml` 존재 시 deep_merge
+1. **yml 로드** — `Read data/layout-selector/rules.yml` → 전체 키 추출
 2. **입력 파악** — 입력 파일·디렉토리·플래그 (`--force`/`--skip`/`--dry-run`) 추출 + 프로젝트 루트·theme 결정
 3. **theme discovery** — `theme_discovery.command` 실행 → layout 카탈로그 화이트리스트 확보. fallback theme 합치기
 4. **슬라이드 분리** — `.md`를 `---` 구분자로 분리 (frontmatter 종료 `---` 제외)
@@ -93,8 +89,6 @@ L2 부재 시 L1 그대로 사용 (하위호환). 설계 SSOT: [`../../_doc_arch
 * **체크포인트 메시지** — `checkpoint.template` 변경
 * **실행 제약** — `execution_constraints` 조정
 * **종료 보고 양식** — `report_template` 변경
-* **프로젝트별 override** — `data/layout-selector/overrides/<project>.yml` 추가 (deep_merge로 본 yml에 덮어씀)
-
 본 agent 호출 시점에 yml을 매번 Read하므로, 수정 후 다음 호출부터 즉시 반영.
 
 # 핵심 절차
@@ -109,10 +103,9 @@ L2 부재 시 L1 그대로 사용 (하위호환). 설계 SSOT: [`../../_doc_arch
     - 입력이 `Projects/<Name>/markdown/` 디렉토리 → 챕터 모드, 챕터 파일 = `markdown/XX-*.md` 패턴
     - `_config.yml` 읽어 `theme:` 값 확보
 
-## 2단계: yml + overrides 로드
+## 2단계: yml 로드
 
 * `Read data/layout-selector/rules.yml` → 전체 정책 추출
-* `overrides.enabled: true`이면 `data/layout-selector/overrides/<project_name>.yml` 존재 확인 → 있으면 deep_merge
 
 ## 3단계: theme layouts 디스커버리
 
