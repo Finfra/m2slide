@@ -25,17 +25,6 @@
 
 # 🚧 진행중
 
-## Issue190. htmlArt 도해 시각 정밀 조정 — process 간격, cycle 노드·중심, hierarchy 연결선 (등록: 2026-05-21)
-* 목적: Issue189 후속 피드백. process 박스 간격 여전히 부족, cycle ↻가 링 중심 아님·노드 폭 부족(텍스트 줄바꿈), hierarchy 연결선이 트리 밖으로 삐져나옴.
-* arch: `_doc_arch/htmlArt.md`
-* 카테고리: Theme (`default`·`default_lec` slide.css)
-* 상세:
-    - process: `> ul` 컬럼 gap 추가 확대 + 화살표 크기↑
-    - cycle: 노드 고정 높이(margin 정확 중심 정렬 → ↻ 링 중심 일치) + 노드 폭 확대(서브텍스트 1줄) + 컨테이너 확대
-    - hierarchy: `ul ul` border-left bus 제거 → per-li `::after` 세그먼트(first/last/only 트림)로 연결선이 첫·끝 자식 중심 범위만 차지하도록 — 트리 밖 돌출 제거
-* 구현 명세:
-    - 검증: `Projects/htmlArtTest` 빌드 + 브라우저 렌더 + `node --test`
-
 # 📕 중요
 
 # 📙 일반
@@ -43,6 +32,16 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue190. htmlArt 도해 시각 정밀 조정 — process 간격, cycle 중심·노드, hierarchy 연결선 (등록: 2026-05-21, 해결: 2026-05-21, commit: e438512) ✅
+* 목적: Issue189 후속 피드백. process 박스 간격 부족, cycle ↻가 링 중심 아님·노드 폭 부족(텍스트 줄바꿈·클리핑), hierarchy 연결선이 트리 밖 돌출.
+* arch: `_doc_arch/htmlArt.md`
+* 카테고리: Theme (`default`·`default_lec` slide.css)
+* 구현 명세 (해결):
+    - process: 컬럼 gap `64→92px`, 화살표 `22→27px`, `justify-content: center`
+    - cycle: 노드 고정 높이(`100px`)로 margin 정확 중심 정렬 → ↻ 링 중심 일치. 노드 폭 `162→224px`, 서브텍스트 `nowrap` 1줄, 컨테이너 `540→600px`. 제목 클리핑 해소(높이·행간·폰트)
+    - hierarchy: `ul ul` border-left bus 제거 → per-li `::after` 세로 세그먼트. first/last/only-child 트림으로 연결선이 첫·끝 자식 중심 범위만 차지 — 트리 밖 돌출 제거
+* 검증: `node --test` 141/141 통과. htmlArtTest 빌드 + process·cycle·hierarchy 브라우저 렌더 확인. m2SlideStyle1/2 회귀 0.
 
 ## Issue189. htmlArt 도해 시각 개선 — process 간격·화살표, cycle 비율, hierarchy 가로 트리 (등록: 2026-05-21, 해결: 2026-05-21, commit: aa7cbae) ✅
 * 목적: Issue188 직후 사용자 피드백 반영. process 박스 간격 부족·화살표 미가시, cycle 너비 부족·노드 높이 과다로 원형 안 보임, hierarchy 세로 트리라 markmap과 차별 없음 — htmlArt 가치는 가로 표현.
