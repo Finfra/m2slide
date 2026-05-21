@@ -30,6 +30,23 @@ color: cyan
     - `data/info-filler/templates/` — Info.md 생성 시 placeholder 보조 템플릿 (Info.template.md가 기본 원형)
     - `data/info-filler/examples/` — 분야별 예시 (선택)
 
+## 프로젝트 정책 cascade (L2)
+
+본 단계는 글로벌 정책(L1) 위에 프로젝트 override(L2)를 deep-merge하여 사용함.
+
+* L1: `data/info-filler/questions.yml` (위 SSOT yml)
+* L2: `Projects/<Name>/_pipeline/policy/info-filler.yml` (존재할 때만)
+
+병합 절차:
+
+1. L1 yml Read
+2. `Projects/<Name>/_pipeline/policy/info-filler.yml` 존재 시 Read
+3. deep-merge — L2 키를 L1 위에 덮어씀 (scalar·매핑은 L2 값 우선, 리스트는 L2 값으로 치환)
+4. L2 키가 L1 스키마에 없으면(orphan) 경고 출력 후 해당 키 무시
+5. 병합 결과를 본 단계 동작 정책으로 사용
+
+L2 부재 시 L1 그대로 사용 (하위호환). 설계 SSOT: [`../../_doc_arch/pipeline-policy-cascade.md`](../../_doc_arch/pipeline-policy-cascade.md)
+
 # 핵심 원칙
 
 1. **데이터-주도** — 질문·옵션·검증 규칙은 모두 yml에서 Read. SCAR 본문 하드코딩 금지.
@@ -192,6 +209,22 @@ yml `report_template` 양식으로 보고. 변수 치환:
 * `_config.yml` 신규 생성 — `/new-project` 커맨드 책임 (단, 본 agent가 수집한 빌드 옵션을 `_config.yml`에 동기화하는 후속 작업은 별도 이슈 후보)
 * 실제 산출물 빌드(HTML/EPUB/TXT) — 단계 8·9 책임
 * **TTS 합성·MP4 영상 렌더링** — 상위 videoMaker 프로젝트(`run.sh`) 책임. 본 agent는 TTS 엔진(`cosyVoice`/`chatterbox`), speaker(`lib/tts/Speakers/*`), MP4 렌더링 옵션을 질의하지 않음. videoMaker는 자체 `_config.yml` 또는 env로 TTS 백엔드 결정
+
+# 정책 변경 요청 처리
+
+사용자가 본 단계 정책 변경을 요청하면:
+
+1. **분류** — 글로벌(전 프로젝트) vs 프로젝트(이번 영상만)
+    - "현재 프로젝트만"·"이번 영상" → 프로젝트 (L2)
+    - "미관상"·"앞으로 늘"·범용 개선 → 글로벌 (L1)
+    - 모호하면 사용자에게 질문
+2. **키 확인** — `data/info-filler/questions.yml`에 해당 키 존재 여부
+    - 있음 → 글로벌은 `data/info-filler/questions.yml` 값 수정 / 프로젝트는 `Projects/<Name>/_pipeline/policy/info-filler.yml`에 키:값 기록
+    - 없음 → 스키마 자동 확장 (3)
+3. **스키마 자동 확장** — 새 키를 `data/info-filler/questions.yml`에 보수적 기본값(기존 동작 불변)으로 추가. 글로벌 변경이므로 사용자 체크포인트 1회 확인 후 2의 "있음" 분기 진행
+4. **로그** — `Projects/<Name>/_pipeline/history.md`에 정책 변경 entry append
+
+상세: [`../../_doc_arch/pipeline-policy-cascade.md`](../../_doc_arch/pipeline-policy-cascade.md) `# 신규 요청 흐름`
 
 # 참조
 
