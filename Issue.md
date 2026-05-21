@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 192
+* Issue HWM: 194
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -25,6 +25,23 @@
 
 # 🚧 진행중
 
+## Issue193. htmlArt 렌더 백엔드 CSS → SVG(d3) 전환 (등록: 2026-05-21)
+* 목적: htmlArt 4타입(process/cycle/hierarchy/pyramid)이 순수 CSS 구현이라 Issue188~192 5개 이슈가 전부 시각 튜닝 반복으로 소진됨. 특히 cycle 원형 배치·hierarchy 연결선은 CSS로 좌표·곡선 계산이 불가능 — `nth-child` 8개 하드코딩(노드 수 상한), 고정 600px(비반응형), 화살표 부재. 렌더 백엔드를 SVG로 전환하여 좌표·연결선을 계산 기반으로 해결한다.
+* arch: `_doc_arch/htmlArt.md`
+* 카테고리: Generator + Theme
+* 상세:
+    - 신규 의존성 0 — d3@7.9.0 full bundle이 markmap 의존성으로 이미 unconditional 로드됨. cycle은 삼각함수만으로 충분하고, hierarchy/pyramid는 d3-hierarchy(tree)·d3-shape(link)를 활용 (둘 다 v7 번들 포함)
+    - `::: htmlart <type>` 문법·들여쓰기 입력 모델 유지. `preprocessPandocDiv` 출력(`data-htmlart` div + 내부 `<ul>`) 그대로 — graceful degradation(JS 미동작 시 list 표시)
+    - 신규 component hook `lib/component-hooks/htmlart_dispatch.js`: reveal ready 시 `div[data-htmlart]` 내부 ul 트리를 파싱하여 타입별 SVG 렌더 후 ul 교체
+    - `data/component-libraries.yml`에 `htmlart` 엔트리 추가 (`init_hook: htmlart_dispatch`, `detect_inline: data-htmlart=`, CDN 없음 — d3 재사용)
+    - 타입별 마이그레이션 순서: cycle(우선) → hierarchy → process → pyramid. 마이그레이션 완료 타입만 `theme/_shared/components.css` 해당 블록 제거
+* 구현 명세 (1차 — cycle PoC, 본 세션 선구현):
+    - cycle 타입 SVG 렌더 선구현. process/hierarchy/pyramid는 훅이 미처리 → 기존 CSS 유지 (점진 전환, 무회귀)
+    - cycle: N노드 원형 등간격 배치 + 노드 간 곡선 화살표(arc path + marker) + foreignObject 텍스트 박스(HTML 자동 줄바꿈). 노드 수 무제한 (CSS `nth-child` 8개 한계 제거)
+    - 색상은 `.m2-htmlart`가 정의한 CSS 변수(`--htmlart-accent` 등) 상속
+    - 잔여 3타입(hierarchy/pyramid/process) d3 레이아웃 기반 이관은 후속 작업
+* 검증 (1차): `node --test` 통과. htmlArtTest 빌드 후 cycle 슬라이드 SVG 렌더 + htmlart_dispatch 훅 주입 확인. process/cycle 외 타입 회귀 0.
+
 # 📕 중요
 
 # 📙 일반
@@ -32,6 +49,17 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue194. htmlArt pyramid — 적층 밴드 → 단일 삼각형 + 상세 패널 (등록: 2026-05-21, 해결: 2026-05-21, commit: a7d026b) ✅
+* 목적: 기존 pyramid는 둥근 사각형 밴드를 폭만 키워 적층하는 방식이라 연속된 진짜 삼각형 모양이 형성되지 않음. 첨부된 PowerPoint 피라미드 SmartArt처럼 단일 삼각형(좌) + 층별 상세 패널(우) 구조로 재설계.
+* 카테고리: Generator + Theme
+* 상세:
+    - `lib/markdown.js`: pyramid 블록 최상위 bullet 라벨을 `<span class="pyr-band-label">`로 래핑 (hierarchy `ha-node` 패턴 동일). 하위 들여쓰기 항목은 그대로 중첩 `<ul>`로 파싱 → 우측 상세 패널이 됨
+    - `theme/_shared/components.css`: 각 층 = 등높이 flex 행. 삼각형 모양은 `.pyr-band-label::before`에 `clip-path: polygon()`으로 분리해 그림 — 좌표를 `--htmlart-i`/`--htmlart-n` 비례로 계산하여 N개 슬라이스가 하나의 삼각형 합성. 라벨 텍스트는 clip 미적용 → 꼭대기 좁은 층 라벨도 온전히 표시. 하위 항목은 우측 테두리 패널 + `•` 마커
+    - `data/htmlart/types.yml`: pyramid `visual:` 설명 갱신
+* 구현 명세:
+    - 검증: `node --test lib/__tests__/markdown.test.js` 38/38 통과, `htmlArtTest` 빌드 후 슬라이드 #/6(pyramid)·#/7(type 교체) 시각 확인
+    - 빌드 산출물(`Projects/htmlArtTest/slide/*`)은 진행중 Issue193 작업과 혼재되어 본 커밋에서 제외 — 소스 3파일만 커밋
 
 ## Issue192. htmlArt hierarchy — 가로 트리 → 상하 조직도 전환 (등록: 2026-05-21, 해결: 2026-05-21, commit: 5301ca9) ✅
 * 목적: Issue189~190의 hierarchy는 좌→우 가로 트리(부모 왼쪽)였으나 사용자 요구는 부모를 위에 두는 상하 조직도. 또한 좌→우 버전의 per-li `::after` bus 세그먼트가 시각적으로 끊겨 보임. 부모 위·자식 가로 행 아래의 PowerPoint Organization Chart 형태로 재설계.
