@@ -25,21 +25,6 @@
 
 # 🚧 진행중
 
-## Issue188. htmlArt core 구현 — `::: htmlart <type>` 파서 + theme CSS 4종 (등록: 2026-05-21)
-* 목적: htmlArt 설계(`_doc_arch/htmlArt.md`)를 코드로 구현. 들여쓰기 아웃라인을 `::: htmlart <type>` fenced div로 감싸면 process·cycle·hierarchy·pyramid 구조 도해로 렌더. 스캐폴드(`Projects/htmlArtTest`)는 이미 존재하나 core 미구현이라 raw 텍스트로 표시되던 것을 실제 렌더로 전환.
-* arch: `_doc_arch/htmlArt.md`
-* 카테고리: Generator (`markdown.js` preprocessPandocDiv) + Theme (`default`·`default_lec` slide.css)
-* 상세:
-    - `markdown.js` preprocessPandocDiv에 `::: htmlart <type>` 분기 추가 → `<div class="m2-htmlart htmlart-<type>" data-htmlart="<type>" style="--htmlart-n:N">`
-    - `slide-parser.js` PANDOC_LAYOUT_RESERVED에 `htmlart` 추가 (슬롯 오추출 방지)
-    - `theme/default`·`default_lec` slide.css에 `.htmlart-{process,cycle,hierarchy,pyramid}` 4종 CSS (순수 CSS, theme 변수 상속, base.css `●` 마커 override)
-    - 타입 화이트리스트 검증 — 미지원/누락 타입은 `.component-error`, 빌드 비차단
-    - `data/htmlart/types.yml`·`smartart-catalog.yml` + media-creater `tools.yml` htmlart_catalog status `design→active`
-* 구현 명세:
-    - 입력: 들여쓰기 리스트 (2칸=1레벨, 기존 list 파서 재사용)
-    - cycle 등간격 배치용 `--htmlart-n` CSS 변수 주입 (top-level `*` 항목 수)
-    - 검증: `Projects/htmlArtTest` 빌드 + `node --test`
-
 # 📕 중요
 
 # 📙 일반
@@ -47,6 +32,20 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue188. htmlArt core 구현 — `::: htmlart <type>` 파서 + theme CSS 4종 (등록: 2026-05-21, 해결: 2026-05-21, commit: 9b154b0) ✅
+* 목적: htmlArt 설계(`_doc_arch/htmlArt.md`)를 코드로 구현. 들여쓰기 아웃라인을 `::: htmlart <type>` fenced div로 감싸면 process·cycle·hierarchy·pyramid 구조 도해로 렌더. 스캐폴드(`Projects/htmlArtTest`)가 raw 텍스트로 표시되던 것을 실제 렌더로 전환.
+* arch: `_doc_arch/htmlArt.md`
+* 카테고리: Generator (`markdown.js` preprocessPandocDiv) + Theme (`default`·`default_lec` slide.css)
+* 구현 명세 (해결):
+    - `markdown.js` preprocessPandocDiv에 `::: htmlart <type>` 분기 — `<div class="m2-htmlart htmlart-<type>" data-htmlart="<type>" style="--htmlart-n:N">`. 미지원/누락 타입은 `.component-error` (빌드 비차단). openWithName보다 먼저 가로채기
+    - `slide-parser.js` PANDOC_LAYOUT_RESERVED에 `htmlart` 추가 (슬롯 오추출 방지)
+    - `theme/default`·`default_lec` slide.css에 `.htmlart-{process,cycle,hierarchy,pyramid}` 4종 CSS. base.css `●` 마커·nested-ul `margin-left:1.2em` override 위해 `section[class*="layout-"]` prefix로 specificity 강화. cycle은 `--htmlart-n` 기반 radial 배치(position:absolute + transform rotate)
+    - `data/htmlart/types.yml` status `design→active`, media-creater `tools.yml` htmlart_catalog `active`
+    - 예제 프로젝트 `Projects/htmlArtTest` (타입 4종 + 타입 교체 데모 슬라이드)
+    - `markdown.test.js` htmlArt 6 케이스 추가
+* 검증: `node --test` 139/139 통과. htmlArtTest 빌드 + 5종 슬라이드 브라우저 렌더 확인(process·cycle·hierarchy·pyramid + `::: columns` 중첩 데모). m2SlideStyle1/2 회귀 0.
+* 비고: `_doc_arch/htmlArt.md`·`data/media-creater/tools.yml` 갱신은 `.gitignore` 대상이라 커밋 제외 — 로컬 유지 (Issue184 동일 정책).
 
 ## Issue187. authoring-pipeline 전 agent의 사용자-변동 콘텐츠 data 외부화 커버리지 점검 (등록: 2026-05-21, 해결: 2026-05-21, commit: 865c4fc) ✅
 * 목적: "에이전트=구현 플랫폼, 사용자 요청에 따라 바뀌는 콘텐츠는 `data/` 파일 참조 필수" 원칙이 9단계 전 agent에 일관 적용됐는지 점검.
