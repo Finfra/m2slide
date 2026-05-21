@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 191
+* Issue HWM: 192
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -32,6 +32,17 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue192. htmlArt hierarchy — 가로 트리 → 상하 조직도 전환 (등록: 2026-05-21, 해결: 2026-05-21, commit: 5301ca9) ✅
+* 목적: Issue189~190의 hierarchy는 좌→우 가로 트리(부모 왼쪽)였으나 사용자 요구는 부모를 위에 두는 상하 조직도. 또한 좌→우 버전의 per-li `::after` bus 세그먼트가 시각적으로 끊겨 보임. 부모 위·자식 가로 행 아래의 PowerPoint Organization Chart 형태로 재설계.
+* arch: `_doc_arch/htmlArt.md`
+* 카테고리: Theme (`theme/_shared/components.css`)
+* 구현 명세 (해결):
+    - `theme/_shared/components.css` hierarchy 블록 전면 교체 (Issue191 공통 CSS 추출 후이므로 단일 파일 수정)
+    - 레이아웃: `ul` flex row(자식 가로 펼침), `li` flex column(노드 위 + 자식 ul 아래)
+    - 연결선: `li::before`/`::after` border-top 반쪽 가로 bus + `::after` border-left 세로 drop. first/last-child 바깥 bus 트림, only-child drop만. `ul::before` 부모→bus 세로선. 끊김 없는 연속 연결선
+    - base.css `●` 마커 suppressor와 specificity 충돌 → connector 셀렉터를 `.m2-htmlart.htmlart-hierarchy` 복합 클래스로 강화
+* 검증: htmlArtTest 빌드 + hierarchy 브라우저 렌더 확인(부모 위·자식 행·연결선 연속). m2SlideStyle1/2 회귀 0.
 
 ## Issue191. 공통 컴포넌트 CSS 중복 제거 — theme/_shared/components.css 추출 + @import (등록: 2026-05-21, 해결: 2026-05-21, commit: 96e5861) ✅
 * 목적: htmlArt·cards·시각화 컴포넌트 CSS가 `theme/default/slide.css`·`theme/default_lec/slide.css` 두 파일에 byte-identical하게 매번 수동 복제됨. Issue188~190(htmlArt)에서 두 파일을 동시 복붙으로 동기화했으나, 두 theme이 독립 복사본(@import 없음)이라 누락 시 즉시 drift. 이미 발생한 문제(369줄 중복)와 앞으로 발생할 문제(공통 기능 추가 시마다 복붙) 동시 해결.
