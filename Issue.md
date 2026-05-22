@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 205
+* Issue HWM: 206
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -44,6 +44,25 @@
     - `lib/__tests__/markdown.test.js`: 5종 변환 테스트
     - `Projects/htmlArtTest/htmlArtTest.md`: 5종 데모 슬라이드
     - 검증: `apply-verify-rules` — `./m2slide.sh htmlArtTest` 빌드 → HTML 직접 확인 + Chrome 표시
+
+## Issue206. m2slide 3D 모델 뷰어 컴포넌트 추가 — model-viewer (등록: 2026-05-22)
+* 목적: `component-slide-visual.md`에 `❌ 적용 예정`으로 등재된 3D 모델 컴포넌트를 구현. `fenced \`\`\`model3d\`` + JSON config 저작 문법으로 GLB 모델을 슬라이드에 인터랙티브 렌더.
+* plan: `_doc_work/plan/3d-model_plan.md`
+* 카테고리: Generator + Frontend
+* 상세:
+    - 라이브러리: model-viewer 3.5.0 (Google, GLB 특화 ES Module 웹컴포넌트) — three.js 대비 선언적·경량
+    - 저작 문법: `` ```model3d `` fenced block + JSON config (`src`, `alt`, `autoRotate`, `poster`, `ar`, `height` 등)
+    - 기존 chart/map/react 패턴 동일: `component-libraries.yml` 등재 + `conditional` CDN 주입 + dispatch hook
+* 구현 명세:
+    - `data/component-libraries.yml`: model3d 엔트리 추가 (injection: conditional, detect_fenced_lang: ["model3d"])
+    - `lib/component-registry.js`: `module_js` CDN 타입 지원 추가 (ES Module 웹컴포넌트 로드용)
+    - `lib/component-hooks/model3d_dispatch.js`: Reveal.on("ready") 패턴, JSON config → `<model-viewer>` 속성 매핑
+    - `_doc_arch/component-libraries.md`: `module_js` 타입 스키마 등재
+    - `lib/__tests__/component-libraries.test.js`: Issue206 테스트 그룹 추가
+    - `.claude/rules/md-m2slide-rules.md`: 저작 문법 등재
+    - `_doc_arch/component-slide-visual.md`: ❌ → ✅ 상태 업데이트
+    - `Projects/ComponentTest/` 재생성 + model3d 샘플 슬라이드
+    - `lib/markdown.js` 수정 불필요 (`getComponentFencedLangs()` 자동 발견)
 
 # 📕 중요
 

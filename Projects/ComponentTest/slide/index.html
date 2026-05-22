@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>구성요소 라이브러리 테스트</title>
+  <title>ComponentTest</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -1222,7 +1222,7 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1779339508316">
+  <link rel="stylesheet" href="css/custom.css?v=1779432071534">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1389,9 +1389,6 @@ html.ratio-fill .agenda-frame {
     @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
   </style>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.6.0/css/all.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body class="  media-enlarge-fit" data-nav-indicator="both" style="
   --global-font-family: Pretendard, sans-serif;
@@ -1428,7 +1425,7 @@ html.ratio-fill .agenda-frame {
   --slide-ratio: 1.5;
   --slide-outer-padding: 0px;
   --slide-inner-padding: 0px;
-  --m2-card-columns: 3;
+  --m2-card-columns: auto-fit;
 ">
   <!-- Issue107: nav-up-btn 제거 — Reveal 기본 .controls .navigate-up/.navigate-down에 동작 위임 -->
   <!-- Issue55 Phase 7: #toc-container 오버레이 제거 — 마크맵은 _toc.html layout 내부 SVG 또는 agenda.html에서 렌더 -->
@@ -1438,358 +1435,50 @@ html.ratio-fill .agenda-frame {
   <div class="reveal ratio-3-2">
     <div class="slides">
 
-<section class="layout-_cover">
-  <div class="cover-header">
-    <h1 class="cover-title">구성요소 라이브러리 테스트</h1>
-    <div class="cover-subtitle">Issue180 — 시각화 라이브러리 적용 검증 샘플</div>
-    
-  </div>
-
-  <div class="cover-body">
-    <div class="cover-instructor">
-      <span class="cover-instructor-name">nowage</span>
-      <span class="cover-instructor-contact">nowage@gmail.com</span>
-    </div>
-
-    <div class="cover-meta">
-      
-      <span class="cover-version">0.1.0</span>
-    </div>
-  </div>
-
-  
-</section>
-
-<!--
-  Issue138: Cards Page 전용 layout (autoToc cards 표시).
-  class="layout-_cards layout-_toc" 동시 부여:
-    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
-    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
-  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
--->
-<section data-heading-level="1" class="layout-_cards layout-_toc title-slide">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">구성요소 라이브러리 테스트</h1>
-  </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="13">
-<li class="chapter-card"><a href="#/3">Mermaid 다이어그램 (회귀 기준)</a></li>
-<li class="chapter-card"><a href="#/4">수식 (KaTeX)</a></li>
-<li class="chapter-card"><a href="#/5">심벌 (Font Awesome)</a></li>
-<li class="chapter-card"><a href="#/6">이모지 (Emoji)</a></li>
-<li class="chapter-card"><a href="#/7">차트 (chart.js)</a></li>
-<li class="chapter-card"><a href="#/8">지도 (Leaflet)</a></li>
-<li class="chapter-card"><a href="#/9">인포그래픽 (d3)</a></li>
-<li class="chapter-card"><a href="#/10">카드 (Cards)</a></li>
-<li class="chapter-card"><a href="#/11">React artifact</a></li>
-<li class="chapter-card"><a href="#/12">HTML artifact (WordArt)</a></li>
-<li class="chapter-card"><a href="#/13">React artifact — Hooks·리스트</a></li>
-<li class="chapter-card"><a href="#/14">HTML artifact — SVG 곡선 텍스트</a></li>
-<li class="chapter-card"><a href="#/15">Phase 진행 현황</a></li>
-</ul></div>
-</section>
-
-
 <section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
-    
-  </div>
-  <h2 class="title">Mermaid 다이어그램 (회귀 기준)</h2>
+  <h2 class="title">model3d — GLB 없음 (오류 표시 확인)</h2>
   <div class="contents-body">
 
-<p>generic fenced 디스패처 신설 후에도 기존 mermaid 경로가 정상 동작하는지 확인하는 회귀 기준 슬라이드.</p>
-
-<div class="media-container mermaid">
-graph TD
-    A[Start] --> B{Is it working?}
-    B -- Yes --> C[Great!]
-    B -- No --> D[Debug]
-    D --> B
+<div class="component-container" data-component="model3d">
+{
+  "src": "./img/missing.glb",
+  "alt": "존재하지 않는 GLB — model-viewer 로딩 실패 정상"
+}
 </div></div>
 </section>
 
 <section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
-    
-  </div>
-  <h2 class="title">수식 (KaTeX)</h2>
+  <h2 class="title">model3d — JSON 파싱 오류 확인</h2>
   <div class="contents-body">
 
-<p>블록 수식과 인라인 수식을 LaTeX로 작성한다.</p>
-
-<p>$$E = mc^2$$</p>
-
-<p>피타고라스 정리는 인라인으로 \(a^2 + b^2 = c^2\) 처럼 쓴다.</p></div>
+<div class="component-container" data-component="model3d">
+{ invalid json syntax }
+</div></div>
 </section>
 
 <section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
-    
-  </div>
-  <h2 class="title">심벌 (Font Awesome)</h2>
-  <div class="contents-body">
-
-<ul>
-<li class="bullet-dot">시작하기 <i class="fa-solid fa-rocket"></i></li>
-<li class="bullet-dot">완료 표시 <i class="fa-solid fa-check-circle"></i></li>
-<li class="bullet-dot">경고 <i class="fa-solid fa-triangle-exclamation"></i></li>
-<li class="bullet-dot">코드 인라인 안의 <code>:fa-x:</code> 는 변환되지 않음</li>
-</ul></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
-    
-  </div>
-  <h2 class="title">이모지 (Emoji)</h2>
-  <div class="contents-body">
-
-<p>별도 라이브러리 없이 Unicode 문자로 직접 렌더된다.</p>
-
-<ul>
-<li class="bullet-dot">상태 표시 — 성공 ✅ / 경고 ⚠️ / 실패 ❌</li>
-<li class="bullet-dot">강조·분위기 — 🚀 🎯 💡 🔥</li>
-<li class="bullet-dot">목록 마커 보조 — 📁 📊 🗂 📌</li>
-<li class="bullet-dot">심벌(Font Awesome)과 달리 변환 단계 없이 그대로 표시</li>
-</ul></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
-    
-  </div>
-  <h2 class="title">차트 (chart.js)</h2>
+  <h2 class="title">model3d + chart 병존 확인</h2>
   <div class="contents-body">
 
 <div class="component-container" data-component="chart">
 {
   "type": "bar",
   "data": {
-    "labels": ["1세대", "2세대", "3세대"],
-    "datasets": [{ "label": "도입률(%)", "data": [20, 55, 80] }]
-  },
-  "options": { "responsive": true }
+    "labels": ["A", "B", "C"],
+    "datasets": [{ "label": "값", "data": [12, 19, 7] }]
+  }
 }
 </div></div>
 </section>
 
 <section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
-    
-  </div>
-  <h2 class="title">지도 (Leaflet)</h2>
-  <div class="contents-body">
-
-<div class="component-container" data-component="map">
-{
-  "center": [37.5665, 126.9780],
-  "zoom": 11,
-  "markers": [{ "coords": [37.5665, 126.9780], "popup": "서울" }]
-}
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
-    
-  </div>
-  <h2 class="title">인포그래픽 (d3)</h2>
-  <div class="contents-body">
-
-<p>데이텀마다 막대 + 값 라벨 + 범주 라벨을 묶어 그린다 — d3 고유의 커스텀 SVG 조립.</p>
-
-<div class="component-container" data-component="d3">
-const data = [
-  { label: '1세대', value: 20 },
-  { label: '2세대', value: 55 },
-  { label: '3세대', value: 80 }
-];
-const svg = d3.select(el).append('svg').attr('width', 480).attr('height', 220);
-const g = svg.selectAll('g').data(data).enter().append('g')
-  .attr('transform', (d, i) =&gt; `translate(${i * 150 + 30}, 0)`);
-g.append('rect')
-  .attr('y', d =&gt; 170 - d.value).attr('width', 110).attr('height', d =&gt; d.value)
-  .attr('rx', 6).attr('fill', '#4a90d9');
-g.append('text')
-  .attr('x', 55).attr('y', d =&gt; 162 - d.value).attr('text-anchor', 'middle')
-  .attr('font-weight', 'bold').text(d =&gt; d.value + '%');
-g.append('text')
-  .attr('x', 55).attr('y', 195).attr('text-anchor', 'middle')
-  .attr('fill', '#555').text(d =&gt; d.label);
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
-    
-  </div>
-  <h2 class="title">카드 (Cards)</h2>
-  <div class="contents-body">
-
-<p>리스트를 카드 그리드로 배치한다. 인포그래픽과 달리 균질한 항목을 단순 병렬 제시할 때 쓴다.</p>
-
-<div class="m2-cards cards">
-<ul>
-<li class="bullet-dot"><strong>수식</strong>
-<ul>
-<li class="bullet-dash">KaTeX 블록·인라인 LaTeX 렌더</li>
-</ul>
-</li>
-<li class="bullet-dot"><strong>심벌</strong>
-<ul>
-<li class="bullet-dash">Font Awesome <code>:fa-name:</code> 인라인</li>
-</ul>
-</li>
-<li class="bullet-dot"><strong>차트</strong>
-<ul>
-<li class="bullet-dash">chart.js 캔버스 그래프</li>
-<li class="bullet-dash">막대·선·원형 차트 지원</li>
-<li class="bullet-dash">실시간 데이터 갱신</li>
-</ul>
-</li>
-<li class="bullet-dot"><strong>지도</strong>
-<ul>
-<li class="bullet-dash">Leaflet OpenStreetMap 타일</li>
-</ul>
-</li>
-<li class="bullet-dot"><strong>인포그래픽</strong>
-<ul>
-<li class="bullet-dash">d3 커스텀 SVG 조립</li>
-</ul>
-</li>
-<li class="bullet-dot"><strong>이모지</strong>
-<ul>
-<li class="bullet-dash">Unicode 네이티브 문자</li>
-</ul>
-</li>
-</ul>
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
-    
-  </div>
-  <h2 class="title">React artifact</h2>
-  <div class="contents-body">
-
-<p>JSX로 작성하는 인터랙티브 컴포넌트. Babel-standalone가 브라우저에서 변환한다.</p>
-
-<div class="component-container" data-component="react">
-function Counter() {
-  const [n, setN] = React.useState(0);
-  return (
-    &lt;div style={{ textAlign: 'center', fontSize: '1.4rem' }}&gt;
-      &lt;p&gt;클릭 횟수: &lt;strong&gt;{n}&lt;/strong&gt;&lt;/p&gt;
-      &lt;button onClick={() =&gt; setN(n + 1)}&gt;+1&lt;/button&gt;
-      &lt;button onClick={() =&gt; setN(0)}&gt;리셋&lt;/button&gt;
-    &lt;/div&gt;
-  );
-}
-render(&lt;Counter /&gt;);
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
-    
-  </div>
-  <h2 class="title">HTML artifact (WordArt)</h2>
-  <div class="contents-body">
-
-<p>Cards로 표현하기 복잡한 장식 텍스트. 순수 CSS WordArt 효과.</p>
-
-<div class="component-container wordart-block">
-<h2 class="wordart-gradient">그라데이션</h2>
-<h2 class="wordart-outline">외곽선</h2>
-<h2 class="wordart-shadow">그림자</h2>
-<h2 class="wordart-3d">입체 3D</h2>
-<h2 class="wordart-glow">네온 발광</h2>
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
-    
-  </div>
-  <h2 class="title">React artifact — Hooks·리스트</h2>
-  <div class="contents-body">
-
-<p><code>useEffect</code> 타이머와 배열 <code>map</code> 렌더링 검증.</p>
-
-<div class="component-container" data-component="react">
-function Clock() {
-  const [t, setT] = React.useState(new Date().toLocaleTimeString());
-  React.useEffect(() =&gt; {
-    const id = setInterval(() =&gt; setT(new Date().toLocaleTimeString()), 1000);
-    return () =&gt; clearInterval(id);
-  }, []);
-  const hooks = ['useState', 'useEffect', 'cleanup'];
-  return (
-    &lt;div style={{ textAlign: 'center' }}&gt;
-      &lt;p style={{ fontSize: '2rem', fontWeight: 'bold', color: '#2b8fb3' }}&gt;{t}&lt;/p&gt;
-      &lt;ul style={{ display: 'inline-block', textAlign: 'left' }}&gt;
-        {hooks.map((h, i) =&gt; &lt;li key={i}&gt;{h}&lt;/li&gt;)}
-      &lt;/ul&gt;
-    &lt;/div&gt;
-  );
-}
-render(&lt;Clock /&gt;);
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
-    
-  </div>
-  <h2 class="title">HTML artifact — SVG 곡선 텍스트</h2>
-  <div class="contents-body">
-
-<p>WordArt 클래스로 표현 불가한 곡선 텍스트는 본문에 inline SVG <code>textPath</code>로 작성.</p>
-
-<div class="component-container wordart-block">
-<svg viewBox="0 0 420 170" width="460">
-  <defs>
-    <linearGradient id="wa-grad" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#2b8fb3"/>
-      <stop offset="55%" stop-color="#6a3fb5"/>
-      <stop offset="100%" stop-color="#c0392b"/>
-    </linearGradient>
-    <path id="wa-curve" d="M30,140 Q210,10 390,140" fill="none"/>
-  </defs>
-  <text font-size="40" font-weight="800" fill="url(#wa-grad)">
-    <textPath href="#wa-curve" startOffset="50%" text-anchor="middle">곡선 WordArt</textPath>
-  </text>
-</svg>
-</div></div>
-</section>
-
-<section class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">구성요소 라이브러리 테스트</div>
-    
-  </div>
-  <h2 class="title">Phase 진행 현황</h2>
+  <h2 class="title">일반 슬라이드 (CDN 미주입 무관)</h2>
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot">Phase 0 — 레지스트리 + generic 디스패처 인프라</li>
-<li class="bullet-dot">Phase 1 — 수식·심벌·차트 ✅</li>
-<li class="bullet-dot">Phase 2 — 지도·인포그래픽 ✅</li>
-<li class="bullet-dot">Phase 3 — React artifact·HTML artifact(WordArt) (본 슬라이드까지) ✅</li>
-<li class="bullet-dot">emoji — Unicode 네이티브, 라이브러리 무관 ✅</li>
-<li class="bullet-dot">카드 — <code>::: cards</code> 리스트→카드 그리드, m2slide 자체 구현 ✅</li>
+<li class="bullet-dot">model3d CDN은 <code>model3d</code> 블록 있는 데크에만 조건 주입</li>
+<li class="bullet-dot">이 슬라이드는 model3d 없음 — 동일 덱이므로 CDN 주입됨 (정상)</li>
+<li class="bullet-dot">GLB 파일을 <code>Projects/ComponentTest/img/</code>에 배치하면 실제 3D 렌더 확인 가능</li>
 </ul></div>
 </section>
 
@@ -1803,54 +1492,6 @@ render(&lt;Clock /&gt;);
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-  <script>
-(function(){
-  function fitSvg(el){
-    var svg = el.querySelector("svg");
-    if (!svg || svg.getAttribute("viewBox")) return;
-    var vw = parseFloat(svg.getAttribute("width")) || svg.clientWidth || 480;
-    var vh = parseFloat(svg.getAttribute("height")) || svg.clientHeight || 270;
-    svg.setAttribute("viewBox", "0 0 " + vw + " " + vh);
-    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    svg.removeAttribute("width");
-    svg.removeAttribute("height");
-  }
-  function render(){
-    if (typeof d3 === "undefined") return;
-    document.querySelectorAll("div[data-component=\"d3\"]").forEach(function(el){
-      if (el.getAttribute("data-rendered")) return;
-      var code = (el.textContent || "").trim();
-      el.textContent = "";
-      el.setAttribute("data-rendered", "1");
-      try { new Function("d3", "el", code)(d3, el); fitSvg(el); }
-      catch(e){ el.innerHTML = "<div class=\"component-error\">d3 렌더 실패: " + e.message + "</div>"; }
-    });
-  }
-  if (window.Reveal && Reveal.on) Reveal.on("ready", render);
-  else document.addEventListener("DOMContentLoaded", render);
-})();
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-  <script>
-(function(){
-  function render(){
-    if (typeof renderMathInElement !== "function") return;
-    try {
-      renderMathInElement(document.body, {
-        delimiters: [
-          {left:"$$",right:"$$",display:true},
-          {left:"\\(",right:"\\)",display:false},
-          {left:"\\[",right:"\\]",display:true}
-        ],
-        throwOnError:false
-      });
-    } catch(e) { console.error("[katex] render 실패:", e); }
-  }
-  if (window.Reveal && Reveal.on) Reveal.on("ready", render);
-  else document.addEventListener("DOMContentLoaded", render);
-})();
-  </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
   <script>
 (function(){
@@ -1872,75 +1513,79 @@ render(&lt;Clock /&gt;);
   else document.addEventListener("DOMContentLoaded", render);
 })();
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js"></script>
   <script>
-(function(){
-  var maps = [];
-  function fitHeight(el){
-    var ph = (el.parentElement && el.parentElement.clientHeight) || 0;
-    if (ph > 240) el.style.height = ph + "px";
-    else if (!el.style.height) el.style.height = "420px";
+
+(function() {
+  function renderModel3d(el) {
+    if (el.dataset.rendered) return;
+    el.dataset.rendered = '1';
+
+    let config;
+    try {
+      config = JSON.parse(el.textContent.trim());
+    } catch (e) {
+      el.innerHTML = '<div class="component-error">model3d: JSON 파싱 오류 — ' + e.message + '</div>';
+      return;
+    }
+
+    if (!config.src) {
+      el.innerHTML = '<div class="component-error">model3d: src 필드 없음 (GLB/GLTF 경로 필수)</div>';
+      return;
+    }
+
+    const viewer = document.createElement('model-viewer');
+    viewer.setAttribute('src', config.src);
+    viewer.setAttribute('alt', config.alt || '3D 모델');
+    viewer.setAttribute('camera-controls', '');
+    viewer.setAttribute('touch-action', 'pan-y');
+
+    if (config.poster)             viewer.setAttribute('poster', config.poster);
+    if (config.ar)                 viewer.setAttribute('ar', '');
+    if (config.autoRotate)         viewer.setAttribute('auto-rotate', '');
+    if (config.rotationPerSecond)  viewer.setAttribute('rotation-per-second', config.rotationPerSecond);
+    if (config.fieldOfView)        viewer.setAttribute('field-of-view', config.fieldOfView);
+    if (config.minCameraOrbit)     viewer.setAttribute('min-camera-orbit', config.minCameraOrbit);
+    if (config.maxCameraOrbit)     viewer.setAttribute('max-camera-orbit', config.maxCameraOrbit);
+    if (config.backgroundColor)    viewer.style.backgroundColor = config.backgroundColor;
+
+    viewer.style.width  = '100%';
+    viewer.style.height = config.height || '400px';
+
+    el.textContent = '';
+    el.appendChild(viewer);
   }
-  function renderAll(){
-    if (typeof L === "undefined") return;
-    document.querySelectorAll("div[data-component=\"map\"]").forEach(function(el){
-      if (el.getAttribute("data-rendered")) return;
-      var cfg;
-      try { cfg = JSON.parse((el.textContent || "").trim()); }
-      catch(e){ el.innerHTML = "<div class=\"component-error\">map config JSON 파싱 실패</div>"; return; }
-      el.textContent = "";
-      el.setAttribute("data-rendered", "1");
+
+  function fitHeight(el) {
+    const parent = el.parentElement;
+    if (parent && parent.clientHeight > 240) {
+      const h = (parent.clientHeight - 80) + 'px';
+      el.style.height = h;
+      const v = el.querySelector('model-viewer');
+      if (v) v.style.height = h;
+    }
+  }
+
+  function renderAll() {
+    document.querySelectorAll('div[data-component="model3d"]').forEach(function(el) {
+      renderModel3d(el);
       fitHeight(el);
-      try {
-        var map = L.map(el).setView(cfg.center || [0,0], cfg.zoom || 2);
-        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: "\u00a9 OpenStreetMap", maxZoom: 19
-        }).addTo(map);
-        (cfg.markers || []).forEach(function(m){
-          var mk = L.marker(m.coords).addTo(map);
-          if (m.popup) mk.bindPopup(m.popup);
-        });
-        maps.push(map);
-      } catch(e){ el.innerHTML = "<div class=\"component-error\">map 렌더 실패: " + e.message + "</div>"; }
     });
   }
-  function refresh(){
-    maps.forEach(function(m){
-      try { fitHeight(m.getContainer()); m.invalidateSize(); } catch(e){}
+
+  if (typeof Reveal !== 'undefined') {
+    Reveal.on('ready', renderAll);
+    Reveal.on('slidechanged', function(e) {
+      e.currentSlide.querySelectorAll('div[data-component="model3d"]').forEach(function(el) {
+        if (!el.dataset.rendered) renderModel3d(el);
+        fitHeight(el);
+      });
     });
-  }
-  if (window.Reveal && Reveal.on) {
-    Reveal.on("ready", function(){ renderAll(); setTimeout(refresh, 120); });
-    Reveal.on("slidechanged", function(){ setTimeout(refresh, 120); });
   } else {
-    document.addEventListener("DOMContentLoaded", renderAll);
+    document.addEventListener('DOMContentLoaded', renderAll);
   }
 })();
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.26.4/babel.min.js"></script>
-  <script>
-(function(){
-  function render(){
-    if (typeof React === "undefined" || typeof ReactDOM === "undefined" || typeof Babel === "undefined") return;
-    document.querySelectorAll("div[data-component=\"react\"]").forEach(function(el){
-      if (el.getAttribute("data-rendered")) return;
-      var code = (el.textContent || "").trim();
-      el.textContent = "";
-      el.setAttribute("data-rendered", "1");
-      try {
-        var js = Babel.transform(code, { presets: ["react"] }).code;
-        var mount = function(element){ ReactDOM.createRoot(el).render(element); };
-        new Function("React", "ReactDOM", "el", "render", js)(React, ReactDOM, el, mount);
-      } catch(e){
-        el.innerHTML = "<div class=\"component-error\">React 렌더 실패: " + e.message + "</div>";
-      }
-    });
-  }
-  if (window.Reveal && Reveal.on) Reveal.on("ready", render);
-  else document.addEventListener("DOMContentLoaded", render);
-})();
+
   </script>
   <script>
     // Allow URL toggle: ?top=1 to enable top-align-mode regardless of config
@@ -2085,7 +1730,7 @@ render(&lt;Clock /&gt;);
 
 
     // Inject configuration
-    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"head_left":"d1","head_right":"now","head_breadcum":true,"cardColumns":"3","style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":[]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
+    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"head_left":"d1","head_right":"now","head_breadcum":true,"cardColumns":"auto-fit","style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":[]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
 
     // Dynamic Styling and Resizing Script
     let observer; // Define observer at top level
@@ -2203,61 +1848,20 @@ render(&lt;Clock /&gt;);
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/2\">구성요소 라이브러리 테스트</a>",
-                  "children": [
-                        {
-                              "content": "<a href=\"#/3\">Mermaid 다이어그램 (회귀 기준)</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/4\">수식 (KaTeX)</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/5\">심벌 (Font Awesome)</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/6\">이모지 (Emoji)</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/7\">차트 (chart.js)</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/8\">지도 (Leaflet)</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/9\">인포그래픽 (d3)</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/10\">카드 (Cards)</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/11\">React artifact</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/12\">HTML artifact (WordArt)</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/13\">React artifact — Hooks·리스트</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/14\">HTML artifact — SVG 곡선 텍스트</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/15\">Phase 진행 현황</a>",
-                              "children": []
-                        }
-                  ]
+                  "content": "<a href=\"#/1\">model3d — GLB 없음 (오류 표시 확인)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/2\">model3d — JSON 파싱 오류 확인</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/3\">model3d + chart 병존 확인</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/4\">일반 슬라이드 (CDN 미주입 무관)</a>",
+                  "children": []
             }
       ]
 };
@@ -2511,7 +2115,7 @@ render(&lt;Clock /&gt;);
     // PREV_CHAPTER: 이전 챕터 HTML 파일명 (chapter mode TOC slide ← 대상)
     // NEXT_CHAPTER: 다음 챕터 HTML 파일명 (chapter mode ↓ 대상, key_navigation.md K9)
     var M2SLIDE_MODE = 'single';
-    var M2SLIDE_COVER = true;
+    var M2SLIDE_COVER = false;
     // Issue119: cover layout 이름 (_config.yml cover_layout, 기본 _cover). isCoverSlide() 판정에 사용.
     var M2SLIDE_COVER_LAYOUT = '_cover';
     var PREV_CHAPTER = '';

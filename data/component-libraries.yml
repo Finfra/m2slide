@@ -1,6 +1,6 @@
 # component-libraries.yml — 시각화 라이브러리 메타 SSOT (Issue180 Phase 0)
 # 스키마·디스패처 contract: _doc_arch/component-libraries.md
-# slide-components.md 라이브러리 표는 본 파일 status를 참조 (이중 SSOT 금지).
+# component-slide.md 라이브러리 표는 본 파일 status를 참조 (이중 SSOT 금지).
 # 로더: lib/component-registry.js (블록 스타일 전용 파서 — flow map 미사용).
 # 사용자가 본 파일을 수정하면 빌드 시 즉시 반영됨 (html-builder.js가 매 빌드 Read).
 ---
@@ -164,3 +164,22 @@ libraries:
     detect_fenced_lang: []
     detect_inline:
       - "data-htmlart="
+
+  # ==========================================================================
+  # 3D 모델 뷰어 (Issue206) — model-viewer 웹컴포넌트
+  #   ```model3d fenced block 본문 = JSON config (src, poster, ar 등).
+  #   model-viewer는 ES Module 웹컴포넌트 — module_js CDN 타입 필요 (component-registry.js).
+  #   GLB/GLTF 파일을 선언적 JSON으로 표시. 인터랙티브(회전/확대) 기본 내장.
+  # ==========================================================================
+  - id: model3d
+    component: 3D 모델 뷰어
+    stage: 5
+    injection: conditional
+    status: applied
+    init_hook: model3d_dispatch
+    cdn:
+      - type: module_js
+        url: https://ajax.googleapis.com/ajax/libs/model-viewer/3.5.0/model-viewer.min.js
+    detect_fenced_lang:
+      - "model3d"
+    detect_inline: []
