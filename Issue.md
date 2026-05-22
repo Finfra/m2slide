@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 201
+* Issue HWM: 203
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -29,9 +29,41 @@
 
 # 📙 일반
 
+## Issue202. cover 슬라이드 미세 조정 — 제목 wrap orphan + 우측 빈 박스 (등록: 2026-05-22)
+* 목적: HtmlArtEval 프로젝트 cover 슬라이드 제목이 2줄로 wrap되며 마지막 글자("본")가 둘째 줄에 단독(orphan)으로 떨어짐. 제목 우측 끝에 빈 박스가 함께 렌더되어 시각적으로 어색함. 사용자가 브라우저에서 발견.
+* 카테고리: Theme
+* 상세:
+    - 대상: `Projects/HtmlArtEval/slide/index.html` (cover 슬라이드, `_cover` layout 자동 주입)
+    - 증상 1 — 제목 "htmlArt 평가 — m2Slide 소개 변환본"이 2줄 wrap, "본" orphan
+    - 증상 2 — 제목 우측 끝 빈 박스 렌더
+* 구현 명세:
+    - 진단 단계: `slide/index.html`·`theme/{name}/layouts/_cover.html`·`theme/{name}/slide.css` Read하여 원인 확정
+    - 추정 원인 1 (제목 wrap/orphan): theme `slide.css`의 `_cover` 제목 규칙 — `font-size`/`max-width`/`text-wrap` 조정 (`text-wrap: balance` 또는 폰트 축소)
+    - 추정 원인 2 (빈 박스): `_cover.html` 템플릿 변수(`{{part_subtitle}}` 등) 미치환 또는 frontmatter 빈 값 → 빈 슬롯 조건부 처리 또는 frontmatter 값 채움
+    - 수정 레이어 우선순위: 슬라이드 소스 frontmatter → `_cover.html` → theme `slide.css` (base.css 미사용)
+    - CSS 금지 속성(`display:flex`, `height:100%`, `position`, `transform`) 변경 없이 안전 속성만 사용
+    - 검증: `./m2slide.sh HtmlArtEval` 재빌드 → cover 슬라이드 HTML 직접 확인 + 브라우저 표시
+
 # 📗 선택
 
 # ✅ 완료
+
+## Issue203. cards title-only 항목 가로 행(rows) 자동 레이아웃 (등록: 2026-05-22, 해결: 2026-05-22, commit: d6f963f) ✅
+* 목적: `::: cards` 블록이 전부 본문 없는 title-only 카드일 때, 좁은 grid 열에서 긴 텍스트가 어색하게 줄바꿈되고 제목 높이 불균형으로 빈 회색 body 띠가 생김. 파서가 자동 감지하여 가로 행(rows)으로 렌더해 해소. (브레인스토밍 완료 — 사용자 승인)
+* 카테고리: Generator + Theme
+* 상세:
+    - 증상 재현: `Projects/HtmlArtEval/slide/index.html` slide 3 "한 줄 요약" — title-only 카드 3개 grid 3열에서 긴 문장 줄바꿈 + 짧은 카드 빈 회색 body 띠
+    - 트리거: 자동 감지 (작성자 무개입) — 브레인스토밍 1차 결정
+    - 구현 방식: B안(파서 클래스) 채택 — A안(CSS `:has()`) 대비 EPUB 동일 동작 + 테스트 가능
+* 결과 (Walkthrough):
+    - `lib/markdown.js` `preprocessPandocDiv`: `::: cards` 본문 look-ahead — 들여쓰기 bullet(본문)이 0개면 `m2-cards`에 `rows` 클래스 추가
+    - `theme/_shared/components.css`: `.m2-cards.rows > ul` → 1열 그리드. title-only `<li>`(`:not(:has(> ul/ol))`) → 빈 회색 body 박스 제거 + `<strong>`에 `border-radius`·`box-shadow`. 안전 속성만 (금지 속성 무사용)
+    - per-li 식별은 명세의 `card-title-only` 클래스 주입 대신 CSS `:has()`로 단순화 — 같은 결과, 파서 변경 최소화. `:has()` 미지원 EPUB 리더는 graceful degradation
+    - `lib/__tests__/markdown.test.js`: title-only 전부/단일/혼합/본문있음 5케이스 추가 — 전체 149개 통과
+    - `data/md-builder/styles.yml`: cards `component_syntax` 가이드 추가
+    - `.claude/rules/md-m2slide-rules.md`·`_doc_arch/slide-components.md`: rows 자동 동작 문서화 (해당 경로는 m2slide `.gitignore` 대상 — 디스크 반영, 커밋 제외)
+    - 검증: `./m2slide.sh HtmlArtEval` 재빌드 → slide 3 `<div class="m2-cards cards rows">` 확인, 브라우저 표시
+    - 작업 트리 내 Issue202-era 미커밋 변경은 surgical 스테이징(`git apply --cached`)으로 본 커밋에서 제외
 
 ## Issue201. htmlArt pyramid 우측 패널 제목 중복 (등록: 2026-05-22, 해결: 2026-05-22, commit: 7431c97) ✅
 * 목적: pyramid 도해의 우측 상세 패널 제목(`비전`·`전략`·`실행`)이 삼각형 밴드 라벨과 글자 그대로 중복. 사용자가 브라우저에서 발견.
