@@ -35,6 +35,16 @@
   color: var(--kn-text);
 }
 
+/* 한글 어절 중간 줄바꿈 방지 — 슬라이드 전역
+   - word-break는 상속 속성 → 제목·본문·노드 등 슬라이드 안 모든 텍스트에 전파
+   - CJK 기본값(normal)은 글자 사이 어디서나 줄바꿈 허용 → "변환본" 어절 중간 끊김
+   - code 블록은 code-wrapper 규칙(더 높은 specificity)이 break-word로 override
+   - overflow-wrap: break-word는 끊을 수 없는 초장문 토큰(URL 등) 오버플로 안전망 */
+.reveal .slides section {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
 /* =========================================================================
    2. layout-* 상/하단 노랑 가로선 + 페이지 번호
    - 공통 padding은 base.css §10 (28px 56px 56px 56px)
