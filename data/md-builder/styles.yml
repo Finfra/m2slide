@@ -355,6 +355,9 @@ component_syntax:
   icon:
     inline: ":fa-rocket:  :fa-check-circle:"
     guide: "Font Awesome 아이콘. :fa-{이름}: → <i class=fa-solid fa-{이름}>. 강조·목록 마커 보조용."
+  cards:
+    block: "::: cards\n* **제목**\n  - 본문\n:::"
+    guide: "균질 항목 N개를 박스로 병렬 제시. 본문 없는 title-only 카드(`* **제목**`만)만 모인 블록은 빌드 시 가로 행으로 자동 렌더 → 한 줄 강조 문장 묶음(핵심 요약 등)에 카드 사용 OK."
 
 # ============================================================================
 # 10. 종료 보고 양식

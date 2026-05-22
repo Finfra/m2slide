@@ -155,6 +155,26 @@
 .reveal section[class*="layout-"] .m2-cards > ul > li > ul > li > ul > li::before {
   content: "-";
 }
+/* Issue203: 전부 title-only 카드 블록(파서가 .rows 주입) → 1열 가로 행 레이아웃.
+   좁은 grid 열에서 긴 텍스트가 어색하게 줄바꿈되던 문제 해소. */
+.reveal section[class*="layout-"] .m2-cards.rows > ul,
+.reveal section[class*="layout-"] .m2-cards.rows > ol {
+  grid-template-columns: 1fr;
+}
+/* Issue203: title-only 카드(본문 중첩 리스트 없음) → 빈 회색 body 박스 제거.
+   제목 밴드(strong)가 카드 전체를 차지. :has() 미지원 리더는 기존 grid 박스 유지(graceful degradation). */
+.reveal section[class*="layout-"] .m2-cards > ul > li:not(:has(> ul)):not(:has(> ol)),
+.reveal section[class*="layout-"] .m2-cards > ol > li:not(:has(> ul)):not(:has(> ol)) {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
+}
+.reveal section[class*="layout-"] .m2-cards > ul > li:not(:has(> ul)):not(:has(> ol)) > strong,
+.reveal section[class*="layout-"] .m2-cards > ol > li:not(:has(> ul)):not(:has(> ol)) > strong {
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
 
 /* =========================================================================
    htmlArt 구조 도해 — `::: htmlart <type>` fenced div (Issue188)
