@@ -26,25 +26,6 @@
 
 # 🚧 진행중
 
-## Issue204. htmlArt list 타입군 5종 신설 — numbered·hexagon·bracket·block·tab (등록: 2026-05-22)
-* 목적: htmlArt가 SmartArt List 카테고리를 "비순차 박스 묶음은 `::: cards`가 담당"하여 비대상으로 두던 설계 결정을 번복. List 카테고리의 비순차·장식형 시각 패턴을 generic 타입 5종(numbered·hexagon·bracket·block·tab)으로 신설하여 표현 범위 확장. 사용자 요청 — SmartArt List 38 layout 중 cards로 표현 불가한 패턴(번호 카드·육각·괄호 그룹·악센트 블록·탭 그룹) 보강.
-* plan: `_doc_work/plan/htmlart-list-types_plan.md`
-* 카테고리: Generator + Frontend
-* 상세:
-    - 브레인스토밍 완료 — 사용자 승인 (A안 단계 분리, 5종 로스터 tab 포함)
-    - SP-A(본 이슈): list 5종 **텍스트 전용** 신설. 아이콘·이미지 시각 강화는 SP-B(별도 후속 이슈)로 분리
-    - 입력 모델: `::: htmlart <type>` + 들여쓰기 아웃라인(2칸=1레벨) — 기존 14종과 동일
-    - numbered·hexagon·block = 평면 1단 / bracket·tab = 2단(그룹/멤버)
-* 구현 명세:
-    - `lib/markdown.js` `HTMLART_TYPES` Set에 5종 추가 (generic div 경로 그대로 — 특수 span 래핑 불필요)
-    - `lib/component-hooks/htmlart_dispatch.js`: `renderNumbered`·`renderHexagon`·`renderBracket`·`renderBlock`·`renderTab` d3 SVG 렌더 함수 5개 + `render()` 디스패치. 기존 헬퍼(`collectItems`·`mkSvg`·`nodeBox`·`centerLabel`·`errBox`) 재사용
-    - `data/htmlart/types.yml`: `types` 블록 5종(tier: v3) + `decision_table` 신호 + `validation`(whitelist·min_nodes 전부 1) + `type_count` 14→19
-    - `data/htmlart/smartart-catalog.yml`: `category_to_htmlart.list` `null`→list 타입군, List 카테고리 `htmlart_note` 갱신
-    - `_doc_arch/htmlArt.md`·`htmlArt_list.md`: 타입 14→19, List 미채택 결정 번복, v3 tier 추가, 비범위에서 list 제거, List 카테고리 매핑·집계 갱신
-    - `lib/__tests__/markdown.test.js`: 5종 변환 테스트
-    - `Projects/htmlArtTest/htmlArtTest.md`: 5종 데모 슬라이드
-    - 검증: `apply-verify-rules` — `./m2slide.sh htmlArtTest` 빌드 → HTML 직접 확인 + Chrome 표시
-
 ## Issue206. m2slide 3D 모델 뷰어 컴포넌트 추가 — model-viewer (등록: 2026-05-22)
 * 목적: `component-slide-visual.md`에 `❌ 적용 예정`으로 등재된 3D 모델 컴포넌트를 구현. `fenced \`\`\`model3d\`` + JSON config 저작 문법으로 GLB 모델을 슬라이드에 인터랙티브 렌더.
 * plan: `_doc_work/plan/3d-model_plan.md`
@@ -71,6 +52,10 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue204. htmlArt list 타입군 5종 신설 — numbered·hexagon·bracket·block·tab (등록: 2026-05-22, 해결: 2026-05-22, commit: 03de042) ✅
+* 목적: htmlArt가 SmartArt List 카테고리를 "비순차 박스 묶음은 `::: cards`가 담당"하여 비대상으로 두던 설계 결정을 번복. List 카테고리의 비순차·장식형 시각 패턴을 generic 타입 5종(numbered·hexagon·bracket·block·tab)으로 신설하여 표현 범위 확장.
+* 구현: `lib/markdown.js` HTMLART_TYPES 5종 추가, `htmlart_dispatch.js` render 함수 5개, `data/htmlart/types.yml`·`smartart-catalog.yml` 갱신, 테스트 44 pass, htmlArtTest 5종 데모 슬라이드
 
 ## Issue205. htmlArt arrow 화살표 깨짐 + pyramid 상세 패널 분리·글자크기 (등록: 2026-05-22, 해결: 2026-05-22, commit: 702af67) ✅
 * 목적: htmlArtTest 검수 중 2건 — (1) arrow 좌·우 방향 화살표 안 보임 (2) pyramid 상세 패널 분리·글자크기 위계 역전.
