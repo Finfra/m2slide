@@ -26,25 +26,6 @@
 
 # 🚧 진행중
 
-## Issue206. m2slide 3D 모델 뷰어 컴포넌트 추가 — model-viewer (등록: 2026-05-22)
-* 목적: `component-slide-visual.md`에 `❌ 적용 예정`으로 등재된 3D 모델 컴포넌트를 구현. `fenced \`\`\`model3d\`` + JSON config 저작 문법으로 GLB 모델을 슬라이드에 인터랙티브 렌더.
-* plan: `_doc_work/plan/3d-model_plan.md`
-* 카테고리: Generator + Frontend
-* 상세:
-    - 라이브러리: model-viewer 3.5.0 (Google, GLB 특화 ES Module 웹컴포넌트) — three.js 대비 선언적·경량
-    - 저작 문법: `` ```model3d `` fenced block + JSON config (`src`, `alt`, `autoRotate`, `poster`, `ar`, `height` 등)
-    - 기존 chart/map/react 패턴 동일: `component-libraries.yml` 등재 + `conditional` CDN 주입 + dispatch hook
-* 구현 명세:
-    - `data/component-libraries.yml`: model3d 엔트리 추가 (injection: conditional, detect_fenced_lang: ["model3d"])
-    - `lib/component-registry.js`: `module_js` CDN 타입 지원 추가 (ES Module 웹컴포넌트 로드용)
-    - `lib/component-hooks/model3d_dispatch.js`: Reveal.on("ready") 패턴, JSON config → `<model-viewer>` 속성 매핑
-    - `_doc_arch/component-libraries.md`: `module_js` 타입 스키마 등재
-    - `lib/__tests__/component-libraries.test.js`: Issue206 테스트 그룹 추가
-    - `.claude/rules/md-m2slide-rules.md`: 저작 문법 등재
-    - `_doc_arch/component-slide-visual.md`: ❌ → ✅ 상태 업데이트
-    - `Projects/ComponentTest/` 재생성 + model3d 샘플 슬라이드
-    - `lib/markdown.js` 수정 불필요 (`getComponentFencedLangs()` 자동 발견)
-
 # 📕 중요
 
 # 📙 일반
@@ -52,6 +33,20 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue206. m2slide 3D 모델 뷰어 컴포넌트 추가 — model-viewer 3.5.0 (등록: 2026-05-22, 해결: 2026-05-22, commit: 43c3fbe) ✅
+* 목적: `component-slide-visual.md`에 `❌ 적용 예정`으로 등재된 3D 모델 컴포넌트 구현. `\`\`\`model3d` fenced block + JSON config (`src`/`alt`/`autoRotate`/`poster`/`ar`/`height` 등) 저작 문법으로 GLB 모델을 슬라이드에 인터랙티브 렌더.
+* 카테고리: Generator + Frontend
+* 구현:
+    - `data/component-libraries.yml`: model3d 엔트리 (injection: conditional, status: applied, module_js CDN)
+    - `lib/component-registry.js`: `module_js` CDN 타입 지원 추가 (ES Module 웹컴포넌트 로드용)
+    - `lib/component-hooks/model3d_dispatch.js`: JSON config → `<model-viewer>` 속성 매핑 + GLB 로딩 실패 시 component-error 표시 (error 이벤트 핸들러)
+    - `lib/__tests__/component-libraries.test.js`: Issue206 테스트 그룹 3건 추가 (36 pass)
+    - `_doc_arch/component-libraries.md`: `module_js` CDN 타입 스키마 등재
+    - `_doc_arch/component-slide-visual.md`: 3D 모델 항목 ❌ → ✅
+    - `Projects/ComponentTest/` 재생성 + model3d 샘플 슬라이드 (GLB 누락 오류/JSON 파싱 오류/chart 병존 검증)
+    - `.claude/rules/md-m2slide-rules.md`: 저작 문법 등재
+* 검증: 테스트 36/36 통과. ComponentTest 빌드 성공 + model3d CDN 주입 확인. model3d 없는 덱 CDN 미주입 확인. m2SlideStyle1/2 회귀 빌드 성공. GLB 누락 오류 표시 확인.
 
 ## Issue204. htmlArt list 타입군 5종 신설 — numbered·hexagon·bracket·block·tab (등록: 2026-05-22, 해결: 2026-05-22, commit: 03de042) ✅
 * 목적: htmlArt가 SmartArt List 카테고리를 "비순차 박스 묶음은 `::: cards`가 담당"하여 비대상으로 두던 설계 결정을 번복. List 카테고리의 비순차·장식형 시각 패턴을 generic 타입 5종(numbered·hexagon·bracket·block·tab)으로 신설하여 표현 범위 확장.
