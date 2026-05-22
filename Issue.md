@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 203
+* Issue HWM: 204
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -22,31 +22,48 @@
 
 # 🌱 이슈후보
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
+2. HtmlArtEval cover 슬라이드 제목 우측 끝 빈 박스 렌더 (Issue202 등록 시 동반 발견 — word-break와 별개. `_cover.html` 변수 미치환 또는 frontmatter 빈 값 추정)
 
 # 🚧 진행중
+
+## Issue204. htmlArt list 타입군 5종 신설 — numbered·hexagon·bracket·block·tab (등록: 2026-05-22)
+* 목적: htmlArt가 SmartArt List 카테고리를 "비순차 박스 묶음은 `::: cards`가 담당"하여 비대상으로 두던 설계 결정을 번복. List 카테고리의 비순차·장식형 시각 패턴을 generic 타입 5종(numbered·hexagon·bracket·block·tab)으로 신설하여 표현 범위 확장. 사용자 요청 — SmartArt List 38 layout 중 cards로 표현 불가한 패턴(번호 카드·육각·괄호 그룹·악센트 블록·탭 그룹) 보강.
+* plan: `_doc_work/plan/htmlart-list-types_plan.md`
+* 카테고리: Generator + Frontend
+* 상세:
+    - 브레인스토밍 완료 — 사용자 승인 (A안 단계 분리, 5종 로스터 tab 포함)
+    - SP-A(본 이슈): list 5종 **텍스트 전용** 신설. 아이콘·이미지 시각 강화는 SP-B(별도 후속 이슈)로 분리
+    - 입력 모델: `::: htmlart <type>` + 들여쓰기 아웃라인(2칸=1레벨) — 기존 14종과 동일
+    - numbered·hexagon·block = 평면 1단 / bracket·tab = 2단(그룹/멤버)
+* 구현 명세:
+    - `lib/markdown.js` `HTMLART_TYPES` Set에 5종 추가 (generic div 경로 그대로 — 특수 span 래핑 불필요)
+    - `lib/component-hooks/htmlart_dispatch.js`: `renderNumbered`·`renderHexagon`·`renderBracket`·`renderBlock`·`renderTab` d3 SVG 렌더 함수 5개 + `render()` 디스패치. 기존 헬퍼(`collectItems`·`mkSvg`·`nodeBox`·`centerLabel`·`errBox`) 재사용
+    - `data/htmlart/types.yml`: `types` 블록 5종(tier: v3) + `decision_table` 신호 + `validation`(whitelist·min_nodes 전부 1) + `type_count` 14→19
+    - `data/htmlart/smartart-catalog.yml`: `category_to_htmlart.list` `null`→list 타입군, List 카테고리 `htmlart_note` 갱신
+    - `_doc_arch/htmlArt.md`·`htmlArt_list.md`: 타입 14→19, List 미채택 결정 번복, v3 tier 추가, 비범위에서 list 제거, List 카테고리 매핑·집계 갱신
+    - `lib/__tests__/markdown.test.js`: 5종 변환 테스트
+    - `Projects/htmlArtTest/htmlArtTest.md`: 5종 데모 슬라이드
+    - 검증: `apply-verify-rules` — `./m2slide.sh htmlArtTest` 빌드 → HTML 직접 확인 + Chrome 표시
 
 # 📕 중요
 
 # 📙 일반
 
-## Issue202. cover 슬라이드 미세 조정 — 제목 wrap orphan + 우측 빈 박스 (등록: 2026-05-22)
-* 목적: HtmlArtEval 프로젝트 cover 슬라이드 제목이 2줄로 wrap되며 마지막 글자("본")가 둘째 줄에 단독(orphan)으로 떨어짐. 제목 우측 끝에 빈 박스가 함께 렌더되어 시각적으로 어색함. 사용자가 브라우저에서 발견.
-* 카테고리: Theme
-* 상세:
-    - 대상: `Projects/HtmlArtEval/slide/index.html` (cover 슬라이드, `_cover` layout 자동 주입)
-    - 증상 1 — 제목 "htmlArt 평가 — m2Slide 소개 변환본"이 2줄 wrap, "본" orphan
-    - 증상 2 — 제목 우측 끝 빈 박스 렌더
-* 구현 명세:
-    - 진단 단계: `slide/index.html`·`theme/{name}/layouts/_cover.html`·`theme/{name}/slide.css` Read하여 원인 확정
-    - 추정 원인 1 (제목 wrap/orphan): theme `slide.css`의 `_cover` 제목 규칙 — `font-size`/`max-width`/`text-wrap` 조정 (`text-wrap: balance` 또는 폰트 축소)
-    - 추정 원인 2 (빈 박스): `_cover.html` 템플릿 변수(`{{part_subtitle}}` 등) 미치환 또는 frontmatter 빈 값 → 빈 슬롯 조건부 처리 또는 frontmatter 값 채움
-    - 수정 레이어 우선순위: 슬라이드 소스 frontmatter → `_cover.html` → theme `slide.css` (base.css 미사용)
-    - CSS 금지 속성(`display:flex`, `height:100%`, `position`, `transform`) 변경 없이 안전 속성만 사용
-    - 검증: `./m2slide.sh HtmlArtEval` 재빌드 → cover 슬라이드 HTML 직접 확인 + 브라우저 표시
-
 # 📗 선택
 
 # ✅ 완료
+
+## Issue202. 슬라이드 전역 한글 어절 중간 줄바꿈 금지 (word-break: keep-all) (등록: 2026-05-22, 해결: 2026-05-22, commit: 9f31dba) ✅
+* 목적: 슬라이드 전체에서 한글 텍스트가 어절 중간에서 줄바꿈됨 — HtmlArtEval cover 제목 "변환본"이 "변" + "환본"으로 끊김. CJK는 `word-break` 기본값 `normal`에서 글자 사이 어디서나 줄바꿈 허용 → `keep-all` 미명시 시 어절 중간 끊김. cover뿐 아니라 제목·본문·노드 전반 발생. 사용자가 `/dev`로 코드 단위 일괄 해결 요청.
+* 카테고리: Theme
+* 상세:
+    - 코드 조사(CSS 4파일): 기존 `keep-all`은 `chapter-card`·`head-bar` 슬롯 2곳만 국소 적용. 제목·본문·노드 등 슬라이드 본체 텍스트 전부 미적용
+    - code 블록(code-wrapper)은 의도적으로 `break-word` 유지 — 손대지 않음
+* 구현 (해결):
+    - `theme/default/slide.css` + `theme/default_lec/slide.css` 양쪽 `.reveal .slides section`에 `word-break: keep-all` + `overflow-wrap: break-word` 추가 (사용자 선택: theme slide.css 2파일 레이어 — base.css 미수정)
+    - `word-break`는 상속 속성 → 슬라이드 안 모든 텍스트(제목·본문·노드) 자동 전파. code 블록은 code-wrapper 규칙(높은 specificity)이 `break-word`로 override
+    - `overflow-wrap: break-word` — 끊을 수 없는 초장문 토큰(URL 등) 오버플로 안전망
+* 검증: `./m2slide.sh` HtmlArtEval·m2SlideStyle1_single·m2SlideStyle2_chapter 빌드 성공. 빌드 산출물 `custom.css` 287행에 규칙 반영 확인. Chrome 표시 — cover 제목 어절 단위 줄바꿈.
 
 ## Issue203. cards title-only 항목 가로 행(rows) 자동 레이아웃 (등록: 2026-05-22, 해결: 2026-05-22, commit: d6f963f) ✅
 * 목적: `::: cards` 블록이 전부 본문 없는 title-only 카드일 때, 좁은 grid 열에서 긴 텍스트가 어색하게 줄바꿈되고 제목 높이 불균형으로 빈 회색 body 띠가 생김. 파서가 자동 감지하여 가로 행(rows)으로 렌더해 해소. (브레인스토밍 완료 — 사용자 승인)
