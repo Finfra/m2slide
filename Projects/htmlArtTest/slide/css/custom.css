@@ -107,19 +107,19 @@
    카드 컴포넌트 — `::: cards` fenced div: 내부 리스트를 카드 그리드로 배치.
    인포그래픽보다 단순한 "균질 항목 N개 병렬 제시"용 (slide-components.md Core 계열).
    ========================================================================= */
-.reveal .m2-cards > ul,
-.reveal .m2-cards > ol {
+.reveal section[class*="layout-"] .m2-cards > ul,
+.reveal section[class*="layout-"] .m2-cards > ol {
   display: grid;
   /* --m2-card-columns: _config.yml card_columns 키로 주입 (기본 auto-fit). 프로젝트 한정 카드 폭 제어 */
-  grid-template-columns: repeat(var(--m2-card-columns, auto-fit), minmax(200px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(var(--m2-card-columns, auto-fit), minmax(180px, 1fr));
+  gap: 10px;
   list-style: none;
   padding: 0;
-  margin: 0.5em 0;
+  margin: 0.25em 0;
 }
 /* 카드 박스 — 제목 밴드가 카드 폭을 꽉 채우도록 padding 0 + overflow hidden */
-.reveal .m2-cards > ul > li,
-.reveal .m2-cards > ol > li {
+.reveal section[class*="layout-"] .m2-cards > ul > li,
+.reveal section[class*="layout-"] .m2-cards > ol > li {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -131,29 +131,29 @@
   line-height: 1.5;
 }
 /* 카드 제목 밴드 — 테마 컬러 변수. 제목은 `**볼드**`로 작성 */
-.reveal .m2-cards > ul > li > strong,
-.reveal .m2-cards > ol > li > strong {
+.reveal section[class*="layout-"] .m2-cards > ul > li > strong,
+.reveal section[class*="layout-"] .m2-cards > ol > li > strong {
   display: block;
   margin: 0;
-  padding: 10px 18px;
+  padding: 7px 14px;
   background: var(--m2-card-title-bg, var(--kn-accent));
   color: var(--m2-card-title-fg, var(--kn-text));
   text-align: center;
   font-size: 1.05em;
 }
 /* 카드 본문 — 제목 아래 중첩 리스트 */
-.reveal .m2-cards li ul,
-.reveal .m2-cards li ol {
+.reveal section[class*="layout-"] .m2-cards li ul,
+.reveal section[class*="layout-"] .m2-cards li ol {
   display: block;
   list-style: none;
   margin: 0;
-  padding: 12px 18px;
+  padding: 8px 13px;
 }
-.reveal .m2-cards li ul ul,
-.reveal .m2-cards li ul ol {
+.reveal section[class*="layout-"] .m2-cards li ul ul,
+.reveal section[class*="layout-"] .m2-cards li ul ol {
   padding: 2px 0 2px 1.4em;
 }
-.reveal .m2-cards li ul li {
+.reveal section[class*="layout-"] .m2-cards li ul li {
   list-style: none;
   margin: 0.15em 0;
 }
@@ -175,20 +175,58 @@
 .reveal section[class*="layout-"] .m2-cards > ul > li > ul > li > ul > li::before {
   content: "-";
 }
+/* Issue203: 전부 title-only 카드 블록(파서가 .rows 주입) → 1열 가로 행 레이아웃.
+   좁은 grid 열에서 긴 텍스트가 어색하게 줄바꿈되던 문제 해소. */
+.reveal section[class*="layout-"] .m2-cards.rows > ul,
+.reveal section[class*="layout-"] .m2-cards.rows > ol {
+  grid-template-columns: 1fr;
+}
+/* Issue203: title-only 카드(본문 중첩 리스트 없음) → 빈 회색 body 박스 제거.
+   제목 밴드(strong)가 카드 전체를 차지. :has() 미지원 리더는 기존 grid 박스 유지(graceful degradation). */
+.reveal section[class*="layout-"] .m2-cards > ul > li:not(:has(> ul)):not(:has(> ol)),
+.reveal section[class*="layout-"] .m2-cards > ol > li:not(:has(> ul)):not(:has(> ol)) {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
+}
+.reveal section[class*="layout-"] .m2-cards > ul > li:not(:has(> ul)):not(:has(> ol)) > strong,
+.reveal section[class*="layout-"] .m2-cards > ol > li:not(:has(> ul)):not(:has(> ol)) > strong {
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
 
 /* =========================================================================
    htmlArt 구조 도해 — `::: htmlart <type>` fenced div (Issue188)
-   process · cycle · hierarchy · pyramid. 순수 CSS, theme 변수 상속.
+   process · cycle · hierarchy · pyramid 4타입 전부 d3 SVG 렌더(Issue193).
+   본 섹션은 `.m2-htmlart` 공통 컨테이너(CSS 변수·component-error)만 보유 —
+   타입별 시각은 lib/component-hooks/htmlart_dispatch.js 의 d3 렌더가 담당.
    설계 SSOT: _doc_arch/htmlArt.md
    ========================================================================= */
 .reveal .m2-htmlart {
   --htmlart-accent: var(--kn-accent, #2b8a9d);
   --htmlart-fg: var(--kn-text, #ffffff);
   --htmlart-box-bg: rgba(0, 0, 0, 0.045);
+  --htmlart-surface: #f4f4f5;            /* 노드 박스 불투명 배경 — d3 연결선이 박스 뒤로 가려지게 (Issue195) */
   --htmlart-box-border: rgba(0, 0, 0, 0.16);
   --htmlart-arrow: rgba(0, 0, 0, 0.5);
-  margin: 0.6em 0;
   font-size: 0.92em;
+  /* Issue197/198: .contents-body(flex column)의 bullet 다음 잔여 세로 공간을 도해가 채움
+     — .media-container·.component-container 와 동일한 콘텐츠 컨테이너 fill 계약.
+     margin 금지 — flex item margin 은 잔여공간을 별도 잠식해 도해를 축소시킴(Issue198 P1).
+     비-flex 부모에선 무시(inline style fallback). */
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+/* Issue198: htmlArt 가 columns 슬롯(`::: {.column}`) 안에 있을 때 —
+   base.css `.m2-cols{align-items:center}` 가 컬럼 높이를 콘텐츠 기준으로
+   붕괴시켜 `.m2-col`(flex column) 안 `.m2-htmlart`(flex:1 1 0, basis 0)가
+   0 높이가 됨. htmlArt 있는 columns 만 stretch 로 전환해 컬럼이 본문
+   높이를 받게 함 (base.css 미수정 — components.css override). */
+.reveal .m2-cols:has(.m2-htmlart),
+.reveal .columns:has(.m2-htmlart) {
+  align-items: stretch;
 }
 .reveal .m2-htmlart ul,
 .reveal .m2-htmlart ol {
@@ -206,216 +244,13 @@
   font-size: 0.85em;
 }
 
-/* ── process — 가로 박스 체인 + 진행 화살표 ─────────────────────────── */
-.reveal .htmlart-process > ul {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: stretch;
-  gap: 30px 92px;
-}
-.reveal .htmlart-process > ul > li {
-  flex: 1 1 0;
-  min-width: 110px;
-  position: relative;
-  background: var(--htmlart-box-bg);
-  border: 1px solid var(--htmlart-box-border);
-  border-radius: 8px;
-  padding: 12px 14px;
-  font-weight: 600;
-}
-.reveal .htmlart-process > ul > li:not(:last-child)::after {
-  content: "";
-  position: absolute;
-  right: -59px;
-  top: 50%;
-  transform: translateY(-50%);
-  border-top: 16px solid transparent;
-  border-bottom: 16px solid transparent;
-  border-left: 27px solid var(--htmlart-arrow);
-}
-.reveal section[class*="layout-"] .htmlart-process > ul > li ul {
-  margin: 7px 0 0 0;
-  padding-left: 0;
-  font-weight: 400;
-  font-size: 0.8em;
-  opacity: 0.82;
-}
-.reveal .htmlart-process > ul > li ul li {
-  margin: 2px 0;
-}
-
-/* ── pyramid — 적층 밴드 (위 좁고 아래 넓음) ────────────────────────── */
-.reveal .htmlart-pyramid > ul {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 7px;
-}
-.reveal .htmlart-pyramid > ul > li {
-  width: 100%;
-  background: var(--htmlart-accent);
-  color: var(--htmlart-fg);
-  text-align: center;
-  padding: 11px 18px;
-  border-radius: 6px;
-  font-weight: 600;
-}
-.reveal .htmlart-pyramid > ul > li:nth-child(1) { width: 34%; }
-.reveal .htmlart-pyramid > ul > li:nth-child(2) { width: 52%; }
-.reveal .htmlart-pyramid > ul > li:nth-child(3) { width: 70%; }
-.reveal .htmlart-pyramid > ul > li:nth-child(4) { width: 86%; }
-.reveal .htmlart-pyramid > ul > li:nth-child(n+5) { width: 100%; }
-.reveal section[class*="layout-"] .htmlart-pyramid > ul > li ul {
-  margin: 3px 0 0 0;
-  padding-left: 0;
-  font-weight: 400;
-  font-size: 0.76em;
-  opacity: 0.9;
-}
-
-/* ── hierarchy — 상하 조직도 (부모 위 · 자식 가로 행 아래 + 연결선) ─── */
-/* 세로 들여쓰기 트리는 markmap 영역 — htmlArt hierarchy 는 부모를 위에 두고
-   자식을 가로로 펼치는 조직도 (PowerPoint Organization Chart 대응) */
-.reveal .htmlart-hierarchy {
-  font-size: 0.82em;
-  overflow-x: auto;
-  text-align: center;
-}
-/* 자식 컨테이너 — 가로 행 */
-.reveal .htmlart-hierarchy ul {
-  display: flex;
-  justify-content: center;
-  position: relative;
-  padding-top: 16px;
-}
-.reveal .htmlart-hierarchy > ul {
-  padding-top: 0;
-}
-/* 부모 노드 → 자식 bus 세로 연결 */
-.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy ul::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: 2px;
-  height: 16px;
-  margin-left: -1px;
-  background: var(--htmlart-box-border);
-}
-.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy > ul::before {
-  display: none;
-}
-/* 각 노드 — 부모는 위, 자식 ul 은 아래 (세로 스택) */
-.reveal section[class*="layout-"] .htmlart-hierarchy li {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 24px 10px 0;
-  line-height: 1.35;
-}
-.reveal section[class*="layout-"] .htmlart-hierarchy > ul > li {
-  padding-top: 0;
-}
-/* 가로 bus 반쪽 (border-top) + 세로 drop (::after border-left) */
-.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy li::before,
-.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy li::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  width: 50%;
-  height: 24px;
-  border-top: 2px solid var(--htmlart-box-border);
-}
-.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy li::before {
-  right: 50%;
-}
-.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy li::after {
-  left: 50%;
-  border-left: 2px solid var(--htmlart-box-border);
-}
-/* 첫·끝 자식 — 바깥쪽 가로 bus 제거 (세로 drop 은 유지) */
-.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy li:first-child::before { border-top: 0; }
-.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy li:last-child::after { border-top: 0; }
-/* 단일 자식 — bus 없이 세로 drop 만 */
-.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy li:only-child::before { display: none; }
-.reveal section[class*="layout-"] .m2-htmlart.htmlart-hierarchy li:only-child::after { border-top: 0; }
-/* 노드 박스 */
-.reveal .htmlart-hierarchy .ha-node {
-  display: inline-block;
-  background: var(--htmlart-box-bg);
-  border: 1px solid var(--htmlart-box-border);
-  border-radius: 7px;
-  padding: 7px 14px;
-  white-space: nowrap;
-}
-.reveal .htmlart-hierarchy > ul > li > .ha-node {
-  background: var(--htmlart-accent);
-  color: var(--htmlart-fg);
-  font-weight: 700;
-}
-
-/* ── cycle — 원형 배치 (--htmlart-n 기반 등간격) ────────────────────── */
-.reveal .htmlart-cycle > ul {
-  position: relative;
-  width: 600px;
-  height: 600px;
-  margin: 0.2em auto;
-}
-.reveal .htmlart-cycle > ul::before {
-  content: "\21BB";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 2.6em;
-  color: var(--htmlart-accent);
-  opacity: 0.5;
-}
-.reveal section[class*="layout-"] .htmlart-cycle > ul > li {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 224px;
-  height: 100px;
-  margin: -50px 0 0 -112px;
-  --htmlart-r: 184px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  background: var(--htmlart-box-bg);
-  border: 2px solid var(--htmlart-accent);
-  border-radius: 22px;
-  padding: 8px 14px;
-  text-align: center;
-  font-weight: 600;
-  font-size: 0.82em;
-  line-height: 1.2;
-  overflow: hidden;
-  transform:
-    rotate(calc(360deg * var(--htmlart-i, 0) / var(--htmlart-n, 1)))
-    translateY(calc(-1 * var(--htmlart-r)))
-    rotate(calc(-360deg * var(--htmlart-i, 0) / var(--htmlart-n, 1)));
-}
-.reveal .htmlart-cycle > ul > li:nth-child(1) { --htmlart-i: 0; }
-.reveal .htmlart-cycle > ul > li:nth-child(2) { --htmlart-i: 1; }
-.reveal .htmlart-cycle > ul > li:nth-child(3) { --htmlart-i: 2; }
-.reveal .htmlart-cycle > ul > li:nth-child(4) { --htmlart-i: 3; }
-.reveal .htmlart-cycle > ul > li:nth-child(5) { --htmlart-i: 4; }
-.reveal .htmlart-cycle > ul > li:nth-child(6) { --htmlart-i: 5; }
-.reveal .htmlart-cycle > ul > li:nth-child(7) { --htmlart-i: 6; }
-.reveal .htmlart-cycle > ul > li:nth-child(8) { --htmlart-i: 7; }
-.reveal section[class*="layout-"] .htmlart-cycle > ul > li ul {
-  margin: 3px 0 0 0;
-  padding-left: 0;
-  font-weight: 400;
-  font-size: 0.66em;
-  line-height: 1.2;
-  white-space: nowrap;
-  opacity: 0.8;
-}
+/* ── htmlArt 타입 CSS (process·cycle·hierarchy·pyramid) ───────────────────
+   4타입 전부 렌더 백엔드 d3 SVG 로 이관 완료 (Issue193). 런타임 훅
+   lib/component-hooks/htmlart_dispatch.js 가 data-htmlart div 내부 <ul> 을
+   파싱하여 d3 로 SVG 도해를 생성·교체한다. 타입별 CSS 셀렉터는 불필요 —
+   위 .m2-htmlart 공통 블록(CSS 변수·component-error)만 잔존하며 SVG 요소가
+   --htmlart-accent 등 변수를 상속한다.
+   ───────────────────────────────────────────────────────────────────────── */
 
 /* <<< @import ../_shared/components.css */
 
@@ -442,6 +277,16 @@
 
 .reveal .slides {
   color: var(--kn-text);
+}
+
+/* 한글 어절 중간 줄바꿈 방지 — 슬라이드 전역
+   - word-break는 상속 속성 → 제목·본문·노드 등 슬라이드 안 모든 텍스트에 전파
+   - CJK 기본값(normal)은 글자 사이 어디서나 줄바꿈 허용 → "변환본" 어절 중간 끊김
+   - code 블록은 code-wrapper 규칙(더 높은 specificity)이 break-word로 override
+   - overflow-wrap: break-word는 끊을 수 없는 초장문 토큰(URL 등) 오버플로 안전망 */
+.reveal .slides section {
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 /* =========================================================================

@@ -4,8 +4,9 @@
 # ⚠ "SmartArt" 는 Microsoft 상표. 본 파일은 설계 참조 자료다.
 #   m2slide 산출물(코드·CSS 클래스·문법 키워드·사용자 노출 명칭)에는 "SmartArt" 사용 금지 → htmlArt 사용.
 #
-# 에이전트 fast-path 는 data/htmlart/types.yml (htmlArt v1 타입 + 결정표).
+# 에이전트 fast-path 는 data/htmlart/types.yml (htmlArt 타입 14종 + 결정표).
 # 본 파일은 전체 참조·확장 출처 — 에이전트는 카테고리 인덱스만 보고 필요한 카테고리만 펼쳐 읽을 것.
+# layout 별 구현 현황(구현 여부 + 구현 path)은 _doc_arch/htmlArt_list.md.
 # 설계 SSOT: _doc_arch/htmlArt.md
 ---
 meta:
@@ -17,20 +18,21 @@ meta:
   duplication_note: "일부 layout 은 복수 카테고리에 중복 등재됨 (MS 원본 분류 충실 반영)."
   purpose_lang: "용도 설명은 한국어 축약. MS 원문은 영어 — source_url 참조."
 
-# ── 카테고리 → htmlArt v1 타입 매핑 (에이전트 1차 인덱스) ──────────────────
+# ── 카테고리 → htmlArt 타입 매핑 (에이전트 1차 인덱스) ─────────────────────
+# 값이 리스트면 해당 카테고리의 layout 들을 여러 htmlArt 타입이 분담.
 # null   = htmlArt 아님 (다른 구성요소로 처리)
-# v2     = htmlArt v2 후보 (현재 미채택)
-# legacy = MS 레거시 온라인 카테고리
+# legacy = MS 레거시 온라인 카테고리 (대부분 타 카테고리 변형)
+# layout 단위 정밀 매핑·구현 path 는 _doc_arch/htmlArt_list.md 참조.
 category_to_htmlart:
-  list:         null      # → ::: cards (비순차 박스 묶음)
-  process:      process   # ✅ htmlArt v1
-  cycle:        cycle     # ✅ htmlArt v1
-  hierarchy:    hierarchy # ✅ htmlArt v1
-  pyramid:      pyramid   # ✅ htmlArt v1
-  relationship: v2        # v2 후보 (venn·radial·target)
-  matrix:       v2        # v2 후보 (2×2 사분면)
-  picture:      null      # → Media 계열 (image_placeholder)
-  officecom:    legacy    # 레거시 — 대부분 타 카테고리 변형
+  list:         [numbered, hexagon, bracket, block, tab]  # ✅ 구현 (v3 list 타입군 5종)
+  process:      [process, timeline, funnel, gear, chevron, step]  # ✅ 구현 (6 타입 분담)
+  cycle:        [cycle, radial]                        # ✅ 구현
+  hierarchy:    [hierarchy]                            # ✅ 구현
+  pyramid:      [pyramid]                              # ✅ 구현
+  relationship: [venn, target, radial, arrow]          # ✅ 구현 (대표 layout)
+  matrix:       [matrix]                               # ✅ 구현
+  picture:      null                                   # → Media 계열 (image_placeholder)
+  officecom:    legacy                                 # 레거시 — 대부분 타 카테고리 변형
 
 # ── 카테고리별 layout 카탈로그 ────────────────────────────────────────────
 categories:
@@ -38,8 +40,8 @@ categories:
   list:
     label: "List (목록형)"
     category_purpose: "주요 항목을 색상 도형으로 강조. 비순차·그룹 정보 표현."
-    htmlart: null
-    htmlart_note: "비순차 박스 묶음은 ::: cards 가 담당 — htmlArt 미채택."
+    htmlart: [numbered, hexagon, bracket, block, tab]
+    htmlart_note: "v3 list 타입군 5종(Issue204) — 번호카드→numbered, 육각→hexagon, 괄호그룹→bracket, 악센트블록→block, 탭그룹→tab. 균질 박스 그리드는 여전히 ::: cards. 그림 포함 layout 은 Media 계열."
     layouts:
       Alternating Hexagon List: "상호 연결된 아이디어 시리즈"
       Basic Block List: "비순차·그룹 정보 블록"
@@ -83,7 +85,8 @@ categories:
   process:
     label: "Process (프로세스형)"
     category_purpose: "방향성 흐름. 작업·워크플로의 순차 단계·국면·타임라인."
-    htmlart: process
+    htmlart: [process, timeline, funnel, gear, chevron, step]
+    htmlart_note: "기본 process. 타임라인→timeline, 깔때기→funnel, 톱니→gear, 갈매기→chevron, 계단→step."
     layouts:
       Accent Process: "진행·타임라인·순차 단계"
       Alternating Flow: "정보 그룹·순차 단계"
@@ -130,7 +133,8 @@ categories:
   cycle:
     label: "Cycle (주기형)"
     category_purpose: "원형·반복 프로세스. 라이프사이클·반복 단계·중심 아이디어 순환."
-    htmlart: cycle
+    htmlart: [cycle, radial]
+    htmlart_note: "원형 흐름→cycle. 중심 아이디어 방사 관계(Basic Radial 등)→radial."
     layouts:
       Basic Cycle: "원형 흐름의 연속 단계"
       Basic Pie: "개별 부분이 전체를 구성"
@@ -173,8 +177,8 @@ categories:
   relationship:
     label: "Relationship (관계형)"
     category_purpose: "중첩·수렴·대비. 벤다이어그램·타깃(포함)·방사형(중심 관계)."
-    htmlart: v2
-    htmlart_note: "venn·radial·target 은 순수 CSS 비용이 큼 — htmlArt v2 후보."
+    htmlart: [venn, target, radial, arrow]
+    htmlart_note: "Basic Venn→venn, Basic Target/Nested Target→target, Basic Radial→radial, Converging Arrows→arrow. d3 SVG 렌더."
     layouts:
       Arrow Ribbon: "연결된 관련·대비 개념"
       Balance: "두 아이디어 비교·관계"
@@ -214,8 +218,8 @@ categories:
   matrix:
     label: "Matrix (행렬형)"
     category_purpose: "정보 분류. 2차원 — 부분과 전체·중심 개념의 관계."
-    htmlart: v2
-    htmlart_note: "2×2 사분면 — 정확히 4항목 입력 규약 필요. htmlArt v2 후보."
+    htmlart: [matrix]
+    htmlart_note: "Basic Matrix/Grid Matrix/Titled Matrix→matrix (2×2). 4항목 미만 빈칸·초과 절단. d3 SVG 렌더."
     layouts:
       Basic Matrix: "사분면 내 구성요소 관계"
       Cycle Matrix: "중심 아이디어와의 주기적 관계"

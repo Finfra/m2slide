@@ -1,8 +1,9 @@
 # data/htmlart/types.yml
-# htmlArt v1 타입 정의 + 콘텐츠 신호 → 타입 결정표 (에이전트 fast-path SSOT).
+# htmlArt 타입 정의 + 콘텐츠 신호 → 타입 결정표 (에이전트 fast-path SSOT).
 #
 # media-creater·md-builder 등 에이전트는 구조 도해 선택 시 본 파일을 1차 참조한다.
 # 전체 SmartArt 참조 카탈로그는 data/htmlart/smartart-catalog.yml.
+# 전체 layout 별 구현 현황은 _doc_arch/htmlArt_list.md.
 # 설계 SSOT: _doc_arch/htmlArt.md
 #
 # ⚠ "SmartArt" 는 Microsoft 상표 — 산출물에는 htmlArt 사용.
@@ -10,30 +11,38 @@
 meta:
   design_doc: _doc_arch/htmlArt.md
   catalog: data/htmlart/smartart-catalog.yml
-  status: active          # core 구현 완료 (Issue188 — markdown.js preprocessPandocDiv + theme CSS)
+  layout_status: _doc_arch/htmlArt_list.md
+  status: active          # core 구현 완료 (Issue188 v1 4종 + Issue202 확장 10종 + Issue204 list 5종)
   syntax: "::: htmlart <type>"
   input_model: "들여쓰기 아웃라인 (2칸 = 1레벨, ::: cards 본문과 동일)"
+  type_count: 19
 
-# ── htmlArt v1 타입 (4종) ──────────────────────────────────────────────────
+# ── htmlArt 타입 (19종 = v1 4종 + v2 확장 10종 + v3 list 5종) ────────────────
+# v1 (Issue188): process · cycle · hierarchy · pyramid
+# v2 확장 (Issue202): timeline · venn · matrix · target · funnel · gear · radial · chevron · step · arrow
+# v3 list (Issue204): numbered · hexagon · bracket · block · tab
 types:
   process:
-    intent: "순차 단계·진행·워크플로·타임라인"
+    tier: v1
+    intent: "순차 단계·진행·워크플로"
     smartart_category: process
     input: "평면 리스트 — 최상위 항목 = 단계, 작성 순서 = 진행 순서"
     sublevel: "하위 들여쓰기 = 단계 내부 보조 설명 (선택)"
-    visual: "가로 박스 체인 + 진행 방향 화살표"
+    visual: "가로 박스 체인 + 진행 방향 삼각 화살표"
     recommend_count: "3-6 단계"
 
   cycle:
+    tier: v1
     intent: "순환·반복·라이프사이클·중심 아이디어 순환"
     smartart_category: cycle
     input: "평면 리스트 — 최상위 항목 = 순환 노드"
     sublevel: "하위 들여쓰기 = 노드 보조 설명 (선택)"
     visual: "노드 원형 등간격 배치 + 순환 곡선 화살표"
     recommend_count: "3-6 노드"
-    impl_note: "렌더 백엔드 d3 SVG (Issue193) — d3.pointRadial 원형 좌표 + d3.path().arc() 곡선 화살표. 노드 수 무제한"
+    impl_note: "d3.pointRadial 원형 좌표 + d3.path().arc() 곡선 화살표. 노드 수 무제한"
 
   hierarchy:
+    tier: v1
     intent: "계층·트리·조직도·상하 보고 관계"
     smartart_category: hierarchy
     input: "중첩 리스트 — 들여쓰기 깊이 = 트리 깊이, 최상위 1개 = 루트(권장)"
@@ -42,19 +51,217 @@ types:
     recommend_count: "깊이 3 이내·노드 12 이내"
 
   pyramid:
+    tier: v1
     intent: "비례·적층·토대→정점·우선순위 층"
     smartart_category: pyramid
     input: "평면 리스트 — 최상위 항목 = 층, 1번째 = 꼭대기"
     sublevel: "하위 들여쓰기 = 층 보조 설명 (선택)"
-    visual: "단일 삼각형 (좌) + 층별 상세 패널 (우) — 층 = 등높이 행"
+    visual: "적층 사다리꼴 (위 좁고 아래 넓음) + 우측 상세 패널"
     recommend_count: "3-5 층"
+
+  timeline:
+    tier: v2
+    intent: "시간순 이벤트·연표·일정·마일스톤"
+    smartart_category: process
+    input: "평면 리스트 — 최상위 항목 = 시점, 작성 순서 = 시간 순서"
+    sublevel: "하위 들여쓰기 = 시점 보조 설명 (선택)"
+    visual: "가로 축선 + 마일스톤 마커 + 상하 교대 라벨 박스"
+    recommend_count: "3-7 시점"
+
+  venn:
+    tier: v2
+    intent: "중첩·교집합·공통점과 차이점"
+    smartart_category: relationship
+    input: "평면 리스트 — 최상위 항목 = 집합(원)"
+    sublevel: "하위 들여쓰기 = 집합 보조 설명 (선택)"
+    visual: "겹친 원 — 2·3개는 정형 배치, 4개+ 는 선형 벤"
+    recommend_count: "2-3 집합 (4+ 선형 벤)"
+
+  matrix:
+    tier: v2
+    intent: "2차원 분류·사분면·부분과 전체 관계"
+    smartart_category: matrix
+    input: "평면 리스트 — 최상위 항목 = 사분면 (4개 권장)"
+    sublevel: "하위 들여쓰기 = 사분면 보조 설명 (선택)"
+    visual: "2×2 격자 + 중심 축선. 4개 미만은 빈칸, 초과는 절단"
+    recommend_count: "정확히 4 항목"
+
+  target:
+    tier: v2
+    intent: "포함·점층·동심·핵심 강조 관계"
+    smartart_category: relationship
+    input: "평면 리스트 — 최상위 항목 = 링 (작성 순서 = 바깥→안)"
+    sublevel: "(미사용 — 링 라벨만 표시)"
+    visual: "동심원 — 바깥 링이 1번째, 안쪽으로 점층"
+    recommend_count: "3-5 링"
+
+  funnel:
+    tier: v2
+    intent: "필터링·수렴·단계적 감소·세일즈 퍼널"
+    smartart_category: process
+    input: "평면 리스트 — 최상위 항목 = 단계 (작성 순서 = 위→아래)"
+    sublevel: "하위 들여쓰기 = 단계 보조 설명 (선택)"
+    visual: "깔때기 — 위 넓고 아래 좁아짐 + 우측 상세 패널"
+    recommend_count: "3-5 단계"
+
+  gear:
+    tier: v2
+    intent: "맞물림·상호의존·연동 시스템"
+    smartart_category: process
+    input: "평면 리스트 — 최상위 항목 = 톱니바퀴"
+    sublevel: "하위 들여쓰기 = 톱니바퀴 보조 설명 (선택)"
+    visual: "맞물린 톱니바퀴 체인 (상하 교대 배치)"
+    recommend_count: "2-4 톱니바퀴"
+
+  radial:
+    tier: v2
+    intent: "중심 개념 + 관련 요소 (방사 관계)"
+    smartart_category: cycle
+    input: "평면 리스트 — 최상위 1번째 항목 = 중심, 나머지 = 스포크"
+    sublevel: "하위 들여쓰기 = 노드 보조 설명 (선택)"
+    visual: "중심 허브 박스 + 방사형 스포크 노드 + 연결선"
+    recommend_count: "중심 1 + 스포크 3-8"
+
+  chevron:
+    tier: v2
+    intent: "순차 단계 (강한 진행감 강조)"
+    smartart_category: process
+    input: "평면 리스트 — 최상위 항목 = 단계, 작성 순서 = 진행 순서"
+    sublevel: "하위 들여쓰기 = 단계 보조 설명 (선택)"
+    visual: "맞물린 갈매기형(>) 화살표 체인"
+    recommend_count: "3-6 단계"
+
+  step:
+    tier: v2
+    intent: "점진적 상승·성장·레벨업·누적 단계"
+    smartart_category: process
+    input: "평면 리스트 — 최상위 항목 = 단계, 1번째가 맨 아래"
+    sublevel: "하위 들여쓰기 = 단계 보조 설명 (선택)"
+    visual: "계단형 박스 (좌하→우상 상승) + 라이저 연결선"
+    recommend_count: "3-5 단계"
+
+  arrow:
+    tier: v2
+    intent: "수렴·집약·여러 입력 → 하나의 결과"
+    smartart_category: relationship
+    input: "평면 리스트 — 최상위 1번째 항목 = 중심(결과), 나머지 = 수렴 입력"
+    sublevel: "하위 들여쓰기 = 노드 보조 설명 (선택)"
+    visual: "방사형 소스 노드 → 중심 허브로 굵은 화살표 수렴"
+    recommend_count: "중심 1 + 입력 2-6"
+
+  numbered:
+    tier: v3
+    intent: "번호 있는 목록·순서 목록·체크리스트·랭킹"
+    smartart_category: list
+    input: "평면 리스트 — 최상위 항목 = 카드, 작성 순서 = 번호"
+    sublevel: "하위 들여쓰기 = 카드 보조 설명 (선택)"
+    visual: "카드 세로 적층 + 좌측 원형 번호 배지"
+    recommend_count: "3-7 항목"
+
+  hexagon:
+    tier: v3
+    intent: "상호 연결된 아이디어 시리즈 (비순차 장식)"
+    smartart_category: list
+    input: "평면 리스트 — 최상위 항목 = 육각 노드"
+    sublevel: "하위 들여쓰기 = 노드 보조 설명 (선택)"
+    visual: "육각형 노드 상하 교대(zigzag) 가로 배치 + 커넥터"
+    recommend_count: "3-6 노드"
+
+  bracket:
+    tier: v3
+    intent: "그룹·하위 그룹 묶음 (괄호로 그룹 경계 강조)"
+    smartart_category: list
+    input: "2단 리스트 — 최상위 항목 = 그룹, 하위 들여쓰기 = 그룹 멤버"
+    sublevel: "하위 들여쓰기 = 그룹 멤버 (필수 — 없으면 라벨만 렌더)"
+    visual: "좌측 그룹 라벨 + 큰 중괄호 + 우측 멤버 박스 세로열"
+    recommend_count: "2-5 그룹, 그룹당 2-6 멤버"
+
+  block:
+    tier: v3
+    intent: "정보 그룹·항목 나열 (단일 컬럼 세로 목록)"
+    smartart_category: list
+    input: "평면 리스트 — 최상위 항목 = 블록"
+    sublevel: "하위 들여쓰기 = 블록 보조 설명 (선택)"
+    visual: "좌측 색 악센트 바 + 제목/설명, 단일 컬럼 세로 적층"
+    recommend_count: "3-7 블록"
+
+  tab:
+    tier: v3
+    intent: "탭으로 분류된 그룹 목록 (2단 카테고리별)"
+    smartart_category: list
+    input: "2단 리스트 — 최상위 항목 = 탭 그룹, 하위 들여쓰기 = 탭 내 항목"
+    sublevel: "하위 들여쓰기 = 탭 내 항목"
+    visual: "폴더 탭 헤더 + 탭별 항목 패널 (정적 — 전 탭 펼침 세로 나열)"
+    recommend_count: "2-5 탭, 탭당 2-6 항목"
 
 # ── 콘텐츠 신호 → htmlArt 타입 결정표 (fast-path, 위→아래 first-match) ──────
 # 에이전트는 슬라이드 본문 키워드를 위에서부터 대조하여 첫 매칭 타입을 채택한다.
+# 구체적(specific) 타입을 위에, 일반(generic) 4종을 아래에 배치 — first-match 가
+# 구체 타입을 우선 채택하도록.
 decision_table:
+  - htmlart: venn
+    signal_ko: ["벤다이어그램", "교집합", "중첩", "공통점", "공통 영역", "겹치는"]
+    signal_en: ["venn", "overlap", "intersection", "common"]
+
+  - htmlart: matrix
+    signal_ko: ["사분면", "행렬", "매트릭스", "2x2", "2×2", "4분면"]
+    signal_en: ["matrix", "quadrant", "2x2", "grid"]
+
+  - htmlart: target
+    signal_ko: ["동심원", "표적", "과녁", "핵심으로", "점층", "포함 관계"]
+    signal_en: ["target", "concentric", "nested", "bullseye"]
+
+  - htmlart: funnel
+    signal_ko: ["퍼널", "깔때기", "필터링", "전환율", "세일즈 퍼널", "좁혀지는"]
+    signal_en: ["funnel", "filter", "conversion", "narrowing"]
+
+  - htmlart: gear
+    signal_ko: ["톱니바퀴", "기어", "맞물", "연동", "상호의존", "맞물린"]
+    signal_en: ["gear", "interlocking", "mesh", "cog"]
+
+  - htmlart: radial
+    signal_ko: ["방사형", "중심 개념", "허브", "중심과 주변", "중심 아이디어"]
+    signal_en: ["radial", "hub", "central concept", "spoke"]
+
+  - htmlart: timeline
+    signal_ko: ["타임라인", "연표", "일정", "시간순", "마일스톤", "날짜별", "연혁"]
+    signal_en: ["timeline", "milestone", "chronological", "schedule"]
+
+  - htmlart: step
+    signal_ko: ["계단", "단계적 상승", "성장 단계", "레벨업", "누적", "점진적"]
+    signal_en: ["staircase", "step up", "ascending", "level"]
+
+  - htmlart: chevron
+    signal_ko: ["갈매기", "체브론", "강한 진행"]
+    signal_en: ["chevron"]
+
+  - htmlart: arrow
+    signal_ko: ["수렴", "집약", "통합", "여러 입력", "하나로 모", "결집"]
+    signal_en: ["converging", "convergence", "consolidate"]
+
+  - htmlart: numbered
+    signal_ko: ["번호 목록", "순서 목록", "번호 매기기", "체크리스트", "랭킹", "순위 목록"]
+    signal_en: ["numbered", "ranking", "checklist", "ordered list"]
+
+  - htmlart: hexagon
+    signal_ko: ["육각형", "헥사곤", "벌집", "육각 노드"]
+    signal_en: ["hexagon", "honeycomb"]
+
+  - htmlart: bracket
+    signal_ko: ["괄호 묶음", "그룹 묶음", "분류 묶음", "괄호로 묶"]
+    signal_en: ["bracket", "grouping", "grouped list"]
+
+  - htmlart: tab
+    signal_ko: ["탭", "탭 그룹", "분류 탭", "카테고리별", "탭으로 구분"]
+    signal_en: ["tab", "tabbed", "tab list"]
+
+  - htmlart: block
+    signal_ko: ["블록 목록", "항목 나열", "세로 목록", "정보 블록"]
+    signal_en: ["block list", "vertical list"]
+
   - htmlart: process
-    signal_ko: ["순차", "단계", "절차", "프로세스", "워크플로", "진행", "타임라인", "흐름"]
-    signal_en: ["step", "process", "flow", "sequential", "timeline", "workflow"]
+    signal_ko: ["순차", "단계", "절차", "프로세스", "워크플로", "진행", "흐름"]
+    signal_en: ["step", "process", "flow", "sequential", "workflow"]
 
   - htmlart: cycle
     signal_ko: ["순환", "반복", "주기", "라이프사이클", "되풀이", "다시 처음"]
@@ -72,18 +279,42 @@ decision_table:
 not_htmlart:
   - signal: "비순차 박스 묶음·균질 항목 그리드"
     use: "::: cards"
-  - signal: "관계도·벤다이어그램·네트워크·중심 방사형"
-    use: "d3_inline 또는 mermaid (htmlArt v2 후보: relationship)"
-  - signal: "2×2 사분면 분류"
-    use: "표 또는 d3_inline (htmlArt v2 후보: matrix)"
+  - signal: "임의 노드 네트워크·자유 연결 그래프"
+    use: "d3_inline 또는 mermaid"
+  - signal: "커스텀 SVG·자유 시각화·19개 타입 미매칭·데이터 주도 도해"
+    use: "d3_inline (인포그래픽) — 작성자가 d3 코드로 직접 SVG 제어"
   - signal: "사진·이미지 강조"
     use: "image_placeholder (Media 계열)"
 
 # ── 검증 ──────────────────────────────────────────────────────────────────
 validation:
-  type_whitelist: [process, cycle, hierarchy, pyramid]
+  type_whitelist:
+    [process, cycle, hierarchy, pyramid,
+     timeline, venn, matrix, target, funnel,
+     gear, radial, chevron, step, arrow,
+     numbered, hexagon, bracket, block, tab]
   on_unsupported_type: "슬라이드에 .component-error 표시, 빌드 중단 안 함"
   on_empty_body: "에러 메시지 표시"
+  min_nodes:
+    process: 1
+    cycle: 2
+    hierarchy: 1
+    pyramid: 2
+    timeline: 2
+    venn: 2
+    matrix: 1
+    target: 1
+    funnel: 2
+    gear: 1
+    radial: 2
+    chevron: 1
+    step: 1
+    arrow: 2
+    numbered: 1
+    hexagon: 1
+    bracket: 1
+    block: 1
+    tab: 1
 
 # ── 에이전트 사용 안내 ─────────────────────────────────────────────────────
 agent_usage:
