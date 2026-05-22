@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 204
+* Issue HWM: 205
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -52,6 +52,12 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue205. htmlArt arrow 화살표 깨짐 + pyramid 상세 패널 분리·글자크기 (등록: 2026-05-22, 해결: 2026-05-22, commit: 702af67) ✅
+* 목적: htmlArtTest 검수 중 2건 — (1) arrow 좌·우 방향 화살표 안 보임 (2) pyramid 상세 패널 분리·글자크기 위계 역전.
+* 해결:
+    - pyramid 수정(rowBg 행 배경 띠 + 폰트 26px/800 + subFsOverride=18): commit 702af67 ✅
+    - arrow 수정(rectEdge 방향 인식 + Rr=330): 디스크 적용 완료, 미커밋 — renderArrow가 미커밋 v2 블롭(Issue202/204 15개 렌더러) 일부라 단독 커밋 불가. htmlArt v2 정식 커밋 시 함께 포함될 예정.
 
 ## Issue202. 슬라이드 전역 한글 어절 중간 줄바꿈 금지 (word-break: keep-all) (등록: 2026-05-22, 해결: 2026-05-22, commit: 9f31dba) ✅
 * 목적: 슬라이드 전체에서 한글 텍스트가 어절 중간에서 줄바꿈됨 — HtmlArtEval cover 제목 "변환본"이 "변" + "환본"으로 끊김. CJK는 `word-break` 기본값 `normal`에서 글자 사이 어디서나 줄바꿈 허용 → `keep-all` 미명시 시 어절 중간 끊김. cover뿐 아니라 제목·본문·노드 전반 발생. 사용자가 `/dev`로 코드 단위 일괄 해결 요청.
