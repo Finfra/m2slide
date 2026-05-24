@@ -787,6 +787,26 @@
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
 }
 
+/* Issue224 보강: autoToc cards(`.chapter-list--cards`) px 고정값 em override.
+   base.css L561-573의 min-width 240px / max-width 360px / padding 16px 20px가
+   카드 다수(28+ 슬라이드) 케이스에서 font_size_auto 비례 축소 불가 → 잘림.
+   theme override로 em 기반 전환 + 폰트 자동 축소 시 카드도 비례 축소. */
+.reveal section.layout-_toc .chapter-list--cards {
+  font-size: 0.9em;
+  gap: 0.7em;
+}
+.reveal section.layout-_toc .chapter-list--cards .chapter-card {
+  min-width: 9em;
+  max-width: 15em;
+  padding: 0.5em 0.7em;
+  border-radius: 0.4em;
+  flex: 0 1 calc((100% - 0.7em * 3) / 4);
+}
+.reveal section.layout-_toc .chapter-list--cards .chapter-card a {
+  font-size: 0.92em;
+  line-height: 1.3;
+}
+
 /* 본문(.toc-body)이 비어있지 않은 placeholder _toc 슬라이드는
    비어있는 markmap 자리(SVG 380px min-height)가 카드를 아래로 밀어냄.
    본문 카드가 있을 때는 markmap 영역을 숨겨 카드 위주 레이아웃 유지. */
@@ -1229,5 +1249,20 @@ body.agenda-page .agenda-frame {
 .guide-line-mode .reveal section.layout-_contents > .contents-head-bar > .contents-head-left,
 .guide-line-mode .reveal section.layout-_contents > .contents-head-bar > .contents-head-right {
   outline: 1px dotted rgba(180, 80, 0, 0.7);
+}
+
+/* React artifact 내부 ul/li 는 m2slide bullet 시스템(base.css §10) 적용 제외.
+   사용자가 React 코드 안 작성한 <ul>/<ol> 은 native list-style 사용. */
+.reveal section[class*="layout-"] .component-container[data-component="react"] ul > li::before,
+.reveal section[class*="layout-"] .component-container[data-component="react"] ul ul > li::before,
+.reveal section[class*="layout-"] .component-container[data-component="react"] ul ul ul > li::before,
+.reveal section[class*="layout-"] .component-container[data-component="react"] ol > li::before {
+  content: none !important;
+}
+.reveal section[class*="layout-"] .component-container[data-component="react"] ul > li,
+.reveal section[class*="layout-"] .component-container[data-component="react"] ul ul > li,
+.reveal section[class*="layout-"] .component-container[data-component="react"] ol > li {
+  padding-left: 0;
+  position: static;
 }
 
