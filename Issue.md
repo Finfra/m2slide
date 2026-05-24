@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 212
+* Issue HWM: 213
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -80,6 +80,18 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue213. _contents body video·img 풀폭 표시 — media-container fit 규칙 확장 (등록: 2026-05-24, 해결: 2026-05-24, commit: 7724ccc) ✅
+* 목적: H2 제목이 있는 슬라이드(`_contents` layout)에 마크다운 `![](./video/*.mp4)` 또는 `![](./img/*.png)`을 단독 배치할 때 video/img가 자연 크기(예: 320x240)로 작게 표시되어 빈 슬라이드처럼 보이는 문제 해결. 제목 없는 미디어 단독 슬라이드는 `_blank--full-video` 자동 감지가 처리하지만 제목 보존하고 풀폭 표현이 필요한 경우 우회 수단이 없었음.
+* 상세:
+    - 원인 = `theme/default/slide.css`의 media-container fit 규칙이 `.mermaid svg`·`.media-container svg`만 100%/100% + object-fit: contain 적용. video·img는 자연 크기 유지
+    - `_contents` body는 이미 `display: flex; flex-direction: column` + `.media-container { flex: 1 1 0 }`로 잔여 영역 100% 확보된 상태 — 자식 video/img만 fit 규칙 누락
+    - aTest 01-layout.md `## 동영상 단독 슬라이드`(#/16) 사례에서 발견. video가 슬라이드 중앙에 320×240으로 표시되어 빈 영역 다대
+* 구현 명세:
+    - `theme/default/slide.css:347-356`: SVG fit 규칙 셀렉터 그룹에 `.reveal section[class*="layout-"] .media-container video`·`.reveal section[class*="layout-"] .media-container img` 추가. width/height 100% + max-* none + object-fit: contain
+    - aTest 빌드 검증: `slide/css/custom.css` 반영 확인, `01-layout.html#/16` `_contents` layout video 풀폭 표시
+* 카테고리: Theme
+* 참고: 자동 감지(`_blank--full-video`)와 보완 관계 — 제목 없는 단독 미디어는 자동 감지, 제목 유지 케이스는 본 규칙으로 처리
 
 ## Issue212. model3d GLB `file://` 로딩 실패 — 빌드 타임 base64 data URI 자동 인라인 (등록: 2026-05-24, 해결: 2026-05-24, commit: 965bdc1) ✅
 * 목적: Chrome 86+ `file://` 페이지 `fetch()` 차단 정책으로 model-viewer 컴포넌트가 `./img/*.glb` 로딩 실패하던 문제 해결. HTTP 서버 경유(playwright + python http.server) 시는 정상 동작하나 `open file://...` 직접 open 시 매번 "model3d: GLB 로딩 실패" 빨간 박스 표시. ComponentTest 슬라이드 1·2·9의 test-cube 3건 모두 영향.
