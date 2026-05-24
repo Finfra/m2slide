@@ -2,7 +2,21 @@
 title: Component Test — model3d
 subtitle: Issue206 3D 모델 뷰어 컴포넌트 검증
 type: ppt
-release_date: 2026-05-22
+release_date: 2026-05-24
+---
+
+## model3d — 실제 GLB 렌더 확인 (test-cube.glb)
+
+```model3d
+{
+  "src": "./img/test-cube.glb",
+  "alt": "파란 큐브 — model-viewer 실제 렌더 검증",
+  "autoRotate": true,
+  "rotationPerSecond": "30deg",
+  "backgroundColor": "#1a1a2e"
+}
+```
+
 ---
 
 ## model3d — GLB 없음 (오류 표시 확인)

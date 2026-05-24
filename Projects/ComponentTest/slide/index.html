@@ -1222,7 +1222,7 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1779434569027">
+  <link rel="stylesheet" href="css/custom.css?v=1779584221166">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1434,6 +1434,21 @@ html.ratio-fill .agenda-frame {
 
   <div class="reveal ratio-3-2">
     <div class="slides">
+
+<section class="layout-_contents">
+  <h2 class="title">model3d — 실제 GLB 렌더 확인 (test-cube.glb)</h2>
+  <div class="contents-body">
+
+<div class="component-container" data-component="model3d">
+{
+  "src": "./img/test-cube.glb",
+  "alt": "파란 큐브 — model-viewer 실제 렌더 검증",
+  "autoRotate": true,
+  "rotationPerSecond": "30deg",
+  "backgroundColor": "#1a1a2e"
+}
+</div></div>
+</section>
 
 <section class="layout-_contents">
   <h2 class="title">model3d — GLB 없음 (오류 표시 확인)</h2>
@@ -1853,19 +1868,23 @@ html.ratio-fill .agenda-frame {
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">model3d — GLB 없음 (오류 표시 확인)</a>",
+                  "content": "<a href=\"#/1\">model3d — 실제 GLB 렌더 확인 (test-cube.glb)</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/2\">model3d — JSON 파싱 오류 확인</a>",
+                  "content": "<a href=\"#/2\">model3d — GLB 없음 (오류 표시 확인)</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">model3d + chart 병존 확인</a>",
+                  "content": "<a href=\"#/3\">model3d — JSON 파싱 오류 확인</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/4\">일반 슬라이드 (CDN 미주입 무관)</a>",
+                  "content": "<a href=\"#/4\">model3d + chart 병존 확인</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/5\">일반 슬라이드 (CDN 미주입 무관)</a>",
                   "children": []
             }
       ]

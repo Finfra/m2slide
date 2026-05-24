@@ -1230,7 +1230,7 @@ html.ratio-fill .agenda-frame {
     @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
 </style>
-<link rel="stylesheet" href="css/custom.css?v=1779434569028">
+<link rel="stylesheet" href="css/custom.css?v=1779584221167">
 </head>
 <body class="agenda-page" data-nav-indicator="both">
 <div class="agenda-frame">
@@ -1251,7 +1251,7 @@ html.ratio-fill .agenda-frame {
 <script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
 <script>
 (function(){
-  const tocData = {"content":"","children":[{"content":"<a href=\"index.html#/1\">model3d — GLB 없음 (오류 표시 확인)</a>","children":[]},{"content":"<a href=\"index.html#/2\">model3d — JSON 파싱 오류 확인</a>","children":[]},{"content":"<a href=\"index.html#/3\">model3d + chart 병존 확인</a>","children":[]},{"content":"<a href=\"index.html#/4\">일반 슬라이드 (CDN 미주입 무관)</a>","children":[]}]};
+  const tocData = {"content":"","children":[{"content":"<a href=\"index.html#/1\">model3d — 실제 GLB 렌더 확인 (test-cube.glb)</a>","children":[]},{"content":"<a href=\"index.html#/2\">model3d — GLB 없음 (오류 표시 확인)</a>","children":[]},{"content":"<a href=\"index.html#/3\">model3d — JSON 파싱 오류 확인</a>","children":[]},{"content":"<a href=\"index.html#/4\">model3d + chart 병존 확인</a>","children":[]},{"content":"<a href=\"index.html#/5\">일반 슬라이드 (CDN 미주입 무관)</a>","children":[]}]};
   function init() {
     if (!window.markmap) { return setTimeout(init, 50); }
     const svg = document.querySelector('.toc-mindmap-svg');
@@ -1306,7 +1306,7 @@ html.ratio-fill .agenda-frame {
       var sep = base.indexOf('?') === -1 ? '?' : '&';
       return base + sep + signal + hash;
     }
-  const _tocData = {"content":"","children":[{"content":"<a href=\"index.html#/1\">model3d — GLB 없음 (오류 표시 확인)</a>","children":[]},{"content":"<a href=\"index.html#/2\">model3d — JSON 파싱 오류 확인</a>","children":[]},{"content":"<a href=\"index.html#/3\">model3d + chart 병존 확인</a>","children":[]},{"content":"<a href=\"index.html#/4\">일반 슬라이드 (CDN 미주입 무관)</a>","children":[]}]};
+  const _tocData = {"content":"","children":[{"content":"<a href=\"index.html#/1\">model3d — 실제 GLB 렌더 확인 (test-cube.glb)</a>","children":[]},{"content":"<a href=\"index.html#/2\">model3d — GLB 없음 (오류 표시 확인)</a>","children":[]},{"content":"<a href=\"index.html#/3\">model3d — JSON 파싱 오류 확인</a>","children":[]},{"content":"<a href=\"index.html#/4\">model3d + chart 병존 확인</a>","children":[]},{"content":"<a href=\"index.html#/5\">일반 슬라이드 (CDN 미주입 무관)</a>","children":[]}]};
   function firstHrefFromToc(node){
     if (!node || !node.children || node.children.length === 0) return null;
     for (const child of node.children) {
