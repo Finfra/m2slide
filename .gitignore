@@ -127,6 +127,8 @@ Temporary Items
 !/data/emoji-usage.yml
 !/data/htmlart/
 !/data/htmlart/**
+!/data/palettes/
+!/data/palettes/**
 
 # Backup files
 *.bak

@@ -1,0 +1,16 @@
+/* theme/default/palettes/cool.css — 청록·푸른·보라 톤
+ * 카탈로그 SSOT: data/palettes/catalog.yml (palettes.cool)
+ * 설계 SSOT: _doc_arch/color-palette.md
+ * 용도: 차분·기술·금융·B2B·신뢰
+ */
+:root {
+  --m2-accent-1: #3498DB;
+  --m2-accent-2: #1ABC9C;
+  --m2-accent-3: #9B59B6;
+  --m2-accent-4: #2980B9;
+  --m2-accent-5: #16A085;
+  --m2-accent-6: #34495E;
+  --m2-text: #1A2530;
+  --m2-bg: #FBFCFD;
+  --m2-surface: #EDF2F7;
+}

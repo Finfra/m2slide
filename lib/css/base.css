@@ -33,6 +33,27 @@
    - <body style="..."> 인라인이 더 높은 specificity로 override
    ========================================================================= */
 :root {
+  /* ─────────────────────────────────────────────────────────────────────
+     m2 컬러 팔레트 9 슬롯 (Issue210) — Accent 1-6 + Text + Bg + Surface
+     설계 SSOT: _doc_arch/color-palette.md
+     카탈로그: data/palettes/catalog.yml (default 팔레트와 일치)
+     theme/{name}/palettes/{palette}.css 가 :root override 로 교체.
+     기존 --kn-* 변수는 신규 슬롯 alias 로 회귀 0 보증.
+     ───────────────────────────────────────────────────────────────────── */
+  --m2-accent-1: #F5C518;          /* default 팔레트 — 기존 --kn-accent 값 */
+  --m2-accent-2: #4ABDAC;
+  --m2-accent-3: #FC4A1A;
+  --m2-accent-4: #7B68EE;
+  --m2-accent-5: #2ECC71;
+  --m2-accent-6: #E74C3C;
+  --m2-text: #111111;
+  --m2-bg: #ffffff;
+  --m2-surface: #f4f4f5;
+
+  /* 기존 --kn-* 변수 호환 alias — theme/slide.css 가 override 가능 (회귀 0 보증) */
+  --kn-accent: var(--m2-accent-1);
+  --kn-text: var(--m2-text);
+
   /* Global */
   --global-font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
 

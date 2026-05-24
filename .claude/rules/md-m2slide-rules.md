@@ -406,6 +406,53 @@ md-slide-rules의 `::: columns` 표준 외에 m2slide는 임의 슬롯명 지원
 * 사용자 `#layout-*` 명시는 항상 우선
 * `_config.yml`의 `auto_layout_detect: false`로 비활성화 가능
 
+## 8. 컬러 팔레트 시스템 (Issue210)
+
+`_config.yml palette:` 키로 theme 컬러 variant 교체. htmlArt 블록 단위 `{.palette-X}`·`{.accent-N}` override. PowerPoint Office Theme 대응. 영속 SSOT: [`_doc_arch/color-palette.md`](../../_doc_arch/color-palette.md).
+
+### 데크 전체 — `_config.yml`
+
+```yaml
+theme: default
+palette: warm       # default | warm | cool | mono. 미지정 시 default (회귀 0 보증)
+```
+
+* 카탈로그: `data/palettes/catalog.yml` (기본 4 팔레트). 신규 팔레트: 본 파일 + `theme/{name}/palettes/{palette}.css` 동시 작성.
+* 빌드 시 `theme/{themeName}/palettes/{palette}.css` 또는 `theme/default/palettes/{palette}.css` fallback CSS가 inline `<style>` 주입됨.
+
+### htmlArt 블록 단위 — Pandoc attribute
+
+```markdown
+::: htmlart pie {.palette-cool}
+* A 40%
+* B 30%
+* C 30%
+:::
+
+::: htmlart process {.accent-3}
+* 입력
+* 처리
+* 출력
+:::
+```
+
+* `{.palette-X}` — 블록 내부에서 X 팔레트 활성 (현 구현은 단일 블록 변수 inline override 대신 `data-palette` 부여, theme별 CSS 매핑은 후속)
+* `{.accent-N}` — N=1~6, `--htmlart-accent`를 해당 m2 accent 단일 색으로 강제 (균질형 순환 비활성, opacity 점층 사용)
+* 둘 병용 가능: `{.palette-cool .accent-3}`
+
+### 색 자동 순환 정책 (D4)
+
+| 분류 | 타입 | 색 정책 |
+| :--- | :--- | :--- |
+| 균질형 N개 | `pie` · `cycle` · `gear` · `matrix` · `venn` | `var(--m2-accent-${(i%6)+1})` 순환 |
+| 순차/점층형 | `process` · `timeline` · `chevron` · `step` · `funnel` | accent-1 단색 + opacity 점층 |
+| 중심+자식형 | `hierarchy` · `radial` · `arrow` | 중심 accent-1, 자식 accent-2 |
+| 목록·계열형 | `numbered` · `hexagon` · `block` · `bracket` · `tab` · `target` | accent-1 단색 |
+| 좌우 대비형 | `balance` · `compare` | 좌 accent-1, 우 accent-2 |
+
+* Phase 4 (Issue210) 구현 — pie만 우선 적용. 나머지 균질형은 후속 작업으로 동일 정책 점진 적용.
+* `{.accent-N}` 명시 시 자동 순환 무시.
+
 # 시각화 구성요소 (Issue181 — 수식·심벌·차트)
 
 시각화 라이브러리 기반 구성요소 저작 문법. 라이브러리 메타 SSOT는 [`data/component-libraries.yml`](../../data/component-libraries.yml), 설계 SSOT는 [`_doc_arch/component-libraries.md`](../../_doc_arch/component-libraries.md).

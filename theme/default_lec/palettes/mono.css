@@ -1,0 +1,16 @@
+/* theme/default/palettes/mono.css — 회색 명도 변형 (무채색)
+ * 카탈로그 SSOT: data/palettes/catalog.yml (palettes.mono)
+ * 설계 SSOT: _doc_arch/color-palette.md
+ * 용도: 미니멀·고급·인쇄 친화·중립
+ */
+:root {
+  --m2-accent-1: #2C3E50;
+  --m2-accent-2: #7F8C8D;
+  --m2-accent-3: #34495E;
+  --m2-accent-4: #95A5A6;
+  --m2-accent-5: #566573;
+  --m2-accent-6: #1C2833;
+  --m2-text: #1A1A1A;
+  --m2-bg: #FFFFFF;
+  --m2-surface: #F0F0F0;
+}

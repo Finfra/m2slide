@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 207
+* Issue HWM: 211
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -26,9 +26,114 @@
 
 # 🚧 진행중
 
+## Issue210. 컬러 팔레트 시스템 — theme variant + htmlArt 객체 단위 컬러 override (등록: 2026-05-24)
+* 목적: PowerPoint Office Theme 대응 — theme별 N색 팔레트(`Accent 1-6 + Text/Bg + Surface`) 도입으로 (1) `_config.yml palette:` 키로 theme 컬러 variant 교체, (2) htmlArt 블록 단위 `{.palette-X}`/`{.accent-N}` override. 현재 `--kn-accent` 단일색만 사용하여 SmartArt 류 도해 색 구별 약화 + 같은 슬라이드 안 두 htmlart 블록을 다른 색으로 표현 불가. pie 슬라이드 teal 톤 하드코딩(`htmlart_dispatch.js renderPie` 팔레트 7색)도 동반 정리.
+* plan: `_doc_work/plan/color-palette_plan.md`
+* task: `_doc_work/tasks/color-palette_task.md`
+* arch: `_doc_arch/color-palette.md`
+* 상세:
+    - 신규 CSS 변수 9 슬롯: `--m2-accent-1`~`--m2-accent-6` + `--m2-text` + `--m2-bg` + `--m2-surface`
+    - 호환: `--kn-accent` = `var(--m2-accent-1)` alias로 회귀 0 보증
+    - 신규 카탈로그: `data/palettes/catalog.yml` (default/warm/cool/mono 4종 기본)
+    - 신규 파일: `theme/{default,default_lec}/palettes/{default,warm,cool,mono}.css` 8개
+    - `_config.yml` 신규 키: `palette: <name>` (기본 `default`)
+    - 블록 단위: `::: htmlart pie {.palette-cool}` 또는 `{.accent-3}` Pandoc attribute syntax
+    - 색 자동 순환 정책 (D4 표): 균질형(pie·cycle·gear·matrix·venn) Accent 순환, 순차형(process·timeline 등) 단색+opacity, 중심형(hierarchy·radial·arrow) 2색
+* 구현 명세:
+    - Phase 1 (SSOT·데이터): `_doc_arch/color-palette.md` + `data/palettes/catalog.yml`
+    - Phase 2 (CSS 인프라): `lib/css/base.css` 변수 + `theme/_shared/components.css` `--htmlart-accent` 매핑 변경 + `theme/{default,default_lec}/palettes/*.css` 8개
+    - Phase 3 (빌드): `lib/config.js` `palette` 키 + `lib/html-builder.js` palette CSS inline 주입 + `lib/lint-layouts.js` `--lint-palette` 검증
+    - Phase 4 (htmlArt override): `lib/markdown.js` `::: htmlart` attribute 파싱 확장 + `lib/component-hooks/htmlart_dispatch.js` pie 하드코딩 제거 + D4 색 정책 통일
+    - Phase 5 (슬라이드 단위 override) — 후순위 분리 가능
+    - Phase 6 (데모): `Projects/paletteTest` 신규 + `Projects/htmlArtTest` override 데모 + `.claude/rules/md-m2slide-rules.md` 컬러 섹션
+    - 검증: htmlArtTest·layoutTest·m2SlideStyle1_single·m2SlideStyle2_chapter 4 대표 프로젝트 회귀 스크린샷 diff + paletteTest 시각 매트릭스 + markdown.test.js 신규 케이스
+* 카테고리: Theme + Generator + Asset
+* 의존: Issue206(model3d) Issue208(compare) Issue209(workflow)과 독립 — palette 변수가 추후 신규 타입에도 자동 적용
+
 # 📕 중요
 
 # 📙 일반
+
+## Issue211. htmlArt `explain` 타입 추가 — 중앙 명제 + 사방 풀이 phrase (등록: 2026-05-24)
+* 목적: "하나의 핵심 명제를 여러 관점·풀이 문장으로 풀어 설명"하는 슬라이드 패턴을 htmlArt 표준 타입으로 추가. 중앙에 큰 강조 키워드/명제, 사방에 짧은 풀이 phrase가 가는 라인으로 연결되는 시각. 기존 `radial`(중심 허브 + 스포크 박스 노드, Issue202)과 시각 유사하나 의도·표현 분리 필요:
+    - `radial` = 중심 개념 + 관련 요소들의 "방사 관계" (균질 박스 노드)
+    - `explain` = 한 명제의 "다관점 풀이/정의 확장" (박스 없는 풀이 phrase + 가는 라인)
+* 상세:
+    - 신규 타입 `explain` (tier v5, smartart_category `relationship`)
+    - intent: "중앙 명제를 여러 짧은 풀이 문장으로 설명·정의 확장·다관점 해석"
+    - input: 평면 리스트 — 최상위 1번째 항목 = 중앙 명제, 2번째 이후 = 풀이 phrase
+    - sublevel: (미사용 — 풀이는 짧은 phrase로 한정. 긴 설명 필요 시 `radial` 권장)
+    - visual: 중앙 큰 강조 텍스트 (슬라이드급 폰트, 박스 없음, accent 색 강조) + 사방 풀이 phrase (박스 없는 텍스트, 본문 색) + 중앙 ↔ phrase 가는 라인 연결 (accent 색)
+    - recommend_count: 중앙 1 + 풀이 4-8개
+    - 사례: "Skill.md 이해하기 = 기본+커스텀 / 메모장에서 열림 / 마크다운 방식 / ...", "프롬프트 엔지니어링 = 명확한 지시 / 컨텍스트 제공 / 예시 활용 / ...", 정의·개념 풀이 일반
+* 구현 명세:
+    - `data/htmlart/types.yml`에 `explain` 항목 추가 + `decision_table` 신호 등록 (`radial`보다 위에 배치 — first-match 구체 우선)
+        - `signal_ko`: ["풀어 설명", "정의 확장", "여러 관점", "다관점", "여러 의미", "풀이"]
+        - `signal_en`: ["explain", "elaborate", "expand", "define", "interpret"]
+    - `lib/component-hooks/htmlart_dispatch.js`에 `renderExplain` 핸들러 추가
+        - d3 SVG 백엔드 (Issue193 통일)
+        - 중앙 노드: viewBox 중앙, 큰 폰트(accent 색, 가독 한도 내 강조)
+        - 풀이 phrase: `d3.pointRadial` 원형 좌표 (radial과 동일 알고리즘, 단 박스 없는 텍스트만 배치)
+        - 연결선: 중앙 → phrase 직선 또는 한 번 꺾인 elbow (이미지 2 참조 — 짧은 horizontal stub + 대각 line)
+    - 라벨 파싱: 중앙 명제는 일반 텍스트 또는 `**볼드**` 허용 (자동 강조)
+    - theme CSS: `theme/_shared/components.css`에 `.htmlart-explain` 스타일 추가
+        - 신규 CSS 변수: `--htmlart-explain-center-fg` (기본 `var(--kn-accent)`), `--htmlart-explain-leaf-fg` (기본 `var(--kn-text)`), `--htmlart-explain-line` (기본 `var(--kn-accent)`)
+    - 글자 크기 자동 스케일 (Issue200 패턴 — 박스 비례 폰트 정책 차용)
+    - `radial` vs `explain` 경계 명시:
+        - 박스 + 균질 노드 → `radial`
+        - 박스 없음 + 강조 명제 풀이 → `explain`
+    - 예제 슬라이드: `Projects/htmlArtTest/htmlArtTest.md`에 explain 1슬라이드 추가
+    - 검증: htmlArtTest 회귀 스크린샷 + markdown.test.js 신규 케이스
+* 카테고리: Generator + Asset
+* 참고: `_doc_work/z_htm/claude-htm-ask-1779589823.html` (제안 검토 결과)
+* 의존: Issue210(컬러 팔레트)과 독립 — palette 변수가 적용되면 explain accent도 자동 반영
+
+## Issue208. htmlArt `compare` 타입 추가 — 2분할 좌우 비교 (등록: 2026-05-24)
+* 목적: 좌우 동등 병렬로 두 영역을 대비하는 슬라이드 패턴을 htmlArt 표준 타입으로 추가. 현재 21종 중 의미·시각이 모두 맞는 타입 없음 — `balance`(시소·무게 강조), `bracket`(그룹 적층), `matrix`(2×2), `venn`(교집합) 모두 불일치. SmartArt 원본 카탈로그의 "Opposing Arrows", "Counterbalance Arrows", "Opposing Ideas" 매핑.
+* 상세:
+    - 신규 타입 `compare` (tier v5, smartart_category `relationship`)
+    - intent: "양쪽 대비·좌우 비교·대립하는 두 영역"
+    - input: 정확히 2개 그룹 — 최상위 1번째 = 좌, 2번째 = 우. 라벨 규약 `**헤드라인** / 부제`
+    - sublevel: 각 그룹 bullet (필수)
+    - visual: 중앙 세로 구분선 + 좌·우 동등 컬럼 + 상단 작은 부제(악센트) + 큰 컬러 헤드라인 + bullet 리스트
+    - recommend_count: 2 그룹 고정, 그룹당 2-7 항목
+    - 사례: "도구의 영역 vs 사고의 영역", "Old vs New", "장점 vs 단점"
+* 구현 명세:
+    - `data/htmlart/types.yml`에 `compare` 항목 추가 + `decision_table` 신호 등록 (`balance`보다 위에 배치)
+        - `signal_ko`: ["좌우 비교", "두 영역 비교", "대립", "대비", "vs", "반대 개념", "양분", "이분법"]
+        - `signal_en`: ["compare", "versus", "vs", "opposing", "contrast", "dichotomy"]
+    - `lib/component-hooks/htmlart_dispatch.js`에 `compare` 핸들러 추가
+    - 라벨 파싱 정규식: `/^\*\*(.+?)\*\*\s*(?:\/\s*(.+))?$/`
+    - 렌더는 d3 SVG 불필요 — 순수 HTML/CSS grid 2열 (반응형 자연스러움)
+    - theme CSS: `theme/_shared/components.css` 또는 `theme/{name}/slide.css`에 `.htmlart-compare` 스타일 추가
+        - CSS 변수: `--htmlart-compare-sub`, `--htmlart-compare-head-left`, `--htmlart-compare-head-right`, `--htmlart-compare-divider`
+    - balance vs compare 경계 명시: balance = 무게·기울기 비대칭, compare = 동등 병렬
+* 카테고리: Generator + Asset
+* 참고: `_doc_work/z_htm/claude-htm-1779588931.html` (제안 검토 결과)
+
+## Issue209. htmlArt `workflow` 타입 추가 — 사람 endcap + 단계 박스 체인 (등록: 2026-05-24)
+* 목적: "기획구상 → ... → 결과문서" 형태의 워크플로 패턴을 htmlArt 표준 타입으로 추가. 양 끝에 사람(역할·페르소나) endcap이 있고 중간에 N개의 단계 박스가 배치되는 시각 구조. 현재 `process` 타입은 박스 체인만 표현하고 endcap·페르소나 강조 불가.
+* 상세:
+    - 신규 타입 `workflow` (tier v5, smartart_category `process`)
+    - intent: "양 끝 페르소나(시작·결과) + 중간 단계 박스 체인. 사람 주도 워크플로·역할 강조 프로세스"
+    - input: 평면 리스트 — 최상위 항목 = 단계. 첫·마지막 항목에 `[person]` 메타 또는 라벨 형식 `**기획구상** {person}` 으로 endcap 표시
+    - sublevel: 하위 들여쓰기 = 단계 보조 설명 + 도구 라벨(예: "Gemini · NotebookLM"). 그룹 묶기 메타 `{group: "..."}` 로 상단 캡션 표시
+    - visual: 사람 실루엣 아이콘 endcap(좌·우) + 라운드 사각 박스 체인(중앙) + 상단 그룹 캡션(괄호로 묶음) + 박스 아래 라벨 텍스트
+    - recommend_count: 3-10 단계 (endcap 2 + 중간 1-8)
+    - 변형: endcap 없이 박스만 (degraded `process` 동등), 빈 박스(번호만), 그룹 캡션 (선택)
+    - 사례: "슬라이드 워크플로우 (기획 → Gemini → Claude In PPT → 결과)", "고객 여정맵(고객 → 터치포인트들 → 결과)", "리서치 파이프라인(질문자 → 도구들 → 보고서)"
+* 구현 명세:
+    - `data/htmlart/types.yml`에 `workflow` 항목 추가 + `decision_table` 신호 등록 (`process`보다 위에 배치)
+        - `signal_ko`: ["워크플로우", "워크 플로우", "워크플로", "업무 흐름", "역할별 흐름", "사람 흐름", "여정맵", "페르소나 프로세스"]
+        - `signal_en`: ["workflow", "journey", "persona process", "user journey"]
+    - `lib/component-hooks/htmlart_dispatch.js`에 `workflow` 핸들러 추가
+    - 라벨 메타 파싱: `**라벨** {person}`, `{group: "..."}`, `{tool: "..."}` 토큰 파싱
+    - 사람 아이콘은 SVG inline (`theme/_shared/icons/person.svg` 신설) — 색은 CSS 변수 `--htmlart-workflow-person-fill`
+    - 박스 체인은 d3 SVG (기존 `process` 렌더 재사용 + endcap 위치만 추가)
+    - 그룹 캡션은 상단 정중앙 텍스트 + 좌우 곡선 가이드(중괄호 또는 brace) — 옵셔널
+    - theme CSS: `.htmlart-workflow` 스타일, `--htmlart-workflow-box-fill`, `--htmlart-workflow-person-fill`, `--htmlart-workflow-group-caption`
+* 카테고리: Generator + Asset
+* 참고: 출처 영상 — YouTube `oG5-NY2ZdwU` (우석지니 채널)의 "슬라이드 워크 플로우" 슬라이드 패턴 + 빈 박스/번호 박스 변형
 
 # 📗 선택
 

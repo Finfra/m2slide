@@ -1,0 +1,85 @@
+# data/palettes/catalog.yml
+# m2slide 컬러 팔레트 카탈로그 SSOT (Issue210).
+#
+# 9 슬롯 = Accent 1-6 + Text + Bg + Surface (PowerPoint Office Theme 대응).
+# 신규 팔레트 추가 시: 본 파일 + theme/{name}/palettes/{palette}.css 두 곳 동시 생성.
+# 설계 SSOT: _doc_arch/color-palette.md
+---
+meta:
+  design_doc: _doc_arch/color-palette.md
+  status: active
+  slot_count: 9
+  slots:
+    - accent_1
+    - accent_2
+    - accent_3
+    - accent_4
+    - accent_5
+    - accent_6
+    - text
+    - bg
+    - surface
+  default_palette: default
+
+# ── 팔레트 정의 (4 기본) ───────────────────────────────────────────────
+# 각 팔레트는 9 슬롯 hex 값 전체를 정의. theme/default/palettes/{name}.css
+# 파일이 본 카탈로그 값을 :root override 로 작성한다.
+palettes:
+
+  default:
+    description: 기본 노란색 기조 (m2slide 브랜드 — kn-accent 호환)
+    use_case: 강의·일반·기본값
+    accent_1: '#F5C518'      # 노랑 (현 --kn-accent 와 동일 — 회귀 0 보증)
+    accent_2: '#4ABDAC'      # 청록
+    accent_3: '#FC4A1A'      # 주황
+    accent_4: '#7B68EE'      # 보라
+    accent_5: '#2ECC71'      # 녹색
+    accent_6: '#E74C3C'      # 빨강
+    text: '#111111'
+    bg: '#ffffff'
+    surface: '#f4f4f5'
+
+  warm:
+    description: 붉은·주황·황금 톤
+    use_case: 강렬·열정·식음료·라이프스타일·홍보
+    accent_1: '#E74C3C'      # 빨강
+    accent_2: '#F39C12'      # 주황
+    accent_3: '#D35400'      # 진한 주황
+    accent_4: '#C0392B'      # 진한 빨강
+    accent_5: '#F1C40F'      # 황금
+    accent_6: '#E67E22'      # 호박색
+    text: '#2C1810'          # 진한 갈색
+    bg: '#FFF8F0'            # 따뜻한 흰색
+    surface: '#FFEBD6'       # 옅은 살구
+
+  cool:
+    description: 청록·푸른·보라 톤
+    use_case: 차분·기술·금융·B2B·신뢰
+    accent_1: '#3498DB'      # 파랑
+    accent_2: '#1ABC9C'      # 청록
+    accent_3: '#9B59B6'      # 보라
+    accent_4: '#2980B9'      # 진한 파랑
+    accent_5: '#16A085'      # 진한 청록
+    accent_6: '#34495E'      # 짙은 회청색
+    text: '#1A2530'          # 짙은 청록
+    bg: '#FBFCFD'            # 차가운 흰색
+    surface: '#EDF2F7'       # 옅은 청회색
+
+  mono:
+    description: 회색 명도 변형 (무채색)
+    use_case: 미니멀·고급·인쇄 친화·중립
+    accent_1: '#2C3E50'      # 짙은 회청
+    accent_2: '#7F8C8D'      # 중간 회색
+    accent_3: '#34495E'      # 회청색
+    accent_4: '#95A5A6'      # 옅은 회색
+    accent_5: '#566573'      # 진한 회색
+    accent_6: '#1C2833'      # 거의 검정
+    text: '#1A1A1A'
+    bg: '#FFFFFF'
+    surface: '#F0F0F0'
+
+# ── 향후 확장 후보 (참조용, 미구현) ────────────────────────────────────
+# nature  — 녹·갈·황 톤 (자연·친환경·교육)
+# pastel  — 파스텔 (어린이·창의·디자인 워크숍)
+# neon    — 형광·고대비 (게이밍·이벤트)
+# 추가 시 본 파일에 정의 + theme/{name}/palettes/{newname}.css 작성

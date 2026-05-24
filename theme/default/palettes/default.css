@@ -1,0 +1,18 @@
+/* theme/default/palettes/default.css — m2slide default 팔레트
+ * 카탈로그 SSOT: data/palettes/catalog.yml (palettes.default)
+ * 설계 SSOT: _doc_arch/color-palette.md
+ *
+ * default 팔레트는 회귀 0 보증 — accent_1 값(#F5C518)이 기존 --kn-accent 와 동일.
+ * 본 파일은 base.css :root 기본값과 동일하므로 명시 적용해도 시각 변화 없음.
+ */
+:root {
+  --m2-accent-1: #F5C518;
+  --m2-accent-2: #4ABDAC;
+  --m2-accent-3: #FC4A1A;
+  --m2-accent-4: #7B68EE;
+  --m2-accent-5: #2ECC71;
+  --m2-accent-6: #E74C3C;
+  --m2-text: #111111;
+  --m2-bg: #ffffff;
+  --m2-surface: #f4f4f5;
+}

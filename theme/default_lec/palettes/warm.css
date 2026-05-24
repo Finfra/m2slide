@@ -1,0 +1,16 @@
+/* theme/default/palettes/warm.css — 붉은·주황·황금 톤
+ * 카탈로그 SSOT: data/palettes/catalog.yml (palettes.warm)
+ * 설계 SSOT: _doc_arch/color-palette.md
+ * 용도: 강렬·열정·식음료·라이프스타일·홍보
+ */
+:root {
+  --m2-accent-1: #E74C3C;
+  --m2-accent-2: #F39C12;
+  --m2-accent-3: #D35400;
+  --m2-accent-4: #C0392B;
+  --m2-accent-5: #F1C40F;
+  --m2-accent-6: #E67E22;
+  --m2-text: #2C1810;
+  --m2-bg: #FFF8F0;
+  --m2-surface: #FFEBD6;
+}
