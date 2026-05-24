@@ -373,6 +373,18 @@ timeline
 
 ---
 
+## Excalidraw — 손그림 스타일 다이어그램
+
+m2slide는 excalidraw fenced block을 직접 처리하지 않음 (mermaid처럼 빌드 dispatcher 미등록). 손그림 스타일 자유형 다이어그램은 `.excalidraw` JSON 소스 파일을 별도 도구로 PNG/SVG로 export 한 뒤 이미지로 임베드한다.
+
+![m2slide Architecture (excalidraw)](./img/m2slide-architecture.png)
+
+* 소스: `img/m2slide-architecture.excalidraw` (excalidraw.com에서 직접 편집 가능)
+* 빌드: `excalidraw-diagram` 스킬 또는 [excalidraw.com](https://excalidraw.com) Export → PNG
+* mermaid와 차이: mermaid는 fenced 코드 자동 렌더, excalidraw는 이미지 파이프라인 경유
+
+---
+
 ## p5 — Bouncing Ball (자동 움직임 시뮬레이션)
 
 ```p5
@@ -445,6 +457,36 @@ p.draw = function() {
   }
 };
 ```
+
+---
+
+## Table — 기본 정렬 옵션
+
+| 정렬 | 문법      | 예시      |
+| :--- | :-------- | --------: |
+| 좌   | `:---`    | 좌측 정렬 |
+| 중앙 | `:---:`   |  중앙     |
+| 우   | `---:`    |     우측  |
+
+* `:` 위치로 정렬 방향 지정
+* 헤더 구분 라인에서만 유효
+* 셀 공백 패딩 정렬은 가독성용 (출력엔 영향 없음)
+
+---
+
+## Table — 데이터 비교
+
+| 항목       | 라이브러리     | 버전     | 상태 |
+| :--------- | :------------- | :------- | :--: |
+| 수식       | KaTeX          | 0.16.x   |  ✅  |
+| 차트       | chart.js       | 4.x      |  ✅  |
+| 지도       | Leaflet        | 1.9.x    |  ✅  |
+| 인포그래픽 | d3             | 7.x      |  ✅  |
+| 3D 모델    | model-viewer   | 3.5.0    |  ✅  |
+| 시뮬레이션 | p5.js          | 1.11.2   |  ✅  |
+
+* component-libraries.yml SSOT 발췌
+* 다중 컬럼·이모지·인라인 코드 혼합 허용
 
 ---
 

@@ -1,0 +1,399 @@
+{
+  "type": "excalidraw",
+  "version": 2,
+  "source": "https://excalidraw.com",
+  "elements": [
+    {
+      "type": "text",
+      "id": "title",
+      "x": 360, "y": 40,
+      "width": 360, "height": 32,
+      "text": "m2slide Architecture",
+      "originalText": "m2slide Architecture",
+      "fontSize": 28, "fontFamily": 3,
+      "textAlign": "center", "verticalAlign": "top",
+      "strokeColor": "#1e40af", "backgroundColor": "transparent",
+      "fillStyle": "solid", "strokeWidth": 1, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 100001, "version": 1, "versionNonce": 100002,
+      "isDeleted": false, "groupIds": [], "boundElements": null,
+      "link": null, "locked": false, "containerId": null, "lineHeight": 1.25
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "x": 280, "y": 78,
+      "width": 520, "height": 22,
+      "text": "Markdown → Build → HTML · EPUB · PDF",
+      "originalText": "Markdown → Build → HTML · EPUB · PDF",
+      "fontSize": 16, "fontFamily": 3,
+      "textAlign": "center", "verticalAlign": "top",
+      "strokeColor": "#64748b", "backgroundColor": "transparent",
+      "fillStyle": "solid", "strokeWidth": 1, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 100003, "version": 1, "versionNonce": 100004,
+      "isDeleted": false, "groupIds": [], "boundElements": null,
+      "link": null, "locked": false, "containerId": null, "lineHeight": 1.25
+    },
+
+    {
+      "type": "rectangle",
+      "id": "src_rect",
+      "x": 60, "y": 220, "width": 200, "height": 100,
+      "strokeColor": "#c2410c", "backgroundColor": "#fed7aa",
+      "fillStyle": "solid", "strokeWidth": 2, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 110001, "version": 1, "versionNonce": 110002,
+      "isDeleted": false, "groupIds": [],
+      "boundElements": [
+        {"id": "src_text", "type": "text"},
+        {"id": "arrow_src_build", "type": "arrow"}
+      ],
+      "link": null, "locked": false, "roundness": {"type": 3}
+    },
+    {
+      "type": "text",
+      "id": "src_text",
+      "x": 78, "y": 252,
+      "width": 164, "height": 50,
+      "text": "Markdown\nSource (.md)",
+      "originalText": "Markdown\nSource (.md)",
+      "fontSize": 18, "fontFamily": 3,
+      "textAlign": "center", "verticalAlign": "middle",
+      "strokeColor": "#374151", "backgroundColor": "transparent",
+      "fillStyle": "solid", "strokeWidth": 1, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 110003, "version": 1, "versionNonce": 110004,
+      "isDeleted": false, "groupIds": [], "boundElements": null,
+      "link": null, "locked": false, "containerId": "src_rect", "lineHeight": 1.25
+    },
+    {
+      "type": "text",
+      "id": "src_detail",
+      "x": 60, "y": 330,
+      "width": 200, "height": 60,
+      "text": "AGENDA.md\n+ 챕터 *.md\n+ frontmatter",
+      "originalText": "AGENDA.md\n+ 챕터 *.md\n+ frontmatter",
+      "fontSize": 12, "fontFamily": 3,
+      "textAlign": "center", "verticalAlign": "top",
+      "strokeColor": "#64748b", "backgroundColor": "transparent",
+      "fillStyle": "solid", "strokeWidth": 1, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 110005, "version": 1, "versionNonce": 110006,
+      "isDeleted": false, "groupIds": [], "boundElements": null,
+      "link": null, "locked": false, "containerId": null, "lineHeight": 1.4
+    },
+
+    {
+      "type": "rectangle",
+      "id": "build_rect",
+      "x": 400, "y": 180, "width": 260, "height": 180,
+      "strokeColor": "#1e3a5f", "backgroundColor": "#3b82f6",
+      "fillStyle": "solid", "strokeWidth": 2, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 200001, "version": 1, "versionNonce": 200002,
+      "isDeleted": false, "groupIds": [],
+      "boundElements": [
+        {"id": "build_text", "type": "text"},
+        {"id": "arrow_src_build", "type": "arrow"},
+        {"id": "arrow_build_html", "type": "arrow"},
+        {"id": "arrow_build_epub", "type": "arrow"},
+        {"id": "arrow_build_pdf", "type": "arrow"},
+        {"id": "arrow_build_theme", "type": "arrow"},
+        {"id": "arrow_build_comp", "type": "arrow"}
+      ],
+      "link": null, "locked": false, "roundness": {"type": 3}
+    },
+    {
+      "type": "text",
+      "id": "build_text",
+      "x": 420, "y": 230,
+      "width": 220, "height": 80,
+      "text": "m2slide Build\n(generate-slides.js\n + generate-epub.js)",
+      "originalText": "m2slide Build\n(generate-slides.js\n + generate-epub.js)",
+      "fontSize": 18, "fontFamily": 3,
+      "textAlign": "center", "verticalAlign": "middle",
+      "strokeColor": "#ffffff", "backgroundColor": "transparent",
+      "fillStyle": "solid", "strokeWidth": 1, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 200003, "version": 1, "versionNonce": 200004,
+      "isDeleted": false, "groupIds": [], "boundElements": null,
+      "link": null, "locked": false, "containerId": "build_rect", "lineHeight": 1.3
+    },
+
+    {
+      "type": "rectangle",
+      "id": "theme_rect",
+      "x": 280, "y": 440, "width": 200, "height": 80,
+      "strokeColor": "#1e3a5f", "backgroundColor": "#93c5fd",
+      "fillStyle": "solid", "strokeWidth": 2, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 300001, "version": 1, "versionNonce": 300002,
+      "isDeleted": false, "groupIds": [],
+      "boundElements": [
+        {"id": "theme_text", "type": "text"},
+        {"id": "arrow_build_theme", "type": "arrow"}
+      ],
+      "link": null, "locked": false, "roundness": {"type": 3}
+    },
+    {
+      "type": "text",
+      "id": "theme_text",
+      "x": 290, "y": 462,
+      "width": 180, "height": 36,
+      "text": "Theme + Layout\n(slide.css + *.html)",
+      "originalText": "Theme + Layout\n(slide.css + *.html)",
+      "fontSize": 14, "fontFamily": 3,
+      "textAlign": "center", "verticalAlign": "middle",
+      "strokeColor": "#374151", "backgroundColor": "transparent",
+      "fillStyle": "solid", "strokeWidth": 1, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 300003, "version": 1, "versionNonce": 300004,
+      "isDeleted": false, "groupIds": [], "boundElements": null,
+      "link": null, "locked": false, "containerId": "theme_rect", "lineHeight": 1.3
+    },
+
+    {
+      "type": "rectangle",
+      "id": "comp_rect",
+      "x": 540, "y": 440, "width": 240, "height": 80,
+      "strokeColor": "#1e3a5f", "backgroundColor": "#93c5fd",
+      "fillStyle": "solid", "strokeWidth": 2, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 310001, "version": 1, "versionNonce": 310002,
+      "isDeleted": false, "groupIds": [],
+      "boundElements": [
+        {"id": "comp_text", "type": "text"},
+        {"id": "arrow_build_comp", "type": "arrow"}
+      ],
+      "link": null, "locked": false, "roundness": {"type": 3}
+    },
+    {
+      "type": "text",
+      "id": "comp_text",
+      "x": 550, "y": 455,
+      "width": 220, "height": 50,
+      "text": "Components\nMermaid · Chart · htmlArt\np5 · model3d · KaTeX",
+      "originalText": "Components\nMermaid · Chart · htmlArt\np5 · model3d · KaTeX",
+      "fontSize": 13, "fontFamily": 3,
+      "textAlign": "center", "verticalAlign": "middle",
+      "strokeColor": "#374151", "backgroundColor": "transparent",
+      "fillStyle": "solid", "strokeWidth": 1, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 310003, "version": 1, "versionNonce": 310004,
+      "isDeleted": false, "groupIds": [], "boundElements": null,
+      "link": null, "locked": false, "containerId": "comp_rect", "lineHeight": 1.3
+    },
+
+    {
+      "type": "rectangle",
+      "id": "out_html",
+      "x": 820, "y": 140, "width": 180, "height": 80,
+      "strokeColor": "#047857", "backgroundColor": "#a7f3d0",
+      "fillStyle": "solid", "strokeWidth": 2, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 400001, "version": 1, "versionNonce": 400002,
+      "isDeleted": false, "groupIds": [],
+      "boundElements": [
+        {"id": "out_html_text", "type": "text"},
+        {"id": "arrow_build_html", "type": "arrow"}
+      ],
+      "link": null, "locked": false, "roundness": {"type": 3}
+    },
+    {
+      "type": "text",
+      "id": "out_html_text",
+      "x": 830, "y": 162,
+      "width": 160, "height": 36,
+      "text": "HTML\n(Reveal.js)",
+      "originalText": "HTML\n(Reveal.js)",
+      "fontSize": 16, "fontFamily": 3,
+      "textAlign": "center", "verticalAlign": "middle",
+      "strokeColor": "#374151", "backgroundColor": "transparent",
+      "fillStyle": "solid", "strokeWidth": 1, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 400003, "version": 1, "versionNonce": 400004,
+      "isDeleted": false, "groupIds": [], "boundElements": null,
+      "link": null, "locked": false, "containerId": "out_html", "lineHeight": 1.3
+    },
+
+    {
+      "type": "rectangle",
+      "id": "out_epub",
+      "x": 820, "y": 240, "width": 180, "height": 80,
+      "strokeColor": "#047857", "backgroundColor": "#a7f3d0",
+      "fillStyle": "solid", "strokeWidth": 2, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 410001, "version": 1, "versionNonce": 410002,
+      "isDeleted": false, "groupIds": [],
+      "boundElements": [
+        {"id": "out_epub_text", "type": "text"},
+        {"id": "arrow_build_epub", "type": "arrow"}
+      ],
+      "link": null, "locked": false, "roundness": {"type": 3}
+    },
+    {
+      "type": "text",
+      "id": "out_epub_text",
+      "x": 830, "y": 262,
+      "width": 160, "height": 36,
+      "text": "EPUB\n(3.0)",
+      "originalText": "EPUB\n(3.0)",
+      "fontSize": 16, "fontFamily": 3,
+      "textAlign": "center", "verticalAlign": "middle",
+      "strokeColor": "#374151", "backgroundColor": "transparent",
+      "fillStyle": "solid", "strokeWidth": 1, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 410003, "version": 1, "versionNonce": 410004,
+      "isDeleted": false, "groupIds": [], "boundElements": null,
+      "link": null, "locked": false, "containerId": "out_epub", "lineHeight": 1.3
+    },
+
+    {
+      "type": "rectangle",
+      "id": "out_pdf",
+      "x": 820, "y": 340, "width": 180, "height": 80,
+      "strokeColor": "#047857", "backgroundColor": "#a7f3d0",
+      "fillStyle": "solid", "strokeWidth": 2, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 420001, "version": 1, "versionNonce": 420002,
+      "isDeleted": false, "groupIds": [],
+      "boundElements": [
+        {"id": "out_pdf_text", "type": "text"},
+        {"id": "arrow_build_pdf", "type": "arrow"}
+      ],
+      "link": null, "locked": false, "roundness": {"type": 3}
+    },
+    {
+      "type": "text",
+      "id": "out_pdf_text",
+      "x": 830, "y": 362,
+      "width": 160, "height": 36,
+      "text": "PDF\n(Pandoc)",
+      "originalText": "PDF\n(Pandoc)",
+      "fontSize": 16, "fontFamily": 3,
+      "textAlign": "center", "verticalAlign": "middle",
+      "strokeColor": "#374151", "backgroundColor": "transparent",
+      "fillStyle": "solid", "strokeWidth": 1, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 420003, "version": 1, "versionNonce": 420004,
+      "isDeleted": false, "groupIds": [], "boundElements": null,
+      "link": null, "locked": false, "containerId": "out_pdf", "lineHeight": 1.3
+    },
+
+    {
+      "type": "arrow",
+      "id": "arrow_src_build",
+      "x": 262, "y": 270, "width": 136, "height": 0,
+      "strokeColor": "#c2410c", "backgroundColor": "transparent",
+      "fillStyle": "solid", "strokeWidth": 3, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 500001, "version": 1, "versionNonce": 500002,
+      "isDeleted": false, "groupIds": [], "boundElements": null,
+      "link": null, "locked": false,
+      "points": [[0, 0], [136, 0]],
+      "startBinding": {"elementId": "src_rect", "focus": 0, "gap": 2},
+      "endBinding": {"elementId": "build_rect", "focus": 0, "gap": 2},
+      "startArrowhead": null, "endArrowhead": "arrow"
+    },
+
+    {
+      "type": "arrow",
+      "id": "arrow_build_html",
+      "x": 662, "y": 220, "width": 156, "height": -40,
+      "strokeColor": "#1e3a5f", "backgroundColor": "transparent",
+      "fillStyle": "solid", "strokeWidth": 2, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 510001, "version": 1, "versionNonce": 510002,
+      "isDeleted": false, "groupIds": [], "boundElements": null,
+      "link": null, "locked": false,
+      "points": [[0, 0], [156, -40]],
+      "startBinding": {"elementId": "build_rect", "focus": 0, "gap": 2},
+      "endBinding": {"elementId": "out_html", "focus": 0, "gap": 2},
+      "startArrowhead": null, "endArrowhead": "arrow"
+    },
+    {
+      "type": "arrow",
+      "id": "arrow_build_epub",
+      "x": 662, "y": 270, "width": 156, "height": 10,
+      "strokeColor": "#1e3a5f", "backgroundColor": "transparent",
+      "fillStyle": "solid", "strokeWidth": 2, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 520001, "version": 1, "versionNonce": 520002,
+      "isDeleted": false, "groupIds": [], "boundElements": null,
+      "link": null, "locked": false,
+      "points": [[0, 0], [156, 10]],
+      "startBinding": {"elementId": "build_rect", "focus": 0, "gap": 2},
+      "endBinding": {"elementId": "out_epub", "focus": 0, "gap": 2},
+      "startArrowhead": null, "endArrowhead": "arrow"
+    },
+    {
+      "type": "arrow",
+      "id": "arrow_build_pdf",
+      "x": 662, "y": 320, "width": 156, "height": 60,
+      "strokeColor": "#1e3a5f", "backgroundColor": "transparent",
+      "fillStyle": "solid", "strokeWidth": 2, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 530001, "version": 1, "versionNonce": 530002,
+      "isDeleted": false, "groupIds": [], "boundElements": null,
+      "link": null, "locked": false,
+      "points": [[0, 0], [156, 60]],
+      "startBinding": {"elementId": "build_rect", "focus": 0, "gap": 2},
+      "endBinding": {"elementId": "out_pdf", "focus": 0, "gap": 2},
+      "startArrowhead": null, "endArrowhead": "arrow"
+    },
+
+    {
+      "type": "arrow",
+      "id": "arrow_build_theme",
+      "x": 460, "y": 362, "width": -80, "height": 76,
+      "strokeColor": "#64748b", "backgroundColor": "transparent",
+      "fillStyle": "solid", "strokeWidth": 1, "strokeStyle": "dashed",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 540001, "version": 1, "versionNonce": 540002,
+      "isDeleted": false, "groupIds": [], "boundElements": null,
+      "link": null, "locked": false,
+      "points": [[0, 0], [-80, 76]],
+      "startBinding": {"elementId": "build_rect", "focus": 0, "gap": 2},
+      "endBinding": {"elementId": "theme_rect", "focus": 0, "gap": 2},
+      "startArrowhead": null, "endArrowhead": "arrow"
+    },
+    {
+      "type": "arrow",
+      "id": "arrow_build_comp",
+      "x": 600, "y": 362, "width": 60, "height": 76,
+      "strokeColor": "#64748b", "backgroundColor": "transparent",
+      "fillStyle": "solid", "strokeWidth": 1, "strokeStyle": "dashed",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 550001, "version": 1, "versionNonce": 550002,
+      "isDeleted": false, "groupIds": [], "boundElements": null,
+      "link": null, "locked": false,
+      "points": [[0, 0], [60, 76]],
+      "startBinding": {"elementId": "build_rect", "focus": 0, "gap": 2},
+      "endBinding": {"elementId": "comp_rect", "focus": 0, "gap": 2},
+      "startArrowhead": null, "endArrowhead": "arrow"
+    },
+
+    {
+      "type": "text",
+      "id": "label_uses",
+      "x": 350, "y": 388,
+      "width": 360, "height": 22,
+      "text": "uses",
+      "originalText": "uses",
+      "fontSize": 13, "fontFamily": 3,
+      "textAlign": "center", "verticalAlign": "top",
+      "strokeColor": "#64748b", "backgroundColor": "transparent",
+      "fillStyle": "solid", "strokeWidth": 1, "strokeStyle": "solid",
+      "roughness": 0, "opacity": 100, "angle": 0,
+      "seed": 600001, "version": 1, "versionNonce": 600002,
+      "isDeleted": false, "groupIds": [], "boundElements": null,
+      "link": null, "locked": false, "containerId": null, "lineHeight": 1.25
+    }
+  ],
+  "appState": {
+    "viewBackgroundColor": "#ffffff",
+    "gridSize": 20
+  },
+  "files": {}
+}
