@@ -26,30 +26,6 @@
 
 # 🚧 진행중
 
-## Issue210. 컬러 팔레트 시스템 — theme variant + htmlArt 객체 단위 컬러 override (등록: 2026-05-24)
-* 목적: PowerPoint Office Theme 대응 — theme별 N색 팔레트(`Accent 1-6 + Text/Bg + Surface`) 도입으로 (1) `_config.yml palette:` 키로 theme 컬러 variant 교체, (2) htmlArt 블록 단위 `{.palette-X}`/`{.accent-N}` override. 현재 `--kn-accent` 단일색만 사용하여 SmartArt 류 도해 색 구별 약화 + 같은 슬라이드 안 두 htmlart 블록을 다른 색으로 표현 불가. pie 슬라이드 teal 톤 하드코딩(`htmlart_dispatch.js renderPie` 팔레트 7색)도 동반 정리.
-* plan: `_doc_work/plan/color-palette_plan.md`
-* task: `_doc_work/tasks/color-palette_task.md`
-* arch: `_doc_arch/color-palette.md`
-* 상세:
-    - 신규 CSS 변수 9 슬롯: `--m2-accent-1`~`--m2-accent-6` + `--m2-text` + `--m2-bg` + `--m2-surface`
-    - 호환: `--kn-accent` = `var(--m2-accent-1)` alias로 회귀 0 보증
-    - 신규 카탈로그: `data/palettes/catalog.yml` (default/warm/cool/mono 4종 기본)
-    - 신규 파일: `theme/{default,default_lec}/palettes/{default,warm,cool,mono}.css` 8개
-    - `_config.yml` 신규 키: `palette: <name>` (기본 `default`)
-    - 블록 단위: `::: htmlart pie {.palette-cool}` 또는 `{.accent-3}` Pandoc attribute syntax
-    - 색 자동 순환 정책 (D4 표): 균질형(pie·cycle·gear·matrix·venn) Accent 순환, 순차형(process·timeline 등) 단색+opacity, 중심형(hierarchy·radial·arrow) 2색
-* 구현 명세:
-    - Phase 1 (SSOT·데이터): `_doc_arch/color-palette.md` + `data/palettes/catalog.yml`
-    - Phase 2 (CSS 인프라): `lib/css/base.css` 변수 + `theme/_shared/components.css` `--htmlart-accent` 매핑 변경 + `theme/{default,default_lec}/palettes/*.css` 8개
-    - Phase 3 (빌드): `lib/config.js` `palette` 키 + `lib/html-builder.js` palette CSS inline 주입 + `lib/lint-layouts.js` `--lint-palette` 검증
-    - Phase 4 (htmlArt override): `lib/markdown.js` `::: htmlart` attribute 파싱 확장 + `lib/component-hooks/htmlart_dispatch.js` pie 하드코딩 제거 + D4 색 정책 통일
-    - Phase 5 (슬라이드 단위 override) — 후순위 분리 가능
-    - Phase 6 (데모): `Projects/paletteTest` 신규 + `Projects/htmlArtTest` override 데모 + `.claude/rules/md-m2slide-rules.md` 컬러 섹션
-    - 검증: htmlArtTest·layoutTest·m2SlideStyle1_single·m2SlideStyle2_chapter 4 대표 프로젝트 회귀 스크린샷 diff + paletteTest 시각 매트릭스 + markdown.test.js 신규 케이스
-* 카테고리: Theme + Generator + Asset
-* 의존: Issue206(model3d) Issue208(compare) Issue209(workflow)과 독립 — palette 변수가 추후 신규 타입에도 자동 적용
-
 # 📕 중요
 
 # 📙 일반
@@ -138,6 +114,28 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue210. 컬러 팔레트 시스템 — theme variant + htmlArt 객체 단위 컬러 override (등록: 2026-05-24, 해결: 2026-05-24, commit: 83dfe2a) ✅
+* 목적: PowerPoint Office Theme 대응 — theme별 N색 팔레트(`Accent 1-6 + Text/Bg + Surface`) 도입으로 (1) `_config.yml palette:` 키로 theme 컬러 variant 교체, (2) htmlArt 블록 단위 `{.palette-X}`/`{.accent-N}` override. pie 슬라이드 teal 톤 하드코딩 동반 정리.
+* plan: `_doc_work/plan/color-palette_plan.md`
+* task: `_doc_work/tasks/color-palette_task.md`
+* arch: `_doc_arch/color-palette.md`
+* 상세:
+    - 신규 CSS 변수 9 슬롯: `--m2-accent-1`~`--m2-accent-6` + `--m2-text` + `--m2-bg` + `--m2-surface`
+    - 호환: `--kn-accent` = `var(--m2-accent-1)` alias로 회귀 0 보증
+    - 신규 카탈로그: `data/palettes/catalog.yml` (default/warm/cool/mono 4종 기본)
+    - 신규 파일: `theme/{default,default_lec}/palettes/{default,warm,cool,mono}.css` 8개
+    - `_config.yml` 신규 키: `palette: <name>` (기본 `default`)
+    - 블록 단위: `::: htmlart pie {.palette-cool}` 또는 `{.accent-3}` Pandoc attribute syntax
+    - 색 자동 순환 정책 (D4 표): 균질형(pie·cycle·gear·matrix·venn) Accent 순환, 순차형 단색+opacity, 중심형 2색
+* 구현:
+    - Phase 1 (SSOT·데이터): `_doc_arch/color-palette.md` + `data/palettes/catalog.yml`
+    - Phase 2 (CSS 인프라): `lib/css/base.css` 변수 + `theme/_shared/components.css` `--htmlart-accent` 매핑 변경 + `[data-palette=X]` selector + `theme/{default,default_lec}/palettes/*.css` 8개
+    - Phase 3 (빌드): `lib/config.js` `palette` 키 + `lib/html-builder.js` palette CSS inline 주입 (3 페이지 템플릿)
+    - Phase 4 (htmlArt override): `lib/markdown.js` `::: htmlart` attribute 파싱 (`{.palette-X .accent-N}`) + `lib/component-hooks/htmlart_dispatch.js` pie 하드코딩 제거 + `sliceColor(i)` 6 순환 + 범례 패널 항상 표시(panelW=320)
+    - Phase 6 (데모): `Projects/paletteTest` 신규 (9 슬라이드) + `.claude/rules/md-m2slide-rules.md` §8 컬러 섹션
+    - 검증: 164 tests pass + 4 팔레트 inline override 확인 (warm `#E74C3C` / cool `#3498DB` / mono `#2C3E50`) + Chrome 시각 검증
+* 후속 이슈 후보: Phase 4.5 (theme PNG/hex 하드코딩 마이그레이션), Phase 5 (슬라이드 단위 `#palette-X` 메타), 균질형 cycle/gear/matrix/venn 색 정책 점진 적용
 
 ## Issue207. Simulation View(p5.js) 컴포넌트 추가 (등록: 2026-05-24, 해결: 2026-05-24, commit: 4e75e96, cf8b76e, e42ae02, 4752f0a, 00b5435, fc0262a, 9e5c957) ✅
 * 목적: 슬라이드에 인터랙티브 시뮬레이션(자율 움직임·마우스 반응·입자 시스템)을 작성할 수 있도록 p5.js 컴포넌트 추가. component-slide-visual.md 119행 "Simulation View ❌ 적용 예정(1순위)" 해소
