@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 220
+* Issue HWM: 224
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -25,6 +25,63 @@
 2. HtmlArtEval cover 슬라이드 제목 우측 끝 빈 박스 렌더 (Issue202 등록 시 동반 발견 — word-break와 별개. `_cover.html` 변수 미치환 또는 frontmatter 빈 값 추정)
 
 # 🚧 진행중
+
+## Issue223. `open-slide` 스킬 신규 — 임의 슬라이드 자동 진입 + Chrome 포커스 강제 (등록: 2026-05-24)
+* 목적: 코드/콘텐츠 수정 후 특정 슬라이드(예: 08.4 #/6) 직접 검증할 때 매번 `file:///.../slide/<chapter>.html?fwd=1#/N` URL을 수작업 조립 + macOS `open` 동일 URL 재호출 시 새 탭만 추가되고 foreground 안 옴. 슬래시 커맨드 대신 **스킬**로 만들어 description 매칭 자동 트리거 → claude가 "슬라이드 X 열어줘", "검증해줘" 등 발화 시 자동 호출.
+* 상세:
+    - 기존 자산:
+        - `apply-verify-rules.md` §4.1 — URL 규약 SSOT
+        - `run.sh` / `/run` — 빌드 + 초기 진입 cover만, 슬라이드 번호 인자 없음
+    - 누락: 임의 슬라이드 진입 + 자동 트리거 + Chrome 포커스 강제
+    - 영향: 검증 반복 시 매번 절대경로·쿼리·hash 수작업, Chrome backgrounded
+* 구현 명세:
+    - 신규: `.claude/skills/open-slide/SKILL.md` (프로젝트 로컬, m2slide-specific)
+        - frontmatter title `open-slide`, description: "m2slide 슬라이드 검증·재오픈 시 자동 발동. 프로젝트·챕터·슬라이드 번호로 정확한 URL 조립하여 Chrome에 포커스까지 강제. 슬라이드 N번 직접 열기, 수정 후 확인, 검증 사이클 마찰 제거"
+        - 입력 형식: `{project} {chapter_prefix} {N}` (예: `aTest_v1 08.4 6`)
+        - chapter prefix 매칭: `Projects/<project>/slide/<prefix>*.html` glob → 단일 매칭 검증, 다중·미발견 시 에러
+        - URL 조립: `file://<abs>/Projects/<project>/slide/<resolved>.html?fwd=1#/<N>`
+        - 실행:
+            ```bash
+            open -a "Google Chrome" --new '<URL>'
+            osascript -e 'tell application "Google Chrome" to activate'
+            ```
+        - 옵션: `--firefox` (Firefox 강제), `--build` (open 전 `./m2slide.sh <project>`)
+    - 자동 트리거 keyword (description에 명시): "슬라이드 열기", "슬라이드 확인", "verify slide", "open slide", "검증", 슬라이드 번호 형식(`08.4 #6`)
+    - 책임 분리: `/run` 빌드+cover, `open-slide` 스킬 임의 진입
+* 검증:
+    - `aTest_v1 08.4 6` → 정확한 슬라이드 진입 + Chrome 포커스
+    - prefix 모호성: `08` 입력 시 다중 매칭 검출·에러 보고
+    - claude 자체 "08.5 슬라이드 보여줘" 발화 시 스킬 자동 호출 확인
+* 카테고리: DX (개발자 도구) + Build (스킬 wrapper)
+* 관련: `/run` 커맨드, `apply-verify-rules.md` §4.1
+
+## Issue222. htmlArt cycle 중앙 ↻ 심볼 더블 이스케이프 회귀 — `↻` 6글자 텍스트로 출력 (등록: 2026-05-24)
+* 목적: cycle 도해 중앙에 회전 심볼(↻, U+21BB)이 표시되어야 하나 `↻` 6글자 raw 텍스트가 출력되어 슬라이드를 가리는 시각 회귀. `Projects/aTest_v1/slide/08.1.basic-chain.html?fwd=1#/3`에서 큰 회색 "↻" 텍스트 노출 확인.
+* 상세:
+    - 원인: `lib/component-hooks/htmlart_dispatch.client.js:139` — `.text('\\u21BB')` 더블 이스케이프
+    - 배경: `htmlart_dispatch.js`가 fs.readFileSync로 .client.js를 raw 로드하므로 JavaScript escape는 1회면 충분. 그러나 코드는 `\\u21BB`로 작성되어 실제 문자열이 역슬래시 + u21BB 6글자가 됨. SVG text 노드에 그대로 fill되어 화면 표시
+    - 영향: cycle 타입을 사용하는 모든 슬라이드 회귀 (aTest_v1 08.1·08.2·08.3·08.4·08.5, htmlArtTest 등)
+    - 동일 패턴 점검 필요: 기타 unicode escape 문자열 (있다면)
+* 구현 명세:
+    - 수정: `lib/component-hooks/htmlart_dispatch.client.js:139` — `'\\u21BB'` → `'↻'` (literal) 또는 `'↻'` (single escape). literal이 raw 로드 시 안전 (escape strip 회피 보장)
+    - 빌드 후 검증: cycle 슬라이드의 중앙에 ↻ 심볼이 옅게 표시되고 raw `↻` 텍스트가 사라졌는지 확인
+* 카테고리: Frontend (htmlart 렌더 회귀)
+
+## Issue221. htmlArt nodeBox 영문 long token clip — width cap + overflow-wrap fallback (등록: 2026-05-24)
+* 목적: aTest_v1 08.4 workflow 슬라이드의 "Gemini · NotebookLM"·"Claude In PPT" 박스에서 단일 영문 토큰(`NotebookLM`)이 박스 폭(196px)을 초과하여 좌우 clip 발생. 카드 텍스트 잘림 회귀 해결.
+* 상세:
+    - 재현: `Projects/aTest_v1/slide/08.4.ratio-compare-explain.html#/6`
+    - 원인: `nodeBox`의 titleFs = `min(h*0.30, w*0.21, 44)` → 41px. `word-break:keep-all`로 영문 단일 단어가 분리되지 않아 41px × "NotebookLM"(10자) ≈ 250px > 196px 박스에서 overflow:hidden으로 잘림
+    - 영향: workflow 외 cycle/hierarchy/process/cards 등 nodeBox 사용 모든 htmlArt 타입에서 긴 영문 토큰 동일 회귀 가능성
+* 구현 명세:
+    - `lib/component-hooks/htmlart_dispatch.client.js` nodeBox 수정:
+        - `longestTokenLen(s)` 헬퍼: 공백·`·`·`•`·`-`·`_`·`/`·`|`로 split하여 최장 토큰 글자 수 반환
+        - title width cap: `floor(innerW / (titleTokLen * 0.58))` (0.58em ≈ 영문 sans avg glyph), `titleFs = min(기존, widthCap)`, floor 10px
+        - subs도 동일 cap 적용 (긴 단일 단어 보호)
+        - title/subs 양쪽 div에 `overflow-wrap:anywhere` 추가 — keep-all 유지하면서 long token만 fallback break
+    - 검증: `./m2slide.sh aTest_v1` 빌드 후 08.4 #/6 Firefox로 확인. 박스 안 텍스트 clip 사라지고 폰트 자동 축소됨
+* 카테고리: Frontend (htmlart dispatch) + Generator (nodeBox 공통 헬퍼)
+* 관련: Issue200/201/205 (nodeBox font sizing 히스토리)
 
 ## Issue220. ESC overview 진입 시 thumbnail content 시각적 비표시 — Issue215 잔존 회귀 (등록: 2026-05-24)
 * 목적: Issue215 fix(commit e63c1b3, width/height number 전달) 이후 ESC overview 진입 시 sections 좌표·grid spacing은 정상이나 화면이 비어 보이는 잔존 회귀 해결.
@@ -154,6 +211,28 @@
 # 📙 일반
 
 # ✅ 완료
+
+## Issue224. `::: cards` 다수 카드 슬라이드 overflow clip — px 고정값 em 전환 (등록: 2026-05-24, 해결: 2026-05-24, commit: TBD) ✅
+* 목적: 카드 개수가 많은 슬라이드에서 카드 그리드가 슬라이드 세로 영역을 초과하여 하단이 잘리는 회귀. font_size_auto가 `.theContents` 폰트를 줄여 overflow를 잡으려 하나 카드 박스 크기·간격이 px 고정이라 폰트만 줄어들고 카드 행 높이·열 폭은 그대로 유지되어 잘림이 해소되지 않음. `Projects/aTest/slide/02-component.html?fwd=1#/8` (6 cards 블록) 등에서 재현.
+* Root cause:
+    - `theme/_shared/components.css` §카드 컴포넌트(line 89~178)의 5종 px 고정값(`minmax(180px,1fr)`·`gap 10px`·title `padding 7px 14px`·본문 `padding 8px 13px`·중첩 ul `padding 2px`·`border-radius 10px`·`box-shadow 0 2px 6px`)이 폰트 비례 축소되지 않음
+    - `lib/html-builder.js:1274` overflow 감지 후 `.theContents` font-size를 이진 탐색으로 fontSizeMin(20px)까지 줄여도 카드 박스 크기는 그대로 → 행 수·박스 높이 불변 → 잘림 해소 실패
+* 변경:
+    - `theme/_shared/components.css`: 카드 관련 px 값 전체 em 기반 전환
+        - `minmax(180px, 1fr)` → `minmax(8em, 1fr)` (line 94)
+        - `gap: 10px` → `gap: 0.5em` (line 95)
+        - 제목 padding `7px 14px` → `0.35em 0.7em` (line 118)
+        - 본문 padding `8px 13px` → `0.4em 0.65em` (line 130)
+        - 중첩 ul padding `2px 0 2px 1.4em` → `0.1em 0 0.1em 1.4em` (line 134)
+        - 카드 li `border-radius: 10px` → `0.5em` + `box-shadow 0 2px 6px` → `0 0.1em 0.3em` (line 108, 110)
+        - title-only `.rows` strong `border-radius: 10px` → `0.5em` + `box-shadow 0 2px 6px` → `0 0.1em 0.3em` (line 177-178)
+* 검증:
+    - `./m2slide.sh aTest` 빌드 OK (108 slides), `./m2slide.sh aTest_v1` 빌드 OK
+    - built CSS `Projects/aTest/slide/css/custom.css:116` `minmax(8em, 1fr)` 반영 확인
+    - 브라우저: `Projects/aTest/slide/02-component.html?fwd=1#/8` (6 cards 블록) 자동 오픈, font_size_auto 트리거 시 카드 비례 축소되어 잘림 해소
+    - 회귀 점검: 카드 적은 슬라이드(1~3개)는 폰트 축소 미트리거 → 시각 변화 거의 없음 (border-radius·box-shadow 미세 차이만)
+* 카테고리: Theme (CSS — 카드 그리드 비례 축소)
+* 관련: `lib/html-builder.js:1274` font_size_auto, Issue203 (title-only rows), `_doc_arch/component-slide.md` Core 계열
 
 ## Issue215. ESC overview 모드 슬라이드 1개만 표시 회귀 — width/height 문자열 전달로 spacing 100배 비정상 (등록: 2026-05-24, 해결: 2026-05-24, commit: df96409, e63c1b3) ✅
 * 목적: ESC 키로 overview 모드 진입 시 챕터 슬라이드 27장이 모두 같은 좌표에 겹쳐 1장처럼 보임. aTest 04-htmlart.html에서 재현. reveal.js overview 그리드 정상 표시 복구.

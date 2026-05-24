@@ -90,9 +90,11 @@
 .reveal section[class*="layout-"] .m2-cards > ul,
 .reveal section[class*="layout-"] .m2-cards > ol {
   display: grid;
-  /* --m2-card-columns: _config.yml card_columns 키로 주입 (기본 auto-fit). 프로젝트 한정 카드 폭 제어 */
-  grid-template-columns: repeat(var(--m2-card-columns, auto-fit), minmax(180px, 1fr));
-  gap: 10px;
+  /* --m2-card-columns: _config.yml card_columns 키로 주입 (기본 auto-fit). 프로젝트 한정 카드 폭 제어
+     Issue223: minmax/gap/padding을 em 기반으로 전환 → font_size_auto가 contents 폰트를 줄이면
+     카드 박스도 비례 축소되어 카드 다수 슬라이드의 overflow clip 자동 완화 */
+  grid-template-columns: repeat(var(--m2-card-columns, auto-fit), minmax(8em, 1fr));
+  gap: 0.5em;
   list-style: none;
   padding: 0;
   margin: 0.25em 0;
@@ -105,9 +107,9 @@
   padding: 0;
   background: var(--m2-card-body-bg, rgba(0, 0, 0, 0.04));
   border: 1px solid var(--m2-card-border, rgba(0, 0, 0, 0.12));
-  border-radius: 10px;
+  border-radius: 0.5em;
   overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.12);
   line-height: 1.5;
 }
 /* 카드 제목 밴드 — 테마 컬러 변수. 제목은 `**볼드**`로 작성 */
@@ -115,7 +117,7 @@
 .reveal section[class*="layout-"] .m2-cards > ol > li > strong {
   display: block;
   margin: 0;
-  padding: 7px 14px;
+  padding: 0.35em 0.7em;
   background: var(--m2-card-title-bg, var(--kn-accent));
   color: var(--m2-card-title-fg, var(--kn-text));
   text-align: center;
@@ -127,11 +129,11 @@
   display: block;
   list-style: none;
   margin: 0;
-  padding: 8px 13px;
+  padding: 0.4em 0.65em;
 }
 .reveal section[class*="layout-"] .m2-cards li ul ul,
 .reveal section[class*="layout-"] .m2-cards li ul ol {
-  padding: 2px 0 2px 1.4em;
+  padding: 0.1em 0 0.1em 1.4em;
 }
 .reveal section[class*="layout-"] .m2-cards li ul li {
   list-style: none;
@@ -172,8 +174,8 @@
 }
 .reveal section[class*="layout-"] .m2-cards > ul > li:not(:has(> ul)):not(:has(> ol)) > strong,
 .reveal section[class*="layout-"] .m2-cards > ol > li:not(:has(> ul)):not(:has(> ol)) > strong {
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  border-radius: 0.5em;
+  box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.12);
 }
 
 /* =========================================================================
