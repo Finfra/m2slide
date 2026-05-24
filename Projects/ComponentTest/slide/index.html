@@ -54,6 +54,27 @@
    - <body style="..."> 인라인이 더 높은 specificity로 override
    ========================================================================= */
 :root {
+  /* ─────────────────────────────────────────────────────────────────────
+     m2 컬러 팔레트 9 슬롯 (Issue210) — Accent 1-6 + Text + Bg + Surface
+     설계 SSOT: _doc_arch/color-palette.md
+     카탈로그: data/palettes/catalog.yml (default 팔레트와 일치)
+     theme/{name}/palettes/{palette}.css 가 :root override 로 교체.
+     기존 --kn-* 변수는 신규 슬롯 alias 로 회귀 0 보증.
+     ───────────────────────────────────────────────────────────────────── */
+  --m2-accent-1: #F5C518;          /* default 팔레트 — 기존 --kn-accent 값 */
+  --m2-accent-2: #4ABDAC;
+  --m2-accent-3: #FC4A1A;
+  --m2-accent-4: #7B68EE;
+  --m2-accent-5: #2ECC71;
+  --m2-accent-6: #E74C3C;
+  --m2-text: #111111;
+  --m2-bg: #ffffff;
+  --m2-surface: #f4f4f5;
+
+  /* 기존 --kn-* 변수 호환 alias — theme/slide.css 가 override 가능 (회귀 0 보증) */
+  --kn-accent: var(--m2-accent-1);
+  --kn-text: var(--m2-text);
+
   /* Global */
   --global-font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
 
@@ -1222,7 +1243,10 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1779584221166">
+  <style data-m2slide-palette="default">
+
+  </style>
+  <link rel="stylesheet" href="css/custom.css?v=1779593505751">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1440,34 +1464,43 @@ html.ratio-fill .agenda-frame {
   <div class="contents-body">
 
 <div class="component-container" data-component="model3d">
-{
-  "src": "./img/test-cube.glb",
-  "alt": "파란 큐브 — model-viewer 실제 렌더 검증",
-  "autoRotate": true,
-  "rotationPerSecond": "30deg",
-  "backgroundColor": "#1a1a2e"
-}
+{"src":"data:model/gltf-binary;base64,Z2xURgIAAACwAwAA7AIAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJtMnNsaWRlLXRlc3QifSwic2NlbmUiOjAsInNjZW5lcyI6W3sibm9kZXMiOlswXSwibmFtZSI6IlNjZW5lIn1dLCJub2RlcyI6W3sibWVzaCI6MCwibmFtZSI6IkN1YmUifV0sIm1lc2hlcyI6W3sibmFtZSI6IkN1YmUiLCJwcmltaXRpdmVzIjpbeyJhdHRyaWJ1dGVzIjp7IlBPU0lUSU9OIjowfSwiaW5kaWNlcyI6MSwibWF0ZXJpYWwiOjB9XX1dLCJhY2Nlc3NvcnMiOlt7ImJ1ZmZlclZpZXciOjAsImJ5dGVPZmZzZXQiOjAsImNvbXBvbmVudFR5cGUiOjUxMjYsImNvdW50Ijo4LCJ0eXBlIjoiVkVDMyIsIm1pbiI6Wy0wLjUsLTAuNSwtMC41XSwibWF4IjpbMC41LDAuNSwwLjVdfSx7ImJ1ZmZlclZpZXciOjEsImJ5dGVPZmZzZXQiOjAsImNvbXBvbmVudFR5cGUiOjUxMjMsImNvdW50IjozNiwidHlwZSI6IlNDQUxBUiJ9XSwiYnVmZmVyVmlld3MiOlt7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MCwiYnl0ZUxlbmd0aCI6OTYsInRhcmdldCI6MzQ5NjJ9LHsiYnVmZmVyIjowLCJieXRlT2Zmc2V0Ijo5NiwiYnl0ZUxlbmd0aCI6NzIsInRhcmdldCI6MzQ5NjN9XSwiYnVmZmVycyI6W3siYnl0ZUxlbmd0aCI6MTY4fV0sIm1hdGVyaWFscyI6W3sibmFtZSI6IkJsdWUiLCJwYnJNZXRhbGxpY1JvdWdobmVzcyI6eyJiYXNlQ29sb3JGYWN0b3IiOlswLjIsMC40LDAuOCwxXSwibWV0YWxsaWNGYWN0b3IiOjAuMywicm91Z2huZXNzRmFjdG9yIjowLjV9fV19qAAAAEJJTgAAAAC/AAAAvwAAAL8AAAA/AAAAvwAAAL8AAAA/AAAAPwAAAL8AAAC/AAAAPwAAAL8AAAC/AAAAvwAAAD8AAAA/AAAAvwAAAD8AAAA/AAAAPwAAAD8AAAC/AAAAPwAAAD8AAAEAAgAAAAIAAwAEAAYABQAEAAcABgAAAAQABQAAAAUAAQADAAIABgADAAYABwAAAAMABwAAAAcABAABAAUABgABAAYAAgA=","alt":"파란 큐브 — model-viewer 실제 렌더 검증","autoRotate":true,"rotationPerSecond":"30deg","backgroundColor":"#1a1a2e"}
 </div></div>
 </section>
 
 <section class="layout-_contents">
-  <h2 class="title">model3d — GLB 없음 (오류 표시 확인)</h2>
+  <h2 class="title">model3d — 카메라 위치 고정 (정면 뷰)</h2>
   <div class="contents-body">
 
 <div class="component-container" data-component="model3d">
-{
-  "src": "./img/missing.glb",
-  "alt": "존재하지 않는 GLB — model-viewer 로딩 실패 정상"
-}
-</div></div>
+{"src":"data:model/gltf-binary;base64,Z2xURgIAAACwAwAA7AIAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJtMnNsaWRlLXRlc3QifSwic2NlbmUiOjAsInNjZW5lcyI6W3sibm9kZXMiOlswXSwibmFtZSI6IlNjZW5lIn1dLCJub2RlcyI6W3sibWVzaCI6MCwibmFtZSI6IkN1YmUifV0sIm1lc2hlcyI6W3sibmFtZSI6IkN1YmUiLCJwcmltaXRpdmVzIjpbeyJhdHRyaWJ1dGVzIjp7IlBPU0lUSU9OIjowfSwiaW5kaWNlcyI6MSwibWF0ZXJpYWwiOjB9XX1dLCJhY2Nlc3NvcnMiOlt7ImJ1ZmZlclZpZXciOjAsImJ5dGVPZmZzZXQiOjAsImNvbXBvbmVudFR5cGUiOjUxMjYsImNvdW50Ijo4LCJ0eXBlIjoiVkVDMyIsIm1pbiI6Wy0wLjUsLTAuNSwtMC41XSwibWF4IjpbMC41LDAuNSwwLjVdfSx7ImJ1ZmZlclZpZXciOjEsImJ5dGVPZmZzZXQiOjAsImNvbXBvbmVudFR5cGUiOjUxMjMsImNvdW50IjozNiwidHlwZSI6IlNDQUxBUiJ9XSwiYnVmZmVyVmlld3MiOlt7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MCwiYnl0ZUxlbmd0aCI6OTYsInRhcmdldCI6MzQ5NjJ9LHsiYnVmZmVyIjowLCJieXRlT2Zmc2V0Ijo5NiwiYnl0ZUxlbmd0aCI6NzIsInRhcmdldCI6MzQ5NjN9XSwiYnVmZmVycyI6W3siYnl0ZUxlbmd0aCI6MTY4fV0sIm1hdGVyaWFscyI6W3sibmFtZSI6IkJsdWUiLCJwYnJNZXRhbGxpY1JvdWdobmVzcyI6eyJiYXNlQ29sb3JGYWN0b3IiOlswLjIsMC40LDAuOCwxXSwibWV0YWxsaWNGYWN0b3IiOjAuMywicm91Z2huZXNzRmFjdG9yIjowLjV9fV19qAAAAEJJTgAAAAC/AAAAvwAAAL8AAAA/AAAAvwAAAL8AAAA/AAAAPwAAAL8AAAC/AAAAPwAAAL8AAAC/AAAAvwAAAD8AAAA/AAAAvwAAAD8AAAA/AAAAPwAAAD8AAAC/AAAAPwAAAD8AAAEAAgAAAAIAAwAEAAYABQAEAAcABgAAAAQABQAAAAUAAQADAAIABgADAAYABwAAAAMABwAAAAcABAABAAUABgABAAYAAgA=","alt":"정면 카메라 + 자동회전 없음","fieldOfView":"45deg","minCameraOrbit":"0deg 75deg 4m","maxCameraOrbit":"0deg 75deg 4m","backgroundColor":"#222831"}
+</div>
+
+<ul>
+<li class="bullet-dot"><code>minCameraOrbit == maxCameraOrbit</code> → 카메라 위치 완전 고정 (드래그 회전 차단)</li>
+<li class="bullet-dot">자동회전 없이 정적 정면 뷰 — 단일 각도 강조 시 유용</li>
+</ul></div>
 </section>
 
 <section class="layout-_contents">
-  <h2 class="title">model3d — JSON 파싱 오류 확인</h2>
+  <h2 class="title">chart — 다중 데이터셋 line + pie 비교</h2>
   <div class="contents-body">
 
-<div class="component-container" data-component="model3d">
-{ invalid json syntax }
+<div class="component-container" data-component="chart">
+{
+  "type": "line",
+  "data": {
+    "labels": ["1월","2월","3월","4월","5월","6월"],
+    "datasets": [
+      { "label": "매출", "data": [12,19,15,25,22,30], "borderColor": "#58a6ff", "tension": 0.3 },
+      { "label": "비용", "data": [8,11,9,14,13,18], "borderColor": "#f78166", "tension": 0.3 }
+    ]
+  },
+  "options": {
+    "responsive": true,
+    "plugins": { "legend": { "position": "top" } }
+  }
+}
 </div></div>
 </section>
 
@@ -1494,6 +1527,213 @@ html.ratio-fill .agenda-frame {
 <li class="bullet-dot">model3d CDN은 <code>model3d</code> 블록 있는 데크에만 조건 주입</li>
 <li class="bullet-dot">이 슬라이드는 model3d 없음 — 동일 덱이므로 CDN 주입됨 (정상)</li>
 <li class="bullet-dot">GLB 파일을 <code>Projects/ComponentTest/img/</code>에 배치하면 실제 3D 렌더 확인 가능</li>
+</ul></div>
+</section>
+
+<section class="layout-_contents">
+  <h2 class="title">p5 — Bouncing Ball (자동 움직임 시뮬레이션)</h2>
+  <div class="contents-body">
+
+<div class="component-container" data-component="p5">
+let x, y, vx, vy, r;
+p.setup = function() {
+  p.createCanvas(el.clientWidth, el.clientHeight);
+  r = 30;
+  x = p.width / 2; y = p.height / 2;
+  vx = 5; vy = 4;
+};
+p.draw = function() {
+  p.background('#1a1a2e');
+  p.noStroke();
+  p.fill('#4ec9b0');
+  p.ellipse(x, y, r * 2, r * 2);
+  x += vx; y += vy;
+  if (x &lt; r || x &gt; p.width - r) vx = -vx;
+  if (y &lt; r || y &gt; p.height - r) vy = -vy;
+};
+</div></div>
+</section>
+
+<section class="layout-_contents">
+  <h2 class="title">p5 — Mouse Interaction (마우스 추적 입자)</h2>
+  <div class="contents-body">
+
+<div class="component-container" data-component="p5">
+let trail = [];
+p.setup = function() {
+  p.createCanvas(el.clientWidth, el.clientHeight);
+};
+p.draw = function() {
+  p.background(20, 20, 40, 60);
+  trail.push({ x: p.mouseX, y: p.mouseY });
+  if (trail.length &gt; 60) trail.shift();
+  p.noStroke();
+  for (let i = 0; i &lt; trail.length; i++) {
+    const t = trail[i];
+    const a = p.map(i, 0, trail.length, 30, 255);
+    const sz = p.map(i, 0, trail.length, 6, 24);
+    p.fill(78, 201, 176, a);
+    p.ellipse(t.x, t.y, sz, sz);
+  }
+};
+</div></div>
+</section>
+
+<section class="layout-_contents">
+  <h2 class="title">p5 — Particle System (입자 시스템)</h2>
+  <div class="contents-body">
+
+<div class="component-container" data-component="p5">
+let parts = [];
+p.setup = function() {
+  p.createCanvas(el.clientWidth, el.clientHeight);
+  const n = Math.max(80, Math.floor(p.width * p.height / 8000));
+  for (let i = 0; i &lt; n; i++) {
+    parts.push({
+      x: p.random(p.width),
+      y: p.random(p.height),
+      vx: p.random(-2, 2),
+      vy: p.random(-2, 2),
+      r: p.random(4, 14),
+    });
+  }
+};
+p.draw = function() {
+  p.background('#0d1117');
+  p.noStroke();
+  p.fill('#58a6ff');
+  for (const pt of parts) {
+    p.ellipse(pt.x, pt.y, pt.r * 2);
+    pt.x += pt.vx; pt.y += pt.vy;
+    if (pt.x &lt; 0 || pt.x &gt; p.width) pt.vx *= -1;
+    if (pt.y &lt; 0 || pt.y &gt; p.height) pt.vy *= -1;
+  }
+};
+</div></div>
+</section>
+
+<section class="layout-_contents">
+  <h2 class="title">model3d — 복잡 예제 (AR + 카메라 제한 + 자동회전)</h2>
+  <div class="contents-body">
+
+<div class="component-container" data-component="model3d">
+{"src":"data:model/gltf-binary;base64,Z2xURgIAAACwAwAA7AIAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJtMnNsaWRlLXRlc3QifSwic2NlbmUiOjAsInNjZW5lcyI6W3sibm9kZXMiOlswXSwibmFtZSI6IlNjZW5lIn1dLCJub2RlcyI6W3sibWVzaCI6MCwibmFtZSI6IkN1YmUifV0sIm1lc2hlcyI6W3sibmFtZSI6IkN1YmUiLCJwcmltaXRpdmVzIjpbeyJhdHRyaWJ1dGVzIjp7IlBPU0lUSU9OIjowfSwiaW5kaWNlcyI6MSwibWF0ZXJpYWwiOjB9XX1dLCJhY2Nlc3NvcnMiOlt7ImJ1ZmZlclZpZXciOjAsImJ5dGVPZmZzZXQiOjAsImNvbXBvbmVudFR5cGUiOjUxMjYsImNvdW50Ijo4LCJ0eXBlIjoiVkVDMyIsIm1pbiI6Wy0wLjUsLTAuNSwtMC41XSwibWF4IjpbMC41LDAuNSwwLjVdfSx7ImJ1ZmZlclZpZXciOjEsImJ5dGVPZmZzZXQiOjAsImNvbXBvbmVudFR5cGUiOjUxMjMsImNvdW50IjozNiwidHlwZSI6IlNDQUxBUiJ9XSwiYnVmZmVyVmlld3MiOlt7ImJ1ZmZlciI6MCwiYnl0ZU9mZnNldCI6MCwiYnl0ZUxlbmd0aCI6OTYsInRhcmdldCI6MzQ5NjJ9LHsiYnVmZmVyIjowLCJieXRlT2Zmc2V0Ijo5NiwiYnl0ZUxlbmd0aCI6NzIsInRhcmdldCI6MzQ5NjN9XSwiYnVmZmVycyI6W3siYnl0ZUxlbmd0aCI6MTY4fV0sIm1hdGVyaWFscyI6W3sibmFtZSI6IkJsdWUiLCJwYnJNZXRhbGxpY1JvdWdobmVzcyI6eyJiYXNlQ29sb3JGYWN0b3IiOlswLjIsMC40LDAuOCwxXSwibWV0YWxsaWNGYWN0b3IiOjAuMywicm91Z2huZXNzRmFjdG9yIjowLjV9fV19qAAAAEJJTgAAAAC/AAAAvwAAAL8AAAA/AAAAvwAAAL8AAAA/AAAAPwAAAL8AAAC/AAAAPwAAAL8AAAC/AAAAvwAAAD8AAAA/AAAAvwAAAD8AAAA/AAAAPwAAAD8AAAC/AAAAPwAAAD8AAAEAAgAAAAIAAwAEAAYABQAEAAcABgAAAAQABQAAAAUAAQADAAIABgADAAYABwAAAAMABwAAAAcABAABAAUABgABAAYAAgA=","alt":"AR + 카메라 orbit 제한 + 자동회전 종합 예제","ar":true,"autoRotate":true,"rotationPerSecond":"20deg","fieldOfView":"30deg","minCameraOrbit":"auto auto 2m","maxCameraOrbit":"auto auto 8m","backgroundColor":"#0d1117"}
+</div>
+
+<ul>
+<li class="bullet-dot"><code>ar: true</code> — 모바일 지원 브라우저 AR 모드 활성화</li>
+<li class="bullet-dot"><code>minCameraOrbit</code> / <code>maxCameraOrbit</code> — zoom 거리 2m~8m 제한</li>
+<li class="bullet-dot"><code>fieldOfView: 30deg</code> — 망원 효과 (기본 45deg)</li>
+<li class="bullet-dot"><code>autoRotate</code> + <code>rotationPerSecond: 20deg</code> — 자동 회전 속도 제어</li>
+</ul></div>
+</section>
+
+<section class="layout-_contents">
+  <h2 class="title">p5 — 복잡 예제 (Boids 군집 시뮬레이션)</h2>
+  <div class="contents-body">
+
+<div class="component-container" data-component="p5">
+let boids = [];
+const N = 80;
+const VIS = 80, SEP = 36, MAX_V = 3.5;
+
+class Boid {
+  constructor(w, h) {
+    this.pos = p.createVector(p.random(w), p.random(h));
+    this.vel = p5.Vector.random2D().mult(p.random(1, MAX_V));
+    this.acc = p.createVector(0, 0);
+  }
+  edges(w, h) {
+    if (this.pos.x &lt; 0) this.pos.x = w;
+    if (this.pos.x &gt; w) this.pos.x = 0;
+    if (this.pos.y &lt; 0) this.pos.y = h;
+    if (this.pos.y &gt; h) this.pos.y = 0;
+  }
+  flock(others) {
+    let align = p.createVector(), cohes = p.createVector(), sep = p.createVector();
+    let nA = 0, nC = 0, nS = 0;
+    for (const o of others) {
+      if (o === this) continue;
+      const d = p5.Vector.dist(this.pos, o.pos);
+      if (d &lt; VIS) { align.add(o.vel); nA++; cohes.add(o.pos); nC++; }
+      if (d &lt; SEP &amp;&amp; d &gt; 0) {
+        const diff = p5.Vector.sub(this.pos, o.pos).div(d * d);
+        sep.add(diff); nS++;
+      }
+    }
+    if (nA) { align.div(nA).setMag(MAX_V).sub(this.vel).limit(0.15); this.acc.add(align); }
+    if (nC) { cohes.div(nC).sub(this.pos).setMag(MAX_V).sub(this.vel).limit(0.08); this.acc.add(cohes); }
+    if (nS) { sep.div(nS).setMag(MAX_V).sub(this.vel).limit(0.2); this.acc.add(sep); }
+  }
+  update() {
+    this.vel.add(this.acc).limit(MAX_V);
+    this.pos.add(this.vel);
+    this.acc.mult(0);
+  }
+  draw() {
+    const a = this.vel.heading();
+    p.push();
+    p.translate(this.pos.x, this.pos.y);
+    p.rotate(a);
+    p.fill('#58a6ff');
+    p.stroke('#1f6feb');
+    p.strokeWeight(1.5);
+    p.triangle(-14, -9, -14, 9, 20, 0);
+    p.pop();
+  }
+}
+
+p.setup = function() {
+  p.createCanvas(el.clientWidth, el.clientHeight);
+  for (let i = 0; i &lt; N; i++) boids.push(new Boid(p.width, p.height));
+};
+p.draw = function() {
+  p.background('#0d1117');
+  for (const b of boids) { b.edges(p.width, p.height); b.flock(boids); }
+  for (const b of boids) { b.update(); b.draw(); }
+};
+</div>
+
+<ul>
+<li class="bullet-dot"><strong>Boids 알고리즘</strong> — Craig Reynolds (1986): align(정렬) + cohesion(응집) + separation(분리) 3규칙 자율 군집</li>
+<li class="bullet-dot">80마리 화살표가 이웃과 상호작용하여 새떼·물고기떼 같은 자연스러운 무리 형성</li>
+<li class="bullet-dot">edge wrap-around로 화면 경계 순환</li>
+</ul></div>
+</section>
+
+<section class="layout-_contents">
+  <h2 class="title">p5 — Wave Field (사인파 격자)</h2>
+  <div class="contents-body">
+
+<div class="component-container" data-component="p5">
+let t = 0;
+p.setup = function() {
+  p.createCanvas(el.clientWidth, el.clientHeight);
+};
+p.draw = function() {
+  p.background('#0d1117');
+  p.noStroke();
+  const cols = 28, rows = 16;
+  const dx = p.width / cols, dy = p.height / rows;
+  for (let i = 0; i &lt; cols; i++) {
+    for (let j = 0; j &lt; rows; j++) {
+      const x = i * dx + dx / 2;
+      const y = j * dy + dy / 2;
+      const d = p.dist(x, y, p.width / 2, p.height / 2);
+      const v = p.sin(d * 0.02 - t) * 0.5 + 0.5;
+      const r = p.map(v, 0, 1, 4, dx * 0.45);
+      p.fill(88 + v * 100, 166 + v * 50, 255, 200);
+      p.ellipse(x, y, r, r);
+    }
+  }
+  t += 0.06;
+};
+</div>
+
+<ul>
+<li class="bullet-dot">중심에서 동심원으로 퍼지는 사인파 → 격자 점 크기·색상으로 가시화</li>
+<li class="bullet-dot"><code>p.dist</code> + <code>p.sin(d - t)</code> 조합으로 중심점 기준 phase 시각화</li>
+<li class="bullet-dot">GPU shader 없이도 28×16 = 448개 점 60fps 무리 없이 렌더</li>
 </ul></div>
 </section>
 
@@ -1600,6 +1840,93 @@ html.ratio-fill .agenda-frame {
         if (!el.dataset.rendered) renderModel3d(el);
         fitHeight(el);
       });
+    });
+  } else {
+    document.addEventListener('DOMContentLoaded', renderAll);
+  }
+})();
+
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.11.2/lib/p5.min.js"></script>
+  <script>
+
+(function() {
+  var instances = new WeakMap(); // el → p5 instance
+
+  function fitContainer(el) {
+    var parent = el.parentElement;
+    if (parent && parent.clientHeight > 240) {
+      el.style.height = (parent.clientHeight - 80) + 'px';
+    }
+    el.style.width = '100%';
+    el.style.display = 'block';
+  }
+
+  function applyCanvasFit(el) {
+    el.querySelectorAll('canvas').forEach(function(c) {
+      c.style.width = '100%';
+      c.style.height = '100%';
+      c.style.display = 'block';
+    });
+  }
+
+  function renderP5(el) {
+    if (el.dataset.rendered) return;
+    el.dataset.rendered = '1';
+    if (typeof p5 === 'undefined') {
+      el.innerHTML = '<div class="component-error">p5: 라이브러리 로드 실패</div>';
+      return;
+    }
+    var code = (el.textContent || '').trim();
+    el.textContent = '';
+    fitContainer(el);
+    try {
+      var sketch = new Function('p', 'el', code);
+      var inst = new p5(function(p) { sketch(p, el); }, el);
+      instances.set(el, inst);
+      // p5 setup이 동기 실행되어 canvas DOM이 다음 microtask엔 존재.
+      queueMicrotask(function() { applyCanvasFit(el); });
+    } catch (e) {
+      el.innerHTML = '<div class="component-error">p5 렌더 실패: ' + e.message + '</div>';
+    }
+  }
+
+  function pauseSlide(slide) {
+    if (!slide) return;
+    slide.querySelectorAll('div[data-component="p5"]').forEach(function(el) {
+      var inst = instances.get(el);
+      if (inst && typeof inst.noLoop === 'function') inst.noLoop();
+    });
+  }
+
+  function resumeSlide(slide) {
+    if (!slide) return;
+    slide.querySelectorAll('div[data-component="p5"]').forEach(function(el) {
+      if (!el.dataset.rendered) renderP5(el);
+      var inst = instances.get(el);
+      if (inst && typeof inst.loop === 'function') inst.loop();
+      // 슬라이드 재진입 시 부모 영역이 갱신될 수 있으므로 fit 재적용.
+      fitContainer(el);
+      applyCanvasFit(el);
+    });
+  }
+
+  function renderAll() {
+    document.querySelectorAll('div[data-component="p5"]').forEach(renderP5);
+  }
+
+  if (typeof Reveal !== 'undefined' && Reveal.on) {
+    Reveal.on('ready', function() {
+      renderAll();
+      // ready 직후엔 현재 슬라이드 외 전부 일시정지
+      var current = Reveal.getCurrentSlide && Reveal.getCurrentSlide();
+      document.querySelectorAll('section').forEach(function(s) {
+        if (s !== current) pauseSlide(s);
+      });
+    });
+    Reveal.on('slidechanged', function(e) {
+      pauseSlide(e.previousSlide);
+      resumeSlide(e.currentSlide);
     });
   } else {
     document.addEventListener('DOMContentLoaded', renderAll);
@@ -1872,11 +2199,11 @@ html.ratio-fill .agenda-frame {
                   "children": []
             },
             {
-                  "content": "<a href=\"#/2\">model3d — GLB 없음 (오류 표시 확인)</a>",
+                  "content": "<a href=\"#/2\">model3d — 카메라 위치 고정 (정면 뷰)</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">model3d — JSON 파싱 오류 확인</a>",
+                  "content": "<a href=\"#/3\">chart — 다중 데이터셋 line + pie 비교</a>",
                   "children": []
             },
             {
@@ -1885,6 +2212,30 @@ html.ratio-fill .agenda-frame {
             },
             {
                   "content": "<a href=\"#/5\">일반 슬라이드 (CDN 미주입 무관)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/6\">p5 — Bouncing Ball (자동 움직임 시뮬레이션)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/7\">p5 — Mouse Interaction (마우스 추적 입자)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/8\">p5 — Particle System (입자 시스템)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/9\">model3d — 복잡 예제 (AR + 카메라 제한 + 자동회전)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/10\">p5 — 복잡 예제 (Boids 군집 시뮬레이션)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/11\">p5 — Wave Field (사인파 격자)</a>",
                   "children": []
             }
       ]

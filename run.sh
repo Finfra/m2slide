@@ -61,6 +61,22 @@ if [ "${1:-}" = "--lint-config" ]; then
     fi
 fi
 
+# --serve: 빌드 후 HTTP 서버 자동 띄우고 그 URL을 Chrome으로 open (file:// fetch 차단 우회)
+#   model3d 인라인 빌드가 default 이므로 일반 케이스는 불필요.
+#   대용량 GLB (inline_max_kb 초과) 또는 폰트·CDN 정밀 검증 시 사용.
+#   사용: ./run.sh <Project> --serve [--port N]
+_serve_mode=false
+_serve_port=8765
+_args=()
+for a in "$@"; do
+    case "$a" in
+        --serve) _serve_mode=true ;;
+        --port=*) _serve_port="${a#--port=}" ;;
+        *) _args+=("$a") ;;
+    esac
+done
+set -- "${_args[@]}"
+
 # 기본 동작: 프로젝트 빌드 + 브라우저 열기
 _arg="${1:-m2SlideStyle1_single}"
 # 인자 형태별 분기:
@@ -88,7 +104,23 @@ rm -rf "$prj_path/slide"
 # kroki SVG 캐시는 lib/kroki/(source-of-truth)에 보관되므로 slide/ 삭제 후에도 영향 없음.
 # 빌드 시 lib/markdown.js의 fetchKrokiSvgCached가 자동으로 lib/kroki/ → slide/kroki/ 복사함.
 ./m2slide.sh "$prj_path"
-if [ -f "$prj_path/slide/index.html" ]; then
+
+if $_serve_mode; then
+    # 포트 충돌 시 +1씩 증가 (최대 10회)
+    for _i in $(seq 0 9); do
+        _try_port=$((_serve_port + _i))
+        if ! lsof -i:$_try_port >/dev/null 2>&1; then
+            _serve_port=$_try_port
+            break
+        fi
+    done
+    cd "$prj_path/slide" || exit 1
+    python3 -m http.server "$_serve_port" > "/tmp/m2slide_run_${_serve_port}.log" 2>&1 &
+    _SERVER_PID=$!
+    sleep 0.5
+    echo "🌐 HTTP server started (PID $_SERVER_PID, port $_serve_port). Stop: kill $_SERVER_PID"
+    open -a "Google Chrome" "http://127.0.0.1:$_serve_port/index.html"
+elif [ -f "$prj_path/slide/index.html" ]; then
     open -a "Google Chrome" "$prj_path/slide/index.html"
 else
     open -a "Google Chrome" "$prj_path"/slide/*.html

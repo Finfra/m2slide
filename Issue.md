@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 211
+* Issue HWM: 212
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -80,6 +80,24 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue212. model3d GLB `file://` 로딩 실패 — 빌드 타임 base64 data URI 자동 인라인 (등록: 2026-05-24, 해결: 2026-05-24, commit: TBD) ✅
+* 목적: Chrome 86+ `file://` 페이지 `fetch()` 차단 정책으로 model-viewer 컴포넌트가 `./img/*.glb` 로딩 실패하던 문제 해결. HTTP 서버 경유(playwright + python http.server) 시는 정상 동작하나 `open file://...` 직접 open 시 매번 "model3d: GLB 로딩 실패" 빨간 박스 표시. ComponentTest 슬라이드 1·2·9의 test-cube 3건 모두 영향.
+* 상세:
+    - 원인 = Chrome 86 (2020~) 보안 강화로 `file:` 오리진의 fetch·XHR 차단. `<img>`·`<link>` 등 브라우저 내장 로더는 동작하지만 model-viewer 내부 `fetch()` 호출은 차단됨
+    - 우회 4범주(HTTP/인라인/타 브라우저/플래그) 검토 → **빌드 타임 GLB → base64 data URI 인라인**이 사용자 무개입 정답
+    - model-viewer가 `data:model/gltf-binary;base64,...` 공식 지원 — fetch 우회 가능
+    - 944 bytes GLB → base64 +33% 크기 증가 (1.3KB). HTML 110KB → 113.7KB (거의 무시)
+    - 대용량 GLB 가드: `inline_max_kb` 임계 초과 시 인라인 skip + console warn → `run.sh --serve` 폴백
+* 구현 명세:
+    - `lib/markdown.js`: `setModel3dInlineOptions({projectDir, inlineGlb, inlineMaxKb})` setter + `inlineModel3dGlb(configText)` 함수. fenced model3d 처리 시 JSON 파싱 → src 로컬 경로(http/https/data 아님)이면 fs.readFileSync + base64 + src 치환. 외부 URL·이미 data URI·임계 초과 GLB는 무변경
+    - `lib/html-builder.js`: `generateHTML()` 진입 시 setKrokiCacheDir와 동일 패턴으로 `setModel3dInlineOptions` 호출. `_cfg.model3d.inline_glb`/`inline_max_kb` 전달, projectDir = `path.dirname(outputDir)`
+    - `lib/config.js`: `_config.yml model3d:` 섹션 YAML 파서 추가 (`inline_glb` boolean, `inline_max_kb` integer). animation 섹션 패턴 차용
+    - `run.sh`: `--serve [--port=N]` 플래그 추가. 포트 충돌 시 +1 자동 증가(10회). `python3 -m http.server` 백그라운드 + Chrome `http://127.0.0.1:N/index.html` open. 대용량 GLB 비인라인 검증·HTTP 환경 의존 컴포넌트(폰트·CDN) 검증용
+    - `_doc_work/debug_TECH.md`: `model3d GLB file:// 로딩 실패` 섹션 신규 추가 (핵심 레이어·triage·사례 박제·빠른 명령어)
+    - ComponentTest 빌드 검증: data URI 3건 인라인 + 잔존 src 참조 0건 + HTML 113.7KB
+* 카테고리: Generator + Build
+* 참고: `_doc_work/z_htm/claude-htm-1779591365.html` (원인 분석), `_doc_work/z_htm/claude-htm-1779591598.html` (해결 방법 비교), `_doc_work/z_htm/claude-htm-ask-1779591782.html` (사용자 결정)
 
 ## Issue211. htmlArt `explain` 타입 추가 — 중앙 명제 + 사방 풀이 phrase (등록: 2026-05-24, 해결: 2026-05-24, commit: 83dfe2a) ✅
 * 목적: "하나의 핵심 명제를 여러 관점·풀이 문장으로 풀어 설명"하는 슬라이드 패턴을 htmlArt 표준 타입으로 추가. 중앙 큰 강조 명제 + 사방 풀이 phrase + elbow line. 기존 `radial`(중심 허브 + 스포크 박스 노드)과 시각 유사하나 의도·표현 분리:

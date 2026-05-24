@@ -50,6 +50,27 @@
    - <body style="..."> 인라인이 더 높은 specificity로 override
    ========================================================================= */
 :root {
+  /* ─────────────────────────────────────────────────────────────────────
+     m2 컬러 팔레트 9 슬롯 (Issue210) — Accent 1-6 + Text + Bg + Surface
+     설계 SSOT: _doc_arch/color-palette.md
+     카탈로그: data/palettes/catalog.yml (default 팔레트와 일치)
+     theme/{name}/palettes/{palette}.css 가 :root override 로 교체.
+     기존 --kn-* 변수는 신규 슬롯 alias 로 회귀 0 보증.
+     ───────────────────────────────────────────────────────────────────── */
+  --m2-accent-1: #F5C518;          /* default 팔레트 — 기존 --kn-accent 값 */
+  --m2-accent-2: #4ABDAC;
+  --m2-accent-3: #FC4A1A;
+  --m2-accent-4: #7B68EE;
+  --m2-accent-5: #2ECC71;
+  --m2-accent-6: #E74C3C;
+  --m2-text: #111111;
+  --m2-bg: #ffffff;
+  --m2-surface: #f4f4f5;
+
+  /* 기존 --kn-* 변수 호환 alias — theme/slide.css 가 override 가능 (회귀 0 보증) */
+  --kn-accent: var(--m2-accent-1);
+  --kn-text: var(--m2-text);
+
   /* Global */
   --global-font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
 
@@ -1218,6 +1239,9 @@ html.ratio-fill .agenda-frame {
 }
 
 </style>
+<style data-m2slide-palette="default">
+
+</style>
 <style>
     /* Issue110/125: visibility 가드 — Reveal·agenda 양쪽 컨테이너 적용 */
     html.m2-initial-loading .reveal,
@@ -1230,7 +1254,7 @@ html.ratio-fill .agenda-frame {
     @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
 </style>
-<link rel="stylesheet" href="css/custom.css?v=1779584221167">
+<link rel="stylesheet" href="css/custom.css?v=1779593505753">
 </head>
 <body class="agenda-page" data-nav-indicator="both">
 <div class="agenda-frame">
@@ -1251,7 +1275,7 @@ html.ratio-fill .agenda-frame {
 <script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
 <script>
 (function(){
-  const tocData = {"content":"","children":[{"content":"<a href=\"index.html#/1\">model3d — 실제 GLB 렌더 확인 (test-cube.glb)</a>","children":[]},{"content":"<a href=\"index.html#/2\">model3d — GLB 없음 (오류 표시 확인)</a>","children":[]},{"content":"<a href=\"index.html#/3\">model3d — JSON 파싱 오류 확인</a>","children":[]},{"content":"<a href=\"index.html#/4\">model3d + chart 병존 확인</a>","children":[]},{"content":"<a href=\"index.html#/5\">일반 슬라이드 (CDN 미주입 무관)</a>","children":[]}]};
+  const tocData = {"content":"","children":[{"content":"<a href=\"index.html#/1\">model3d — 실제 GLB 렌더 확인 (test-cube.glb)</a>","children":[]},{"content":"<a href=\"index.html#/2\">model3d — 카메라 위치 고정 (정면 뷰)</a>","children":[]},{"content":"<a href=\"index.html#/3\">chart — 다중 데이터셋 line + pie 비교</a>","children":[]},{"content":"<a href=\"index.html#/4\">model3d + chart 병존 확인</a>","children":[]},{"content":"<a href=\"index.html#/5\">일반 슬라이드 (CDN 미주입 무관)</a>","children":[]},{"content":"<a href=\"index.html#/6\">p5 — Bouncing Ball (자동 움직임 시뮬레이션)</a>","children":[]},{"content":"<a href=\"index.html#/7\">p5 — Mouse Interaction (마우스 추적 입자)</a>","children":[]},{"content":"<a href=\"index.html#/8\">p5 — Particle System (입자 시스템)</a>","children":[]},{"content":"<a href=\"index.html#/9\">model3d — 복잡 예제 (AR + 카메라 제한 + 자동회전)</a>","children":[]},{"content":"<a href=\"index.html#/10\">p5 — 복잡 예제 (Boids 군집 시뮬레이션)</a>","children":[]},{"content":"<a href=\"index.html#/11\">p5 — Wave Field (사인파 격자)</a>","children":[]}]};
   function init() {
     if (!window.markmap) { return setTimeout(init, 50); }
     const svg = document.querySelector('.toc-mindmap-svg');
@@ -1306,7 +1330,7 @@ html.ratio-fill .agenda-frame {
       var sep = base.indexOf('?') === -1 ? '?' : '&';
       return base + sep + signal + hash;
     }
-  const _tocData = {"content":"","children":[{"content":"<a href=\"index.html#/1\">model3d — 실제 GLB 렌더 확인 (test-cube.glb)</a>","children":[]},{"content":"<a href=\"index.html#/2\">model3d — GLB 없음 (오류 표시 확인)</a>","children":[]},{"content":"<a href=\"index.html#/3\">model3d — JSON 파싱 오류 확인</a>","children":[]},{"content":"<a href=\"index.html#/4\">model3d + chart 병존 확인</a>","children":[]},{"content":"<a href=\"index.html#/5\">일반 슬라이드 (CDN 미주입 무관)</a>","children":[]}]};
+  const _tocData = {"content":"","children":[{"content":"<a href=\"index.html#/1\">model3d — 실제 GLB 렌더 확인 (test-cube.glb)</a>","children":[]},{"content":"<a href=\"index.html#/2\">model3d — 카메라 위치 고정 (정면 뷰)</a>","children":[]},{"content":"<a href=\"index.html#/3\">chart — 다중 데이터셋 line + pie 비교</a>","children":[]},{"content":"<a href=\"index.html#/4\">model3d + chart 병존 확인</a>","children":[]},{"content":"<a href=\"index.html#/5\">일반 슬라이드 (CDN 미주입 무관)</a>","children":[]},{"content":"<a href=\"index.html#/6\">p5 — Bouncing Ball (자동 움직임 시뮬레이션)</a>","children":[]},{"content":"<a href=\"index.html#/7\">p5 — Mouse Interaction (마우스 추적 입자)</a>","children":[]},{"content":"<a href=\"index.html#/8\">p5 — Particle System (입자 시스템)</a>","children":[]},{"content":"<a href=\"index.html#/9\">model3d — 복잡 예제 (AR + 카메라 제한 + 자동회전)</a>","children":[]},{"content":"<a href=\"index.html#/10\">p5 — 복잡 예제 (Boids 군집 시뮬레이션)</a>","children":[]},{"content":"<a href=\"index.html#/11\">p5 — Wave Field (사인파 격자)</a>","children":[]}]};
   function firstHrefFromToc(node){
     if (!node || !node.children || node.children.length === 0) return null;
     for (const child of node.children) {
