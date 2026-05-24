@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 206
+* Issue HWM: 207
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -25,6 +25,20 @@
 2. HtmlArtEval cover 슬라이드 제목 우측 끝 빈 박스 렌더 (Issue202 등록 시 동반 발견 — word-break와 별개. `_cover.html` 변수 미치환 또는 frontmatter 빈 값 추정)
 
 # 🚧 진행중
+
+## Issue207. Simulation View(p5.js) 컴포넌트 추가 (등록: 2026-05-24)
+* 목적: 슬라이드에 인터랙티브 시뮬레이션(자율 움직임·마우스 반응·입자 시스템)을 작성할 수 있도록 p5.js 컴포넌트 추가. component-slide-visual.md 119행 "Simulation View ❌ 적용 예정(1순위)" 해소
+* plan: `_doc_work/plan/simulation-p5_plan.md`
+* 상세:
+    - `data/component-libraries.yml` 에 p5 엔트리 등재 (conditional CDN + p5_dispatch 훅)
+    - `lib/component-hooks/p5_dispatch.js` 신규 — instance mode + slidechanged 일시정지
+    - ComponentTest 프로젝트에 예제 슬라이드 4종 (bouncing ball / mouse / particles / 에러)
+    - 문서 갱신: md-m2slide-rules.md, component-slide-visual.md
+* 구현 명세:
+    - p5.js는 **instance mode 강제** — `p.setup/draw/mouseX` 등 `p.` prefix. 다중 인스턴스 격리 필수
+    - 사용자 코드 인자: `p` (p5 인스턴스), `el` (컴포넌트 컨테이너 div)
+    - slidechanged 이벤트에서 비활성 슬라이드의 p5 인스턴스 `noLoop()` 일시정지 → 활성 시 `loop()` 재개
+    - 검증 기준: `<div class="component-container" data-component="p5"` 4회 + `p5.min.js` 1회 + `new p5(` 훅 1회. 브라우저에서 4슬라이드 시각 확인 + 회귀 없음
 
 # 📕 중요
 
