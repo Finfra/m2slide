@@ -136,6 +136,19 @@ Glob Projects/<Name>/refs/*.md → 있으면 키워드별 그룹화
 
 판정 근거(`decision_reason`)를 보관 → 종료 보고에 사용.
 
+### 3-A. 기존 .md에서 챕터 boundary 검출 (Issue217 — reverse·import 흐름)
+
+입력으로 기존 단일 `.md`(또는 ppt2m2slide 1차 산출물)가 주어진 경우 forward 휴리스틱만으로 mode 결정 금지.
+
+* `chapter_marker_patterns` Read → 입력 .md 라인 매칭 카운트
+* 매칭 카운트 ≥ 2 + `always_confirm_mode_on_reverse: true` → `AskUserQuestion` **무조건** 호출
+* 메시지에 다음 포함:
+    - 검출된 boundary 라인 미리보기 (최대 20개. 초과 시 `... (총 N개)` 추가)
+    - 자동 판정 mode (`detected_mode`)
+    - 선택지: "{detected_mode} mode 진행" / 반대 mode로 변경
+* 사용자 응답 후 결정된 mode로 단계 4 진행
+* forward 흐름(info-filler → agenda-designer 정상 경로)에는 본 단계 미적용 (기존 룰 그대로)
+
 ## 4. outline 패턴 선택
 
 `selection_rules[]` 순차 평가:

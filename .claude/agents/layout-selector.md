@@ -69,6 +69,9 @@ L2 부재 시 L1 그대로 사용 (하위호환). 설계 SSOT: [`../../_doc_arch
     - 그래도 미존재 시 `hallucinated_layout_action: skip_with_warning`
 8. **JSON 출력** — `output_format.schema` 형식으로 stdout
 9. **`.ppt.md` 생성** — `--dry-run` 미지정 시 `ppt_md_generation.default_mode: preserve_manual` 적용. 수동·자동 위임은 통과, 추천은 디렉티브 영역에 `#layout-{name}` 주입
+    * **슬라이드 구분자 보존 의무 (Issue227)**: 입력 .md에 H1 사이 `---` 단독 줄 없으면 `.ppt.md` 생성 시 자동 삽입. 첫 H1 외 모든 H1 직전에 빈 줄 + `---` + 빈 줄 추가. m2slide `slide-parser.js`가 `\n---\n` 기준으로만 슬라이드 분리하므로 누락 시 챕터 전체가 1슬라이드로 병합됨
+    * **chapter mode 첫 H1에 `_cover` 매핑 금지 (Issue227)**: chapter mode 입력 .md의 첫 H1은 `_contents` 또는 `_contents_no_title`로 매핑. m2slide `_cover` slide는 `→` 키에 `agenda.html` 강제 redirect → chapter 내 navigation 불가. cover는 single mode 또는 chapter mode 표지 (toc-placeholder) 전용
+    * single mode·전체 표지 슬라이드는 기존 cover_first_slide 룰 그대로
 10. **검증** — `validation_rules[]` 순차 적용
 11. **체크포인트** — `--no-checkpoint` 미지정 시 `checkpoint.template` 출력
 12. **종료 보고** — `report_template` 양식

@@ -25,6 +25,26 @@ mode_decision:
     priority: highest        # --mode 인자 우선
     flags: [--mode chapter, --mode single]
   ambiguous_action: ask_user # 규칙 모호 시 1회 질의
+  # Issue217 — 기존 .md(또는 PPT 역변환 산출물)에서 챕터를 발굴해야 하는 흐름에서는
+  # mode 자동 판정 결과를 보여주고 사용자에게 무조건 컨펌받음.
+  # (정방향 info-filler 흐름에서는 user_override + ambiguous_action 만으로 충분)
+  always_confirm_mode_on_reverse: true
+
+# ============================================================================
+# 1-A. 기존 .md에서 챕터 boundary 검출 패턴 (ppt2m2slide와 공유 — Issue217)
+# ============================================================================
+# pptx2md가 챕터 제목을 H2로 떨구는 일반 케이스 대응.
+# 매칭된 라인 카운트가 2 이상이면 chapter mode 후보로 간주, 사용자에게 boundary 리스트 표시 + 컨펌.
+chapter_marker_patterns:
+  - "^#{1,2}\\s+부록\\s*\\d+"
+  - "^#{1,2}\\s+챕터\\s*\\d+"
+  - "^#{1,2}\\s+섹션\\s*\\d+"
+  - "^#{1,2}\\s+(Chapter|CHAPTER|chapter)\\s*\\d+"
+  - "^#{1,2}\\s+(Part|PART|part)\\s*\\d+"
+  - "^#{1,2}\\s+(Section|SECTION|section)\\s*\\d+"
+  - "^#{1,2}\\s+(Lecture|LECTURE)\\s*\\d+"
+  - "^#{1,2}\\s+\\d+\\.\\s+\\S+"
+  - "^#{1,2}\\s+제\\s*\\d+\\s*(장|부|편)"
 
 # ============================================================================
 # 2. 챕터 수·챕터당 슬라이드 권장 (분량 기반)
