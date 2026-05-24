@@ -44,7 +44,7 @@
 # ✅ 완료
 
 
-## Issue232. H1 슬라이드 contents-header 누락 + 백틱 인라인 코드 link 침범 + H1/H2 puffer 비대칭 (등록: 2026-05-25, 해결: 2026-05-25) ✅
+## Issue232. H1 슬라이드 contents-header 누락 + 백틱 인라인 코드 link 침범 + H1/H2 puffer 비대칭 (등록: 2026-05-25, 해결: 2026-05-25, commit: 8215612) ✅
 * 목적: `BasicKnowledgeForAI_small/01-markdown.html` `#/11`(`# Markdown 문법 - 링크` H1만 있는 슬라이드)의 contents-header가 통째 사라지고 빈 가로 띠로 보이던 회귀 차단. 동시에 본문 백틱 인라인 코드 `` `[name](URL)` ``이 `<code>&lt;a href="URL"&gt;name&lt;/a&gt;</code>`로 변환되던 markdown 파서 inline 처리 순서 버그 차단 + H1 슬라이드와 H2 슬라이드의 puffer 마스코트 시각 비대칭 차단.
 * 상세:
     - 회귀 ①: `slide-parser`의 `if (layout) { title 추출 }` 가드가 layout 미명시 슬라이드(H1만 있고 `theme_default_layout: contents` fallback 경로)를 skip → `slideTitle=''` 유지 → html-builder Issue90 로직이 빈 `contents-header` 통째 제거
