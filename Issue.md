@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 224
+* Issue HWM: 225
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -25,6 +25,22 @@
 2. HtmlArtEval cover 슬라이드 제목 우측 끝 빈 박스 렌더 (Issue202 등록 시 동반 발견 — word-break와 별개. `_cover.html` 변수 미치환 또는 frontmatter 빈 값 추정)
 
 # 🚧 진행중
+
+## Issue225. .ppt.md 빌드 결과 파일명 미일치 — agenda.html cross-page 링크 404 (등록: 2026-05-24)
+* 목적: layout-selector가 생성한 `.ppt.md` 파생본을 빌드하면 `<base>.ppt.html`로 떨어지나 agenda.html 내 cross-page 링크는 원본 `.md` 기준(`<base>.html`)으로 작성됨. 결과적으로 agenda.html에서 다음 챕터 클릭 시 `ERR_FILE_NOT_FOUND`. BasicKnowledgeForAI (ppt2m2slide + layout-selector 출력) 빌드에서 회귀 확인.
+* 상세:
+    - 재현: `Projects/BasicKnowledgeForAI/slide/agenda.html` 열고 `01. MarkDown` 클릭 → `01-markdown.html?fwd=1` 요청, 실제 파일은 `01-markdown.ppt.html` → 404
+    - 원인1: `lib/generate-slides.js:240` — `file.replace('.md', '.html')` 첫 `.md`만 치환. `01-markdown.ppt.md` → `01-markdown.ppt.html`
+    - 원인2: `lib/generate-slides.js:326` — `orderedChapters` 매핑 동일 패턴, chapter offset 계산 오작동
+    - agenda.html 링크 생성 로직은 원본 .md 파일명 기준이라 가정 (chapter mode 다른 프로젝트는 `.ppt.md` 미사용이라 미발각)
+    - 영향: layout-selector 적용 + chapter mode 프로젝트 전수
+* 구현 명세:
+    - 수정: `lib/generate-slides.js:240,326` — `f.replace(/(\.ppt)?\.md$/, '.html')`로 `.ppt` 접미사도 함께 제거
+    - 빌드 결과: `01-markdown.ppt.md` → `01-markdown.html` (원본 base 기준)
+    - 검증:
+        - BasicKnowledgeForAI 재빌드 + agenda.html 모든 챕터 링크 클릭 회귀 확인
+        - 대표 프로젝트 회귀 검증: `m2SlideStyle1_single`(single, .ppt.md 없음), `m2SlideStyle2_chapter`(chapter, .ppt.md 없음), `aTest`(chapter, .ppt.md 없음) — 빌드 결과 파일명 변경 없는지 확인
+* 카테고리: Generator + Build
 
 ## Issue223. `open-slide` 스킬 신규 — 임의 슬라이드 자동 진입 + Chrome 포커스 강제 (등록: 2026-05-24)
 * 목적: 코드/콘텐츠 수정 후 특정 슬라이드(예: 08.4 #/6) 직접 검증할 때 매번 `file:///.../slide/<chapter>.html?fwd=1#/N` URL을 수작업 조립 + macOS `open` 동일 URL 재호출 시 새 탭만 추가되고 foreground 안 옴. 슬래시 커맨드 대신 **스킬**로 만들어 description 매칭 자동 트리거 → claude가 "슬라이드 X 열어줘", "검증해줘" 등 발화 시 자동 호출.
