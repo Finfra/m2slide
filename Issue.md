@@ -44,7 +44,7 @@
 # ✅ 완료
 
 
-## Issue231. graphify CLI 미활용 회귀 — slide 코드 추적 시 grep 우선 + 자동 트리거 부재 (등록: 2026-05-25, 해결: 2026-05-25) ✅
+## Issue231. graphify CLI 미활용 회귀 — slide 코드 추적 시 grep 우선 + 자동 트리거 부재 (등록: 2026-05-25, 해결: 2026-05-25, commit: b80e4c5) ✅
 * 목적: m2slide 코드/아키텍처 질문 처리 시 `.claude/rules/graphify-rules.md`의 "CLI 우선" 룰을 무시하고 `grep`+`Read`로 진행한 회귀 차단. 직전 세션(`#/11` head-bar 누락 원인 추적)에서 `slide-parser.js`·`html-builder.js`·`head-resolver.js` 다중 파일 추적에 grep만 사용 → graphify의 EXTRACTED/INFERRED edge traversal 이점 미활용 → 토큰·시간 낭비. `graphify-out/GRAPH_REPORT.brief.md` 존재 + `graphify` CLI 정상 동작 + `~/.local/bin/graphify` 설치 상태였음에도 우회.
 * 상세:
     - 현 룰의 한계: "CLI 우선" 원칙만 적시되어 있고 **자동 발동 트리거(어떤 사용자 요청 패턴에서 graphify를 써야 하는가)** 미명시. 룰 위반 감지 메커니즘 없음
