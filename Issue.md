@@ -26,41 +26,32 @@
 
 # 🚧 진행중
 
-## Issue223. `open-slide` 스킬 신규 — 임의 슬라이드 자동 진입 + Chrome 포커스 강제 (등록: 2026-05-24)
-* 목적: 코드/콘텐츠 수정 후 특정 슬라이드(예: 08.4 #/6) 직접 검증할 때 매번 `file:///.../slide/<chapter>.html?fwd=1#/N` URL을 수작업 조립 + macOS `open` 동일 URL 재호출 시 새 탭만 추가되고 foreground 안 옴. 슬래시 커맨드 대신 **스킬**로 만들어 description 매칭 자동 트리거 → claude가 "슬라이드 X 열어줘", "검증해줘" 등 발화 시 자동 호출.
-* 상세:
-    - 기존 자산:
-        - `apply-verify-rules.md` §4.1 — URL 규약 SSOT
-        - `run.sh` / `/run` — 빌드 + 초기 진입 cover만, 슬라이드 번호 인자 없음
-    - 누락: 임의 슬라이드 진입 + 자동 트리거 + Chrome 포커스 강제
-    - 영향: 검증 반복 시 매번 절대경로·쿼리·hash 수작업, Chrome backgrounded
-* 구현 명세:
-    - 신규: `.claude/skills/open-slide/SKILL.md` (프로젝트 로컬, m2slide-specific)
-        - frontmatter title `open-slide`, description: "m2slide 슬라이드 검증·재오픈 시 자동 발동. 프로젝트·챕터·슬라이드 번호로 정확한 URL 조립하여 Chrome에 포커스까지 강제. 슬라이드 N번 직접 열기, 수정 후 확인, 검증 사이클 마찰 제거"
-        - 입력 형식: `{project} {chapter_prefix} {N}` (예: `aTest_v1 08.4 6`)
-        - chapter prefix 매칭: `Projects/<project>/slide/<prefix>*.html` glob → 단일 매칭 검증, 다중·미발견 시 에러
-        - URL 조립: `file://<abs>/Projects/<project>/slide/<resolved>.html?fwd=1#/<N>`
-        - 실행:
-            ```bash
-            open -a "Google Chrome" --new '<URL>'
-            osascript -e 'tell application "Google Chrome" to activate'
-            ```
-        - 옵션: `--firefox` (Firefox 강제), `--build` (open 전 `./m2slide.sh <project>`)
-    - 자동 트리거 keyword (description에 명시): "슬라이드 열기", "슬라이드 확인", "verify slide", "open slide", "검증", 슬라이드 번호 형식(`08.4 #6`)
-    - 책임 분리: `/run` 빌드+cover, `open-slide` 스킬 임의 진입
-* 검증:
-    - `aTest_v1 08.4 6` → 정확한 슬라이드 진입 + Chrome 포커스
-    - prefix 모호성: `08` 입력 시 다중 매칭 검출·에러 보고
-    - claude 자체 "08.5 슬라이드 보여줘" 발화 시 스킬 자동 호출 확인
-* 카테고리: DX (개발자 도구) + Build (스킬 wrapper)
-* 관련: `/run` 커맨드, `apply-verify-rules.md` §4.1
-
 
 # 📕 중요
 
 # 📙 일반
 
 # ✅ 완료
+
+
+## Issue223. `open-slide` 스킬 신규 — 임의 슬라이드 자동 진입 + Chrome 포커스 강제 (등록: 2026-05-24, 해결: 2026-05-24, commit: b72c7dc) ✅
+* 목적: 코드/콘텐츠 수정 후 특정 슬라이드(예: 08.4 #/6) 직접 검증할 때 매번 `file:///.../slide/<chapter>.html?fwd=1#/N` URL을 수작업 조립 + macOS `open` 동일 URL 재호출 시 새 탭만 추가되고 foreground 안 옴. 슬래시 커맨드 대신 **스킬**로 만들어 description 매칭 자동 트리거 → claude가 "슬라이드 X 열어줘", "검증해줘" 등 발화 시 자동 호출.
+* 구현:
+    - 신규: `.claude/skills/open-slide/SKILL.md` (프로젝트 로컬 SCAR, `git add -f`로 추적 — `.gitignore`의 `.claude` 무시 우회)
+        - frontmatter title `open-slide`, description에 트리거 keyword(`슬라이드 N번`, `X.Y #N`, `검증해줘`, `open slide`) 명시
+        - 입력 형식: `{project} {chapter_prefix} {N} [--firefox] [--build]`
+        - chapter prefix glob 매칭: 1개 매칭만 통과, 0/다중 시 에러 + 매칭 목록 안내
+        - URL 조립: `?fwd=1#/N` (쿼리 hash 앞 — apply-verify-rules §4.1)
+        - 실행: Chrome AppleScript heredoc (`tell application "Google Chrome" → make new tab + activate`) — shell `open -a` ban 회피 (apply-verify-rules §4)
+        - 옵션: `--firefox` (Firefox AppleScript), `--build` (open 전 `./m2slide.sh <project>`)
+    - 책임 분리: `/run` 빌드+cover, `open-slide` 스킬 임의 진입
+* 검증 (b72c7dc):
+    - 정상 매칭: `aTest_v1 08.4` → `08.4.ratio-compare-explain.html` 단일 매칭
+    - 다중 매칭: `aTest_v1 08` → 6개 검출 (08-htmlart, 08.1~08.5)
+    - 미매칭: `aTest_v1 99` → 에러
+    - AppleScript heredoc 실제 Chrome 포커스 + 새 탭 진입 확인 (`aTest_v1 08.4 6`)
+* 카테고리: DX (개발자 도구) + Build (스킬 wrapper)
+* 관련: `/run` 커맨드, `apply-verify-rules.md` §4.1
 
 
 ## Issue214. ppt2m2slide 에이전트 설계 — 기존 PPT를 m2slide 프로젝트로 역변환 (등록: 2026-05-24, 해결: 2026-05-24, commit: b897367) ✅
