@@ -345,7 +345,9 @@
 }
 
 .reveal section[class*="layout-"] .mermaid svg,
-.reveal section[class*="layout-"] .media-container svg {
+.reveal section[class*="layout-"] .media-container svg,
+.reveal section[class*="layout-"] .media-container video,
+.reveal section[class*="layout-"] .media-container img {
   width: 100% !important;
   height: 100% !important;
   max-width: none !important;
