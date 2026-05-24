@@ -56,35 +56,32 @@
 * 관련: `/run` 커맨드, `apply-verify-rules.md` §4.1
 
 
-## Issue214. ppt2m2slide 에이전트 설계 — 기존 PPT를 m2slide 프로젝트로 역변환 (등록: 2026-05-24)
-* 목적: m2slide가 미완성이라 그동안 m2slide → PPT export → PPT 수정 → 발표 워크플로우로 작업했음. PPT 수정분이 m2slide로 환류되지 않아 매번 같은 PPT 작업을 반복. 기존 PPT(.pptx)를 m2slide 프로젝트(`Projects/<Name>/`)로 역변환하는 agent를 신설하여 PPT 자산을 m2slide 카탈로그로 흡수. 여러 PPT 변환 누적 시 m2slide 카탈로그가 풍부해져 발표 가능 임계점에 빠르게 도달.
-* depends: Issue217
-* plan: `_doc_work/plan/ppt2m2slide_plan.md`
-* task: `_doc_work/tasks/ppt2m2slide_task.md`
-* 상세:
-    - PPT 슬라이드 → markdown 슬라이드(`---` 구분자) 변환
-    - PPT layout → m2slide layout 매핑 (`#layout-*` 디렉티브)
-    - PPT SmartArt → m2slide htmlart 변환 시도. 매핑 실패 시 `data/_proposals/`로 신규 type 후보 분리
-    - PPT 차트/임베디드 미디어 → m2slide component (chart/model3d/video) 또는 img/ 자산
-    - PPT theme 색상 → palette 매칭. 실패 시 `_proposals/`로 신규 팔레트 후보
-    - chapter mode (AGENDA.md + 다중 .md) / single mode 자동 판정
-    - 사용자 검토 체크포인트 3개 (메타 수집 후 / 매핑 후 / 빌드 직전)
-* 구현 명세:
-    - 신규: `.claude/agents/ppt2m2slide.md` (info-filler/agenda-designer 데이터-주도 패턴 차용, model: opus, tools: Read/Write/Edit/Bash/Glob)
-    - 신규: `data/ppt2m2slide/{heuristics,mappings}.yml` 외부화 카탈로그
-    - 신규: `_doc_arch/ppt2m2slide.md` 영속 설계 SSOT (Mermaid 흐름도)
-    - 신규: `.claude/commands/ppt2m2slide.md` 슬래시 진입점 (`/ppt2m2slide <pptx> [name] [--mode] [--no-checkpoint]`)
-    - 수정: `_doc_arch/authoring-pipeline.md` reverse-pipeline 한 줄 추가
-    - 미수정: `lib/generate-slides.js` 등 빌드 파이프라인, 기존 카탈로그 (`data/htmlart/types.yml` 등)
-    - 책임 분리: pptx2md 글로벌 스킬은 raw 추출만, m2slide 의미론 매핑은 ppt2m2slide 단독
-    - 자동 머지 금지: `_proposals/` 산출물은 항상 사용자 승인 후 수동 머지
-* 카테고리: Generator + Project + Build
-
 # 📕 중요
 
 # 📙 일반
 
 # ✅ 완료
+
+
+## Issue214. ppt2m2slide 에이전트 설계 — 기존 PPT를 m2slide 프로젝트로 역변환 (등록: 2026-05-24, 해결: 2026-05-24, commit: b897367) ✅
+* 목적: m2slide가 미완성이라 그동안 m2slide → PPT export → PPT 수정 → 발표 워크플로우로 작업했음. PPT 수정분이 m2slide로 환류되지 않아 매번 같은 PPT 작업을 반복. 기존 PPT(.pptx)를 m2slide 프로젝트(`Projects/<Name>/`)로 역변환하는 agent를 신설하여 PPT 자산을 m2slide 카탈로그로 흡수.
+* depends: Issue217 ✅
+* plan: `_doc_work/plan/ppt2m2slide_plan.md`
+* task: `_doc_work/tasks/ppt2m2slide_task.md`
+* 구현:
+    - 신규: `.claude/agents/ppt2m2slide.md` (model:opus, color:magenta, tools:Read/Write/Edit/Bash/Glob) — info-filler/agenda-designer 데이터-주도 패턴 차용
+    - 신규: `data/ppt2m2slide/heuristics.yml` (layout 판정·mode 임계값·palette 매칭·체크포인트 메시지) + `mappings.yml` (SmartArt→htmlart·chart→component·media·fallback)
+    - 신규: `_doc_arch/ppt2m2slide.md` 영속 설계 SSOT (변환 파이프라인·체크포인트·라운드트립 검증)
+    - 신규: `.claude/commands/ppt2m2slide.md` 슬래시 진입점 (`/ppt2m2slide <pptx> [name] [--mode] [--no-checkpoint]`)
+    - 수정: `_doc_arch/authoring-pipeline.md`에 `## Reverse pipeline (ppt2m2slide)` 한 줄 추가
+    - 책임 분리: pptx2md 글로벌 스킬 raw 추출만, m2slide 의미론 매핑은 본 agent 단독
+    - 자동 머지 금지: `_proposals/` 산출물은 항상 사용자 승인 후 수동 머지
+* 검증 (b897367 합본):
+    - YAML 파싱 OK (heuristics.yml + mappings.yml)
+    - BasicKnowledgeForAI 변환 round-trip — 239 슬라이드 → chapter mode 자동 + 13 챕터 + 17 sub-chapter, 빌드 rc=0, 32 HTML 모두 200 OK
+    - 회귀: aTest·m2SlideStyle1_single·m2SlideStyle2_chapter 영향 0
+    - 산출물 5개 모두 .gitignore 대상 (.claude/_doc_arch/_doc_work/data/* 의도적 제외) — Issue217 fix(b897367)와 합본 검증
+* 카테고리: Generator + Project + Build
 
 
 ## Issue228. agenda.js·html-builder.js cross-page navigation `.ppt.md` 미정규화 — PREV_CHAPTER/NEXT_CHAPTER/subsections lookup 실패 (등록: 2026-05-24, 해결: 2026-05-24, commit: b897367) ✅
