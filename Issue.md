@@ -212,7 +212,7 @@
 
 # ✅ 완료
 
-## Issue224. `::: cards` 다수 카드 슬라이드 overflow clip — px 고정값 em 전환 (등록: 2026-05-24, 해결: 2026-05-24, commit: TBD) ✅
+## Issue224. `::: cards` 다수 카드 슬라이드 overflow clip — px 고정값 em 전환 (등록: 2026-05-24, 해결: 2026-05-24, commit: ea777cb) ✅
 * 목적: 카드 개수가 많은 슬라이드에서 카드 그리드가 슬라이드 세로 영역을 초과하여 하단이 잘리는 회귀. font_size_auto가 `.theContents` 폰트를 줄여 overflow를 잡으려 하나 카드 박스 크기·간격이 px 고정이라 폰트만 줄어들고 카드 행 높이·열 폭은 그대로 유지되어 잘림이 해소되지 않음. `Projects/aTest/slide/02-component.html?fwd=1#/8` (6 cards 블록) 등에서 재현.
 * Root cause:
     - `theme/_shared/components.css` §카드 컴포넌트(line 89~178)의 5종 px 고정값(`minmax(180px,1fr)`·`gap 10px`·title `padding 7px 14px`·본문 `padding 8px 13px`·중첩 ul `padding 2px`·`border-radius 10px`·`box-shadow 0 2px 6px`)이 폰트 비례 축소되지 않음
