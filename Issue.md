@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 228
+* Issue HWM: 229
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -25,6 +25,19 @@
 2. HtmlArtEval cover 슬라이드 제목 우측 끝 빈 박스 렌더 (Issue202 등록 시 동반 발견 — word-break와 별개. `_cover.html` 변수 미치환 또는 frontmatter 빈 값 추정)
 
 # 🚧 진행중
+
+## Issue229. default 테마에 sub-chapter(`_chapter`) layout 추가 — chapter divider page (등록: 2026-05-24)
+* 목적: chapter divider 슬라이드(메인 챕터 제목 + 하위 sub-section 목록 표시)는 default_lec에 `4.2.chapter.html` + `.layout-chapter` CSS 있으나 default 테마에는 부재. `theme: default` 프로젝트가 chapter divider 슬라이드 생성 불가. default에도 동일 layout 추가 (디자인은 default 미니멀 톤 — typography·divider 위주, 배경 이미지 없음)
+* 상세:
+    - default_lec `_chapter` 슬롯 구조(header + chapter-title + divider + content) 차용
+    - default 색 변수(`--m2-accent-1`) + 단순 divider line + 큰 제목
+    - underscore form `_chapter.html` 작성 시 `chapter`·`_chapter` 양쪽 메타 자동 alias 등록(generate-slides.js)
+* 구현 명세:
+    - 신규: `theme/default/layouts/_chapter.html` (default_lec `4.2.chapter.html` 슬롯 동일)
+    - 수정: `theme/default/slide.css` — `.layout-chapter` 계열 CSS 추가 (미니멀)
+    - 검증: `Projects/m2SlideStyle1_single`에 `#layout-chapter` 슬라이드 추가 → `./m2slide.sh m2SlideStyle1_single` → HTML 직접 검증 → AppleScript Chrome 진입
+    - default_lec은 이미 `4.2.chapter.html` 보유 — 추가 작업 없음
+* 카테고리: Theme
 
 
 # 📕 중요

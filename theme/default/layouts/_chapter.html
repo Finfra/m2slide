@@ -1,0 +1,24 @@
+<!-- @meta
+description: 챕터 진입 표지 layout. 큰 제목 + 하위 sub-section 목록(또는 학습 목표).
+recommended_for:
+  - 챕터 시작 슬라이드 (메인 챕터 진입 page)
+  - 섹션 표지 (cover 다음, 본문 전)
+  - sub-section 목록 안내
+not_recommended_for:
+  - 일반 본문 슬라이드 (_contents 사용)
+  - 전체 강의 표지 (_cover 사용)
+slots:
+  - title
+  - content
+example: |
+  ## 6. 고급 자동화 기술
+
+  * 6.1. ChatGPT와 다른 툴의 통합 자동화 방법
+  * 6.2. 실습: 다양한 소프트웨어를 연동한 자동화 구현
+-->
+<section class="layout-chapter">
+  <div class="chapter-header">
+    <h1 class="chapter-title">{{title}}</h1>
+  </div>
+  <div class="chapter-body">{{content}}</div>
+</section>

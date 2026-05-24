@@ -438,24 +438,8 @@
   max-width: 55%;
 }
 
-/* 4.4 chapter: puffer2 중앙-좌측 + 제목 하단
-   Issue72: !important 제거 — base.css와 동일 specificity (0,0,2,2). theme이 후순위 로드되어 자연 우선 */
-.reveal section.layout-chapter {
-  background-image: url('../theme-img/finfraPuffer2.png');
-  background-repeat: no-repeat;
-  background-position: 18% 38%;
-  background-size: 16% auto;
-  justify-content: flex-end;
-}
-
-.reveal section.layout-chapter .chapter-header {
-  text-align: center;
-  padding-bottom: 12%;
-}
-
-.reveal section.layout-chapter .chapter-title {
-  font-size: 3em;
-}
+/* 4.4 chapter: Issue229에서 §Issue229 블록(파일 끝)으로 이전 — default 미니멀 톤.
+   default_lec과 달리 background-image 없음(theme-img/ 폴더 부재). */
 
 /* 4.5 exercise: butterfly 좌측 + cat 우하단 */
 .reveal section.layout-exercise {
@@ -1266,3 +1250,72 @@ body.agenda-page .agenda-frame {
   position: static;
 }
 
+
+/* =========================================================================
+   Issue229: layout-chapter — chapter divider page (메인 챕터 + sub-section 목록)
+   default 미니멀 톤 — 배경 이미지 없이 typography·divider 위주.
+   default_lec과 슬롯 구조 동일(chapter-header + chapter-title + chapter-divider + chapter-body).
+   ========================================================================= */
+.reveal section.layout-chapter,
+.reveal section.layout-_chapter {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  padding: 6% 8%;
+}
+
+.reveal section.layout-chapter .chapter-header,
+.reveal section.layout-_chapter .chapter-header {
+  text-align: center;
+  margin-bottom: 4%;
+  position: relative;
+  padding-bottom: 1.2em;
+}
+
+.reveal section.layout-chapter .chapter-header::after,
+.reveal section.layout-_chapter .chapter-header::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  width: 60%;
+  height: 4px;
+  background: var(--m2-accent-1, #F5C518);
+  border-radius: 2px;
+}
+
+.reveal section.layout-chapter .chapter-title,
+.reveal section.layout-_chapter .chapter-title {
+  font-size: 2.6em;
+  font-weight: 700;
+  color: var(--m2-text, #111);
+  margin: 0 0 0.4em 0;
+  line-height: 1.2;
+}
+
+.reveal section.layout-chapter .chapter-body,
+.reveal section.layout-_chapter .chapter-body {
+  margin: 4% auto 0;
+  max-width: 72%;
+  padding: 1.4em 2em;
+  border: 2px solid var(--m2-accent-1, #F5C518);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.6);
+  font-size: 1.1em;
+  line-height: 1.7;
+}
+
+.reveal section.layout-chapter .chapter-body ul,
+.reveal section.layout-_chapter .chapter-body ul,
+.reveal section.layout-chapter .chapter-body ol,
+.reveal section.layout-_chapter .chapter-body ol {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.reveal section.layout-chapter .chapter-body p,
+.reveal section.layout-_chapter .chapter-body p {
+  margin: 0.4em 0;
+}
