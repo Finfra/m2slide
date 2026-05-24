@@ -26,20 +26,6 @@
 
 # 🚧 진행중
 
-## Issue207. Simulation View(p5.js) 컴포넌트 추가 (등록: 2026-05-24)
-* 목적: 슬라이드에 인터랙티브 시뮬레이션(자율 움직임·마우스 반응·입자 시스템)을 작성할 수 있도록 p5.js 컴포넌트 추가. component-slide-visual.md 119행 "Simulation View ❌ 적용 예정(1순위)" 해소
-* plan: `_doc_work/plan/simulation-p5_plan.md`
-* 상세:
-    - `data/component-libraries.yml` 에 p5 엔트리 등재 (conditional CDN + p5_dispatch 훅)
-    - `lib/component-hooks/p5_dispatch.js` 신규 — instance mode + slidechanged 일시정지
-    - ComponentTest 프로젝트에 예제 슬라이드 4종 (bouncing ball / mouse / particles / 에러)
-    - 문서 갱신: md-m2slide-rules.md, component-slide-visual.md
-* 구현 명세:
-    - p5.js는 **instance mode 강제** — `p.setup/draw/mouseX` 등 `p.` prefix. 다중 인스턴스 격리 필수
-    - 사용자 코드 인자: `p` (p5 인스턴스), `el` (컴포넌트 컨테이너 div)
-    - slidechanged 이벤트에서 비활성 슬라이드의 p5 인스턴스 `noLoop()` 일시정지 → 활성 시 `loop()` 재개
-    - 검증 기준: `<div class="component-container" data-component="p5"` 4회 + `p5.min.js` 1회 + `new p5(` 훅 1회. 브라우저에서 4슬라이드 시각 확인 + 회귀 없음
-
 # 📕 중요
 
 # 📙 일반
@@ -47,6 +33,35 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue207. Simulation View(p5.js) 컴포넌트 추가 (등록: 2026-05-24, 해결: 2026-05-24, commit: 4e75e96, cf8b76e, e42ae02, 4752f0a, 00b5435, fc0262a, 9e5c957) ✅
+* 목적: 슬라이드에 인터랙티브 시뮬레이션(자율 움직임·마우스 반응·입자 시스템)을 작성할 수 있도록 p5.js 컴포넌트 추가. component-slide-visual.md 119행 "Simulation View ❌ 적용 예정(1순위)" 해소
+* plan: `_doc_work/plan/simulation-p5_plan.md`
+* 카테고리: Generator + Frontend + Asset
+* 구현:
+    - `data/component-libraries.yml` 에 p5 엔트리 등재 (conditional CDN + p5_dispatch 훅, p5@1.11.2)
+    - `lib/component-hooks/p5_dispatch.js` 신규 — instance mode + slidechanged noLoop()/loop() 일시정지·재개
+    - `lib/component-hooks/p5_dispatch.js` 후속 fix — `fitContainer(el)` + `applyCanvasFit(el)` 추가하여 캔버스가 슬라이드 영역 채움 (model3d fitHeight 패턴 차용)
+    - ComponentTest 프로젝트에 예제 슬라이드 4종 (bouncing ball / mouse trail / particle system / 에러 표시). `p.createCanvas(el.clientWidth, el.clientHeight)` 권장 패턴 사용
+    - 문서 갱신: `.claude/rules/md-m2slide-rules.md` Simulation View 섹션 추가, `_doc_arch/component-slide-visual.md` 라이브러리 표에 p5 행 추가 + 미적용 표에서 제거
+* 구현 명세:
+    - p5.js **instance mode 강제** — `p.setup/draw/mouseX` 등 `p.` prefix. 다중 인스턴스 격리 + 글로벌 오염 방지
+    - 사용자 코드 인자: `p` (p5 인스턴스), `el` (컴포넌트 컨테이너 div, dispatcher가 슬라이드 영역에 맞춰 사전 fit)
+    - slidechanged 이벤트에서 비활성 슬라이드 p5 인스턴스 `noLoop()` 일시정지 → 활성 시 `loop()` 재개 (CPU 절약)
+    - dispatcher: `fitContainer(el)` 부모 영역 채움 + `applyCanvasFit(el)` canvas CSS `width:100%; height:100%; display:block` 강제
+* 검증:
+    - 테스트 41/41 pass (기존 36 + p5 5건 신규)
+    - 빌드 OK: ComponentTest(p5 주입 1회) + m2SlideStyle1_single / m2SlideStyle2_chapter / htmlArtTest (모두 미주입 — conditional 정상)
+    - 브라우저 시각 확인: bouncing ball / mouse trail / particles 슬라이드 영역 fit + 에러 슬라이드 `.component-error` 표시
+    - 후속 사용자 지적 "캔버스가 슬라이드 영역 채워야" → 옵션 C (dispatcher fit + 예제 권장) 채택하여 해결
+* commit:
+    - 4e75e96: yml 레지스트리 등재
+    - cf8b76e: p5_dispatch 훅 (TDD RED → GREEN)
+    - e42ae02: 레지스트리 통합 테스트 3건
+    - 4752f0a: ComponentTest 예제 4종 추가
+    - 00b5435: md-m2slide-rules + component-slide-visual 문서 갱신
+    - fc0262a: Issue207 등록 + HWM 갱신
+    - 9e5c957: 캔버스 슬라이드 영역 fit (dispatcher fitContainer + 예제 권장 패턴)
 
 ## Issue206. m2slide 3D 모델 뷰어 컴포넌트 추가 — model-viewer 3.5.0 (등록: 2026-05-22, 해결: 2026-05-22, commit: 43c3fbe) ✅
 * 목적: `component-slide-visual.md`에 `❌ 적용 예정`으로 등재된 3D 모델 컴포넌트 구현. `\`\`\`model3d` fenced block + JSON config (`src`/`alt`/`autoRotate`/`poster`/`ar`/`height` 등) 저작 문법으로 GLB 모델을 슬라이드에 인터랙티브 렌더.
