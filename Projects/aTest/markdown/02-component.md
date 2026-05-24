@@ -490,6 +490,76 @@ p.draw = function() {
 
 ---
 
+## p5 — Boids 군집 시뮬레이션 (편대 비행)
+
+```p5
+let boids = [];
+const N = 80;
+const VIS = 80, SEP = 36, MAX_V = 3.5;
+
+class Boid {
+  constructor(w, h) {
+    this.pos = p.createVector(p.random(w), p.random(h));
+    this.vel = p5.Vector.random2D().mult(p.random(1, MAX_V));
+    this.acc = p.createVector(0, 0);
+  }
+  edges(w, h) {
+    if (this.pos.x < 0) this.pos.x = w;
+    if (this.pos.x > w) this.pos.x = 0;
+    if (this.pos.y < 0) this.pos.y = h;
+    if (this.pos.y > h) this.pos.y = 0;
+  }
+  flock(others) {
+    let align = p.createVector(), cohes = p.createVector(), sep = p.createVector();
+    let nA = 0, nC = 0, nS = 0;
+    for (const o of others) {
+      if (o === this) continue;
+      const d = p5.Vector.dist(this.pos, o.pos);
+      if (d < VIS) { align.add(o.vel); nA++; cohes.add(o.pos); nC++; }
+      if (d < SEP && d > 0) {
+        const diff = p5.Vector.sub(this.pos, o.pos).div(d * d);
+        sep.add(diff); nS++;
+      }
+    }
+    if (nA) { align.div(nA).setMag(MAX_V).sub(this.vel).limit(0.15); this.acc.add(align); }
+    if (nC) { cohes.div(nC).sub(this.pos).setMag(MAX_V).sub(this.vel).limit(0.08); this.acc.add(cohes); }
+    if (nS) { sep.div(nS).setMag(MAX_V).sub(this.vel).limit(0.2); this.acc.add(sep); }
+  }
+  update() {
+    this.vel.add(this.acc).limit(MAX_V);
+    this.pos.add(this.vel);
+    this.acc.mult(0);
+  }
+  draw() {
+    const a = this.vel.heading();
+    p.push();
+    p.translate(this.pos.x, this.pos.y);
+    p.rotate(a);
+    p.fill('#58a6ff');
+    p.stroke('#1f6feb');
+    p.strokeWeight(1.5);
+    p.triangle(-14, -9, -14, 9, 20, 0);
+    p.pop();
+  }
+}
+
+p.setup = function() {
+  p.createCanvas(el.clientWidth, el.clientHeight);
+  for (let i = 0; i < N; i++) boids.push(new Boid(p.width, p.height));
+};
+p.draw = function() {
+  p.background('#0d1117');
+  for (const b of boids) { b.edges(p.width, p.height); b.flock(boids); }
+  for (const b of boids) { b.update(); b.draw(); }
+};
+```
+
+* **Boids 알고리즘** — Craig Reynolds (1986): align(정렬) + cohesion(응집) + separation(분리) 3규칙 자율 군집
+* 80마리 화살표가 이웃과 상호작용하여 새떼·물고기떼 같은 편대 형성
+* edge wrap-around로 화면 경계 순환
+
+---
+
 ## Phase 진행 현황
 
 * Phase 0 — 레지스트리 + generic 디스패처 인프라
