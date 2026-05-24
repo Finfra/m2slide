@@ -30,40 +30,6 @@
 
 # 📙 일반
 
-## Issue211. htmlArt `explain` 타입 추가 — 중앙 명제 + 사방 풀이 phrase (등록: 2026-05-24)
-* 목적: "하나의 핵심 명제를 여러 관점·풀이 문장으로 풀어 설명"하는 슬라이드 패턴을 htmlArt 표준 타입으로 추가. 중앙에 큰 강조 키워드/명제, 사방에 짧은 풀이 phrase가 가는 라인으로 연결되는 시각. 기존 `radial`(중심 허브 + 스포크 박스 노드, Issue202)과 시각 유사하나 의도·표현 분리 필요:
-    - `radial` = 중심 개념 + 관련 요소들의 "방사 관계" (균질 박스 노드)
-    - `explain` = 한 명제의 "다관점 풀이/정의 확장" (박스 없는 풀이 phrase + 가는 라인)
-* 상세:
-    - 신규 타입 `explain` (tier v5, smartart_category `relationship`)
-    - intent: "중앙 명제를 여러 짧은 풀이 문장으로 설명·정의 확장·다관점 해석"
-    - input: 평면 리스트 — 최상위 1번째 항목 = 중앙 명제, 2번째 이후 = 풀이 phrase
-    - sublevel: (미사용 — 풀이는 짧은 phrase로 한정. 긴 설명 필요 시 `radial` 권장)
-    - visual: 중앙 큰 강조 텍스트 (슬라이드급 폰트, 박스 없음, accent 색 강조) + 사방 풀이 phrase (박스 없는 텍스트, 본문 색) + 중앙 ↔ phrase 가는 라인 연결 (accent 색)
-    - recommend_count: 중앙 1 + 풀이 4-8개
-    - 사례: "Skill.md 이해하기 = 기본+커스텀 / 메모장에서 열림 / 마크다운 방식 / ...", "프롬프트 엔지니어링 = 명확한 지시 / 컨텍스트 제공 / 예시 활용 / ...", 정의·개념 풀이 일반
-* 구현 명세:
-    - `data/htmlart/types.yml`에 `explain` 항목 추가 + `decision_table` 신호 등록 (`radial`보다 위에 배치 — first-match 구체 우선)
-        - `signal_ko`: ["풀어 설명", "정의 확장", "여러 관점", "다관점", "여러 의미", "풀이"]
-        - `signal_en`: ["explain", "elaborate", "expand", "define", "interpret"]
-    - `lib/component-hooks/htmlart_dispatch.js`에 `renderExplain` 핸들러 추가
-        - d3 SVG 백엔드 (Issue193 통일)
-        - 중앙 노드: viewBox 중앙, 큰 폰트(accent 색, 가독 한도 내 강조)
-        - 풀이 phrase: `d3.pointRadial` 원형 좌표 (radial과 동일 알고리즘, 단 박스 없는 텍스트만 배치)
-        - 연결선: 중앙 → phrase 직선 또는 한 번 꺾인 elbow (이미지 2 참조 — 짧은 horizontal stub + 대각 line)
-    - 라벨 파싱: 중앙 명제는 일반 텍스트 또는 `**볼드**` 허용 (자동 강조)
-    - theme CSS: `theme/_shared/components.css`에 `.htmlart-explain` 스타일 추가
-        - 신규 CSS 변수: `--htmlart-explain-center-fg` (기본 `var(--kn-accent)`), `--htmlart-explain-leaf-fg` (기본 `var(--kn-text)`), `--htmlart-explain-line` (기본 `var(--kn-accent)`)
-    - 글자 크기 자동 스케일 (Issue200 패턴 — 박스 비례 폰트 정책 차용)
-    - `radial` vs `explain` 경계 명시:
-        - 박스 + 균질 노드 → `radial`
-        - 박스 없음 + 강조 명제 풀이 → `explain`
-    - 예제 슬라이드: `Projects/htmlArtTest/htmlArtTest.md`에 explain 1슬라이드 추가
-    - 검증: htmlArtTest 회귀 스크린샷 + markdown.test.js 신규 케이스
-* 카테고리: Generator + Asset
-* 참고: `_doc_work/z_htm/claude-htm-ask-1779589823.html` (제안 검토 결과)
-* 의존: Issue210(컬러 팔레트)과 독립 — palette 변수가 적용되면 explain accent도 자동 반영
-
 ## Issue208. htmlArt `compare` 타입 추가 — 2분할 좌우 비교 (등록: 2026-05-24)
 * 목적: 좌우 동등 병렬로 두 영역을 대비하는 슬라이드 패턴을 htmlArt 표준 타입으로 추가. 현재 21종 중 의미·시각이 모두 맞는 타입 없음 — `balance`(시소·무게 강조), `bracket`(그룹 적층), `matrix`(2×2), `venn`(교집합) 모두 불일치. SmartArt 원본 카탈로그의 "Opposing Arrows", "Counterbalance Arrows", "Opposing Ideas" 매핑.
 * 상세:
@@ -114,6 +80,20 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue211. htmlArt `explain` 타입 추가 — 중앙 명제 + 사방 풀이 phrase (등록: 2026-05-24, 해결: 2026-05-24, commit: 83dfe2a) ✅
+* 목적: "하나의 핵심 명제를 여러 관점·풀이 문장으로 풀어 설명"하는 슬라이드 패턴을 htmlArt 표준 타입으로 추가. 중앙 큰 강조 명제 + 사방 풀이 phrase + elbow line. 기존 `radial`(중심 허브 + 스포크 박스 노드)과 시각 유사하나 의도·표현 분리:
+    - `radial` = 중심 개념 + 관련 요소들의 "방사 관계" (균질 박스 노드)
+    - `explain` = 한 명제의 "다관점 풀이/정의 확장" (박스 없는 풀이 phrase + 가는 라인)
+* 변경:
+    - `data/htmlart/types.yml` — `explain` 항목 (tier v5, smartart_category `relationship`) + `decision_table` 신호 (`radial`보다 위) + `type_whitelist` + `min_nodes: 2` + type_count 22→23
+    - `lib/markdown.js` — `HTMLART_TYPES` 에 `explain` 추가 (화이트리스트, 23종)
+    - `lib/component-hooks/htmlart_dispatch.js` — `renderExplain` d3 SVG 핸들러 (`d3.pointRadial` 원형 좌표 + elbow line + foreignObject 텍스트, 박스 없음)
+    - `theme/_shared/components.css` — `.htmlart-explain` 스타일 + 3 CSS 변수(`--htmlart-explain-center-fg`/`-leaf-fg`/`-line`)
+    - `Projects/htmlArtTest/htmlArtTest.md` — explain 예제 슬라이드 1장 + 도입부 타입수 21→23 갱신 + version 0.3.0→0.3.1
+    - `lib/__tests__/markdown.test.js` — 22→23종 화이트리스트 테스트 + explain 신규 케이스 (51 tests 전체 pass)
+* 카테고리: Generator + Asset
+* 참고: `_doc_work/z_htm/claude-htm-ask-1779589823.html` (제안 검토 결과)
 
 ## Issue210. 컬러 팔레트 시스템 — theme variant + htmlArt 객체 단위 컬러 override (등록: 2026-05-24, 해결: 2026-05-24, commit: 83dfe2a) ✅
 * 목적: PowerPoint Office Theme 대응 — theme별 N색 팔레트(`Accent 1-6 + Text/Bg + Surface`) 도입으로 (1) `_config.yml palette:` 키로 theme 컬러 variant 교체, (2) htmlArt 블록 단위 `{.palette-X}`/`{.accent-N}` override. pie 슬라이드 teal 톤 하드코딩 동반 정리.
