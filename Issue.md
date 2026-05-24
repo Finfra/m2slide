@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 229
+* Issue HWM: 231
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -26,6 +26,16 @@
 
 # 🚧 진행중
 
+## Issue230. Single mode 중간 H1 슬라이드가 cover로 분류되어 →/↓/End 시 agenda.html 점프 — isCoverSlide() deck 위치 한정 누락 (등록: 2026-05-25)
+* 목적: m2SlideStyle1_single 등 single mode 프로젝트에서 `index.html#/2`(`# 2. 코드 ...` H1 챕터 divider)에서 → 키 누르면 `agenda.html?fwd=1`로 점프. layout-selector가 모든 본문 H1에 `#layout-_cover` 자동 부착 → `isCoverSlide()`가 deck 진입점이 아닌 중간 슬라이드까지 cover로 판정 → cover navigation 룰(↓·→·End → agenda) 발동. cover는 의미상 deck 진입점(#/0)만이어야 함.
+* 상세:
+    - 재현: `./m2slide.sh m2SlideStyle1_single` 후 `index.html?fwd=1#/2`에서 → 키 → `agenda.html?fwd=1` (의도: #/3 다음 슬라이드)
+    - 원인: `lib/html-builder.js:1609` `isCoverSlide()`가 layout class만 검사. layout-selector가 H1 슬라이드를 `_cover`로 일괄 분류 시 모든 H1이 cover로 인식
+    - 영향: single mode + chapter mode 양쪽. layout-selector .ppt.md 사용 프로젝트 전부
+* 구현 명세:
+    - `isCoverSlide()`에 deck 진입점 조건 추가: `Reveal.getHorizontalSlides()[0] === slide`
+    - 시각적 _cover layout은 유지(스타일은 그대로), navigation 의미만 leaf로 격하
+* 카테고리: Frontend (navigation) + Generator (cover 의미 정합성)
 
 # 📕 중요
 
@@ -33,6 +43,19 @@
 
 # ✅ 완료
 
+
+## Issue231. graphify CLI 미활용 회귀 — slide 코드 추적 시 grep 우선 + 자동 트리거 부재 (등록: 2026-05-25, 해결: 2026-05-25) ✅
+* 목적: m2slide 코드/아키텍처 질문 처리 시 `.claude/rules/graphify-rules.md`의 "CLI 우선" 룰을 무시하고 `grep`+`Read`로 진행한 회귀 차단. 직전 세션(`#/11` head-bar 누락 원인 추적)에서 `slide-parser.js`·`html-builder.js`·`head-resolver.js` 다중 파일 추적에 grep만 사용 → graphify의 EXTRACTED/INFERRED edge traversal 이점 미활용 → 토큰·시간 낭비. `graphify-out/GRAPH_REPORT.brief.md` 존재 + `graphify` CLI 정상 동작 + `~/.local/bin/graphify` 설치 상태였음에도 우회.
+* 상세:
+    - 현 룰의 한계: "CLI 우선" 원칙만 적시되어 있고 **자동 발동 트리거(어떤 사용자 요청 패턴에서 graphify를 써야 하는가)** 미명시. 룰 위반 감지 메커니즘 없음
+    - memory 누락: `feedback_graphify_first` 없음 → 세션 간 회귀 차단 메커니즘 부재
+    - 회귀 사례: 2026-05-25 head-bar 누락 분석 시 `grep -rn "head_left"`, `grep -n "outline-title"` 다수 호출. `graphify query "contents-header head-bar title hoisting"`로 단발 해결 가능했음
+* 구현 명세:
+    - `.claude/rules/graphify-rules.md`에 "자동 발동 트리거" 섹션 추가 — 사용자 표현 트리거(왜/어디서/추적/원인/관계/호출/흐름) + 사용 패턴 트리거(grep 3회 이상 → graphify 전환) + 명령어 매핑 표
+    - "위반 시 대응" 섹션 추가 — grep 4회 이상 누적 + 다중 파일 추적 시 self-trigger
+    - memory 저장: `feedback_graphify_first.md` + MEMORY.md 인덱스 갱신
+    - learning_log.md 한 줄 append
+* 카테고리: SCAR 룰 + 도구 사용 정책
 
 ## Issue229. default 테마에 sub-chapter(`_chapter`) layout 추가 — chapter divider page (등록: 2026-05-24, 해결: 2026-05-24, commit: 6ed4ca8) ✅
 * 목적: chapter divider 슬라이드(메인 챕터 제목 + 하위 sub-section 목록 표시)는 default_lec에 `4.2.chapter.html` + `.layout-chapter` CSS 있으나 default 테마에는 부재. `theme: default` 프로젝트가 chapter divider 슬라이드 생성 불가. default에도 동일 layout 추가 (디자인은 default 미니멀 톤 — typography·divider 위주, 배경 이미지 없음)
