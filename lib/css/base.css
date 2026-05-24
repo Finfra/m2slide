@@ -233,10 +233,15 @@ body {
    - Issue109 visible 강제 + Issue63 height:100% + theme min-height:100% 결합으로
      overview 그리드 모드에서 section들이 풀사이즈 적층 또는 viewport 밖 이탈
    - .reveal.overview 클래스는 ESC 진입 시 reveal.js가 자동 부착
-   - overview 모드에서는 reveal.js 기본 grid 동작에 위임 (우리 강제 해제) */
-.reveal.overview,
-.reveal.overview .slides {
+   - overview 모드에서는 reveal.js 기본 grid 동작에 위임 (우리 강제 해제)
+   Issue220: `.reveal.overview .slides`에 `overflow: hidden`을 부여하면 reveal.js Overview가
+   sections를 `.slides` box(1920px width) 밖 좌표(translate3d 1990/3980/...px)에 transform 배치하는데
+   clip되어 1장만 시각 paint. `.reveal.overview`(viewport 루트)는 hidden 유지, `.slides`만 visible로 분리. */
+.reveal.overview {
   overflow: hidden !important;
+}
+.reveal.overview .slides {
+  overflow: visible !important;
 }
 .reveal.overview .slides section,
 .reveal.overview .slides section[class*="layout-"] {
