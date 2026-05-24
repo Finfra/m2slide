@@ -557,7 +557,7 @@ Cards로 표현하기 복잡한 장식 텍스트·리치 HTML. **WordArt 장식 
 ```p5
 let x = 0;
 p.setup = function() {
-  p.createCanvas(600, 320);
+  p.createCanvas(el.clientWidth, el.clientHeight);
 };
 p.draw = function() {
   p.background('#1a1a2e');
@@ -572,7 +572,14 @@ p.draw = function() {
 * p5.js **instance mode** — `p.setup`, `p.draw`, `p.mouseX` 등 모든 p5 API는 `p.` prefix 필수 (전역 모드 사용 금지: 다중 인스턴스 격리·다른 컴포넌트와 글로벌 오염 방지)
 * 사용 가능 인자:
     - `p` — p5 인스턴스 (`p.createCanvas`, `p.background`, `p.ellipse`, `p.mouseX/Y` 등 전체 p5 API)
-    - `el` — 컴포넌트 컨테이너 div (캔버스가 이 안에 자동 마운트)
+    - `el` — 컴포넌트 컨테이너 div (캔버스가 이 안에 자동 마운트). dispatcher가 슬라이드 영역에 맞춰 `el.clientWidth/clientHeight` 사전 설정
+* **권장 패턴 — 컨테이너 크기 기준 캔버스 생성**:
+    - `p.createCanvas(el.clientWidth, el.clientHeight)` 사용 → 슬라이드 영역 fit + 픽셀 해상도 일치 (선명함)
+    - 고정 픽셀(`p.createCanvas(600, 320)`)도 동작은 하나 dispatcher가 canvas CSS 100%로 강제 늘려 픽셀 보간 발생 (약간 흐려질 수 있음)
+* dispatcher 자동 처리:
+    - `el` 컨테이너에 슬라이드 영역 채우는 width/height 강제 (model3d `fitHeight` 패턴 차용)
+    - 생성된 canvas에 CSS `width:100%; height:100%; display:block` 적용
+    - 슬라이드 재진입 시 fit 재적용 (창 크기 변동 대응)
 * CDN(p5@1.11.2)은 `p5` 블록 있는 데크에만 조건 주입
 * 본문은 사용자 슬라이드 콘텐츠로 신뢰 처리 (d3·mermaid·react와 동일 수준)
 * 슬라이드 전환 시 비활성 p5 인스턴스는 자동 `noLoop()` 일시정지 → 활성 시 `loop()` 재개 (CPU 절약)

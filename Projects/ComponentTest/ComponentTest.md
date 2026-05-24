@@ -63,19 +63,21 @@ release_date: 2026-05-24
 ## p5 — Bouncing Ball (자동 움직임 시뮬레이션)
 
 ```p5
-let x, y, vx, vy;
+let x, y, vx, vy, r;
 p.setup = function() {
-  p.createCanvas(600, 320);
-  x = 300; y = 160; vx = 4; vy = 3;
+  p.createCanvas(el.clientWidth, el.clientHeight);
+  r = 30;
+  x = p.width / 2; y = p.height / 2;
+  vx = 5; vy = 4;
 };
 p.draw = function() {
   p.background('#1a1a2e');
   p.noStroke();
   p.fill('#4ec9b0');
-  p.ellipse(x, y, 40, 40);
+  p.ellipse(x, y, r * 2, r * 2);
   x += vx; y += vy;
-  if (x < 20 || x > 580) vx = -vx;
-  if (y < 20 || y > 300) vy = -vy;
+  if (x < r || x > p.width - r) vx = -vx;
+  if (y < r || y > p.height - r) vy = -vy;
 };
 ```
 
@@ -86,18 +88,19 @@ p.draw = function() {
 ```p5
 let trail = [];
 p.setup = function() {
-  p.createCanvas(600, 320);
+  p.createCanvas(el.clientWidth, el.clientHeight);
 };
 p.draw = function() {
   p.background(20, 20, 40, 60);
   trail.push({ x: p.mouseX, y: p.mouseY });
-  if (trail.length > 40) trail.shift();
+  if (trail.length > 60) trail.shift();
   p.noStroke();
   for (let i = 0; i < trail.length; i++) {
     const t = trail[i];
     const a = p.map(i, 0, trail.length, 30, 255);
+    const sz = p.map(i, 0, trail.length, 6, 24);
     p.fill(78, 201, 176, a);
-    p.ellipse(t.x, t.y, 14, 14);
+    p.ellipse(t.x, t.y, sz, sz);
   }
 };
 ```
@@ -109,14 +112,15 @@ p.draw = function() {
 ```p5
 let parts = [];
 p.setup = function() {
-  p.createCanvas(600, 320);
-  for (let i = 0; i < 60; i++) {
+  p.createCanvas(el.clientWidth, el.clientHeight);
+  const n = Math.max(80, Math.floor(p.width * p.height / 8000));
+  for (let i = 0; i < n; i++) {
     parts.push({
       x: p.random(p.width),
       y: p.random(p.height),
-      vx: p.random(-1.5, 1.5),
-      vy: p.random(-1.5, 1.5),
-      r: p.random(4, 12),
+      vx: p.random(-2, 2),
+      vy: p.random(-2, 2),
+      r: p.random(4, 14),
     });
   }
 };
