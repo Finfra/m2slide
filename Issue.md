@@ -26,25 +26,31 @@
 
 # 🚧 진행중
 
-## Issue229. default 테마에 sub-chapter(`_chapter`) layout 추가 — chapter divider page (등록: 2026-05-24)
-* 목적: chapter divider 슬라이드(메인 챕터 제목 + 하위 sub-section 목록 표시)는 default_lec에 `4.2.chapter.html` + `.layout-chapter` CSS 있으나 default 테마에는 부재. `theme: default` 프로젝트가 chapter divider 슬라이드 생성 불가. default에도 동일 layout 추가 (디자인은 default 미니멀 톤 — typography·divider 위주, 배경 이미지 없음)
-* 상세:
-    - default_lec `_chapter` 슬롯 구조(header + chapter-title + divider + content) 차용
-    - default 색 변수(`--m2-accent-1`) + 단순 divider line + 큰 제목
-    - underscore form `_chapter.html` 작성 시 `chapter`·`_chapter` 양쪽 메타 자동 alias 등록(generate-slides.js)
-* 구현 명세:
-    - 신규: `theme/default/layouts/_chapter.html` (default_lec `4.2.chapter.html` 슬롯 동일)
-    - 수정: `theme/default/slide.css` — `.layout-chapter` 계열 CSS 추가 (미니멀)
-    - 검증: `Projects/m2SlideStyle1_single`에 `#layout-chapter` 슬라이드 추가 → `./m2slide.sh m2SlideStyle1_single` → HTML 직접 검증 → AppleScript Chrome 진입
-    - default_lec은 이미 `4.2.chapter.html` 보유 — 추가 작업 없음
-* 카테고리: Theme
-
 
 # 📕 중요
 
 # 📙 일반
 
 # ✅ 완료
+
+
+## Issue229. default 테마에 sub-chapter(`_chapter`) layout 추가 — chapter divider page (등록: 2026-05-24, 해결: 2026-05-24, commit: 6ed4ca8) ✅
+* 목적: chapter divider 슬라이드(메인 챕터 제목 + 하위 sub-section 목록 표시)는 default_lec에 `4.2.chapter.html` + `.layout-chapter` CSS 있으나 default 테마에는 부재. `theme: default` 프로젝트가 chapter divider 슬라이드 생성 불가. default에도 동일 layout 추가 (디자인은 default 미니멀 톤 — typography·divider 위주, 배경 이미지 없음)
+* 상세:
+    - default_lec `_chapter` 슬롯 구조(header + chapter-title + divider + content) 차용
+    - default 색 변수(`--m2-accent-1`) + 단순 divider line + 큰 제목
+    - underscore form `_chapter.html` 작성 시 `chapter`·`_chapter` 양쪽 메타 자동 alias 등록(generate-slides.js)
+* 구현 (6ed4ca8):
+    - 신규: `theme/default/layouts/_chapter.html` — chapter-header(title) + chapter-body(content) 슬롯. 빈 self-closing div(`<div class="chapter-divider"></div>`)는 빌더가 제거하므로 CSS `::after` pseudo-element로 divider line 그리기
+    - 수정: `theme/default/slide.css` — 파일 끝에 `.layout-chapter`·`.layout-_chapter` 블록 추가. flex 중앙정렬 + chapter-title(2.6em bold) + chapter-header::after(60% width 4px accent line) + chapter-body(72% max-width, accent border 박스). `--m2-accent-1` 변수 상속
+    - 정리: 기존 깨진 chapter CSS(line 441-458, `../theme-img/finfraPuffer2.png` 폴더 부재) 제거
+    - default_lec은 기존 `4.2.chapter.html` + `.layout-chapter` CSS 유지 (회귀 0)
+* 검증 (6ed4ca8):
+    - 빌드: `./m2slide.sh m2SlideStyle1_single` 성공 (36 section)
+    - HTML 직접 확인: `slide/index.html:1511` `<section data-slide-hash="#/3" class="layout-chapter">` 정상 + chapter-header/chapter-title/chapter-body 슬롯 모두 매핑
+    - Chrome AppleScript 진입 (`file:///.../slide/index.html?fwd=1#/3`) 시각 확인
+    - default_lec 회귀: layouts/4.2.chapter.html + slide.css `.layout-chapter` 6건 grep 일치
+* 카테고리: Theme
 
 
 ## Issue223. `open-slide` 스킬 신규 — 임의 슬라이드 자동 진입 + Chrome 포커스 강제 (등록: 2026-05-24, 해결: 2026-05-24, commit: b72c7dc) ✅
