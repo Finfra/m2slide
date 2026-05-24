@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 216
+* Issue HWM: 217
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -26,23 +26,31 @@
 
 # 🚧 진행중
 
-## Issue215. ESC overview 모드 슬라이드 1개만 표시 회귀 — Issue109 overflow:visible 복합 회귀 (등록: 2026-05-24)
-* 목적: ESC 키로 overview 모드 진입 시 챕터 슬라이드 27장이 모두 같은 좌표에 겹쳐 1장처럼 보임. aTest 04-htmlart.html에서 재현. reveal.js overview 그리드 정상 표시 복구.
+## Issue217. ppt2m2slide chapter 검출 H1-only 한계 + agenda 확정 전 사용자 컨펌 의무화 (등록: 2026-05-24)
+* 목적: `ppt2m2slide`가 pptx2md 산출물의 챕터 구조를 H1(`#`) 카운트만으로 판정하여, pptx2md가 챕터·슬라이드 제목을 모두 H2(`##`)로 변환하는 일반 케이스에서 chapter mode 진입 실패. `Projects/BasicKnowledgeForAI`(202장, 13개 `## 부록N` 챕터)가 single mode로 떨어져 2720줄 단일 .md 생성. 다중 챕터 PPT는 거의 모두 동일 문제 재발 예상. mode 자동 판정 + 사용자 컨펌 없는 통과를 차단.
 * 상세:
-    - 재현: `open Projects/aTest/slide/04-htmlart.html` → ESC → 중앙에 단일 슬라이드만 표시 (실제는 27 sections 모두 렌더되나 시각적으로 겹침)
-    - 원인1: `lib/css/base.css:219-230` (Issue109, commit `7907b62`) — `html, body, .reveal, .reveal .slides` 에 `overflow: visible !important` 강제. reveal.js overview 모드는 `.slides` 의 `overflow: hidden` + translate3d 그리드 배치에 의존하므로 클립 규약 깨짐.
-    - 원인2: `Theme/default/slide.css:85-87` — 모든 `[class*="layout-"]` section에 `min-height: 100% !important`. overview 모드에서 각 section이 풀사이즈(1920×1280) 유지된 채 translate3d 좌표로 이동 → 같은 좌표 근처에 모두 적층.
-    - 영향: 모든 챕터·프로젝트의 ESC overview 사용 불가
-    - 비회귀 보존: Issue109 의도(슬라이드 transition을 outer padding 영역까지 가시화)는 normal 모드에서 유지되어야 함
+    - 원인1: `data/ppt2m2slide/heuristics.yml mode_decision.chapter.require_h1_count: 2` 만 본다. H2 numbered prefix(`부록N`, `Chapter N`, `Part N`, `N.`, `섹션N`) 미검출
+    - 원인2: `.claude/agents/ppt2m2slide.md` Step 6 — mode 자동 판정 결과를 사용자에게 보여주지 않고 그대로 산출물 생성. 체크포인트 2는 매핑 검토만, mode 변경 기회 없음
+    - 원인3: `.claude/agents/agenda-designer.md` 동일 — single↔chapter 판정 모호 시 사용자 컨펌 미강제
+    - 영향: 본 변환 시 BasicKnowledgeForAI 같이 다중 챕터 자료가 single mode로 전락 → 사용자가 수동 분할 필요 (회피 비용 큼)
 * 구현 명세:
-    - 후보1 단독 적용: `lib/css/base.css` 에 `.reveal.overview, .reveal.overview .slides { overflow: hidden !important; }` 추가 — overview 진입 시만 클립 복구
-    - 검증 프로젝트: `aTest` (전체 챕터 5개 ESC), `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`
-    - 회귀 검증: 일반 모드 슬라이드 transition outer padding 가시화(Issue109) 유지, 챕터 ↑/→ 네비게이션 정상
-    - 가드 준수: `lib/css/base.css` 는 base.css 수정 가드 대상 — CSS 금지 속성(`display`, `height`, `position`, `transform`) 미변경 (overflow만 조정)
-* 카테고리: Theme (CSS)
+    - 수정: `data/ppt2m2slide/heuristics.yml`
+        - `mode_decision`에 `chapter_marker_patterns` 추가 (H2 numbered prefix regex 목록: `^##\s+(부록|챕터|Chapter|Part|Section|섹션)\s*\d+`, `^##\s+\d+\.\s+\S+` 등)
+        - chapter 후보 카운트: H1 카운트 + chapter_marker_patterns 매칭 H2 카운트
+        - `checkpoint_messages.step6_mode` 신규 — mode 자동 판정 + 검출 boundary 목록을 표시·컨펌
+    - 수정: `.claude/agents/ppt2m2slide.md` Step 6
+        - mode 자동 판정 직후 `AskUserQuestion` 무조건 호출 (chapter list 미리보기 + single/chapter 선택)
+        - `--no-checkpoint` 플래그도 mode 컨펌만은 우회 금지 (산출물 구조 결정은 사용자만)
+    - 수정: `.claude/agents/agenda-designer.md`
+        - 동일 패턴 — 모호 시 detected boundary list 표시 + 사용자 컨펌
+    - 신규: `data/agenda-designer/patterns.yml`에 `chapter_marker_patterns` 항목 추가 (ppt2m2slide와 공유)
+    - 재처리: `Projects/BasicKnowledgeForAI`를 chapter mode로 재변환 (별도 ops 작업, 본 이슈 후속)
+* 카테고리: Generator (agent 데이터-주도)
+* 후속: Issue214 (ppt2m2slide 본 변환 — 본 이슈 완료 후 진행)
 
 ## Issue214. ppt2m2slide 에이전트 설계 — 기존 PPT를 m2slide 프로젝트로 역변환 (등록: 2026-05-24)
 * 목적: m2slide가 미완성이라 그동안 m2slide → PPT export → PPT 수정 → 발표 워크플로우로 작업했음. PPT 수정분이 m2slide로 환류되지 않아 매번 같은 PPT 작업을 반복. 기존 PPT(.pptx)를 m2slide 프로젝트(`Projects/<Name>/`)로 역변환하는 agent를 신설하여 PPT 자산을 m2slide 카탈로그로 흡수. 여러 PPT 변환 누적 시 m2slide 카탈로그가 풍부해져 발표 가능 임계점에 빠르게 도달.
+* depends: Issue217
 * plan: `_doc_work/plan/ppt2m2slide_plan.md`
 * task: `_doc_work/tasks/ppt2m2slide_task.md`
 * 상세:
@@ -69,6 +77,19 @@
 # 📙 일반
 
 # ✅ 완료
+
+## Issue215. ESC overview 모드 슬라이드 1개만 표시 회귀 — Issue109 overflow:visible 복합 회귀 (등록: 2026-05-24, 해결: 2026-05-24, commit: df96409) ✅
+* 목적: ESC 키로 overview 모드 진입 시 챕터 슬라이드 27장이 모두 같은 좌표에 겹쳐 1장처럼 보임. aTest 04-htmlart.html에서 재현. reveal.js overview 그리드 정상 표시 복구.
+* 변경:
+    - `lib/css/base.css`: `.reveal.overview, .reveal.overview .slides { overflow: hidden !important; }` 추가 — overview 진입 시만 클립 복구 (이슈 명세 후보1)
+    - `lib/css/base.css`: `.reveal.overview .slides section, .reveal.overview .slides section[class*="layout-"] { min-height: 0 !important; max-height: none !important; }` 추가 — theme `min-height:100%` 강제로 overview 모드 풀사이즈 적층되던 회귀 차단 (원인2 대응)
+    - `lib/css/base.css`: `media-enlarge-height/fit` 전역 `display:flex !important`를 `section.present` 한정으로 좁힘 — 비활성 슬라이드의 reveal.js inline `display:none` 덮어쓰기 차단 (cross-page 잔상 방지, 동반 발견)
+* 검증:
+    - aTest 04-htmlart 27 sections — overview ON 시 grid 분산(x좌표 -67k~+68k, 340×227 thumbnail) playwright evaluate 확인
+    - overview OFF 시 `.slides`·`.reveal`·`body` overflow `visible` 유지(Issue109 outer padding 가시화 의도 보존)
+    - aTest + m2Slide + graphify + LlmAndVibeCoding 빌드 정상, base.css 산출물 inline 반영 확인
+* 가드 준수: `base.css` 수정 가드 — `display`·`height`·`position`·`transform` 금지 속성 미변경 (overflow + min/max-height만 조정, overview 한정 셀렉터)
+* 카테고리: Theme (CSS)
 
 ## Issue216. p5.js 슬라이드 진입 시 캔버스 크기 깨짐 — `renderAll`이 비활성 슬라이드까지 사전 렌더 (등록: 2026-05-24, 해결: 2026-05-24, commit: 3db86ef) ✅
 * 목적: `p5` 컴포넌트가 포함된 슬라이드를 네비게이션으로 진입하면 캔버스가 가로 막대·세로 막대·정사각 등 비정상 크기로 표시됨. 해당 슬라이드 URL(`#/14`)로 새로고침하면 정상. p5 캔버스 내부 픽셀 크기를 슬라이드가 실제로 가시화된 시점의 컨테이너 크기로 결정하도록 디스패처 초기화 시점을 lazy로 전환.
