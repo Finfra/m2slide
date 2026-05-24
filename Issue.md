@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 213
+* Issue HWM: 216
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -26,13 +26,59 @@
 
 # 🚧 진행중
 
+## Issue215. ESC overview 모드 슬라이드 1개만 표시 회귀 — Issue109 overflow:visible 복합 회귀 (등록: 2026-05-24)
+* 목적: ESC 키로 overview 모드 진입 시 챕터 슬라이드 27장이 모두 같은 좌표에 겹쳐 1장처럼 보임. aTest 04-htmlart.html에서 재현. reveal.js overview 그리드 정상 표시 복구.
+* 상세:
+    - 재현: `open Projects/aTest/slide/04-htmlart.html` → ESC → 중앙에 단일 슬라이드만 표시 (실제는 27 sections 모두 렌더되나 시각적으로 겹침)
+    - 원인1: `lib/css/base.css:219-230` (Issue109, commit `7907b62`) — `html, body, .reveal, .reveal .slides` 에 `overflow: visible !important` 강제. reveal.js overview 모드는 `.slides` 의 `overflow: hidden` + translate3d 그리드 배치에 의존하므로 클립 규약 깨짐.
+    - 원인2: `Theme/default/slide.css:85-87` — 모든 `[class*="layout-"]` section에 `min-height: 100% !important`. overview 모드에서 각 section이 풀사이즈(1920×1280) 유지된 채 translate3d 좌표로 이동 → 같은 좌표 근처에 모두 적층.
+    - 영향: 모든 챕터·프로젝트의 ESC overview 사용 불가
+    - 비회귀 보존: Issue109 의도(슬라이드 transition을 outer padding 영역까지 가시화)는 normal 모드에서 유지되어야 함
+* 구현 명세:
+    - 후보1 단독 적용: `lib/css/base.css` 에 `.reveal.overview, .reveal.overview .slides { overflow: hidden !important; }` 추가 — overview 진입 시만 클립 복구
+    - 검증 프로젝트: `aTest` (전체 챕터 5개 ESC), `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest`
+    - 회귀 검증: 일반 모드 슬라이드 transition outer padding 가시화(Issue109) 유지, 챕터 ↑/→ 네비게이션 정상
+    - 가드 준수: `lib/css/base.css` 는 base.css 수정 가드 대상 — CSS 금지 속성(`display`, `height`, `position`, `transform`) 미변경 (overflow만 조정)
+* 카테고리: Theme (CSS)
+
+## Issue214. ppt2m2slide 에이전트 설계 — 기존 PPT를 m2slide 프로젝트로 역변환 (등록: 2026-05-24)
+* 목적: m2slide가 미완성이라 그동안 m2slide → PPT export → PPT 수정 → 발표 워크플로우로 작업했음. PPT 수정분이 m2slide로 환류되지 않아 매번 같은 PPT 작업을 반복. 기존 PPT(.pptx)를 m2slide 프로젝트(`Projects/<Name>/`)로 역변환하는 agent를 신설하여 PPT 자산을 m2slide 카탈로그로 흡수. 여러 PPT 변환 누적 시 m2slide 카탈로그가 풍부해져 발표 가능 임계점에 빠르게 도달.
+* plan: `_doc_work/plan/ppt2m2slide_plan.md`
+* task: `_doc_work/tasks/ppt2m2slide_task.md`
+* 상세:
+    - PPT 슬라이드 → markdown 슬라이드(`---` 구분자) 변환
+    - PPT layout → m2slide layout 매핑 (`#layout-*` 디렉티브)
+    - PPT SmartArt → m2slide htmlart 변환 시도. 매핑 실패 시 `data/_proposals/`로 신규 type 후보 분리
+    - PPT 차트/임베디드 미디어 → m2slide component (chart/model3d/video) 또는 img/ 자산
+    - PPT theme 색상 → palette 매칭. 실패 시 `_proposals/`로 신규 팔레트 후보
+    - chapter mode (AGENDA.md + 다중 .md) / single mode 자동 판정
+    - 사용자 검토 체크포인트 3개 (메타 수집 후 / 매핑 후 / 빌드 직전)
+* 구현 명세:
+    - 신규: `.claude/agents/ppt2m2slide.md` (info-filler/agenda-designer 데이터-주도 패턴 차용, model: opus, tools: Read/Write/Edit/Bash/Glob)
+    - 신규: `data/ppt2m2slide/{heuristics,mappings}.yml` 외부화 카탈로그
+    - 신규: `_doc_arch/ppt2m2slide.md` 영속 설계 SSOT (Mermaid 흐름도)
+    - 신규: `.claude/commands/ppt2m2slide.md` 슬래시 진입점 (`/ppt2m2slide <pptx> [name] [--mode] [--no-checkpoint]`)
+    - 수정: `_doc_arch/authoring-pipeline.md` reverse-pipeline 한 줄 추가
+    - 미수정: `lib/generate-slides.js` 등 빌드 파이프라인, 기존 카탈로그 (`data/htmlart/types.yml` 등)
+    - 책임 분리: pptx2md 글로벌 스킬은 raw 추출만, m2slide 의미론 매핑은 ppt2m2slide 단독
+    - 자동 머지 금지: `_proposals/` 산출물은 항상 사용자 승인 후 수동 머지
+* 카테고리: Generator + Project + Build
+
 # 📕 중요
 
 # 📙 일반
 
-# 📗 선택
-
 # ✅ 완료
+
+## Issue216. p5.js 슬라이드 진입 시 캔버스 크기 깨짐 — `renderAll`이 비활성 슬라이드까지 사전 렌더 (등록: 2026-05-24, 해결: 2026-05-24, commit: 3db86ef) ✅
+* 목적: `p5` 컴포넌트가 포함된 슬라이드를 네비게이션으로 진입하면 캔버스가 가로 막대·세로 막대·정사각 등 비정상 크기로 표시됨. 해당 슬라이드 URL(`#/14`)로 새로고침하면 정상. p5 캔버스 내부 픽셀 크기를 슬라이드가 실제로 가시화된 시점의 컨테이너 크기로 결정하도록 디스패처 초기화 시점을 lazy로 전환.
+* 변경:
+    - `lib/component-hooks/p5_dispatch.js` `renderAll()` 함수 제거 — 비활성 슬라이드(display:none/off-screen) 사전 렌더 시 `el.clientWidth/clientHeight` 가 0/부정확값 반환 → `p.createCanvas(0,0)` 으로 캔버스 내부 픽셀 크기가 잘못 고정되던 문제 차단
+    - `Reveal.on('ready')` 핸들러: 현재 슬라이드(`Reveal.getCurrentSlide()`)의 `p5` 컴포넌트만 즉시 `renderP5`. 나머지는 `resumeSlide` 진입 시 lazy render (기존 `if (!el.dataset.rendered) renderP5(el);` 활용)
+    - `resumeSlide`: `fitContainer` + `applyCanvasFit` 이후 `inst.resizeCanvas(el.clientWidth, el.clientHeight)` 추가 — 고정 픽셀 `createCanvas(600, 320)` 패턴 + 컨테이너 크기 변동 동기화 (방어적)
+    - 검증: `aTest_v1/14-simulation.html` 직접 open + ←/→ 네비게이션 진입 두 경로 모두 정상 비율
+* 부수 효과: 첫 로드 시 비활성 슬라이드 p5 인스턴스 생성 비용 사라짐 (CPU 절약)
+* 카테고리: Generator (component-hook)
 
 ## Issue209. htmlArt `workflow` 타입 추가 — 사람 endcap + 단계 박스 체인 (등록: 2026-05-24, 해결: 2026-05-24, commit: 71c382b) ✅
 * 목적: "기획구상 → ... → 결과문서" 형태의 워크플로 패턴을 htmlArt 표준 타입으로 추가. 양 끝에 사람(역할·페르소나) endcap이 있고 중간에 N개의 단계 박스가 배치되는 시각 구조. 기존 `process`는 박스 체인만 표현하고 endcap·페르소나 강조 불가.
