@@ -229,6 +229,21 @@ body {
   overflow: visible !important;
 }
 
+/* Issue215: ESC overview 모드에서 우리 CSS의 size·overflow 강제를 모두 해제.
+   - Issue109 visible 강제 + Issue63 height:100% + theme min-height:100% 결합으로
+     overview 그리드 모드에서 section들이 풀사이즈 적층 또는 viewport 밖 이탈
+   - .reveal.overview 클래스는 ESC 진입 시 reveal.js가 자동 부착
+   - overview 모드에서는 reveal.js 기본 grid 동작에 위임 (우리 강제 해제) */
+.reveal.overview,
+.reveal.overview .slides {
+  overflow: hidden !important;
+}
+.reveal.overview .slides section,
+.reveal.overview .slides section[class*="layout-"] {
+  min-height: 0 !important;
+  max-height: none !important;
+}
+
 /* 개별 슬라이드 섹션
    - Flexbox Column 레이아웃 (공통 패턴 §3에서 display:flex 적용)
    - Issue63 후속 수정: height/max-height/overflow override를 ratio-fill 한정으로 분리.
@@ -382,7 +397,11 @@ body {
 }
 
 /* 3. Height: 높이 최대화 */
-.media-enlarge-height .reveal .slides section {
+/* Issue: `display: flex !important` 가 모든 section 에 적용되면 reveal.js 가 비활성
+   슬라이드에 inline 으로 부여하는 `display: none` 을 덮어서 cross-page 전환 직후
+   다중 슬라이드가 한 프레임 겹쳐 paint 되는 잔상이 발생. `section.present` 한정으로
+   변경하여 활성 슬라이드만 flex 레이아웃을 강제. height/overflow 도 동일 한정. */
+.media-enlarge-height .reveal .slides section.present {
   /* Issue63: 100vh → 100% (parent .slides는 ratio 모드에서 Reveal이 1080px 논리 높이 설정,
      fill 모드에서는 viewport 채움). 100vh는 ratio 모드에서 transform scale 비율 fit을 깨뜨림. */
   height: 100% !important;
@@ -419,7 +438,8 @@ body {
 }
 
 /* 4. Fit: 화면에 꽉 차게 맞춤 (스크롤 없음) */
-.media-enlarge-fit .reveal .slides section {
+/* Issue: `section.present` 한정 (위 height 모드와 동일 사유 — cross-page 잔상 차단) */
+.media-enlarge-fit .reveal .slides section.present {
   /* Issue63: 100vh → 100% (ratio 모드 transform scale 비율 fit 보존, 동일 사유) */
   height: 100% !important;
   display: flex !important;
