@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 225
+* Issue HWM: 227
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -25,6 +25,44 @@
 2. HtmlArtEval cover 슬라이드 제목 우측 끝 빈 박스 렌더 (Issue202 등록 시 동반 발견 — word-break와 별개. `_cover.html` 변수 미치환 또는 frontmatter 빈 값 추정)
 
 # 🚧 진행중
+
+## Issue227. ppt2m2slide·layout-selector 산출물 슬라이드 구분자 `---` 누락 — 챕터 내 모든 H1이 1슬라이드로 병합 (등록: 2026-05-24)
+* 목적: ppt2m2slide reverse-pipeline + layout-selector 단계 6 산출 `.ppt.md`에 슬라이드 구분자 `---` 단독 줄이 부재. `slide-parser.js:334` `content.split(/\n---\n/)`가 `---` 부재 시 전체를 1슬라이드로 처리 → `01-markdown.html`이 16 H1 슬라이드를 1 cover 슬라이드로 합침. agenda 진입 후 챕터 내 슬라이드 navigation 불가.
+* 상세:
+    - 재현: `Projects/BasicKnowledgeForAI/markdown/01-markdown.ppt.md`에 16개 `# 제목` H1 + 각각 `#layout-_contents` directive 있으나 본문 `---` 단독 줄 0개. 빌드 결과 `slide/01-markdown.html` section 카운트 2개 (toc-placeholder + 단일 cover)
+    - 원인1: `lib/slide-parser.js:334` `content.split(/\n---\n/)` — `---` 단독 줄만 슬라이드 분리. H1은 분리 트리거 아님
+    - 원인2: `.claude/agents/ppt2m2slide.md` Step 6-3·`layout-selector.md` 산출 단계에서 `---` 자동 삽입 의무 없음. pptx2md raw output 그대로 사용
+    - 영향: ppt2m2slide로 변환한 모든 프로젝트의 챕터 .md (마크다운에 명시적 `---` 있는 sub-chapter는 정상). 13 챕터 + 17 sub-chapter 중 sub-chapter는 split_subchapters.py로 `---` 정상 삽입되어 무관
+    - 사용자 보고: "다음으로 넘어가지 않는 문제" — agenda → 챕터 진입 후 → 키로 다음 슬라이드 안 감
+* 구현 명세:
+    - 즉시 fix: 기존 `.ppt.md` 13개 (01·02·04·06·07·08·09·10·11·13 챕터, 03/05/12는 축소·sub-chapter로 이관됨)에 H1 사이 `---` 자동 삽입 후처리. 첫 H1 (cover) 직후부터 매 H1 직전에 빈 줄 + `---` + 빈 줄 삽입
+    - 영구 fix:
+        - `.claude/agents/ppt2m2slide.md` Step 6-3에 "H1 단위 슬라이드 분리 시 각 H1 직전(첫 H1 제외)에 `---` 단독 줄 삽입" 룰 추가
+        - `.claude/agents/layout-selector.md`에 `.ppt.md` 생성 시 동일 룰 추가
+    - 검증: 재빌드 후 `01-markdown.html` section 카운트 17 (toc + 16 slides) 확인 + playwright로 navigation 동작 확인
+    - 회귀 검증: 다른 정상 프로젝트(aTest 등) 빌드 결과 section 카운트 변화 없는지 확인
+* 카테고리: Generator + agent (ppt2m2slide / layout-selector)
+
+## Issue226. ESC 키 reveal.js overview 진입 실패 — m2slide custom keydown handler가 ESC intercept (등록: 2026-05-24)
+* 목적: 사용자가 ESC 키를 눌렀을 때 reveal.js 표준 overview 모드 진입이 안 되고 forward navigation(`#/N` → `#/N+1`)으로 처리되는 회귀 해결. 사용자가 "여러 슬라이드 안 보임" 보고 + chrome screenshot에서 1장만 viewport 채우고 다른 sections opacity 0 적층 확인.
+* 상세:
+    - 재현: `Projects/aTest/slide/02-component.html#/2` 진입 후 ESC → URL #/3 변경 + `.reveal.overview` class 미부착 + 다른 sections opacity 0
+    - 진단 (playwright):
+        - `Reveal.toggleOverview(true)` API 호출 → 정상 grid 분산 (32 sections × 340×227 thumbnail viewport 안 분산, hasOverview=true)
+        - `page.keyboard.press('Escape')` native press → hasOverview=false + hash forward navigation only
+        - `Reveal.getConfig().overview === true` (활성)
+        - `Reveal.getConfig().keyboard = {33:null, 34:null, 35:null, 36:null}` (PageUp/PageDown/End/Home 만 null, ESC 27은 native 그대로여야 함)
+    - 즉 m2slide custom keydown handler (`lib/html-builder.js` Reveal.initialize 이후 document.addEventListener('keydown', ..., true) capture phase)가 ESC를 가로채 forward navigation으로 처리하고 reveal.js native ESC handler에 도달 안 함
+    - 영향: 모든 m2slide 데크에서 ESC overview 기능 사용 불가
+    - Issue215 (width number fix)는 적용되어 있어 API 호출 시 overview는 정상. 진입 경로(키 입력)만 차단됨
+* 구현 명세:
+    - 후보1: `lib/html-builder.js`의 keydown handler에서 ESC keyCode 27 검출 시 `Reveal.toggleOverview()` 명시 호출 + `event.preventDefault()` 후 return
+    - 후보2: m2slide custom handler를 capture phase(`true`)에서 bubble phase(`false`)로 변경하여 reveal.js native handler 먼저 실행 (단 다른 키 처리 순서 영향 검토 필요)
+    - 후보3: `Reveal.initialize({ keyboard: { 27: 'toggleOverview' } })` 명시 등록 — 가장 안전
+    - 검증: aTest 02-component.html#/2 진입 후 ESC → `.reveal.overview` class 부착 + sections grid 분산 + 다시 ESC → 일반 모드 복귀
+* 카테고리: Generator (html-builder.js keydown handler)
+* 관련: Issue215 (width number fix), Issue220 (ESC overview thumbnail visibility — 본 이슈 해결 후 Issue220 재검증)
+* 영속: 사용자가 본 chrome screenshot에서 작은 박스 슬라이드 1장 + 다른 슬라이드 숨김 ← ESC 후 forward navigation 결과의 fade-in/out transition 잔상으로 해석. ESC 진짜 overview 진입이면 사용자 화면은 27 thumbnails grid이어야 함
 
 ## Issue225. .ppt.md 빌드 결과 파일명 미일치 — agenda.html cross-page 링크 404 (등록: 2026-05-24)
 * 목적: layout-selector가 생성한 `.ppt.md` 파생본을 빌드하면 `<base>.ppt.html`로 떨어지나 agenda.html 내 cross-page 링크는 원본 `.md` 기준(`<base>.html`)으로 작성됨. 결과적으로 agenda.html에서 다음 챕터 클릭 시 `ERR_FILE_NOT_FOUND`. BasicKnowledgeForAI (ppt2m2slide + layout-selector 출력) 빌드에서 회귀 확인.
@@ -70,34 +108,6 @@
     - claude 자체 "08.5 슬라이드 보여줘" 발화 시 스킬 자동 호출 확인
 * 카테고리: DX (개발자 도구) + Build (스킬 wrapper)
 * 관련: `/run` 커맨드, `apply-verify-rules.md` §4.1
-
-## Issue222. htmlArt cycle 중앙 ↻ 심볼 더블 이스케이프 회귀 — `↻` 6글자 텍스트로 출력 (등록: 2026-05-24)
-* 목적: cycle 도해 중앙에 회전 심볼(↻, U+21BB)이 표시되어야 하나 `↻` 6글자 raw 텍스트가 출력되어 슬라이드를 가리는 시각 회귀. `Projects/aTest_v1/slide/08.1.basic-chain.html?fwd=1#/3`에서 큰 회색 "↻" 텍스트 노출 확인.
-* 상세:
-    - 원인: `lib/component-hooks/htmlart_dispatch.client.js:139` — `.text('\\u21BB')` 더블 이스케이프
-    - 배경: `htmlart_dispatch.js`가 fs.readFileSync로 .client.js를 raw 로드하므로 JavaScript escape는 1회면 충분. 그러나 코드는 `\\u21BB`로 작성되어 실제 문자열이 역슬래시 + u21BB 6글자가 됨. SVG text 노드에 그대로 fill되어 화면 표시
-    - 영향: cycle 타입을 사용하는 모든 슬라이드 회귀 (aTest_v1 08.1·08.2·08.3·08.4·08.5, htmlArtTest 등)
-    - 동일 패턴 점검 필요: 기타 unicode escape 문자열 (있다면)
-* 구현 명세:
-    - 수정: `lib/component-hooks/htmlart_dispatch.client.js:139` — `'\\u21BB'` → `'↻'` (literal) 또는 `'↻'` (single escape). literal이 raw 로드 시 안전 (escape strip 회피 보장)
-    - 빌드 후 검증: cycle 슬라이드의 중앙에 ↻ 심볼이 옅게 표시되고 raw `↻` 텍스트가 사라졌는지 확인
-* 카테고리: Frontend (htmlart 렌더 회귀)
-
-## Issue221. htmlArt nodeBox 영문 long token clip — width cap + overflow-wrap fallback (등록: 2026-05-24)
-* 목적: aTest_v1 08.4 workflow 슬라이드의 "Gemini · NotebookLM"·"Claude In PPT" 박스에서 단일 영문 토큰(`NotebookLM`)이 박스 폭(196px)을 초과하여 좌우 clip 발생. 카드 텍스트 잘림 회귀 해결.
-* 상세:
-    - 재현: `Projects/aTest_v1/slide/08.4.ratio-compare-explain.html#/6`
-    - 원인: `nodeBox`의 titleFs = `min(h*0.30, w*0.21, 44)` → 41px. `word-break:keep-all`로 영문 단일 단어가 분리되지 않아 41px × "NotebookLM"(10자) ≈ 250px > 196px 박스에서 overflow:hidden으로 잘림
-    - 영향: workflow 외 cycle/hierarchy/process/cards 등 nodeBox 사용 모든 htmlArt 타입에서 긴 영문 토큰 동일 회귀 가능성
-* 구현 명세:
-    - `lib/component-hooks/htmlart_dispatch.client.js` nodeBox 수정:
-        - `longestTokenLen(s)` 헬퍼: 공백·`·`·`•`·`-`·`_`·`/`·`|`로 split하여 최장 토큰 글자 수 반환
-        - title width cap: `floor(innerW / (titleTokLen * 0.58))` (0.58em ≈ 영문 sans avg glyph), `titleFs = min(기존, widthCap)`, floor 10px
-        - subs도 동일 cap 적용 (긴 단일 단어 보호)
-        - title/subs 양쪽 div에 `overflow-wrap:anywhere` 추가 — keep-all 유지하면서 long token만 fallback break
-    - 검증: `./m2slide.sh aTest_v1` 빌드 후 08.4 #/6 Firefox로 확인. 박스 안 텍스트 clip 사라지고 폰트 자동 축소됨
-* 카테고리: Frontend (htmlart dispatch) + Generator (nodeBox 공통 헬퍼)
-* 관련: Issue200/201/205 (nodeBox font sizing 히스토리)
 
 ## Issue220. ESC overview 진입 시 thumbnail content 시각적 비표시 — Issue215 잔존 회귀 (등록: 2026-05-24)
 * 목적: Issue215 fix(commit e63c1b3, width/height number 전달) 이후 ESC overview 진입 시 sections 좌표·grid spacing은 정상이나 화면이 비어 보이는 잔존 회귀 해결.
@@ -227,6 +237,38 @@
 # 📙 일반
 
 # ✅ 완료
+
+## Issue221. htmlArt nodeBox 영문 long token clip — width cap + overflow-wrap fallback (등록: 2026-05-24, 해결: 2026-05-24, commit: 1430cc0) ✅
+* 목적: aTest_v1 08.4 workflow 슬라이드의 "Gemini · NotebookLM"·"Claude In PPT" 박스에서 단일 영문 토큰(`NotebookLM`)이 박스 폭(196px)을 초과하여 좌우 clip 발생. 카드 텍스트 잘림 회귀 해결.
+* Root cause:
+    - 재현: `Projects/aTest_v1/slide/08.4.ratio-compare-explain.html#/6`
+    - `nodeBox`의 titleFs = `min(h*0.30, w*0.21, 44)` → 41px. `word-break:keep-all`로 영문 단일 단어가 분리되지 않아 41px × "NotebookLM"(10자) ≈ 250px > 196px 박스에서 overflow:hidden으로 잘림
+    - 영향 범위: workflow 외 cycle/hierarchy/process/cards 등 nodeBox 사용 모든 htmlArt 타입에서 동일 회귀 가능
+* 변경 (lib/component-hooks/htmlart_dispatch.client.js):
+    - `longestTokenLen(s)` 헬퍼 추가 — 공백·`·`·`•`·`-`·`_`·`/`·`|`로 split하여 최장 토큰 글자 수 반환
+    - title width cap: `floor(innerW / (titleTokLen * 0.58))` (0.58em ≈ 영문 sans avg glyph), `titleFs = min(기존, widthCap)`, floor 10px
+    - subs도 동일 cap 적용 (긴 단일 단어 보호)
+    - title/subs 양쪽 div에 `overflow-wrap:anywhere` 추가 — keep-all 유지하면서 long token만 fallback break
+* 동시 적용 (same commit 1430cc0):
+    - `htmlart_dispatch.js`의 1311줄 client script template literal을 `htmlart_dispatch.client.js` 별도 파일로 분리 + `fs.readFileSync` raw 로드 패턴 — Issue222 fix(`↻` literal)의 인프라 기반
+    - Issue222 동시 종결 (commit 묶음 분리 불가)
+* 검증: `./m2slide.sh aTest_v1` 빌드 OK, 08.4 #/6 박스 안 텍스트 clip 사라짐, 폰트 자동 축소됨
+* 카테고리: Frontend (htmlart dispatch) + Generator (nodeBox 공통 헬퍼)
+* 관련: Issue200/201/205 (nodeBox font sizing 히스토리), Issue222 (같은 commit)
+
+## Issue222. htmlArt cycle 중앙 ↻ 심볼 더블 이스케이프 회귀 — `↻` 6글자 텍스트로 출력 (등록: 2026-05-24, 해결: 2026-05-24, commit: 1430cc0) ✅
+* 목적: cycle 도해 중앙에 회전 심볼(↻, U+21BB)이 표시되어야 하나 `↻` 6글자 raw 텍스트가 출력되어 슬라이드를 가리는 시각 회귀. `Projects/aTest_v1/slide/08.1.basic-chain.html?fwd=1#/3`에서 큰 회색 "↻" 텍스트 노출 확인.
+* Root cause:
+    - `lib/component-hooks/htmlart_dispatch.client.js:139` — `.text('\\u21BB')` 더블 이스케이프
+    - `htmlart_dispatch.js`가 fs.readFileSync로 .client.js를 raw 로드하므로 JavaScript escape는 1회면 충분. 그러나 코드는 `\\u21BB`로 작성되어 실제 문자열이 역슬래시 + u21BB 6글자가 됨. SVG text 노드에 그대로 fill되어 화면 표시
+    - 영향: cycle 타입을 사용하는 모든 슬라이드 회귀 (aTest_v1 08.1·08.2·08.3·08.4·08.5, htmlArtTest 등)
+* 변경:
+    - `.text('\\u21BB')` → `.text('↻')` literal로 변경 (raw 로드 환경에서 escape strip 회피)
+* 동시 적용 (same commit 1430cc0):
+    - `.js`/`.client.js` 분리 리팩터링 + Issue221 fix(longestTokenLen + overflow-wrap)
+* 검증: cycle 슬라이드 중앙에 ↻ 정상 표시, raw `↻` 텍스트 사라짐
+* 카테고리: Frontend (htmlart 렌더 회귀)
+* 관련: Issue221 (같은 commit)
 
 ## Issue224. `::: cards` 다수 카드 슬라이드 overflow clip — px 고정값 em 전환 (등록: 2026-05-24, 해결: 2026-05-24, commit: ea777cb, b14f748, 05d25ff, 502015f) ✅
 * 목적: 카드 개수가 많은 슬라이드에서 카드 그리드가 슬라이드 세로 영역을 초과하여 하단이 잘리는 회귀. font_size_auto가 `.theContents` 폰트를 줄여 overflow를 잡으려 하나 카드 박스 크기·간격이 px 고정이라 폰트만 줄어들고 카드 행 높이·열 폭은 그대로 유지되어 잘림이 해소되지 않음. `Projects/aTest/slide/02-component.html?fwd=1#/8` (6 cards 블록) 등에서 재현.
