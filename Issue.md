@@ -34,7 +34,7 @@
 
 # ✅ 완료
 
-## Issue209. htmlArt `workflow` 타입 추가 — 사람 endcap + 단계 박스 체인 (등록: 2026-05-24, 해결: 2026-05-24, commit: TBD) ✅
+## Issue209. htmlArt `workflow` 타입 추가 — 사람 endcap + 단계 박스 체인 (등록: 2026-05-24, 해결: 2026-05-24, commit: 71c382b) ✅
 * 목적: "기획구상 → ... → 결과문서" 형태의 워크플로 패턴을 htmlArt 표준 타입으로 추가. 양 끝에 사람(역할·페르소나) endcap이 있고 중간에 N개의 단계 박스가 배치되는 시각 구조. 기존 `process`는 박스 체인만 표현하고 endcap·페르소나 강조 불가.
 * 변경:
     - `lib/markdown.js` HTMLART_TYPES에 `workflow` 추가 (24종) + 주석 갱신
@@ -45,7 +45,7 @@
 * 단순화 사항: 본 1차 구현은 `{person}`·`{group}`·`{tool}` 메타 파싱 미적용 — 첫·마지막 항목 자동 endcap 규칙으로 대체. 메타 토큰 + 그룹 캡션은 후속 이슈 후보
 * 카테고리: Generator + Asset
 
-## Issue208. htmlArt `compare` 타입 추가 — 2분할 좌우 비교 (등록: 2026-05-24, 해결: 2026-05-24, commit: 83dfe2a + TBD) ✅
+## Issue208. htmlArt `compare` 타입 추가 — 2분할 좌우 비교 (등록: 2026-05-24, 해결: 2026-05-24, commit: 83dfe2a, 71c382b) ✅
 * 목적: 좌우 동등 병렬로 두 영역을 대비하는 슬라이드 패턴을 htmlArt 표준 타입으로 추가. 21종 중 의미·시각이 모두 맞는 타입 없음 — `balance`(시소·무게), `bracket`(그룹 적층), `matrix`(2×2), `venn`(교집합) 모두 불일치. SmartArt 원본 카탈로그의 "Opposing Arrows", "Counterbalance Arrows", "Opposing Ideas" 매핑.
 * 변경:
     - 신규 타입 `compare` (tier v5, smartart_category relationship) — Issue211 작업분(commit 83dfe2a) 동반 흡수 구현
