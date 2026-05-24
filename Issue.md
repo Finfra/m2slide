@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 227
+* Issue HWM: 228
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -25,6 +25,22 @@
 2. HtmlArtEval cover 슬라이드 제목 우측 끝 빈 박스 렌더 (Issue202 등록 시 동반 발견 — word-break와 별개. `_cover.html` 변수 미치환 또는 frontmatter 빈 값 추정)
 
 # 🚧 진행중
+
+## Issue228. agenda.js·html-builder.js cross-page navigation `.ppt.md` 미정규화 — PREV_CHAPTER/NEXT_CHAPTER/subsections lookup 실패 (등록: 2026-05-24)
+* 목적: layout-selector가 `.ppt.md` 파생본 생성 후 빌드 입력이 `.ppt.md`인 케이스에서 `agenda.js`의 `path.basename(fileName, '.md')`가 `.ppt`만 떼고 `02-linux-basic.ppt` 반환 → AGENDA.md 링크 (`./02-linux-basic.md` 기반 `02-linux-basic.html`)와 매칭 실패 → PREV_CHAPTER·NEXT_SIBLING 빈 값 → ← 키 cross-page navigation 시 이전 챕터로 못 가고 agenda fallback. Issue225와 같은 패턴.
+* 상세:
+    - 재현: `02-linux-basic.html#/toc-placeholder`에서 ← → `agenda.html?back=1` (정상 동작 = `01-markdown.html?back=1#/<last>`)
+    - 원인1: `lib/agenda.js:235,210` `path.basename(fileName, '.md')` — `.ppt.md` → `.ppt` 잔존
+    - 원인2: `lib/html-builder.js:258,592` `fileName = path.basename(filePath)` — `.ppt.md` raw 그대로 agenda.js 호출
+    - 결과: `window.PREV_CHAPTER = ''` (빈 값) → keydown handler가 agenda로 fallback
+    - 영향: layout-selector .ppt.md 사용하는 모든 chapter mode 프로젝트 cross-page navigation 전반 (←/→ 챕터간 이동, subsections lookup, sibling 점프)
+* 구현 명세:
+    - 수정: `lib/agenda.js` 상단에 `_baseFromInput(fileName)` helper 추가 — `.ppt.md`/`.md` 둘 다 base 이름 추출
+    - 수정: `lib/agenda.js:210,244` `_getSiblingChapter`·`_getAdjacentChapter`의 `currentHtml` 생성 시 `_baseFromInput(fileName) + '.html'` 사용
+    - 수정: `lib/html-builder.js:258,592` `fileName` 정규화 — `.ppt.md` → `.md` 치환 후 agenda.js 함수에 전달 (downstream getSubsections/getParentPage regex도 일관 동작)
+    - 검증: playwright로 ← 키 cross-page 이동 확인 (`02-linux-basic.html#/toc-placeholder` → `01-markdown.html?back=1`)
+    - 회귀 검증: 다른 정상 프로젝트(aTest 등) 빌드 결과 cross-page 동작 영향 없는지 확인
+* 카테고리: Generator + Build
 
 ## Issue227. ppt2m2slide·layout-selector 산출물 슬라이드 구분자 `---` 누락 — 챕터 내 모든 H1이 1슬라이드로 병합 (등록: 2026-05-24)
 * 목적: ppt2m2slide reverse-pipeline + layout-selector 단계 6 산출 `.ppt.md`에 슬라이드 구분자 `---` 단독 줄이 부재. `slide-parser.js:334` `content.split(/\n---\n/)`가 `---` 부재 시 전체를 1슬라이드로 처리 → `01-markdown.html`이 16 H1 슬라이드를 1 cover 슬라이드로 합침. agenda 진입 후 챕터 내 슬라이드 navigation 불가.
@@ -89,63 +105,6 @@
 * 관련: `/run` 커맨드, `apply-verify-rules.md` §4.1
 
 
-## Issue219. htmlArt `callout` 타입 추가 — 중앙 hub + 다방향 callout arrow (등록: 2026-05-24)
-* 목적: 사용자 제공 이미지 2장(중앙 hub + 방사 callout arrow + 라벨) 기반 신규 htmlArt 타입. 강의·소개 슬라이드에서 핵심 주제(중앙) + 부연·태그 그룹(방사 라벨)을 박스 없이 fan-out 으로 표현하는 패턴이 흔함. 기존 `explain`(좌·우 column 풀이)·`radial`(중심 박스+스포크 박스)·`annotate`(원문 span 주해)로는 표현 불가 — 짧은 화살표 + 다방위 자유 분산 + 라벨 색 분리(강조/태그) 패턴이 모두 부재.
-* plan: (단순/중간 — plan 파일 생략)
-* 상세:
-    - 입력: 첫 항목 = 중앙 hub (아이콘 토큰 `:fa-*:` 또는 emoji 1자 첫 부분 자동 파싱). 나머지 = branch (작성 순서 = 배치 순서)
-    - 라벨 강조: `**볼드**` branch → accent-1(primary), 일반 → accent-2(secondary)
-    - 태그 그룹: 라벨 안 `|` 또는 ` / ` sep → 토큰 사이 옅은 vertical bar
-    - orientation 옵션(Pandoc attribute): `{.h}`/`{.horizontal}`(기본, 가로 stem) · `{.v}`/`{.vertical}`(세로) · `{.fan}`(이미지 2 형태, 상반원 부채꼴)
-    - 권장 branch 수: 2-6
-    - graceful degradation: JS 미동작 시 `<ul>` 그대로 노출 (다른 htmlArt 타입과 동일)
-    - 참고 명세: `_doc_work/refs/htmlart-callout-reference.md` (이미지 2장 구조·시각 SSOT)
-* 구현 명세:
-    - `lib/markdown.js`: `HTMLART_TYPES` Set에 `callout` 추가
-    - `data/htmlart/types.yml`: tier `v7` 신규 또는 ext 추가. signal_ko `["중앙 주제", "방사 라벨", "콜아웃", "주제+태그"]`, signal_en `["callout", "annotation hub"]`. decision_table에 specific 위치 등재
-    - `lib/component-hooks/htmlart_dispatch.client.js`: `renderCallout(el)` 추가 + dispatch case 매핑
-        - 입력 파싱: 첫 항목에서 `:fa-([\w-]+):` 토큰 분리 → icon slot, 나머지 텍스트 = title
-        - `**bold**` 감지 → accent-1 class, 미감지 → accent-2
-        - orientation 클래스(`data-orientation`)에 따라 분산 좌표 계산
-        - branch path: hub edge → 짧은 stem(stub) → arrow head, 끝에 박스 없는 텍스트
-        - 태그 sep(`|` 또는 ` / `) → `<span class="ha-tag-sep">|</span>` 삽입
-    - `lib/__tests__/markdown.test.js`: callout 케이스 추가 (24종 → 25종 갱신)
-    - `_doc_arch/htmlArt.md`: v7 섹션 추가, 타입 25종 표·통계·카테고리 매핑 갱신
-    - `Projects/htmlArtTest/htmlArtTest.md` 또는 신규 슬라이드: callout 데모 3종 (horizontal·fan·vertical)
-* 검증:
-    - `node --test lib/__tests__/markdown.test.js`
-    - `./m2slide.sh htmlArtTest` 빌드 + Firefox 검증
-* 카테고리: Frontend + Generator
-* 후속: ppt2m2slide(Issue214) SmartArt 매핑에 PowerPoint "Callout"/"Radial Callout" → `callout` 추가
-
-## Issue218. htmlArt `bend_process` 타입 추가 — N단계 줄바꿈 serpentine 흐름 (등록: 2026-05-24)
-* 목적: PowerPoint SmartArt "Bending Process"(휘어지는 프로세스) 대응. 단계 수가 많아 한 줄에 다 못 담길 때 행 끝에서 곡선으로 다음 줄로 꺾어 역방향으로 이어지는 N단계 흐름. 기존 `process`(가로 직선 1행)·`step`(계단)·`workflow`(사람+박스)로 표현 불가. 강의·튜토리얼 PPT에 흔히 등장(7단계 작업 사이클, 학습 로드맵 등)하므로 ppt2m2slide(Issue214) 매핑 후보로도 필수.
-* 상세:
-    - 입력: 평면 리스트 — 최상위 항목 = 단계, 작성 순서 = 진행 순서
-    - sublevel: 하위 들여쓰기 = 단계 라벨/보조 설명 (예: "스킬, GEM, GPTS", "대화로 진행", "가장 오래 걸림")
-    - visual: 번호 원(circle) + 라벨, 행 끝에서 곡선으로 다음 줄, 역방향 진행 (serpentine)
-    - 권장 단계 수: 4-12 (3 이하면 `process` 권장, 13 이상이면 `timeline` 권장)
-    - 옵션: 단계 비활성(회색) 표시 — 작성 시 별도 디렉티브 또는 prefix(`~~`)로 표시 검토
-    - 단계 간 transition 라벨(보조 설명) 지원 — sublevel 첫 줄을 라벨로, 나머지를 단계 본문으로 분리하는 방식 검토
-    - 참고 이미지: `_doc_work/capture/issue218/` (7단계 + 5단계 샘플)
-* 구현 명세:
-    - 신규: `data/htmlart/types.yml`에 `bend_process` 항목 추가 (tier: v3 또는 v6 워크플로와 동일 tier)
-        - smartart_category: process
-        - signal 추가: signal_kr `["휘어지는 프로세스", "꺾이는 흐름", "여러 줄 단계", "serpentine"]`, signal_en `["bending process", "serpentine", "wrap process", "multi-row steps"]`
-        - matcher: `process` 보다 우선순위 낮게(특정 signal 명시 시만 발동). 미명시 + 단계 수 ≥ 7이면 자동 추천 검토
-    - 신규: `data/htmlart/smartart-catalog.yml` 매핑에 PowerPoint "Bending Process" → `bend_process` 추가
-    - 신규: `lib/component-hooks/htmlart_dispatch.js` (또는 htmlart 렌더 모듈)에 `bend_process` 케이스 — d3 기반:
-        - 컨테이너 폭 기준 한 행 단계 수(N_per_row) 자동 계산 (단계 박스 최소 폭 기준)
-        - 행별 좌→우, 우→좌 교대 배치
-        - 행 끝에서 `d3.path().arcTo()` 또는 cubic-bezier로 곡선 연결
-        - 비활성 단계(회색) 옵션 처리
-        - 사이 라벨 텍스트 배치 (라인 위)
-    - 신규: 테스트 프로젝트 `Projects/htmlartTest`(또는 기존)에 bend_process 샘플 슬라이드 추가
-    - 수정: `_doc_arch/htmlart.md` 또는 관련 설계 문서에 bend_process 항목 추가
-    - 미수정: 기존 htmlart 타입 렌더 로직
-* 카테고리: Frontend + Generator (htmlart 카탈로그 확장)
-* 후속: Issue214 ppt2m2slide의 SmartArt 매핑 카탈로그가 본 타입을 자동 활용
-
 ## Issue217. ppt2m2slide chapter 검출 H1-only 한계 + agenda 확정 전 사용자 컨펌 의무화 (등록: 2026-05-24)
 * 목적: `ppt2m2slide`가 pptx2md 산출물의 챕터 구조를 H1(`#`) 카운트만으로 판정하여, pptx2md가 챕터·슬라이드 제목을 모두 H2(`##`)로 변환하는 일반 케이스에서 chapter mode 진입 실패. `Projects/BasicKnowledgeForAI`(202장, 13개 `## 부록N` 챕터)가 single mode로 떨어져 2720줄 단일 .md 생성. 다중 챕터 PPT는 거의 모두 동일 문제 재발 예상. mode 자동 판정 + 사용자 컨펌 없는 통과를 차단.
 * 상세:
@@ -197,6 +156,29 @@
 # 📙 일반
 
 # ✅ 완료
+
+## Issue219. htmlArt `callout` 타입 추가 — 중앙 hub + 다방향 callout arrow (등록: 2026-05-24, 해결: 2026-05-24, commit: 596d564) ✅
+* 목적: 사용자 제공 이미지 2장(중앙 hub + 방사 callout arrow + 라벨) 기반 신규 htmlArt 타입. 강의·소개 슬라이드에서 핵심 주제(중앙) + 부연·태그 그룹(방사 라벨)을 박스 없이 fan-out 으로 표현하는 패턴 — 기존 `explain`·`radial`·`annotate`로 표현 불가하던 짧은 화살표 + 다방위 자유 분산 + 라벨 색 분리 패턴 충족.
+* 구현:
+    - `lib/markdown.js`: `HTMLART_TYPES` Set에 `callout` 추가 + orientation attr(`.h`/`.v`/`.fan`) → `data-orientation` 전파
+    - `data/htmlart/types.yml`: tier v7 신규. signal_ko/en, decision_table 등재
+    - `lib/component-hooks/htmlart_dispatch.client.js`: `renderCallout(el)` (선행 1430cc0 분리). 아이콘 토큰 `:fa-*:` 파싱, `**bold**` accent-1/일반 accent-2, 태그 sep(`|`/` / `) 처리, orientation별 분산 좌표
+    - `lib/__tests__/markdown.test.js`: callout 케이스 4종 추가 (25종 갱신)
+* 검증: `node --test lib/__tests__/markdown.test.js` → 55 pass / 0 fail
+* 카테고리: Frontend + Generator
+* 후속: ppt2m2slide(Issue214) SmartArt 매핑 카탈로그가 본 타입을 자동 활용
+
+## Issue218. htmlArt `bend_process` 타입 추가 — N단계 줄바꿈 serpentine 흐름 (등록: 2026-05-24, 해결: 2026-05-24, commit: 596d564) ✅
+* 목적: PowerPoint SmartArt "Bending Process"(휘어지는 프로세스) 대응. 단계 수가 많아 한 줄에 못 담길 때 행 끝에서 곡선으로 꺾어 역방향 이어지는 N단계 흐름. 기존 `process`·`step`·`workflow`로 표현 불가하던 multi-row serpentine 패턴 충족. ppt2m2slide(Issue214) SmartArt 매핑 후보로도 필수.
+* 구현:
+    - `data/htmlart/types.yml`: `bend_process` 항목 추가 (smartart_category: process, signal_ko/en, decision_table에서 `process`보다 우선순위 낮게 등재)
+    - `data/htmlart/smartart-catalog.yml`: PowerPoint "Bending Process" → `bend_process` 매핑
+    - `lib/markdown.js`: `HTMLART_TYPES` Set에 `bend_process` 추가
+    - `lib/component-hooks/htmlart_dispatch.client.js`: `renderBendProcess` (선행 1430cc0 분리). 컨테이너 폭 기준 N_per_row 자동 계산, 행별 좌↔우 교대 배치, 곡선 연결
+    - `lib/__tests__/markdown.test.js`: 타입 카운트 갱신
+* 검증: `node --test lib/__tests__/markdown.test.js` → 55 pass / 0 fail
+* 카테고리: Frontend + Generator (htmlart 카탈로그 확장)
+* 후속: Issue214 ppt2m2slide의 SmartArt 매핑 카탈로그가 본 타입을 자동 활용
 
 ## Issue220. ESC overview thumbnail 1장만 표시 회귀 — `.reveal.overview .slides { overflow:hidden }` clip (등록: 2026-05-24, 해결: 2026-05-24, commit: dd6b009) ✅
 * 목적: ESC overview에서 모든 슬라이드 thumbnail이 정상 grid + 본문 가시 표시되도록 회귀 해결. 사용자 화면에서 ESC 누르면 thumbnail 1장만 viewport에 보이고 나머지 sections 시각 paint 누락.
