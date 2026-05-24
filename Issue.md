@@ -81,7 +81,7 @@
 
 # ✅ 완료
 
-## Issue212. model3d GLB `file://` 로딩 실패 — 빌드 타임 base64 data URI 자동 인라인 (등록: 2026-05-24, 해결: 2026-05-24, commit: TBD) ✅
+## Issue212. model3d GLB `file://` 로딩 실패 — 빌드 타임 base64 data URI 자동 인라인 (등록: 2026-05-24, 해결: 2026-05-24, commit: 965bdc1) ✅
 * 목적: Chrome 86+ `file://` 페이지 `fetch()` 차단 정책으로 model-viewer 컴포넌트가 `./img/*.glb` 로딩 실패하던 문제 해결. HTTP 서버 경유(playwright + python http.server) 시는 정상 동작하나 `open file://...` 직접 open 시 매번 "model3d: GLB 로딩 실패" 빨간 박스 표시. ComponentTest 슬라이드 1·2·9의 test-cube 3건 모두 영향.
 * 상세:
     - 원인 = Chrome 86 (2020~) 보안 강화로 `file:` 오리진의 fetch·XHR 차단. `<img>`·`<link>` 등 브라우저 내장 로더는 동작하지만 model-viewer 내부 `fetch()` 호출은 차단됨
