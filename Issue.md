@@ -88,25 +88,29 @@
 * 카테고리: DX (개발자 도구) + Build (스킬 wrapper)
 * 관련: `/run` 커맨드, `apply-verify-rules.md` §4.1
 
-## Issue220. ESC overview 진입 시 thumbnail content 시각적 비표시 — Issue215 잔존 회귀 (등록: 2026-05-24)
-* 목적: Issue215 fix(commit e63c1b3, width/height number 전달) 이후 ESC overview 진입 시 sections 좌표·grid spacing은 정상이나 화면이 비어 보이는 잔존 회귀 해결.
-* 상세:
+## Issue220. ESC overview thumbnail 시각 표시 통합 회귀 — 3단계 흐름 마지막 단계 (등록: 2026-05-24)
+* 목적: ESC overview에서 모든 슬라이드 thumbnail이 정상 grid + 본문 가시 표시되도록 회귀 흐름 전체 종결. Issue215·Issue226·본 이슈 3건이 동일 ESC overview thumbnail UX 결함이라 통합 추적.
+* 통합 회귀 흐름 (3단계 — 사용자 인식 "한 이슈"):
+    1. **Issue226 (완료, 8ae3e9c) — ESC 진입 차단**: cfg.keyboard에 ESC(27) 미명시 + m2slide custom keydown handler capture phase 가 reveal.js native ESC handler 도달 차단 → ESC가 forward navigation으로 처리. fix: `keyboard: {27: 'toggleOverview'}` 명시
+    2. **Issue215 (완료, df96409 + e63c1b3) — spacing 100배 회귀**: Reveal.initialize에 `width: '${revealWidth}'` 무조건 인용 → number 1920이 문자열 전달 → reveal.js Overview `i.width + 70` 문자열 concat "192070" → grid spacing 100배 → 27 sections이 viewport 밖. fix: `${typeof X === 'number' ? X : "'X'"}` 패턴
+    3. **본 이슈 (잔존) — thumbnail content 가시성**: 진입·spacing 정상 후에도 thumbnail box 안 내용이 시각적으로 안 보임. DOM에는 그려져 있으나 visual layer paint 누락
+* 잔존 단계 상세:
     - playwright evaluate에서 sections visible:true, display:block, opacity:1, content 자식 elements 존재, viewport 안 위치 확인됨에도 screenshot에 thumbnails 미표시
-    - 강제 `background: rgba(255,0,0,0.2) !important; outline: 3px solid red !important` 적용해도 안 보임 — DOM은 그려졌으나 visual layer에 paint 안 됨
-    - 영향: Issue215 fix는 spacing 회귀(100배)를 해결했으나 thumbnail content가 보이지 않아 사용자 ESC overview UX 불가
-* 원인 후보:
-    - reveal.js overview re-layout 후 `Reveal.layout()` 호출 시점에 transform 적용이 안정되기 전 캡처 (타이밍)
-    - reveal.css의 `.reveal.overview .slides section { height:100% !important }`와 우리 base.css의 `min-height:0; max-height:none !important` 잔여 충돌 (Issue215 보조 변경)
-    - `.media-enlarge-height/fit .reveal .slides section.present { ... overflow:hidden }`가 .present만이라 비활성 section content가 1920×1280 그대로 그려지지만 section 자체는 scale 0.177 후 340×227 viewport, content overflow가 viewport 밖 짤림
-    - z-index 또는 stacking context 충돌 (overlay 레이어)
-* 구현 명세:
-    - 재현: aTest 04-htmlart.html 열고 ESC → sections 좌표 정상이나 화면 빈 상태 확인
-    - 후보1: `.reveal.overview .slides section`에 `overflow:hidden` + `contain: layout style` 추가하여 thumbnail box 안에만 content 그리도록 클리핑
-    - 후보2: Issue215 보조 변경(`min-height:0` 등) revert 하고 reveal.css 표준 `height:100% !important`에 위임
-    - 후보3: 슬라이드별 `display:flex/height:100%` 강제(`media-enlarge-*` 한정)가 overview에 미치는 영향 분리 검토
-    - 검증: aTest 5개 챕터 + m2Slide·graphify ESC overview thumbnail content 시각 표시
+    - 강제 `background: rgba(255,0,0,0.2) !important; outline: 3px solid red !important` 적용해도 안 보임 — DOM은 그려졌으나 visual layer paint 누락
+    - Issue226·Issue215 fix 후 사용자 chrome 재검증 필요 — 두 fix만으로 시각 표시까지 해결됐는지 우선 확인
+* 원인 후보 (Issue215·226 fix 후에도 잔존 시):
+    - reveal.css의 `.reveal.overview .slides section { height:100% !important }`와 base.css(df96409)의 `.reveal.overview .slides section { min-height:0; max-height:none !important }` 잔여 충돌
+    - `.media-enlarge-height/fit .reveal .slides section.present { display:flex; height:100%; overflow:hidden }`가 `.present`만이라 비활성 section content가 1920×1280 자연 크기로 그려지지만 section box는 scale 0.177 후 340×227 viewport → content overflow가 viewport 밖 잘림
+    - z-index 또는 stacking context 충돌
+    - reveal.js overview re-layout 타이밍 (Reveal.layout 호출 시점에 transform 적용 안정 전)
+* 구현 명세 (Issue226·215 fix 후 잔존 시):
+    - 재현: aTest 04-htmlart.html chrome hard reload → ESC → 27 sections grid + thumbnail 본문 가시 표시 (현재 정상이면 본 이슈 종결)
+    - 후보1: base.css 보조 변경(df96409의 `.reveal.overview .slides section { min-height:0; max-height:none }`) revert + reveal.css 표준 `height:100%`에 위임
+    - 후보2: `.reveal.overview .slides section`에 `overflow:hidden` + `contain: layout style` 추가 — thumbnail box 안에만 content 클리핑
+    - 후보3: 슬라이드별 `display:flex/height:100%` 강제(`media-enlarge-*` 한정) 영향 분리 검토
+    - 검증: aTest 5개 챕터 + m2Slide + graphify + LlmAndVibeCoding 모두 ESC overview thumbnail 시각 표시
 * 카테고리: Theme (CSS) + Frontend (reveal.js overview UX)
-* 관련: Issue215 (Root cause + 1차 fix), Issue109 (overflow:visible outer padding 의도)
+* 관련 완료: Issue215 (width number fix), Issue226 (keyboard ESC config fix), Issue109 (overflow:visible outer padding 의도)
 
 ## Issue219. htmlArt `callout` 타입 추가 — 중앙 hub + 다방향 callout arrow (등록: 2026-05-24)
 * 목적: 사용자 제공 이미지 2장(중앙 hub + 방사 callout arrow + 라벨) 기반 신규 htmlArt 타입. 강의·소개 슬라이드에서 핵심 주제(중앙) + 부연·태그 그룹(방사 라벨)을 박스 없이 fan-out 으로 표현하는 패턴이 흔함. 기존 `explain`(좌·우 column 풀이)·`radial`(중심 박스+스포크 박스)·`annotate`(원문 span 주해)로는 표현 불가 — 짧은 화살표 + 다방위 자유 분산 + 라벨 색 분리(강조/태그) 패턴이 모두 부재.
