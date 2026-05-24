@@ -183,3 +183,22 @@ libraries:
     detect_fenced_lang:
       - "model3d"
     detect_inline: []
+
+  # ==========================================================================
+  # Simulation View (Issue207) — p5.js 인터랙티브 시뮬레이션
+  #   ```p5 fenced block 본문 = p5 instance(p) + 컨테이너(el) 인자를 받는 JS 코드.
+  #   p5.js는 instance mode (new p5(sketchFn, container))로 호출 — 슬라이드별 다중 인스턴스 격리.
+  #   p5_dispatch.js가 slidechanged 이벤트에서 비활성 슬라이드 인스턴스를 noLoop()으로 일시정지.
+  # ==========================================================================
+  - id: p5
+    component: Simulation View
+    stage: 5
+    injection: conditional
+    status: applied
+    init_hook: p5_dispatch
+    cdn:
+      - type: js
+        url: https://cdn.jsdelivr.net/npm/p5@1.11.2/lib/p5.min.js
+    detect_fenced_lang:
+      - "p5"
+    detect_inline: []
