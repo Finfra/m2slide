@@ -212,7 +212,7 @@
 
 # ✅ 완료
 
-## Issue224. `::: cards` 다수 카드 슬라이드 overflow clip — px 고정값 em 전환 (등록: 2026-05-24, 해결: 2026-05-24, commit: ea777cb) ✅
+## Issue224. `::: cards` 다수 카드 슬라이드 overflow clip — px 고정값 em 전환 (등록: 2026-05-24, 해결: 2026-05-24, commit: ea777cb, b14f748) ✅
 * 목적: 카드 개수가 많은 슬라이드에서 카드 그리드가 슬라이드 세로 영역을 초과하여 하단이 잘리는 회귀. font_size_auto가 `.theContents` 폰트를 줄여 overflow를 잡으려 하나 카드 박스 크기·간격이 px 고정이라 폰트만 줄어들고 카드 행 높이·열 폭은 그대로 유지되어 잘림이 해소되지 않음. `Projects/aTest/slide/02-component.html?fwd=1#/8` (6 cards 블록) 등에서 재현.
 * Root cause:
     - `theme/_shared/components.css` §카드 컴포넌트(line 89~178)의 5종 px 고정값(`minmax(180px,1fr)`·`gap 10px`·title `padding 7px 14px`·본문 `padding 8px 13px`·중첩 ul `padding 2px`·`border-radius 10px`·`box-shadow 0 2px 6px`)이 폰트 비례 축소되지 않음
@@ -231,6 +231,13 @@
     - built CSS `Projects/aTest/slide/css/custom.css:116` `minmax(8em, 1fr)` 반영 확인
     - 브라우저: `Projects/aTest/slide/02-component.html?fwd=1#/8` (6 cards 블록) 자동 오픈, font_size_auto 트리거 시 카드 비례 축소되어 잘림 해소
     - 회귀 점검: 카드 적은 슬라이드(1~3개)는 폰트 축소 미트리거 → 시각 변화 거의 없음 (border-radius·box-shadow 미세 차이만)
+* 보강 (b14f748): 1차 fix만으로는 카드 28개(htmlArtTest #/2, 4×7) 케이스가 잘림 잔존 — font_size_auto가 fontSizeMin 20px 한계 도달해도 카드 영역 빠듯
+    - `.m2-cards` 컨테이너에 `font-size: 0.92em` 추가 (`.theContents` 축소와 합산)
+    - `minmax(8em, 1fr)` → `minmax(6.5em, 1fr)` (더 narrow 카드 → 같은 폭에 더 많은 열 fit → 행 수 감소)
+    - `gap 0.5em` → `0.35em`, `margin 0.25em` → `0.2em` (간격 압축)
+    - 제목 padding `0.35em 0.7em` → `0.25em 0.6em`, `line-height: 1.3` 명시
+    - 본문 padding `0.4em 0.65em` → `0.3em 0.55em`
+    - 제목 `font-size 1.05em` → `1em` (제목·본문 동일 비율)
 * 카테고리: Theme (CSS — 카드 그리드 비례 축소)
 * 관련: `lib/html-builder.js:1274` font_size_auto, Issue203 (title-only rows), `_doc_arch/component-slide.md` Core 계열
 
