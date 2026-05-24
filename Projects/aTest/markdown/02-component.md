@@ -373,6 +373,81 @@ timeline
 
 ---
 
+## p5 — Bouncing Ball (자동 움직임 시뮬레이션)
+
+```p5
+let x, y, vx, vy;
+p.setup = function() {
+  p.createCanvas(el.clientWidth, el.clientHeight);
+  x = p.width / 2; y = p.height / 2; vx = 4; vy = 3;
+};
+p.draw = function() {
+  p.background('#1a1a2e');
+  p.noStroke();
+  p.fill('#4ec9b0');
+  p.ellipse(x, y, 40, 40);
+  x += vx; y += vy;
+  if (x < 20 || x > p.width - 20) vx = -vx;
+  if (y < 20 || y > p.height - 20) vy = -vy;
+};
+```
+
+---
+
+## p5 — Mouse Interaction (마우스 추적 입자)
+
+```p5
+let trail = [];
+p.setup = function() {
+  p.createCanvas(el.clientWidth, el.clientHeight);
+};
+p.draw = function() {
+  p.background(20, 20, 40, 60);
+  trail.push({ x: p.mouseX, y: p.mouseY });
+  if (trail.length > 40) trail.shift();
+  p.noStroke();
+  for (let i = 0; i < trail.length; i++) {
+    const t = trail[i];
+    const a = p.map(i, 0, trail.length, 30, 255);
+    p.fill(78, 201, 176, a);
+    p.ellipse(t.x, t.y, 14, 14);
+  }
+};
+```
+
+---
+
+## p5 — Particle System (입자 시스템, Issue207)
+
+```p5
+let parts = [];
+p.setup = function() {
+  p.createCanvas(el.clientWidth, el.clientHeight);
+  for (let i = 0; i < 60; i++) {
+    parts.push({
+      x: p.random(p.width),
+      y: p.random(p.height),
+      vx: p.random(-1.5, 1.5),
+      vy: p.random(-1.5, 1.5),
+      r: p.random(4, 12),
+    });
+  }
+};
+p.draw = function() {
+  p.background('#0d1117');
+  p.noStroke();
+  p.fill('#58a6ff');
+  for (const pt of parts) {
+    p.ellipse(pt.x, pt.y, pt.r * 2);
+    pt.x += pt.vx; pt.y += pt.vy;
+    if (pt.x < 0 || pt.x > p.width) pt.vx *= -1;
+    if (pt.y < 0 || pt.y > p.height) pt.vy *= -1;
+  }
+};
+```
+
+---
+
 ## Phase 진행 현황
 
 * Phase 0 — 레지스트리 + generic 디스패처 인프라
@@ -380,6 +455,7 @@ timeline
 * Phase 2 — 지도·인포그래픽 ✅
 * Phase 3 — React artifact·HTML artifact(WordArt) ✅
 * Phase 4 — model3d(Issue206) ✅
+* Phase 5 — p5 Simulation View(Issue207) ✅
 * Mermaid 카테고리 — flowchart·sequence·class·state·er·gantt·mindmap·pie·timeline ✅
 * emoji — Unicode 네이티브, 라이브러리 무관 ✅
 * 카드 — `::: cards` 리스트→카드 그리드, m2slide 자체 구현 ✅

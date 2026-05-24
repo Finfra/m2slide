@@ -395,6 +395,21 @@
 
 ---
 
+## annotate — 원문 주해 (Issue213)
+
+* 원문 안의 단어/문구에 색 윗줄·밑줄. 좌·우 라벨로 설명.
+* syntax: `target: <원문>` + `over|under <color>: <span> → <label>`. 색 = red/blue/green/yellow/orange/purple/pink/cyan/#hex.
+
+::: htmlart annotate
+* target: Skill.md 이해하기
+* over red: Skill → 클로드가 참고하는 작업 지침
+* over blue: .md → 마크다운 방식으로 작성
+* under green: 이해 → 필요할 때 업로드해 사용
+* under orange: 하기 → 쟁여 놓고 꺼내 쓰는 자산
+:::
+
+---
+
 ## 동일 아웃라인, 타입 교체
 
 * 아래 두 슬롯은 내용이 같고 타입 이름만 다르다.
