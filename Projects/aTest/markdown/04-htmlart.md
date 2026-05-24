@@ -1,9 +1,9 @@
-# 4. htmlArt 23타입 카탈로그
+# 4. htmlArt 24타입 카탈로그
 
 들여쓰기 아웃라인을 타입 선택만으로 구조 도해(SmartArt 대응)로 변환하는 구성요소. 같은 아웃라인을 두고 타입 이름만 바꾸면 다른 도해가 된다. (구 htmlArtTest v0.3.1)
 
 * 문법: `::: htmlart <type>` fenced div + 표준 들여쓰기 리스트
-* 타입 분류: v1 4종(process·cycle·hierarchy·pyramid) + v2 10종(timeline·venn·matrix·target·funnel·gear·radial·chevron·step·arrow) + v3 list 5종(numbered·hexagon·bracket·block·tab) + v4 비율·균형 2종(pie·balance) + v5 비교·풀이 2종(compare·explain)
+* 타입 분류: v1 4종(process·cycle·hierarchy·pyramid) + v2 10종(timeline·venn·matrix·target·funnel·gear·radial·chevron·step·arrow) + v3 list 5종(numbered·hexagon·bracket·block·tab) + v4 비율·균형 2종(pie·balance) + v5 비교·풀이 2종(compare·explain) + v6 워크플로 1종(workflow)
 * 빌드 시 `markdown.js preprocessPandocDiv` + 런타임 d3 SVG `htmlart_dispatch`로 렌더
 
 ---
@@ -374,6 +374,24 @@
   - 생각의 외주화 습관 버리기 (인지 주권)
   - 내 생각/의도를 언어로 정의하기
   - HITL(AI + 사람 검수) 적용하기
+:::
+
+---
+
+## workflow — 사람 endcap + 단계 박스 체인 (Issue209)
+
+* 평면 리스트. 첫·마지막 항목 = 사람(역할) endcap, 중간 = 박스 단계.
+* process(박스만 체인)와 달리 사람·역할 강조. 여정맵·페르소나 워크플로에 사용.
+
+::: htmlart workflow
+* 기획자
+  - 슬라이드 구조 설계
+* Gemini · NotebookLM
+  - 리서치 · 초안 생성
+* Claude In PPT
+  - 슬라이드 변환
+* 결과 문서
+  - 최종 산출물
 :::
 
 ---

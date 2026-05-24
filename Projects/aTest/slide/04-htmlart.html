@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>4. htmlArt 23타입 카탈로그</title>
+  <title>4. htmlArt 24타입 카탈로그</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"4","slideOffset":6,"totalSlides":10};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"4","slideOffset":71,"totalSlides":108};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -403,7 +403,11 @@ body {
 }
 
 /* 3. Height: 높이 최대화 */
-.media-enlarge-height .reveal .slides section {
+/* Issue: `display: flex !important` 가 모든 section 에 적용되면 reveal.js 가 비활성
+   슬라이드에 inline 으로 부여하는 `display: none` 을 덮어서 cross-page 전환 직후
+   다중 슬라이드가 한 프레임 겹쳐 paint 되는 잔상이 발생. `section.present` 한정으로
+   변경하여 활성 슬라이드만 flex 레이아웃을 강제. height/overflow 도 동일 한정. */
+.media-enlarge-height .reveal .slides section.present {
   /* Issue63: 100vh → 100% (parent .slides는 ratio 모드에서 Reveal이 1080px 논리 높이 설정,
      fill 모드에서는 viewport 채움). 100vh는 ratio 모드에서 transform scale 비율 fit을 깨뜨림. */
   height: 100% !important;
@@ -440,7 +444,8 @@ body {
 }
 
 /* 4. Fit: 화면에 꽉 차게 맞춤 (스크롤 없음) */
-.media-enlarge-fit .reveal .slides section {
+/* Issue: `section.present` 한정 (위 height 모드와 동일 사유 — cross-page 잔상 차단) */
+.media-enlarge-fit .reveal .slides section.present {
   /* Issue63: 100vh → 100% (ratio 모드 transform scale 비율 fit 보존, 동일 사유) */
   height: 100% !important;
   display: flex !important;
@@ -1246,7 +1251,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1779595512629">
+  <link rel="stylesheet" href="css/custom.css?v=1779600298490">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1461,7 +1466,7 @@ html.ratio-fill .agenda-frame {
 
       <section id="toc-placeholder" class="layout-_toc title-slide">
   <header class="toc-page-header">
-    <h1 class="toc-page-title">4. htmlArt 23타입 카탈로그</h1>
+    <h1 class="toc-page-title">4. htmlArt 24타입 카탈로그</h1>
   </header>
   <div class="toc-markmap">
     <svg class="toc-mindmap-svg"></svg>
@@ -1470,7 +1475,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">process — 프로세스 체인</h2>
@@ -1509,7 +1514,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">cycle — 주기 순환</h2>
@@ -1548,7 +1553,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">hierarchy — 계층 트리</h2>
@@ -1584,7 +1589,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">pyramid — 피라미드</h2>
@@ -1618,7 +1623,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">timeline — 타임라인</h2>
@@ -1657,7 +1662,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">venn — 벤다이어그램</h2>
@@ -1691,7 +1696,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">matrix — 사분면 격자</h2>
@@ -1730,7 +1735,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">target — 동심원</h2>
@@ -1753,7 +1758,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">funnel — 깔때기</h2>
@@ -1792,7 +1797,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">gear — 톱니바퀴</h2>
@@ -1826,7 +1831,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">radial — 방사형</h2>
@@ -1850,7 +1855,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">chevron — 갈매기형 체인</h2>
@@ -1873,7 +1878,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">step — 계단형 단계</h2>
@@ -1912,7 +1917,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">arrow — 수렴 화살표</h2>
@@ -1936,7 +1941,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">numbered — 번호 카드 리스트</h2>
@@ -1975,7 +1980,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">hexagon — 육각형 리스트</h2>
@@ -1999,7 +2004,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">bracket — 괄호 그룹 리스트</h2>
@@ -2032,7 +2037,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">block — 세로 악센트 블록 리스트</h2>
@@ -2066,7 +2071,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">tab — 탭 그룹 리스트</h2>
@@ -2103,7 +2108,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">pie — 부채꼴 비율</h2>
@@ -2134,7 +2139,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">balance — 양팔 시소</h2>
@@ -2165,7 +2170,7 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">compare — 좌우 동등 비교 (Issue208)</h2>
@@ -2200,7 +2205,46 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
+    
+  </div>
+  <h2 class="title">workflow — 사람 endcap + 단계 박스 체인 (Issue209)</h2>
+  <div class="contents-body">
+
+<ul>
+<li class="bullet-dot">평면 리스트. 첫·마지막 항목 = 사람(역할) endcap, 중간 = 박스 단계.</li>
+<li class="bullet-dot">process(박스만 체인)와 달리 사람·역할 강조. 여정맵·페르소나 워크플로에 사용.</li>
+</ul>
+
+<div class="m2-htmlart htmlart-workflow" data-htmlart="workflow" style="--htmlart-n:4">
+<ul>
+<li class="bullet-dot">기획자
+<ul>
+<li class="bullet-dash">슬라이드 구조 설계</li>
+</ul>
+</li>
+<li class="bullet-dot">Gemini · NotebookLM
+<ul>
+<li class="bullet-dash">리서치 · 초안 생성</li>
+</ul>
+</li>
+<li class="bullet-dot">Claude In PPT
+<ul>
+<li class="bullet-dash">슬라이드 변환</li>
+</ul>
+</li>
+<li class="bullet-dot">결과 문서
+<ul>
+<li class="bullet-dash">최종 산출물</li>
+</ul>
+</li>
+</ul>
+</div></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">explain — 중앙 명제 + 사방 풀이 (Issue211)</h2>
@@ -2226,7 +2270,31 @@ html.ratio-fill .agenda-frame {
 
 <section class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">4. htmlArt 23타입 카탈로그</div>
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
+    
+  </div>
+  <h2 class="title">annotate — 원문 주해 (Issue213)</h2>
+  <div class="contents-body">
+
+<ul>
+<li class="bullet-dot">원문 안의 단어/문구에 색 윗줄·밑줄. 좌·우 라벨로 설명.</li>
+<li class="bullet-dot">syntax: <code>target: &lt;원문&gt;</code> + <code>over|under &lt;color&gt;: &lt;span&gt; → &lt;label&gt;</code>. 색 = red/blue/green/yellow/orange/purple/pink/cyan/#hex.</li>
+</ul>
+
+<div class="m2-htmlart htmlart-annotate" data-htmlart="annotate" style="--htmlart-n:5">
+<ul>
+<li class="bullet-dot">target: Skill.md 이해하기</li>
+<li class="bullet-dot">over red: Skill → 클로드가 참고하는 작업 지침</li>
+<li class="bullet-dot">over blue: .md → 마크다운 방식으로 작성</li>
+<li class="bullet-dot">under green: 이해 → 필요할 때 업로드해 사용</li>
+<li class="bullet-dot">under orange: 하기 → 쟁여 놓고 꺼내 쓰는 자산</li>
+</ul>
+</div></div>
+</section>
+
+<section class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">4. htmlArt 24타입 카탈로그</div>
     
   </div>
   <h2 class="title">동일 아웃라인, 타입 교체</h2>
@@ -3215,6 +3283,105 @@ html.ratio-fill .agenda-frame {
       + '</div>';
   }
 
+  // ── workflow — 양 끝 사람 endcap + 중간 단계 박스 체인 (Issue209) ──────
+  //   입력: 평면 리스트. 단계 N개.
+  //   - N==1: 박스 1개 (endcap 없음 — process degraded)
+  //   - N==2: 좌 사람 + 우 박스 (시작 인물 → 결과 단계)
+  //   - N>=3: 좌 사람 + 중간 박스들 + 우 사람
+  //   사람 SVG: 머리 원 + 라운드 사각 몸. 색은 --htmlart-accent 상속.
+  //   process 와 다른 점: 양 끝 시각 강조 + endcap 라벨이 박스 아래 텍스트로.
+  function renderWorkflow(el){
+    var ul=el.querySelector(':scope > ul'); if(!ul)return;
+    var items=collectItems(ul);
+    if(!items.length){ errBox(el,'htmlArt workflow: 단계 1개 이상 필요'); return; }
+    var N=items.length;
+    var boxW=196, boxH=200, arrowGap=44, padY=28, padX=20;
+    var personW=120, personH=200;
+    // endcap 위치 판정
+    var leftIsPerson = N>=2;
+    var rightIsPerson = N>=3;
+    var stepsCount = N - (leftIsPerson?1:0) - (rightIsPerson?1:0);
+    // 전체 너비: 좌(person|box) + (중간 박스들 + 화살표) + 우(person|box)
+    function unitW(isP){return isP?personW:boxW;}
+    var W = padX*2;
+    if(leftIsPerson) W += personW; else W += boxW;
+    if(stepsCount>0) W += stepsCount*(boxW+arrowGap) + arrowGap; // 좌→첫박스 화살표 1개 + 박스마다 + 화살표
+    if(rightIsPerson) W += personW + arrowGap; // 마지막박스→우 endcap
+    else if(N>=2) W += boxW + arrowGap;
+    // 단순화: 폭 재계산
+    // 슬롯 N개 (각각 box 또는 person). 슬롯 사이마다 arrowGap.
+    var slots=[];
+    for(var k=0;k<N;k++){
+      var isP = (k===0 && leftIsPerson) || (k===N-1 && rightIsPerson);
+      slots.push({isPerson:isP, w: isP?personW:boxW, item:items[k]});
+    }
+    var totalW = padX*2 + slots.reduce(function(s,x){return s+x.w;},0) + (N-1)*arrowGap;
+    var H = Math.max(boxH, personH) + padY*2;
+
+    el.innerHTML='';
+    var svg=d3.select(el).append('svg')
+      .attr('viewBox','0 0 '+totalW+' '+H)
+      .attr('class','ha-workflow-svg')
+      .attr('style','width:100%;height:100%;max-height:92vh;display:block;margin:0 auto');
+
+    // 화살표 (슬롯 사이)
+    var gArrows=svg.append('g');
+    var xCursor=padX;
+    var slotX=[];
+    slots.forEach(function(s){ slotX.push(xCursor); xCursor += s.w + arrowGap; });
+    // arrow draw between slot i and i+1
+    for(var i=0;i<N-1;i++){
+      var ax = slotX[i] + slots[i].w + arrowGap/2;
+      var ay = padY + Math.max(boxH,personH)/2;
+      var pts=[(ax-13)+','+(ay-16),(ax+15)+','+ay,(ax-13)+','+(ay+16)].join(' ');
+      gArrows.append('polygon').attr('points',pts)
+        .attr('style','fill:var(--htmlart-arrow,rgba(0,0,0,.45))');
+    }
+
+    // 슬롯 렌더
+    var gSlots=svg.append('g');
+    slots.forEach(function(s, idx){
+      var x = slotX[idx];
+      var slotCy = padY + Math.max(boxH,personH)/2;
+      if(s.isPerson){
+        // 사람 SVG (머리 + 몸) 중앙 정렬
+        var cx = x + personW/2;
+        var headR = 30;
+        var headCy = padY + 10 + headR;
+        var bodyTop = headCy + headR + 6;
+        var bodyH = 70;
+        var bodyW = 80;
+        gSlots.append('circle')
+          .attr('cx', cx).attr('cy', headCy).attr('r', headR)
+          .attr('style','fill:var(--htmlart-accent,#2b8a9d);stroke:none');
+        // 몸: 라운드 사각 (위 살짝 좁고 아래 넓은 사다리꼴 효과 → 단순 라운드 rect)
+        gSlots.append('rect')
+          .attr('x', cx - bodyW/2).attr('y', bodyTop)
+          .attr('width', bodyW).attr('height', bodyH)
+          .attr('rx', bodyW/2).attr('ry', 16)
+          .attr('style','fill:var(--htmlart-accent,#2b8a9d);stroke:none');
+        // 라벨 (사람 아래)
+        var labelY = bodyTop + bodyH + 8;
+        var labelH = padY + personH - (labelY - padY);
+        var labelFo = gSlots.append('foreignObject')
+          .attr('x', x).attr('y', labelY)
+          .attr('width', personW).attr('height', Math.max(labelH, 40));
+        var labelText = s.item.title;
+        var subText = (s.item.subs && s.item.subs.length) ? s.item.subs.join(' · ') : '';
+        labelFo.append('xhtml:div')
+          .attr('style','width:100%;height:100%;display:flex;flex-direction:column;'
+            +'align-items:center;justify-content:flex-start;text-align:center;'
+            +'font-weight:700;font-size:16px;line-height:1.2;'
+            +'color:var(--htmlart-fg-on-bg,inherit);word-break:keep-all')
+          .html('<div>'+esc(labelText)+'</div>'
+            + (subText?'<div style="font-weight:400;font-size:13px;opacity:.78;margin-top:3px">'+esc(subText)+'</div>':''));
+      } else {
+        // 표준 박스 (process 박스와 동일)
+        nodeBox(gSlots, x, padY, boxW, boxH, s.item.title, s.item.subs, false);
+      }
+    });
+  }
+
   // ── explain — 중앙 명제 + 좌·우 column phrase + elbow line (Issue211) ─────
   // 마인드맵 패턴: 중앙 박스 좌·우 면에서만 라인 출발 (위·아래 면 미사용 →
   // 중심 텍스트 영역 침범 0). phrase 는 좌·우 2 column 세로 배치, 라인은
@@ -3299,6 +3466,136 @@ html.ratio-fill .agenda-frame {
       .text(center.title);
   }
 
+  // ── annotate — 원문 + 색 윗줄·밑줄 + 좌·우 라벨 (Issue213) ─────────────────
+  // syntax B: target + over/under <color>: <span> → <label>
+  //   foreignObject 원문 안에 span 마커 → getBoundingClientRect 측정 →
+  //   SVG viewBox 좌표 변환 → 색 줄(over/under) + dashed elbow + 좌·우 라벨.
+  function renderAnnotate(el){
+    var ul=el.querySelector(':scope > ul'); if(!ul)return;
+    var items=collectItems(ul);
+    if(items.length<2){ errBox(el,'htmlArt annotate: target + 주석 1개 이상 필요'); return; }
+
+    var target=null, annots=[];
+    items.forEach(function(it){
+      var t=it.title.trim();
+      var mt=t.match(/^targets*:s*(.+)$/i);
+      if(mt){ if(!target)target=mt[1].trim(); return; }
+      var m=t.match(/^(over|under)s+([a-zA-Z]+|#[0-9a-fA-F]{3,8})s*:s*(.+?)s*(?:→|->)s*(.+)$/i);
+      if(m) annots.push({pos:m[1].toLowerCase(),color:m[2],span:m[3].trim(),label:m[4].trim()});
+    });
+    if(!target){ target=items[0].title.trim(); }
+    if(!annots.length){ errBox(el,'htmlArt annotate: over/under 주석 필요'); return; }
+
+    var W=1400, H=620, cx=W/2, cy=H/2;
+    var targetFs=56;
+    var labelW=300, labelH=52, labelGap=24;
+    var colorMap={red:'#e74c3c',blue:'#3498db',green:'#27ae60',yellow:'#f1c40f',
+                  orange:'#e67e22',purple:'#9b59b6',pink:'#e91e63',cyan:'#16a085',black:'#222'};
+    function colorOf(c){ return colorMap[c.toLowerCase()] || c; }
+
+    var svg=mkSvg(el,W,H,'ha-annotate-svg');
+
+    // 마커로 span 위치 표시(STX/ETX) — span first-match 치환
+    var markedTarget=target;
+    annots.forEach(function(a,i){
+      var sp=a.span;
+      var p=markedTarget.indexOf(sp);
+      if(p>=0){
+        markedTarget=markedTarget.substring(0,p)
+          +''+i+''+sp+''
+          +markedTarget.substring(p+sp.length);
+      }
+    });
+    var html=markedTarget.replace(/(d+)([^]+)/g,
+      function(m,i,s){ return '<span data-annot-idx="'+i+'" style="display:inline-block;">'+s+'</span>'; });
+
+    var fo=svg.append('foreignObject')
+      .attr('x',0).attr('y',cy-60).attr('width',W).attr('height',120);
+    fo.append('xhtml:div')
+      .attr('style','width:100%;height:100%;display:flex;align-items:center;justify-content:center;'
+        +'color:var(--htmlart-annotate-target-fg,var(--htmlart-accent,#2b8a9d));'
+        +'font-weight:800;font-size:'+targetFs+'px;line-height:1.2;text-align:center;'
+        +'word-break:keep-all;letter-spacing:0.02em;')
+      .html(html);
+
+    function drawLines(){
+      var spans=el.querySelectorAll('[data-annot-idx]');
+      var svgEl=svg.node();
+      var svgRect=svgEl.getBoundingClientRect();
+      if(spans.length===0||svgRect.width===0){ requestAnimationFrame(drawLines); return; }
+      var sx2vb=W/svgRect.width, sy2vb=H/svgRect.height;
+
+      var boxes=[];
+      spans.forEach(function(s){
+        var i=+s.getAttribute('data-annot-idx');
+        var r=s.getBoundingClientRect();
+        boxes.push({
+          i:i, a:annots[i],
+          x:(r.left-svgRect.left)*sx2vb,
+          y:(r.top-svgRect.top)*sy2vb,
+          w:r.width*sx2vb, h:r.height*sy2vb
+        });
+      });
+
+      var left=[], right=[];
+      boxes.forEach(function(b){
+        if(b.x+b.w/2 < cx) left.push(b); else right.push(b);
+      });
+      left.sort(function(a,b){ return a.y-b.y; });
+      right.sort(function(a,b){ return a.y-b.y; });
+
+      function drawOne(b, side, sideIdx, sideN){
+        var stroke=colorOf(b.a.color);
+        var over=b.a.pos==='over';
+        var lineY = over ? b.y - 10 : b.y + b.h + 10;
+
+        // span 밑/위 강조 줄
+        svg.append('line')
+          .attr('x1',b.x).attr('y1',lineY)
+          .attr('x2',b.x+b.w).attr('y2',lineY)
+          .attr('stroke',stroke).attr('stroke-width',5).attr('stroke-linecap','round');
+
+        var labelX = side==='left' ? 30 : W - 30 - labelW;
+        var totalH = sideN*labelH + (sideN-1)*labelGap;
+        var topY = cy - totalH/2;
+        var labelY = topY + sideIdx*(labelH+labelGap);
+        var midY = labelY + labelH/2;
+
+        var spanEdgeX = side==='left' ? b.x : b.x + b.w;
+        var labelEdgeX = side==='left' ? labelX + labelW : labelX;
+
+        // bezier curve — span 줄 끝 → 라벨로 부드럽게 휘어짐
+        // cubic S 곡선: 시작점 수평 진행 → 종점 수평 도착
+        var dx = labelEdgeX - spanEdgeX;
+        var c1x = spanEdgeX + dx * 0.45;
+        var c1y = lineY;
+        var c2x = labelEdgeX - dx * 0.45;
+        var c2y = midY;
+        svg.append('path')
+          .attr('d','M'+spanEdgeX+' '+lineY
+              +' C'+c1x+' '+c1y+', '+c2x+' '+c2y+', '+labelEdgeX+' '+midY)
+          .attr('style','fill:none;stroke:'+stroke+';stroke-width:3;stroke-linecap:round;');
+
+        // 라벨 — 단순 텍스트 (박스·border·배경 없음)
+        var fol=svg.append('foreignObject')
+          .attr('x',labelX).attr('y',labelY)
+          .attr('width',labelW).attr('height',labelH);
+        fol.append('xhtml:div')
+          .attr('style','width:100%;height:100%;display:flex;align-items:center;'
+            +'justify-content:'+(side==='left'?'flex-end':'flex-start')+';'
+            +'padding:0 6px;font-size:24px;line-height:1.3;font-weight:600;'
+            +'text-align:'+(side==='left'?'right':'left')+';'
+            +'word-break:keep-all;box-sizing:border-box;'
+            +'color:var(--htmlart-fg,inherit);')
+          .text(b.a.label);
+      }
+
+      left.forEach(function(b,i){ drawOne(b,'left',i,left.length); });
+      right.forEach(function(b,i){ drawOne(b,'right',i,right.length); });
+    }
+    requestAnimationFrame(function(){ requestAnimationFrame(drawLines); });
+  }
+
   function render(){
     if(typeof d3==='undefined')return;            // d3 미로드 → ul 그대로(graceful degradation)
     document.querySelectorAll('div[data-htmlart]').forEach(function(el){
@@ -3326,7 +3623,9 @@ html.ratio-fill .agenda-frame {
              : type==='pie'?renderPie
              : type==='balance'?renderBalance
              : type==='compare'?renderCompare
+             : type==='workflow'?renderWorkflow
              : type==='explain'?renderExplain
+             : type==='annotate'?renderAnnotate
              : null;
       if(!fn)return;                               // 미지원 타입 → 무시
       el.setAttribute('data-htmlart-rendered','1');
@@ -3610,94 +3909,98 @@ html.ratio-fill .agenda-frame {
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/2\">4. htmlArt 23타입 카탈로그</a>",
+                  "content": "<a href=\"#/1\">4. htmlArt 24타입 카탈로그</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/3\">process — 프로세스 체인</a>",
+                              "content": "<a href=\"#/2\">process — 프로세스 체인</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/4\">cycle — 주기 순환</a>",
+                              "content": "<a href=\"#/3\">cycle — 주기 순환</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/5\">hierarchy — 계층 트리</a>",
+                              "content": "<a href=\"#/4\">hierarchy — 계층 트리</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/6\">pyramid — 피라미드</a>",
+                              "content": "<a href=\"#/5\">pyramid — 피라미드</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/7\">timeline — 타임라인</a>",
+                              "content": "<a href=\"#/6\">timeline — 타임라인</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/8\">venn — 벤다이어그램</a>",
+                              "content": "<a href=\"#/7\">venn — 벤다이어그램</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/9\">matrix — 사분면 격자</a>",
+                              "content": "<a href=\"#/8\">matrix — 사분면 격자</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/10\">target — 동심원</a>",
+                              "content": "<a href=\"#/9\">target — 동심원</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/11\">funnel — 깔때기</a>",
+                              "content": "<a href=\"#/10\">funnel — 깔때기</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/12\">gear — 톱니바퀴</a>",
+                              "content": "<a href=\"#/11\">gear — 톱니바퀴</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/13\">radial — 방사형</a>",
+                              "content": "<a href=\"#/12\">radial — 방사형</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/14\">chevron — 갈매기형 체인</a>",
+                              "content": "<a href=\"#/13\">chevron — 갈매기형 체인</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/15\">step — 계단형 단계</a>",
+                              "content": "<a href=\"#/14\">step — 계단형 단계</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/16\">arrow — 수렴 화살표</a>",
+                              "content": "<a href=\"#/15\">arrow — 수렴 화살표</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/17\">numbered — 번호 카드 리스트</a>",
+                              "content": "<a href=\"#/16\">numbered — 번호 카드 리스트</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/18\">hexagon — 육각형 리스트</a>",
+                              "content": "<a href=\"#/17\">hexagon — 육각형 리스트</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/19\">bracket — 괄호 그룹 리스트</a>",
+                              "content": "<a href=\"#/18\">bracket — 괄호 그룹 리스트</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/20\">block — 세로 악센트 블록 리스트</a>",
+                              "content": "<a href=\"#/19\">block — 세로 악센트 블록 리스트</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/21\">tab — 탭 그룹 리스트</a>",
+                              "content": "<a href=\"#/20\">tab — 탭 그룹 리스트</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/22\">pie — 부채꼴 비율</a>",
+                              "content": "<a href=\"#/21\">pie — 부채꼴 비율</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/23\">balance — 양팔 시소</a>",
+                              "content": "<a href=\"#/22\">balance — 양팔 시소</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/24\">compare — 좌우 동등 비교 (Issue208)</a>",
+                              "content": "<a href=\"#/23\">compare — 좌우 동등 비교 (Issue208)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/24\">workflow — 사람 endcap + 단계 박스 체인 (Issue209)</a>",
                               "children": []
                         },
                         {
@@ -3705,7 +4008,11 @@ html.ratio-fill .agenda-frame {
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/26\">동일 아웃라인, 타입 교체</a>",
+                              "content": "<a href=\"#/26\">annotate — 원문 주해 (Issue213)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/27\">동일 아웃라인, 타입 교체</a>",
                               "children": []
                         }
                   ]

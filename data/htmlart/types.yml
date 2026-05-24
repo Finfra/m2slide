@@ -12,15 +12,19 @@ meta:
   design_doc: _doc_arch/htmlArt.md
   catalog: data/htmlart/smartart-catalog.yml
   layout_status: _doc_arch/htmlArt_list.md
-  status: active          # core 구현 완료 (Issue188 v1 4종 + Issue202 확장 10종 + Issue204 list 5종)
+  status: active          # core 구현 완료 (v1 4종 + v2 10종 + v3 list 5종 + v4 비율·균형 2종 + v5 비교·풀이 2종 + v6 워크플로 1종)
   syntax: "::: htmlart <type>"
   input_model: "들여쓰기 아웃라인 (2칸 = 1레벨, ::: cards 본문과 동일)"
-  type_count: 19
+  type_count: 24
 
-# ── htmlArt 타입 (19종 = v1 4종 + v2 확장 10종 + v3 list 5종) ────────────────
+# ── htmlArt 타입 (23종 = v1 4 + v2 확장 10 + v3 list 5 + v4 비율·균형 2 + v5 비교·풀이 2) ─────
 # v1 (Issue188): process · cycle · hierarchy · pyramid
 # v2 확장 (Issue202): timeline · venn · matrix · target · funnel · gear · radial · chevron · step · arrow
 # v3 list (Issue204): numbered · hexagon · bracket · block · tab
+# v4 비율·균형: pie · balance (Basic Pie · Pie Process · Balance 흡수)
+# v5 비교 (Issue208): compare (Opposing Ideas · Counterbalance Arrows · Opposing Arrows 흡수)
+# v5 풀이 (Issue211): explain (중앙 명제 + 사방 풀이 phrase, radial 변형)
+# v6 워크플로 (Issue209): workflow (사람 endcap + 단계 박스 체인, process 변형)
 types:
   process:
     tier: v1
@@ -194,6 +198,69 @@ types:
     visual: "폴더 탭 헤더 + 탭별 항목 패널 (정적 — 전 탭 펼침 세로 나열)"
     recommend_count: "2-5 탭, 탭당 2-6 항목"
 
+  pie:
+    tier: v4
+    intent: "부분-전체 비율·구성비 (부채꼴 분할)"
+    smartart_category: cycle    # SmartArt 분류상 Cycle/Relationship 의 Basic Pie + List 의 Pie Process
+    input: "평면 리스트 — 최상위 항목 = 조각. 라벨 끝 `N%` 또는 ` N` 토큰을 비율로 파싱"
+    sublevel: "하위 들여쓰기 = 조각 보조 설명 (선택, 범례에 표시)"
+    visual: "원형 부채꼴 분할 + 조각 내부 N% 라벨 + 우측 색 범례"
+    recommend_count: "2-7 조각 (합 100% 권장, 미지정 시 균등 분할)"
+
+  balance:
+    tier: v4
+    intent: "장단점·찬반·양팔 비교 (시소형 균형)"
+    smartart_category: relationship
+    input: "정확히 2개 그룹 — 최상위 1번째 = 좌, 2번째 = 우"
+    sublevel: "하위 들여쓰기 = 그룹 항목 (수가 가중치). 라벨 끝 ` N` 명시 시 그 값 우선"
+    visual: "삼각 받침대 + 가로 팔 + 좌·우 접시. 무거운 쪽이 아래로 기울어짐"
+    recommend_count: "2 그룹 고정. 그룹당 1-6 항목"
+
+  compare:
+    tier: v5
+    intent: "양쪽 대비·좌우 비교·대립하는 두 영역 (동등 병렬 — balance와 달리 무게 무관)"
+    smartart_category: relationship    # SmartArt Opposing Ideas / Counterbalance Arrows / Opposing Arrows 흡수
+    input: "정확히 2개 그룹 — 최상위 1번째 = 좌, 2번째 = 우. 라벨 형식 `**헤드라인** / 부제` (`/`로 헤드라인·부제 분리, 부제 생략 가능)"
+    sublevel: "하위 들여쓰기 = 그룹 bullet 본문 (필수, 2-7 항목 권장)"
+    visual: "중앙 세로 구분선 + 좌·우 동등 컬럼 + 상단 작은 부제(악센트) + 큰 컬러 헤드라인 + bullet 리스트"
+    recommend_count: "2 그룹 고정. 그룹당 2-7 항목"
+
+  workflow:
+    tier: v6
+    intent: "사람 endcap + 단계 박스 체인 (역할 강조 워크플로 — process 변형)"
+    smartart_category: process
+    input: "평면 리스트 — 최상위 항목 = 단계. 첫·마지막 항목 라벨에 사람 endcap 자동 부여 (시작 인물 → 단계들 → 결과 인물)"
+    sublevel: "하위 들여쓰기 = 단계 보조 설명 (도구·역할 라벨)"
+    visual: "사람 실루엣 endcap(좌·우) + 라운드 박스 체인(중앙) + 진행 화살표"
+    recommend_count: "3-10 단계 (endcap 2 + 중간 1-8)"
+    impl_note: "process 박스 체인 + 첫·마지막 박스를 사람 SVG(머리 원 + 몸 라운드 사각)로 치환. 사람 색은 --htmlart-accent 상속"
+
+  explain:
+    tier: v5
+    intent: "중앙 명제를 여러 짧은 풀이 phrase로 풀어 설명 (정의 확장·다관점 해석)"
+    smartart_category: relationship
+    input: "평면 리스트 — 최상위 1번째 항목 = 중앙 명제, 나머지 = 풀이 phrase"
+    sublevel: "(미사용 — 풀이는 짧은 phrase로 한정. 긴 설명은 radial 권장)"
+    visual: "중앙 큰 강조 텍스트 (박스 X, accent 색) + 사방 풀이 phrase (박스 X, 본문 색) + 중앙 ↔ phrase elbow line (accent 색)"
+    recommend_count: "중앙 1 + 풀이 4-8"
+    impl_note: "d3.pointRadial 원형 좌표 + elbow line (짧은 horizontal stub + 대각 line). 박스 없이 텍스트만 — radial 변형"
+
+  annotate:
+    tier: v6
+    intent: "원문 안의 단어/문구를 색 윗줄·밑줄로 강조 + 좌·우 라벨로 설명 (주해·용어 풀이)"
+    smartart_category: relationship
+    input: |
+      평면 리스트 — syntax B (over/under + 색 + span + label):
+        * target: <원문 전체>
+        * over <color>: <span> → <label>
+        * under <color>: <span> → <label>
+      color = red|blue|green|yellow|orange|purple|pink|cyan|#hex
+      span = target 안의 substring (첫 매칭)
+    sublevel: "(미사용)"
+    visual: "중앙 큰 원문 + 각 span 위/아래 색 줄 + 좌·우 라벨 박스 (색 border, dashed elbow)"
+    recommend_count: "원문 1 + 주석 2-6"
+    impl_note: "foreignObject 안에 span 마커 → getBoundingClientRect 측정 → SVG viewBox 좌표 변환 → 색 줄 + elbow line + 좌·우 라벨 배치 (span x-위치로 좌/우 분기)"
+
 # ── 콘텐츠 신호 → htmlArt 타입 결정표 (fast-path, 위→아래 first-match) ──────
 # 에이전트는 슬라이드 본문 키워드를 위에서부터 대조하여 첫 매칭 타입을 채택한다.
 # 구체적(specific) 타입을 위에, 일반(generic) 4종을 아래에 배치 — first-match 가
@@ -218,6 +285,10 @@ decision_table:
   - htmlart: gear
     signal_ko: ["톱니바퀴", "기어", "맞물", "연동", "상호의존", "맞물린"]
     signal_en: ["gear", "interlocking", "mesh", "cog"]
+
+  - htmlart: explain
+    signal_ko: ["풀어 설명", "정의 확장", "여러 관점", "다관점", "여러 의미", "풀이", "이해하기"]
+    signal_en: ["explain", "elaborate", "expand definition", "interpret", "define"]
 
   - htmlart: radial
     signal_ko: ["방사형", "중심 개념", "허브", "중심과 주변", "중심 아이디어"]
@@ -259,6 +330,26 @@ decision_table:
     signal_ko: ["블록 목록", "항목 나열", "세로 목록", "정보 블록"]
     signal_en: ["block list", "vertical list"]
 
+  - htmlart: pie
+    signal_ko: ["비율", "구성비", "퍼센트", "%", "부분-전체", "점유율", "파이", "원형 차트", "조각"]
+    signal_en: ["pie", "percent", "share", "proportion", "composition"]
+
+  - htmlart: compare
+    # compare 는 balance 보다 위에 배치 — "동등 병렬 좌우 비교" 가 "무게·시소" 보다
+    # 일반적이라 signal 충돌 시 compare 우선. balance 는 "시소·기울기" 명시어가 있을 때만.
+    signal_ko: ["좌우 비교", "두 영역 비교", "대립", "대비", "vs", "반대 개념", "양분", "이분법", "두 영역"]
+    signal_en: ["compare", "versus", "vs", "opposing", "contrast", "dichotomy", "two sides"]
+
+  - htmlart: balance
+    signal_ko: ["균형", "시소", "장단점", "찬반", "양팔", "트레이드오프", "비교 무게"]
+    signal_en: ["balance", "seesaw", "tradeoff", "pros and cons", "weigh"]
+
+  - htmlart: workflow
+    # workflow 는 process 보다 위 — "사람·역할·페르소나 흐름" 명시 시 우선.
+    # 일반 "프로세스·단계" 만 있으면 process 로 fall-through.
+    signal_ko: ["워크플로우", "워크 플로우", "업무 흐름", "역할별 흐름", "사람 흐름", "여정맵", "여정 맵", "페르소나 프로세스", "유저 저니"]
+    signal_en: ["user journey", "persona process", "journey map", "role flow"]
+
   - htmlart: process
     signal_ko: ["순차", "단계", "절차", "프로세스", "워크플로", "진행", "흐름"]
     signal_en: ["step", "process", "flow", "sequential", "workflow"]
@@ -292,7 +383,8 @@ validation:
     [process, cycle, hierarchy, pyramid,
      timeline, venn, matrix, target, funnel,
      gear, radial, chevron, step, arrow,
-     numbered, hexagon, bracket, block, tab]
+     numbered, hexagon, bracket, block, tab,
+     pie, balance, compare, explain, workflow, annotate]
   on_unsupported_type: "슬라이드에 .component-error 표시, 빌드 중단 안 함"
   on_empty_body: "에러 메시지 표시"
   min_nodes:
@@ -315,6 +407,12 @@ validation:
     bracket: 1
     block: 1
     tab: 1
+    pie: 2
+    balance: 2
+    compare: 2
+    explain: 2
+    workflow: 1
+    annotate: 2
 
 # ── 에이전트 사용 안내 ─────────────────────────────────────────────────────
 agent_usage:

@@ -30,56 +30,32 @@
 
 # 📙 일반
 
-## Issue208. htmlArt `compare` 타입 추가 — 2분할 좌우 비교 (등록: 2026-05-24)
-* 목적: 좌우 동등 병렬로 두 영역을 대비하는 슬라이드 패턴을 htmlArt 표준 타입으로 추가. 현재 21종 중 의미·시각이 모두 맞는 타입 없음 — `balance`(시소·무게 강조), `bracket`(그룹 적층), `matrix`(2×2), `venn`(교집합) 모두 불일치. SmartArt 원본 카탈로그의 "Opposing Arrows", "Counterbalance Arrows", "Opposing Ideas" 매핑.
-* 상세:
-    - 신규 타입 `compare` (tier v5, smartart_category `relationship`)
-    - intent: "양쪽 대비·좌우 비교·대립하는 두 영역"
-    - input: 정확히 2개 그룹 — 최상위 1번째 = 좌, 2번째 = 우. 라벨 규약 `**헤드라인** / 부제`
-    - sublevel: 각 그룹 bullet (필수)
-    - visual: 중앙 세로 구분선 + 좌·우 동등 컬럼 + 상단 작은 부제(악센트) + 큰 컬러 헤드라인 + bullet 리스트
-    - recommend_count: 2 그룹 고정, 그룹당 2-7 항목
-    - 사례: "도구의 영역 vs 사고의 영역", "Old vs New", "장점 vs 단점"
-* 구현 명세:
-    - `data/htmlart/types.yml`에 `compare` 항목 추가 + `decision_table` 신호 등록 (`balance`보다 위에 배치)
-        - `signal_ko`: ["좌우 비교", "두 영역 비교", "대립", "대비", "vs", "반대 개념", "양분", "이분법"]
-        - `signal_en`: ["compare", "versus", "vs", "opposing", "contrast", "dichotomy"]
-    - `lib/component-hooks/htmlart_dispatch.js`에 `compare` 핸들러 추가
-    - 라벨 파싱 정규식: `/^\*\*(.+?)\*\*\s*(?:\/\s*(.+))?$/`
-    - 렌더는 d3 SVG 불필요 — 순수 HTML/CSS grid 2열 (반응형 자연스러움)
-    - theme CSS: `theme/_shared/components.css` 또는 `theme/{name}/slide.css`에 `.htmlart-compare` 스타일 추가
-        - CSS 변수: `--htmlart-compare-sub`, `--htmlart-compare-head-left`, `--htmlart-compare-head-right`, `--htmlart-compare-divider`
-    - balance vs compare 경계 명시: balance = 무게·기울기 비대칭, compare = 동등 병렬
-* 카테고리: Generator + Asset
-* 참고: `_doc_work/z_htm/claude-htm-1779588931.html` (제안 검토 결과)
-
-## Issue209. htmlArt `workflow` 타입 추가 — 사람 endcap + 단계 박스 체인 (등록: 2026-05-24)
-* 목적: "기획구상 → ... → 결과문서" 형태의 워크플로 패턴을 htmlArt 표준 타입으로 추가. 양 끝에 사람(역할·페르소나) endcap이 있고 중간에 N개의 단계 박스가 배치되는 시각 구조. 현재 `process` 타입은 박스 체인만 표현하고 endcap·페르소나 강조 불가.
-* 상세:
-    - 신규 타입 `workflow` (tier v5, smartart_category `process`)
-    - intent: "양 끝 페르소나(시작·결과) + 중간 단계 박스 체인. 사람 주도 워크플로·역할 강조 프로세스"
-    - input: 평면 리스트 — 최상위 항목 = 단계. 첫·마지막 항목에 `[person]` 메타 또는 라벨 형식 `**기획구상** {person}` 으로 endcap 표시
-    - sublevel: 하위 들여쓰기 = 단계 보조 설명 + 도구 라벨(예: "Gemini · NotebookLM"). 그룹 묶기 메타 `{group: "..."}` 로 상단 캡션 표시
-    - visual: 사람 실루엣 아이콘 endcap(좌·우) + 라운드 사각 박스 체인(중앙) + 상단 그룹 캡션(괄호로 묶음) + 박스 아래 라벨 텍스트
-    - recommend_count: 3-10 단계 (endcap 2 + 중간 1-8)
-    - 변형: endcap 없이 박스만 (degraded `process` 동등), 빈 박스(번호만), 그룹 캡션 (선택)
-    - 사례: "슬라이드 워크플로우 (기획 → Gemini → Claude In PPT → 결과)", "고객 여정맵(고객 → 터치포인트들 → 결과)", "리서치 파이프라인(질문자 → 도구들 → 보고서)"
-* 구현 명세:
-    - `data/htmlart/types.yml`에 `workflow` 항목 추가 + `decision_table` 신호 등록 (`process`보다 위에 배치)
-        - `signal_ko`: ["워크플로우", "워크 플로우", "워크플로", "업무 흐름", "역할별 흐름", "사람 흐름", "여정맵", "페르소나 프로세스"]
-        - `signal_en`: ["workflow", "journey", "persona process", "user journey"]
-    - `lib/component-hooks/htmlart_dispatch.js`에 `workflow` 핸들러 추가
-    - 라벨 메타 파싱: `**라벨** {person}`, `{group: "..."}`, `{tool: "..."}` 토큰 파싱
-    - 사람 아이콘은 SVG inline (`theme/_shared/icons/person.svg` 신설) — 색은 CSS 변수 `--htmlart-workflow-person-fill`
-    - 박스 체인은 d3 SVG (기존 `process` 렌더 재사용 + endcap 위치만 추가)
-    - 그룹 캡션은 상단 정중앙 텍스트 + 좌우 곡선 가이드(중괄호 또는 brace) — 옵셔널
-    - theme CSS: `.htmlart-workflow` 스타일, `--htmlart-workflow-box-fill`, `--htmlart-workflow-person-fill`, `--htmlart-workflow-group-caption`
-* 카테고리: Generator + Asset
-* 참고: 출처 영상 — YouTube `oG5-NY2ZdwU` (우석지니 채널)의 "슬라이드 워크 플로우" 슬라이드 패턴 + 빈 박스/번호 박스 변형
-
 # 📗 선택
 
 # ✅ 완료
+
+## Issue209. htmlArt `workflow` 타입 추가 — 사람 endcap + 단계 박스 체인 (등록: 2026-05-24, 해결: 2026-05-24, commit: TBD) ✅
+* 목적: "기획구상 → ... → 결과문서" 형태의 워크플로 패턴을 htmlArt 표준 타입으로 추가. 양 끝에 사람(역할·페르소나) endcap이 있고 중간에 N개의 단계 박스가 배치되는 시각 구조. 기존 `process`는 박스 체인만 표현하고 endcap·페르소나 강조 불가.
+* 변경:
+    - `lib/markdown.js` HTMLART_TYPES에 `workflow` 추가 (24종) + 주석 갱신
+    - `data/htmlart/types.yml` `workflow` 항목(tier v6, smartart_category process) + `decision_table` `workflow` 신호 등록 (`process`보다 위) + `type_whitelist`/`min_nodes` 갱신 + type_count 23→24
+    - `lib/component-hooks/htmlart_dispatch.js` `renderWorkflow` d3 SVG 핸들러 — N>=2 시 좌 사람 endcap, N>=3 시 우 사람 endcap, 중간은 표준 박스(nodeBox 재사용) + 화살표. 사람 SVG = 머리 원 + 라운드 사각 몸, 색은 `--htmlart-accent` 상속
+    - `lib/__tests__/markdown.test.js` 23→24 화이트리스트 + workflow 신규 케이스 (52 tests 전체 pass)
+    - `Projects/aTest/markdown/04-htmlart.md` 카탈로그 도입부 23→24 + workflow 데모 슬라이드(compare↔explain 사이, #/25)
+* 단순화 사항: 본 1차 구현은 `{person}`·`{group}`·`{tool}` 메타 파싱 미적용 — 첫·마지막 항목 자동 endcap 규칙으로 대체. 메타 토큰 + 그룹 캡션은 후속 이슈 후보
+* 카테고리: Generator + Asset
+
+## Issue208. htmlArt `compare` 타입 추가 — 2분할 좌우 비교 (등록: 2026-05-24, 해결: 2026-05-24, commit: 83dfe2a + TBD) ✅
+* 목적: 좌우 동등 병렬로 두 영역을 대비하는 슬라이드 패턴을 htmlArt 표준 타입으로 추가. 21종 중 의미·시각이 모두 맞는 타입 없음 — `balance`(시소·무게), `bracket`(그룹 적층), `matrix`(2×2), `venn`(교집합) 모두 불일치. SmartArt 원본 카탈로그의 "Opposing Arrows", "Counterbalance Arrows", "Opposing Ideas" 매핑.
+* 변경:
+    - 신규 타입 `compare` (tier v5, smartart_category relationship) — Issue211 작업분(commit 83dfe2a) 동반 흡수 구현
+    - `data/htmlart/types.yml` `compare` 항목 + `decision_table` 신호(`balance`보다 위, "좌우 비교/대립/vs/이분법" 키워드)
+    - `lib/markdown.js` HTMLART_TYPES에 `compare` 등재
+    - `lib/component-hooks/htmlart_dispatch.js` `renderCompare` — 라벨 `**헤드라인** / 부제` 파싱 + 순수 HTML grid 2열(중앙 구분선 + 좌·우 컬럼) — d3 SVG 불필요
+    - `lib/__tests__/markdown.test.js` `v5 compare` 케이스 (2그룹 라벨·부제·bullet 변환 검증)
+    - `Projects/aTest/markdown/04-htmlart.md` compare 데모 슬라이드 (도구의 영역 vs 사고의 영역)
+* balance vs compare 경계: balance = 무게·기울기 비대칭, compare = 동등 병렬
+* 카테고리: Generator + Asset
 
 ## Issue213. _contents body video·img 풀폭 표시 — media-container fit 규칙 확장 (등록: 2026-05-24, 해결: 2026-05-24, commit: 7724ccc) ✅
 * 목적: H2 제목이 있는 슬라이드(`_contents` layout)에 마크다운 `![](./video/*.mp4)` 또는 `![](./img/*.png)`을 단독 배치할 때 video/img가 자연 크기(예: 320x240)로 작게 표시되어 빈 슬라이드처럼 보이는 문제 해결. 제목 없는 미디어 단독 슬라이드는 `_blank--full-video` 자동 감지가 처리하지만 제목 보존하고 풀폭 표현이 필요한 경우 우회 수단이 없었음.
