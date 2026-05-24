@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 217
+* Issue HWM: 220
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -25,6 +25,83 @@
 2. HtmlArtEval cover 슬라이드 제목 우측 끝 빈 박스 렌더 (Issue202 등록 시 동반 발견 — word-break와 별개. `_cover.html` 변수 미치환 또는 frontmatter 빈 값 추정)
 
 # 🚧 진행중
+
+## Issue220. ESC overview 진입 시 thumbnail content 시각적 비표시 — Issue215 잔존 회귀 (등록: 2026-05-24)
+* 목적: Issue215 fix(commit e63c1b3, width/height number 전달) 이후 ESC overview 진입 시 sections 좌표·grid spacing은 정상이나 화면이 비어 보이는 잔존 회귀 해결.
+* 상세:
+    - playwright evaluate에서 sections visible:true, display:block, opacity:1, content 자식 elements 존재, viewport 안 위치 확인됨에도 screenshot에 thumbnails 미표시
+    - 강제 `background: rgba(255,0,0,0.2) !important; outline: 3px solid red !important` 적용해도 안 보임 — DOM은 그려졌으나 visual layer에 paint 안 됨
+    - 영향: Issue215 fix는 spacing 회귀(100배)를 해결했으나 thumbnail content가 보이지 않아 사용자 ESC overview UX 불가
+* 원인 후보:
+    - reveal.js overview re-layout 후 `Reveal.layout()` 호출 시점에 transform 적용이 안정되기 전 캡처 (타이밍)
+    - reveal.css의 `.reveal.overview .slides section { height:100% !important }`와 우리 base.css의 `min-height:0; max-height:none !important` 잔여 충돌 (Issue215 보조 변경)
+    - `.media-enlarge-height/fit .reveal .slides section.present { ... overflow:hidden }`가 .present만이라 비활성 section content가 1920×1280 그대로 그려지지만 section 자체는 scale 0.177 후 340×227 viewport, content overflow가 viewport 밖 짤림
+    - z-index 또는 stacking context 충돌 (overlay 레이어)
+* 구현 명세:
+    - 재현: aTest 04-htmlart.html 열고 ESC → sections 좌표 정상이나 화면 빈 상태 확인
+    - 후보1: `.reveal.overview .slides section`에 `overflow:hidden` + `contain: layout style` 추가하여 thumbnail box 안에만 content 그리도록 클리핑
+    - 후보2: Issue215 보조 변경(`min-height:0` 등) revert 하고 reveal.css 표준 `height:100% !important`에 위임
+    - 후보3: 슬라이드별 `display:flex/height:100%` 강제(`media-enlarge-*` 한정)가 overview에 미치는 영향 분리 검토
+    - 검증: aTest 5개 챕터 + m2Slide·graphify ESC overview thumbnail content 시각 표시
+* 카테고리: Theme (CSS) + Frontend (reveal.js overview UX)
+* 관련: Issue215 (Root cause + 1차 fix), Issue109 (overflow:visible outer padding 의도)
+
+## Issue219. htmlArt `callout` 타입 추가 — 중앙 hub + 다방향 callout arrow (등록: 2026-05-24)
+* 목적: 사용자 제공 이미지 2장(중앙 hub + 방사 callout arrow + 라벨) 기반 신규 htmlArt 타입. 강의·소개 슬라이드에서 핵심 주제(중앙) + 부연·태그 그룹(방사 라벨)을 박스 없이 fan-out 으로 표현하는 패턴이 흔함. 기존 `explain`(좌·우 column 풀이)·`radial`(중심 박스+스포크 박스)·`annotate`(원문 span 주해)로는 표현 불가 — 짧은 화살표 + 다방위 자유 분산 + 라벨 색 분리(강조/태그) 패턴이 모두 부재.
+* plan: (단순/중간 — plan 파일 생략)
+* 상세:
+    - 입력: 첫 항목 = 중앙 hub (아이콘 토큰 `:fa-*:` 또는 emoji 1자 첫 부분 자동 파싱). 나머지 = branch (작성 순서 = 배치 순서)
+    - 라벨 강조: `**볼드**` branch → accent-1(primary), 일반 → accent-2(secondary)
+    - 태그 그룹: 라벨 안 `|` 또는 ` / ` sep → 토큰 사이 옅은 vertical bar
+    - orientation 옵션(Pandoc attribute): `{.h}`/`{.horizontal}`(기본, 가로 stem) · `{.v}`/`{.vertical}`(세로) · `{.fan}`(이미지 2 형태, 상반원 부채꼴)
+    - 권장 branch 수: 2-6
+    - graceful degradation: JS 미동작 시 `<ul>` 그대로 노출 (다른 htmlArt 타입과 동일)
+    - 참고 명세: `_doc_work/refs/htmlart-callout-reference.md` (이미지 2장 구조·시각 SSOT)
+* 구현 명세:
+    - `lib/markdown.js`: `HTMLART_TYPES` Set에 `callout` 추가
+    - `data/htmlart/types.yml`: tier `v7` 신규 또는 ext 추가. signal_ko `["중앙 주제", "방사 라벨", "콜아웃", "주제+태그"]`, signal_en `["callout", "annotation hub"]`. decision_table에 specific 위치 등재
+    - `lib/component-hooks/htmlart_dispatch.client.js`: `renderCallout(el)` 추가 + dispatch case 매핑
+        - 입력 파싱: 첫 항목에서 `:fa-([\w-]+):` 토큰 분리 → icon slot, 나머지 텍스트 = title
+        - `**bold**` 감지 → accent-1 class, 미감지 → accent-2
+        - orientation 클래스(`data-orientation`)에 따라 분산 좌표 계산
+        - branch path: hub edge → 짧은 stem(stub) → arrow head, 끝에 박스 없는 텍스트
+        - 태그 sep(`|` 또는 ` / `) → `<span class="ha-tag-sep">|</span>` 삽입
+    - `lib/__tests__/markdown.test.js`: callout 케이스 추가 (24종 → 25종 갱신)
+    - `_doc_arch/htmlArt.md`: v7 섹션 추가, 타입 25종 표·통계·카테고리 매핑 갱신
+    - `Projects/htmlArtTest/htmlArtTest.md` 또는 신규 슬라이드: callout 데모 3종 (horizontal·fan·vertical)
+* 검증:
+    - `node --test lib/__tests__/markdown.test.js`
+    - `./m2slide.sh htmlArtTest` 빌드 + Firefox 검증
+* 카테고리: Frontend + Generator
+* 후속: ppt2m2slide(Issue214) SmartArt 매핑에 PowerPoint "Callout"/"Radial Callout" → `callout` 추가
+
+## Issue218. htmlArt `bend_process` 타입 추가 — N단계 줄바꿈 serpentine 흐름 (등록: 2026-05-24)
+* 목적: PowerPoint SmartArt "Bending Process"(휘어지는 프로세스) 대응. 단계 수가 많아 한 줄에 다 못 담길 때 행 끝에서 곡선으로 다음 줄로 꺾어 역방향으로 이어지는 N단계 흐름. 기존 `process`(가로 직선 1행)·`step`(계단)·`workflow`(사람+박스)로 표현 불가. 강의·튜토리얼 PPT에 흔히 등장(7단계 작업 사이클, 학습 로드맵 등)하므로 ppt2m2slide(Issue214) 매핑 후보로도 필수.
+* 상세:
+    - 입력: 평면 리스트 — 최상위 항목 = 단계, 작성 순서 = 진행 순서
+    - sublevel: 하위 들여쓰기 = 단계 라벨/보조 설명 (예: "스킬, GEM, GPTS", "대화로 진행", "가장 오래 걸림")
+    - visual: 번호 원(circle) + 라벨, 행 끝에서 곡선으로 다음 줄, 역방향 진행 (serpentine)
+    - 권장 단계 수: 4-12 (3 이하면 `process` 권장, 13 이상이면 `timeline` 권장)
+    - 옵션: 단계 비활성(회색) 표시 — 작성 시 별도 디렉티브 또는 prefix(`~~`)로 표시 검토
+    - 단계 간 transition 라벨(보조 설명) 지원 — sublevel 첫 줄을 라벨로, 나머지를 단계 본문으로 분리하는 방식 검토
+    - 참고 이미지: `_doc_work/capture/issue218/` (7단계 + 5단계 샘플)
+* 구현 명세:
+    - 신규: `data/htmlart/types.yml`에 `bend_process` 항목 추가 (tier: v3 또는 v6 워크플로와 동일 tier)
+        - smartart_category: process
+        - signal 추가: signal_kr `["휘어지는 프로세스", "꺾이는 흐름", "여러 줄 단계", "serpentine"]`, signal_en `["bending process", "serpentine", "wrap process", "multi-row steps"]`
+        - matcher: `process` 보다 우선순위 낮게(특정 signal 명시 시만 발동). 미명시 + 단계 수 ≥ 7이면 자동 추천 검토
+    - 신규: `data/htmlart/smartart-catalog.yml` 매핑에 PowerPoint "Bending Process" → `bend_process` 추가
+    - 신규: `lib/component-hooks/htmlart_dispatch.js` (또는 htmlart 렌더 모듈)에 `bend_process` 케이스 — d3 기반:
+        - 컨테이너 폭 기준 한 행 단계 수(N_per_row) 자동 계산 (단계 박스 최소 폭 기준)
+        - 행별 좌→우, 우→좌 교대 배치
+        - 행 끝에서 `d3.path().arcTo()` 또는 cubic-bezier로 곡선 연결
+        - 비활성 단계(회색) 옵션 처리
+        - 사이 라벨 텍스트 배치 (라인 위)
+    - 신규: 테스트 프로젝트 `Projects/htmlartTest`(또는 기존)에 bend_process 샘플 슬라이드 추가
+    - 수정: `_doc_arch/htmlart.md` 또는 관련 설계 문서에 bend_process 항목 추가
+    - 미수정: 기존 htmlart 타입 렌더 로직
+* 카테고리: Frontend + Generator (htmlart 카탈로그 확장)
+* 후속: Issue214 ppt2m2slide의 SmartArt 매핑 카탈로그가 본 타입을 자동 활용
 
 ## Issue217. ppt2m2slide chapter 검출 H1-only 한계 + agenda 확정 전 사용자 컨펌 의무화 (등록: 2026-05-24)
 * 목적: `ppt2m2slide`가 pptx2md 산출물의 챕터 구조를 H1(`#`) 카운트만으로 판정하여, pptx2md가 챕터·슬라이드 제목을 모두 H2(`##`)로 변환하는 일반 케이스에서 chapter mode 진입 실패. `Projects/BasicKnowledgeForAI`(202장, 13개 `## 부록N` 챕터)가 single mode로 떨어져 2720줄 단일 .md 생성. 다중 챕터 PPT는 거의 모두 동일 문제 재발 예상. mode 자동 판정 + 사용자 컨펌 없는 통과를 차단.
@@ -78,18 +155,23 @@
 
 # ✅ 완료
 
-## Issue215. ESC overview 모드 슬라이드 1개만 표시 회귀 — Issue109 overflow:visible 복합 회귀 (등록: 2026-05-24, 해결: 2026-05-24, commit: df96409) ✅
+## Issue215. ESC overview 모드 슬라이드 1개만 표시 회귀 — width/height 문자열 전달로 spacing 100배 비정상 (등록: 2026-05-24, 해결: 2026-05-24, commit: df96409, e63c1b3) ✅
 * 목적: ESC 키로 overview 모드 진입 시 챕터 슬라이드 27장이 모두 같은 좌표에 겹쳐 1장처럼 보임. aTest 04-htmlart.html에서 재현. reveal.js overview 그리드 정상 표시 복구.
+* Root cause (1차 commit 후 잔존 회귀를 playwright 실제 ESC 검증으로 발견):
+    - `lib/html-builder.js:1099-1100` chapter Reveal.initialize에서 `width: '${revealWidth}'` 무조건 인용 → number 1920이 문자열 "1920"으로 reveal.js에 전달
+    - reveal.js Overview 코드 `overviewSlideWidth = i.width + e` (e=70)가 문자열 concat `"1920" + 70 = "192070"` 픽셀이 되어 grid spacing 정상의 100배
+    - 결과: 27 sections이 viewport 폭의 100배 간격으로 배치되어 화면에 1장도 보이지 않음
+    - 1차 추정(Issue109 overflow:visible + theme min-height:100%)은 원인의 일부지만 spacing 100배가 진짜 회귀 원인
 * 변경:
-    - `lib/css/base.css`: `.reveal.overview, .reveal.overview .slides { overflow: hidden !important; }` 추가 — overview 진입 시만 클립 복구 (이슈 명세 후보1)
-    - `lib/css/base.css`: `.reveal.overview .slides section, .reveal.overview .slides section[class*="layout-"] { min-height: 0 !important; max-height: none !important; }` 추가 — theme `min-height:100%` 강제로 overview 모드 풀사이즈 적층되던 회귀 차단 (원인2 대응)
-    - `lib/css/base.css`: `media-enlarge-height/fit` 전역 `display:flex !important`를 `section.present` 한정으로 좁힘 — 비활성 슬라이드의 reveal.js inline `display:none` 덮어쓰기 차단 (cross-page 잔상 방지, 동반 발견)
+    - `lib/html-builder.js` (e63c1b3): cover Reveal.initialize(L2261-2262)의 `${typeof X === 'number' ? X : "'X'"}` 패턴 동일 적용 — ratio-3-2/16-9는 number 그대로, ratio-fill만 `'100%'` 인용
+    - `lib/css/base.css` (df96409): `.reveal.overview` 한정 `overflow: hidden`, `min-height: 0`, `max-height: none` 추가 (보조적 보호) + `media-enlarge-height/fit` 전역 `display:flex !important`를 `section.present` 한정으로 좁힘 (cross-page 잔상 동반 발견)
 * 검증:
-    - aTest 04-htmlart 27 sections — overview ON 시 grid 분산(x좌표 -67k~+68k, 340×227 thumbnail) playwright evaluate 확인
+    - playwright `Reveal.configure({width:1920, height:1280})` 강제 후 toggleOverview → spacing 정상 352px (= (1920+70) × scale 0.177), 27 sections viewport 안 grid 분산
+    - rebuild 후 aTest/m2Slide/graphify/LlmAndVibeCoding HTML 산출물 `width: 1920,` (인용 없음) 확인
     - overview OFF 시 `.slides`·`.reveal`·`body` overflow `visible` 유지(Issue109 outer padding 가시화 의도 보존)
-    - aTest + m2Slide + graphify + LlmAndVibeCoding 빌드 정상, base.css 산출물 inline 반영 확인
+* 잔존 — 별 이슈 후보: rebuild 후 ESC 진입 시 sections 좌표는 정상이나 thumbnail content가 시각적으로 보이지 않음 (강제 background 적용해도 안 보임). reveal.js의 overview re-layout 타이밍 또는 우리 CSS의 section 자체 가시 영역 제한 가능성. 별 이슈로 분리하여 추가 조사 예정
 * 가드 준수: `base.css` 수정 가드 — `display`·`height`·`position`·`transform` 금지 속성 미변경 (overflow + min/max-height만 조정, overview 한정 셀렉터)
-* 카테고리: Theme (CSS)
+* 카테고리: Generator + Theme (html-builder.js + CSS)
 
 ## Issue216. p5.js 슬라이드 진입 시 캔버스 크기 깨짐 — `renderAll`이 비활성 슬라이드까지 사전 렌더 (등록: 2026-05-24, 해결: 2026-05-24, commit: 3db86ef) ✅
 * 목적: `p5` 컴포넌트가 포함된 슬라이드를 네비게이션으로 진입하면 캔버스가 가로 막대·세로 막대·정사각 등 비정상 크기로 표시됨. 해당 슬라이드 URL(`#/14`)로 새로고침하면 정상. p5 캔버스 내부 픽셀 크기를 슬라이드가 실제로 가시화된 시점의 컨테이너 크기로 결정하도록 디스패처 초기화 시점을 lazy로 전환.
