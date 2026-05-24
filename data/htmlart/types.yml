@@ -12,12 +12,12 @@ meta:
   design_doc: _doc_arch/htmlArt.md
   catalog: data/htmlart/smartart-catalog.yml
   layout_status: _doc_arch/htmlArt_list.md
-  status: active          # core 구현 완료 (v1 4종 + v2 10종 + v3 list 5종 + v4 비율·균형 2종 + v5 비교·풀이 2종 + v6 워크플로 1종)
+  status: active          # core 구현 완료 (v1 4종 + v2 10종 + v3 list 5종 + v4 비율·균형 2종 + v5 비교·풀이 2종 + v6 워크플로 1종 + ext annotate + v7 callout)
   syntax: "::: htmlart <type>"
   input_model: "들여쓰기 아웃라인 (2칸 = 1레벨, ::: cards 본문과 동일)"
-  type_count: 24
+  type_count: 26
 
-# ── htmlArt 타입 (23종 = v1 4 + v2 확장 10 + v3 list 5 + v4 비율·균형 2 + v5 비교·풀이 2) ─────
+# ── htmlArt 타입 (26종 = v1 4 + v2 확장 10 + v3 list 5 + v4 비율·균형 2 + v5 비교·풀이 2 + v6 워크플로 1 + ext annotate 1 + v7 callout 1) ─────
 # v1 (Issue188): process · cycle · hierarchy · pyramid
 # v2 확장 (Issue202): timeline · venn · matrix · target · funnel · gear · radial · chevron · step · arrow
 # v3 list (Issue204): numbered · hexagon · bracket · block · tab
@@ -235,6 +235,16 @@ types:
     recommend_count: "3-10 단계 (endcap 2 + 중간 1-8)"
     impl_note: "process 박스 체인 + 첫·마지막 박스를 사람 SVG(머리 원 + 몸 라운드 사각)로 치환. 사람 색은 --htmlart-accent 상속"
 
+  bend_process:
+    tier: v6
+    intent: "N단계 줄바꿈 serpentine 흐름 (단계 수가 많아 한 줄에 다 못 담길 때 휘어지는 프로세스)"
+    smartart_category: process
+    input: "평면 리스트 — 최상위 항목 = 단계, 작성 순서 = 진행 순서. 단계 라벨 끝 `~~` 또는 `[off]` prefix 시 비활성(회색) 처리"
+    sublevel: "하위 들여쓰기 = 단계 간 transition 라벨 (선택 — 다음 화살표 위에 표시)"
+    visual: "번호 원형 노드 + 라벨, 행 끝에서 곡선으로 다음 행 꺾임 후 역방향 진행 (serpentine). 노드 사이 직선 연결, 행 끝 ¼원 곡선"
+    recommend_count: "4-12 단계 (3 이하 → process, 13+ → timeline 권장)"
+    impl_note: "행당 노드 수(per_row)는 컨테이너 폭 ÷ 단일 노드폭으로 자동 산출. 행별 좌→우, 우→좌 교대. 행 전환 곡선 = d3.path().arcTo() 또는 cubic bezier. 비활성 노드는 fill=gray + opacity=0.55. 사이 라벨은 노드 중간 위쪽 또는 아래쪽 텍스트."
+
   explain:
     tier: v5
     intent: "중앙 명제를 여러 짧은 풀이 phrase로 풀어 설명 (정의 확장·다관점 해석)"
@@ -261,6 +271,22 @@ types:
     recommend_count: "원문 1 + 주석 2-6"
     impl_note: "foreignObject 안에 span 마커 → getBoundingClientRect 측정 → SVG viewBox 좌표 변환 → 색 줄 + elbow line + 좌·우 라벨 배치 (span x-위치로 좌/우 분기)"
 
+  callout:
+    tier: v7
+    intent: "중앙 hub(아이콘 + 큰 타이틀) + 다방향 callout arrow + 박스 없는 라벨 (강조 카피 / 태그 그룹)"
+    smartart_category: relationship
+    input: |
+      평면 리스트:
+        * [:fa-name: 또는 이모지] <중앙 hub 타이틀>
+        * **<강조 카피>**            ← bold → accent-1 (primary)
+        * <라벨 또는 태그|태그|태그>  ← 일반 → accent-2 (secondary)
+        * ...
+      옵션 (Pandoc attribute): {.h}/{.horizontal}(기본) · {.v}/{.vertical} · {.fan}
+    sublevel: "(미사용 — 평면 리스트만)"
+    visual: "중앙 hub(아이콘 슬롯 + 큰 타이틀) + branch arrow N개 + 끝 라벨. 태그 sep `|` 또는 ` / ` → 토큰 사이 옅은 vertical bar"
+    recommend_count: "중앙 1 + branch 2-6"
+    impl_note: "첫 항목 머리에서 :fa-([\\w-]+): 또는 emoji 1자 분리 → 아이콘 슬롯. **bold** 감지 → accent-1, 아니면 accent-2. orientation 클래스(horizontal/vertical/fan)에 따라 branch 좌표 분산. branch path: hub edge → 짧은 stub → arrow head + 끝에 박스 없는 텍스트."
+
 # ── 콘텐츠 신호 → htmlArt 타입 결정표 (fast-path, 위→아래 first-match) ──────
 # 에이전트는 슬라이드 본문 키워드를 위에서부터 대조하여 첫 매칭 타입을 채택한다.
 # 구체적(specific) 타입을 위에, 일반(generic) 4종을 아래에 배치 — first-match 가
@@ -285,6 +311,10 @@ decision_table:
   - htmlart: gear
     signal_ko: ["톱니바퀴", "기어", "맞물", "연동", "상호의존", "맞물린"]
     signal_en: ["gear", "interlocking", "mesh", "cog"]
+
+  - htmlart: callout
+    signal_ko: ["콜아웃", "중앙 주제", "방사 라벨", "주제 + 태그", "주제+태그", "주제와 부연", "주제와 태그", "포스터형 주제"]
+    signal_en: ["callout", "annotation hub", "topic with tags", "fan out tags"]
 
   - htmlart: explain
     signal_ko: ["풀어 설명", "정의 확장", "여러 관점", "다관점", "여러 의미", "풀이", "이해하기"]
@@ -350,6 +380,12 @@ decision_table:
     signal_ko: ["워크플로우", "워크 플로우", "업무 흐름", "역할별 흐름", "사람 흐름", "여정맵", "여정 맵", "페르소나 프로세스", "유저 저니"]
     signal_en: ["user journey", "persona process", "journey map", "role flow"]
 
+  - htmlart: bend_process
+    # bend_process 는 process 보다 위 — "휘어지는·serpentine·줄바꿈 흐름" 명시 시 우선.
+    # 일반 "프로세스·단계" 만 있으면 process 로 fall-through.
+    signal_ko: ["휘어지는 프로세스", "휘어지는 단계", "꺾이는 흐름", "여러 줄 단계", "줄바꿈 흐름", "serpentine", "구불구불"]
+    signal_en: ["bending process", "serpentine", "wrap process", "multi-row steps", "snaking"]
+
   - htmlart: process
     signal_ko: ["순차", "단계", "절차", "프로세스", "워크플로", "진행", "흐름"]
     signal_en: ["step", "process", "flow", "sequential", "workflow"]
@@ -384,7 +420,7 @@ validation:
      timeline, venn, matrix, target, funnel,
      gear, radial, chevron, step, arrow,
      numbered, hexagon, bracket, block, tab,
-     pie, balance, compare, explain, workflow, annotate]
+     pie, balance, compare, explain, workflow, annotate, callout]
   on_unsupported_type: "슬라이드에 .component-error 표시, 빌드 중단 안 함"
   on_empty_body: "에러 메시지 표시"
   min_nodes:
@@ -413,6 +449,7 @@ validation:
     explain: 2
     workflow: 1
     annotate: 2
+    callout: 2
 
 # ── 에이전트 사용 안내 ─────────────────────────────────────────────────────
 agent_usage:

@@ -25,7 +25,7 @@ meta:
 # layout 단위 정밀 매핑·구현 path 는 _doc_arch/htmlArt_list.md 참조.
 category_to_htmlart:
   list:         [numbered, hexagon, bracket, block, tab]  # ✅ 구현 (v3 list 타입군 5종)
-  process:      [process, timeline, funnel, gear, chevron, step]  # ✅ 구현 (6 타입 분담)
+  process:      [process, timeline, funnel, gear, chevron, step, bend_process]  # ✅ 구현 (7 타입 분담)
   cycle:        [cycle, radial]                        # ✅ 구현
   hierarchy:    [hierarchy]                            # ✅ 구현
   pyramid:      [pyramid]                              # ✅ 구현
@@ -85,8 +85,8 @@ categories:
   process:
     label: "Process (프로세스형)"
     category_purpose: "방향성 흐름. 작업·워크플로의 순차 단계·국면·타임라인."
-    htmlart: [process, timeline, funnel, gear, chevron, step]
-    htmlart_note: "기본 process. 타임라인→timeline, 깔때기→funnel, 톱니→gear, 갈매기→chevron, 계단→step."
+    htmlart: [process, timeline, funnel, gear, chevron, step, bend_process]
+    htmlart_note: "기본 process. 타임라인→timeline, 깔때기→funnel, 톱니→gear, 갈매기→chevron, 계단→step. 단계 수가 많아 여러 행이 필요한 휘어지는·serpentine 흐름→bend_process."
     layouts:
       Accent Process: "진행·타임라인·순차 단계"
       Alternating Flow: "정보 그룹·순차 단계"
