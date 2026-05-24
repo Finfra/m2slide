@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 231
+* Issue HWM: 232
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -42,6 +42,21 @@
 # 📙 일반
 
 # ✅ 완료
+
+
+## Issue232. H1 슬라이드 contents-header 누락 + 백틱 인라인 코드 link 침범 + H1/H2 puffer 비대칭 (등록: 2026-05-25, 해결: 2026-05-25) ✅
+* 목적: `BasicKnowledgeForAI_small/01-markdown.html` `#/11`(`# Markdown 문법 - 링크` H1만 있는 슬라이드)의 contents-header가 통째 사라지고 빈 가로 띠로 보이던 회귀 차단. 동시에 본문 백틱 인라인 코드 `` `[name](URL)` ``이 `<code>&lt;a href="URL"&gt;name&lt;/a&gt;</code>`로 변환되던 markdown 파서 inline 처리 순서 버그 차단 + H1 슬라이드와 H2 슬라이드의 puffer 마스코트 시각 비대칭 차단.
+* 상세:
+    - 회귀 ①: `slide-parser`의 `if (layout) { title 추출 }` 가드가 layout 미명시 슬라이드(H1만 있고 `theme_default_layout: contents` fallback 경로)를 skip → `slideTitle=''` 유지 → html-builder Issue90 로직이 빈 `contents-header` 통째 제거
+    - 회귀 ②: `lib/markdown.js processInline()`이 link 정규식을 inline-code 정규식보다 먼저 실행 → 백틱 안의 `[name](URL)` 패턴이 `<a>` 태그로 치환 → 뒤이은 inline-code 변환이 `<a>` HTML을 escape 해 `<code>` 안에 밀어넣음
+    - 회귀 ③: H1 → `<h1 class="outline-title">` 생성. Issue90 hoist 정규식이 `h[2-6]` + `class="title"`만 매칭 → H1 hoist 누락 → theme/default puffer CSS `.layout-_contents > .title` 미매치 → 마스코트 누락
+    - 1차 fix(parser fallback) 부작용: title은 표시되나 template `<h1 class="contents-title">` 경로로 흘러 m2Slide H2 hoist 경로와 다른 DOM 구조 생성 → puffer 여전히 미표시
+* 구현 명세:
+    - 1차 parser fallback fix revert (slide-parser.js 원복)
+    - `lib/html-builder.js` Issue90 hoist 정규식 확장: `h[2-6]` → `h[1-6]` + class 매칭에 `outline-title` 포함 + hoist 시 `outline-title` → `title` 정규화 (puffer CSS selector 매치)
+    - `lib/markdown.js processInline()` 인라인 코드 stash/restore 패턴 도입: `\x01CODE${idx}\x01` sentinel 로 코드 격리 후 link·bold 변환, 마지막에 placeholder 복원
+    - 사례 기록: `_doc_work/debug_TECH.md` § Issue232 추가 (3중 회귀 진단·1차 fix 부작용·최종 fix·함정 3종)
+* 카테고리: Generator (slide-parser·markdown 파서·html-builder hoist) + Frontend (CSS selector 일관성)
 
 
 ## Issue231. graphify CLI 미활용 회귀 — slide 코드 추적 시 grep 우선 + 자동 트리거 부재 (등록: 2026-05-25, 해결: 2026-05-25, commit: b80e4c5) ✅
