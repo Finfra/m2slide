@@ -228,7 +228,7 @@
 
 # ✅ 완료
 
-## Issue224. `::: cards` 다수 카드 슬라이드 overflow clip — px 고정값 em 전환 (등록: 2026-05-24, 해결: 2026-05-24, commit: ea777cb, b14f748) ✅
+## Issue224. `::: cards` 다수 카드 슬라이드 overflow clip — px 고정값 em 전환 (등록: 2026-05-24, 해결: 2026-05-24, commit: ea777cb, b14f748, 05d25ff, 502015f) ✅
 * 목적: 카드 개수가 많은 슬라이드에서 카드 그리드가 슬라이드 세로 영역을 초과하여 하단이 잘리는 회귀. font_size_auto가 `.theContents` 폰트를 줄여 overflow를 잡으려 하나 카드 박스 크기·간격이 px 고정이라 폰트만 줄어들고 카드 행 높이·열 폭은 그대로 유지되어 잘림이 해소되지 않음. `Projects/aTest/slide/02-component.html?fwd=1#/8` (6 cards 블록) 등에서 재현.
 * Root cause:
     - `theme/_shared/components.css` §카드 컴포넌트(line 89~178)의 5종 px 고정값(`minmax(180px,1fr)`·`gap 10px`·title `padding 7px 14px`·본문 `padding 8px 13px`·중첩 ul `padding 2px`·`border-radius 10px`·`box-shadow 0 2px 6px`)이 폰트 비례 축소되지 않음
@@ -254,8 +254,19 @@
     - 제목 padding `0.35em 0.7em` → `0.25em 0.6em`, `line-height: 1.3` 명시
     - 본문 padding `0.4em 0.65em` → `0.3em 0.55em`
     - 제목 `font-size 1.05em` → `1em` (제목·본문 동일 비율)
-* 카테고리: Theme (CSS — 카드 그리드 비례 축소)
-* 관련: `lib/html-builder.js:1274` font_size_auto, Issue203 (title-only rows), `_doc_arch/component-slide.md` Core 계열
+* 보강 2 (05d25ff): 사용자 스크린샷 재분석 — 잘림 그리드가 `.m2-cards`가 아닌 시스템 autoToc cards (`.chapter-list--cards .chapter-card`) (`lib/css/base.css:561-573`). H2 슬라이드 수 많은 single-mode 프로젝트(htmlArtTest 28, m2Slide 20)에서 자동 cards 페이지가 viewport 초과
+    - base.css 수정 가드 회피 위해 `theme/default/slide.css` + `theme/default_lec/slide.css`에 em 기반 override 추가
+    - `.chapter-list--cards`: `font-size 0.9em`, `gap 0.7em`
+    - `.chapter-card`: `min-width 9em`, `max-width 15em`, `padding 0.5em 0.7em`, `border-radius 0.4em`, `flex 4열 기본`
+    - `.chapter-card a`: `font-size 0.92em`, `line-height 1.3`
+* 보강 3 (502015f): playwright 측정으로 root cause 확정 — cards 슬라이드(`layout-_cards layout-_toc title-slide`)는 `.theContents` 컨테이너 없음 → `applyDynamicStyles` querySelectorAll length 0 → 즉시 return → font_size_auto 미적용
+    - `lib/html-builder.js:1242` selector `.theContents` → `.theContents, .toc-cards` 확장
+    - 동일 binary search fit 로직을 `.toc-cards`에도 적용 — 카드 폰트 자동 축소 + em 기반 카드 박스 비례 축소 동시 작동
+    - 검증 (playwright http://localhost:8765/index.html?fwd=1#/2 viewport 1920x1080):
+        - 전: scrollH 1187, overflow 107px, toc-cards fontSize 40px 고정
+        - 후: scrollH 1080, overflow 0, toc-cards inline fontSize 35.96px (binary search fit)
+* 카테고리: Theme (CSS) + Generator (JS)
+* 관련: `lib/html-builder.js:1274` font_size_auto binary search, Issue203 (title-only rows), `_doc_arch/component-slide.md` Core 계열
 
 ## Issue215. ESC overview 모드 슬라이드 1개만 표시 회귀 — width/height 문자열 전달로 spacing 100배 비정상 (등록: 2026-05-24, 해결: 2026-05-24, commit: df96409, e63c1b3) ✅
 * 목적: ESC 키로 overview 모드 진입 시 챕터 슬라이드 27장이 모두 같은 좌표에 겹쳐 1장처럼 보임. aTest 04-htmlart.html에서 재현. reveal.js overview 그리드 정상 표시 복구.
