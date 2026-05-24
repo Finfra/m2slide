@@ -43,27 +43,6 @@
     - 회귀 검증: 다른 정상 프로젝트(aTest 등) 빌드 결과 section 카운트 변화 없는지 확인
 * 카테고리: Generator + agent (ppt2m2slide / layout-selector)
 
-## Issue226. ESC 키 reveal.js overview 진입 실패 — m2slide custom keydown handler가 ESC intercept (등록: 2026-05-24)
-* 목적: 사용자가 ESC 키를 눌렀을 때 reveal.js 표준 overview 모드 진입이 안 되고 forward navigation(`#/N` → `#/N+1`)으로 처리되는 회귀 해결. 사용자가 "여러 슬라이드 안 보임" 보고 + chrome screenshot에서 1장만 viewport 채우고 다른 sections opacity 0 적층 확인.
-* 상세:
-    - 재현: `Projects/aTest/slide/02-component.html#/2` 진입 후 ESC → URL #/3 변경 + `.reveal.overview` class 미부착 + 다른 sections opacity 0
-    - 진단 (playwright):
-        - `Reveal.toggleOverview(true)` API 호출 → 정상 grid 분산 (32 sections × 340×227 thumbnail viewport 안 분산, hasOverview=true)
-        - `page.keyboard.press('Escape')` native press → hasOverview=false + hash forward navigation only
-        - `Reveal.getConfig().overview === true` (활성)
-        - `Reveal.getConfig().keyboard = {33:null, 34:null, 35:null, 36:null}` (PageUp/PageDown/End/Home 만 null, ESC 27은 native 그대로여야 함)
-    - 즉 m2slide custom keydown handler (`lib/html-builder.js` Reveal.initialize 이후 document.addEventListener('keydown', ..., true) capture phase)가 ESC를 가로채 forward navigation으로 처리하고 reveal.js native ESC handler에 도달 안 함
-    - 영향: 모든 m2slide 데크에서 ESC overview 기능 사용 불가
-    - Issue215 (width number fix)는 적용되어 있어 API 호출 시 overview는 정상. 진입 경로(키 입력)만 차단됨
-* 구현 명세:
-    - 후보1: `lib/html-builder.js`의 keydown handler에서 ESC keyCode 27 검출 시 `Reveal.toggleOverview()` 명시 호출 + `event.preventDefault()` 후 return
-    - 후보2: m2slide custom handler를 capture phase(`true`)에서 bubble phase(`false`)로 변경하여 reveal.js native handler 먼저 실행 (단 다른 키 처리 순서 영향 검토 필요)
-    - 후보3: `Reveal.initialize({ keyboard: { 27: 'toggleOverview' } })` 명시 등록 — 가장 안전
-    - 검증: aTest 02-component.html#/2 진입 후 ESC → `.reveal.overview` class 부착 + sections grid 분산 + 다시 ESC → 일반 모드 복귀
-* 카테고리: Generator (html-builder.js keydown handler)
-* 관련: Issue215 (width number fix), Issue220 (ESC overview thumbnail visibility — 본 이슈 해결 후 Issue220 재검증)
-* 영속: 사용자가 본 chrome screenshot에서 작은 박스 슬라이드 1장 + 다른 슬라이드 숨김 ← ESC 후 forward navigation 결과의 fade-in/out transition 잔상으로 해석. ESC 진짜 overview 진입이면 사용자 화면은 27 thumbnails grid이어야 함
-
 ## Issue225. .ppt.md 빌드 결과 파일명 미일치 — agenda.html cross-page 링크 404 (등록: 2026-05-24)
 * 목적: layout-selector가 생성한 `.ppt.md` 파생본을 빌드하면 `<base>.ppt.html`로 떨어지나 agenda.html 내 cross-page 링크는 원본 `.md` 기준(`<base>.html`)으로 작성됨. 결과적으로 agenda.html에서 다음 챕터 클릭 시 `ERR_FILE_NOT_FOUND`. BasicKnowledgeForAI (ppt2m2slide + layout-selector 출력) 빌드에서 회귀 확인.
 * 상세:
@@ -237,6 +216,24 @@
 # 📙 일반
 
 # ✅ 완료
+
+## Issue226. ESC 키 reveal.js overview 진입 실패 — keyboard config에 27:'toggleOverview' 명시 (등록: 2026-05-24, 해결: 2026-05-24, commit: 8ae3e9c) ✅
+* 목적: ESC 키를 눌렀을 때 reveal.js 표준 overview 모드 진입이 안 되고 forward navigation(`#/N` → `#/N+1`)으로 처리되는 회귀 해결. 사용자 chrome screenshot에서 슬라이드 1장만 viewport 채우고 다른 sections opacity 0 적층 확인.
+* Root cause:
+    - cfg.keyboard에 `{33,34,35,36 → null}` (PageUp/PageDown/End/Home 비활성)만 있고 ESC(27)는 reveal.js native default 기대였음
+    - 그러나 m2slide custom keydown handler(`lib/html-builder.js` `document.addEventListener('keydown', ..., true)`)가 **capture phase**로 등록되어 reveal.js native handler에 도달 전 다른 navigation 분기로 처리됨
+    - 진단 (playwright):
+        - `Reveal.toggleOverview(true)` API 호출 → 정상 grid 분산 (32 sections × 340×227 thumbnail)
+        - `page.keyboard.press('Escape')` native press → hasOverview=false + URL forward navigation only
+* 변경:
+    - `lib/html-builder.js:1130-1136` chapter Reveal.initialize keyboard 객체에 `27: 'toggleOverview'` 추가
+    - `lib/html-builder.js:2274` cover Reveal.initialize keyboard 객체에 동일 명시
+    - reveal.js 5.0.4 표준 keyboard config 형식 — m2slide custom handler capture phase와 무관하게 reveal.js가 toggleOverview 실행
+* 검증:
+    - 빌드 후 aTest 02-component.html line 2657 산출물 반영 확인 (`27: 'toggleOverview'`)
+    - playwright 재검증 launch 충돌(사용자 chrome 실행 중) — 사용자 chrome reload 후 ESC 진입 시 `.reveal.overview` class 부착 + thumbnail grid 분산 예상
+* 후속: Issue220 (ESC overview thumbnail visibility) 재검증 필요 — 본 fix 후 진입 정상이면 thumbnail content 가시성 별 회귀인지 재판정
+* 카테고리: Generator (html-builder.js keyboard config)
 
 ## Issue221. htmlArt nodeBox 영문 long token clip — width cap + overflow-wrap fallback (등록: 2026-05-24, 해결: 2026-05-24, commit: 1430cc0) ✅
 * 목적: aTest_v1 08.4 workflow 슬라이드의 "Gemini · NotebookLM"·"Claude In PPT" 박스에서 단일 영문 토큰(`NotebookLM`)이 박스 폭(196px)을 초과하여 좌우 clip 발생. 카드 텍스트 잘림 회귀 해결.
