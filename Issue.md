@@ -26,55 +26,6 @@
 
 # 🚧 진행중
 
-## Issue228. agenda.js·html-builder.js cross-page navigation `.ppt.md` 미정규화 — PREV_CHAPTER/NEXT_CHAPTER/subsections lookup 실패 (등록: 2026-05-24)
-* 목적: layout-selector가 `.ppt.md` 파생본 생성 후 빌드 입력이 `.ppt.md`인 케이스에서 `agenda.js`의 `path.basename(fileName, '.md')`가 `.ppt`만 떼고 `02-linux-basic.ppt` 반환 → AGENDA.md 링크 (`./02-linux-basic.md` 기반 `02-linux-basic.html`)와 매칭 실패 → PREV_CHAPTER·NEXT_SIBLING 빈 값 → ← 키 cross-page navigation 시 이전 챕터로 못 가고 agenda fallback. Issue225와 같은 패턴.
-* 상세:
-    - 재현: `02-linux-basic.html#/toc-placeholder`에서 ← → `agenda.html?back=1` (정상 동작 = `01-markdown.html?back=1#/<last>`)
-    - 원인1: `lib/agenda.js:235,210` `path.basename(fileName, '.md')` — `.ppt.md` → `.ppt` 잔존
-    - 원인2: `lib/html-builder.js:258,592` `fileName = path.basename(filePath)` — `.ppt.md` raw 그대로 agenda.js 호출
-    - 결과: `window.PREV_CHAPTER = ''` (빈 값) → keydown handler가 agenda로 fallback
-    - 영향: layout-selector .ppt.md 사용하는 모든 chapter mode 프로젝트 cross-page navigation 전반 (←/→ 챕터간 이동, subsections lookup, sibling 점프)
-* 구현 명세:
-    - 수정: `lib/agenda.js` 상단에 `_baseFromInput(fileName)` helper 추가 — `.ppt.md`/`.md` 둘 다 base 이름 추출
-    - 수정: `lib/agenda.js:210,244` `_getSiblingChapter`·`_getAdjacentChapter`의 `currentHtml` 생성 시 `_baseFromInput(fileName) + '.html'` 사용
-    - 수정: `lib/html-builder.js:258,592` `fileName` 정규화 — `.ppt.md` → `.md` 치환 후 agenda.js 함수에 전달 (downstream getSubsections/getParentPage regex도 일관 동작)
-    - 검증: playwright로 ← 키 cross-page 이동 확인 (`02-linux-basic.html#/toc-placeholder` → `01-markdown.html?back=1`)
-    - 회귀 검증: 다른 정상 프로젝트(aTest 등) 빌드 결과 cross-page 동작 영향 없는지 확인
-* 카테고리: Generator + Build
-
-## Issue227. ppt2m2slide·layout-selector 산출물 슬라이드 구분자 `---` 누락 — 챕터 내 모든 H1이 1슬라이드로 병합 (등록: 2026-05-24)
-* 목적: ppt2m2slide reverse-pipeline + layout-selector 단계 6 산출 `.ppt.md`에 슬라이드 구분자 `---` 단독 줄이 부재. `slide-parser.js:334` `content.split(/\n---\n/)`가 `---` 부재 시 전체를 1슬라이드로 처리 → `01-markdown.html`이 16 H1 슬라이드를 1 cover 슬라이드로 합침. agenda 진입 후 챕터 내 슬라이드 navigation 불가.
-* 상세:
-    - 재현: `Projects/BasicKnowledgeForAI/markdown/01-markdown.ppt.md`에 16개 `# 제목` H1 + 각각 `#layout-_contents` directive 있으나 본문 `---` 단독 줄 0개. 빌드 결과 `slide/01-markdown.html` section 카운트 2개 (toc-placeholder + 단일 cover)
-    - 원인1: `lib/slide-parser.js:334` `content.split(/\n---\n/)` — `---` 단독 줄만 슬라이드 분리. H1은 분리 트리거 아님
-    - 원인2: `.claude/agents/ppt2m2slide.md` Step 6-3·`layout-selector.md` 산출 단계에서 `---` 자동 삽입 의무 없음. pptx2md raw output 그대로 사용
-    - 영향: ppt2m2slide로 변환한 모든 프로젝트의 챕터 .md (마크다운에 명시적 `---` 있는 sub-chapter는 정상). 13 챕터 + 17 sub-chapter 중 sub-chapter는 split_subchapters.py로 `---` 정상 삽입되어 무관
-    - 사용자 보고: "다음으로 넘어가지 않는 문제" — agenda → 챕터 진입 후 → 키로 다음 슬라이드 안 감
-* 구현 명세:
-    - 즉시 fix: 기존 `.ppt.md` 13개 (01·02·04·06·07·08·09·10·11·13 챕터, 03/05/12는 축소·sub-chapter로 이관됨)에 H1 사이 `---` 자동 삽입 후처리. 첫 H1 (cover) 직후부터 매 H1 직전에 빈 줄 + `---` + 빈 줄 삽입
-    - 영구 fix:
-        - `.claude/agents/ppt2m2slide.md` Step 6-3에 "H1 단위 슬라이드 분리 시 각 H1 직전(첫 H1 제외)에 `---` 단독 줄 삽입" 룰 추가
-        - `.claude/agents/layout-selector.md`에 `.ppt.md` 생성 시 동일 룰 추가
-    - 검증: 재빌드 후 `01-markdown.html` section 카운트 17 (toc + 16 slides) 확인 + playwright로 navigation 동작 확인
-    - 회귀 검증: 다른 정상 프로젝트(aTest 등) 빌드 결과 section 카운트 변화 없는지 확인
-* 카테고리: Generator + agent (ppt2m2slide / layout-selector)
-
-## Issue225. .ppt.md 빌드 결과 파일명 미일치 — agenda.html cross-page 링크 404 (등록: 2026-05-24)
-* 목적: layout-selector가 생성한 `.ppt.md` 파생본을 빌드하면 `<base>.ppt.html`로 떨어지나 agenda.html 내 cross-page 링크는 원본 `.md` 기준(`<base>.html`)으로 작성됨. 결과적으로 agenda.html에서 다음 챕터 클릭 시 `ERR_FILE_NOT_FOUND`. BasicKnowledgeForAI (ppt2m2slide + layout-selector 출력) 빌드에서 회귀 확인.
-* 상세:
-    - 재현: `Projects/BasicKnowledgeForAI/slide/agenda.html` 열고 `01. MarkDown` 클릭 → `01-markdown.html?fwd=1` 요청, 실제 파일은 `01-markdown.ppt.html` → 404
-    - 원인1: `lib/generate-slides.js:240` — `file.replace('.md', '.html')` 첫 `.md`만 치환. `01-markdown.ppt.md` → `01-markdown.ppt.html`
-    - 원인2: `lib/generate-slides.js:326` — `orderedChapters` 매핑 동일 패턴, chapter offset 계산 오작동
-    - agenda.html 링크 생성 로직은 원본 .md 파일명 기준이라 가정 (chapter mode 다른 프로젝트는 `.ppt.md` 미사용이라 미발각)
-    - 영향: layout-selector 적용 + chapter mode 프로젝트 전수
-* 구현 명세:
-    - 수정: `lib/generate-slides.js:240,326` — `f.replace(/(\.ppt)?\.md$/, '.html')`로 `.ppt` 접미사도 함께 제거
-    - 빌드 결과: `01-markdown.ppt.md` → `01-markdown.html` (원본 base 기준)
-    - 검증:
-        - BasicKnowledgeForAI 재빌드 + agenda.html 모든 챕터 링크 클릭 회귀 확인
-        - 대표 프로젝트 회귀 검증: `m2SlideStyle1_single`(single, .ppt.md 없음), `m2SlideStyle2_chapter`(chapter, .ppt.md 없음), `aTest`(chapter, .ppt.md 없음) — 빌드 결과 파일명 변경 없는지 확인
-* 카테고리: Generator + Build
-
 ## Issue223. `open-slide` 스킬 신규 — 임의 슬라이드 자동 진입 + Chrome 포커스 강제 (등록: 2026-05-24)
 * 목적: 코드/콘텐츠 수정 후 특정 슬라이드(예: 08.4 #/6) 직접 검증할 때 매번 `file:///.../slide/<chapter>.html?fwd=1#/N` URL을 수작업 조립 + macOS `open` 동일 URL 재호출 시 새 탭만 추가되고 foreground 안 옴. 슬래시 커맨드 대신 **스킬**로 만들어 description 매칭 자동 트리거 → claude가 "슬라이드 X 열어줘", "검증해줘" 등 발화 시 자동 호출.
 * 상세:
@@ -105,28 +56,6 @@
 * 관련: `/run` 커맨드, `apply-verify-rules.md` §4.1
 
 
-## Issue217. ppt2m2slide chapter 검출 H1-only 한계 + agenda 확정 전 사용자 컨펌 의무화 (등록: 2026-05-24)
-* 목적: `ppt2m2slide`가 pptx2md 산출물의 챕터 구조를 H1(`#`) 카운트만으로 판정하여, pptx2md가 챕터·슬라이드 제목을 모두 H2(`##`)로 변환하는 일반 케이스에서 chapter mode 진입 실패. `Projects/BasicKnowledgeForAI`(202장, 13개 `## 부록N` 챕터)가 single mode로 떨어져 2720줄 단일 .md 생성. 다중 챕터 PPT는 거의 모두 동일 문제 재발 예상. mode 자동 판정 + 사용자 컨펌 없는 통과를 차단.
-* 상세:
-    - 원인1: `data/ppt2m2slide/heuristics.yml mode_decision.chapter.require_h1_count: 2` 만 본다. H2 numbered prefix(`부록N`, `Chapter N`, `Part N`, `N.`, `섹션N`) 미검출
-    - 원인2: `.claude/agents/ppt2m2slide.md` Step 6 — mode 자동 판정 결과를 사용자에게 보여주지 않고 그대로 산출물 생성. 체크포인트 2는 매핑 검토만, mode 변경 기회 없음
-    - 원인3: `.claude/agents/agenda-designer.md` 동일 — single↔chapter 판정 모호 시 사용자 컨펌 미강제
-    - 영향: 본 변환 시 BasicKnowledgeForAI 같이 다중 챕터 자료가 single mode로 전락 → 사용자가 수동 분할 필요 (회피 비용 큼)
-* 구현 명세:
-    - 수정: `data/ppt2m2slide/heuristics.yml`
-        - `mode_decision`에 `chapter_marker_patterns` 추가 (H2 numbered prefix regex 목록: `^##\s+(부록|챕터|Chapter|Part|Section|섹션)\s*\d+`, `^##\s+\d+\.\s+\S+` 등)
-        - chapter 후보 카운트: H1 카운트 + chapter_marker_patterns 매칭 H2 카운트
-        - `checkpoint_messages.step6_mode` 신규 — mode 자동 판정 + 검출 boundary 목록을 표시·컨펌
-    - 수정: `.claude/agents/ppt2m2slide.md` Step 6
-        - mode 자동 판정 직후 `AskUserQuestion` 무조건 호출 (chapter list 미리보기 + single/chapter 선택)
-        - `--no-checkpoint` 플래그도 mode 컨펌만은 우회 금지 (산출물 구조 결정은 사용자만)
-    - 수정: `.claude/agents/agenda-designer.md`
-        - 동일 패턴 — 모호 시 detected boundary list 표시 + 사용자 컨펌
-    - 신규: `data/agenda-designer/patterns.yml`에 `chapter_marker_patterns` 항목 추가 (ppt2m2slide와 공유)
-    - 재처리: `Projects/BasicKnowledgeForAI`를 chapter mode로 재변환 (별도 ops 작업, 본 이슈 후속)
-* 카테고리: Generator (agent 데이터-주도)
-* 후속: Issue214 (ppt2m2slide 본 변환 — 본 이슈 완료 후 진행)
-
 ## Issue214. ppt2m2slide 에이전트 설계 — 기존 PPT를 m2slide 프로젝트로 역변환 (등록: 2026-05-24)
 * 목적: m2slide가 미완성이라 그동안 m2slide → PPT export → PPT 수정 → 발표 워크플로우로 작업했음. PPT 수정분이 m2slide로 환류되지 않아 매번 같은 PPT 작업을 반복. 기존 PPT(.pptx)를 m2slide 프로젝트(`Projects/<Name>/`)로 역변환하는 agent를 신설하여 PPT 자산을 m2slide 카탈로그로 흡수. 여러 PPT 변환 누적 시 m2slide 카탈로그가 풍부해져 발표 가능 임계점에 빠르게 도달.
 * depends: Issue217
@@ -156,6 +85,81 @@
 # 📙 일반
 
 # ✅ 완료
+
+
+## Issue228. agenda.js·html-builder.js cross-page navigation `.ppt.md` 미정규화 — PREV_CHAPTER/NEXT_CHAPTER/subsections lookup 실패 (등록: 2026-05-24, 해결: 2026-05-24, commit: b897367) ✅
+* 목적: layout-selector가 `.ppt.md` 파생본 생성 후 빌드 입력이 `.ppt.md`인 케이스에서 `agenda.js`의 `path.basename(fileName, '.md')`가 `.ppt`만 떼고 `02-linux-basic.ppt` 반환 → AGENDA.md 링크 (`./02-linux-basic.md` 기반 `02-linux-basic.html`)와 매칭 실패 → PREV_CHAPTER·NEXT_SIBLING 빈 값 → ← 키 cross-page navigation 시 이전 챕터로 못 가고 agenda fallback. Issue225와 같은 패턴.
+* 상세:
+    - 재현: `02-linux-basic.html#/toc-placeholder`에서 ← → `agenda.html?back=1` (정상 동작 = `01-markdown.html?back=1#/<last>`)
+    - 원인1: `lib/agenda.js:235,210` `path.basename(fileName, '.md')` — `.ppt.md` → `.ppt` 잔존
+    - 원인2: `lib/html-builder.js:258,592` `fileName = path.basename(filePath)` — `.ppt.md` raw 그대로 agenda.js 호출
+    - 결과: `window.PREV_CHAPTER = ''` (빈 값) → keydown handler가 agenda로 fallback
+    - 영향: layout-selector .ppt.md 사용하는 모든 chapter mode 프로젝트 cross-page navigation 전반 (←/→ 챕터간 이동, subsections lookup, sibling 점프)
+* 구현 명세:
+    - 수정: `lib/agenda.js` 상단에 `_baseFromInput(fileName)` helper 추가 — `.ppt.md`/`.md` 둘 다 base 이름 추출
+    - 수정: `lib/agenda.js:210,244` `_getSiblingChapter`·`_getAdjacentChapter`의 `currentHtml` 생성 시 `_baseFromInput(fileName) + '.html'` 사용
+    - 수정: `lib/html-builder.js:258,592` `fileName` 정규화 — `.ppt.md` → `.md` 치환 후 agenda.js 함수에 전달 (downstream getSubsections/getParentPage regex도 일관 동작)
+    - 검증: playwright로 ← 키 cross-page 이동 확인 (`02-linux-basic.html#/toc-placeholder` → `01-markdown.html?back=1`)
+    - 회귀 검증: 다른 정상 프로젝트(aTest 등) 빌드 결과 cross-page 동작 영향 없는지 확인
+* 카테고리: Generator + Build
+
+
+## Issue227. ppt2m2slide·layout-selector 산출물 슬라이드 구분자 `---` 누락 — 챕터 내 모든 H1이 1슬라이드로 병합 (등록: 2026-05-24, 해결: 2026-05-24, commit: b897367) ✅
+* 목적: ppt2m2slide reverse-pipeline + layout-selector 단계 6 산출 `.ppt.md`에 슬라이드 구분자 `---` 단독 줄이 부재. `slide-parser.js:334` `content.split(/\n---\n/)`가 `---` 부재 시 전체를 1슬라이드로 처리 → `01-markdown.html`이 16 H1 슬라이드를 1 cover 슬라이드로 합침. agenda 진입 후 챕터 내 슬라이드 navigation 불가.
+* 상세:
+    - 재현: `Projects/BasicKnowledgeForAI/markdown/01-markdown.ppt.md`에 16개 `# 제목` H1 + 각각 `#layout-_contents` directive 있으나 본문 `---` 단독 줄 0개. 빌드 결과 `slide/01-markdown.html` section 카운트 2개 (toc-placeholder + 단일 cover)
+    - 원인1: `lib/slide-parser.js:334` `content.split(/\n---\n/)` — `---` 단독 줄만 슬라이드 분리. H1은 분리 트리거 아님
+    - 원인2: `.claude/agents/ppt2m2slide.md` Step 6-3·`layout-selector.md` 산출 단계에서 `---` 자동 삽입 의무 없음. pptx2md raw output 그대로 사용
+    - 영향: ppt2m2slide로 변환한 모든 프로젝트의 챕터 .md (마크다운에 명시적 `---` 있는 sub-chapter는 정상). 13 챕터 + 17 sub-chapter 중 sub-chapter는 split_subchapters.py로 `---` 정상 삽입되어 무관
+    - 사용자 보고: "다음으로 넘어가지 않는 문제" — agenda → 챕터 진입 후 → 키로 다음 슬라이드 안 감
+* 구현 명세:
+    - 즉시 fix: 기존 `.ppt.md` 13개 (01·02·04·06·07·08·09·10·11·13 챕터, 03/05/12는 축소·sub-chapter로 이관됨)에 H1 사이 `---` 자동 삽입 후처리. 첫 H1 (cover) 직후부터 매 H1 직전에 빈 줄 + `---` + 빈 줄 삽입
+    - 영구 fix:
+        - `.claude/agents/ppt2m2slide.md` Step 6-3에 "H1 단위 슬라이드 분리 시 각 H1 직전(첫 H1 제외)에 `---` 단독 줄 삽입" 룰 추가
+        - `.claude/agents/layout-selector.md`에 `.ppt.md` 생성 시 동일 룰 추가
+    - 검증: 재빌드 후 `01-markdown.html` section 카운트 17 (toc + 16 slides) 확인 + playwright로 navigation 동작 확인
+    - 회귀 검증: 다른 정상 프로젝트(aTest 등) 빌드 결과 section 카운트 변화 없는지 확인
+* 카테고리: Generator + agent (ppt2m2slide / layout-selector)
+
+
+## Issue225. .ppt.md 빌드 결과 파일명 미일치 — agenda.html cross-page 링크 404 (등록: 2026-05-24, 해결: 2026-05-24, commit: b897367) ✅
+* 목적: layout-selector가 생성한 `.ppt.md` 파생본을 빌드하면 `<base>.ppt.html`로 떨어지나 agenda.html 내 cross-page 링크는 원본 `.md` 기준(`<base>.html`)으로 작성됨. 결과적으로 agenda.html에서 다음 챕터 클릭 시 `ERR_FILE_NOT_FOUND`. BasicKnowledgeForAI (ppt2m2slide + layout-selector 출력) 빌드에서 회귀 확인.
+* 상세:
+    - 재현: `Projects/BasicKnowledgeForAI/slide/agenda.html` 열고 `01. MarkDown` 클릭 → `01-markdown.html?fwd=1` 요청, 실제 파일은 `01-markdown.ppt.html` → 404
+    - 원인1: `lib/generate-slides.js:240` — `file.replace('.md', '.html')` 첫 `.md`만 치환. `01-markdown.ppt.md` → `01-markdown.ppt.html`
+    - 원인2: `lib/generate-slides.js:326` — `orderedChapters` 매핑 동일 패턴, chapter offset 계산 오작동
+    - agenda.html 링크 생성 로직은 원본 .md 파일명 기준이라 가정 (chapter mode 다른 프로젝트는 `.ppt.md` 미사용이라 미발각)
+    - 영향: layout-selector 적용 + chapter mode 프로젝트 전수
+* 구현 명세:
+    - 수정: `lib/generate-slides.js:240,326` — `f.replace(/(\.ppt)?\.md$/, '.html')`로 `.ppt` 접미사도 함께 제거
+    - 빌드 결과: `01-markdown.ppt.md` → `01-markdown.html` (원본 base 기준)
+    - 검증:
+        - BasicKnowledgeForAI 재빌드 + agenda.html 모든 챕터 링크 클릭 회귀 확인
+        - 대표 프로젝트 회귀 검증: `m2SlideStyle1_single`(single, .ppt.md 없음), `m2SlideStyle2_chapter`(chapter, .ppt.md 없음), `aTest`(chapter, .ppt.md 없음) — 빌드 결과 파일명 변경 없는지 확인
+* 카테고리: Generator + Build
+
+
+## Issue217. ppt2m2slide chapter 검출 H1-only 한계 + agenda 확정 전 사용자 컨펌 의무화 (등록: 2026-05-24, 해결: 2026-05-24, commit: b897367) ✅
+* 목적: `ppt2m2slide`가 pptx2md 산출물의 챕터 구조를 H1(`#`) 카운트만으로 판정하여, pptx2md가 챕터·슬라이드 제목을 모두 H2(`##`)로 변환하는 일반 케이스에서 chapter mode 진입 실패. `Projects/BasicKnowledgeForAI`(202장, 13개 `## 부록N` 챕터)가 single mode로 떨어져 2720줄 단일 .md 생성. 다중 챕터 PPT는 거의 모두 동일 문제 재발 예상. mode 자동 판정 + 사용자 컨펌 없는 통과를 차단.
+* 상세:
+    - 원인1: `data/ppt2m2slide/heuristics.yml mode_decision.chapter.require_h1_count: 2` 만 본다. H2 numbered prefix(`부록N`, `Chapter N`, `Part N`, `N.`, `섹션N`) 미검출
+    - 원인2: `.claude/agents/ppt2m2slide.md` Step 6 — mode 자동 판정 결과를 사용자에게 보여주지 않고 그대로 산출물 생성. 체크포인트 2는 매핑 검토만, mode 변경 기회 없음
+    - 원인3: `.claude/agents/agenda-designer.md` 동일 — single↔chapter 판정 모호 시 사용자 컨펌 미강제
+    - 영향: 본 변환 시 BasicKnowledgeForAI 같이 다중 챕터 자료가 single mode로 전락 → 사용자가 수동 분할 필요 (회피 비용 큼)
+* 구현 명세:
+    - 수정: `data/ppt2m2slide/heuristics.yml`
+        - `mode_decision`에 `chapter_marker_patterns` 추가 (H2 numbered prefix regex 목록: `^##\s+(부록|챕터|Chapter|Part|Section|섹션)\s*\d+`, `^##\s+\d+\.\s+\S+` 등)
+        - chapter 후보 카운트: H1 카운트 + chapter_marker_patterns 매칭 H2 카운트
+        - `checkpoint_messages.step6_mode` 신규 — mode 자동 판정 + 검출 boundary 목록을 표시·컨펌
+    - 수정: `.claude/agents/ppt2m2slide.md` Step 6
+        - mode 자동 판정 직후 `AskUserQuestion` 무조건 호출 (chapter list 미리보기 + single/chapter 선택)
+        - `--no-checkpoint` 플래그도 mode 컨펌만은 우회 금지 (산출물 구조 결정은 사용자만)
+    - 수정: `.claude/agents/agenda-designer.md`
+        - 동일 패턴 — 모호 시 detected boundary list 표시 + 사용자 컨펌
+    - 신규: `data/agenda-designer/patterns.yml`에 `chapter_marker_patterns` 항목 추가 (ppt2m2slide와 공유)
+    - 재처리: `Projects/BasicKnowledgeForAI`를 chapter mode로 재변환 (별도 ops 작업, 본 이슈 후속)
+* 카테고리: Generator (agent 데이터-주도)
+* 후속: Issue214 (ppt2m2slide 본 변환 — 본 이슈 완료 후 진행)
 
 ## Issue219. htmlArt `callout` 타입 추가 — 중앙 hub + 다방향 callout arrow (등록: 2026-05-24, 해결: 2026-05-24, commit: 596d564) ✅
 * 목적: 사용자 제공 이미지 2장(중앙 hub + 방사 callout arrow + 라벨) 기반 신규 htmlArt 타입. 강의·소개 슬라이드에서 핵심 주제(중앙) + 부연·태그 그룹(방사 라벨)을 박스 없이 fan-out 으로 표현하는 패턴 — 기존 `explain`·`radial`·`annotate`로 표현 불가하던 짧은 화살표 + 다방위 자유 분산 + 라벨 색 분리 패턴 충족.
