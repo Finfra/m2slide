@@ -10,6 +10,10 @@
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Source dev-server lifecycle (Issue235)
+# shellcheck source=lib/dev-server/lifecycle.sh
+. "$SCRIPT_DIR/lib/dev-server/lifecycle.sh"
+
 usage() {
   cat <<EOF
 Usage: $(basename "$0") [project_dir] [--epub] [--pdf] [--pptx] [-h|--help]
@@ -61,10 +65,52 @@ EOF
   fi
 }
 
+# Subcommand: --serve {start|stop|status|restart} (Issue235)
+# Handled before main option parser so it can short-circuit without project resolution.
+if [ "$1" = "--serve" ]; then
+  case "$2" in
+    start)    dev_server_start; exit $? ;;
+    stop)     dev_server_stop;  exit $? ;;
+    status)   dev_server_status; exit $? ;;
+    restart)  dev_server_restart; exit $? ;;
+    "")       echo "Usage: $(basename "$0") --serve {start|stop|status|restart}" >&2; exit 1 ;;
+    *)        echo "❌ Error: Unknown --serve subcommand: $2" >&2; exit 1 ;;
+  esac
+fi
+
+# Subcommand: --lint-deployment [project] (Issue235)
+# Lint build artifacts for file-deployment-rules violations.
+if [ "$1" = "--lint-deployment" ]; then
+  LINT_TARGET="$2"
+  LINT_BASE="$SCRIPT_DIR"
+  if [ -n "$LINT_TARGET" ]; then
+    if [ -d "$LINT_TARGET" ]; then
+      LINT_BASE="$LINT_TARGET"
+    elif [ -d "$SCRIPT_DIR/Projects/$LINT_TARGET" ]; then
+      LINT_BASE="$SCRIPT_DIR/Projects/$LINT_TARGET"
+    else
+      echo "❌ Error: project not found: $LINT_TARGET" >&2; exit 1
+    fi
+  fi
+  echo "🔍 Lint deployment artifacts under: $LINT_BASE"
+  # Patterns that break file:// deployment
+  PATTERNS='localhost|127\.0\.0\.1|0\.0\.0\.0|/Users/|/home/[a-z]|file:///Users/|file:///home/'
+  HITS=$(find "$LINT_BASE" -path '*/slide/*.html' -type f -print0 2>/dev/null \
+    | xargs -0 grep -EHn "$PATTERNS" 2>/dev/null || true)
+  if [ -n "$HITS" ]; then
+    echo "❌ Deployment violations found (file:// 호환성 위반):" >&2
+    echo "$HITS" >&2
+    exit 1
+  fi
+  echo "✅ No deployment violations"
+  exit 0
+fi
+
 # Parse options
 GENERATE_EPUB=false
 GENERATE_PDF=false
 GENERATE_PPTX=false
+DEV_SERVE=true
 PROJECT_DIR=""
 
 for arg in "$@"; do
@@ -81,6 +127,9 @@ for arg in "$@"; do
       ;;
     --pptx)
       GENERATE_PPTX=true
+      ;;
+    --no-serve)
+      DEV_SERVE=false
       ;;
     -*)
       echo "❌ Error: Unknown option: $arg" >&2
@@ -326,4 +375,24 @@ if [ "$GENERATE_EPUB" = true ] || [ "$GENERATE_PDF" = true ] || [ "$GENERATE_PPT
   echo "🔄 Refreshing index.html with download buttons..."
   node "$SCRIPT_DIR/lib/generate-slides.js" "$PROJECT_DIR" > /dev/null
   echo "  ✅ index.html refreshed"
+fi
+
+# Auto-start dev-server (Issue235) — opt-out via --no-serve or dev_server: false in _config.yml
+if [ "$DEV_SERVE" = true ]; then
+  # Honor _config.yml dev_server: false (project-level or root-level)
+  DEV_SERVER_OPT_OUT=false
+  for cfg in "$PROJECT_DIR/_config.yml" "$SCRIPT_DIR/_config.yml"; do
+    if [ -f "$cfg" ] && grep -qE "^dev_server:[[:space:]]*false" "$cfg" 2>/dev/null; then
+      DEV_SERVER_OPT_OUT=true
+      break
+    fi
+  done
+
+  if [ "$DEV_SERVER_OPT_OUT" = false ]; then
+    echo ""
+    echo "🌐 Starting dev-server (Issue235)..."
+    dev_server_start || echo "  ⚠️  dev-server start failed — file:// still works"
+    REL_PROJECT="${PROJECT_DIR#"$SCRIPT_DIR/"}"
+    echo "  📂 http://${DEV_SERVER_BIND}:${DEV_SERVER_PORT}/${REL_PROJECT}/slide/index.html"
+  fi
 fi

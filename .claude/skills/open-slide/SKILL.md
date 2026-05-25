@@ -1,7 +1,7 @@
 ---
 title: open-slide
-description: m2slide 슬라이드를 정확한 URL로 Chrome에 열고 포커스 강제. 트리거 — "슬라이드 N번 열어줘", "슬라이드 X 확인", "X.Y #N 보여줘", "검증해줘", "open slide", 빌드 후 특정 슬라이드 진입 필요 시 자동 호출. 인자 `{project} {chapter_prefix} {N} [--firefox] [--build]`. chapter prefix glob 매칭 + Chrome 포커스 강제(osascript) + `?fwd=1#/N` URL 규약 준수.
-date: 2026-05-24
+description: m2slide 슬라이드를 정확한 URL로 열고 포커스 강제 또는 헤드리스 검증. 트리거 — "슬라이드 N번 열어줘", "X.Y #N 보여줘", "검증해줘", "open slide". 인자 `{project} {chapter_prefix} {N} [--firefox] [--build] [--verify]`. 기본 = 시각 채널(AppleScript Chrome + file:// + `?fwd=1#/N`). `--verify` = 헤드리스 채널(HTTP dev-server + Playwright + screenshot + console).
+date: 2026-05-25
 ---
 
 # 목적
@@ -20,7 +20,7 @@ m2slide 코드/콘텐츠 수정 후 특정 슬라이드(예: `aTest_v1` 08.4 #/6
 # 입력 형식
 
 ```
-{project} {chapter_prefix} {N} [--firefox] [--build]
+{project} {chapter_prefix} {N} [--firefox] [--build] [--verify]
 ```
 
 | 인자 | 의미 | 예시 |
@@ -30,6 +30,7 @@ m2slide 코드/콘텐츠 수정 후 특정 슬라이드(예: `aTest_v1` 08.4 #/6
 | `N` | reveal.js horizontal slide index (0-base) | `6` |
 | `--firefox` | (옵션) Chrome 대신 Firefox 사용 | |
 | `--build` | (옵션) open 전 `./m2slide.sh <project>` 실행 | |
+| `--verify` | (옵션, Issue235) 헤드리스 검증 모드 — HTTP dev-server + Playwright navigate + screenshot + console 캡처 | |
 
 # 동작 순서
 
@@ -52,12 +53,21 @@ m2slide 코드/콘텐츠 수정 후 특정 슬라이드(예: `aTest_v1` 08.4 #/6
 
 ## 3. URL 조립
 
+기본 (시각 채널, AppleScript file://):
+
 ```
 file://<absolute_path>/Projects/<project>/slide/<resolved>.html?fwd=1#/<N>
 ```
 
+`--verify` (헤드리스 채널, HTTP dev-server — Issue235):
+
+```
+http://localhost:9877/Projects/<project>/slide/<resolved>.html#/<N>
+```
+
 * `<absolute_path>`: `pwd -P` 결과 또는 git root
 * `?fwd=1` 쿼리는 `#hash` 앞에 배치 (Reveal.js hash 파싱 충돌 회피 — apply-verify-rules §4.1)
+* `?fwd=1`은 시각 채널에서만 사용 (m2slide 내부 fade-in 트랜지션 cue). 헤드리스에서는 hash 단독으로 충분
 * URL 전체 single-quote 인용 (zsh `#` 주석 회피)
 
 ## 4. 브라우저 실행 + 포커스 강제
@@ -74,14 +84,17 @@ tell application "Google Chrome"
         make new window
     end if
     tell window 1
-        make new tab with properties {URL:"<URL>"}
+        set newTab to make new tab at end of tabs
+        set URL of newTab to "<URL>"
+        set active tab index to (count of tabs)
     end tell
 end tell
 EOF
 ```
 
-* `make new tab` 매번 새 탭 강제 → 동일 URL 캐시·재진입 회귀 회피
-* `activate` Chrome 자체를 foreground로 끌어옴 (open `--new` 대비 신뢰성↑)
+* `make new tab` 으로 빈 탭 먼저 생성 → `set URL of newTab` 으로 분리 navigate (file:// 회귀 회피 — `with properties {URL:...}` 단일 호출은 빈 New Tab 으로 떨어짐, 2026-05-24 확인)
+* `set active tab index to (count of tabs)` 새 탭을 포커스 활성 탭으로 강제
+* `activate` Chrome 자체를 foreground 로 끌어옴 (open `--new` 대비 신뢰성↑)
 * `file://` URL heredoc 내부 큰따옴표로 안전 인용
 
 `--firefox` 옵션:
@@ -95,16 +108,44 @@ end tell
 EOF
 ```
 
-Playwright 대안 (페이지 콘텐츠 자동 검증 필요 시):
+Playwright 대안 (`--firefox` 없이 페이지 콘텐츠 자동 검증 필요 시):
 * `mcp__playwright__browser_navigate` 사용
-* **주의**: file:// 차단됨 — `python3 -m http.server 8765` 먼저 띄우고 `http://localhost:8765/...` 로 navigate
+* **주의**: file:// 차단됨 — `--verify` 사용하여 dev-server 경유 (아래)
 * stale Chrome lock 시 `pkill -f "user-data-dir=.*ms-playwright"` 후 재시도
+
+## 4-V. --verify 헤드리스 검증 모드 (Issue235)
+
+`--verify` 플래그 사용 시 §4 AppleScript 대신 다음 흐름 수행:
+
+1. dev-server 살아있는지 확인 → 없으면 자동 시동:
+    ```bash
+    "$REPO_ROOT/m2slide.sh" --serve start
+    ```
+2. URL 조립: `http://localhost:9877/Projects/<project>/slide/<resolved>.html#/<N>`
+3. Playwright MCP navigate:
+    ```
+    mcp__playwright__browser_navigate("<URL>")
+    ```
+4. 스크린샷 저장:
+    ```
+    mcp__playwright__browser_take_screenshot(
+        filename="_doc_work/capture/verify-<project>-<chapter_prefix>-<N>.png"
+    )
+    ```
+5. console 메시지 캡처:
+    ```
+    mcp__playwright__browser_console_messages()
+    ```
+6. console에서 ERROR·WARN 추출하여 §5 결과 보고에 포함
+
+기존 시각 채널과 병행 가능 — `--verify` 후 같은 응답 내에서 §4 시각 채널도 호출 시 사용자에게 결과를 보여줄 수 있음.
 
 ## 5. 결과 보고
 
 * 열린 URL (markdown 링크 형식)
 * resolve 된 chapter 파일명
 * 빌드 실행 여부 (옵션 사용 시)
+* `--verify` 사용 시: 스크린샷 경로 + console ERROR/WARN 요약
 
 # 에러 처리
 
@@ -127,7 +168,7 @@ Playwright 대안 (페이지 콘텐츠 자동 검증 필요 시):
 
 1. 매칭: `Projects/aTest_v1/slide/08.4.ratio-compare-explain.html`
 2. URL: `file:///Users/nowage/_git/__all/videoMaker/lib/m2slide/Projects/aTest_v1/slide/08.4.ratio-compare-explain.html?fwd=1#/6`
-3. 실행: §4 AppleScript heredoc (`tell application "Google Chrome" → make new tab + activate`)
+3. 실행: §4 AppleScript heredoc (`tell application "Google Chrome" → make new tab + set URL of newTab + set active tab index + activate`)
 4. 보고:
     ```
     Chrome 포커스 + 슬라이드 진입.

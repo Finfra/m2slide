@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 234
+* Issue HWM: 235
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -25,6 +25,23 @@
 2. HtmlArtEval cover 슬라이드 제목 우측 끝 빈 박스 렌더 (Issue202 등록 시 동반 발견 — word-break와 별개. `_cover.html` 변수 미치환 또는 frontmatter 빈 값 추정)
 
 # 🚧 진행중
+
+## Issue235. 슬라이드 dev-server 도입 + 파일 단위 배포 rule (등록: 2026-05-25)
+* 목적: `file://` 단독 동작(배포 호환)을 유지하면서 개발 중 HTTP server 자동 시동으로 Playwright/curl 헤드리스 검증 채널 확보. 빌드 산출물의 파일 단위 배포 가능성을 rule로 명시·검증.
+* plan: `_doc_work/plan/slide-dev-server_plan.md`
+* 상세:
+    - 현재 `open-slide` skill AppleScript Chrome 제어는 시각 확인만 가능, 헤드리스 검증 불가
+    - Playwright MCP는 `file://` 차단 → HTTP server 별도 시동 필요
+    - 배포 시 사용자는 단일 `.html` 파일 + `img/` 만으로 동작해야 함 (server-only 의존 금지)
+* 구현 명세:
+    - `lib/dev-server/server.py` 신규 — Python `http.server` 기반 idempotent server (port 9877, pid `_doc_work/.dev-server.pid`)
+    - `m2slide.sh --serve {start|stop|status|restart}` + 빌드 시 자동 시동 (`--no-serve` opt-out)
+    - `.claude/rules/file-deployment-rules.md` 신규 — 파일 단위 배포 보장 rule (localhost·절대경로·server-only 기능 금지)
+    - `m2slide.sh --lint-deployment` — 빌드 산출물 lint
+    - `.claude/rules/apply-verify-rules.md` §4 갱신 — 검증 채널 이중화 (file:// 시각 / http 헤드리스) + §4.5 파일 단위 배포 검증
+    - `.claude/skills/open-slide/SKILL.md` `--verify` 플래그 추가 (HTTP+Playwright 경로)
+    - `_doc_arch/dev-server.md` 영속 설계 SSOT
+* 카테고리: Build + Asset + Project
 
 ## Issue230. Single mode 중간 H1 슬라이드가 cover로 분류되어 →/↓/End 시 agenda.html 점프 — isCoverSlide() deck 위치 한정 누락 (등록: 2026-05-25)
 * 목적: m2SlideStyle1_single 등 single mode 프로젝트에서 `index.html#/2`(`# 2. 코드 ...` H1 챕터 divider)에서 → 키 누르면 `agenda.html?fwd=1`로 점프. layout-selector가 모든 본문 H1에 `#layout-_cover` 자동 부착 → `isCoverSlide()`가 deck 진입점이 아닌 중간 슬라이드까지 cover로 판정 → cover navigation 룰(↓·→·End → agenda) 발동. cover는 의미상 deck 진입점(#/0)만이어야 함.
