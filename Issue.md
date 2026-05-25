@@ -45,7 +45,7 @@
     - 시각적 _cover layout은 유지(스타일은 그대로), navigation 의미만 leaf로 격하
 * 카테고리: Frontend (navigation) + Generator (cover 의미 정합성)
 * 
-## Issue236. dev-server /_dev/raw + /_dev/list endpoint — curl-friendly section view (등록: 2026-05-25, 해결: 2026-05-25, commit: TBD) ✅
+## Issue236. dev-server /_dev/raw + /_dev/list endpoint — curl-friendly section view (등록: 2026-05-25, 해결: 2026-05-25, commit: 58de985) ✅
 * 목적: reveal.js JS 클라이언트 렌더 우회. curl + grep으로 특정 슬라이드 컨텐츠 즉시 확인 가능하게 함. AppleScript Chrome·Playwright 없이 빠른 디자인 파악.
 * 상세:
     - curl로 `index.html?fwd=1#/N` fetch 시 모든 section 포함된 raw HTML 반환 — 특정 N번째 활성 슬라이드 추출 불가 (reveal.js JS가 클라이언트에서 처리)
