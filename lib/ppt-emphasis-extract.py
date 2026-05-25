@@ -111,18 +111,36 @@ def extract_emphasis_and_sources(pptx_path: Path):
 
 
 def wrap_emphasis_in_text(text: str, target: str) -> tuple[str, int]:
-    """target 정확 매칭을 **target** 으로 변환. 코드블록·이미 감싼 케이스 skip."""
+    """target 정확 매칭을 **target** 으로 변환.
+    Skip: 코드블록·인라인코드·markdown link path·URL·단어 중간 매칭·이미 감싼 케이스."""
+    # 1) 코드블록 분리 (skip)
     parts = re.split(r'(```[\s\S]*?```)', text)
     count = 0
+    # 단어 중간 침범 방지 lookahead/lookbehind:
+    # target이 alphanum/_ 으로 시작·끝나면 같은 종류 문자가 양 옆에 오면 skip
+    target_starts_word = bool(re.match(r'[\w]', target))
+    target_ends_word = bool(re.search(r'[\w]$', target))
+    esc = re.escape(target)
+    lb_word = r'(?<![\w])' if target_starts_word else ''
+    la_word = r'(?![\w])' if target_ends_word else ''
+    pattern = re.compile(rf'(?<!\*\*){lb_word}({esc}){la_word}(?!\*\*)')
+
     for i, part in enumerate(parts):
         if part.startswith('```'):
             continue
-        sub_parts = re.split(r'(`[^`\n]+`)', part)
+        # 2) 인라인 코드·링크·URL 보호 — 정규식 분리
+        # 우선순위: ![alt](path) → [text](path) → `code` → http(s)://...
+        protected_re = re.compile(
+            r'(!\[[^\]]*\]\([^)]+\)'        # 이미지
+            r'|\[[^\]]*\]\([^)]+\)'         # 링크
+            r'|`[^`\n]+`'                   # 인라인 코드
+            r'|https?://\S+'                # URL
+            r')'
+        )
+        sub_parts = protected_re.split(part)
         for j, sub in enumerate(sub_parts):
-            if sub.startswith('`'):
-                continue
-            esc = re.escape(target)
-            pattern = re.compile(rf'(?<!\*\*)({esc})(?!\*\*)')
+            if protected_re.fullmatch(sub):
+                continue  # skip protected
             sub_parts[j], n = pattern.subn(r'**\1**', sub)
             count += n
         parts[i] = ''.join(sub_parts)
@@ -156,7 +174,8 @@ def convert_source_blockquote(text: str) -> tuple[str, int]:
 
 
 def patch_markdown(md_dir: Path, emphasis: list, dry_run: bool = False):
-    md_files = sorted(md_dir.rglob('*.md'))
+    # AGENDA.md 는 네비게이션 메타 파일 — emphasis/source 적용 제외
+    md_files = sorted(p for p in md_dir.rglob('*.md') if p.name != 'AGENDA.md')
     changes = {'emphasis_applied': 0, 'source_applied': 0, 'files_changed': 0, 'emphasis_unmatched': []}
     matched_emphasis = set()
 
