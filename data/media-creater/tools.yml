@@ -352,3 +352,71 @@ report_template: |
 video_policy:
   v1: manual_recording        # 사용자 수동 녹화
   v2_candidate: screencast-cli
+
+# ============================================================================
+# 9.5. PPT 변환 미디어 보존 정책 (Issue233 — ppt2m2slide 학습)
+# ============================================================================
+# ppt2m2slide 변환 시 PPT 원본 이미지 자산을 그대로 보존하기 위한 규칙.
+# media-creater 가 생성하는 새 미디어가 아니라 *추출된* 자산을 다루므로
+# 일반 tools 카탈로그와 별도 섹션으로 정리.
+ppt_extracted_media:
+  # PPT 슬라이드별 이미지 추출 정책
+  image_extraction:
+    handler: pptx2md                # ~/.claude/skills/pptx2md
+    output_dir: Projects/<Name>/markdown/img/
+    naming: "<project_slug>_<index>.png"      # pptx2md 기본
+    preserve_aspect_ratio: true
+    deduplicate: true                          # 동일 이미지 중복 추출 방지
+    forbidden_extensions: [.wmf, .emf]         # Windows Metafile — Chrome 미지원
+  # PPT 텍스트박스가 이미지 위에 오버레이된 경우 (callout)
+  image_overlay_callouts:
+    detection_signal: "텍스트박스의 z-order > 이미지 z-order + 좌표 겹침 ≥ 50%"
+    current_fallback: "콜아웃 텍스트를 슬라이드 본문 bullet 으로 분리"
+    v2_options:
+      - composite_capture: "PPT 슬라이드 전체를 PNG로 캡처 + 본문 텍스트 제거 (visual-first)"
+      - svg_overlay: "추출 이미지에 SVG 텍스트 오버레이 합성 (semantic-preserving)"
+      - manual_review: "_proposals/에 슬라이드 번호 + 콜아웃 텍스트 목록 기록 + 사용자 수동 배치"
+  # PPT 슬라이드 background 이미지·도형
+  background_shapes:
+    rectangle_fill: ignored          # 단색 사각형 배경은 무시 (CSS 색상으로 대체)
+    image_background: extract        # 배경 이미지는 별도 추출 → #background-image-* 디렉티브 사용 후보
+    gradient: ignored                # 그라데이션 미지원 (v2)
+
+# ============================================================================
+# 10. htmlArt 구조 도해 카탈로그 (active — core parser 구현 완료, Issue188)
+# ============================================================================
+# 들여쓰기 아웃라인 → 구조 도해(process/cycle/hierarchy/pyramid). PowerPoint SmartArt 대응 개념.
+# ⚠ 산출물에 "SmartArt" 표기 금지 — htmlArt 사용.
+#
+# core 구현 완료 (markdown.js preprocessPandocDiv + theme/default·default_lec slide.css).
+# 구조 도해 신호는 htmlArt 가 mermaid_inline 보다 우선 — content_pattern_rules 의
+# sequential_steps·hierarchy_tree 보다 먼저 평가할 것.
+htmlart:
+  status: active
+  handler: inline_fenced_div                 # `::: htmlart <type>` — markdown.js 가 처리
+  design_doc: _doc_arch/htmlArt.md
+  types_ref: data/htmlart/types.yml          # 에이전트 fast-path — 타입 + 결정표
+  smartart_ref: data/htmlart/smartart-catalog.yml  # SmartArt 전체 참조 카탈로그
+  fenced_div: "::: htmlart <type>"
+  v1_types: [process, cycle, hierarchy, pyramid]
+  triggers:
+    - "순차 단계"
+    - "프로세스"
+    - "순환"
+    - "라이프사이클"
+    - "계층"
+    - "트리"
+    - "조직도"
+    - "피라미드"
+    - "비례 층"
+  selection_hint: |
+    구조 도해 신호(단계/순환/계층/비례)는 htmlArt 1차 후보.
+    types.yml decision_table 을 위→아래 first-match 로 평가하여 타입 결정.
+
+    ── vs 인포그래픽(d3_inline) 경계 ──────────────────────────────────
+    · 텍스트 아웃라인 → 19개 타입 중 하나로 표현 가능  →  htmlArt
+    · 커스텀 SVG·자유 시각화·데이터 주도·타입 미매칭   →  d3_inline
+    · 핵심 차이: htmlArt = m2slide가 SVG 생성, d3 = 작성자 코드가 SVG 생성
+    ────────────────────────────────────────────────────────────────────
+
+    어느 신호도 미매칭 시 mermaid_inline 등 기존 룰로 위임.

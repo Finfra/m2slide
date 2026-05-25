@@ -78,6 +78,19 @@ palettes:
     bg: '#FFFFFF'
     surface: '#F0F0F0'
 
+  office_rainbow:
+    description: PowerPoint Office Theme 기본 6색 (무지개 — 다중 카테고리 강조)
+    use_case: 강의·튜토리얼·다카테고리 비교 (PPT 변환 호환, Issue233)
+    accent_1: '#0365C0'      # 파랑
+    accent_2: '#00882B'      # 녹색
+    accent_3: '#DCBD23'      # 노랑
+    accent_4: '#DE6A10'      # 주황
+    accent_5: '#C82506'      # 빨강
+    accent_6: '#773F9B'      # 보라
+    text: '#000000'
+    bg: '#FFFFFF'
+    surface: '#DCDEE0'       # PPT lt2 (카드 배경)
+
 # ── 향후 확장 후보 (참조용, 미구현) ────────────────────────────────────
 # nature  — 녹·갈·황 톤 (자연·친환경·교육)
 # pastel  — 파스텔 (어린이·창의·디자인 워크숍)

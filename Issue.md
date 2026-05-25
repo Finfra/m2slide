@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 232
+* Issue HWM: 233
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -25,6 +25,22 @@
 2. HtmlArtEval cover 슬라이드 제목 우측 끝 빈 박스 렌더 (Issue202 등록 시 동반 발견 — word-break와 별개. `_cover.html` 변수 미치환 또는 frontmatter 빈 값 추정)
 
 # 🚧 진행중
+
+## Issue233. ppt2m2slide data 폴더 학습 — BasicKnowledgeForAI_small.pptx 슬라이드별 분석 후 heuristics/mappings/md-builder/media-creater 카탈로그 보강 (등록: 2026-05-25)
+* 목적: `/Users/nowage/Desktop/BasicKnowledgeForAI_small.pptx`를 슬라이드별로 분석하여 ppt2m2slide 단발 실행만으로 원본과 ≥80% 시각 유사 산출물이 나오도록 `data/ppt2m2slide/{heuristics,mappings}.yml`, `data/md-builder/styles.yml`, `data/media-creater/tools.yml`, `data/palettes/catalog.yml` 등을 보강. 카탈로그 학습이 본 이슈 핵심 — 단발 PPT 변환 정확도 향상이 산출물.
+* plan: `_doc_work/plan/ppt2m2slide_data_training_plan.md`
+* 상세:
+    - 입력: BasicKnowledgeForAI_small.pptx (23장, 부록1 Markdown + 부록2 Linux, chapter mode)
+    - 기존 산출물 `Projects/BasicKnowledgeForAI_small/` + 후보 보고서 `data/_proposals/BasicKnowledgeForAI_small-2026-05-24.md` 존재 (palette office_rainbow 후보 기록됨)
+    - PPT 원본 ↔ m2slide HTML 슬라이드별 시각 비교 (Playwright + Keynote MCP 또는 fallback)
+    - 발견 갭마다 카탈로그/heuristics 업데이트 + 재변환 + 재비교 루프
+* 구현 명세:
+    - 1차 palette `office_rainbow` 추가 (catalog.yml + theme/default + theme/default_lec)
+    - 2차 ppt2m2slide 재실행 → palette 매칭 검증
+    - 3차 슬라이드 1~23 시각 diff → 텍스트 가독성, 이미지 배치, layout 매칭, header 표시 등 갭 항목 도출
+    - 4차 갭 항목별 데이터 파일 업데이트 (예: 새 layout heuristic, 신규 slot 분류 규칙, 추가 fallback)
+    - 검증: round-trip 재변환 후 ≥80% 시각 일치
+* 카테고리: Generator (ppt2m2slide) + Asset (palette·htmlart)
 
 ## Issue230. Single mode 중간 H1 슬라이드가 cover로 분류되어 →/↓/End 시 agenda.html 점프 — isCoverSlide() deck 위치 한정 누락 (등록: 2026-05-25)
 * 목적: m2SlideStyle1_single 등 single mode 프로젝트에서 `index.html#/2`(`# 2. 코드 ...` H1 챕터 divider)에서 → 키 누르면 `agenda.html?fwd=1`로 점프. layout-selector가 모든 본문 H1에 `#layout-_cover` 자동 부착 → `isCoverSlide()`가 deck 진입점이 아닌 중간 슬라이드까지 cover로 판정 → cover navigation 룰(↓·→·End → agenda) 발동. cover는 의미상 deck 진입점(#/0)만이어야 함.

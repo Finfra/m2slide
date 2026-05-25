@@ -1,0 +1,16 @@
+/* theme/default_lec/palettes/office_rainbow.css — PowerPoint Office Theme 6색 무지개
+ * 카탈로그 SSOT: data/palettes/catalog.yml (palettes.office_rainbow)
+ * 설계 SSOT: _doc_arch/color-palette.md
+ * 용도: 강의·튜토리얼·다카테고리 비교 (PPT 변환 호환, Issue233)
+ */
+:root {
+  --m2-accent-1: #0365C0;
+  --m2-accent-2: #00882B;
+  --m2-accent-3: #DCBD23;
+  --m2-accent-4: #DE6A10;
+  --m2-accent-5: #C82506;
+  --m2-accent-6: #773F9B;
+  --m2-text: #000000;
+  --m2-bg: #FFFFFF;
+  --m2-surface: #DCDEE0;
+}

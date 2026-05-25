@@ -344,7 +344,7 @@ layout_meta_policy:
 # ============================================================================
 # 9.5. 구성요소 저작 문법 (Issue181 — 시각화 라이브러리)
 # ============================================================================
-# 인라인급 구성요소(수식·아이콘)를 본문에 직접 작성할 때의 가이드.
+# 인라인급 구성요소(수식·심벌)를 본문에 직접 작성할 때의 가이드.
 # fenced급(차트 등)은 단계 5 media-creater 책임 — 본 skill 미관여.
 # 설계 SSOT: _doc_arch/component-libraries.md
 component_syntax:
@@ -354,10 +354,29 @@ component_syntax:
     guide: "수식은 LaTeX. 블록 $$…$$ + 인라인 \\(…\\) 만 사용. 단일 $ 금지 (통화·셸 변수 충돌)."
   icon:
     inline: ":fa-rocket:  :fa-check-circle:"
-    guide: "Font Awesome 아이콘. :fa-{이름}: → <i class=fa-solid fa-{이름}>. 강조·목록 마커 보조용."
+    guide: "Font Awesome 심벌. :fa-{이름}: → <i class=fa-solid fa-{이름}>. 강조·목록 마커 보조용."
   cards:
     block: "::: cards\n* **제목**\n  - 본문\n:::"
     guide: "균질 항목 N개를 박스로 병렬 제시. 본문 없는 title-only 카드(`* **제목**`만)만 모인 블록은 빌드 시 가로 행으로 자동 렌더 → 한 줄 강조 문장 묶음(핵심 요약 등)에 카드 사용 OK."
+
+# ============================================================================
+# 9.6. PPT 변환 본문 보존 정책 (Issue233 — ppt2m2slide 학습)
+# ============================================================================
+# ppt2m2slide 가 PPT → markdown 변환할 때 md-builder 가 본문을 추가 가공하지 않도록 정의.
+# md-builder 는 신규 콘텐츠 생성 책임. ppt2m2slide 산출물은 *PPT 원본을 단순 옮긴 것*이므로
+# md-builder의 스타일 변환 (formal_lecture rules 등)을 적용하면 PPT 원본 어조가 손실됨.
+ppt_source_handling:
+  detect_origin: "Projects/<Name>/_pipeline/ppt-meta.yml 존재 여부로 PPT 변환 프로젝트 식별"
+  bypass_style_rules: true
+  reason: "PPT 원본의 어조·구조는 사용자가 의도한 결과물. md-builder 자동 변환 금지"
+  exceptions:
+    - "사용자가 명시적으로 '튜토리얼 톤으로 다시 작성' 등 재가공 요청 시 적용"
+# PPT 원본 강조 색상 (Issue233 — ppt2m2slide preservation.text_emphasis 와 짝)
+# md-builder가 markdown 본문 가공 시 PPT에서 추출된 색상 metadata를 보존.
+ppt_text_emphasis_handling:
+  enabled: false                        # ppt2m2slide preservation.text_emphasis.enabled 와 동조
+  inline_syntax: span_style             # `<span style="color:#XXXXXX">텍스트</span>`
+  fallback_bold: true                   # 색상 보존 미구현 시 **bold** 로 강조만 유지
 
 # ============================================================================
 # 10. 종료 보고 양식
