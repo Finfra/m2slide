@@ -1327,11 +1327,11 @@ body.agenda-page .agenda-frame {
  * ────────────────────────────────────────────────────────────────────────── */
 .reveal .m2-source {
   position: absolute;
-  bottom: 0;                       /* footer bar(bottom:12px) 아래 영역 */
+  bottom: -0.3em;                  /* footer bar(bottom:12px) 아래로 내려 겹침 방지 */
   left: 0;
   right: 0;
   text-align: center;              /* 가운데 정렬 */
-  font-size: 0.4em;                /* 작게 (0.55em → 0.4em) */
+  font-size: 0.28em;               /* 작게 (0.4em → 0.28em, 30% 축소) */
   font-style: italic;
   color: var(--m2-text, #111);
   opacity: 0.55;

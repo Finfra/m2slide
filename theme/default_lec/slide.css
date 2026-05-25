@@ -927,11 +927,11 @@ body.agenda-page .agenda-frame {
 /* Issue234 — source slot (출처) + strong accent (PPT 빨강 강조 호환) */
 .reveal .m2-source {
   position: absolute;
-  bottom: 0;                       /* footer bar 아래 */
+  bottom: -0.3em;
   left: 0;
   right: 0;
   text-align: center;
-  font-size: 0.4em;
+  font-size: 0.28em;
   font-style: italic;
   color: var(--m2-text, #111);
   opacity: 0.55;
