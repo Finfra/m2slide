@@ -1322,20 +1322,23 @@ body.agenda-page .agenda-frame {
 
 /* ──────────────────────────────────────────────────────────────────────────
  * Issue234 — source slot (출처·인용)
- * `::: source ...출처... :::` fenced div → 슬라이드 하단 작은 글씨
+ * `::: source ...출처... :::` fenced div → 슬라이드 footer bar(::after bottom:12px) 아래 영역
  * 사용 예: PPT 변환 시 "출처:" prefix 텍스트박스 자동 매핑 + 사용자 수동 사용
  * ────────────────────────────────────────────────────────────────────────── */
 .reveal .m2-source {
   position: absolute;
-  bottom: 1.2em;
-  right: 2em;
+  bottom: 0;                       /* footer bar(bottom:12px) 아래 영역 */
+  right: 1em;
   left: 2em;
   text-align: right;
-  font-size: 0.55em;
+  font-size: 0.4em;                /* 작게 (0.55em → 0.4em) */
   font-style: italic;
   color: var(--m2-text, #111);
   opacity: 0.55;
   pointer-events: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .reveal .m2-source p {
@@ -1347,6 +1350,15 @@ body.agenda-page .agenda-frame {
   color: inherit;
   text-decoration: underline;
   text-decoration-style: dotted;
+}
+
+/* URL 원본을 링크 텍스트 뒤에 (URL) 형태로 부착 */
+.reveal .m2-source a::after {
+  content: ' (' attr(href) ')';
+  margin-left: 0.3em;
+  font-style: normal;
+  opacity: 0.7;
+  text-decoration: none;
 }
 
 /* Issue234 — strong 강조에 accent color (PPT 빨강 강조 텍스트 호환)
