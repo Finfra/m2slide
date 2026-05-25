@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 233
+* Issue HWM: 234
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -25,6 +25,26 @@
 2. HtmlArtEval cover 슬라이드 제목 우측 끝 빈 박스 렌더 (Issue202 등록 시 동반 발견 — word-break와 별개. `_cover.html` 변수 미치환 또는 frontmatter 빈 값 추정)
 
 # 🚧 진행중
+
+## Issue234. ppt2m2slide 학습 round 3 — PPT 색 강조 → **bold** 변환 + 출처 텍스트박스 → ::: source 슬롯 (등록: 2026-05-25)
+* 목적: Issue233 학습 후속 사용자 피드백 2건 반영:
+    1. PPT 빨강/파랑 강조 텍스트(`매우 간단한 구조의 문법`, `직관적으로 인식` 등)가 m2slide 변환 시 손실 → markdown `**bold**` 변환 + theme 강조 스타일 적용
+    2. PPT 슬라이드 좌하단 출처 텍스트박스(`출처: 마크다운 작성법 (ihoneymon)` 등)가 m2slide에 적절한 slot 없음 → default theme에 `::: source` 슬롯 추가 (bottom-right small italic)
+* 상세:
+    - 입력: BasicKnowledgeForAI_small.pptx slide 3 (Markdown이란?) — 빨강 강조 텍스트 4부 + 출처 블록쿼트
+    - 현 동작: 강조 색상 손실 (plain text), 출처는 일반 blockquote (`> 출처:`)
+    - 사용자 기대: `**매우 간단한 구조의 문법**` + theme 강조 색상, 출처는 슬라이드 하단 작은 글씨
+* 구현 명세:
+    - 1) `data/ppt2m2slide/heuristics.yml preservation.text_emphasis.enabled: true` 토글
+    - 2) 신규 스크립트 `lib/ppt-emphasis-extract.py` — python-pptx로 슬라이드별 run.font.color.rgb 추출 → 색상별 markdown wrap 매핑 (red=**bold**, 기타=**bold** fallback)
+    - 3) ppt2m2slide agent Step 4.5 신설 — pptx2md 산출물 markdown 후처리: 컬러 텍스트 → `**...**`, "출처:" prefix 텍스트박스 → `::: source ... :::` 래핑
+    - 4) `lib/markdown.js LAYOUT_CLASS_ALIASES`에 `source: 'm2-source source'` 추가
+    - 5) `theme/default/slide.css` + `theme/default_lec/slide.css`에 `.m2-source` CSS 추가 (position: absolute bottom-right, font-size 70%, italic, color: var(--m2-text) opacity 0.6)
+    - 6) `theme/default/slide.css strong` 강조 색상 `var(--m2-accent-5)` (빨강 계열) 적용 검토
+* 검증:
+    - BasicKnowledgeForAI_small_v2 재변환 후 slide 3 컬러 강조 + 출처 슬롯 시각 검증
+    - 기존 프로젝트(LlmAndVibeCoding 등) blockquote/strong 사용 슬라이드 회귀 확인
+* 카테고리: Generator (ppt2m2slide post-process) + Theme (default slide.css)
 
 ## Issue230. Single mode 중간 H1 슬라이드가 cover로 분류되어 →/↓/End 시 agenda.html 점프 — isCoverSlide() deck 위치 한정 누락 (등록: 2026-05-25)
 * 목적: m2SlideStyle1_single 등 single mode 프로젝트에서 `index.html#/2`(`# 2. 코드 ...` H1 챕터 divider)에서 → 키 누르면 `agenda.html?fwd=1`로 점프. layout-selector가 모든 본문 H1에 `#layout-_cover` 자동 부착 → `isCoverSlide()`가 deck 진입점이 아닌 중간 슬라이드까지 cover로 판정 → cover navigation 룰(↓·→·End → agenda) 발동. cover는 의미상 deck 진입점(#/0)만이어야 함.

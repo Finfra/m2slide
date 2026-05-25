@@ -923,3 +923,23 @@ body.agenda-page .agenda-frame {
   line-height: 1.3;
 }
 
+
+/* Issue234 — source slot (출처) + strong accent (PPT 빨강 강조 호환) */
+.reveal .m2-source {
+  position: absolute;
+  bottom: 1.2em;
+  right: 2em;
+  left: 2em;
+  text-align: right;
+  font-size: 0.55em;
+  font-style: italic;
+  color: var(--m2-text, #111);
+  opacity: 0.55;
+}
+.reveal .m2-source p { margin: 0; line-height: 1.4; }
+.reveal .m2-source a { color: inherit; text-decoration: underline; text-decoration-style: dotted; }
+.reveal .contents-body strong,
+.reveal .slides section strong {
+  color: var(--m2-accent-5, #C82506);
+  font-weight: 700;
+}

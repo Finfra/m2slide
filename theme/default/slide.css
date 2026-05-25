@@ -1319,3 +1319,40 @@ body.agenda-page .agenda-frame {
 .reveal section.layout-_chapter .chapter-body p {
   margin: 0.4em 0;
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Issue234 — source slot (출처·인용)
+ * `::: source ...출처... :::` fenced div → 슬라이드 하단 작은 글씨
+ * 사용 예: PPT 변환 시 "출처:" prefix 텍스트박스 자동 매핑 + 사용자 수동 사용
+ * ────────────────────────────────────────────────────────────────────────── */
+.reveal .m2-source {
+  position: absolute;
+  bottom: 1.2em;
+  right: 2em;
+  left: 2em;
+  text-align: right;
+  font-size: 0.55em;
+  font-style: italic;
+  color: var(--m2-text, #111);
+  opacity: 0.55;
+  pointer-events: auto;
+}
+
+.reveal .m2-source p {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.reveal .m2-source a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+
+/* Issue234 — strong 강조에 accent color (PPT 빨강 강조 텍스트 호환)
+ * 사용자가 명시 색 override 시 inline style 우선 (cascade 자연 처리). */
+.reveal .contents-body strong,
+.reveal .slides section strong {
+  color: var(--m2-accent-5, #C82506);
+  font-weight: 700;
+}
