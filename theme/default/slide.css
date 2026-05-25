@@ -1328,9 +1328,9 @@ body.agenda-page .agenda-frame {
 .reveal .m2-source {
   position: absolute;
   bottom: 0;                       /* footer bar(bottom:12px) 아래 영역 */
-  right: 1em;
-  left: 2em;
-  text-align: right;
+  left: 0;
+  right: 0;
+  text-align: center;              /* 가운데 정렬 */
   font-size: 0.4em;                /* 작게 (0.55em → 0.4em) */
   font-style: italic;
   color: var(--m2-text, #111);
@@ -1339,6 +1339,8 @@ body.agenda-page .agenda-frame {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  padding: 0 1em;
+  box-sizing: border-box;
 }
 
 .reveal .m2-source p {
