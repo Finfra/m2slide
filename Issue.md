@@ -26,22 +26,6 @@
 
 # 🚧 진행중
 
-## Issue233. ppt2m2slide data 폴더 학습 — BasicKnowledgeForAI_small.pptx 슬라이드별 분석 후 heuristics/mappings/md-builder/media-creater 카탈로그 보강 (등록: 2026-05-25)
-* 목적: `/Users/nowage/Desktop/BasicKnowledgeForAI_small.pptx`를 슬라이드별로 분석하여 ppt2m2slide 단발 실행만으로 원본과 ≥80% 시각 유사 산출물이 나오도록 `data/ppt2m2slide/{heuristics,mappings}.yml`, `data/md-builder/styles.yml`, `data/media-creater/tools.yml`, `data/palettes/catalog.yml` 등을 보강. 카탈로그 학습이 본 이슈 핵심 — 단발 PPT 변환 정확도 향상이 산출물.
-* plan: `_doc_work/plan/ppt2m2slide_data_training_plan.md`
-* 상세:
-    - 입력: BasicKnowledgeForAI_small.pptx (23장, 부록1 Markdown + 부록2 Linux, chapter mode)
-    - 기존 산출물 `Projects/BasicKnowledgeForAI_small/` + 후보 보고서 `data/_proposals/BasicKnowledgeForAI_small-2026-05-24.md` 존재 (palette office_rainbow 후보 기록됨)
-    - PPT 원본 ↔ m2slide HTML 슬라이드별 시각 비교 (Playwright + Keynote MCP 또는 fallback)
-    - 발견 갭마다 카탈로그/heuristics 업데이트 + 재변환 + 재비교 루프
-* 구현 명세:
-    - 1차 palette `office_rainbow` 추가 (catalog.yml + theme/default + theme/default_lec)
-    - 2차 ppt2m2slide 재실행 → palette 매칭 검증
-    - 3차 슬라이드 1~23 시각 diff → 텍스트 가독성, 이미지 배치, layout 매칭, header 표시 등 갭 항목 도출
-    - 4차 갭 항목별 데이터 파일 업데이트 (예: 새 layout heuristic, 신규 slot 분류 규칙, 추가 fallback)
-    - 검증: round-trip 재변환 후 ≥80% 시각 일치
-* 카테고리: Generator (ppt2m2slide) + Asset (palette·htmlart)
-
 ## Issue230. Single mode 중간 H1 슬라이드가 cover로 분류되어 →/↓/End 시 agenda.html 점프 — isCoverSlide() deck 위치 한정 누락 (등록: 2026-05-25)
 * 목적: m2SlideStyle1_single 등 single mode 프로젝트에서 `index.html#/2`(`# 2. 코드 ...` H1 챕터 divider)에서 → 키 누르면 `agenda.html?fwd=1`로 점프. layout-selector가 모든 본문 H1에 `#layout-_cover` 자동 부착 → `isCoverSlide()`가 deck 진입점이 아닌 중간 슬라이드까지 cover로 판정 → cover navigation 룰(↓·→·End → agenda) 발동. cover는 의미상 deck 진입점(#/0)만이어야 함.
 * 상세:
@@ -59,6 +43,25 @@
 
 # ✅ 완료
 
+
+## Issue233. ppt2m2slide data 폴더 학습 — BasicKnowledgeForAI_small.pptx 슬라이드별 분석 + office_rainbow palette + PPT 보존 정책 보강 (등록: 2026-05-25, 해결: 2026-05-25, commit: 41b5e5a) ✅
+* 목적: `/Users/nowage/Desktop/BasicKnowledgeForAI_small.pptx` (23슬라이드)를 슬라이드별 PNG 캡처 후 m2slide 빌드 산출물과 1:1 비교하여 ppt2m2slide 단발 실행만으로 원본과 ≥80% 시각 유사 산출물이 나오도록 data 카탈로그 학습. 단발 PPT 변환 정확도 향상이 산출물.
+* plan: `_doc_work/plan/ppt2m2slide_data_training_plan.md`
+* 상세:
+    - 입력: BasicKnowledgeForAI_small.pptx (23장 — 부록1 Markdown 17장 + 부록2 Linux 5장 + 빈 슬라이드 1장)
+    - 기준선 캡처: PowerPoint sandbox 제약 → libreoffice headless → PDF → macOS Quartz PyObjC 렌더로 PNG 23장 생성
+    - m2slide 캡처: puppeteer headless (1920x1080) — hashOneBasedIndex:true 대응 `#/N` 1-base 인덱싱
+    - 시각 diff 22/22 (PPT 23 - 빈 1) — 콘텐츠 매칭 100% / 시각 매칭 ≈ 80%
+* 구현 명세:
+    - 1차: `office_rainbow` 팔레트 추가 (`data/palettes/catalog.yml` + `theme/default/palettes/office_rainbow.css` + `theme/default_lec/palettes/office_rainbow.css`) — PPT Office 2016+ 기본 무지개 6색 (`#0365C0`·`#00882B`·`#DCBD23`·`#DE6A10`·`#C82506`·`#773F9B`)
+    - 2차: `data/ppt2m2slide/heuristics.yml` 보강 — `preservation.text_emphasis` (PPT 색상 → markdown span) + `preservation.callouts_over_image` (이미지 위 텍스트박스 v2 정책) + `slide_type_layout` (chapter/cover_root/section_break 슬라이드 타입별 layout)
+    - 3차: `data/ppt2m2slide/mappings.yml` 보강 — `known_theme_color_mapping` (PPT theme 6 hex tuple → palette 직접 매핑, ΔE 우회 캐시)
+    - 4차: `data/md-builder/styles.yml` — `ppt_source_handling.bypass_style_rules: true` + `ppt_text_emphasis_handling` (PPT 원본 어조 보존)
+    - 5차: `data/media-creater/tools.yml` — `ppt_extracted_media` 섹션 (image_extraction · image_overlay_callouts · background_shapes)
+    - 검증: ppt2m2slide agent 단발 재실행 → `Projects/BasicKnowledgeForAI_small_v2/` 자동 생성 + palette `office_rainbow` 자동 매칭 (사용자 정정 불필요) ✅
+    - 보고서: `data/_proposals/BasicKnowledgeForAI_small-2026-05-25.md` 슬라이드별 diff 표 + 향후 코드 작업 필요 항목 4개
+    - 향후 별도 이슈 후보: ① cover_root prepend 구현 (heuristics spec 있으나 agent 코드 미구현) ② PPT 텍스트 색상 보존 (python-pptx run.font.color → markdown span 변환) ③ 이미지 callout overlay 합성 캡처 ④ 코드 블록 syntax highlight palette 연동
+* 카테고리: Generator (ppt2m2slide) + Asset (palette·heuristics·mappings)
 
 ## Issue232. H1 슬라이드 contents-header 누락 + 백틱 인라인 코드 link 침범 + H1/H2 puffer 비대칭 (등록: 2026-05-25, 해결: 2026-05-25, commit: 8215612) ✅
 * 목적: `BasicKnowledgeForAI_small/01-markdown.html` `#/11`(`# Markdown 문법 - 링크` H1만 있는 슬라이드)의 contents-header가 통째 사라지고 빈 가로 띠로 보이던 회귀 차단. 동시에 본문 백틱 인라인 코드 `` `[name](URL)` ``이 `<code>&lt;a href="URL"&gt;name&lt;/a&gt;</code>`로 변환되던 markdown 파서 inline 처리 순서 버그 차단 + H1 슬라이드와 H2 슬라이드의 puffer 마스코트 시각 비대칭 차단.
