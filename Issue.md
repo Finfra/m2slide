@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 235
+* Issue HWM: 236
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -26,7 +26,15 @@
 
 # 🚧 진행중
 
-## Issue230. Single mode 중간 H1 슬라이드가 cover로 분류되어 →/↓/End 시 agenda.html 점프 — isCoverSlide() deck 위치 한정 누락 (등록: 2026-05-25)
+# 📕 중요
+
+# 📙 일반
+
+# 📗 선택
+
+# ✅ 완료
+
+## Issue230. Single mode 중간 H1 슬라이드가 cover로 분류되어 →/↓/End 시 agenda.html 점프 — isCoverSlide() deck 위치 한정 누락 (등록: 2026-05-25, 컨텐츠 잘못 만들어진 것이 문제 였음. 기능에 문제 없음.)
 * 목적: m2SlideStyle1_single 등 single mode 프로젝트에서 `index.html#/2`(`# 2. 코드 ...` H1 챕터 divider)에서 → 키 누르면 `agenda.html?fwd=1`로 점프. layout-selector가 모든 본문 H1에 `#layout-_cover` 자동 부착 → `isCoverSlide()`가 deck 진입점이 아닌 중간 슬라이드까지 cover로 판정 → cover navigation 룰(↓·→·End → agenda) 발동. cover는 의미상 deck 진입점(#/0)만이어야 함.
 * 상세:
     - 재현: `./m2slide.sh m2SlideStyle1_single` 후 `index.html?fwd=1#/2`에서 → 키 → `agenda.html?fwd=1` (의도: #/3 다음 슬라이드)
@@ -36,13 +44,29 @@
     - `isCoverSlide()`에 deck 진입점 조건 추가: `Reveal.getHorizontalSlides()[0] === slide`
     - 시각적 _cover layout은 유지(스타일은 그대로), navigation 의미만 leaf로 격하
 * 카테고리: Frontend (navigation) + Generator (cover 의미 정합성)
-
-# 📕 중요
-
-# 📙 일반
-
-# ✅ 완료
-
+* 
+## Issue236. dev-server /_dev/raw + /_dev/list endpoint — curl-friendly section view (등록: 2026-05-25, 해결: 2026-05-25, commit: TBD) ✅
+* 목적: reveal.js JS 클라이언트 렌더 우회. curl + grep으로 특정 슬라이드 컨텐츠 즉시 확인 가능하게 함. AppleScript Chrome·Playwright 없이 빠른 디자인 파악.
+* 상세:
+    - curl로 `index.html?fwd=1#/N` fetch 시 모든 section 포함된 raw HTML 반환 — 특정 N번째 활성 슬라이드 추출 불가 (reveal.js JS가 클라이언트에서 처리)
+    - 사용자: "지금 작업이 특정 페이지 내용 확인하는 것이 목적" — curl 빠른 디자인 파악 필요
+* 구현 명세:
+    - `lib/dev-server/server.py`에 `DevHandler` 확장 (기존 QuietHandler 대체)
+    - `/_dev/raw?file=PATH&n=N` — N번째 top-level `<section>` plain HTML 래핑 응답 (theme CSS link carry-over로 디자인 fidelity)
+    - `/_dev/list?file=PATH[&format=json]` — 모든 section 인덱스 (title + bytes + raw URL). HTML 기본, JSON 옵션
+    - `/_dev/` — 사용법 help
+    - 보안: 경로 traversal 차단 (403), `.html` 만 허용 (400), localhost bind
+    - `find_top_section_spans()` — `.reveal .slides` 안 depth-1 section 만 추출 (nested vertical slide는 부모 포함)
+    - 빌드 산출물 무변경 — dev-server 메모리 동적 응답 (file:// 배포 rule 영향 0)
+    - `_doc_arch/dev-server.md` 갱신 — 3채널 분기 표 (file:// SSOT / http live / http raw) + raw endpoint 섹션 신설
+    - `.claude/rules/file-deployment-rules.md` 예외 절에 `/_dev/` endpoint 명시
+* 검증:
+    - python ast 통과
+    - `curl /_dev/list?...format=json` → 36 sections, title·bytes 정확
+    - `curl /_dev/raw?file=...&n=10` → "플로우차트 (Flowchart)" + mermaid 코드 정확 응답
+    - 경로 traversal `../../../etc/passwd` → 403, 존재 안 함 → 404, 범위 초과 → 404
+    - latin-1 호환성 버그 fix (em dash `—` → `:`) — HTTP reason phrase ASCII 강제
+* 카테고리: Build (dev-server) + DX
 
 ## Issue235. 슬라이드 dev-server + 파일 단위 배포 rule (등록: 2026-05-25, 해결: 2026-05-25, commit: 6a65b1d) ✅
 * 목적: `file://` 단독 동작(배포 호환)을 SSOT로 유지하면서 개발 중 HTTP server 자동 시동으로 Playwright·curl 헤드리스 검증 채널 확보. 빌드 산출물의 파일 단위 배포 가능성을 rule로 명시·검증.
