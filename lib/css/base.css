@@ -1245,3 +1245,42 @@ html.ratio-fill .agenda-frame {
 .agenda-frame .toc-markmap {
   padding: 12px 0;
 }
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Issue234 — source slot (출처·인용) 기본 스타일 (모든 theme 공통)
+ * `::: source ...출처... :::` fenced div → 슬라이드 하단 가운데 작은 글씨
+ * theme/{name}/slide.css 가 색·강조 override 가능 (font-size·position 등 보존 권장)
+ * ────────────────────────────────────────────────────────────────────────── */
+.reveal .m2-source {
+  position: absolute;
+  bottom: -0.3em;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.28em;
+  font-style: italic;
+  color: var(--m2-text, #111);
+  opacity: 0.55;
+  pointer-events: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 1em;
+  box-sizing: border-box;
+}
+.reveal .m2-source p {
+  margin: 0;
+  line-height: 1.4;
+}
+.reveal .m2-source a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+.reveal .m2-source a::after {
+  content: ' (' attr(href) ')';
+  margin-left: 0.3em;
+  font-style: normal;
+  opacity: 0.7;
+  text-decoration: none;
+}
