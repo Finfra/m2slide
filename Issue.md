@@ -26,23 +26,6 @@
 
 # 🚧 진행중
 
-## Issue235. 슬라이드 dev-server 도입 + 파일 단위 배포 rule (등록: 2026-05-25)
-* 목적: `file://` 단독 동작(배포 호환)을 유지하면서 개발 중 HTTP server 자동 시동으로 Playwright/curl 헤드리스 검증 채널 확보. 빌드 산출물의 파일 단위 배포 가능성을 rule로 명시·검증.
-* plan: `_doc_work/plan/slide-dev-server_plan.md`
-* 상세:
-    - 현재 `open-slide` skill AppleScript Chrome 제어는 시각 확인만 가능, 헤드리스 검증 불가
-    - Playwright MCP는 `file://` 차단 → HTTP server 별도 시동 필요
-    - 배포 시 사용자는 단일 `.html` 파일 + `img/` 만으로 동작해야 함 (server-only 의존 금지)
-* 구현 명세:
-    - `lib/dev-server/server.py` 신규 — Python `http.server` 기반 idempotent server (port 9877, pid `_doc_work/.dev-server.pid`)
-    - `m2slide.sh --serve {start|stop|status|restart}` + 빌드 시 자동 시동 (`--no-serve` opt-out)
-    - `.claude/rules/file-deployment-rules.md` 신규 — 파일 단위 배포 보장 rule (localhost·절대경로·server-only 기능 금지)
-    - `m2slide.sh --lint-deployment` — 빌드 산출물 lint
-    - `.claude/rules/apply-verify-rules.md` §4 갱신 — 검증 채널 이중화 (file:// 시각 / http 헤드리스) + §4.5 파일 단위 배포 검증
-    - `.claude/skills/open-slide/SKILL.md` `--verify` 플래그 추가 (HTTP+Playwright 경로)
-    - `_doc_arch/dev-server.md` 영속 설계 SSOT
-* 카테고리: Build + Asset + Project
-
 ## Issue230. Single mode 중간 H1 슬라이드가 cover로 분류되어 →/↓/End 시 agenda.html 점프 — isCoverSlide() deck 위치 한정 누락 (등록: 2026-05-25)
 * 목적: m2SlideStyle1_single 등 single mode 프로젝트에서 `index.html#/2`(`# 2. 코드 ...` H1 챕터 divider)에서 → 키 누르면 `agenda.html?fwd=1`로 점프. layout-selector가 모든 본문 H1에 `#layout-_cover` 자동 부착 → `isCoverSlide()`가 deck 진입점이 아닌 중간 슬라이드까지 cover로 판정 → cover navigation 룰(↓·→·End → agenda) 발동. cover는 의미상 deck 진입점(#/0)만이어야 함.
 * 상세:
@@ -60,6 +43,26 @@
 
 # ✅ 완료
 
+
+## Issue235. 슬라이드 dev-server + 파일 단위 배포 rule (등록: 2026-05-25, 해결: 2026-05-25, commit: 6a65b1d) ✅
+* 목적: `file://` 단독 동작(배포 호환)을 SSOT로 유지하면서 개발 중 HTTP server 자동 시동으로 Playwright·curl 헤드리스 검증 채널 확보. 빌드 산출물의 파일 단위 배포 가능성을 rule로 명시·검증.
+* plan: `_doc_work/plan/slide-dev-server_plan.md`
+* 상세:
+    - 기존 AppleScript Chrome 제어는 시각 확인만 가능, 헤드리스 검증 불가 (curl/Playwright 채널 부재)
+    - Playwright MCP는 `file://` 차단 → HTTP server 별도 시동 필요
+    - 배포 시 사용자는 단일 `.html` 파일 + `img/` 만으로 동작해야 함 (server-only 의존 금지)
+* 구현 명세:
+    - `lib/dev-server/server.py` 신규 — Python stdlib `http.server` (port 9877, 127.0.0.1 bind, document root = repo root)
+    - `lib/dev-server/lifecycle.sh` — idempotent start/stop/status/restart (pid `_doc_work/.dev-server.pid`, log `.dev-server.log`)
+    - `m2slide.sh --serve {start|stop|status|restart}` subcommand
+    - `m2slide.sh` 빌드 시 dev-server 자동 시동 (`--no-serve` opt-out, `_config.yml dev_server: false` opt-out)
+    - `m2slide.sh --lint-deployment [project]` — `localhost`, `127.0.0.1`, `0.0.0.0`, `/Users/`, `/home/`, `file:///Users/` regex grep
+    - `_doc_arch/dev-server.md` 영속 설계 SSOT — 두 채널 분기 (file:// SSOT / HTTP 보조)
+    - `.claude/rules/file-deployment-rules.md` 신규 — 파일 단위 배포 보장 rule + 허용·금지 패턴 표
+    - `.claude/rules/apply-verify-rules.md` §4 검증 채널 이중화 + §4.5 파일 단위 배포 검증 신설
+    - `.claude/skills/open-slide/SKILL.md` `--verify` 플래그 (HTTP+Playwright navigate+screenshot+console)
+* 검증: bash -n + python ast 통과, lifecycle 4종 동작, curl HTTP 200, lint 위반 0건, 자동 시동 + URL 안내, `--no-serve` opt-out 동작
+* 카테고리: Build + Asset + Project
 
 ## Issue234. ppt2m2slide 학습 round 3 — PPT 색 강조 → **bold** + 출처 텍스트박스 → ::: source 슬롯 (등록: 2026-05-25, 해결: 2026-05-25, commit: 0d1f8c0) ✅
 * 목적: Issue233 후속 사용자 피드백 2건 반영 — ① PPT 빨강 강조 텍스트(`매우 간단한 구조의 문법`, `직관적으로 인식` 등) 손실 → `**bold**` 변환 + theme 강조 스타일 ② PPT 출처 텍스트박스(`[공통] ... https://...`) m2slide slot 없음 → `::: source` 슬롯 (default theme 하단 absolute)
