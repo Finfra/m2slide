@@ -540,24 +540,31 @@ class DevHandler(SimpleHTTPRequestHandler):
     def _serve_short_entry(self, project: str, chapter):
         """Handle /p/<project>[/<chapter>].
 
-        * chapter in ('s', 'slide') → deck entry alias (proxy index.html). Issue236.17
-          shortens /p/<P>/slide/ → /p/<P>/s/. Old form 'slide' kept as alias.
         * chapter present  → proxy build artifact content (Issue236.9 — was 302)
         * chapter absent   → HTML overview page (project slide list)
+        Note: /p/<P>/s/ with no further path (chapter='s') falls through to _short_file_rel
+        which resolves to s.html (not found → 404). Use /p/<P>/s/cover or /p/<P>/s/<n>/toc
+        named routes instead. Issue239.
         """
-        if chapter in ('s', 'slide'):
-            # chapter mode: proxy first chapter HTML so #hash is preserved by browser.
-            # single mode: proxy index.html (the deck itself). Issue238.
-            first_stem = self._resolve_chapter_index(project, 1)
-            if first_stem is not None and first_stem != 'index':
-                file_rel = self._short_file_rel(project, first_stem)
-            else:
-                file_rel = self._short_file_rel(project, None)
-            return self._proxy_build_artifact(file_rel)
         if chapter is not None:
             file_rel = self._short_file_rel(project, chapter)
             return self._proxy_build_artifact(file_rel)
         return self._serve_project_overview(project)
+
+    def _serve_cover_entry(self, project: str):
+        """Handle /p/<project>/s/cover → proxy index.html (cover deck). Issue239."""
+        file_rel = self._short_file_rel(project, None)  # index.html
+        return self._proxy_build_artifact(file_rel)
+
+    def _serve_chapter_toc(self, project: str, chap_idx: int):
+        """Handle /p/<project>/s/<chap>/toc → chapter HTML at TOC slide. Issue239."""
+        stem = self._resolve_chapter_index(project, chap_idx)
+        if stem is None:
+            self.send_error(404, f'chapter {chap_idx} not found in {project}')
+            return
+        chapter = None if stem == 'index' else stem
+        file_rel = self._short_file_rel(project, chapter)
+        return self._proxy_build_artifact(file_rel, slide_n=1)
 
     def _proxy_build_artifact(self, file_rel: str, slide_n=None):
         """Serve build artifact content as 200 response with rewritten navigation.

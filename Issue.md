@@ -46,12 +46,14 @@
     - `--m2-card-title-bg: var(--m2-accent-1, #F5C518)` — 카드 제목 밴드는 palette에 반응하도록 직접 참조
     - 회귀 테스트: `m2SlideStyle1_single`, `m2SlideStyle2_chapter` 모두 `--kn-accent: #F5C518` 확인
 
-## Issue239. dev-server /p/P/s/ — chapter mode에서 agenda로 리다이렉트되어 #hash 소실 (등록: 2026-05-26, 해결: 2026-05-26, commit: 12baaa6) ✅
-* 목적: `/p/<P>/s/#/2` 접근 시 첫 챕터 슬라이드가 표시되지 않고 agenda로 리다이렉트되는 버그 수정
+## Issue239. dev-server /p/P/s/ — chapter mode에서 agenda로 리다이렉트되어 #hash 소실 (등록: 2026-05-26, 해결: 2026-05-26, commit: 12baaa6, f1400ca, TBD) ✅
+* 목적: `/p/<P>/s/#/2` 접근 시 첫 챕터 슬라이드가 표시되지 않고 agenda로 리다이렉트되는 버그 수정. `/p/P/s/` → 404, 명명 라우트(`/s/cover`, `/s/<n>/toc`) 추가
 * 상세:
     - chapter mode `index.html`은 `<meta http-equiv="refresh">` agenda 리다이렉트 페이지 → `#/2` 해시 소실
-    - `_serve_short_entry`: chapter='s'/'slide' 시 `_resolve_chapter_index(1)`로 첫 챕터 HTML을 200 프록시
-    - 브라우저 URL 유지 → `#` hash 보존. single mode는 기존 index.html 프록시 유지
+    - 최종 설계: `/p/P/s/` 그대로 두면 `s.html` 미존재 → 404 (hash 전달 불가이므로 나머지는 명명 라우트로)
+    - `/p/P/s/cover` → `index.html` 프록시 (cover deck)
+    - `/p/P/s/<n>/toc` → 챕터 N HTML 첫 슬라이드(`slide_n=1`) 프록시 (TOC/markmap)
+    - `_serve_cover_entry`, `_serve_chapter_toc` 핸들러 메서드 추가
 
 ## Issue237. explicit #layout-* H1 슬라이드 End/Home 키 sibling 점프 불가 — headingLevel 누락 (등록: 2026-05-26, 해결: 2026-05-26, commit: f330c5b) ✅
 * 목적: m2SlideStyle1_single `index.html#/2`(H1 + `#layout-_cover` 명시 슬라이드)에서 End 키 눌러도 다음 H1 anchor로 이동하지 않음. slide-parser.js 앵커 감지 패스에서 explicit layout 지정 슬라이드가 early return되어 headingLevel 미설정 → data-heading-level 미주입 → isAnchorSlide() false → findNextSiblingAnchorIndex() -1 → End key noop.

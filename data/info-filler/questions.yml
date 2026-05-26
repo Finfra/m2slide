@@ -79,6 +79,21 @@ planning:
         type: date_iso
 
   optional:
+    - id: source_type
+      label: 원본 유형
+      prompt: "이 프로젝트의 출처는? ppt=기존 PPT 변환, markdown=기존 md 정리, scratch=처음부터 신규"
+      default: scratch
+      values: [ppt, markdown, scratch]
+      example: "ppt"
+
+    - id: source_cover
+      label: 원본 표지 존재
+      prompt: "원본 PPT/자료에 표지(커버) 슬라이드가 있었나요? (source_type=ppt일 때만 질의)"
+      default: false
+      values: [true, false]
+      conditional: { source_type: ppt }
+      hint: "표지가 있으면 의존성 규칙에 따라 cover_enabled=true로 자동 보정됩니다."
+
     - id: outline
       label: 목차 outline
       prompt: "1차 챕터·섹션 리스트 (있으면). 없으면 agenda-designer가 자동 생성."
@@ -111,6 +126,7 @@ build_options:
     prompt: "첫 슬라이드 cover 자동 주입?"
     default: false
     values: [true, false]
+    hint: "source_cover=true이면 의존성 규칙에 의해 true로 자동 보정됨. ppt2m2slide 변환 프로젝트는 반드시 확인."
 
   - id: cover_layout
     prompt: "cover layout 이름 (cover_enabled=true일 때만)"
@@ -181,6 +197,10 @@ output_options:
 # 5. 산출물 의존성 — 자동 보정 규칙
 # ============================================================================
 dependencies:
+  - if: { source_cover: true }
+    then: { cover_enabled: true }
+    reason: "원본 PPT·자료에 표지가 있으면 m2slide 빌드에도 cover 자동 주입 활성화"
+
   - if: { output_tts_txt: true }
     then: { output_subs_txt: true }
     reason: ".tts.txt는 .txt에서 파생 (txt2tts agent 변환)"
@@ -244,6 +264,8 @@ validation_rules:
     refs_seed: 1
   consistency_checks:
     - rule: "output_tts_txt=true → output_subs_txt=true"
+    - rule: "source_cover=true → cover_enabled=true (의존성 자동 보정 확인)"
+    - rule: "source_type=ppt → source_cover 필드 반드시 질의 (ppt2m2slide 변환 표지 누락 방지)"
 
 # ============================================================================
 # 8. 인터뷰 진행 정책
@@ -252,10 +274,15 @@ interview_policy:
   followup_max: 1               # 미응답 필드당 follow-up 1회
   default_on_skip: true         # "모르겠다"·"건너뛰자" 응답 시 default 적용 후 진행
   preserve_existing: true       # 비파괴 갱신 — 기존 사용자 작성 값 변경 금지
-  config_yml_priority: true     # _config.yml 값이 있으면 default 후보로 사용
+  config_yml_priority: true     # _config.yml 값이 있으면 default 후보로 사용 (단 의존성 자동 보정은 config_yml 값을 덮어씀)
   range_for_chapter_mode:
     duration_min: 30
     goals_min: 5
+  ppt_origin_rule: |
+    source_type=ppt 감지 시 (Info.md 출처 섹션 또는 _config.yml 주석에서 ppt2m2slide 언급 확인):
+    1. source_cover 필드를 반드시 질의 (skip 불허)
+    2. source_cover=true이면 cover_enabled를 config_yml 기존값 무관하게 true로 보정
+    3. _config.yml에 cover_enabled: false가 이미 있어도 "원본 표지 있음 → true로 변경 권장" 알림 후 진행
 
 # ============================================================================
 # 9. 종료 보고 템플릿
