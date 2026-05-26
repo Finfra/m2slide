@@ -203,11 +203,17 @@ class DevHandler(SimpleHTTPRequestHandler):
         except (ValueError, IndexError):
             pass
 
+    # /Projects/.../X.html/<N>  →  text section (zsh-friendly direct URL)
+    # Trailing slash optional.  HTTP fragment (#/N) cannot reach the server,
+    # so this path-segment form is the curl-friendly equivalent.
+    _DIRECT_SLIDE_RE = re.compile(r'^(.+?\.html)/(\d+)/?$', re.IGNORECASE)
+
     def do_GET(self):
         # Path-segment form (zsh-friendly — no ? or # in URL):
-        #   /_dev/raw/<n>/<file path...>
-        #   /_dev/text/<n>/<file path...>
-        #   /_dev/list/<file path...>
+        #   /_dev/raw/<n>/<file path...>     → 302 to live URL with #/N
+        #   /_dev/text/<n>/<file path...>    → plain text section
+        #   /_dev/list/<file path...>        → section index
+        #   /<build path>/X.html/<n>         → plain text section (direct curl form)
         # Query form (legacy, also supported):
         #   /_dev/raw?file=<path>&n=<n>
         #   /_dev/text?file=<path>&n=<n>
@@ -220,7 +226,51 @@ class DevHandler(SimpleHTTPRequestHandler):
             return self._serve_list()
         if self.path == '/_dev/' or self.path == '/_dev':
             return self._serve_help()
+        # Direct slide form: /<build path>/X.html/<n> (no query, no hash)
+        path_only = self.path.split('?', 1)[0].split('#', 1)[0]
+        m = self._DIRECT_SLIDE_RE.match(path_only)
+        if m:
+            file_path = m.group(1).lstrip('/')
+            try:
+                n = int(m.group(2))
+            except ValueError:
+                return super().do_GET()
+            return self._serve_direct_slide(file_path, n)
         return super().do_GET()
+
+    def _serve_direct_slide(self, file_path: str, n: int):
+        """Handle /<build path>/X.html/<n> — equivalent to /_dev/text/<n>/<path>.
+
+        Content-negotiation: ?mode=raw or Accept: text/html with X-Direct-Mode
+        could redirect to live; default is text (curl-friendly).
+        """
+        resolved = self._resolve_file_path(file_path)
+        if resolved is None:
+            return
+        full, rel = resolved
+        html = self._read_file(full)
+        spans = find_top_section_spans(html)
+        if not spans:
+            self.send_error(404, f'no <section> found inside .slides for {rel}')
+            return
+        total = len(spans)
+        if n < 1 or n > total:
+            self.send_error(404, f'slide {n} out of range (1..{total})')
+            return
+        # mode=raw query → redirect to live URL with #/N (browser design view)
+        q = parse_qs(urlparse(self.path).query)
+        if q.get('mode', [''])[0] == 'raw':
+            target = '/' + rel.lstrip('/') + '#/' + str(n)
+            self.send_response(302)
+            self.send_header('Location', target)
+            self.send_header('Content-Length', '0')
+            self.end_headers()
+            return
+        s, e = spans[n - 1]
+        section_html = html[s:e]
+        head_links = '\n'.join(re.findall(
+            r'<link\s+rel="stylesheet"[^>]+>', html, flags=re.IGNORECASE))
+        self._write_html(wrap_text_html(rel, n, total, section_html, head_links))
 
     # --- path parsing helpers ---
 
