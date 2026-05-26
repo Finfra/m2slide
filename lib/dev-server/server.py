@@ -324,40 +324,60 @@ class DevHandler(SimpleHTTPRequestHandler):
         m = self._LEGACY_BUILD_HTML_RE.match(path_only)
         if m:
             return self._redirect_legacy_html(m.group(1), m.group(2))
-        # Legacy build-artifact directory (no .html) → /p/<P> or /p/
+        # Legacy build-artifact directory (no .html) — block with 404
         m = self._LEGACY_BUILD_DIR_RE.match(path_only)
         if m:
-            project = m.group(1)
-            target = f'/p/{project}' if project else '/p/'
-            if '?' in self.path:
-                target += '?' + self.path.split('?', 1)[1]
-            self.send_response(302)
-            self.send_header('Location', target)
-            self.send_header('Content-Length', '0')
-            self.end_headers()
-            return
+            return self._reject_legacy_dir(m.group(1))
         return super().do_GET()
 
-    def _redirect_legacy_html(self, project: str, stem: str):
-        """302 redirect /Projects/<P>/slide/<X>.html → /p/<P>[/<stem>] (Issue236.9).
-
-        Preserves query string. Client preserves URL hash automatically (RFC 7231).
-        Examples:
-          /Projects/X/slide/index.html?fwd=1#/13
-            → 302 Location: /p/X?fwd=1
-            → final URL after client hash preservation: /p/X?fwd=1#/13
-          /Projects/X/slide/01-md.html?fwd=1#/toc
-            → 302 Location: /p/X/01-md?fwd=1#/toc-placeholder preserved by client
-        """
-        # Build target — index → /p/<P>, others → /p/<P>/<stem>
-        target = f'/p/{project}' if stem == 'index' else f'/p/{project}/{stem}'
-        # Preserve query string
-        if '?' in self.path:
-            target += '?' + self.path.split('?', 1)[1]
-        self.send_response(302)
-        self.send_header('Location', target)
-        self.send_header('Content-Length', '0')
+    def _reject_legacy_dir(self, project):
+        """404 for legacy /Projects[/<P>[/slide[/]]] access (Issue236.11)."""
+        if project:
+            suggested = f'/p/{project}'
+        else:
+            suggested = '/p/'
+        body = (
+            f'<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
+            f'<title>404 — legacy URL blocked</title>'
+            f'<style>body{{font-family:sans-serif;max-width:720px;margin:40px auto;padding:0 16px;line-height:1.6}}'
+            f'code{{background:#f3f3f3;padding:2px 6px;border-radius:3px}}</style></head><body>'
+            f'<h1>404 — legacy URL blocked</h1>'
+            f'<p>Direct access to <code>/Projects/...</code> directory paths is blocked on dev-server.</p>'
+            f'<p>Use: <a href="{suggested}"><code>{suggested}</code></a></p>'
+            f'</body></html>'
+        ).encode('utf-8')
+        self.send_response(404)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
         self.end_headers()
+        self.wfile.write(body)
+
+    def _redirect_legacy_html(self, project: str, stem: str):
+        """Reject legacy /Projects/<P>/slide/<X>.html access with 404 (Issue236.11).
+
+        Earlier (Issue236.9) this 302-redirected to /p/<P>[/<stem>] for backward
+        compat. Policy tightened — caller must use the short /p/ form directly.
+        Suggested URL printed in response body for user discovery.
+        """
+        suggested = f'/p/{project}' if stem == 'index' else f'/p/{project}/{stem}'
+        body = (
+            f'<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
+            f'<title>404 — legacy URL blocked</title>'
+            f'<style>body{{font-family:sans-serif;max-width:720px;margin:40px auto;padding:0 16px;line-height:1.6}}'
+            f'code{{background:#f3f3f3;padding:2px 6px;border-radius:3px}}</style></head><body>'
+            f'<h1>404 — legacy URL blocked</h1>'
+            f'<p>Direct access to <code>/Projects/&lt;P&gt;/slide/&lt;X&gt;.html</code> '
+            f'is no longer supported on dev-server (Issue236.11).</p>'
+            f'<p>Use the short form: <a href="{suggested}"><code>{suggested}</code></a></p>'
+            f'<p>For a specific slide: <code>/p/&lt;P&gt;/s/&lt;chap&gt;/&lt;n&gt;</code> '
+            f'(text) or <code>?mode=raw</code> (design view).</p>'
+            f'</body></html>'
+        ).encode('utf-8')
+        self.send_response(404)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Length', str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
 
     def _short_file_rel(self, project: str, chapter):
         """Build relative path for /p/<project>[/<chapter>] form."""
@@ -598,7 +618,7 @@ class DevHandler(SimpleHTTPRequestHandler):
             'a:hover{text-decoration:underline}'
             '.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:16px 0}'
             '.card{background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}'
-            '.card h3{margin:0 0 8px;font-size:16px}'
+            '.card h3{margin:0 0 8px;font-size:16px}.card h3 a{color:inherit;text-decoration:none;font-weight:bold}.card h3 a:hover{text-decoration:underline}'
             '.card .meta{color:#666;font-size:13px;margin:4px 0}'
             '.card .links{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px}'
             '.card .links a{font-size:12px;background:#f0f8fa;padding:4px 8px;border-radius:3px}'
@@ -678,7 +698,7 @@ class DevHandler(SimpleHTTPRequestHandler):
             entry_stem = entry[:-len('.html')]
             entry_link = f'/p/{p}' if entry_stem == 'index' else f'/p/{p}/{entry_stem}'
             cards.append(
-                f'<div class="card"><h3>{p}</h3>'
+                f'<div class="card"><h3><a href="/p/{p}/s/1?mode=raw">{p}</a></h3>'
                 f'<div class="meta">{count} .html · 진입: <code>{entry}</code></div>'
                 '<div class="links">'
                 f'<a href="/p/{p}">📋 슬라이드 목록</a>'
