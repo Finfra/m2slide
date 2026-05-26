@@ -1,0 +1,328 @@
+# data/ppt2m2slide/heuristics.yml
+# ppt2m2slide agent의 layout 판정 임계값 + mode 판정 + palette 매칭 임계값.
+#
+# 설계 SSOT: _doc_arch/ppt2m2slide.md
+# 본 파일 수정 시 agent 본문 변경 없이 즉시 반영됨 (데이터-주도 SCAR).
+---
+schema_version: 1
+
+# ── layout 자동 판정 휴리스틱 ─────────────────────────────────
+# PPT 슬라이드의 제목 위치·이미지 비율·텍스트 양을 기준으로
+# m2slide layout(_cover / _blank / _contents_no_title / _contents) 판정.
+# 우선순위: cover → blank → contents_no_title → contents (fallback)
+layout_detection:
+  cover:
+    # 제목이 슬라이드 상단 40% 영역 안에 위치 + 본문 텍스트 50자 미만
+    # PPT 표지·섹션 구분 슬라이드 패턴
+    title_top_ratio_max: 0.4
+    body_text_chars_max: 50
+  blank:
+    # 제목 없음 + 이미지 1개가 슬라이드 면적의 60% 이상 점유
+    # PPT 풀스크린 이미지 슬라이드 패턴
+    no_title: true
+    image_area_ratio_min: 0.6
+  contents_no_title:
+    # 제목 텍스트 빈 칸 + 본문 존재
+    title_empty: true
+    body_required: true
+  contents:
+    # 기본 fallback — 제목 + 본문 일반 구조
+    fallback: true
+
+# ── 슬라이드 내 콘텐츠 구조별 레이아웃 변환 규칙 ──────────────
+# PPT 슬라이드 본문의 텍스트+이미지 패턴 → m2slide 마크다운 레이아웃 변환 규칙.
+# ppt2m2slide agent가 pptx2md 출력 정제 시 본 규칙 적용.
+content_layout_rules:
+  - id: text_plus_one_image
+    desc: "텍스트(bullet/paragraph) + 이미지 1개 → ::right:: 2분할"
+    trigger:
+      text_blocks_min: 1
+      images: 1
+    output: |
+      {text_blocks}
+
+      ::right::
+
+      {image}
+    note: "PPT 왼쪽 텍스트 + 오른쪽 이미지 패턴. Markdown Example·Header·순서없는목록·코드블록 슬라이드"
+
+  - id: two_images_side_by_side
+    desc: "이미지 2개 → ::: columns 50/50 나란히"
+    trigger:
+      text_blocks_max: 2          # 설명 텍스트 0~2행 허용
+      images: 2
+    output: |
+      {text_blocks}
+
+      ::: columns
+      ::: {.column width="50%"}
+      {image_1}
+      :::
+      ::: {.column width="50%"}
+      {image_2}
+      :::
+      :::
+    note: |
+      PPT 2-image 나란히 패턴. BlockQuote 슬라이드가 대표 사례.
+      주의: pptx2md는 전체 PPT에 걸쳐 이미지를 순차 번호 부여하므로
+      image_N+1이 실제로 다음 슬라이드 이미지일 수 있음.
+      확인 방법: python-pptx로 슬라이드별 shape 목록 비교 후 image_count 검증.
+      예시(BasicKnowledgeForAI_small): 강조 슬라이드에 pptx2md가 img_6·img_7 배치
+      했으나 img_7은 다음 슬라이드(코드블록) 소속 → 강조는 img_6 단독이 정확.
+
+  - id: image_plus_table
+    desc: "이미지 1개 + 표 → ::: columns 50/50"
+    trigger:
+      images: 1
+      has_table: true
+      text_blocks_max: 0
+    output: |
+      ::: columns
+      ::: {.column width="50%"}
+      {image}
+      :::
+      ::: {.column width="50%"}
+      {table}
+      :::
+      :::
+    note: "PPT 이미지+표 패턴. html삽입 슬라이드"
+
+  - id: text_plus_one_image_right_two_stacked
+    desc: "텍스트 + 이미지 2개(세로 스택) → ::right:: 2분할 (이미지 우측 세로 배치)"
+    trigger:
+      text_blocks_min: 1
+      images: 2
+      image_stacked: true         # 이미지가 수직으로 쌓인 패턴 (x 좌표 유사)
+    output: |
+      {text_blocks}
+
+      ::right::
+
+      {image_1}
+
+      {image_2}
+    note: "PPT 텍스트 좌+이미지2개 우 스택 패턴. 윈도우접속 슬라이드"
+
+# ── markdown syntax 정제 규칙 ────────────────────────────────
+# pptx2md 출력 정제 단계에서 적용할 마크다운 문법 변환 규칙.
+# 적용 순서: source 변환 → content_layout 변환 → 본 정제 순.
+markdown_syntax_cleanup:
+  - id: autolink_to_backtick
+    desc: "autolink <URL> → 백틱 인라인 코드"
+    pattern: '<(https?://[^\s>]+)>'
+    replacement: '`<$1>`'
+    rationale: |
+      pptx2md가 PPT URL 텍스트박스를 <http://example.com/> autolink 문법으로 변환함.
+      m2slide 마크다운 파서는 <http://...> 를 literal HTML 태그로 그대로 출력하며,
+      브라우저는 알 수 없는 태그로 간주하여 내용을 숨김.
+      백틱 인라인 코드로 감싸면 URL이 정상 텍스트로 노출됨.
+      학습 사례: BasicKnowledgeForAI_small 링크 슬라이드 `<http://example.com/>`.
+    scope: body_text_only          # frontmatter·code_block 내부는 변환 금지
+    apply_after: pptx2md_raw       # pptx2md 원본 출력 직후 정제 단계에서 적용
+
+  - id: email_autolink_to_backtick
+    desc: "email autolink <email@example.com> → 백틱 인라인 코드"
+    pattern: '<([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})>'
+    replacement: '`<$1>`'
+    rationale: "URL autolink와 동일 이유. email autolink도 브라우저가 태그로 인식"
+    scope: body_text_only
+
+# ── pptx2md 이미지 순번 주의사항 ──────────────────────────────
+# pptx2md는 전체 PPT 슬라이드에 걸쳐 이미지를 하나의 전역 카운터로 번호 부여.
+# 슬라이드 N의 이미지가 항상 img_K.png (K = 슬라이드 내 등장 순서)가 아님.
+image_assignment_policy:
+  rationale: |
+    pptx2md 이미지 추출은 PPT shape 순서(전체 덱 기준) 기반으로 번호를 증가시킴.
+    결과적으로 슬라이드 M의 1번째 이미지가 img_0007.png 일 수 있음.
+    두 이미지가 같은 슬라이드에 속하는지 반드시 python-pptx shape 스캔으로 확인.
+  verification_method: |
+    python3 -c "
+    from pptx import Presentation
+    prs = Presentation('{pptx_path}')
+    for i, slide in enumerate(prs.slides):
+        imgs = [s for s in slide.shapes if s.shape_type == 13]  # MSO_SHAPE_TYPE.PICTURE
+        print(f'Slide {i+1}: {len(imgs)} images')
+    "
+  known_issue_example: |
+    BasicKnowledgeForAI_small.pptx 사례:
+    - 강조(emphasis) 슬라이드: PPT에 이미지 1개 (img_6 = 강조 syntax+렌더 합성 이미지)
+    - pptx2md 출력: img_6 + img_7 두 개 참조 (img_7은 다음 슬라이드 소속)
+    - 수정: 강조 슬라이드에 img_6만 사용, img_7은 코드블록 슬라이드에 배치
+  fix_strategy: single_image_verification  # 슬라이드당 실제 이미지 수 확인 후 content_layout_rules 적용
+
+# ── source 텍스트박스 자동 변환 규칙 ─────────────────────────
+# PPT 자유 텍스트박스 중 '출처' 계열 prefix 감지 → ::: source fenced div 변환.
+# preservation.source_textbox 와 연동.
+source_textbox_conversion:
+  enabled: true
+  prefixes: ['출처', 'Source', 'source', '[공통]', 'cf)', '참고', '참조']
+  contains_url: true
+  output_template: |
+    ::: source
+    출처: {normalized_text}
+    :::
+  placement: slide_bottom        # 슬라이드 본문 맨 아래에 배치
+  note: "pptx2md가 source 텍스트박스를 orphan bullet으로 변환한 경우 이 규칙으로 재변환"
+
+# ── 슬라이드 타입별 layout 매핑 (Issue233) ───────────────────
+# PPT 슬라이드 메타의 슬라이드 타입 신호 → m2slide layout 선택.
+# 우선순위: 사용자 #layout 명시 > 본 매핑 > layout_detection heuristic
+slide_type_layout:
+  # PPT chapter marker로 검출된 슬라이드 (chapter_markers_detected[].kind == chapter)
+  # → m2slide `_toc` layout (TOC 자동 주입). chapter divider의 시각 강조 + sub-section markmap
+  chapter:
+    layout: _toc                # 기본값. 사용자가 _chapter 선호 시 _config.yml에서 override
+    rationale: "TOC layout 으로 sub-section 자동 markmap 표시 (default theme `_toc` 활용)"
+  # PPT cover_root (deck 최상위 표지)
+  cover_root:
+    single_mode_layout: _cover           # single mode — 표지 자동 주입
+    chapter_mode_layout: _contents       # chapter mode — 첫 챕터 prepend (Issue227 회귀 회피)
+  # PPT section_break (subtitle만 있는 섹션 구분 슬라이드, v2 후보)
+  section_break:
+    layout: _toc
+    rationale: "섹션 구분 = chapter divider 역할"
+
+# ── 원본 보존 정책 (Issue228) ─────────────────────────────────
+# PPT 원본 콘텐츠 요소 제거 금지 원칙. m2slide 룰 충돌 시 콘텐츠 보존 + layout 변형.
+preservation:
+  cover_root:
+    # PPT 표지 슬라이드(cover_root marker) 처리 방식
+    # - single mode: cover 자동 주입 (cover_enabled: true)
+    # - chapter mode: 첫 챕터 첫 슬라이드 직전 prepend, layout 강제 `_contents` (Issue227 navigation 회귀 회피)
+    chapter_mode_action: prepend_as_contents
+    chapter_mode_layout: _contents
+    note: "PPT cover_root preserved as _contents prepend"
+  empty_slides:
+    # PPT 빈 슬라이드(텍스트·이미지·도형 0건)는 예외적으로 무시
+    skip: true
+  # ── PPT 텍스트박스 강조 색상 보존 (Issue233) ──────────────
+  # PPT run.font.color.rgb 비-#000000 → markdown 강조 syntax 변환
+  # python-pptx의 run.font.color.rgb로 추출 가능. 현 agent 미구현 시 _proposals에 기록만
+  text_emphasis:
+    # PPT 컬러 텍스트 → markdown `**bold**` 변환 (Issue234 구현 완료)
+    # 모든 비기본 컬러 (000000/FFFFFF/scheme:tx/bg/dk/lt 제외) → **bold**
+    # theme/default/slide.css strong 셀렉터가 var(--m2-accent-5) 빨강 적용
+    enabled: true                        # Issue234 — lib/ppt-emphasis-extract.py 구현됨
+    handler: lib/ppt-emphasis-extract.py
+    color_to_syntax:
+      default: bold                      # 모든 컬러 run → **bold** (단순화)
+    fallback_action: proposal            # 매칭 실패 시 _proposals 기록
+  # PPT 텍스트박스 출처 검출 (Issue234)
+  source_textbox:
+    enabled: true
+    handler: lib/ppt-emphasis-extract.py # 같은 스크립트가 emphasis + source 함께 처리
+    detection:
+      shape_type: TEXT_BOX               # PLACEHOLDER 가 아닌 자유 TEXT_BOX
+      prefixes: ['출처', 'Source', 'source', '[공통]', 'cf)', '참고', '참조']
+      contains_url: true                 # URL 포함 시 source 후보
+    md_output: '::: source\n출처: ...\n:::'
+  # ── PPT 텍스트박스 콜아웃 보존 (Issue233) ────────────────
+  # 이미지 위에 작은 텍스트박스로 callout 화살표·메모를 표시한 PPT 슬라이드 패턴
+  # 예: BasicKnowledgeForAI_small.pptx slide 6 (Header) — H1~H6 이미지에 "제목" "까지만 지원" 캡션
+  callouts_over_image:
+    # 현 fallback: 캡션 텍스트들이 orphan bullet 로 변환되어 콘텐츠 손실 가능
+    # 권장: 추가 텍스트박스를 별도 caption slot으로 분리 또는 이미지 캡쳐 후 합성
+    enabled: false                       # v2 — 미구현
+    fallback_action: extra_bullets       # 현재 동작 (orphan bullet으로 변환)
+    note: "PPT 이미지 위 텍스트박스 callout은 정확한 위치 유지가 어려움. v2 — 이미지 + 합성 PNG 캡처 fallback 권장"
+
+# ── chapter vs single mode 판정 ───────────────────────────────
+# 슬라이드 수 + H1 분포로 mode 자동 판정.
+# 사용자가 --mode 인자로 명시하면 우선 적용.
+mode_decision:
+  single_max_slides: 25
+  chapter:
+    min_slides: 26
+    # chapter 후보 = H1 카운트 + chapter_marker_patterns 매칭 H2 카운트
+    # pptx2md가 챕터 제목을 H1으로 떨구지 않고 H2로 떨구는 일반 케이스 대응 (Issue217)
+    require_chapter_marker_count: 2
+  # H2(또는 H1) 라인 중 챕터 boundary로 인정할 regex 목록.
+  # 한국어/영어 일반 챕터 명명 관습 포괄. 사용자가 본 yml에 패턴 추가 시 즉시 반영.
+  chapter_marker_patterns:
+    - "^#{1,2}\\s+부록\\s*\\d+"           # ## 부록1. xxx
+    - "^#{1,2}\\s+챕터\\s*\\d+"           # ## 챕터3. xxx
+    - "^#{1,2}\\s+섹션\\s*\\d+"           # ## 섹션2
+    - "^#{1,2}\\s+(Chapter|CHAPTER|chapter)\\s*\\d+"
+    - "^#{1,2}\\s+(Part|PART|part)\\s*\\d+"
+    - "^#{1,2}\\s+(Section|SECTION|section)\\s*\\d+"
+    - "^#{1,2}\\s+(Lecture|LECTURE)\\s*\\d+"
+    - "^#{1,2}\\s+\\d+\\.\\s+\\S+"        # ## 1. 제목 / ## 12. 제목
+    - "^#{1,2}\\s+제\\s*\\d+\\s*(장|부|편)" # ## 제1장 / ## 제2부
+  override_priority:
+    # 사용자 명시 우선순위 (높은 → 낮은)
+    - cli_flag: "--mode"          # /ppt2m2slide --mode chapter
+    - project_config: "_config.yml mode_hint"
+    - heuristic: "본 규칙 자동 판정"
+  # mode 자동 판정 후 반드시 사용자 컨펌 (Issue217).
+  # --no-checkpoint 플래그도 mode 컨펌만은 우회 금지 — 산출물 구조 결정은 사용자 권한.
+  always_confirm_mode: true
+
+# ── palette 매칭 임계값 ───────────────────────────────────────
+# PPT theme 색상 6종을 추출하여 data/palettes/catalog.yml과 ΔE 색차 비교.
+# 임계값 미달 시 _proposals/에 신규 palette 후보로 기록.
+palette_match:
+  similarity_threshold: 0.80   # 정규화 유사도(1.0 - ΔE/100). 0.80 이상이면 매칭으로 간주
+  delta_e_max: 20              # 개별 색상 ΔE 최댓값 (CIE Lab)
+  candidate_count: 3           # 매칭 실패 시 가장 가까운 N개 팔레트를 보고서에 함께 기록
+  weight:
+    # accent 우선순위별 가중치 (1순위가 가장 중요)
+    accent_1: 1.0
+    accent_2: 0.8
+    accent_3: 0.6
+    accent_4: 0.4
+    accent_5: 0.3
+    accent_6: 0.2
+
+# ── PPT 슬라이드 처리 상한 ────────────────────────────────────
+# Opus 4.7 루프 상한 준수 (rules/opus-4-7-execution-rules.md)
+processing_limits:
+  max_slides: 200              # 초과 시 분할 변환 요청
+  smartart_per_slide_max: 5    # 한 슬라이드에 SmartArt 5개 초과 시 경고
+  image_per_slide_max: 10      # 한 슬라이드에 이미지 10개 초과 시 경고
+
+# ── 사용자 체크포인트 메시지 ──────────────────────────────────
+# --no-checkpoint 플래그 사용 시 모두 자동 통과.
+checkpoint_messages:
+  step2_meta: "PPT 메타 수집 완료. {slides}장 슬라이드 분석 결과를 _pipeline/ppt-meta.yml에서 확인 가능합니다. 다음 단계 진행할까요?"
+  # Issue217 — mode 자동 판정 결과 + 검출된 챕터 boundary 미리보기.
+  # always_confirm_mode: true 일 때 무조건 호출. --no-checkpoint 도 우회 금지.
+  # placeholder: {detected_mode}, {slide_count}, {marker_count}, {chapter_preview}
+  # chapter_preview 는 검출된 챕터 제목 목록 (최대 20개 + ...) — 사용자가 boundary 인식 가능해야 함
+  step6_mode: |
+    PPT 분석 결과 — 총 {slide_count}장, 챕터 boundary 후보 {marker_count}개 검출.
+    자동 판정: **{detected_mode} mode**
+
+    검출된 챕터 목록 (미리보기):
+    {chapter_preview}
+
+    이대로 {detected_mode} mode 진행할까요?
+    - chapter mode → markdown/AGENDA.md + 챕터별 .md 분할
+    - single mode → 단일 {name}.md (전체 통합)
+  step6_mapping: "layout·htmlart·palette 매핑 완료. _proposals/에 {proposals_count}개 후보 기록됨. 검토 후 진행할까요?"
+  build: "최종 빌드 직전 (Projects/{name}/). m2slide.sh 빌드 + 브라우저 시각 검증 진행할까요?"
+
+# ── 종료 보고 양식 ────────────────────────────────────────────
+# 경로 표기 규칙: 사용자 산출물 경로는 `file:///절대경로` 형태로 출력 (채팅·문서에서 클릭 시 브라우저 즉시 오픈 가능).
+# `~/...` 와 상대경로(`Projects/{name}/...`)는 클릭 안 됨 → 금지. 예: `file:///Users/{user}/_git/.../Projects/{name}/{name}.md`
+# {abs_project_root} 는 agent 가 빌드 시점 절대경로로 치환 (예: `/Users/nowage/_git/__all/videoMaker/lib/m2slide`).
+report_template: |
+  # ppt2m2slide 변환 보고서
+
+  * 원본 PPT: {source_pptx}
+  * 프로젝트: Projects/{name}/
+  * 총 슬라이드: {total_slides}장
+  * 모드: {mode}
+  * layout 판정:
+      - cover: {cover_count}
+      - blank: {blank_count}
+      - contents_no_title: {contents_no_title_count}
+      - contents: {contents_count}
+  * htmlart 매핑: 성공 {htmlart_success} / 실패 {htmlart_proposals} (proposals에 기록)
+  * palette: {palette_status} (유사도 {palette_similarity})
+  * 빌드: {build_status}
+  * proposals 보고서: data/_proposals/{name}-{date}.md
+
+  산출물:
+
+  * 슬라이드 소스: file://{abs_project_root}/Projects/{name}/{name}.md
+  * 빌드: file://{abs_project_root}/Projects/{name}/slide/index.html

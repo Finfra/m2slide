@@ -1,0 +1,195 @@
+# data/ppt2m2slide/mappings.yml
+# PPT 요소 → m2slide 카탈로그 항목 매핑 사전.
+#
+# 매핑 실패 시 _proposals/에 fallback 기록 (자동 머지 금지).
+# 설계 SSOT: _doc_arch/ppt2m2slide.md
+# 참조 카탈로그:
+#   - data/htmlart/types.yml (htmlart 24종)
+#   - data/htmlart/smartart-catalog.yml (PPT SmartArt 전체 카탈로그)
+#   - data/component-libraries.yml (chart·model3d·p5 등)
+#   - data/palettes/catalog.yml (palette 4종 default/warm/cool/mono)
+---
+schema_version: 1
+
+# ── SmartArt → htmlart 매핑 ───────────────────────────────────
+# PPT SmartArt 카테고리·레이아웃 이름 → m2slide htmlart type.
+# data/htmlart/smartart-catalog.yml의 원본 SmartArt 분류 체계 기준.
+# 키는 PPT SmartArt 카테고리 이름 또는 구체 layout 이름.
+# 미등재 SmartArt는 fallback.unknown_smartart 규칙 적용.
+smartart_to_htmlart:
+  # 카테고리 단위 (PPT SmartArt 7대 분류)
+  Process: process              # Basic Process / Step Up Process / Chevron 등
+  Cycle: cycle                  # Basic Cycle / Continuous Cycle / Radial Cycle 등
+  Hierarchy: hierarchy          # Organization Chart / Hierarchy 등
+  Pyramid: pyramid              # Basic Pyramid / Inverted Pyramid 등
+  Relationship: balance         # Balance / Counterbalance 등 (compare는 별도 신호)
+  Matrix: matrix                # Basic Matrix / Titled Matrix 등
+  List: numbered                # Vertical Bullet List / Numbered List 등
+  Picture: img                  # Picture Strips / Picture Caption List 등 (이미지는 컴포넌트 아닌 자산)
+
+  # 구체 layout 단위 (PPT SmartArt 개별 layout 이름)
+  "Basic Process": process
+  "Step Up Process": step
+  "Step Down Process": step
+  "Continuous Block Process": block
+  "Chevron Process": chevron
+  "Funnel": funnel
+  "Basic Timeline": timeline
+  "Circle Process": cycle
+  "Basic Cycle": cycle
+  "Continuous Cycle": cycle
+  "Radial Cycle": radial
+  "Radial Cluster": radial
+  "Basic Venn": venn
+  "Stacked Venn": venn
+  "Basic Pyramid": pyramid
+  "Inverted Pyramid": pyramid
+  "Pyramid List": pyramid
+  "Basic Target": target
+  "Bullseye": target
+  "Basic Matrix": matrix
+  "Titled Matrix": matrix
+  "Grid Matrix": matrix
+  "Vertical Block List": block
+  "Horizontal Bullet List": numbered
+  "Vertical Bullet List": numbered
+  "Hexagon Cluster": hexagon
+  "Honeycomb": hexagon
+  "Bracket List": bracket
+  "Tabbed Arc": tab
+  "Vertical Tab List": tab
+  "Organization Chart": hierarchy
+  "Hierarchy": hierarchy
+  "Picture Caption List": img
+  "Basic Pie": pie
+  "Pie Process": pie
+  "Balance": balance
+  "Counterbalance Arrows": compare
+  "Opposing Ideas": compare
+  "Opposing Arrows": compare
+  "Process Arrows": arrow
+  "Arrow Ribbon": arrow
+
+# ── 차트 → component 매핑 ─────────────────────────────────────
+# PPT 차트 타입 → m2slide chart component (Chart.js 기반).
+# data/component-libraries.yml의 chart 항목 호환.
+chart_to_component:
+  BarChart: chart                # Chart.js type: bar
+  ColumnChart: chart             # Chart.js type: bar (orientation: vertical)
+  LineChart: chart               # Chart.js type: line
+  PieChart: chart                # Chart.js type: pie
+  DoughnutChart: chart           # Chart.js type: doughnut
+  ScatterChart: chart            # Chart.js type: scatter
+  AreaChart: chart               # Chart.js type: line (fill: true)
+  BubbleChart: chart             # Chart.js type: bubble
+  RadarChart: chart              # Chart.js type: radar
+  ComboChart: chart              # Chart.js mixed
+  StockChart: img                # 미지원 — 이미지로 폴백
+  SurfaceChart: img              # 미지원 — 이미지로 폴백
+
+# ── 임베디드 미디어 → component 매핑 ─────────────────────────
+# PPT에 임베드된 파일 확장자 → m2slide component 또는 자산 폴백.
+embedded_media:
+  .glb: model3d                  # data/component-libraries.yml model3d (model-viewer)
+  .gltf: model3d
+  .mp4: video                    # ![](./video/*.mp4) 마크다운으로 변환
+  .webm: video
+  .mov: video
+  .gif: img                      # 정적 변환 (애니메이션 보존)
+  .svg: img                      # m2slide img/ 폴더로 복사
+  .png: img
+  .jpg: img
+  .jpeg: img
+  .pdf: img                      # 첫 페이지 이미지화 (미지원 시 _proposals/ 기록)
+
+# ── 텍스트박스 → slot 분류 휴리스틱 ──────────────────────────
+# PPT 텍스트박스 위치·크기·스타일로 m2slide slot 추정.
+# data/slot_user.yml 참조.
+text_box_classification:
+  title_position_top:
+    # 슬라이드 상단 20% + 폰트 크기 24pt 이상 → title slot
+    y_ratio_max: 0.2
+    font_size_min: 24
+    target_slot: title
+  bullet_list:
+    # 글머리표 리스트 → content slot (기본)
+    has_bullet: true
+    target_slot: content
+  caption_below_image:
+    # 이미지 직하 + 폰트 크기 12-14pt → caption slot
+    below_image: true
+    font_size_max: 14
+    target_slot: caption
+  footer_position_bottom:
+    # 슬라이드 하단 10% + 폰트 크기 10pt 이하 → footer slot
+    y_ratio_min: 0.9
+    font_size_max: 10
+    target_slot: footer
+
+# ── PPT theme color role → m2slide palette accent 매핑 ────────
+# PPT OOXML theme의 색상 역할 → m2slide CSS variable.
+# data/palettes/catalog.yml의 accent-1~6 체계.
+theme_color_mapping:
+  accent1: accent_1
+  accent2: accent_2
+  accent3: accent_3
+  accent4: accent_4
+  accent5: accent_5
+  accent6: accent_6
+  dk1: text_primary             # 본문 텍스트 (다크)
+  lt1: background_primary       # 배경 (라이트)
+  dk2: text_secondary           # 부제목
+  lt2: background_secondary     # 카드 배경
+  hlink: link                   # 하이퍼링크
+  folHlink: link_visited        # 방문 링크
+
+# ── transition·animation → m2slide 디렉티브 매핑 (v2 후보) ───
+# PPT 전환 효과 → m2slide #transition-* 디렉티브.
+# 현재는 보고서에 추출 결과만 기록. 자동 적용은 v2 범위.
+transition_to_directive:
+  fade: "#transition-fade"
+  push: "#transition-slide"
+  wipe: "#transition-slide-fast"
+  zoom: "#transition-zoom"
+  none: "#transition-none"
+  # fallback: 미등재 효과는 _proposals/에 기록만
+
+# ── PPT theme color hex → palette 매핑 (Issue233) ─────────────
+# 알려진 PPT 기본 테마 색상 hex 값 → m2slide palette 직접 매핑.
+# 한 번 학습된 PPT 테마는 ΔE 계산 없이 즉시 매핑 가능 (cache).
+# 키는 정렬된 accent_1~6 hex tuple. 우선순위 1순위.
+known_theme_color_mapping:
+  # PowerPoint Office 2016+ 기본 무지개 6색 (BasicKnowledgeForAI_small.pptx 학습 결과)
+  - palette: office_rainbow
+    accents:
+      - '#0365C0'
+      - '#00882B'
+      - '#DCBD23'
+      - '#DE6A10'
+      - '#C82506'
+      - '#773F9B'
+    match_mode: exact            # 모든 6 accent 정확 매칭 시 즉시 매핑
+    description: "PowerPoint Office Theme 2016+ 기본 6색 무지개"
+  # warm/cool/mono/default 등도 학습 후 추가 가능
+  # 일치 케이스 발견 시 본 yml에 append 하여 캐시 적중률 향상
+
+# ── fallback 정책 ────────────────────────────────────────────
+# 매칭 실패 시 행동 정의. 자동 머지 금지 원칙 준수.
+fallback:
+  unknown_smartart:
+    action: proposal             # data/_proposals/에 htmlart 후보 기록
+    proposal_section: "신규 htmlart type 후보"
+    fallback_render: img         # 빌드 가능하도록 PNG 캡처 후 img 배치 (사용자 머지 전까지)
+  unknown_chart:
+    action: img                  # 차트는 이미지로 폴백 (Chart.js 변환 실패 시)
+    proposal_section: "신규 chart type 후보"
+  unknown_shape:
+    action: img                  # 도형 그룹은 PNG 캡처 후 img
+    proposal_section: "신규 shape 후보 (낮은 우선순위)"
+  unknown_palette:
+    action: proposal             # _proposals/에 신규 palette 후보 기록
+    proposal_section: "신규 palette 후보"
+    fallback_palette: default    # 빌드 가능하도록 default 팔레트 사용
+  unknown_layout:
+    action: contents             # 모든 layout 판정 실패 시 contents 사용
+    log_warning: true

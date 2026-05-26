@@ -129,6 +129,17 @@ Temporary Items
 !/data/htmlart/**
 !/data/palettes/
 !/data/palettes/**
+!/data/slot-designer/
+!/data/slot-designer/**
+!/data/ppt2m2slide/
+!/data/ppt2m2slide/**
 
 # Backup files
 *.bak
+
+# 루트 직접 생성된 캡처/스크린샷 차단 (capture-output-rules.md)
+# 모든 스크린샷·캡처 png 는 _doc_work/capture/ 에 저장해야 함
+/*.png
+/*.jpg
+/*.jpeg
+/*.webp

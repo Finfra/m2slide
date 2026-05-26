@@ -36,6 +36,7 @@ layout_slot_map:
   contents:
     slots:
       - { name: content, match: "*" }     # 기본 — 모든 콘텐츠
+      - { name: source,  match: source_fenced_div, optional: true }  # 출처/citation 텍스트박스
 
   cover:
     slots:
@@ -126,6 +127,7 @@ match_rules:
   bullet_list:          "본문의 * / - 리스트"
   text_after_bullets:   "리스트 직후 단락"
   star:                 "모든 본문 콘텐츠 (* 와일드카드)"
+  source_fenced_div:    "::: source ... ::: fenced div (PPT '출처' 텍스트박스 대응)"
 
 # ============================================================================
 # 4. 본문 분할 휴리스틱 (slot 미정의 시 fallback)
@@ -185,6 +187,7 @@ placeholder_discovery:
     - "{{caption}}"
     - "{{code}}"
     - "{{explanation}}"
+    - "{{source}}"             # 출처/citation — PPT 텍스트박스 prefixes: ['출처','Source','[공통]','cf)']
 
 # ============================================================================
 # 8. 검증 규칙
