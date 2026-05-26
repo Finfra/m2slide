@@ -242,6 +242,9 @@ class DevHandler(SimpleHTTPRequestHandler):
 
     # Direct slide form: /Projects/.../X.html/<N>
     _DIRECT_SLIDE_RE = re.compile(r'^(.+?\.html)/(\d+)/?$', re.IGNORECASE)
+    # Legacy build-artifact .html access — caught and redirected to short /p/ form
+    _LEGACY_BUILD_HTML_RE = re.compile(
+        r'^/Projects/([^/]+)/slide/(.+)\.html$', re.IGNORECASE)
     # Short form (zsh-friendly, curl-only):
     #   /p/<project>/s/<chap>/<slide>      → text section. chap, slide both 1-base
     #   /p/<project>/s/<slide>             → chap=1 (single mode index.html) shorthand
@@ -310,7 +313,32 @@ class DevHandler(SimpleHTTPRequestHandler):
             except ValueError:
                 return super().do_GET()
             return self._serve_direct_slide(file_path, n)
+        # Legacy build-artifact .html — redirect to short /p/ form (Issue236.9)
+        m = self._LEGACY_BUILD_HTML_RE.match(path_only)
+        if m:
+            return self._redirect_legacy_html(m.group(1), m.group(2))
         return super().do_GET()
+
+    def _redirect_legacy_html(self, project: str, stem: str):
+        """302 redirect /Projects/<P>/slide/<X>.html → /p/<P>[/<stem>] (Issue236.9).
+
+        Preserves query string. Client preserves URL hash automatically (RFC 7231).
+        Examples:
+          /Projects/X/slide/index.html?fwd=1#/13
+            → 302 Location: /p/X?fwd=1
+            → final URL after client hash preservation: /p/X?fwd=1#/13
+          /Projects/X/slide/01-md.html?fwd=1#/toc
+            → 302 Location: /p/X/01-md?fwd=1#/toc-placeholder preserved by client
+        """
+        # Build target — index → /p/<P>, others → /p/<P>/<stem>
+        target = f'/p/{project}' if stem == 'index' else f'/p/{project}/{stem}'
+        # Preserve query string
+        if '?' in self.path:
+            target += '?' + self.path.split('?', 1)[1]
+        self.send_response(302)
+        self.send_header('Location', target)
+        self.send_header('Content-Length', '0')
+        self.end_headers()
 
     def _short_file_rel(self, project: str, chapter):
         """Build relative path for /p/<project>[/<chapter>] form."""
@@ -401,18 +429,11 @@ class DevHandler(SimpleHTTPRequestHandler):
     def _serve_short_slide(self, project: str, chapter, n: int):
         """Handle /p/<project>[/<chapter>]/s/<n>."""
         file_rel = self._short_file_rel(project, chapter)
-        # mode=raw → redirect to live URL with #/N
+        # mode=raw → proxy build artifact content + base href + hash navigate
+        # (Issue236.9 — no longer 302 to /Projects/...; URL bar stays short)
         q = parse_qs(urlparse(self.path).query)
         if q.get('mode', [''])[0] == 'raw':
-            resolved = self._resolve_file_path(file_rel)
-            if resolved is None:
-                return
-            target = '/' + resolved[1].lstrip('/') + '#/' + str(n)
-            self.send_response(302)
-            self.send_header('Location', target)
-            self.send_header('Content-Length', '0')
-            self.end_headers()
-            return
+            return self._proxy_build_artifact(file_rel, slide_n=n)
         # default: text section
         resolved = self._resolve_file_path(file_rel)
         if resolved is None:
@@ -450,21 +471,67 @@ class DevHandler(SimpleHTTPRequestHandler):
     def _serve_short_entry(self, project: str, chapter):
         """Handle /p/<project>[/<chapter>].
 
-        * chapter present → 302 to build artifact (Projects/<project>/slide/<chapter>.html)
+        * chapter present → proxy build artifact content (Issue236.9 — was 302)
         * chapter absent  → HTML overview page (project slide list)
         """
         if chapter is not None:
             file_rel = self._short_file_rel(project, chapter)
-            resolved = self._resolve_file_path(file_rel)
-            if resolved is None:
-                return
-            target = '/' + resolved[1].lstrip('/')
-            self.send_response(302)
-            self.send_header('Location', target)
-            self.send_header('Content-Length', '0')
-            self.end_headers()
-            return
+            return self._proxy_build_artifact(file_rel)
         return self._serve_project_overview(project)
+
+    def _proxy_build_artifact(self, file_rel: str, slide_n=None):
+        """Serve build artifact content as 200 response with <base href> + slide nav.
+
+        Issue236.9 — keeps URL bar short (/p/<P>[/<chapter>]) while serving the
+        m2slide deck. Internal relative paths (img/, agenda.html, sibling chapters)
+        resolve via <base href="/Projects/<P>/slide/"> — those .html links are then
+        caught by _redirect_legacy_html and bounced to /p/<P>/<stem>.
+
+        slide_n (optional): if provided, injects a script to navigate to #/N when
+        the browser has not already set a hash. URL hash from the user (preserved
+        by browser across our 302) wins.
+        """
+        resolved = self._resolve_file_path(file_rel)
+        if resolved is None:
+            return
+        full, rel = resolved
+        try:
+            with open(full, 'r', encoding='utf-8') as f:
+                content = f.read()
+        except (OSError, UnicodeDecodeError) as e:
+            self.send_error(500, f'cannot read {rel}: {e}')
+            return
+        # base href so relative paths in build HTML still resolve to the build dir
+        slide_dir = '/'.join(rel.split('/')[:-1]) + '/'  # e.g. 'Projects/X/slide/'
+        base_tag = f'<base href="/{slide_dir}">'
+        # Inject base tag immediately after opening <head ...>
+        new_content, n_subs = re.subn(
+            r'(<head\b[^>]*>)', r'\1' + base_tag, content, count=1, flags=re.IGNORECASE)
+        if n_subs:
+            content = new_content
+        else:
+            # head missing — fall back to original content
+            pass
+        # Optional: navigate to slide N when hash not preset by client
+        if slide_n is not None:
+            nav_script = (
+                f'<script>(function(){{'
+                f'if(!window.location.hash){{'
+                f'window.location.hash="#/{slide_n}";'
+                f'}}'
+                f'}})();</script>'
+            )
+            new_content, _ = re.subn(
+                r'(</body\s*>)', nav_script + r'\1', content, count=1, flags=re.IGNORECASE)
+            content = new_content if _ else content + nav_script
+        data = content.encode('utf-8')
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Length', str(len(data)))
+        # Disable cache so iterative dev (build → reload) always sees fresh
+        self.send_header('Cache-Control', 'no-store')
+        self.end_headers()
+        self.wfile.write(data)
 
     # ----- HTML landing pages -----
 
