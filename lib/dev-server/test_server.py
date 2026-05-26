@@ -98,5 +98,31 @@ class FallbackRedirectTest(unittest.TestCase):
         self.assertTrue(calls['end'])
 
 
+class StemRewriteTest(unittest.TestCase):
+    def _h(self):
+        return DevHandler.__new__(DevHandler)
+
+    def test_index_stem_to_cover(self):
+        # index.html (cover entry) → /s/c (was /s/)
+        self.assertEqual(
+            self._h()._stem_to_short_path('m2Slide', 'index'),
+            '/p/m2Slide/s/c'
+        )
+
+    def test_agenda_stem_to_agenda_short(self):
+        # agenda.html → /s/a (was /p/<P>/agenda)
+        self.assertEqual(
+            self._h()._stem_to_short_path('m2Slide', 'agenda'),
+            '/p/m2Slide/s/a'
+        )
+
+    def test_chapter_stem_unchanged(self):
+        # 01-intro.html → /p/<P>/01-intro (불변)
+        self.assertEqual(
+            self._h()._stem_to_short_path('m2Slide', '01-intro'),
+            '/p/m2Slide/01-intro'
+        )
+
+
 if __name__ == '__main__':
     unittest.main()

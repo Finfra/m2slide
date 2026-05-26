@@ -652,10 +652,13 @@ class DevHandler(SimpleHTTPRequestHandler):
         return self._REL_ASSET_RE.sub(repl, content)
 
     def _stem_to_short_path(self, project: str, stem: str) -> str:
-        # index.html is the deck entry → /p/<P>/s/ (Issue236.17 — shorter than /slide/)
-        # /p/<P> remains the overview HTML page (distinct).
-        if stem.lower() == 'index':
-            return f'/p/{project}/s/'
+        # Issue240: short URL 통일 — index → /s/c (cover), agenda → /s/a (agenda).
+        # chapter stem 은 그대로 /p/<P>/<stem>.
+        s = stem.lower()
+        if s == 'index':
+            return f'/p/{project}/s/c'
+        if s == 'agenda':
+            return f'/p/{project}/s/a'
         return f'/p/{project}/{stem}'
 
     def _rewrite_nav_strings(self, content: str, project: str) -> str:
