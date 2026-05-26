@@ -80,21 +80,44 @@ def extract_section_title(section_html: str) -> str:
     return re.sub(r'\s+', ' ', text).strip()
 
 
+_PATH_PROJECT_RE = re.compile(
+    r'^Projects/([^/]+)/slide/(.+)\.html$', re.IGNORECASE)
+
+
+def to_short_url(file_path: str, n=None, mode: str = '') -> str:
+    """Convert Projects/<P>/slide/<X>.html [+ n] to /p/<P>[/<X>]/s/<n>[?mode=raw].
+
+    Returns shortened URL when path matches build-artifact convention, else falls
+    back to the long path-segment form.
+    """
+    m = _PATH_PROJECT_RE.match(file_path.lstrip('/'))
+    if not m:
+        # fallback — long form
+        if n is None:
+            return '/' + file_path.lstrip('/')
+        return f'/_dev/text/{n}/{file_path}'
+    project, stem = m.group(1), m.group(2)
+    chapter_seg = '' if stem == 'index' else f'/{stem}'
+    # text is default — only raw needs ?mode=raw
+    suffix = '?mode=raw' if mode == 'raw' else ''
+    if n is None:
+        # list/overview link — chapter dropped (always project root)
+        return f'/p/{project}'
+    return f'/p/{project}{chapter_seg}/s/{n}{suffix}'
+
+
 def render_raw_nav(file_path: str, n: int, total: int, mode: str = 'raw') -> str:
-    """Render top-fixed nav bar for raw view (1-base n, matches live #/n)."""
+    """Render top-fixed nav bar — short /p/... URLs, single 'live' link (no duplicate design)."""
     prev_n = max(1, n - 1)
     next_n = min(total, n + 1)
-    other_mode = 'text' if mode == 'raw' else 'raw'
-    other_label = 'plain text' if mode == 'raw' else 'design'
     return (
         f'<nav class="raw-nav" id="raw-nav">'
         f'<code>{file_path}</code> · '
         f'slide <b>{n}</b>/{total} '
-        f' · <a href="/_dev/{mode}?file={file_path}&n={prev_n}">← prev</a>'
-        f' · <a href="/_dev/{mode}?file={file_path}&n={next_n}">next →</a>'
-        f' · <a href="/_dev/list?file={file_path}">list</a>'
-        f' · <a href="/{file_path.lstrip("/")}#/{n}">live</a>'
-        f' · <a href="/_dev/{other_mode}?file={file_path}&n={n}">{other_label}</a>'
+        f' · <a href="{to_short_url(file_path, prev_n, mode)}">← prev</a>'
+        f' · <a href="{to_short_url(file_path, next_n, mode)}">next →</a>'
+        f' · <a href="{to_short_url(file_path)}">list</a>'
+        f' · <a href="{to_short_url(file_path, n, "raw")}">live</a>'
         f'</nav>'
     )
 
@@ -447,13 +470,14 @@ class DevHandler(SimpleHTTPRequestHandler):
                     f'<div class="links"><a href="/p/{p}">목록 보기</a></div></div>'
                 )
                 continue
+            entry_stem = entry[:-len('.html')]
+            entry_link = f'/p/{p}' if entry_stem == 'index' else f'/p/{p}/{entry_stem}'
             cards.append(
                 f'<div class="card"><h3>{p}</h3>'
                 f'<div class="meta">{count} .html · 진입: <code>{entry}</code></div>'
                 '<div class="links">'
                 f'<a href="/p/{p}">📋 슬라이드 목록</a>'
-                f'<a href="/Projects/{p}/slide/{entry}">🎬 live</a>'
-                f'<a href="/p/{p}/s/1?mode=raw">▶ #/1 design</a>'
+                f'<a href="/p/{p}/s/1?mode=raw">🎬 live #/1</a>'
                 '</div></div>'
             )
         body = (
@@ -491,6 +515,7 @@ class DevHandler(SimpleHTTPRequestHandler):
             except (OSError, UnicodeDecodeError):
                 spans = []
             count = len(spans)
+            chapter_seg = '' if stem == 'index' else f'/{stem}'
             rows = []
             for i, (s, e) in enumerate(spans):
                 sec_html = html[s:e]
@@ -498,16 +523,16 @@ class DevHandler(SimpleHTTPRequestHandler):
                 one = i + 1
                 rows.append(
                     f'<tr><td>{one}</td>'
-                    f'<td><a href="/p/{project}/{stem}/s/{one}?mode=raw">{title}</a></td>'
-                    f'<td><a href="/p/{project}/{stem}/s/{one}">text</a></td>'
-                    f'<td><a href="/Projects/{project}/slide/{f}#/{one}">live</a></td>'
+                    f'<td><a href="/p/{project}{chapter_seg}/s/{one}?mode=raw">{title}</a></td>'
+                    f'<td><a href="/p/{project}{chapter_seg}/s/{one}">text</a></td>'
                     f'<td>{e - s}</td></tr>'
                 )
+            chapter_entry = f'/p/{project}{chapter_seg}' if stem != 'index' else f'/p/{project}/s/1?mode=raw'
             section = (
                 f'<h3>{stem} <small style="color:#888">({count} slides · '
-                f'<a href="/Projects/{project}/slide/{f}">open file</a>)</small></h3>'
-                '<table><thead><tr><th>n</th><th>title (→ design)</th><th>text</th><th>live</th><th>bytes</th></tr></thead>'
-                f'<tbody>{"".join(rows) or "<tr><td colspan=5>no sections</td></tr>"}</tbody></table>'
+                f'<a href="{chapter_entry}">open</a>)</small></h3>'
+                '<table><thead><tr><th>n</th><th>title (→ live)</th><th>text</th><th>bytes</th></tr></thead>'
+                f'<tbody>{"".join(rows) or "<tr><td colspan=4>no sections</td></tr>"}</tbody></table>'
             )
             sections_html_blocks.append(section)
         body = (
