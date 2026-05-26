@@ -233,6 +233,12 @@ class DevHandler(SimpleHTTPRequestHandler):
         if self.path == '/_dev/' or self.path == '/_dev':
             return self._serve_help()
         path_only = self.path.split('?', 1)[0].split('#', 1)[0]
+        # Root landing page
+        if path_only in ('/', '/index.html'):
+            return self._serve_root()
+        # Project list
+        if path_only in ('/p', '/p/'):
+            return self._serve_project_list()
         # Short form: /p/<project>[/<chapter>]/s/<n>
         m = self._SHORT_SLIDE_RE.match(path_only)
         if m:
@@ -300,16 +306,221 @@ class DevHandler(SimpleHTTPRequestHandler):
         self._write_html(wrap_text_html(rel, n, total, section_html, head_links))
 
     def _serve_short_entry(self, project: str, chapter):
-        """Handle /p/<project>[/<chapter>] — 302 redirect to build artifact."""
-        file_rel = self._short_file_rel(project, chapter)
-        resolved = self._resolve_file_path(file_rel)
-        if resolved is None:
+        """Handle /p/<project>[/<chapter>].
+
+        * chapter present → 302 to build artifact (Projects/<project>/slide/<chapter>.html)
+        * chapter absent  → HTML overview page (project slide list)
+        """
+        if chapter is not None:
+            file_rel = self._short_file_rel(project, chapter)
+            resolved = self._resolve_file_path(file_rel)
+            if resolved is None:
+                return
+            target = '/' + resolved[1].lstrip('/')
+            self.send_response(302)
+            self.send_header('Location', target)
+            self.send_header('Content-Length', '0')
+            self.end_headers()
             return
-        target = '/' + resolved[1].lstrip('/')
-        self.send_response(302)
-        self.send_header('Location', target)
-        self.send_header('Content-Length', '0')
-        self.end_headers()
+        return self._serve_project_overview(project)
+
+    # ----- HTML landing pages -----
+
+    def _list_projects(self):
+        """Return sorted project directory names (excluding hidden/_/z_/zip/README)."""
+        projects_root = os.path.join(os.getcwd(), 'Projects')
+        if not os.path.isdir(projects_root):
+            return []
+        out = []
+        for name in sorted(os.listdir(projects_root)):
+            if name.startswith('.') or name.startswith('_') or name.startswith('z_'):
+                continue
+            full = os.path.join(projects_root, name)
+            if not os.path.isdir(full):
+                continue
+            out.append(name)
+        return out
+
+    def _list_slide_files(self, project: str):
+        """List .html files in Projects/<project>/slide/ (excluding hidden)."""
+        slide_dir = os.path.join(os.getcwd(), 'Projects', project, 'slide')
+        if not os.path.isdir(slide_dir):
+            return []
+        out = []
+        for name in sorted(os.listdir(slide_dir)):
+            if not name.endswith('.html') or name.startswith('.'):
+                continue
+            out.append(name)
+        return out
+
+    def _common_styles(self):
+        return (
+            '<style>'
+            ':root{color-scheme:light dark}'
+            'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;'
+            'max-width:1100px;margin:0 auto;padding:24px;line-height:1.6;background:#fafafa;color:#1a1a1a}'
+            'header{background:hsl(191,60%,45%);color:#fff;padding:16px 24px;margin:-24px -24px 24px;'
+            'border-radius:0 0 6px 6px;display:flex;justify-content:space-between;align-items:center}'
+            'header h1{margin:0;font-size:20px;font-weight:500}'
+            'header a{color:#fff;text-decoration:none;margin-left:16px}'
+            'header a:hover{text-decoration:underline}'
+            'h2{border-bottom:2px solid hsl(191,60%,45%);padding-bottom:4px;margin-top:32px}'
+            'h3{color:hsl(191,50%,35%);margin-top:24px}'
+            'a{color:hsl(191,60%,40%);text-decoration:none}'
+            'a:hover{text-decoration:underline}'
+            '.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:16px 0}'
+            '.card{background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}'
+            '.card h3{margin:0 0 8px;font-size:16px}'
+            '.card .meta{color:#666;font-size:13px;margin:4px 0}'
+            '.card .links{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px}'
+            '.card .links a{font-size:12px;background:#f0f8fa;padding:4px 8px;border-radius:3px}'
+            'table{border-collapse:collapse;width:100%}'
+            'td,th{border:1px solid #ddd;padding:6px 12px;text-align:left;vertical-align:top}'
+            'th{background:#f0f8fa}'
+            'code{background:#f3f3f3;padding:2px 6px;border-radius:3px;font-size:0.9em}'
+            'pre{background:#2d2d2d;color:#f8f8f2;padding:12px;border-radius:4px;overflow-x:auto}'
+            '@media (prefers-color-scheme:dark){body{background:#1a1a1a;color:#e0e0e0}'
+            '.card{background:#222;border-color:#444}.card .links a{background:#2a3a3e}'
+            'th{background:#2a3a3e}td,th{border-color:#444}code{background:#2d2d2d;color:#e0e0e0}}'
+            '</style>'
+        )
+
+    def _common_header(self, title: str):
+        return (
+            f'<header><h1>{title}</h1>'
+            '<div><a href="/">🏠 home</a> · <a href="/p/">📂 projects</a> · '
+            '<a href="/_dev/">📖 help</a></div></header>'
+        )
+
+    def _serve_root(self):
+        """GET / — landing page with server info + main navigation."""
+        projects = self._list_projects()
+        sample = projects[0] if projects else 'm2SlideStyle1_single'
+        body = (
+            '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
+            '<title>m2slide dev-server</title>'
+            + self._common_styles() +
+            '</head><body>'
+            + self._common_header('m2slide dev-server') +
+            '<p>로컬 개발용 HTTP 서버 (port 9877). 빌드 산출물(<code>Projects/&lt;P&gt;/slide/*.html</code>)을 '
+            'localhost로 서빙하면서, curl·Playwright 헤드리스 검증 + 슬라이드 컨텐츠 빠른 확인용 endpoint 제공.</p>'
+            '<h2>주요 진입</h2>'
+            '<div class="grid">'
+            '<div class="card"><h3>📂 프로젝트 목록</h3>'
+            '<div class="meta">Projects/ 하위 슬라이드 프로젝트 진입</div>'
+            '<div class="links"><a href="/p/">/p/</a></div></div>'
+            '<div class="card"><h3>📖 endpoint help</h3>'
+            '<div class="meta">전체 endpoint 사용법</div>'
+            '<div class="links"><a href="/_dev/">/_dev/</a></div></div>'
+            f'<div class="card"><h3>🔍 sample 슬라이드 목록</h3>'
+            f'<div class="meta">{sample} 슬라이드 인덱스</div>'
+            f'<div class="links"><a href="/p/{sample}">/p/{sample}</a></div></div>'
+            '</div>'
+            '<h2>주소 체계 요약</h2>'
+            '<table><thead><tr><th>URL</th><th>응답</th></tr></thead><tbody>'
+            '<tr><td><code>/p/</code></td><td>프로젝트 목록 페이지</td></tr>'
+            '<tr><td><code>/p/&lt;project&gt;</code></td><td>슬라이드 목록 페이지</td></tr>'
+            '<tr><td><code>/p/&lt;project&gt;/&lt;chapter&gt;</code></td><td>302 to build chapter.html</td></tr>'
+            '<tr><td><code>/p/&lt;project&gt;/s/&lt;n&gt;</code></td><td>N번째 슬라이드 text (curl)</td></tr>'
+            '<tr><td><code>/p/&lt;project&gt;/s/&lt;n&gt;?mode=raw</code></td><td>302 to live URL #/N (browser)</td></tr>'
+            '<tr><td><code>/_dev/list/&lt;file&gt;</code></td><td>section JSON·HTML 인덱스</td></tr>'
+            '<tr><td><code>/_dev/text/&lt;n&gt;/&lt;file&gt;</code></td><td>plain text section</td></tr>'
+            '<tr><td><code>/_dev/raw/&lt;n&gt;/&lt;file&gt;</code></td><td>302 to live #/N</td></tr>'
+            '<tr><td><code>/Projects/&lt;P&gt;/slide/&lt;X&gt;.html</code></td><td>빌드 산출물 직접 (live view)</td></tr>'
+            '</tbody></table>'
+            '</body></html>'
+        )
+        self._write_html(body)
+
+    def _serve_project_list(self):
+        """GET /p/ — project directory listing."""
+        projects = self._list_projects()
+        cards = []
+        for p in projects:
+            files = self._list_slide_files(p)
+            entry = 'index.html' if 'index.html' in files else (files[0] if files else None)
+            count = len(files)
+            if not entry:
+                cards.append(
+                    f'<div class="card"><h3>{p}</h3>'
+                    f'<div class="meta">⚠️ 빌드 산출물 없음 (slide/ 비어있음)</div>'
+                    f'<div class="links"><a href="/p/{p}">목록 보기</a></div></div>'
+                )
+                continue
+            cards.append(
+                f'<div class="card"><h3>{p}</h3>'
+                f'<div class="meta">{count} .html · 진입: <code>{entry}</code></div>'
+                '<div class="links">'
+                f'<a href="/p/{p}">📋 슬라이드 목록</a>'
+                f'<a href="/Projects/{p}/slide/{entry}">🎬 live</a>'
+                f'<a href="/p/{p}/s/1?mode=raw">▶ #/1 design</a>'
+                '</div></div>'
+            )
+        body = (
+            '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
+            '<title>m2slide — projects</title>'
+            + self._common_styles() +
+            '</head><body>'
+            + self._common_header('📂 프로젝트 목록') +
+            f'<p>총 <b>{len(projects)}</b>개 프로젝트.</p>'
+            '<div class="grid">' + '\n'.join(cards) + '</div>'
+            '</body></html>'
+        )
+        self._write_html(body)
+
+    def _serve_project_overview(self, project: str):
+        """GET /p/<project> — slide list (all .html files + sections)."""
+        files = self._list_slide_files(project)
+        if not files:
+            project_dir = os.path.join(os.getcwd(), 'Projects', project)
+            if not os.path.isdir(project_dir):
+                self.send_error(404, f'project not found: {project}')
+                return
+            self.send_error(404, f'no .html in Projects/{project}/slide/ (build first)')
+            return
+        # If single mode (only index.html + agenda.html), show sections of index.html directly.
+        # Otherwise show chapter list + section count per chapter.
+        sections_html_blocks = []
+        for f in files:
+            stem = f[:-len('.html')]
+            full = os.path.join(os.getcwd(), 'Projects', project, 'slide', f)
+            try:
+                with open(full, 'r', encoding='utf-8') as fh:
+                    html = fh.read()
+                spans = find_top_section_spans(html)
+            except (OSError, UnicodeDecodeError):
+                spans = []
+            count = len(spans)
+            rows = []
+            for i, (s, e) in enumerate(spans):
+                sec_html = html[s:e]
+                title = extract_section_title(sec_html) or '(no title)'
+                one = i + 1
+                rows.append(
+                    f'<tr><td>{one}</td>'
+                    f'<td><a href="/p/{project}/{stem}/s/{one}?mode=raw">{title}</a></td>'
+                    f'<td><a href="/p/{project}/{stem}/s/{one}">text</a></td>'
+                    f'<td><a href="/Projects/{project}/slide/{f}#/{one}">live</a></td>'
+                    f'<td>{e - s}</td></tr>'
+                )
+            section = (
+                f'<h3>{stem} <small style="color:#888">({count} slides · '
+                f'<a href="/Projects/{project}/slide/{f}">open file</a>)</small></h3>'
+                '<table><thead><tr><th>n</th><th>title (→ design)</th><th>text</th><th>live</th><th>bytes</th></tr></thead>'
+                f'<tbody>{"".join(rows) or "<tr><td colspan=5>no sections</td></tr>"}</tbody></table>'
+            )
+            sections_html_blocks.append(section)
+        body = (
+            '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
+            f'<title>m2slide — {project}</title>'
+            + self._common_styles() +
+            '</head><body>'
+            + self._common_header(f'📋 {project}') +
+            f'<p>files in <code>Projects/{project}/slide/</code>: <b>{len(files)}</b></p>'
+            + '\n'.join(sections_html_blocks) +
+            '</body></html>'
+        )
+        self._write_html(body)
 
     def _serve_direct_slide(self, file_path: str, n: int):
         """Handle /<build path>/X.html/<n> — equivalent to /_dev/text/<n>/<path>.
