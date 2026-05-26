@@ -522,9 +522,14 @@ class DevHandler(SimpleHTTPRequestHandler):
     def _serve_short_entry(self, project: str, chapter):
         """Handle /p/<project>[/<chapter>].
 
-        * chapter present → proxy build artifact content (Issue236.9 — was 302)
-        * chapter absent  → HTML overview page (project slide list)
+        * chapter == 'slide'  → deck entry alias (proxy index.html)  (Issue236.16)
+        * chapter present     → proxy build artifact content (Issue236.9 — was 302)
+        * chapter absent      → HTML overview page (project slide list)
         """
+        if chapter == 'slide':
+            # /p/<P>/slide → /p/<P>/slide/ (alias for deck entry — proxy index.html)
+            file_rel = self._short_file_rel(project, None)  # index.html
+            return self._proxy_build_artifact(file_rel)
         if chapter is not None:
             file_rel = self._short_file_rel(project, chapter)
             return self._proxy_build_artifact(file_rel)
@@ -601,8 +606,10 @@ class DevHandler(SimpleHTTPRequestHandler):
     )
 
     def _stem_to_short_path(self, project: str, stem: str) -> str:
+        # index.html is the deck entry → /p/<P>/slide/ (deck URL, distinct from
+        # /p/<P> which is the overview HTML page).
         if stem.lower() == 'index':
-            return f'/p/{project}'
+            return f'/p/{project}/slide/'
         return f'/p/{project}/{stem}'
 
     def _rewrite_nav_strings(self, content: str, project: str) -> str:
