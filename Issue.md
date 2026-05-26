@@ -30,17 +30,6 @@
 
 # 📙 일반
 
-## Issue239. dev-server /p/P/s/ — chapter mode에서 agenda로 리다이렉트되어 #hash 소실 (등록: 2026-05-26)
-* 목적: `/p/<P>/s/#/2` 접근 시 첫 챕터 슬라이드가 표시되지 않고 agenda로 리다이렉트되는 버그 수정
-* 상세:
-    - `/p/<P>/s/` → `_serve_short_entry(chapter='s')` → `index.html` 프록시
-    - chapter mode `index.html`은 `<meta http-equiv="refresh" content="0; url=agenda.html">` 리다이렉트 페이지
-    - nav rewriter가 `agenda.html` → `/p/<P>/agenda`로 변환 → 브라우저 이동, `#/2` 해시 소실
-* 구현 명세:
-    - `_serve_short_entry`: chapter=`s`/`slide` 시 `_resolve_chapter_index(project, 1)`로 첫 챕터 해결
-    - chapter mode(첫 챕터 stem != `index`)면 첫 챕터 HTML 프록시 (200 응답 → 브라우저 URL 유지 → hash 보존)
-    - single mode면 기존대로 index.html 프록시
-
 ## Issue238. palette --m2-accent-1이 --kn-accent를 오염시켜 theme 구조색 변경 (등록: 2026-05-26)
 * 목적: palette 교체 시 agenda markmap 테두리·title 밑줄 등 theme 구조색이 의도치 않게 바뀌는 문제 수정
 * 상세:
@@ -58,6 +47,13 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue239. dev-server /p/P/s/ — chapter mode에서 agenda로 리다이렉트되어 #hash 소실 (등록: 2026-05-26, 해결: 2026-05-26, commit: 12baaa6) ✅
+* 목적: `/p/<P>/s/#/2` 접근 시 첫 챕터 슬라이드가 표시되지 않고 agenda로 리다이렉트되는 버그 수정
+* 상세:
+    - chapter mode `index.html`은 `<meta http-equiv="refresh">` agenda 리다이렉트 페이지 → `#/2` 해시 소실
+    - `_serve_short_entry`: chapter='s'/'slide' 시 `_resolve_chapter_index(1)`로 첫 챕터 HTML을 200 프록시
+    - 브라우저 URL 유지 → `#` hash 보존. single mode는 기존 index.html 프록시 유지
 
 ## Issue237. explicit #layout-* H1 슬라이드 End/Home 키 sibling 점프 불가 — headingLevel 누락 (등록: 2026-05-26, 해결: 2026-05-26, commit: f330c5b) ✅
 * 목적: m2SlideStyle1_single `index.html#/2`(H1 + `#layout-_cover` 명시 슬라이드)에서 End 키 눌러도 다음 H1 anchor로 이동하지 않음. slide-parser.js 앵커 감지 패스에서 explicit layout 지정 슬라이드가 early return되어 headingLevel 미설정 → data-heading-level 미주입 → isAnchorSlide() false → findNextSiblingAnchorIndex() -1 → End key noop.
