@@ -650,12 +650,12 @@ class DevHandler(SimpleHTTPRequestHandler):
             + self._common_styles() +
             '</head><body>'
             + self._common_header('m2slide dev-server') +
-            '<p>로컬 개발용 HTTP 서버 (port 9877). 빌드 산출물(<code>Projects/&lt;P&gt;/slide/*.html</code>)을 '
-            'localhost로 서빙하면서, curl·Playwright 헤드리스 검증 + 슬라이드 컨텐츠 빠른 확인용 endpoint 제공.</p>'
+            '<p>로컬 개발용 HTTP 서버 (port 9877). 슬라이드 컨텐츠 빠른 확인 + '
+            'curl·Playwright 헤드리스 검증용 endpoint 제공.</p>'
             '<h2>주요 진입</h2>'
             '<div class="grid">'
             '<div class="card"><h3>📂 프로젝트 목록</h3>'
-            '<div class="meta">Projects/ 하위 슬라이드 프로젝트 진입</div>'
+            '<div class="meta">슬라이드 프로젝트 진입</div>'
             '<div class="links"><a href="/p/">/p/</a></div></div>'
             '<div class="card"><h3>📖 endpoint help</h3>'
             '<div class="meta">전체 endpoint 사용법</div>'
@@ -664,17 +664,16 @@ class DevHandler(SimpleHTTPRequestHandler):
             f'<div class="meta">{sample} 슬라이드 인덱스</div>'
             f'<div class="links"><a href="/p/{sample}">/p/{sample}</a></div></div>'
             '</div>'
-            '<h2>주소 체계 요약</h2>'
+            '<h2>주소 체계 (legacy /Projects/... 차단됨 → 404)</h2>'
             '<table><thead><tr><th>URL</th><th>응답</th></tr></thead><tbody>'
             '<tr><td><code>/p/</code></td><td>프로젝트 목록 페이지</td></tr>'
-            '<tr><td><code>/p/&lt;project&gt;</code></td><td>슬라이드 목록 페이지</td></tr>'
-            '<tr><td><code>/p/&lt;project&gt;/&lt;chapter&gt;</code></td><td>302 to build chapter.html</td></tr>'
-            '<tr><td><code>/p/&lt;project&gt;/s/&lt;n&gt;</code></td><td>N번째 슬라이드 text (curl)</td></tr>'
-            '<tr><td><code>/p/&lt;project&gt;/s/&lt;n&gt;?mode=raw</code></td><td>302 to live URL #/N (browser)</td></tr>'
+            '<tr><td><code>/p/&lt;P&gt;</code></td><td>프로젝트 슬라이드 목록 (overview)</td></tr>'
+            '<tr><td><code>/p/&lt;P&gt;/s/&lt;chap&gt;/&lt;n&gt;</code></td><td>N번째 슬라이드 text (curl 친화)</td></tr>'
+            '<tr><td><code>/p/&lt;P&gt;/s/&lt;chap&gt;/&lt;n&gt;?mode=raw</code></td><td>디자인 view (브라우저)</td></tr>'
+            '<tr><td><code>/p/&lt;P&gt;/s/&lt;n&gt;</code></td><td>chap=1 자동 (single mode shorthand)</td></tr>'
             '<tr><td><code>/_dev/list/&lt;file&gt;</code></td><td>section JSON·HTML 인덱스</td></tr>'
             '<tr><td><code>/_dev/text/&lt;n&gt;/&lt;file&gt;</code></td><td>plain text section</td></tr>'
             '<tr><td><code>/_dev/raw/&lt;n&gt;/&lt;file&gt;</code></td><td>302 to live #/N</td></tr>'
-            '<tr><td><code>/Projects/&lt;P&gt;/slide/&lt;X&gt;.html</code></td><td>빌드 산출물 직접 (live view)</td></tr>'
             '</tbody></table>'
             '</body></html>'
         )
@@ -1004,9 +1003,14 @@ class DevHandler(SimpleHTTPRequestHandler):
                 'n': one,
                 'title': extract_section_title(sec),
                 'bytes': e - s,
-                'raw_url': f'/_dev/raw/{one}/{rel}',
-                'text_url': f'/_dev/text/{one}/{rel}',
-                'live_url': f'/{rel.lstrip("/")}#/{one}',
+                # short /p/<P>/s/<chap>/<slide> form (legacy /Projects/... blocked)
+                'raw_url': self._file_path_to_short_indexed(rel, one, 'raw')
+                           or f'/_dev/raw/{one}/{rel}',
+                'text_url': self._file_path_to_short_indexed(rel, one)
+                            or f'/_dev/text/{one}/{rel}',
+                # live_url = design view (mode=raw) — same target as raw_url here
+                'live_url': self._file_path_to_short_indexed(rel, one, 'raw')
+                            or f'/{rel.lstrip("/")}#/{one}',
             })
         # Content-negotiation by Accept header — HTML default, JSON if asked
         accept = self.headers.get('Accept', '')
@@ -1048,36 +1052,23 @@ class DevHandler(SimpleHTTPRequestHandler):
             'pre{background:#2d2d2d;color:#f8f8f2;padding:12px;border-radius:4px;overflow-x:auto}</style></head><body>'
             '<h1>m2slide dev-server — endpoints (Issue236)</h1>'
             '<h2>Short form (recommended — shortest URL)</h2>'
-            '<pre># N-th slide as plain text (single mode)\n'
+            '<pre># N번째 슬라이드 text (single mode — chap=1)\n'
             'curl http://127.0.0.1:9877/p/m2SlideStyle1_single/s/25\n\n'
-            '# chapter mode\n'
-            'curl http://127.0.0.1:9877/p/&lt;project&gt;/&lt;chapter-stem&gt;/s/&lt;n&gt;\n\n'
-            '# project / chapter entry (redirect to build artifact)\n'
-            'curl -L http://127.0.0.1:9877/p/m2SlideStyle1_single\n\n'
-            '# design view (browser — 302 to live URL with #/N)\n'
+            '# chapter mode (chap idx 1-base)\n'
+            'curl http://127.0.0.1:9877/p/&lt;P&gt;/s/&lt;chap&gt;/&lt;n&gt;\n\n'
+            '# 프로젝트 overview (슬라이드 목록 HTML)\n'
+            'curl http://127.0.0.1:9877/p/m2SlideStyle1_single\n\n'
+            '# 디자인 view (브라우저)\n'
             'open \'http://127.0.0.1:9877/p/m2SlideStyle1_single/s/25?mode=raw\'</pre>'
-            '<h2>/_dev/ endpoints (full form)</h2>'
-            '<p>Three view modes for slide content. All <code>n</code> indices are <b>1-base</b> '
-            '(matches m2slide hashOneBasedIndex — same number as live URL <code>#/N</code>).</p>'
-            '<p><b>URL forms</b> — path-segment (zsh-friendly, no quoting needed) or query (legacy).</p>'
-            '<h2>/_dev/raw — design view (302 redirect to live)</h2>'
-            '<p>m2slide build artifact loaded with hash <code>#/N</code>. Full design fidelity.</p>'
-            '<pre># path-segment (recommended)\n'
-            'curl -L http://127.0.0.1:9877/_dev/raw/15/Projects/m2SlideStyle1_single/slide/index.html\n\n'
-            '# query (legacy — needs quoting in shells)\n'
-            'curl \'http://127.0.0.1:9877/_dev/raw?file=Projects/m2SlideStyle1_single/slide/index.html&n=15\'</pre>'
-            '<h2>/_dev/text — plain HTML (curl + grep)</h2>'
-            '<p>Only the N-th <code>&lt;section&gt;</code> as plain HTML. No reveal.js, no transition. Curl friendly.</p>'
-            '<pre>curl http://127.0.0.1:9877/_dev/text/15/Projects/m2SlideStyle1_single/slide/index.html</pre>'
-            '<h2>/_dev/list — section index</h2>'
-            '<p>All sections (title + bytes + URLs). HTML default, JSON via <code>?format=json</code> or '
+            '<h2>/_dev/ endpoints (보조 — 별도 .html path 받기)</h2>'
+            '<p>모든 <code>n</code>은 <b>1-base</b> (m2slide hashOneBasedIndex — live URL <code>#/N</code>과 동일).</p>'
+            '<p><b>주의</b>: <code>/Projects/&lt;P&gt;/slide/...</code> 직접 접근은 차단됨 (404). 짧은 <code>/p/...</code> 형태 사용 권장.</p>'
+            '<h2>/_dev/list — section 인덱스</h2>'
+            '<p>모든 section 목록 (title + bytes). HTML 기본, JSON <code>?format=json</code> 또는 '
             '<code>Accept: application/json</code>.</p>'
-            '<pre># HTML\n'
-            'curl http://127.0.0.1:9877/_dev/list/Projects/m2SlideStyle1_single/slide/index.html\n\n'
-            '# JSON\n'
-            'curl -H "Accept: application/json" http://127.0.0.1:9877/_dev/list/Projects/m2SlideStyle1_single/slide/index.html</pre>'
-            '<h2>file path</h2>'
-            '<p>Relative to the m2slide project root. Path traversal blocked. <code>.html</code> only.</p>'
+            '<pre>curl -H "Accept: application/json" http://127.0.0.1:9877/p/m2SlideStyle1_single</pre>'
+            '<h2>file path 보안</h2>'
+            '<p>document root 기준 상대. traversal 차단. <code>.html</code>만 허용.</p>'
             '</body></html>'
         )
         self._write_html(body)
