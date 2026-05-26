@@ -217,6 +217,9 @@ class DevHandler(SimpleHTTPRequestHandler):
     _SHORT_ENTRY_RE = re.compile(r'^/p/([^/]+)(?:/([^/]+))?/?$')
     _SHORT_COVER_RE = re.compile(r'^/p/([^/]+)/s/cover/?$')
     _SHORT_TOC_RE = re.compile(r'^/p/([^/]+)/s/(\d+)/toc/?$')
+    _SHORT_COVER_C_RE = re.compile(r'^/p/([^/]+)/s/c/?$')
+    _SHORT_AGENDA_A_RE = re.compile(r'^/p/([^/]+)/s/a/?$')
+    _SHORT_TOC_T_RE = re.compile(r'^/p/([^/]+)/s/t/?$')
 
     def do_GET(self):
         # Direct slide form: /<build path>/X.html/<n>  → plain text section
@@ -426,7 +429,16 @@ class DevHandler(SimpleHTTPRequestHandler):
         Default (bare URL): proxy build artifact + navigate to slide N (browser design view).
         ?mode=text: plain text section (curl-friendly).
         ?mode=raw: alias for bare (backward compat).
+
+        Issue240: chapter 모드에서 chapter=None 으로 `/p/<P>/s/<N>` 가 들어오면
+        N=chap_idx 로 해석하여 chap N 의 첫 슬라이드로 위임 (index.html cover 진입 회피).
+        Single 모드는 기존 동작 (slide N of index.html).
         """
+        if chapter is None:
+            chap1_stem = self._resolve_chapter_index(project, 1)
+            if chap1_stem is not None and chap1_stem != 'index':
+                # chapter mode → n is chap_idx
+                return self._serve_short_slide_indexed(project, n, 1)
         file_rel = self._short_file_rel(project, chapter)
         q = parse_qs(urlparse(self.path).query)
         if q.get('mode', [''])[0] == 'text':
@@ -528,13 +540,12 @@ class DevHandler(SimpleHTTPRequestHandler):
         # Extract project name from rel (Projects/<P>/slide/<X>.html)
         m = _PATH_PROJECT_RE.match(rel.lstrip('/'))
         project = m.group(1) if m else None
-        # base href so img/css/js relative paths resolve via /p/<P>/s/ (Issue236.17)
-        base_tag = f'<base href="/p/{project}/s/">' if project else ''
-        # Inject base tag immediately after opening <head ...>
-        new_content, n_subs = re.subn(
-            r'(<head\b[^>]*>)', r'\1' + base_tag, content, count=1, flags=re.IGNORECASE)
-        if n_subs:
-            content = new_content
+        # Issue240: <base href> 제거 — History API pushState/replaceState 가 base URL 기준으로
+        # 해석되어 reveal.js 의 hash 갱신 시 `/p/<P>/s/<chap>/<slide>` path segment 가 소실되는
+        # 버그(`/p/<P>/s/#/N` 로 redirect)를 일으킴. 대신 상대 asset 경로(href/src) 를 절대
+        # `/p/<P>/s/<rel>` 로 직접 rewrite.
+        if project:
+            content = self._rewrite_relative_assets(content, project)
         # Rewrite m2slide cross-page navigation: 'X.html?...' / "X.html?..." → '/p/<P>[/<stem>]?...'
         if project:
             content = self._rewrite_nav_strings(content, project)
@@ -572,6 +583,30 @@ class DevHandler(SimpleHTTPRequestHandler):
         r"""(\burl\s*=\s*)([\w][\w-]*)\.html(\?[^"'\s>]*)?(#[^"'\s>]*)?""",
         re.IGNORECASE,
     )
+
+    # Issue240 — relative href/src 를 /p/<P>/s/<rel> 절대 경로로 rewrite.
+    # 매칭: href="img/x.png" / src='css/y.css' 등. 제외: 절대(/, https:, http:, file:, data:, #),
+    # *.html (nav rewrite 대상), 빈 값. 매칭 후 그대로 절대 prefix 부착.
+    _REL_ASSET_RE = re.compile(
+        r"""(\b(?:href|src)\s*=\s*)(['"])(?!/|https?:|file:|data:|#|\s*\2)([^'"]+?)(\2)""",
+        re.IGNORECASE,
+    )
+
+    def _rewrite_relative_assets(self, content: str, project: str) -> str:
+        """Rewrite relative href/src attrs to absolute /p/<P>/s/<rel>.
+        Skip *.html (handled by _rewrite_nav_strings) and absolute/external URLs.
+        """
+        prefix = f'/p/{project}/s/'
+
+        def repl(m):
+            attr, q1, val, q2 = m.group(1), m.group(2), m.group(3), m.group(4)
+            # skip if val ends with .html (with optional query/fragment) — nav rewrite handles
+            stripped = val.split('?', 1)[0].split('#', 1)[0]
+            if stripped.lower().endswith('.html'):
+                return m.group(0)
+            return f'{attr}{q1}{prefix}{val}{q2}'
+
+        return self._REL_ASSET_RE.sub(repl, content)
 
     def _stem_to_short_path(self, project: str, stem: str) -> str:
         # index.html is the deck entry → /p/<P>/s/ (Issue236.17 — shorter than /slide/)
