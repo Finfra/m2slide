@@ -46,7 +46,7 @@
     - `--m2-card-title-bg: var(--m2-accent-1, #F5C518)` — 카드 제목 밴드는 palette에 반응하도록 직접 참조
     - 회귀 테스트: `m2SlideStyle1_single`, `m2SlideStyle2_chapter` 모두 `--kn-accent: #F5C518` 확인
 
-## Issue239. dev-server /p/P/s/ — chapter mode에서 agenda로 리다이렉트되어 #hash 소실 (등록: 2026-05-26, 해결: 2026-05-26, commit: 12baaa6, f1400ca, TBD) ✅
+## Issue239. dev-server /p/P/s/ — chapter mode에서 agenda로 리다이렉트되어 #hash 소실 (등록: 2026-05-26, 해결: 2026-05-26, commit: 12baaa6, f1400ca, fbabfc2) ✅
 * 목적: `/p/<P>/s/#/2` 접근 시 첫 챕터 슬라이드가 표시되지 않고 agenda로 리다이렉트되는 버그 수정. `/p/P/s/` → 404, 명명 라우트(`/s/cover`, `/s/<n>/toc`) 추가
 * 상세:
     - chapter mode `index.html`은 `<meta http-equiv="refresh">` agenda 리다이렉트 페이지 → `#/2` 해시 소실
