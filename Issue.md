@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 237
+* Issue HWM: 239
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -29,6 +29,31 @@
 # 📕 중요
 
 # 📙 일반
+
+## Issue239. dev-server /p/P/s/ — chapter mode에서 agenda로 리다이렉트되어 #hash 소실 (등록: 2026-05-26)
+* 목적: `/p/<P>/s/#/2` 접근 시 첫 챕터 슬라이드가 표시되지 않고 agenda로 리다이렉트되는 버그 수정
+* 상세:
+    - `/p/<P>/s/` → `_serve_short_entry(chapter='s')` → `index.html` 프록시
+    - chapter mode `index.html`은 `<meta http-equiv="refresh" content="0; url=agenda.html">` 리다이렉트 페이지
+    - nav rewriter가 `agenda.html` → `/p/<P>/agenda`로 변환 → 브라우저 이동, `#/2` 해시 소실
+* 구현 명세:
+    - `_serve_short_entry`: chapter=`s`/`slide` 시 `_resolve_chapter_index(project, 1)`로 첫 챕터 해결
+    - chapter mode(첫 챕터 stem != `index`)면 첫 챕터 HTML 프록시 (200 응답 → 브라우저 URL 유지 → hash 보존)
+    - single mode면 기존대로 index.html 프록시
+
+## Issue238. palette --m2-accent-1이 --kn-accent를 오염시켜 theme 구조색 변경 (등록: 2026-05-26)
+* 목적: palette 교체 시 agenda markmap 테두리·title 밑줄 등 theme 구조색이 의도치 않게 바뀌는 문제 수정
+* 상세:
+    - `theme/default/slide.css` line 391: `--kn-accent: var(--m2-accent-1, #F5C518)` — palette 첫 accent에 alias
+    - `office_rainbow` palette: `--m2-accent-1: #0365C0` (파랑) → `--kn-accent`가 파랑이 되어 markmap border·card title bg 등도 파랑으로 바뀜
+    - palette는 htmlArt·component 시각화용 의도였으나 theme 구조색까지 오염
+    - 발견 위치: `BasicKnowledgeForAI_small` agenda 페이지 markmap 테두리 파란색으로 표시
+* 구현 명세:
+    - `--kn-accent`를 `--m2-accent-1` alias에서 분리: theme 고정 노랑(`#F5C518`)으로 복원
+    - component/htmlArt 색은 `--m2-accent-1`~`--m2-accent-6` 직접 참조로 변경
+    - `.m2-card-title-bg`, `.htmlart-accent` 등 컴포넌트 변수 확인 후 `--kn-accent` 의존 제거
+    - `default` / `default_lec` 양쪽 theme 동시 수정 필요
+    - 수정 후 회귀 테스트: `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest` 대표 3종
 
 # 📗 선택
 
