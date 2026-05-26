@@ -772,11 +772,17 @@ class DevHandler(SimpleHTTPRequestHandler):
             f'<div class="card"><h3><a href="/p/{sample}">🔍 sample 슬라이드 목록</a></h3>'
             f'<div class="meta">{sample} 슬라이드 인덱스</div>'
             f'<div class="links"><a href="/p/{sample}">/p/{sample}</a></div></div>'
+            f'<div class="card"><h3><a href="/p/{sample}/s/c">🎬 sample 진입</a></h3>'
+            f'<div class="meta">{sample} cover (없으면 agenda·toc·첫슬라이드 fallback)</div>'
+            f'<div class="links"><a href="/p/{sample}/s/c">/p/{sample}/s/c</a></div></div>'
             '</div>'
             '<h2>주소 체계 (legacy /Projects/... 차단됨 → 404)</h2>'
             '<table><thead><tr><th>URL</th><th>응답</th></tr></thead><tbody>'
             '<tr><td><code>/p/</code></td><td>프로젝트 목록 페이지</td></tr>'
             '<tr><td><code>/p/&lt;P&gt;</code></td><td>프로젝트 슬라이드 목록 (overview)</td></tr>'
+            '<tr><td><code>/p/&lt;P&gt;/s/c</code></td><td>cover (없으면 /s/a → /s/t → /s/1/1 fallback)</td></tr>'
+            '<tr><td><code>/p/&lt;P&gt;/s/a</code></td><td>agenda (없으면 /s/t → /s/1/1 fallback)</td></tr>'
+            '<tr><td><code>/p/&lt;P&gt;/s/t</code></td><td>toc (없으면 /s/1/1 fallback)</td></tr>'
             '<tr><td><code>/p/&lt;P&gt;/s/&lt;chap&gt;/&lt;n&gt;</code></td><td>디자인 view (브라우저, 기본)</td></tr>'
             '<tr><td><code>/p/&lt;P&gt;/s/&lt;chap&gt;/&lt;n&gt;?mode=text</code></td><td>N번째 슬라이드 text (curl 친화)</td></tr>'
             '<tr><td><code>/p/&lt;P&gt;/s/&lt;n&gt;</code></td><td>chap=1 자동 (single mode shorthand)</td></tr>'
@@ -807,13 +813,13 @@ class DevHandler(SimpleHTTPRequestHandler):
                 meta_label = f'{len(chapter_files)} chapter (chapter mode)'
             else:
                 meta_label = '1 deck (single mode)'
-            first_link = f'/p/{p}/s/1/1'
+            first_link = f'/p/{p}/s/c'  # was /s/1/1 — fallback chain 보장
             cards.append(
                 f'<div class="card"><h3><a href="{first_link}">{p}</a></h3>'
                 f'<div class="meta">{meta_label} · 진입: <code>{entry}</code></div>'
                 '<div class="links">'
                 f'<a href="/p/{p}">📋 슬라이드 목록</a>'
-                f'<a href="{first_link}">🎬 chap 1 slide 1</a>'
+                f'<a href="{first_link}">🎬 진입 (cover/agenda/toc/첫슬라이드 fallback)</a>'
                 '</div></div>'
             )
         body = (
