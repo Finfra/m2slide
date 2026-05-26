@@ -22,7 +22,7 @@ import os
 import re
 import sys
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, unquote
 
 
 # ---------- section extraction ----------
@@ -204,6 +204,14 @@ class DevHandler(SimpleHTTPRequestHandler):
             pass
 
     def do_GET(self):
+        # Path-segment form (zsh-friendly — no ? or # in URL):
+        #   /_dev/raw/<n>/<file path...>
+        #   /_dev/text/<n>/<file path...>
+        #   /_dev/list/<file path...>
+        # Query form (legacy, also supported):
+        #   /_dev/raw?file=<path>&n=<n>
+        #   /_dev/text?file=<path>&n=<n>
+        #   /_dev/list?file=<path>[&format=json]
         if self.path.startswith('/_dev/raw'):
             return self._serve_raw()
         if self.path.startswith('/_dev/text'):
@@ -214,13 +222,45 @@ class DevHandler(SimpleHTTPRequestHandler):
             return self._serve_help()
         return super().do_GET()
 
+    # --- path parsing helpers ---
+
+    @staticmethod
+    def _parse_path_segments(path: str, prefix: str, expect_n: bool):
+        """Parse /_dev/<endpoint>/<n>/<file...> form. Returns (n, file) or None.
+
+        n optional (only required when expect_n=True). file may contain slashes.
+        """
+        if not path.startswith(prefix):
+            return None
+        rest = path[len(prefix):]
+        # strip query string and hash if any
+        rest = rest.split('?', 1)[0].split('#', 1)[0]
+        if not rest:
+            return None
+        parts = rest.lstrip('/').split('/', 1) if expect_n else ['', rest.lstrip('/')]
+        if expect_n:
+            if len(parts) < 2:
+                return None
+            try:
+                n = int(parts[0])
+            except ValueError:
+                return None
+            file_path = parts[1]
+        else:
+            n = None
+            file_path = parts[1] if len(parts) > 1 else parts[0]
+        if not file_path:
+            return None
+        return (n, file_path)
+
     # --- helpers ---
 
-    def _resolve_file(self, q):
-        f = (q.get('file', [None])[0] or '').strip()
+    def _resolve_file_path(self, f):
+        """Validate file path (relative to document root). Returns (full, rel) or None."""
         if not f:
-            self.send_error(400, 'query "file=<relative path>" required')
+            self.send_error(400, 'file path required')
             return None
+        f = unquote(f)
         # security: prevent directory traversal
         root = os.getcwd()
         full = os.path.normpath(os.path.join(root, f.lstrip('/')))
@@ -234,6 +274,37 @@ class DevHandler(SimpleHTTPRequestHandler):
             self.send_error(400, 'only .html files supported')
             return None
         return full, f
+
+    def _resolve_request(self, prefix: str, expect_n: bool):
+        """Try path-segment form first, then fall back to query form.
+
+        Returns (full, rel, n) or None (with error already sent).
+        """
+        # path-segment: /_dev/<endpoint>/<n?>/<file...>
+        seg = self._parse_path_segments(self.path, prefix + '/', expect_n)
+        if seg is not None:
+            n, f = seg
+            resolved = self._resolve_file_path(f)
+            if resolved is None:
+                return None
+            return (resolved[0], resolved[1], n)
+        # query form: /_dev/<endpoint>?file=...&n=...
+        q = parse_qs(urlparse(self.path).query)
+        f = (q.get('file', [None])[0] or '').strip()
+        if not f:
+            self.send_error(400, 'either path /_dev/<n>/<file> or query ?file=<path> required')
+            return None
+        resolved = self._resolve_file_path(f)
+        if resolved is None:
+            return None
+        n = None
+        if expect_n:
+            try:
+                n = int(q.get('n', ['1'])[0])
+            except ValueError:
+                self.send_error(400, '"n" must be an integer (1-base)')
+                return None
+        return (resolved[0], resolved[1], n)
 
     def _read_file(self, full):
         with open(full, 'r', encoding='utf-8') as fh:
@@ -260,33 +331,22 @@ class DevHandler(SimpleHTTPRequestHandler):
     def _serve_raw(self):
         """Design-fidelity view: 302 redirect to live URL with #/N hash.
 
-        m2slide build artifact has all the design (theme CSS, layouts, guide-line
-        decorations, head-bar, etc.) wired through reveal.js init. Reproducing that
-        accurately from a synthesized wrapper is fragile (scale timing, guide-line
-        ::after decorations, layout slot generation, etc.).
-
-        Simplest 100% fidelity: redirect to the live URL with the hash set to slide N
-        (1-base, matches m2slide hashOneBasedIndex). Browser navigates, reveal.js
-        runs its normal init path, and the user sees exactly the live design.
-
-        For curl + grep (no JS), use /_dev/text instead.
+        URL forms (both supported):
+          path-segment (zsh-friendly): /_dev/raw/<n>/<file path>
+          query (legacy):              /_dev/raw?file=<path>&n=<n>
         """
-        q = parse_qs(urlparse(self.path).query)
-        resolved = self._resolve_file(q)
+        resolved = self._resolve_request('/_dev/raw', expect_n=True)
         if resolved is None:
             return
-        full, rel = resolved
-        try:
-            n = int(q.get('n', ['1'])[0])
-        except ValueError:
-            self.send_error(400, '"n" must be an integer (1-base)')
-            return
+        full, rel, n = resolved
         html = self._read_file(full)
         spans = find_top_section_spans(html)
         if not spans:
             self.send_error(404, f'no <section> found inside .slides for {rel}')
             return
         total = len(spans)
+        if n is None:
+            n = 1
         if n < 1 or n > total:
             self.send_error(404, f'slide {n} out of range (1..{total})')
             return
@@ -297,26 +357,24 @@ class DevHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
     def _serve_text(self):
-        """Plain-text-style view: only the N-th <section>, no reveal.js, no animation.
+        """Plain-text view: only the N-th <section>, no reveal.js, no animation.
 
-        Curl + grep friendly. n is 1-base (matches /_dev/raw and #/N hash).
+        URL forms:
+          /_dev/text/<n>/<file path>          (zsh-friendly)
+          /_dev/text?file=<path>&n=<n>        (legacy)
         """
-        q = parse_qs(urlparse(self.path).query)
-        resolved = self._resolve_file(q)
+        resolved = self._resolve_request('/_dev/text', expect_n=True)
         if resolved is None:
             return
-        full, rel = resolved
-        try:
-            n = int(q.get('n', ['1'])[0])
-        except ValueError:
-            self.send_error(400, '"n" must be an integer (1-base)')
-            return
+        full, rel, n = resolved
         html = self._read_file(full)
         spans = find_top_section_spans(html)
         if not spans:
             self.send_error(404, f'no <section> found inside .slides for {rel}')
             return
         total = len(spans)
+        if n is None:
+            n = 1
         if n < 1 or n > total:
             self.send_error(404, f'slide {n} out of range (1..{total})')
             return
@@ -327,11 +385,18 @@ class DevHandler(SimpleHTTPRequestHandler):
         self._write_html(wrap_text_html(rel, n, total, section_html, head_links))
 
     def _serve_list(self):
-        q = parse_qs(urlparse(self.path).query)
-        resolved = self._resolve_file(q)
+        """Section index.
+
+        URL forms:
+          /_dev/list/<file path>              (zsh-friendly)
+          /_dev/list?file=<path>[&format=json] (legacy)
+        Query/Accept header controls JSON vs HTML output.
+        """
+        resolved = self._resolve_request('/_dev/list', expect_n=False)
         if resolved is None:
             return
-        full, rel = resolved
+        full, rel, _ = resolved
+        q = parse_qs(urlparse(self.path).query)
         html = self._read_file(full)
         spans = find_top_section_spans(html)
         sections = []
@@ -342,8 +407,8 @@ class DevHandler(SimpleHTTPRequestHandler):
                 'n': one,
                 'title': extract_section_title(sec),
                 'bytes': e - s,
-                'raw_url': f'/_dev/raw?file={rel}&n={one}',
-                'text_url': f'/_dev/text?file={rel}&n={one}',
+                'raw_url': f'/_dev/raw/{one}/{rel}',
+                'text_url': f'/_dev/text/{one}/{rel}',
                 'live_url': f'/{rel.lstrip("/")}#/{one}',
             })
         # Content-negotiation by Accept header — HTML default, JSON if asked
@@ -387,19 +452,25 @@ class DevHandler(SimpleHTTPRequestHandler):
             '<h1>m2slide dev-server — /_dev/ endpoints (Issue236)</h1>'
             '<p>Three view modes for slide content. All <code>n</code> indices are <b>1-base</b> '
             '(matches m2slide hashOneBasedIndex — same number as live URL <code>#/N</code>).</p>'
-            '<h2>/_dev/raw?file=&lt;path&gt;&n=&lt;N&gt; — design view</h2>'
-            '<p>Full m2slide design (theme CSS, layout, mermaid, etc.) with reveal.js animations disabled '
-            'and the deck pre-jumped to slide N. Best for visual inspection.</p>'
-            '<pre>open \'http://127.0.0.1:9877/_dev/raw?file=Projects/m2SlideStyle1_single/slide/index.html&n=11\'</pre>'
-            '<h2>/_dev/text?file=&lt;path&gt;&n=&lt;N&gt; — plain text view</h2>'
-            '<p>Only the N-th <code>&lt;section&gt;</code> HTML, no reveal.js, no theme layout — curl + grep friendly.</p>'
-            '<pre>curl \'http://127.0.0.1:9877/_dev/text?file=Projects/m2SlideStyle1_single/slide/index.html&n=11\'</pre>'
-            '<h2>/_dev/list?file=&lt;path&gt;[&format=json]</h2>'
-            '<p>Index of all sections (title + bytes + raw/text/live URLs). HTML default, JSON with '
-            '<code>format=json</code> or <code>Accept: application/json</code>.</p>'
-            '<pre>curl \'http://127.0.0.1:9877/_dev/list?file=Projects/m2SlideStyle1_single/slide/index.html&format=json\'</pre>'
+            '<p><b>URL forms</b> — path-segment (zsh-friendly, no quoting needed) or query (legacy).</p>'
+            '<h2>/_dev/raw — design view (302 redirect to live)</h2>'
+            '<p>m2slide build artifact loaded with hash <code>#/N</code>. Full design fidelity.</p>'
+            '<pre># path-segment (recommended)\n'
+            'curl -L http://127.0.0.1:9877/_dev/raw/15/Projects/m2SlideStyle1_single/slide/index.html\n\n'
+            '# query (legacy — needs quoting in shells)\n'
+            'curl \'http://127.0.0.1:9877/_dev/raw?file=Projects/m2SlideStyle1_single/slide/index.html&n=15\'</pre>'
+            '<h2>/_dev/text — plain HTML (curl + grep)</h2>'
+            '<p>Only the N-th <code>&lt;section&gt;</code> as plain HTML. No reveal.js, no transition. Curl friendly.</p>'
+            '<pre>curl http://127.0.0.1:9877/_dev/text/15/Projects/m2SlideStyle1_single/slide/index.html</pre>'
+            '<h2>/_dev/list — section index</h2>'
+            '<p>All sections (title + bytes + URLs). HTML default, JSON via <code>?format=json</code> or '
+            '<code>Accept: application/json</code>.</p>'
+            '<pre># HTML\n'
+            'curl http://127.0.0.1:9877/_dev/list/Projects/m2SlideStyle1_single/slide/index.html\n\n'
+            '# JSON\n'
+            'curl -H "Accept: application/json" http://127.0.0.1:9877/_dev/list/Projects/m2SlideStyle1_single/slide/index.html</pre>'
             '<h2>file path</h2>'
-            '<p>Relative to the m2slide project root. Path traversal is blocked. Only <code>.html</code> supported.</p>'
+            '<p>Relative to the m2slide project root. Path traversal blocked. <code>.html</code> only.</p>'
             '</body></html>'
         )
         self._write_html(body)
