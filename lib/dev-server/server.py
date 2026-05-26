@@ -245,6 +245,13 @@ class DevHandler(SimpleHTTPRequestHandler):
     # Legacy build-artifact .html access — caught and redirected to short /p/ form
     _LEGACY_BUILD_HTML_RE = re.compile(
         r'^/Projects/([^/]+)/slide/(.+)\.html$', re.IGNORECASE)
+    # Legacy build-artifact directory access (no .html, trailing slash etc.)
+    #   /Projects                     → /p/
+    #   /Projects/<P>                 → /p/<P>
+    #   /Projects/<P>/slide           → /p/<P>
+    #   /Projects/<P>/slide/          → /p/<P>
+    _LEGACY_BUILD_DIR_RE = re.compile(
+        r'^/Projects(?:/([^/]+)(?:/slide/?)?)?/?$', re.IGNORECASE)
     # Short form (zsh-friendly, curl-only):
     #   /p/<project>/s/<chap>/<slide>      → text section. chap, slide both 1-base
     #   /p/<project>/s/<slide>             → chap=1 (single mode index.html) shorthand
@@ -317,6 +324,18 @@ class DevHandler(SimpleHTTPRequestHandler):
         m = self._LEGACY_BUILD_HTML_RE.match(path_only)
         if m:
             return self._redirect_legacy_html(m.group(1), m.group(2))
+        # Legacy build-artifact directory (no .html) → /p/<P> or /p/
+        m = self._LEGACY_BUILD_DIR_RE.match(path_only)
+        if m:
+            project = m.group(1)
+            target = f'/p/{project}' if project else '/p/'
+            if '?' in self.path:
+                target += '?' + self.path.split('?', 1)[1]
+            self.send_response(302)
+            self.send_header('Location', target)
+            self.send_header('Content-Length', '0')
+            self.end_headers()
+            return
         return super().do_GET()
 
     def _redirect_legacy_html(self, project: str, stem: str):
