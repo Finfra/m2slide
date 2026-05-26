@@ -237,8 +237,11 @@ class DevHandler(SimpleHTTPRequestHandler):
             if code >= 400:
                 sys.stderr.write("%s - - [%s] %s\n" % (
                     self.address_string(), self.log_date_time_string(), format % args))
-        except (ValueError, IndexError):
-            pass
+        except Exception:
+            try:
+                sys.stderr.write("log_message error\n")
+            except Exception:
+                pass
 
     # Direct slide form: /Projects/.../X.html/<N>
     _DIRECT_SLIDE_RE = re.compile(r'^(.+?\.html)/(\d+)/?$', re.IGNORECASE)
@@ -519,12 +522,14 @@ class DevHandler(SimpleHTTPRequestHandler):
         return self._serve_project_overview(project)
 
     def _proxy_build_artifact(self, file_rel: str, slide_n=None):
-        """Serve build artifact content as 200 response with <base href> + slide nav.
+        """Serve build artifact content as 200 response with rewritten navigation.
 
-        Issue236.9 — keeps URL bar short (/p/<P>[/<chapter>]) while serving the
-        m2slide deck. Internal relative paths (img/, agenda.html, sibling chapters)
-        resolve via <base href="/Projects/<P>/slide/"> — those .html links are then
-        caught by _redirect_legacy_html and bounced to /p/<P>/<stem>.
+        Issue236.14 — strict legacy URL elimination:
+          - base href still injected (so img/css/js relative paths work)
+          - cross-page navigation strings (agenda.html, index.html, <chapter>.html
+            inside quotes) rewritten to short /p/<P>[/<stem>] form
+          - prevents legacy /Projects/<P>/slide/<X>.html URLs from appearing in
+            the address bar after m2slide internal navigation
 
         slide_n (optional): if provided, injects a script to navigate to #/N when
         the browser has not already set a hash. URL hash from the user (preserved
@@ -540,7 +545,10 @@ class DevHandler(SimpleHTTPRequestHandler):
         except (OSError, UnicodeDecodeError) as e:
             self.send_error(500, f'cannot read {rel}: {e}')
             return
-        # base href so relative paths in build HTML still resolve to the build dir
+        # Extract project name from rel (Projects/<P>/slide/<X>.html)
+        m = _PATH_PROJECT_RE.match(rel.lstrip('/'))
+        project = m.group(1) if m else None
+        # base href so img/css/js relative paths still resolve to the build dir
         slide_dir = '/'.join(rel.split('/')[:-1]) + '/'  # e.g. 'Projects/X/slide/'
         base_tag = f'<base href="/{slide_dir}">'
         # Inject base tag immediately after opening <head ...>
@@ -548,9 +556,9 @@ class DevHandler(SimpleHTTPRequestHandler):
             r'(<head\b[^>]*>)', r'\1' + base_tag, content, count=1, flags=re.IGNORECASE)
         if n_subs:
             content = new_content
-        else:
-            # head missing — fall back to original content
-            pass
+        # Rewrite m2slide cross-page navigation: 'X.html?...' / "X.html?..." → '/p/<P>[/<stem>]?...'
+        if project:
+            content = self._rewrite_nav_strings(content, project)
         # Optional: navigate to slide N when hash not preset by client
         if slide_n is not None:
             nav_script = (
@@ -571,6 +579,34 @@ class DevHandler(SimpleHTTPRequestHandler):
         self.send_header('Cache-Control', 'no-store')
         self.end_headers()
         self.wfile.write(data)
+
+    # Pattern for navigation rewrite: match X.html[?query][#hash] inside single or
+    # double quotes (covers both JS string literals and HTML href/src attributes).
+    # Excludes URLs that already start with a slash or contain protocol (http:, file:).
+    _NAV_HTML_RE = re.compile(
+        r"""(['"])(?!/|https?:|file:|data:)([\w][\w-]*)\.html(\?[^'"#]*)?(#[^'"]*)?(\1)""",
+        re.IGNORECASE,
+    )
+
+    def _rewrite_nav_strings(self, content: str, project: str) -> str:
+        """Rewrite agenda.html / index.html / <chapter>.html navigation in quoted
+        strings (JS literals, HTML href/src attrs) to short /p/<P>[/<stem>] form.
+
+        Examples:
+          'agenda.html?back=1'   → '/p/<P>/agenda?back=1'
+          "index.html?last=1"    → "/p/<P>?last=1"
+          '01-markdown.html?fwd=1' → '/p/<P>/01-markdown?fwd=1'
+        """
+        def repl(m):
+            q1, stem, qry, frag, q2 = (
+                m.group(1), m.group(2), m.group(3) or '', m.group(4) or '', m.group(5)
+            )
+            if stem.lower() == 'index':
+                new = f'/p/{project}'
+            else:
+                new = f'/p/{project}/{stem}'
+            return f'{q1}{new}{qry}{frag}{q2}'
+        return self._NAV_HTML_RE.sub(repl, content)
 
     # ----- HTML landing pages -----
 
@@ -722,6 +758,16 @@ class DevHandler(SimpleHTTPRequestHandler):
         )
         self._write_html(body)
 
+    def _build_chapter_index_map(self, project: str, files: list) -> dict:
+        """Build stem→1-base-chap-index map in one directory scan (O(n) vs O(n²))."""
+        deck_files = [f for f in files if f != 'agenda.html']
+        chapter_files = [f for f in deck_files if f != 'index.html']
+        if chapter_files:
+            return {f[:-len('.html')]: i + 1 for i, f in enumerate(chapter_files)}
+        if 'index.html' in deck_files:
+            return {'index': 1}
+        return {}
+
     def _serve_project_overview(self, project: str):
         """GET /p/<project> — slide list (all .html files + sections)."""
         files = self._list_slide_files(project)
@@ -730,10 +776,15 @@ class DevHandler(SimpleHTTPRequestHandler):
             if not os.path.isdir(project_dir):
                 self.send_error(404, f'project not found: {project}')
                 return
-            self.send_error(404, f'no .html in Projects/{project}/slide/ (build first)')
+            self.send_error(404, f'no slides built — run ./m2slide.sh {project} first')
             return
-        # If single mode (only index.html + agenda.html), show sections of index.html directly.
-        # Otherwise show chapter list + section count per chapter.
+        # Precompute chapter index map once (avoids O(n²) directory scans)
+        chap_map = self._build_chapter_index_map(project, files)
+        deck_files = [f for f in files if f != 'agenda.html']
+        chapter_files = [f for f in deck_files if f != 'index.html']
+        is_chapter_mode = bool(chapter_files)
+        mode_label = f'{len(chapter_files)} chapters' if is_chapter_mode else 'single mode'
+        total_slides = 0
         sections_html_blocks = []
         for f in files:
             stem = f[:-len('.html')]
@@ -745,17 +796,15 @@ class DevHandler(SimpleHTTPRequestHandler):
             except (OSError, UnicodeDecodeError):
                 spans = []
             count = len(spans)
-            # Determine 1-base chapter index for this stem
-            chap_idx = self._stem_to_chapter_index(project, stem)
+            chap_idx = chap_map.get(stem)
             if chap_idx is None:
-                # agenda.html or unmapped (chapter mode index.html which is redirect/cover)
-                # — still show file info but skip the slide table to avoid noise
                 section = (
                     f'<h3>{stem} '
-                    f'<small style="color:#888">(non-deck file · {count} sections)</small></h3>'
+                    f'<small style="color:#888">(non-deck · {count} sections)</small></h3>'
                 )
                 sections_html_blocks.append(section)
                 continue
+            total_slides += count
             rows = []
             for i, (s, e) in enumerate(spans):
                 sec_html = html[s:e]
@@ -776,17 +825,21 @@ class DevHandler(SimpleHTTPRequestHandler):
                 f'<tbody>{"".join(rows) or "<tr><td colspan=4>no sections</td></tr>"}</tbody></table>'
             )
             sections_html_blocks.append(section)
+        summary = f'<b>{total_slides}</b> slides · {mode_label}'
         body = (
             '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
             f'<title>m2slide — {project}</title>'
             + self._common_styles() +
             '</head><body>'
             + self._common_header(f'📋 {project}') +
-            f'<p>files in <code>Projects/{project}/slide/</code>: <b>{len(files)}</b></p>'
+            f'<p>{summary}</p>'
             + '\n'.join(sections_html_blocks) +
             '</body></html>'
         )
         self._write_html(body)
+
+    _BUILD_ARTIFACT_RE = re.compile(
+        r'^Projects/[^/]+/slide/.+\.html$', re.IGNORECASE)
 
     def _serve_direct_slide(self, file_path: str, n: int):
         """Handle /<build path>/X.html/<n> — equivalent to /_dev/text/<n>/<path>.
@@ -794,6 +847,9 @@ class DevHandler(SimpleHTTPRequestHandler):
         Content-negotiation: ?mode=raw or Accept: text/html with X-Direct-Mode
         could redirect to live; default is text (curl-friendly).
         """
+        if not self._BUILD_ARTIFACT_RE.match(file_path.lstrip('/')):
+            self.send_error(404, f'not a build artifact path: {file_path}')
+            return
         resolved = self._resolve_file_path(file_path)
         if resolved is None:
             return
@@ -807,10 +863,10 @@ class DevHandler(SimpleHTTPRequestHandler):
         if n < 1 or n > total:
             self.send_error(404, f'slide {n} out of range (1..{total})')
             return
-        # mode=raw query → redirect to live URL with #/N (browser design view)
+        # mode=raw query → redirect to short live URL (no legacy /Projects/ form)
         q = parse_qs(urlparse(self.path).query)
         if q.get('mode', [''])[0] == 'raw':
-            target = '/' + rel.lstrip('/') + '#/' + str(n)
+            target = to_short_url(rel, n, 'raw')
             self.send_response(302)
             self.send_header('Location', target)
             self.send_header('Content-Length', '0')
@@ -865,7 +921,7 @@ class DevHandler(SimpleHTTPRequestHandler):
         # security: prevent directory traversal
         root = os.getcwd()
         full = os.path.normpath(os.path.join(root, f.lstrip('/')))
-        if not full.startswith(root + os.sep) and full != root:
+        if not full.startswith(root + os.sep):
             self.send_error(403, 'forbidden: path escapes document root')
             return None
         if not os.path.isfile(full):
