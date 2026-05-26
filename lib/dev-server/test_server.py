@@ -81,5 +81,22 @@ class ActivationTest(unittest.TestCase):
         self.assertFalse(self._h()._toc_active('fakeSingle'))
 
 
+class FallbackRedirectTest(unittest.TestCase):
+    """fallback chain (c→a→t→1/1) + legacy 302 검증. server를 실제 띄우지 않고
+    _redirect_302 호출 시 send_response/header가 호출되는지 mock으로 확인."""
+
+    def test_redirect_302_helper_sends_correct_response(self):
+        h = DevHandler.__new__(DevHandler)
+        calls = {'status': None, 'headers': [], 'end': False}
+        h.send_response = lambda s: calls.__setitem__('status', s)
+        h.send_header = lambda k, v: calls['headers'].append((k, v))
+        h.end_headers = lambda: calls.__setitem__('end', True)
+        h._redirect_302('/p/foo/s/a')
+        self.assertEqual(calls['status'], 302)
+        self.assertIn(('Location', '/p/foo/s/a'), calls['headers'])
+        self.assertIn(('Content-Length', '0'), calls['headers'])
+        self.assertTrue(calls['end'])
+
+
 if __name__ == '__main__':
     unittest.main()

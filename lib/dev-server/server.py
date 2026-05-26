@@ -249,13 +249,24 @@ class DevHandler(SimpleHTTPRequestHandler):
             except ValueError:
                 return super().do_GET()
             return self._serve_short_slide(project, chapter, n)
-        # Named routes: /p/<project>/s/cover and /p/<project>/s/<chap>/toc
+        # Named routes (Issue240+): /s/c (cover) /s/a (agenda) /s/t (toc) — fallback chain
+        m = self._SHORT_COVER_C_RE.match(path_only)
+        if m:
+            return self._serve_short_c(m.group(1))
+        m = self._SHORT_AGENDA_A_RE.match(path_only)
+        if m:
+            return self._serve_short_a(m.group(1))
+        m = self._SHORT_TOC_T_RE.match(path_only)
+        if m:
+            return self._serve_short_t(m.group(1))
+        # Legacy named routes (Issue239) — 302 to new short form for compatibility:
+        # /p/<P>/s/cover → /s/c · /p/<P>/s/<chap>/toc → /s/t (chap 무시)
         m = self._SHORT_COVER_RE.match(path_only)
         if m:
-            return self._serve_cover_entry(m.group(1))
+            return self._redirect_302(f'/p/{m.group(1)}/s/c')
         m = self._SHORT_TOC_RE.match(path_only)
         if m:
-            return self._serve_chapter_toc(m.group(1), int(m.group(2)))
+            return self._redirect_302(f'/p/{m.group(1)}/s/t')
         # Static assets: /p/<project>/slide/<path>  (CSS/JS/img from build dir)
         m = self._STATIC_ASSET_RE.match(path_only)
         if m:
@@ -507,6 +518,38 @@ class DevHandler(SimpleHTTPRequestHandler):
         chapter = None if stem == 'index' else stem
         file_rel = self._short_file_rel(project, chapter)
         return self._proxy_build_artifact(file_rel, slide_n=1)
+
+    def _serve_short_c(self, project: str):
+        """/p/<P>/s/c — cover. Fallback: not active → 302 /s/a."""
+        if not self._cover_active(project):
+            return self._redirect_302(f'/p/{project}/s/a')
+        # cover 활성 — chapter mode·single mode 모두 index.html proxy (markmap or cover slide)
+        file_rel = self._short_file_rel(project, None)  # index.html
+        return self._proxy_build_artifact(file_rel)
+
+    def _serve_short_a(self, project: str):
+        """/p/<P>/s/a — agenda. Fallback: not active → 302 /s/t."""
+        if not self._agenda_active(project):
+            return self._redirect_302(f'/p/{project}/s/t')
+        file_rel = f'Projects/{project}/slide/agenda.html'
+        return self._proxy_build_artifact(file_rel)
+
+    def _serve_short_t(self, project: str):
+        """/p/<P>/s/t — toc. Fallback: not active → 302 /s/1/1."""
+        if not self._toc_active(project):
+            return self._redirect_302(f'/p/{project}/s/1/1')
+        # toc slide 위치:
+        #   single mode: index.html#/2 (cover=#/1, toc=#/2)
+        #   chapter mode: 첫 chapter html#/2 (chapter 페이지 첫 슬라이드 = toc 자동 주입)
+        # 모두 chap=1, slide=2 로 통일 가능 (m2slide hashOneBasedIndex 정합)
+        return self._serve_short_slide_indexed(project, 1, 2)
+
+    def _redirect_302(self, location: str):
+        """Generic 302 redirect helper."""
+        self.send_response(302)
+        self.send_header('Location', location)
+        self.send_header('Content-Length', '0')
+        self.end_headers()
 
     def _proxy_build_artifact(self, file_rel: str, slide_n=None):
         """Serve build artifact content as 200 response with rewritten navigation.
