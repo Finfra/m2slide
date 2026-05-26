@@ -116,6 +116,21 @@ curl http://localhost:9877/p/aTest_v1
 curl -H 'Accept: application/json' http://localhost:9877/p/aTest_v1
 ```
 
+명시적 진입 (Issue240+ short form):
+
+```bash
+# 데크 첫 진입 — cover/agenda/toc/first slide fallback chain
+curl http://localhost:9877/p/<P>/s/c
+
+# cover/agenda/toc 명시 진입
+curl http://localhost:9877/p/<P>/s/c    # cover (없으면 a→t→1/1)
+curl http://localhost:9877/p/<P>/s/a    # agenda (없으면 t→1/1)
+curl http://localhost:9877/p/<P>/s/t    # toc (없으면 1/1)
+
+# 본문 slide 지정 (chap=1-base, slide=1-base)
+curl http://localhost:9877/p/<P>/s/<chap>/<slide>
+```
+
 ### 시각 채널 (AppleScript file://)
 
 **⚠️ shell `open -a "Google Chrome" <URL>` (슬라이드 검증·진입 컨텍스트만) 사용 금지 (Issue223 후속 정책)**
