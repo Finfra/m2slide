@@ -270,6 +270,8 @@ class DevHandler(SimpleHTTPRequestHandler):
     # SLIDE_RE (digits only) matches first so /p/<P>/s/3 → text section, not asset
     _STATIC_ASSET_RE = re.compile(r'^/p/([^/]+)/(?:s|slide)/(.+)$')
     _SHORT_ENTRY_RE = re.compile(r'^/p/([^/]+)(?:/([^/]+))?/?$')
+    _SHORT_COVER_RE = re.compile(r'^/p/([^/]+)/s/cover/?$')
+    _SHORT_TOC_RE = re.compile(r'^/p/([^/]+)/s/(\d+)/toc/?$')
 
     def do_GET(self):
         # Path-segment form (zsh-friendly — no ? or # in URL):
@@ -314,6 +316,13 @@ class DevHandler(SimpleHTTPRequestHandler):
             except ValueError:
                 return super().do_GET()
             return self._serve_short_slide(project, chapter, n)
+        # Named routes: /p/<project>/s/cover and /p/<project>/s/<chap>/toc
+        m = self._SHORT_COVER_RE.match(path_only)
+        if m:
+            return self._serve_cover_entry(m.group(1))
+        m = self._SHORT_TOC_RE.match(path_only)
+        if m:
+            return self._serve_chapter_toc(m.group(1), int(m.group(2)))
         # Static assets: /p/<project>/slide/<path>  (CSS/JS/img from build dir)
         m = self._STATIC_ASSET_RE.match(path_only)
         if m:
