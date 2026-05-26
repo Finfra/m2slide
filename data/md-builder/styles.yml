@@ -310,6 +310,46 @@ small_inline_image_policy:
     style 로 시각 비율 보존.
     학습 사례: BasicKnowledgeForAI_small 이미지 슬라이드 finfra 로고.
 
+media_enlarge_default_policy:
+  description: |
+    프로젝트 _config.yml에 `style.theContents.media_container_enlarge` 미지정 시
+    base.css 가 `original` 모드 적용 → 이미지가 자연 크기 max + container 100% 캡.
+    column 안 이미지는 column 좁은 폭에 비해 너무 작게 보임.
+  default_recommendation: width    # column 폭 100% + height auto — 가장 안정적
+  options:
+    original: "자연 크기 유지 (단, container 100% 캡) — 다중 이미지 슬라이드 과소"
+    width:    "width 100% + height auto — 비율 보존, column 폭 활용 (권장 default)"
+    height:   "section height 100% + flex column — 단일 큰 이미지 슬라이드 좋음, multi-col에서 bullet 가림 위험"
+    fit:      "object-fit:contain — 영역 채움 최대치, multi-col bullet 가림 위험"
+  apply_to: "_config.yml: style.theContents.media_container_enlarge"
+  rationale: |
+    'width' 가 column 내 multi-image 슬라이드에 가장 안정 — 비율 보존 + bullet 안 가림.
+    'fit'/'height' 는 단일 큰 이미지에 좋지만 column 안에서는 over-expand로 bullet 손실.
+    학습 사례: BasicKnowledgeForAI_small 순서없는목록 슬라이드 (s09_i1 portrait):
+      - fit:   image 너무 커져 bullet 텍스트가 영역 밖으로 밀려남
+      - width: column 폭 100% + 비율 보존, bullet 위 안정 표시
+
+tall_portrait_image_in_column_policy:
+  trigger:
+    image_aspect: "height > width * 1.3"  # 세로형 (portrait)
+    in_pandoc_column: true                 # ::: {.column} 안
+    sibling_bullet_above: true             # 같은 column 안에 bullet이 위에 있음
+  output_template: |
+    <img src="{img_path}" alt="{alt}"
+         style="max-width:100%;max-height:80vh;height:auto;display:block;margin:0.2em auto">
+  rationale: |
+    column 안 세로형 이미지가 기본 max-width:100% 로 렌더되면 column 폭에 맞춰
+    높이가 증가 → slide 영역 초과로 위 bullet text overflow.
+    raw <img> + max-width:100% + max-height:80vh + height:auto 조합으로:
+      - column 폭 최대한 활용 (width 100%)
+      - height는 width 비율로 자동 계산 (auto)
+      - 단, 80vh 초과 시 height 캡 (bullet text 안 가림)
+    너무 작게 캡하면(60vh 등) 이미지 손바닥만 해져서 가독성 낮음 — 80vh 권장.
+    학습 사례: BasicKnowledgeForAI_small 순서없는목록 슬라이드 (s09_i1 596x910 portrait).
+  safe_alternatives:
+    - "max-height 70vh~85vh (슬라이드 layout·header 높이에 따라 조정)"
+    - "max-width:300px 등 절대값 (이미지 작아져도 OK인 경우 — 비권장)"
+
 # ============================================================================
 # 4-C. 긴 단순 리스트 (>=12 short items) → multi-column 분할
 # ============================================================================
@@ -340,6 +380,21 @@ long_list_multi_column_policy:
 # ============================================================================
 # 4-D. 마크다운 syntax 본문 → 코드블록 wrap (literal 표시 보장)
 # ============================================================================
+backtick_marker_conflict_policy:
+  description: |
+    bullet line 내부 backtick에 markdown bullet marker (`*`/`-`/`+`) 가 단독 토큰으로
+    들어가면 m2slide parser가 `*` 를 nested bullet 시작으로 오해석하여 li 비워짐.
+    학습 사례: `* \`*\` \`-\` \`+\` 등을 사용` → `<li class="bullet-dot">` 빈 텍스트.
+  forbidden_inline_patterns:
+    - regex: '`\s*[\*\-\+]\s*`'
+      reason: "단일 marker 백틱 (`* `, `- `, `+ `) — bullet parser 충돌"
+  safe_alternatives:
+    - "단일 백틱 그룹: `* - +` (전체 marker 묶음)"
+    - "한국어 표현: 별표·하이픈·플러스"
+    - "HTML entities: &ast;, &hyphen;, &plus;"
+    - "백슬래시 escape: \\*, \\-, \\+"
+  apply_when: "slide.title 이 '문법'·'syntax' 포함 + bullet text 에 marker 설명"
+
 raw_markdown_syntax_block_policy:
   trigger_slide_title_patterns: ["*문법*", "*syntax*"]
   trigger_body_patterns:

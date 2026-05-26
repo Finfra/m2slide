@@ -228,16 +228,72 @@ content_split_rules:
       text_blocks: 1
       images: 1
       use_ppt_shape_position: true
+      special_case: "text-left + image-right 이면 ::right:: 단축 사용 (right_shorthand_single_image 참조)"
     slot_mapping:
       strategy: position_preserving_columns
       rule: |
-        text.left < image.left → leftPanel=text, rightPanel=image
-        image.left < text.left → leftPanel=image, rightPanel=text
-      avoid: "::right:: 단축 (텍스트-좌·이미지-우 가정만 함)"
+        text.left < image.left → ::right:: 단축 (right_shorthand_single_image rule 위임)
+        image.left < text.left → ::: columns 50/50 (image 좌, text 우)
     note: |
-      `::right::` 는 항상 텍스트-좌·이미지-우. PPT가 반대 배치면 swap 실패.
       교육 syntax 슬라이드는 위치가 의미 가짐 (좌=source 우=rendered 또는 반대).
+      text-left + image-right (가장 흔함) 는 ::right:: 단축으로 emit (DRY).
+      image-left 인 경우만 explicit ::: columns 필요.
       학습 사례: BasicKnowledgeForAI_small html삽입 슬라이드 — PPT 좌=pipe text 우=image.
+  - id: right_shorthand_single_image
+    body_pattern: "텍스트/코드 + 단일 이미지 (image 우측) — _model 가장 흔한 패턴"
+    detect:
+      text_or_code_blocks: ">=1"
+      images: 1
+      ppt_image_position: right    # PPT shape left > slide_width/2 또는 text보다 오른쪽
+    slot_mapping:
+      strategy: right_shorthand
+      output: |
+        {text_or_code}
+
+        ::right::
+
+        ![{alt}]({img_path})
+    note: |
+      _model BasicKnowledgeForAI_small의 가장 흔한 패턴 — Markdown Example, 순서없는목록,
+      코드HTML, 표 등 다수 슬라이드가 동일 구조. ::: columns 보다 짧고 가독성 좋음.
+      layout-selector text_plus_single_image_right rule이 hint 전달.
+  - id: code_vs_rendered_two_columns
+    body_pattern: "좌 code block + 우 rendered output (table·list·markdown 등 텍스트만, 이미지 0)"
+    detect:
+      code_blocks: 1
+      rendered_block: 1               # table·list·markdown source as text
+      images: 0
+    slot_mapping:
+      strategy: pandoc_columns_50_50_code_left_render_right
+      output: |
+        ::: columns
+        ::: {.column width="50%"}
+        ```
+        {code_or_pipe_text}
+        ```
+        :::
+        ::: {.column width="50%"}
+        {rendered_content}
+        :::
+        :::
+    note: |
+      html삽입 패턴 — PPT 좌측 텍스트박스에 pipe-table source (image처럼 보이지만 텍스트),
+      우측 picture에 rendered table image OR markdown table render.
+      _model 은 이미지 대신 markdown table을 우측에 두어 actual HTML <table> 렌더.
+      좌측은 ``` ``` 코드블록으로 wrap (pipe_table_source_as_code_block 와 동기화).
+  - id: simple_image_only
+    body_pattern: "단일 이미지 only (텍스트 없음, source citation은 별개)"
+    detect:
+      images: 1
+      bullets: 0
+      paragraphs: 0
+    slot_mapping:
+      strategy: bare_image_centered
+      output: |
+        ![{alt}]({img_path})
+    note: |
+      수평선·강조 등 PPT가 syntax 예제 이미지 하나로 슬라이드를 채우는 패턴.
+      ::right:: 도 필요 없음 — 단순 markdown 이미지가 전체 영역 차지.
   - id: three_column_image_stack
     body_pattern: "3-col 각각 bullet + image stack (PPT shape left 3 cluster)"
     detect:

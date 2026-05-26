@@ -138,6 +138,12 @@ build_options:
     default: 2
     validation: { type: integer, min: 1, max: 6 }
 
+  - id: slide_ratio
+    prompt: "슬라이드 화면 비율 (16:9 | 3:2 | fill)"
+    default: "16:9"
+    values: ["16:9", "3:2", "fill"]
+    hint: "source_type=ppt인 경우 ppt2m2slide가 원본 PPT sldSz cx/cy 비율을 자동 검출하여 본 값을 덮어씀. fill = 비율 무제약."
+
 # ============================================================================
 # 3. 미디어 계획 (단계 5 — Info.md "미디어 계획" H1 섹션)
 # ============================================================================
@@ -266,6 +272,7 @@ validation_rules:
     - rule: "output_tts_txt=true → output_subs_txt=true"
     - rule: "source_cover=true → cover_enabled=true (의존성 자동 보정 확인)"
     - rule: "source_type=ppt → source_cover 필드 반드시 질의 (ppt2m2slide 변환 표지 누락 방지)"
+    - rule: "source_type=ppt → slide_ratio는 ppt2m2slide 자동 검출값 우선 (수동 입력 덮어씀)"
 
 # ============================================================================
 # 8. 인터뷰 진행 정책

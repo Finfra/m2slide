@@ -65,12 +65,39 @@ pattern_rules:
     priority: 75
     reason_template: "이미지 + 짧은 캡션"
 
+  - id: text_plus_single_image_right
+    # _model BasicKnowledgeForAI_small의 가장 흔한 패턴 — bullets/code + single image
+    # → ::right:: shorthand 출력 (DRY 가독성 우선, ::: columns 보다 짧음)
+    condition: "image_count == 1 and (bullets_count >= 1 or has_code_block) and ppt_image_position == 'right'"
+    layout: contents
+    delegate_to_slot_designer: true
+    slot_designer_hint: right_shorthand_single_image
+    priority: 76
+    reason_template: "텍스트/코드 + 단일 이미지(우측) — ::right:: 단축 출력"
+
   - id: two_column_text_image
     condition: "has_text and has_image and bullet_count >= 3"
     layout: two_column
     layout_fallback: contents-split
     priority: 70
     reason_template: "좌우 비교 콘텐츠 (multi-column)"
+
+  - id: code_plus_rendered_two_col
+    # html삽입 패턴 — 좌 code block + 우 rendered table/output (둘 다 텍스트, 이미지 0)
+    condition: "has_code_block and (has_table or has_rendered_output) and image_count == 0"
+    layout: contents
+    delegate_to_slot_designer: true
+    slot_designer_hint: code_vs_rendered_two_columns
+    priority: 74
+    reason_template: "코드 source + 렌더 결과 좌우 비교 (이미지 없음)"
+
+  - id: bullets_only_no_image
+    # 순서있는 목록 패턴 — _model 은 PPT 이미지 있어도 omit하고 텍스트만 표시
+    # 명시적 omit 신호: PPT 이미지가 syntax 보충용 + bullet text가 충분히 자명
+    condition: "bullets_count >= 1 and image_count == 0"
+    layout: contents
+    priority: 50
+    reason_template: "텍스트 전용 (이미지 없음 또는 omit)"
 
   - id: multi_image_bullet_stacked_2col
     condition: "image_count >= 2 and bullet_count >= 2 and ppt_shape_left_distribution == 'two_columns'"

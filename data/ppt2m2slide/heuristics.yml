@@ -429,6 +429,49 @@ preservation:
     #   카드 메뉴를 어지럽힘. 보존 필요 시 사용자가 수동으로 복원)
     chapter_mode_action: drop
     note: "PPT cover_root dropped in chapter mode — toc-placeholder가 챕터 진입 표현"
+
+# ── _config.yml emit 시 default 권장값 ──────────────────────────
+# ppt2m2slide가 _config.yml 생성 시 다음 키를 항상 포함하여 회귀 차단.
+config_yml_emit_defaults:
+  # ── slide_ratio 자동 검출 (Issue: ppt origin 비율 보존) ─────
+  # PPT presentation.xml의 <p:sldSz cx=... cy=...> EMU 값에서 비율 추출.
+  # python-pptx: prs.slide_width / prs.slide_height (EMU 단위).
+  # 매핑: cx:cy → m2slide slide_ratio 화이트리스트 [16:9, 3:2, fill]
+  #   16:9 ≈ 1.777 → "16:9"
+  #   3:2  ≈ 1.500 → "3:2"
+  #   4:3  ≈ 1.333 → "3:2" 근접 매칭 (4:3 미지원 시 가장 가까운 옵션)
+  #   기타     → "fill" (비율 무제약)
+  # tolerance: ±0.02 (16:9·3:2 매칭 허용 오차)
+  slide_ratio:
+    enabled: true
+    extraction: |
+      from pptx import Presentation
+      prs = Presentation(pptx_path)
+      ratio = prs.slide_width / prs.slide_height
+    mapping:
+      "16:9": { min: 1.757, max: 1.797 }   # 1.777 ±0.02
+      "3:2":  { min: 1.480, max: 1.520 }   # 1.500 ±0.02
+      "4:3":  { fallback_to: "3:2" }        # 1.333 → "3:2" (가장 가까운 화이트리스트)
+      "fill": { else: true }                # 화이트리스트 외 모든 비율
+    emit_to_config_yml: true               # _config.yml line 3 부근 `slide_ratio: "..."` 작성
+    override_user_input: true              # info-filler slide_ratio 응답 덮어씀 (PPT 원본 우선)
+    rationale: |
+      PPT 원본 비율과 m2slide 빌드 비율 불일치 시 슬라이드 콘텐츠 잘림·여백 발생.
+      ppt2m2slide 변환 산출물은 항상 원본 PPT 비율을 보존해야 함.
+      학습 사례: BasicKnowledgeForAI_small.pptx (3:2 원본) → 수동 갱신 회귀 차단.
+  style:
+    theContents:
+      media_container_enlarge: width     # column 폭 100% + height auto (비율 보존)
+  rationale: |
+    media_container_enlarge 4 옵션 비교 — column+multi-image 시나리오 기준:
+      - original: column 안 이미지 과소 (자연 크기 + container 캡)
+      - fit:      slide section flex-fill — column 안 이미지가 너무 커서 bullet 가림
+      - height:   image 100% height — 비율 깨질 위험 + bullet 가림 가능
+      - width:    column 폭 100% + height auto — 비율 보존 + bullet 안 가림 ✓
+    'width' 가 column 내 multi-image 슬라이드에 가장 안정. 단일 이미지 큰 슬라이드는
+    'fit' 도 OK하지만 default는 'width' 권장.
+    학습 사례: BasicKnowledgeForAI_small 순서없는목록 슬라이드 (s09_i1 portrait
+    column 안 — fit이면 너무 커서 bullet 가림, width 이면 적정 크기).
   empty_slides:
     # PPT 빈 슬라이드(텍스트·이미지·도형 0건)는 예외적으로 무시
     skip: true

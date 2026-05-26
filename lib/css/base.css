@@ -605,7 +605,7 @@ body {
 .reveal .columns {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;   /* top-align — 좌·우 column 콘텐츠 양 다를 때 위쪽 정렬 (center → 짧은 column이 중간에 떠 어색) */
   justify-content: space-between;
   gap: 4%;
   width: 100%;
@@ -690,7 +690,9 @@ body {
 .reveal .m2-rows img,
 .reveal .rows img {
   max-width: 100%;
+  max-height: 75vh;   /* slide 영역 초과 방지 (portrait 이미지가 column 폭 100%일 때 height overflow 차단) */
   height: auto;
+  object-fit: contain;
 }
 
 /* =========================================================================
