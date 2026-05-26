@@ -106,19 +106,32 @@ def to_short_url(file_path: str, n=None, mode: str = '') -> str:
     return f'/p/{project}{chapter_seg}/s/{n}{suffix}'
 
 
-def render_raw_nav(file_path: str, n: int, total: int, mode: str = 'raw') -> str:
-    """Render top-fixed nav bar — short /p/... URLs, single 'live' link (no duplicate design)."""
-    prev_n = max(1, n - 1)
-    next_n = min(total, n + 1)
+def render_raw_nav_with_urls(file_path: str, n: int, total: int,
+                              prev_url: str, next_url: str,
+                              list_url: str, live_url: str) -> str:
+    """Render top-fixed nav bar with pre-computed short URLs."""
     return (
         f'<nav class="raw-nav" id="raw-nav">'
         f'<code>{file_path}</code> · '
         f'slide <b>{n}</b>/{total} '
-        f' · <a href="{to_short_url(file_path, prev_n, mode)}">← prev</a>'
-        f' · <a href="{to_short_url(file_path, next_n, mode)}">next →</a>'
-        f' · <a href="{to_short_url(file_path)}">list</a>'
-        f' · <a href="{to_short_url(file_path, n, "raw")}">live</a>'
+        f' · <a href="{prev_url}">← prev</a>'
+        f' · <a href="{next_url}">next →</a>'
+        f' · <a href="{list_url}">list</a>'
+        f' · <a href="{live_url}">live</a>'
         f'</nav>'
+    )
+
+
+def render_raw_nav(file_path: str, n: int, total: int, mode: str = 'raw') -> str:
+    """Legacy fallback for callers without chap_idx context — uses to_short_url."""
+    prev_n = max(1, n - 1)
+    next_n = min(total, n + 1)
+    return render_raw_nav_with_urls(
+        file_path, n, total,
+        prev_url=to_short_url(file_path, prev_n),
+        next_url=to_short_url(file_path, next_n),
+        list_url=to_short_url(file_path),
+        live_url=to_short_url(file_path, n, 'raw'),
     )
 
 
@@ -178,13 +191,14 @@ def inject_raw_design_view(html: str, n: int, total: int, file_path: str) -> str
 
 
 def wrap_text_html(file_path: str, n: int, total: int, section_html: str,
-                   head_links: str = '') -> str:
+                   head_links: str = '', nav_html: str = None) -> str:
     """Wrap a single section as plain-text-style HTML (no reveal.js, no theme layout).
 
     For curl + grep — keep theme stylesheets so colors/fonts stay similar but
-    bypass reveal.js coordinate system entirely.
+    bypass reveal.js coordinate system entirely. nav_html may be precomputed
+    (with chap_idx-aware URLs) by the caller; otherwise falls back to legacy.
     """
-    nav = render_raw_nav(file_path, n, total, mode='text')
+    nav = nav_html if nav_html is not None else render_raw_nav(file_path, n, total, mode='text')
     return (
         '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
         f'<title>m2slide text — {file_path}#{n}</title>'
@@ -229,11 +243,13 @@ class DevHandler(SimpleHTTPRequestHandler):
     # Direct slide form: /Projects/.../X.html/<N>
     _DIRECT_SLIDE_RE = re.compile(r'^(.+?\.html)/(\d+)/?$', re.IGNORECASE)
     # Short form (zsh-friendly, curl-only):
-    #   /p/<project>/s/<n>                 → text section N of index.html
-    #   /p/<project>/<chapter>/s/<n>       → text section N of <chapter>.html
-    #   /p/<project>                       → 302 to /Projects/<project>/slide/index.html
-    #   /p/<project>/<chapter>             → 302 to /Projects/<project>/slide/<chapter>.html
-    # Add ?mode=raw  → 302 to live URL with #/N (browser design view).
+    #   /p/<project>/s/<chap>/<slide>      → text section. chap, slide both 1-base
+    #   /p/<project>/s/<slide>             → chap=1 (single mode index.html) shorthand
+    #   /p/<project>/<chapter_name>/s/<n>  → text section, chapter named (legacy)
+    #   /p/<project>                       → HTML overview page
+    #   /p/<project>/<chapter_name>        → 302 to /Projects/<project>/slide/<chapter>.html
+    # ?mode=raw  → 302 to live URL with #/N (browser design view)
+    _SHORT_SLIDE_CHAP_RE = re.compile(r'^/p/([^/]+)/s/(\d+)/(\d+)/?$')
     _SHORT_SLIDE_RE = re.compile(r'^/p/([^/]+)(?:/([^/]+))?/s/(\d+)/?$')
     _SHORT_ENTRY_RE = re.compile(r'^/p/([^/]+)(?:/([^/]+))?/?$')
 
@@ -262,7 +278,16 @@ class DevHandler(SimpleHTTPRequestHandler):
         # Project list
         if path_only in ('/p', '/p/'):
             return self._serve_project_list()
-        # Short form: /p/<project>[/<chapter>]/s/<n>
+        # Short form: /p/<project>/s/<chap>/<slide>  (both 1-base index, chapter mode unified)
+        m = self._SHORT_SLIDE_CHAP_RE.match(path_only)
+        if m:
+            project, chap_str, slide_str = m.group(1), m.group(2), m.group(3)
+            try:
+                chap_idx, slide_idx = int(chap_str), int(slide_str)
+            except ValueError:
+                return super().do_GET()
+            return self._serve_short_slide_indexed(project, chap_idx, slide_idx)
+        # Short form: /p/<project>[/<chapter_name>]/s/<n>
         m = self._SHORT_SLIDE_RE.match(path_only)
         if m:
             project, chapter, n_str = m.group(1), m.group(2), m.group(3)
@@ -292,6 +317,86 @@ class DevHandler(SimpleHTTPRequestHandler):
         base = f'Projects/{project}/slide'
         stem = chapter if chapter else 'index'
         return f'{base}/{stem}.html'
+
+    def _resolve_chapter_index(self, project: str, chap_idx: int):
+        """Map 1-base chapter index to a .html file stem.
+
+        Logic:
+          - Single mode (only index.html as deck, agenda.html may also exist):
+              chap_idx=1 → 'index'
+          - Chapter mode (numbered chapter files like 01-…, 02-…):
+              chap_idx=N → N-th file in sorted order, excluding agenda.html and index.html
+        Returns chapter stem (without .html) or None.
+        """
+        slide_dir = os.path.join(os.getcwd(), 'Projects', project, 'slide')
+        if not os.path.isdir(slide_dir):
+            return None
+        files = sorted(
+            f for f in os.listdir(slide_dir)
+            if f.endswith('.html') and not f.startswith('.')
+        )
+        # exclude agenda.html (m2slide navigation page, not a deck)
+        deck_files = [f for f in files if f != 'agenda.html']
+        if not deck_files:
+            return None
+        # Chapter mode detection: more than one deck file → chapter mode
+        chapter_files = [f for f in deck_files if f != 'index.html']
+        if chapter_files:
+            # chapter mode — index.html is redirect/cover, real chapters are numbered
+            if 1 <= chap_idx <= len(chapter_files):
+                return chapter_files[chap_idx - 1][:-len('.html')]
+            return None
+        # single mode — only index.html
+        if chap_idx == 1 and 'index.html' in deck_files:
+            return 'index'
+        return None
+
+    def _serve_short_slide_indexed(self, project: str, chap_idx: int, slide_idx: int):
+        """Handle /p/<project>/s/<chap_idx>/<slide_idx> (both 1-base)."""
+        stem = self._resolve_chapter_index(project, chap_idx)
+        if stem is None:
+            self.send_error(404, f'chapter {chap_idx} not found in {project}')
+            return
+        chapter = None if stem == 'index' else stem
+        return self._serve_short_slide(project, chapter, slide_idx)
+
+    def _stem_to_chapter_index(self, project: str, stem: str):
+        """Inverse of _resolve_chapter_index. Returns 1-base chap index or None."""
+        slide_dir = os.path.join(os.getcwd(), 'Projects', project, 'slide')
+        if not os.path.isdir(slide_dir):
+            return None
+        files = sorted(
+            f for f in os.listdir(slide_dir)
+            if f.endswith('.html') and not f.startswith('.')
+        )
+        deck_files = [f for f in files if f != 'agenda.html']
+        chapter_files = [f for f in deck_files if f != 'index.html']
+        if chapter_files:
+            target = f'{stem}.html'
+            if target in chapter_files:
+                return chapter_files.index(target) + 1
+            return None
+        if stem == 'index' and 'index.html' in deck_files:
+            return 1
+        return None
+
+    def _file_path_to_short_indexed(self, file_path: str, slide_idx=None, mode: str = ''):
+        """Convert Projects/<P>/slide/<X>.html [+ slide] to /p/<P>/s/<chap>/<slide>[?mode=raw].
+
+        Returns None if file_path not a build artifact under Projects/<P>/slide/.
+        Falls back to long form for unknown paths.
+        """
+        m = _PATH_PROJECT_RE.match(file_path.lstrip('/'))
+        if not m:
+            return None
+        project, stem = m.group(1), m.group(2)
+        chap_idx = self._stem_to_chapter_index(project, stem)
+        if chap_idx is None:
+            return None
+        suffix = '?mode=raw' if mode == 'raw' else ''
+        if slide_idx is None:
+            return f'/p/{project}'
+        return f'/p/{project}/s/{chap_idx}/{slide_idx}{suffix}'
 
     def _serve_short_slide(self, project: str, chapter, n: int):
         """Handle /p/<project>[/<chapter>]/s/<n>."""
@@ -326,7 +431,21 @@ class DevHandler(SimpleHTTPRequestHandler):
         section_html = html[s:e]
         head_links = '\n'.join(re.findall(
             r'<link\s+rel="stylesheet"[^>]+>', html, flags=re.IGNORECASE))
-        self._write_html(wrap_text_html(rel, n, total, section_html, head_links))
+        nav_html = self._render_indexed_nav(rel, n, total)
+        self._write_html(wrap_text_html(rel, n, total, section_html, head_links, nav_html))
+
+    def _render_indexed_nav(self, file_path: str, n: int, total: int):
+        """Build nav bar with chap_idx-aware URLs (/p/<P>/s/<chap>/<slide>)."""
+        prev_n = max(1, n - 1)
+        next_n = min(total, n + 1)
+        prev = self._file_path_to_short_indexed(file_path, prev_n)
+        nxt = self._file_path_to_short_indexed(file_path, next_n)
+        lst = self._file_path_to_short_indexed(file_path)
+        live = self._file_path_to_short_indexed(file_path, n, 'raw')
+        # fallback to legacy form for non-build-artifact paths
+        if prev is None:
+            return render_raw_nav(file_path, n, total, mode='text')
+        return render_raw_nav_with_urls(file_path, n, total, prev, nxt, lst, live)
 
     def _serve_short_entry(self, project: str, chapter):
         """Handle /p/<project>[/<chapter>].
@@ -515,7 +634,17 @@ class DevHandler(SimpleHTTPRequestHandler):
             except (OSError, UnicodeDecodeError):
                 spans = []
             count = len(spans)
-            chapter_seg = '' if stem == 'index' else f'/{stem}'
+            # Determine 1-base chapter index for this stem
+            chap_idx = self._stem_to_chapter_index(project, stem)
+            if chap_idx is None:
+                # agenda.html or unmapped (chapter mode index.html which is redirect/cover)
+                # — still show file info but skip the slide table to avoid noise
+                section = (
+                    f'<h3>{stem} '
+                    f'<small style="color:#888">(non-deck file · {count} sections)</small></h3>'
+                )
+                sections_html_blocks.append(section)
+                continue
             rows = []
             for i, (s, e) in enumerate(spans):
                 sec_html = html[s:e]
@@ -523,13 +652,14 @@ class DevHandler(SimpleHTTPRequestHandler):
                 one = i + 1
                 rows.append(
                     f'<tr><td>{one}</td>'
-                    f'<td><a href="/p/{project}{chapter_seg}/s/{one}?mode=raw">{title}</a></td>'
-                    f'<td><a href="/p/{project}{chapter_seg}/s/{one}">text</a></td>'
+                    f'<td><a href="/p/{project}/s/{chap_idx}/{one}?mode=raw">{title}</a></td>'
+                    f'<td><a href="/p/{project}/s/{chap_idx}/{one}">text</a></td>'
                     f'<td>{e - s}</td></tr>'
                 )
-            chapter_entry = f'/p/{project}{chapter_seg}' if stem != 'index' else f'/p/{project}/s/1?mode=raw'
+            chapter_entry = f'/p/{project}/s/{chap_idx}/1?mode=raw'
             section = (
-                f'<h3>{stem} <small style="color:#888">({count} slides · '
+                f'<h3>chap {chap_idx} — {stem} '
+                f'<small style="color:#888">({count} slides · '
                 f'<a href="{chapter_entry}">open</a>)</small></h3>'
                 '<table><thead><tr><th>n</th><th>title (→ live)</th><th>text</th><th>bytes</th></tr></thead>'
                 f'<tbody>{"".join(rows) or "<tr><td colspan=4>no sections</td></tr>"}</tbody></table>'
@@ -579,7 +709,8 @@ class DevHandler(SimpleHTTPRequestHandler):
         section_html = html[s:e]
         head_links = '\n'.join(re.findall(
             r'<link\s+rel="stylesheet"[^>]+>', html, flags=re.IGNORECASE))
-        self._write_html(wrap_text_html(rel, n, total, section_html, head_links))
+        nav_html = self._render_indexed_nav(rel, n, total)
+        self._write_html(wrap_text_html(rel, n, total, section_html, head_links, nav_html))
 
     # --- path parsing helpers ---
 
@@ -741,7 +872,8 @@ class DevHandler(SimpleHTTPRequestHandler):
         section_html = html[s:e]
         head_links = '\n'.join(re.findall(
             r'<link\s+rel="stylesheet"[^>]+>', html, flags=re.IGNORECASE))
-        self._write_html(wrap_text_html(rel, n, total, section_html, head_links))
+        nav_html = self._render_indexed_nav(rel, n, total)
+        self._write_html(wrap_text_html(rel, n, total, section_html, head_links, nav_html))
 
     def _serve_list(self):
         """Section index.
