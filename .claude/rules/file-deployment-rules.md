@@ -98,7 +98,7 @@ localhost|127\.0\.0\.1|0\.0\.0\.0|/Users/|/home/[a-z]|file:///Users/|file:///hom
 * `theme/**/layouts/*.html` (템플릿 원본 — 빌드 시 절대 경로 치환됨)
     - 단 템플릿 자체에 `localhost`·절대 경로 하드코딩 금지 (사용자가 raw 템플릿을 file://로 열 가능성)
 * 개발 보조 페이지(`_doc_work/z_htm/`) — 빌드 산출물 아님
-* dev-server `/_dev/` 동적 endpoint (Issue236) — 빌드 산출물 아님. raw·list view는 dev-server 메모리에서만 생성되며 디스크 파일로 저장되지 않으므로 본 룰의 적용 범위 밖. `/_dev/raw` 응답 HTML 내부에 dev-server URL이 포함되어도 정적 산출물 오염 아님
+* dev-server `/p/<P>/...` 동적 endpoint (Issue236) — 빌드 산출물 아님. proxy view는 dev-server 메모리에서만 생성되며 디스크 파일로 저장되지 않으므로 본 룰의 적용 범위 밖
 
 # 참조
 

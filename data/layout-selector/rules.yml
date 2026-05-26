@@ -72,6 +72,36 @@ pattern_rules:
     priority: 70
     reason_template: "좌우 비교 콘텐츠 (multi-column)"
 
+  - id: multi_image_bullet_stacked_2col
+    condition: "image_count >= 2 and bullet_count >= 2 and ppt_shape_left_distribution == 'two_columns'"
+    triggers:
+      shape_signals: ["bullet+image vertical stack per column", "PPT shape left 좌표 2개 cluster"]
+    layout: contents
+    delegate_to_slot_designer: true       # 내부 배치는 stage 7에서 결정
+    slot_designer_hint: bullet_image_pairs_two_columns
+    priority: 78                          # two_column_text_image보다 높은 우선순위 (더 구체)
+    reason_template: "PPT 좌·우 column 각각 bullet+image stack — Pandoc columns로 매핑"
+
+  - id: multi_image_3col
+    condition: "image_count >= 3 and bullet_count >= 3 and ppt_shape_left_distribution == 'three_columns'"
+    triggers:
+      shape_signals: ["3-col bullet+image", "PPT shape left 좌표 3개 cluster"]
+    layout: contents
+    delegate_to_slot_designer: true
+    slot_designer_hint: three_column_image_stack
+    priority: 79
+    reason_template: "PPT 3-column 각각 bullet+image stack — 33% Pandoc columns로 매핑"
+
+  - id: multi_image_interleaved_single_col
+    condition: "image_count >= 2 and bullet_count >= 2 and ppt_shape_left_distribution == 'single_column' and bullet_image_pairing == 'vertical'"
+    triggers:
+      shape_signals: ["bullet+image vertical interleave 한 컬럼"]
+    layout: contents
+    delegate_to_slot_designer: true
+    slot_designer_hint: bullet_image_pairs_interleaved
+    priority: 77
+    reason_template: "PPT 단일 column bullet→image 교대 배치 — interleave로 매핑"
+
   - id: code_block
     condition: "has_code and code_lines > 5"
     layout: code

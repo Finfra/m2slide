@@ -606,6 +606,36 @@ class DevHandler(SimpleHTTPRequestHandler):
             new_content, _ = re.subn(
                 r'(</body\s*>)', nav_script + r'\1', content, count=1, flags=re.IGNORECASE)
             content = new_content if _ else content + nav_script
+        # Issue242: cross-page cue query(?fwd=1·?back=1·?last=1) URL bar 정리.
+        # m2slide JS 가 Reveal.on('ready') 에서 location.search 읽어 애니메이션·점프 처리.
+        # 그 후 본 inject 가 replaceState 로 query 만 제거 → URL `/s/<chap>#/N` 깔끔.
+        # 등록 순서: m2slide JS 가 본 inject 보다 먼저 (build artifact 본문) → ready
+        # 콜백 fire 도 동일 순서. setTimeout 50ms 안전 마진.
+        clean_script = (
+            '<script>(function(){'
+            'function clean(){'
+            'var s=location.search;'
+            'if(s&&/(fwd|back|last)=1/.test(s)){'
+            'try{history.replaceState(null,"",location.pathname+location.hash);}catch(e){}'
+            '}'
+            '}'
+            'function arm(){'
+            # Reveal already ready → run clean immediately (already-fired event miss)
+            'if(typeof Reveal!=="undefined"&&Reveal.isReady&&Reveal.isReady()){setTimeout(clean,50);return true;}'
+            # Not ready yet → register listener
+            'if(typeof Reveal!=="undefined"&&Reveal.on){Reveal.on("ready",function(){setTimeout(clean,50);});return true;}'
+            'return false;'
+            '}'
+            'if(!arm()){document.addEventListener("DOMContentLoaded",function(){'
+            'var n=0;var iv=setInterval(function(){if(arm()||++n>50){clearInterval(iv);'
+            'if(n>50)setTimeout(clean,2000);}},100);});}'
+            # Failsafe — 1.5s 후 무조건 clean (Reveal ready 못 잡았어도)
+            'setTimeout(clean,1500);'
+            '})();</script>'
+        )
+        new_content, n_clean = re.subn(
+            r'(</body\s*>)', clean_script + r'\1', content, count=1, flags=re.IGNORECASE)
+        content = new_content if n_clean else content + clean_script
         data = content.encode('utf-8')
         self.send_response(200)
         self.send_header('Content-Type', 'text/html; charset=utf-8')
@@ -624,6 +654,13 @@ class DevHandler(SimpleHTTPRequestHandler):
     # url= sits inside a quoted attribute, not at the quote boundary.
     _META_REFRESH_RE = re.compile(
         r"""(\burl\s*=\s*)([\w][\w-]*)\.html(\?[^"'\s>]*)?(#[^"'\s>]*)?""",
+        re.IGNORECASE,
+    )
+    # Pattern C — JSON-escaped quotes (Issue242). m2slide 빌드 산출물의 _tocData 등에
+    # `\"01-markdown.html\"` 형태로 들어간 chapter href. Pattern A 는 escaped quote
+    # 처리 안 함. \" 또는 &quot; HTML-entity 형 모두 매칭.
+    _NAV_HTML_ESCAPED_RE = re.compile(
+        r"""(\\"|&quot;)(?!/|https?:|file:|data:)([\w][\w-]*)\.html(\?[^"'#\\&]*)?(#[^"'\\&]*)?(\1)""",
         re.IGNORECASE,
     )
 
@@ -662,12 +699,15 @@ class DevHandler(SimpleHTTPRequestHandler):
 
     def _stem_to_short_path(self, project: str, stem: str) -> str:
         # Issue240: short URL 통일 — index → /s/c (cover), agenda → /s/a (agenda).
-        # chapter stem 은 그대로 /p/<P>/<stem>.
+        # Issue242: chapter stem → /s/<chap_idx>/ (user 명시 형식).
         s = stem.lower()
         if s == 'index':
             return f'/p/{project}/s/c'
         if s == 'agenda':
             return f'/p/{project}/s/a'
+        chap_idx = self._stem_to_chapter_index(project, stem)
+        if chap_idx is not None:
+            return f'/p/{project}/s/{chap_idx}/'
         return f'/p/{project}/{stem}'
 
     def _rewrite_nav_strings(self, content: str, project: str) -> str:
@@ -682,6 +722,11 @@ class DevHandler(SimpleHTTPRequestHandler):
                 m.group(1), m.group(2), m.group(3) or '', m.group(4) or '', m.group(5)
             )
             new = self._stem_to_short_path(project, stem)
+            # Issue242: cross-page nav URL에 hash 없으면 #/1 자동 주입.
+            # reveal.js 가 default slide #/1 진입하지만 URL bar 에 명시 표기되어
+            # share·reload·history 추적 일관성 확보. ?fwd=1 같은 cue 는 hash 앞에 유지.
+            if not frag:
+                frag = '#/1'
             return f'{q1}{new}{qry}{frag}{q2}'
         content = self._NAV_HTML_RE.sub(repl_quoted, content)
 
@@ -690,8 +735,21 @@ class DevHandler(SimpleHTTPRequestHandler):
                 m.group(1), m.group(2), m.group(3) or '', m.group(4) or ''
             )
             new = self._stem_to_short_path(project, stem)
+            if not frag:
+                frag = '#/1'
             return f'{prefix}{new}{qry}{frag}'
         content = self._META_REFRESH_RE.sub(repl_meta, content)
+
+        # Pattern C — JSON escaped quotes (Issue242)
+        def repl_escaped(m):
+            q1, stem, qry, frag, q2 = (
+                m.group(1), m.group(2), m.group(3) or '', m.group(4) or '', m.group(5)
+            )
+            new = self._stem_to_short_path(project, stem)
+            if not frag:
+                frag = '#/1'
+            return f'{q1}{new}{qry}{frag}{q2}'
+        content = self._NAV_HTML_ESCAPED_RE.sub(repl_escaped, content)
         return content
 
     # ----- HTML landing pages -----

@@ -7,7 +7,7 @@
 # 에이전트는 본 파일을 호출 시점에 Read → situation 매칭 → primary 우선 사용.
 # 사용자가 본 파일을 수정하면 SCAR 본문 변경 없이 다음 호출부터 즉시 반영.
 #
-# 설계 SSOT: _doc_arch/slide-components.md (Visual 계열 "심벌"), _doc_arch/component-libraries.md
+# 설계 SSOT: _doc_arch/component-slide.md (Visual 계열 "심벌"), _doc_arch/component-libraries.md
 # 라이브러리 등록: data/component-libraries.yml (id: fontawesome)
 ---
 version: 1

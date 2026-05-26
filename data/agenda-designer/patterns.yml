@@ -171,8 +171,17 @@ templates:
     frontmatter:
       title: "{chapter_title}"
       type: ppt
-    body_format_slide: "## 슬라이드 제목 {slide_n}"
+    # 첫 슬라이드는 바로 실제 본문 컨텐츠. 챕터 제목·상위 섹션 제목 중복 emit 금지.
+    # 사유: m2slide가 chapter mode 빌드 시 #/1 에 toc-placeholder(cards layout)를
+    #   자동 주입하며 AGENDA.md의 챕터 제목을 사용함. 챕터 .md에 다시
+    #   `# {chapter_title}` 슬라이드를 두면 동일 제목이 #/2에 중복 노출됨.
+    #   상위 그룹 제목(ex `# 부록`)도 동일 사유로 중복 — emit 금지.
+    body_format_slide: "## {slide_title}"
     slide_separator: "---"
+    forbidden_first_slides:
+      - "# {chapter_title}"           # 챕터 제목 중복 (toc-placeholder가 이미 사용)
+      - "# {parent_section_title}"    # 상위 그룹 제목 (AGENDA outline로 충분)
+      - "#layout-_contents"           # contents layout만 적힌 빈 진입 슬라이드
 
   # single mode .md 파일
   single:
@@ -213,6 +222,15 @@ validation_rules:
     - id: chapter_frontmatter_required
       desc: "각 챕터 파일 frontmatter title + type:ppt 필수"
       fields: [title, type]
+    - id: chapter_no_redundant_title_slide
+      desc: |
+        챕터 .md 첫 슬라이드가 챕터 제목·상위 섹션 제목과 동일하면 안 됨.
+        m2slide가 #/1 toc-placeholder(cards layout)를 자동 주입하여 챕터 제목을
+        이미 표시하므로, 챕터 .md에 `# {chapter_title}` 또는 `# {parent_section}`을
+        다시 두면 동일 제목이 #/2에 중복 노출됨. 첫 슬라이드는 첫 실제 본문이어야 함.
+      pattern_forbidden_first_h1:
+        - "must_not_equal: frontmatter.title"
+        - "must_not_equal: AGENDA parent H2 title"
   single:
     - id: single_frontmatter_required
       desc: "single .md frontmatter title + type:ppt 필수"

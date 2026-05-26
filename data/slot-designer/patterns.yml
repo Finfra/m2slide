@@ -148,6 +148,155 @@ content_split_rules:
   - id: card_grid
     body_pattern: "카드형 그리드"
     slot_mapping: { use: cards }
+  - id: bullet_image_pairs_vertical
+    body_pattern: "bullet N개 + image N개 (PPT shape top 좌표 매칭, 수직 페어링)"
+    detect:
+      bullets_count: ">=2"
+      images_count: ">=2"
+      pairing: "1:1 by vertical proximity"
+      same_column: true            # 모두 한 column 안 (PPT shape left 좌표 유사)
+    slot_mapping:
+      strategy: vertical_interleave
+      output: |
+        * {bullet_1}
+
+        {image_1}
+
+        * {bullet_2}
+
+        {image_2}
+        ...
+    note: |
+      PPT BlockQuote 슬라이드 패턴. 각 bullet 이 자기 직하단 image 를 설명.
+      2-col 으로 바꾸면 페어링이 깨짐. ppt2m2slide heuristics.yml
+      content_layout_rules.bullet_image_pairs_interleaved 와 동기화.
+  - id: bullet_image_pairs_horizontal
+    body_pattern: "bullet 2개 + image 2개 (좌/우 column 페어링)"
+    detect:
+      bullets_count: 2
+      images_count: 2
+      pairing: "left bullet+image vs right bullet+image"
+      columns: 2                   # PPT shape left 좌표 분포로 좌/우 명확 분리
+    slot_mapping:
+      strategy: pandoc_columns
+      output: |
+        ::: columns
+        ::: {.column width="50%"}
+        * {bullet_1}
+
+        {image_1}
+        :::
+        ::: {.column width="50%"}
+        * {bullet_2}
+
+        {image_2}
+        :::
+        :::
+    note: |
+      PPT 순서있는목록 슬라이드 패턴. 좌/우 두 개념 병렬 비교.
+      vertical interleave 와의 구분 — PPT shape left 분포로 판정.
+  - id: long_short_list_multi_column
+    body_pattern: "짧은 단어 N개 (>=12, 항목당 ≤2 words) → multi-column 분할"
+    detect:
+      items_count_min: 12
+      avg_words_per_item_max: 2
+      item_kind: bullet_or_paragraph
+    slot_mapping:
+      strategy: pandoc_columns_N
+      column_count:
+        "12-18": 2
+        "19-35": 3
+        "36+":   4
+      output: |
+        ::: columns
+        ::: {.column width="{100/N}%"}
+        * {chunk_1}
+        :::
+        ::: {.column width="{100/N}%"}
+        * {chunk_2}
+        :::
+        ... (N개)
+        :::
+    note: |
+      명령어 리스트·키워드 리스트 패턴. PPT PowerPoint multi-column 텍스트박스가
+      python-pptx로는 단일 텍스트박스로 보이는 케이스의 시각 회복.
+      학습 사례: BasicKnowledgeForAI_small 명령어 리스트 슬라이드.
+      ppt2m2slide heuristics.yml long_bullet_list_multi_column 과 동기화.
+  - id: text_image_swap_by_position
+    body_pattern: "텍스트 + 이미지 1:1 — PPT shape left 좌표로 좌·우 결정"
+    detect:
+      text_blocks: 1
+      images: 1
+      use_ppt_shape_position: true
+    slot_mapping:
+      strategy: position_preserving_columns
+      rule: |
+        text.left < image.left → leftPanel=text, rightPanel=image
+        image.left < text.left → leftPanel=image, rightPanel=text
+      avoid: "::right:: 단축 (텍스트-좌·이미지-우 가정만 함)"
+    note: |
+      `::right::` 는 항상 텍스트-좌·이미지-우. PPT가 반대 배치면 swap 실패.
+      교육 syntax 슬라이드는 위치가 의미 가짐 (좌=source 우=rendered 또는 반대).
+      학습 사례: BasicKnowledgeForAI_small html삽입 슬라이드 — PPT 좌=pipe text 우=image.
+  - id: three_column_image_stack
+    body_pattern: "3-col 각각 bullet + image stack (PPT shape left 3 cluster)"
+    detect:
+      column_cluster_count: 3
+      per_column_pattern: "bullet (1+) → image (1+) 세로 stack"
+      use_ppt_shape_position: true
+    slot_mapping:
+      strategy: pandoc_columns_3way
+      output: |
+        ::: columns
+        ::: {.column width="33%"}
+        * {col1_bullets}
+
+        {col1_images_stacked}
+        :::
+        ::: {.column width="33%"}
+        * {col2_bullets}
+
+        {col2_images_stacked}
+        :::
+        ::: {.column width="34%"}
+        * {col3_bullets}
+
+        {col3_images_stacked}
+        :::
+        :::
+    note: |
+      stage 6 layout-selector 의 `multi_image_3col` hint 수신 시 적용.
+      각 컬럼별 bullet + image stack 페어링. 좌·중·우 위치 보존.
+      학습 사례 (확장): PPT 3-column 예제 슬라이드 — Markdown 문법 - Header 변형.
+  - id: bullet_image_pairs_two_columns_with_stack
+    body_pattern: "좌·우 2-col 각각 bullet+image multi-stack (column당 N개 bullet+image)"
+    detect:
+      column_cluster_count: 2
+      per_column_pattern: "bullet (1+) + image (1+) 세로 stack — column당 N pair"
+      use_ppt_shape_position: true
+    slot_mapping:
+      strategy: pandoc_columns_2way_stacked
+      output: |
+        ::: columns
+        ::: {.column width="50%"}
+        * {col1_bullet_1}
+
+        {col1_image_1}
+
+        * {col1_bullet_2}
+
+        {col1_image_2}
+        :::
+        ::: {.column width="50%"}
+        * {col2_bullet_1}
+
+        {col2_image_1}
+        :::
+        :::
+    note: |
+      `bullet_image_pairs_two_columns` 의 확장 — 각 컬럼에 bullet+image 페어가 2개 이상.
+      stage 6 layout-selector `multi_image_bullet_stacked_2col` hint 수신 시 적용.
+      학습 사례: BasicKnowledgeForAI_small Header 슬라이드 (좌측 H1+H2 2개 페어, 우측 1개 페어).
 
 # ============================================================================
 # 5. 사용자 수동 slot 보존 정책

@@ -394,8 +394,22 @@ open Projects/LlmAndVibeCoding/slide/01-opening.html
 | `md-m2slide-rules`    | m2slide 마크다운 작성 규칙. 글로벌 `md-slide-rules` 기반 + 고유 확장     |
 | `apply-verify-rules`  | 코드·템플릿·CSS·콘텐츠 수정 후 빌드 → HTML 직접 검증 → 브라우저 표시 절차 |
 | `release-date-rules`  | 슬라이드 소스 `.md` 수정 시 frontmatter `release_date`를 오늘 날짜로 자동 갱신 |
+| `identifier-meta-rules` | instructor_name 등 식별자 메타 필드 자동 채움 금지 + grep 우선 절차. 로마자→한글 역변환 금지 |
+| `capture-output-rules`| 캡처·스크린샷 출력 경로 의무(`_doc_work/capture/`) 및 루트 오염 차단 절차       |
 
 **슬라이드 마크다운 작성 시 의무 참조 순서**:
 1. `~/.claude/rules/md-rules.md` (일반 마크다운 기본)
 2. `~/.claude/rules/md-slide-rules.md` (슬라이드 도구 공통)
 3. `.claude/rules/md-m2slide-rules.md` (m2slide 특화)
+
+## graphify
+
+This project has a graphify knowledge graph at `graphify-out/`.
+
+* **토큰 절감 룰 우선**: `.claude/rules/graphify-rules.md` (글로벌 `~/.claude/rules/graphify-rules.md` 위임)
+* **진입점**: `graphify-out/GRAPH_REPORT.brief.md` (없으면 `/graphify-prune`)
+* **금지**: `GRAPH_REPORT.md` / `graph.json` / `graph.html` 직접 Read
+* **CLI 우선**: 코드/아키텍처 질문은 `graphify query "<질문>"` · `graphify path "<A>" "<B>"` · `graphify explain "<개념>"`
+* **유지**: 파일 수정 후 `graphify update .` (post-commit hook 있으면 자동)
+* **보조**: `/graphify-prune` (brief 재생성), `/gq <질문>` (query 래퍼)
+* **적용 SSOT**: `~/_git/___pm/_doc_arch/graphify-priority-setup.md`

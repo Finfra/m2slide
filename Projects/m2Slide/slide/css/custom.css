@@ -107,15 +107,23 @@
    카드 컴포넌트 — `::: cards` fenced div: 내부 리스트를 카드 그리드로 배치.
    인포그래픽보다 단순한 "균질 항목 N개 병렬 제시"용 (slide-components.md Core 계열).
    ========================================================================= */
+.reveal section[class*="layout-"] .m2-cards {
+  /* Issue224 보강: cards 컨테이너 자체에 0.92em — font_size_auto의 .theContents 축소와 합산되어
+     카드 다수(7행 이상) 슬라이드의 잘림을 추가로 완화 */
+  font-size: 0.92em;
+}
 .reveal section[class*="layout-"] .m2-cards > ul,
 .reveal section[class*="layout-"] .m2-cards > ol {
   display: grid;
-  /* --m2-card-columns: _config.yml card_columns 키로 주입 (기본 auto-fit). 프로젝트 한정 카드 폭 제어 */
-  grid-template-columns: repeat(var(--m2-card-columns, auto-fit), minmax(180px, 1fr));
-  gap: 10px;
+  /* --m2-card-columns: _config.yml card_columns 키로 주입 (기본 auto-fit). 프로젝트 한정 카드 폭 제어
+     Issue223: minmax/gap/padding을 em 기반으로 전환 → font_size_auto가 contents 폰트를 줄이면
+     카드 박스도 비례 축소되어 카드 다수 슬라이드의 overflow clip 자동 완화
+     Issue224 보강: minmax 8em → 6.5em — 더 narrow 카드 → 같은 폭에 더 많은 열 → 행 수 감소 */
+  grid-template-columns: repeat(var(--m2-card-columns, auto-fit), minmax(6.5em, 1fr));
+  gap: 0.35em;
   list-style: none;
   padding: 0;
-  margin: 0.25em 0;
+  margin: 0.2em 0;
 }
 /* 카드 박스 — 제목 밴드가 카드 폭을 꽉 채우도록 padding 0 + overflow hidden */
 .reveal section[class*="layout-"] .m2-cards > ul > li,
@@ -125,9 +133,9 @@
   padding: 0;
   background: var(--m2-card-body-bg, rgba(0, 0, 0, 0.04));
   border: 1px solid var(--m2-card-border, rgba(0, 0, 0, 0.12));
-  border-radius: 10px;
+  border-radius: 0.5em;
   overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.12);
   line-height: 1.5;
 }
 /* 카드 제목 밴드 — 테마 컬러 변수. 제목은 `**볼드**`로 작성 */
@@ -135,11 +143,12 @@
 .reveal section[class*="layout-"] .m2-cards > ol > li > strong {
   display: block;
   margin: 0;
-  padding: 7px 14px;
+  padding: 0.25em 0.6em;
   background: var(--m2-card-title-bg, var(--kn-accent));
   color: var(--m2-card-title-fg, var(--kn-text));
   text-align: center;
-  font-size: 1.05em;
+  font-size: 1em;
+  line-height: 1.3;
 }
 /* 카드 본문 — 제목 아래 중첩 리스트 */
 .reveal section[class*="layout-"] .m2-cards li ul,
@@ -147,11 +156,11 @@
   display: block;
   list-style: none;
   margin: 0;
-  padding: 8px 13px;
+  padding: 0.3em 0.55em;
 }
 .reveal section[class*="layout-"] .m2-cards li ul ul,
 .reveal section[class*="layout-"] .m2-cards li ul ol {
-  padding: 2px 0 2px 1.4em;
+  padding: 0.1em 0 0.1em 1.4em;
 }
 .reveal section[class*="layout-"] .m2-cards li ul li {
   list-style: none;
@@ -192,8 +201,8 @@
 }
 .reveal section[class*="layout-"] .m2-cards > ul > li:not(:has(> ul)):not(:has(> ol)) > strong,
 .reveal section[class*="layout-"] .m2-cards > ol > li:not(:has(> ul)):not(:has(> ol)) > strong {
-  border-radius: 10px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  border-radius: 0.5em;
+  box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.12);
 }
 
 /* =========================================================================
@@ -375,17 +384,16 @@
    1. Keynote Nowage 색상 변수 (테마 브랜딩)
    ========================================================================= */
 :root {
-  /* Issue210: --kn-accent / --kn-text 는 m2 팔레트 시스템 신규 슬롯 alias
-     (theme/default/palettes/{palette}.css 가 --m2-accent-1 등을 override 하면
-     --kn-* 도 자동 따라감 → 팔레트 교체 시 카드·기타 컴포넌트도 일관 적용).
-     default 팔레트의 --m2-accent-1 값(#F5C518) 이 기존 --kn-accent 와 동일 — 회귀 0. */
-  --kn-accent: var(--m2-accent-1, #F5C518);          /* keynote 노랑 */
+  /* Issue238: --kn-accent는 theme 고정 식별색(노랑). palette --m2-accent-1 alias 제거.
+     컴포넌트(cards/htmlArt)는 --m2-accent-1~6 직접 참조로 palette 교체에 반응함.
+     theme 구조색(border, toc, agenda markmap 테두리 등)은 --kn-accent 고정 노랑 유지. */
+  --kn-accent: #F5C518;                             /* keynote 노랑 — theme 고정 식별색 */
   --kn-accent-soft: #FFE15A;     /* 보조 노랑 */
-  --kn-text: var(--m2-text, #111111);
+  --kn-text: #111111;
   --kn-page-num-color: #777777;
-  /* 카드 컴포넌트(`::: cards`) 색상 — 테마 기존 변수 상속이 기본. 특정 색 지정 시 이 값만 교체 */
-  --m2-card-title-bg: var(--kn-accent);     /* 제목 밴드: 테마 accent 색 */
-  --m2-card-title-fg: var(--kn-text);       /* 제목 글자: 테마 텍스트 색 */
+  /* 카드 컴포넌트(`::: cards`) 색상 — palette에 반응하도록 --m2-accent-1 직접 참조 */
+  --m2-card-title-bg: var(--m2-accent-1, #F5C518);  /* 제목 밴드: palette accent */
+  --m2-card-title-fg: var(--m2-text, #111111);       /* 제목 글자: palette text */
   --m2-card-body-bg: rgba(0, 0, 0, 0.04);   /* 본문: 슬라이드 배경 위 옅은 틴트 */
   --m2-card-border: rgba(0, 0, 0, 0.12);    /* 테두리: 옅은 중립색 */
 }
@@ -697,7 +705,9 @@
 }
 
 .reveal section[class*="layout-"] .mermaid svg,
-.reveal section[class*="layout-"] .media-container svg {
+.reveal section[class*="layout-"] .media-container svg,
+.reveal section[class*="layout-"] .media-container video,
+.reveal section[class*="layout-"] .media-container img {
   width: 100% !important;
   height: 100% !important;
   max-width: none !important;
@@ -788,24 +798,8 @@
   max-width: 55%;
 }
 
-/* 4.4 chapter: puffer2 중앙-좌측 + 제목 하단
-   Issue72: !important 제거 — base.css와 동일 specificity (0,0,2,2). theme이 후순위 로드되어 자연 우선 */
-.reveal section.layout-chapter {
-  background-image: url('../theme-img/finfraPuffer2.png');
-  background-repeat: no-repeat;
-  background-position: 18% 38%;
-  background-size: 16% auto;
-  justify-content: flex-end;
-}
-
-.reveal section.layout-chapter .chapter-header {
-  text-align: center;
-  padding-bottom: 12%;
-}
-
-.reveal section.layout-chapter .chapter-title {
-  font-size: 3em;
-}
+/* 4.4 chapter: Issue229에서 §Issue229 블록(파일 끝)으로 이전 — default 미니멀 톤.
+   default_lec과 달리 background-image 없음(theme-img/ 폴더 부재). */
 
 /* 4.5 exercise: butterfly 좌측 + cat 우하단 */
 .reveal section.layout-exercise {
@@ -1135,6 +1129,26 @@
 
 .reveal section.layout-_toc .chapter-list--cards .chapter-card:hover {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+/* Issue224 보강: autoToc cards(`.chapter-list--cards`) px 고정값 em override.
+   base.css L561-573의 min-width 240px / max-width 360px / padding 16px 20px가
+   카드 다수(28+ 슬라이드) 케이스에서 font_size_auto 비례 축소 불가 → 잘림.
+   theme override로 em 기반 전환 + 폰트 자동 축소 시 카드도 비례 축소. */
+.reveal section.layout-_toc .chapter-list--cards {
+  font-size: 0.9em;
+  gap: 0.7em;
+}
+.reveal section.layout-_toc .chapter-list--cards .chapter-card {
+  min-width: 9em;
+  max-width: 15em;
+  padding: 0.5em 0.7em;
+  border-radius: 0.4em;
+  flex: 0 1 calc((100% - 0.7em * 3) / 4);
+}
+.reveal section.layout-_toc .chapter-list--cards .chapter-card a {
+  font-size: 0.92em;
+  line-height: 1.3;
 }
 
 /* 본문(.toc-body)이 비어있지 않은 placeholder _toc 슬라이드는
@@ -1581,3 +1595,97 @@ body.agenda-page .agenda-frame {
   outline: 1px dotted rgba(180, 80, 0, 0.7);
 }
 
+/* React artifact 내부 ul/li 는 m2slide bullet 시스템(base.css §10) 적용 제외.
+   사용자가 React 코드 안 작성한 <ul>/<ol> 은 native list-style 사용. */
+.reveal section[class*="layout-"] .component-container[data-component="react"] ul > li::before,
+.reveal section[class*="layout-"] .component-container[data-component="react"] ul ul > li::before,
+.reveal section[class*="layout-"] .component-container[data-component="react"] ul ul ul > li::before,
+.reveal section[class*="layout-"] .component-container[data-component="react"] ol > li::before {
+  content: none !important;
+}
+.reveal section[class*="layout-"] .component-container[data-component="react"] ul > li,
+.reveal section[class*="layout-"] .component-container[data-component="react"] ul ul > li,
+.reveal section[class*="layout-"] .component-container[data-component="react"] ol > li {
+  padding-left: 0;
+  position: static;
+}
+
+
+/* =========================================================================
+   Issue229: layout-chapter — chapter divider page (메인 챕터 + sub-section 목록)
+   default 미니멀 톤 — 배경 이미지 없이 typography·divider 위주.
+   default_lec과 슬롯 구조 동일(chapter-header + chapter-title + chapter-divider + chapter-body).
+   ========================================================================= */
+.reveal section.layout-chapter,
+.reveal section.layout-_chapter {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  padding: 6% 8%;
+}
+
+.reveal section.layout-chapter .chapter-header,
+.reveal section.layout-_chapter .chapter-header {
+  text-align: center;
+  margin-bottom: 4%;
+  position: relative;
+  padding-bottom: 1.2em;
+}
+
+.reveal section.layout-chapter .chapter-header::after,
+.reveal section.layout-_chapter .chapter-header::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 20%;
+  width: 60%;
+  height: 4px;
+  background: var(--m2-accent-1, #F5C518);
+  border-radius: 2px;
+}
+
+.reveal section.layout-chapter .chapter-title,
+.reveal section.layout-_chapter .chapter-title {
+  font-size: 2.6em;
+  font-weight: 700;
+  color: var(--m2-text, #111);
+  margin: 0 0 0.4em 0;
+  line-height: 1.2;
+}
+
+.reveal section.layout-chapter .chapter-body,
+.reveal section.layout-_chapter .chapter-body {
+  margin: 4% auto 0;
+  max-width: 72%;
+  padding: 1.4em 2em;
+  border: 2px solid var(--m2-accent-1, #F5C518);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.6);
+  font-size: 1.1em;
+  line-height: 1.7;
+}
+
+.reveal section.layout-chapter .chapter-body ul,
+.reveal section.layout-_chapter .chapter-body ul,
+.reveal section.layout-chapter .chapter-body ol,
+.reveal section.layout-_chapter .chapter-body ol {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.reveal section.layout-chapter .chapter-body p,
+.reveal section.layout-_chapter .chapter-body p {
+  margin: 0.4em 0;
+}
+
+/* Issue234 — m2-source 기본 스타일은 lib/css/base.css 로 이관 */
+
+/* Issue234 — strong 강조에 accent color (PPT 빨강 강조 텍스트 호환)
+ * 사용자가 명시 색 override 시 inline style 우선 (cascade 자연 처리). */
+.reveal .contents-body strong,
+.reveal .slides section strong {
+  color: var(--m2-accent-5, #C82506);
+  font-weight: 700;
+}

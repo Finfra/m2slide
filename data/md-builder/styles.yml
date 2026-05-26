@@ -256,6 +256,111 @@ content_limits:
   images_per_slide: 2
 
 # ============================================================================
+# 4-A. 마크다운 문법 교육 슬라이드 — 인라인 syntax literal preservation
+# ============================================================================
+# "Markdown 문법", "MDX 문법", "LaTeX syntax" 등 마크다운/마크업 문법 자체를
+# 교육 목적으로 표시하는 슬라이드는 syntax 가 렌더되어 사라지지 않도록
+# 반드시 백틱(`...`) 으로 wrap. 학습자가 raw syntax 를 봐야 함.
+inline_syntax_preservation:
+  trigger_titles:
+    - "*Markdown 문법*"
+    - "*Markdown syntax*"
+    - "*Markdown Example*"
+    - "*MDX 문법*"
+    - "*문법 - *"
+    - "*syntax*"
+    - "*Pandoc*"
+  patterns_to_wrap:
+    - regex: '\[[^\]]+\]\([^)]+\)'         # [name](url) inline link
+      wrap: '`...`'
+      reason: "auto-render → 링크 아이콘만 보이고 syntax 사라짐"
+    - regex: '!\[[^\]]*\]\([^)]+\)'         # ![alt](url) image
+      wrap: '`...`'
+      reason: "auto-render → 이미지로 변환 — syntax 학습 불가능"
+    - regex: '!\[[^\]]*\]\[[^\]]*\]'        # ![alt][ref] image ref
+      wrap: '`...`'
+      reason: "auto-render → 빈 이미지 또는 깨진 ref"
+    - regex: '<https?://[^>\s]+>'           # <http://...> autolink
+      wrap: '`...`'
+      reason: "브라우저가 unknown tag 로 인식 → 내용 숨김"
+    - regex: '<[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}>'
+      wrap: '`...`'
+      reason: "email autolink — 동일 사유"
+  scope: bullet_text + paragraph + table_cell  # 코드블록·source 영역 내부는 변환 금지
+  exception_marker: "<!-- raw-syntax-ok -->"   # 이 코멘트 직후 1줄은 wrap skip
+  rationale: |
+    학습 사례 (BasicKnowledgeForAI_small):
+      - 링크 슬라이드 `[name](URL)`, `[Google](http://google.com)` → 백틱 wrap 필요
+      - 이미지 슬라이드 `![이미지명][URL]`, `![logo](http://finfra.com/f/f.png)` → 백틱 wrap 필요
+      - 자동링크 `<http://example.com/>` → 백틱 wrap 필요 (markdown_syntax_cleanup 와 중복 안전망)
+
+# ============================================================================
+# 4-B. 작은 예시 이미지 (아이콘/로고) → raw <img> + max-width 인라인 style
+# ============================================================================
+small_inline_image_policy:
+  trigger:
+    role: example_logo
+    preceded_by_markers: ["ex)", "example:", "예)", "예시:"]
+    original_width_emu_max: 2000000     # ~2.1 inch 미만 = 작은 아이콘/로고
+  output_template: |
+    <img src="{img_path}" alt="{alt}" style="max-width:200px;display:block;margin:1em auto">
+  rationale: |
+    m2slide 기본 markdown img 는 부모 max-width 까지 늘어남. PPT 원본 비율이
+    작은 예시 아이콘이 슬라이드 전체 폭으로 늘어나면 어색. raw <img> + 인라인
+    style 로 시각 비율 보존.
+    학습 사례: BasicKnowledgeForAI_small 이미지 슬라이드 finfra 로고.
+
+# ============================================================================
+# 4-C. 긴 단순 리스트 (>=12 short items) → multi-column 분할
+# ============================================================================
+long_list_multi_column_policy:
+  trigger:
+    item_count_min: 12
+    avg_words_per_item_max: 2
+    item_type: bullet_or_short_paragraph
+  column_count_by_total:
+    "12-18": 2
+    "19-35": 3
+    "36-": 4
+  output_template: |
+    ::: columns
+    ::: {.column width="{100/N}%"}
+    * {items_1}
+    :::
+    ::: {.column width="{100/N}%"}
+    * {items_2}
+    :::
+    ... (N 컬럼)
+    :::
+  rationale: |
+    명령어 리스트·키워드 리스트 등 짧은 단어 N개를 단일 컬럼 세로 나열하면
+    스크롤 발생 + 시각 밀도 낮음. PowerPoint multi-column 텍스트박스 패턴 대응.
+    학습 사례: BasicKnowledgeForAI_small 명령어 리스트 슬라이드 (30 items → 3-col).
+
+# ============================================================================
+# 4-D. 마크다운 syntax 본문 → 코드블록 wrap (literal 표시 보장)
+# ============================================================================
+raw_markdown_syntax_block_policy:
+  trigger_slide_title_patterns: ["*문법*", "*syntax*"]
+  trigger_body_patterns:
+    - regex: '^\|[^|]+\|[^|]+\|'    # pipe table header
+      requires_separator_row: true
+    - regex: '^#{1,6}\s'             # H1-H6 markdown header syntax
+    - regex: '^>\s'                  # blockquote syntax
+    - regex: '^\d+\.\s'              # numbered list syntax
+    - regex: '^[*-]\s'               # bullet list syntax (단, slide 본문 bullet과 구분 필요)
+  output_template: |
+    ```
+    {body_text}
+    ```
+  scope_exception: "이미 코드블록 안 / fenced div 'source' / frontmatter"
+  rationale: |
+    마크다운 문법 자체를 가르치는 슬라이드 본문에 pipe table·헤더 syntax 등이
+    raw text 로 있으면 markdown parser 가 자동 렌더 → syntax 사라짐.
+    코드블록 wrap 으로 literal 보존.
+    학습 사례: BasicKnowledgeForAI_small html삽입 슬라이드 pipe table source.
+
+# ============================================================================
 # 5. md 규칙 준수 (3-tier — 글로벌 + 슬라이드 공통 + m2slide 특화)
 # ============================================================================
 md_rules_compliance:
