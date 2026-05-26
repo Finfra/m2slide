@@ -654,13 +654,13 @@ class DevHandler(SimpleHTTPRequestHandler):
             'curl·Playwright 헤드리스 검증용 endpoint 제공.</p>'
             '<h2>주요 진입</h2>'
             '<div class="grid">'
-            '<div class="card"><h3>📂 프로젝트 목록</h3>'
+            '<div class="card"><h3><a href="/p/">📂 프로젝트 목록</a></h3>'
             '<div class="meta">슬라이드 프로젝트 진입</div>'
             '<div class="links"><a href="/p/">/p/</a></div></div>'
-            '<div class="card"><h3>📖 endpoint help</h3>'
+            '<div class="card"><h3><a href="/_dev/">📖 endpoint help</a></h3>'
             '<div class="meta">전체 endpoint 사용법</div>'
             '<div class="links"><a href="/_dev/">/_dev/</a></div></div>'
-            f'<div class="card"><h3>🔍 sample 슬라이드 목록</h3>'
+            f'<div class="card"><h3><a href="/p/{sample}">🔍 sample 슬라이드 목록</a></h3>'
             f'<div class="meta">{sample} 슬라이드 인덱스</div>'
             f'<div class="links"><a href="/p/{sample}">/p/{sample}</a></div></div>'
             '</div>'
@@ -694,14 +694,20 @@ class DevHandler(SimpleHTTPRequestHandler):
                     f'<div class="links"><a href="/p/{p}">목록 보기</a></div></div>'
                 )
                 continue
-            entry_stem = entry[:-len('.html')]
-            entry_link = f'/p/{p}' if entry_stem == 'index' else f'/p/{p}/{entry_stem}'
+            # Use chap_idx-aware short URL form (/p/<P>/s/<chap>/<slide>?mode=raw)
+            deck_files = [f for f in files if f != 'agenda.html']
+            chapter_files = [f for f in deck_files if f != 'index.html']
+            if chapter_files:
+                meta_label = f'{len(chapter_files)} chapter (chapter mode)'
+            else:
+                meta_label = '1 deck (single mode)'
+            first_link = f'/p/{p}/s/1/1?mode=raw'
             cards.append(
-                f'<div class="card"><h3><a href="/p/{p}/s/1?mode=raw">{p}</a></h3>'
-                f'<div class="meta">{count} .html · 진입: <code>{entry}</code></div>'
+                f'<div class="card"><h3><a href="{first_link}">{p}</a></h3>'
+                f'<div class="meta">{meta_label} · 진입: <code>{entry}</code></div>'
                 '<div class="links">'
                 f'<a href="/p/{p}">📋 슬라이드 목록</a>'
-                f'<a href="/p/{p}/s/1?mode=raw">🎬 live #/1</a>'
+                f'<a href="{first_link}">🎬 chap 1 slide 1</a>'
                 '</div></div>'
             )
         body = (
