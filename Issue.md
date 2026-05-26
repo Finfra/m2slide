@@ -34,7 +34,7 @@
 
 # ✅ 완료
 
-## Issue238. palette --m2-accent-1이 --kn-accent를 오염시켜 theme 구조색 변경 (등록: 2026-05-26, 해결: 2026-05-26, commit: TBD) ✅
+## Issue238. palette --m2-accent-1이 --kn-accent를 오염시켜 theme 구조색 변경 (등록: 2026-05-26, 해결: 2026-05-26, commit: cefe39e) ✅
 * 목적: palette 교체 시 agenda markmap 테두리·title 밑줄 등 theme 구조색이 의도치 않게 바뀌는 문제 수정
 * 상세:
     - `theme/default/slide.css`: `--kn-accent: var(--m2-accent-1, #F5C518)` — palette 첫 accent에 alias
