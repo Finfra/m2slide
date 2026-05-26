@@ -80,38 +80,106 @@ def extract_section_title(section_html: str) -> str:
     return re.sub(r'\s+', ' ', text).strip()
 
 
-def wrap_raw_html(file_path: str, n: int, total: int, section_html: str, head_links: str = '') -> str:
-    """Wrap a single section into a minimal standalone HTML page."""
-    nav = (
-        f'<nav style="background:#f0f8fa;padding:8px 16px;font-size:13px;'
-        f'border-bottom:1px solid #ccc;margin-bottom:16px">'
-        f'file=<code>{file_path}</code> · slide=<b>{n}</b>/<span>{total - 1}</span>'
+def render_raw_nav(file_path: str, n: int, total: int, mode: str = 'raw') -> str:
+    """Render top-fixed nav bar for raw view (1-base n, matches live #/n)."""
+    prev_n = max(1, n - 1)
+    next_n = min(total, n + 1)
+    other_mode = 'text' if mode == 'raw' else 'raw'
+    other_label = 'plain text' if mode == 'raw' else 'design'
+    return (
+        f'<nav class="raw-nav" id="raw-nav">'
+        f'<code>{file_path}</code> · '
+        f'slide <b>{n}</b>/{total} '
+        f' · <a href="/_dev/{mode}?file={file_path}&n={prev_n}">← prev</a>'
+        f' · <a href="/_dev/{mode}?file={file_path}&n={next_n}">next →</a>'
         f' · <a href="/_dev/list?file={file_path}">list</a>'
-        f' · <a href="/{file_path.lstrip("/")}#/{n}">live view</a>'
+        f' · <a href="/{file_path.lstrip("/")}#/{n}">live</a>'
+        f' · <a href="/_dev/{other_mode}?file={file_path}&n={n}">{other_label}</a>'
         f'</nav>'
     )
+
+
+def inject_raw_design_view(html: str, n: int, total: int, file_path: str) -> str:
+    """Modify the original build HTML to serve as a 'raw design view':
+       - inject nav bar (sticky top)
+       - inject script: disable reveal.js transitions + jump to slide n-1 (0-base internal)
+       - keep reveal.js, theme CSS, all scripts intact → full design fidelity
+    """
+    nav = render_raw_nav(file_path, n, total, mode='raw')
+    extra_css = (
+        '<style id="raw-design-css">'
+        '.raw-nav{position:fixed;top:0;left:0;right:0;background:#f0f8fa;'
+        'padding:8px 16px;font-size:13px;border-bottom:1px solid #ccc;z-index:99999;'
+        'font-family:-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.6;color:#222}'
+        '.raw-nav a{color:#0a6;text-decoration:none;margin:0 4px}'
+        '.raw-nav a:hover{text-decoration:underline}'
+        '.raw-nav code{background:#fff;padding:1px 4px;border-radius:3px;font-size:11px}'
+        '@media (prefers-color-scheme:dark){'
+        '.raw-nav{background:#2a3a3e;color:#e0e0e0;border-bottom-color:#444}'
+        '.raw-nav a{color:#7dd}.raw-nav code{background:#1a1a1a}}'
+        '</style>'
+    )
+    # init script: wait for Reveal, disable transitions, jump to slide(n-1)
+    # m2slide uses hashOneBasedIndex — Reveal.slide() is 0-base internally, so n-1
+    init_script = (
+        '<script id="raw-design-init">'
+        '(function(){'
+        'function go(){'
+        'if(window.Reveal&&typeof Reveal.configure==="function"&&typeof Reveal.slide==="function"){'
+        'try{Reveal.configure({transition:"none",backgroundTransition:"none",autoSlide:0,'
+        'fragments:false,help:false,viewDistance:0});}catch(e){}'
+        f'try{{Reveal.slide({n - 1}, 0);}}catch(e){{}}'
+        'return;}'
+        'setTimeout(go,30);}'
+        'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",go);}'
+        'else{go();}'
+        '})();'
+        '</script>'
+    )
+    # inject extra_css just before </head>
+    head_close = re.search(r'</head\s*>', html, re.IGNORECASE)
+    if head_close:
+        html = html[:head_close.start()] + extra_css + html[head_close.start():]
+    # inject nav + init_script just before </body>
+    body_close = re.search(r'</body\s*>', html, re.IGNORECASE)
+    if body_close:
+        html = html[:body_close.start()] + nav + init_script + html[body_close.start():]
+    else:
+        html = html + nav + init_script
+    return html
+
+
+def wrap_text_html(file_path: str, n: int, total: int, section_html: str,
+                   head_links: str = '') -> str:
+    """Wrap a single section as plain-text-style HTML (no reveal.js, no theme layout).
+
+    For curl + grep — keep theme stylesheets so colors/fonts stay similar but
+    bypass reveal.js coordinate system entirely.
+    """
+    nav = render_raw_nav(file_path, n, total, mode='text')
     return (
         '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
-        f'<title>m2slide raw — {file_path}#{n}</title>'
+        f'<title>m2slide text — {file_path}#{n}</title>'
         f'{head_links}'
         '<style>'
         'body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;'
-        'max-width:1024px;margin:0 auto;padding:0 24px 60px;line-height:1.6;background:#fafafa;color:#222}'
-        'section{background:#fff;padding:24px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.08)}'
-        'h1,h2,h3,h4{margin-top:0.8em}'
+        'max-width:1024px;margin:0 auto;padding:50px 24px 60px;line-height:1.6;background:#fafafa;color:#222}'
+        '.text-section{background:#fff;padding:24px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.08)}'
+        '.text-section h1,.text-section h2,.text-section h3{margin-top:0.8em}'
         'pre{background:#2d2d2d;color:#f8f8f2;padding:12px;border-radius:4px;overflow-x:auto}'
         'code{background:#f3f3f3;padding:2px 6px;border-radius:3px}'
         'img{max-width:100%}'
-        'table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:6px 12px}'
+        '.raw-nav{position:fixed;top:0;left:0;right:0;background:#f0f8fa;padding:8px 16px;'
+        'font-size:13px;border-bottom:1px solid #ccc;z-index:99999;line-height:1.6}'
+        '.raw-nav a{color:#0a6;text-decoration:none;margin:0 4px}'
+        '.raw-nav a:hover{text-decoration:underline}'
         '@media (prefers-color-scheme: dark){body{background:#1a1a1a;color:#e0e0e0}'
-        'section{background:#222}'
-        'nav{background:#2a3a3e !important;color:#e0e0e0}'
-        'nav a{color:#7dd}'
-        'code{background:#2d2d2d;color:#e0e0e0}'
-        'td,th{border-color:#444}}'
+        '.text-section{background:#222}'
+        '.raw-nav{background:#2a3a3e;color:#e0e0e0}.raw-nav a{color:#7dd}'
+        'code{background:#2d2d2d;color:#e0e0e0}}'
         '</style></head><body>'
         f'{nav}'
-        f'{section_html}'
+        f'<div class="text-section">{section_html}</div>'
         '</body></html>'
     )
 
@@ -133,6 +201,8 @@ class DevHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         if self.path.startswith('/_dev/raw'):
             return self._serve_raw()
+        if self.path.startswith('/_dev/text'):
+            return self._serve_text()
         if self.path.startswith('/_dev/list'):
             return self._serve_list()
         if self.path == '/_dev/' or self.path == '/_dev':
@@ -183,30 +253,61 @@ class DevHandler(SimpleHTTPRequestHandler):
     # --- endpoints ---
 
     def _serve_raw(self):
+        """Design-fidelity view: original HTML + reveal.js + transition:none + jump to slide n.
+
+        n is 1-base to match m2slide's hashOneBasedIndex (URL #/N convention).
+        """
         q = parse_qs(urlparse(self.path).query)
         resolved = self._resolve_file(q)
         if resolved is None:
             return
         full, rel = resolved
         try:
-            n = int(q.get('n', ['0'])[0])
+            n = int(q.get('n', ['1'])[0])
         except ValueError:
-            self.send_error(400, '"n" must be an integer')
+            self.send_error(400, '"n" must be an integer (1-base)')
             return
         html = self._read_file(full)
         spans = find_top_section_spans(html)
         if not spans:
             self.send_error(404, f'no <section> found inside .slides for {rel}')
             return
-        if n < 0 or n >= len(spans):
-            self.send_error(404, f'slide index {n} out of range (0..{len(spans) - 1})')
+        total = len(spans)
+        if n < 1 or n > total:
+            self.send_error(404, f'slide {n} out of range (1..{total})')
             return
-        s, e = spans[n]
+        # Serve the original build artifact with raw-design overlay injected
+        self._write_html(inject_raw_design_view(html, n, total, rel))
+
+    def _serve_text(self):
+        """Plain-text-style view: only the N-th <section>, no reveal.js, no animation.
+
+        Curl + grep friendly. n is 1-base (matches /_dev/raw and #/N hash).
+        """
+        q = parse_qs(urlparse(self.path).query)
+        resolved = self._resolve_file(q)
+        if resolved is None:
+            return
+        full, rel = resolved
+        try:
+            n = int(q.get('n', ['1'])[0])
+        except ValueError:
+            self.send_error(400, '"n" must be an integer (1-base)')
+            return
+        html = self._read_file(full)
+        spans = find_top_section_spans(html)
+        if not spans:
+            self.send_error(404, f'no <section> found inside .slides for {rel}')
+            return
+        total = len(spans)
+        if n < 1 or n > total:
+            self.send_error(404, f'slide {n} out of range (1..{total})')
+            return
+        s, e = spans[n - 1]
         section_html = html[s:e]
-        # carry over <link rel="stylesheet"> from original head for design fidelity
         head_links = '\n'.join(re.findall(
             r'<link\s+rel="stylesheet"[^>]+>', html, flags=re.IGNORECASE))
-        self._write_html(wrap_raw_html(rel, n, len(spans), section_html, head_links))
+        self._write_html(wrap_text_html(rel, n, total, section_html, head_links))
 
     def _serve_list(self):
         q = parse_qs(urlparse(self.path).query)
@@ -219,12 +320,14 @@ class DevHandler(SimpleHTTPRequestHandler):
         sections = []
         for i, (s, e) in enumerate(spans):
             sec = html[s:e]
+            one = i + 1  # 1-base to match m2slide hashOneBasedIndex
             sections.append({
-                'n': i,
+                'n': one,
                 'title': extract_section_title(sec),
                 'bytes': e - s,
-                'raw_url': f'/_dev/raw?file={rel}&n={i}',
-                'live_url': f'/{rel.lstrip("/")}#/{i}',
+                'raw_url': f'/_dev/raw?file={rel}&n={one}',
+                'text_url': f'/_dev/text?file={rel}&n={one}',
+                'live_url': f'/{rel.lstrip("/")}#/{one}',
             })
         # Content-negotiation by Accept header — HTML default, JSON if asked
         accept = self.headers.get('Accept', '')
@@ -236,8 +339,11 @@ class DevHandler(SimpleHTTPRequestHandler):
             })
         # HTML index
         rows = '\n'.join(
-            f'<tr><td>{s["n"]}</td><td><a href="{s["raw_url"]}">{s["title"] or "(no title)"}</a></td>'
-            f'<td><a href="{s["live_url"]}">live</a></td><td>{s["bytes"]}</td></tr>'
+            f'<tr><td>{s["n"]}</td>'
+            f'<td><a href="{s["raw_url"]}">{s["title"] or "(no title)"}</a></td>'
+            f'<td><a href="{s["text_url"]}">text</a></td>'
+            f'<td><a href="{s["live_url"]}">live</a></td>'
+            f'<td>{s["bytes"]}</td></tr>'
             for s in sections
         )
         body = (
@@ -248,7 +354,7 @@ class DevHandler(SimpleHTTPRequestHandler):
             'th{background:#f0f8fa}'
             '</style></head><body>'
             f'<h1>raw section list</h1><p>file: <code>{rel}</code> · count: {len(spans)}</p>'
-            '<table><thead><tr><th>n</th><th>title (→ raw)</th><th>live</th><th>bytes</th></tr></thead>'
+            '<table><thead><tr><th>n</th><th>title (→ raw design)</th><th>text</th><th>live</th><th>bytes</th></tr></thead>'
             f'<tbody>{rows}</tbody></table>'
             '</body></html>'
         )
@@ -259,14 +365,21 @@ class DevHandler(SimpleHTTPRequestHandler):
             '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
             '<title>m2slide dev-server — /_dev/</title>'
             '<style>body{font-family:sans-serif;max-width:820px;margin:0 auto;padding:24px;line-height:1.6}'
-            'code{background:#f3f3f3;padding:2px 6px;border-radius:3px}</style></head><body>'
+            'code{background:#f3f3f3;padding:2px 6px;border-radius:3px}'
+            'pre{background:#2d2d2d;color:#f8f8f2;padding:12px;border-radius:4px;overflow-x:auto}</style></head><body>'
             '<h1>m2slide dev-server — /_dev/ endpoints (Issue236)</h1>'
-            '<p>curl-friendly slide content views, bypassing reveal.js JS render.</p>'
-            '<h2>/_dev/raw?file=&lt;path&gt;&n=&lt;idx&gt;</h2>'
-            '<p>N-th top-level <code>&lt;section&gt;</code> of the .html file as plain HTML.</p>'
-            '<pre>curl \'http://127.0.0.1:9877/_dev/raw?file=Projects/m2SlideStyle1_single/slide/index.html&n=10\'</pre>'
+            '<p>Three view modes for slide content. All <code>n</code> indices are <b>1-base</b> '
+            '(matches m2slide hashOneBasedIndex — same number as live URL <code>#/N</code>).</p>'
+            '<h2>/_dev/raw?file=&lt;path&gt;&n=&lt;N&gt; — design view</h2>'
+            '<p>Full m2slide design (theme CSS, layout, mermaid, etc.) with reveal.js animations disabled '
+            'and the deck pre-jumped to slide N. Best for visual inspection.</p>'
+            '<pre>open \'http://127.0.0.1:9877/_dev/raw?file=Projects/m2SlideStyle1_single/slide/index.html&n=11\'</pre>'
+            '<h2>/_dev/text?file=&lt;path&gt;&n=&lt;N&gt; — plain text view</h2>'
+            '<p>Only the N-th <code>&lt;section&gt;</code> HTML, no reveal.js, no theme layout — curl + grep friendly.</p>'
+            '<pre>curl \'http://127.0.0.1:9877/_dev/text?file=Projects/m2SlideStyle1_single/slide/index.html&n=11\'</pre>'
             '<h2>/_dev/list?file=&lt;path&gt;[&format=json]</h2>'
-            '<p>Index of all top-level sections (titles + bytes + raw URLs). HTML default, JSON with <code>format=json</code> or <code>Accept: application/json</code>.</p>'
+            '<p>Index of all sections (title + bytes + raw/text/live URLs). HTML default, JSON with '
+            '<code>format=json</code> or <code>Accept: application/json</code>.</p>'
             '<pre>curl \'http://127.0.0.1:9877/_dev/list?file=Projects/m2SlideStyle1_single/slide/index.html&format=json\'</pre>'
             '<h2>file path</h2>'
             '<p>Relative to the m2slide project root. Path traversal is blocked. Only <code>.html</code> supported.</p>'
