@@ -203,10 +203,16 @@ class DevHandler(SimpleHTTPRequestHandler):
         except (ValueError, IndexError):
             pass
 
-    # /Projects/.../X.html/<N>  →  text section (zsh-friendly direct URL)
-    # Trailing slash optional.  HTTP fragment (#/N) cannot reach the server,
-    # so this path-segment form is the curl-friendly equivalent.
+    # Direct slide form: /Projects/.../X.html/<N>
     _DIRECT_SLIDE_RE = re.compile(r'^(.+?\.html)/(\d+)/?$', re.IGNORECASE)
+    # Short form (zsh-friendly, curl-only):
+    #   /p/<project>/s/<n>                 → text section N of index.html
+    #   /p/<project>/<chapter>/s/<n>       → text section N of <chapter>.html
+    #   /p/<project>                       → 302 to /Projects/<project>/slide/index.html
+    #   /p/<project>/<chapter>             → 302 to /Projects/<project>/slide/<chapter>.html
+    # Add ?mode=raw  → 302 to live URL with #/N (browser design view).
+    _SHORT_SLIDE_RE = re.compile(r'^/p/([^/]+)(?:/([^/]+))?/s/(\d+)/?$')
+    _SHORT_ENTRY_RE = re.compile(r'^/p/([^/]+)(?:/([^/]+))?/?$')
 
     def do_GET(self):
         # Path-segment form (zsh-friendly — no ? or # in URL):
@@ -226,8 +232,22 @@ class DevHandler(SimpleHTTPRequestHandler):
             return self._serve_list()
         if self.path == '/_dev/' or self.path == '/_dev':
             return self._serve_help()
-        # Direct slide form: /<build path>/X.html/<n> (no query, no hash)
         path_only = self.path.split('?', 1)[0].split('#', 1)[0]
+        # Short form: /p/<project>[/<chapter>]/s/<n>
+        m = self._SHORT_SLIDE_RE.match(path_only)
+        if m:
+            project, chapter, n_str = m.group(1), m.group(2), m.group(3)
+            try:
+                n = int(n_str)
+            except ValueError:
+                return super().do_GET()
+            return self._serve_short_slide(project, chapter, n)
+        # Short form: /p/<project>[/<chapter>]  (entry redirect)
+        m = self._SHORT_ENTRY_RE.match(path_only)
+        if m:
+            project, chapter = m.group(1), m.group(2)
+            return self._serve_short_entry(project, chapter)
+        # Direct slide form: /<build path>/X.html/<n>
         m = self._DIRECT_SLIDE_RE.match(path_only)
         if m:
             file_path = m.group(1).lstrip('/')
@@ -237,6 +257,59 @@ class DevHandler(SimpleHTTPRequestHandler):
                 return super().do_GET()
             return self._serve_direct_slide(file_path, n)
         return super().do_GET()
+
+    def _short_file_rel(self, project: str, chapter):
+        """Build relative path for /p/<project>[/<chapter>] form."""
+        base = f'Projects/{project}/slide'
+        stem = chapter if chapter else 'index'
+        return f'{base}/{stem}.html'
+
+    def _serve_short_slide(self, project: str, chapter, n: int):
+        """Handle /p/<project>[/<chapter>]/s/<n>."""
+        file_rel = self._short_file_rel(project, chapter)
+        # mode=raw → redirect to live URL with #/N
+        q = parse_qs(urlparse(self.path).query)
+        if q.get('mode', [''])[0] == 'raw':
+            resolved = self._resolve_file_path(file_rel)
+            if resolved is None:
+                return
+            target = '/' + resolved[1].lstrip('/') + '#/' + str(n)
+            self.send_response(302)
+            self.send_header('Location', target)
+            self.send_header('Content-Length', '0')
+            self.end_headers()
+            return
+        # default: text section
+        resolved = self._resolve_file_path(file_rel)
+        if resolved is None:
+            return
+        full, rel = resolved
+        html = self._read_file(full)
+        spans = find_top_section_spans(html)
+        if not spans:
+            self.send_error(404, f'no <section> found in {rel}')
+            return
+        total = len(spans)
+        if n < 1 or n > total:
+            self.send_error(404, f'slide {n} out of range (1..{total})')
+            return
+        s, e = spans[n - 1]
+        section_html = html[s:e]
+        head_links = '\n'.join(re.findall(
+            r'<link\s+rel="stylesheet"[^>]+>', html, flags=re.IGNORECASE))
+        self._write_html(wrap_text_html(rel, n, total, section_html, head_links))
+
+    def _serve_short_entry(self, project: str, chapter):
+        """Handle /p/<project>[/<chapter>] — 302 redirect to build artifact."""
+        file_rel = self._short_file_rel(project, chapter)
+        resolved = self._resolve_file_path(file_rel)
+        if resolved is None:
+            return
+        target = '/' + resolved[1].lstrip('/')
+        self.send_response(302)
+        self.send_header('Location', target)
+        self.send_header('Content-Length', '0')
+        self.end_headers()
 
     def _serve_direct_slide(self, file_path: str, n: int):
         """Handle /<build path>/X.html/<n> — equivalent to /_dev/text/<n>/<path>.
@@ -499,7 +572,17 @@ class DevHandler(SimpleHTTPRequestHandler):
             '<style>body{font-family:sans-serif;max-width:820px;margin:0 auto;padding:24px;line-height:1.6}'
             'code{background:#f3f3f3;padding:2px 6px;border-radius:3px}'
             'pre{background:#2d2d2d;color:#f8f8f2;padding:12px;border-radius:4px;overflow-x:auto}</style></head><body>'
-            '<h1>m2slide dev-server — /_dev/ endpoints (Issue236)</h1>'
+            '<h1>m2slide dev-server — endpoints (Issue236)</h1>'
+            '<h2>Short form (recommended — shortest URL)</h2>'
+            '<pre># N-th slide as plain text (single mode)\n'
+            'curl http://127.0.0.1:9877/p/m2SlideStyle1_single/s/25\n\n'
+            '# chapter mode\n'
+            'curl http://127.0.0.1:9877/p/&lt;project&gt;/&lt;chapter-stem&gt;/s/&lt;n&gt;\n\n'
+            '# project / chapter entry (redirect to build artifact)\n'
+            'curl -L http://127.0.0.1:9877/p/m2SlideStyle1_single\n\n'
+            '# design view (browser — 302 to live URL with #/N)\n'
+            'open \'http://127.0.0.1:9877/p/m2SlideStyle1_single/s/25?mode=raw\'</pre>'
+            '<h2>/_dev/ endpoints (full form)</h2>'
             '<p>Three view modes for slide content. All <code>n</code> indices are <b>1-base</b> '
             '(matches m2slide hashOneBasedIndex — same number as live URL <code>#/N</code>).</p>'
             '<p><b>URL forms</b> — path-segment (zsh-friendly, no quoting needed) or query (legacy).</p>'
