@@ -939,6 +939,55 @@ class DevHandler(SimpleHTTPRequestHandler):
 
     # --- helpers ---
 
+    # ---- activation predicates (Issue240+) ----
+
+    def _project_config(self, project: str) -> dict:
+        """Read Projects/<P>/_config.yml as flat dict (top-level scalars only).
+        Sufficient for cover_enabled / toc_placeholder lookups. Returns {}
+        if missing or unparseable.
+        """
+        cfg_path = os.path.join(os.getcwd(), 'Projects', project, '_config.yml')
+        if not os.path.isfile(cfg_path):
+            return {}
+        out = {}
+        try:
+            with open(cfg_path, 'r', encoding='utf-8') as fh:
+                for line in fh:
+                    line = line.split('#', 1)[0].rstrip()
+                    if not line or line.startswith(' ') or line.startswith('\t'):
+                        continue
+                    if ':' not in line:
+                        continue
+                    k, _, v = line.partition(':')
+                    out[k.strip()] = v.strip()
+        except OSError:
+            pass
+        return out
+
+    def _is_chapter_mode(self, project: str) -> bool:
+        files = self._list_slide_files(project)
+        deck_files = [f for f in files if f != 'agenda.html']
+        chapter_files = [f for f in deck_files if f != 'index.html']
+        return bool(chapter_files)
+
+    def _cover_active(self, project: str) -> bool:
+        """Chapter mode → always true (index.html = markmap entry).
+        Single mode → _config.yml cover_enabled: true 일 때만 true.
+        """
+        if self._is_chapter_mode(project):
+            return True
+        cfg = self._project_config(project)
+        return cfg.get('cover_enabled', '').lower() == 'true'
+
+    def _agenda_active(self, project: str) -> bool:
+        agenda = os.path.join(os.getcwd(), 'Projects', project, 'slide', 'agenda.html')
+        return os.path.isfile(agenda)
+
+    def _toc_active(self, project: str) -> bool:
+        """toc_placeholder default true; 명시적 false 만 비활성."""
+        cfg = self._project_config(project)
+        return cfg.get('toc_placeholder', 'true').lower() != 'false'
+
     def _resolve_file_path(self, f):
         """Validate file path (relative to document root). Returns (full, rel) or None."""
         if not f:
