@@ -260,10 +260,12 @@ class DevHandler(SimpleHTTPRequestHandler):
     #   /p/<project>/s/<slide>             → chap=1 (single mode index.html) shorthand
     #   /p/<project>/<chapter_name>/s/<n>  → text section, chapter named (legacy)
     #   /p/<project>                       → HTML overview page
-    #   /p/<project>/<chapter_name>        → 302 to /Projects/<project>/slide/<chapter>.html
+    #   /p/<project>/<chapter_name>        → proxy build artifact (no legacy URL)
+    #   /p/<project>/slide/<path>          → static asset (CSS/JS/img) from build dir
     # ?mode=raw  → 302 to live URL with #/N (browser design view)
     _SHORT_SLIDE_CHAP_RE = re.compile(r'^/p/([^/]+)/s/(\d+)/(\d+)/?$')
     _SHORT_SLIDE_RE = re.compile(r'^/p/([^/]+)(?:/([^/]+))?/s/(\d+)/?$')
+    _STATIC_ASSET_RE = re.compile(r'^/p/([^/]+)/slide/(.+)$')
     _SHORT_ENTRY_RE = re.compile(r'^/p/([^/]+)(?:/([^/]+))?/?$')
 
     def do_GET(self):
@@ -309,6 +311,10 @@ class DevHandler(SimpleHTTPRequestHandler):
             except ValueError:
                 return super().do_GET()
             return self._serve_short_slide(project, chapter, n)
+        # Static assets: /p/<project>/slide/<path>  (CSS/JS/img from build dir)
+        m = self._STATIC_ASSET_RE.match(path_only)
+        if m:
+            return self._serve_slide_static(m.group(1), m.group(2))
         # Short form: /p/<project>[/<chapter>]  (entry redirect)
         m = self._SHORT_ENTRY_RE.match(path_only)
         if m:
@@ -323,10 +329,13 @@ class DevHandler(SimpleHTTPRequestHandler):
             except ValueError:
                 return super().do_GET()
             return self._serve_direct_slide(file_path, n)
-        # Legacy build-artifact .html — redirect to short /p/ form (Issue236.9)
+        # Legacy build-artifact .html — block with 404 (Issue236.11)
         m = self._LEGACY_BUILD_HTML_RE.match(path_only)
         if m:
             return self._redirect_legacy_html(m.group(1), m.group(2))
+        # Any remaining /Projects/... path (static assets, dirs) — block with 404
+        if path_only.lower().startswith('/projects/'):
+            return self._reject_legacy_dir(None)
         # Legacy build-artifact directory (no .html) — block with 404
         m = self._LEGACY_BUILD_DIR_RE.match(path_only)
         if m:
@@ -548,9 +557,8 @@ class DevHandler(SimpleHTTPRequestHandler):
         # Extract project name from rel (Projects/<P>/slide/<X>.html)
         m = _PATH_PROJECT_RE.match(rel.lstrip('/'))
         project = m.group(1) if m else None
-        # base href so img/css/js relative paths still resolve to the build dir
-        slide_dir = '/'.join(rel.split('/')[:-1]) + '/'  # e.g. 'Projects/X/slide/'
-        base_tag = f'<base href="/{slide_dir}">'
+        # base href so img/css/js relative paths resolve via /p/<P>/slide/ (no legacy path)
+        base_tag = f'<base href="/p/{project}/slide/">' if project else ''
         # Inject base tag immediately after opening <head ...>
         new_content, n_subs = re.subn(
             r'(<head\b[^>]*>)', r'\1' + base_tag, content, count=1, flags=re.IGNORECASE)
@@ -580,33 +588,46 @@ class DevHandler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
-    # Pattern for navigation rewrite: match X.html[?query][#hash] inside single or
-    # double quotes (covers both JS string literals and HTML href/src attributes).
-    # Excludes URLs that already start with a slash or contain protocol (http:, file:).
+    # Pattern A — X.html in quotes (JS string literal, HTML href/src attr direct).
     _NAV_HTML_RE = re.compile(
         r"""(['"])(?!/|https?:|file:|data:)([\w][\w-]*)\.html(\?[^'"#]*)?(#[^'"]*)?(\1)""",
         re.IGNORECASE,
     )
+    # Pattern B — meta refresh: <meta http-equiv="refresh" content="0; url=agenda.html">
+    # url= sits inside a quoted attribute, not at the quote boundary.
+    _META_REFRESH_RE = re.compile(
+        r"""(\burl\s*=\s*)([\w][\w-]*)\.html(\?[^"'\s>]*)?(#[^"'\s>]*)?""",
+        re.IGNORECASE,
+    )
+
+    def _stem_to_short_path(self, project: str, stem: str) -> str:
+        if stem.lower() == 'index':
+            return f'/p/{project}'
+        return f'/p/{project}/{stem}'
 
     def _rewrite_nav_strings(self, content: str, project: str) -> str:
-        """Rewrite agenda.html / index.html / <chapter>.html navigation in quoted
-        strings (JS literals, HTML href/src attrs) to short /p/<P>[/<stem>] form.
-
-        Examples:
-          'agenda.html?back=1'   → '/p/<P>/agenda?back=1'
-          "index.html?last=1"    → "/p/<P>?last=1"
-          '01-markdown.html?fwd=1' → '/p/<P>/01-markdown?fwd=1'
+        """Rewrite agenda.html / index.html / <chapter>.html navigation to short
+        /p/<P>[/<stem>] form. Covers:
+          - JS string literals: 'agenda.html?back=1'
+          - HTML attrs: <a href="agenda.html">, <link href="agenda.html">
+          - meta refresh: <meta http-equiv="refresh" content="0; url=agenda.html">
         """
-        def repl(m):
+        def repl_quoted(m):
             q1, stem, qry, frag, q2 = (
                 m.group(1), m.group(2), m.group(3) or '', m.group(4) or '', m.group(5)
             )
-            if stem.lower() == 'index':
-                new = f'/p/{project}'
-            else:
-                new = f'/p/{project}/{stem}'
+            new = self._stem_to_short_path(project, stem)
             return f'{q1}{new}{qry}{frag}{q2}'
-        return self._NAV_HTML_RE.sub(repl, content)
+        content = self._NAV_HTML_RE.sub(repl_quoted, content)
+
+        def repl_meta(m):
+            prefix, stem, qry, frag = (
+                m.group(1), m.group(2), m.group(3) or '', m.group(4) or ''
+            )
+            new = self._stem_to_short_path(project, stem)
+            return f'{prefix}{new}{qry}{frag}'
+        content = self._META_REFRESH_RE.sub(repl_meta, content)
+        return content
 
     # ----- HTML landing pages -----
 
@@ -767,6 +788,41 @@ class DevHandler(SimpleHTTPRequestHandler):
         if 'index.html' in deck_files:
             return {'index': 1}
         return {}
+
+    def _serve_slide_static(self, project: str, asset_path: str):
+        """Serve static build assets (CSS/JS/img/fonts) from Projects/<P>/slide/<path>.
+
+        Mapped from /p/<P>/slide/<path> so the base href can be /p/<P>/slide/
+        instead of /Projects/<P>/slide/ — eliminates legacy paths from HTML output.
+        HTML files are blocked here; they must go through _proxy_build_artifact.
+        """
+        if asset_path.lower().endswith('.html'):
+            self.send_error(403, 'HTML files not served from /p/<P>/slide/; use /p/<P>/<chap>')
+            return
+        safe = os.path.normpath(asset_path)
+        if safe.startswith('..'):
+            self.send_error(403, 'forbidden: path traversal')
+            return
+        slide_root = os.path.join(os.getcwd(), 'Projects', project, 'slide')
+        full = os.path.join(slide_root, safe)
+        if not full.startswith(slide_root + os.sep):
+            self.send_error(403, 'forbidden: path escapes slide dir')
+            return
+        if not os.path.isfile(full):
+            self.send_error(404, f'static asset not found: {asset_path}')
+            return
+        import mimetypes
+        mime, _ = mimetypes.guess_type(full)
+        if mime is None:
+            mime = 'application/octet-stream'
+        with open(full, 'rb') as fh:
+            data = fh.read()
+        self.send_response(200)
+        self.send_header('Content-Type', mime)
+        self.send_header('Content-Length', str(len(data)))
+        self.send_header('Cache-Control', 'no-store')
+        self.end_headers()
+        self.wfile.write(data)
 
     def _serve_project_overview(self, project: str):
         """GET /p/<project> — slide list (all .html files + sections)."""
