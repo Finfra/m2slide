@@ -133,6 +133,8 @@ Temporary Items
 !/data/slot-designer/**
 !/data/ppt2m2slide/
 !/data/ppt2m2slide/**
+!/data/info-filler/
+!/data/info-filler/**
 
 # Backup files
 *.bak
