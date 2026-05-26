@@ -5,13 +5,15 @@ localhost-only static HTTP server for m2slide build artifacts.
 Document root = m2slide project root (passed via --root).
 Bound to 127.0.0.1 only.
 
-Extra endpoints (Issue236 — curl-friendly raw views, bypass reveal.js JS render):
-  GET /_dev/raw?file=<path>&n=<idx>   → N-th top-level <section> of <path> as plain HTML
-  GET /_dev/list?file=<path>          → JSON index of all top-level sections (count, titles)
-  GET /_dev/                          → help page
+Short URL routing (Issue236.5~12):
+  GET /p/<project>/s/<chap>/<slide>           → design view (proxy build artifact)
+  GET /p/<project>/s/<chap>/<slide>?mode=text → plain text section (curl-friendly)
+  GET /p/<project>                            → slide list overview
+  GET /p/<project>/s/cover                    → index.html proxy (markmap)
+  GET /p/<project>/s/<chap>/toc               → chap N first slide
 
-These endpoints are dev-only; they are NOT part of build artifacts and do not
-affect file:// deployment. The file-deployment rule remains intact.
+This server is dev-only; it is NOT part of build artifacts and does not affect
+file:// deployment. The file-deployment rule remains intact.
 
 SSOT: lib/m2slide/_doc_arch/dev-server.md
 """
@@ -88,15 +90,13 @@ def to_short_url(file_path: str, n=None, mode: str = '') -> str:
     """Convert Projects/<P>/slide/<X>.html [+ n] to /p/<P>[/<X>]/s/<n>[?mode=text].
 
     Returns shortened URL when path matches build-artifact convention, else falls
-    back to the long path-segment form.
+    back to long path with #/N hash.
     Default (bare) = browser design view. ?mode=text = curl-friendly text section.
     """
     m = _PATH_PROJECT_RE.match(file_path.lstrip('/'))
     if not m:
-        # fallback — long form
-        if n is None:
-            return '/' + file_path.lstrip('/')
-        return f'/_dev/text/{n}/{file_path}'
+        long = '/' + file_path.lstrip('/')
+        return long if n is None else f'{long}#/{n}'
     project, stem = m.group(1), m.group(2)
     chapter_seg = '' if stem == 'index' else f'/{stem}'
     # design view is default — only text needs ?mode=text
@@ -134,61 +134,6 @@ def render_raw_nav(file_path: str, n: int, total: int, mode: str = 'text') -> st
         list_url=to_short_url(file_path),
         live_url=to_short_url(file_path, n),
     )
-
-
-def inject_raw_design_view(html: str, n: int, total: int, file_path: str) -> str:
-    """Modify the original build HTML to serve as a 'raw design view':
-       - inject nav bar (sticky top)
-       - inject script: disable reveal.js transitions + jump to slide n-1 (0-base internal)
-       - keep reveal.js, theme CSS, all scripts intact → full design fidelity
-    """
-    nav = render_raw_nav(file_path, n, total, mode='raw')
-    extra_css = (
-        '<style id="raw-design-css">'
-        '.raw-nav{position:fixed;top:0;left:0;right:0;background:#f0f8fa;'
-        'padding:8px 16px;font-size:13px;border-bottom:1px solid #ccc;z-index:99999;'
-        'font-family:-apple-system,BlinkMacSystemFont,sans-serif;line-height:1.6;color:#222}'
-        '.raw-nav a{color:#0a6;text-decoration:none;margin:0 4px}'
-        '.raw-nav a:hover{text-decoration:underline}'
-        '.raw-nav code{background:#fff;padding:1px 4px;border-radius:3px;font-size:11px}'
-        '@media (prefers-color-scheme:dark){'
-        '.raw-nav{background:#2a3a3e;color:#e0e0e0;border-bottom-color:#444}'
-        '.raw-nav a{color:#7dd}.raw-nav code{background:#1a1a1a}}'
-        '</style>'
-    )
-    # init script: wait for Reveal.ready, disable transitions only, jump to slide(n-1)
-    # m2slide hashOneBasedIndex — Reveal.slide() is 0-base internally, so pass n-1
-    # Use Reveal.on('ready', ...) so reveal.js full init (layout calc, CSS apply) completes first
-    init_script = (
-        '<script id="raw-design-init">'
-        '(function(){'
-        'function disableTransitions(){'
-        'try{Reveal.configure({transition:"none",backgroundTransition:"none",autoSlide:0});}catch(e){}'
-        f'try{{Reveal.slide({n - 1}, 0);}}catch(e){{}}'
-        '}'
-        'function hook(){'
-        'if(window.Reveal&&typeof Reveal.on==="function"){'
-        'if(Reveal.isReady&&Reveal.isReady()){disableTransitions();}'
-        'else{Reveal.on("ready",disableTransitions);}'
-        'return;}'
-        'setTimeout(hook,30);'
-        '}'
-        'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",hook);}'
-        'else{hook();}'
-        '})();'
-        '</script>'
-    )
-    # inject extra_css just before </head>
-    head_close = re.search(r'</head\s*>', html, re.IGNORECASE)
-    if head_close:
-        html = html[:head_close.start()] + extra_css + html[head_close.start():]
-    # inject nav + init_script just before </body>
-    body_close = re.search(r'</body\s*>', html, re.IGNORECASE)
-    if body_close:
-        html = html[:body_close.start()] + nav + init_script + html[body_close.start():]
-    else:
-        html = html + nav + init_script
-    return html
 
 
 def wrap_text_html(file_path: str, n: int, total: int, section_html: str,
@@ -230,7 +175,7 @@ def wrap_text_html(file_path: str, n: int, total: int, section_html: str,
 # ---------- HTTP handler ----------
 
 class DevHandler(SimpleHTTPRequestHandler):
-    """Static serve + /_dev/{raw,list,help} endpoints (Issue236)."""
+    """Short-form `/p/<P>/...` routing + build-artifact proxy (Issue236)."""
 
     def log_message(self, format, *args):
         try:
@@ -274,23 +219,8 @@ class DevHandler(SimpleHTTPRequestHandler):
     _SHORT_TOC_RE = re.compile(r'^/p/([^/]+)/s/(\d+)/toc/?$')
 
     def do_GET(self):
-        # Path-segment form (zsh-friendly — no ? or # in URL):
-        #   /_dev/raw/<n>/<file path...>     → 302 to live URL with #/N
-        #   /_dev/text/<n>/<file path...>    → plain text section
-        #   /_dev/list/<file path...>        → section index
-        #   /<build path>/X.html/<n>         → plain text section (direct curl form)
-        # Query form (legacy, also supported):
-        #   /_dev/raw?file=<path>&n=<n>
-        #   /_dev/text?file=<path>&n=<n>
-        #   /_dev/list?file=<path>[&format=json]
-        if self.path.startswith('/_dev/raw'):
-            return self._serve_raw()
-        if self.path.startswith('/_dev/text'):
-            return self._serve_text()
-        if self.path.startswith('/_dev/list'):
-            return self._serve_list()
-        if self.path == '/_dev/' or self.path == '/_dev':
-            return self._serve_help()
+        # Direct slide form: /<build path>/X.html/<n>  → plain text section
+        # All other routing via /p/<project>/... short form (Issue236.5~12).
         path_only = self.path.split('?', 1)[0].split('#', 1)[0]
         # Root landing page
         if path_only in ('/', '/index.html'):
@@ -576,9 +506,14 @@ class DevHandler(SimpleHTTPRequestHandler):
           - prevents legacy /Projects/<P>/slide/<X>.html URLs from appearing in
             the address bar after m2slide internal navigation
 
-        slide_n (optional): if provided, injects a script to navigate to #/N when
-        the browser has not already set a hash. URL hash from the user (preserved
-        by browser across our 302) wins.
+        slide_n (optional): if provided AND > 1, injects a script to navigate
+        to #/N when the browser has not already set a hash. URL hash from the
+        user (preserved by browser across our 302) wins.
+
+        slide_n=1 case skips inject — reveal.js default entry is first slide,
+        and hashOneBasedIndex maps it to #/1 lazily on first navigation.
+        Avoids redundant `#/1` appearing in the URL bar on first-slide entry
+        (e.g. clicking a /p/<P>/s/<chap>/1 link from the overview page).
         """
         resolved = self._resolve_file_path(file_rel)
         if resolved is None:
@@ -603,8 +538,10 @@ class DevHandler(SimpleHTTPRequestHandler):
         # Rewrite m2slide cross-page navigation: 'X.html?...' / "X.html?..." → '/p/<P>[/<stem>]?...'
         if project:
             content = self._rewrite_nav_strings(content, project)
-        # Optional: navigate to slide N when hash not preset by client
-        if slide_n is not None:
+        # Optional: navigate to slide N when hash not preset by client.
+        # Skip inject for slide_n=1 — reveal.js default entry is first slide,
+        # avoids redundant `#/1` in URL bar on first-slide entry.
+        if slide_n is not None and slide_n > 1:
             nav_script = (
                 f'<script>(function(){{'
                 f'if(!window.location.hash){{'
@@ -731,8 +668,7 @@ class DevHandler(SimpleHTTPRequestHandler):
     def _common_header(self, title: str):
         return (
             f'<header><h1>{title}</h1>'
-            '<div><a href="/">🏠 home</a> · <a href="/p/">📂 projects</a> · '
-            '<a href="/_dev/">📖 help</a></div></header>'
+            '<div><a href="/">🏠 home</a> · <a href="/p/">📂 projects</a></div></header>'
         )
 
     def _serve_root(self):
@@ -752,9 +688,6 @@ class DevHandler(SimpleHTTPRequestHandler):
             '<div class="card"><h3><a href="/p/">📂 프로젝트 목록</a></h3>'
             '<div class="meta">슬라이드 프로젝트 진입</div>'
             '<div class="links"><a href="/p/">/p/</a></div></div>'
-            '<div class="card"><h3><a href="/_dev/">📖 endpoint help</a></h3>'
-            '<div class="meta">전체 endpoint 사용법</div>'
-            '<div class="links"><a href="/_dev/">/_dev/</a></div></div>'
             f'<div class="card"><h3><a href="/p/{sample}">🔍 sample 슬라이드 목록</a></h3>'
             f'<div class="meta">{sample} 슬라이드 인덱스</div>'
             f'<div class="links"><a href="/p/{sample}">/p/{sample}</a></div></div>'
@@ -766,9 +699,6 @@ class DevHandler(SimpleHTTPRequestHandler):
             '<tr><td><code>/p/&lt;P&gt;/s/&lt;chap&gt;/&lt;n&gt;</code></td><td>디자인 view (브라우저, 기본)</td></tr>'
             '<tr><td><code>/p/&lt;P&gt;/s/&lt;chap&gt;/&lt;n&gt;?mode=text</code></td><td>N번째 슬라이드 text (curl 친화)</td></tr>'
             '<tr><td><code>/p/&lt;P&gt;/s/&lt;n&gt;</code></td><td>chap=1 자동 (single mode shorthand)</td></tr>'
-            '<tr><td><code>/_dev/list/&lt;file&gt;</code></td><td>section JSON·HTML 인덱스</td></tr>'
-            '<tr><td><code>/_dev/text/&lt;n&gt;/&lt;file&gt;</code></td><td>plain text section</td></tr>'
-            '<tr><td><code>/_dev/raw/&lt;n&gt;/&lt;file&gt;</code></td><td>302 to live #/N</td></tr>'
             '</tbody></table>'
             '</body></html>'
         )
@@ -936,10 +866,9 @@ class DevHandler(SimpleHTTPRequestHandler):
         r'^Projects/[^/]+/slide/.+\.html$', re.IGNORECASE)
 
     def _serve_direct_slide(self, file_path: str, n: int):
-        """Handle /<build path>/X.html/<n> — equivalent to /_dev/text/<n>/<path>.
+        """Handle /<build path>/X.html/<n> — plain text section (curl-friendly).
 
-        Content-negotiation: ?mode=raw or Accept: text/html with X-Direct-Mode
-        could redirect to live; default is text (curl-friendly).
+        ?mode=raw → 302 redirect to short live URL (design view).
         """
         if not self._BUILD_ARTIFACT_RE.match(file_path.lstrip('/')):
             self.send_error(404, f'not a build artifact path: {file_path}')
@@ -973,37 +902,6 @@ class DevHandler(SimpleHTTPRequestHandler):
         nav_html = self._render_indexed_nav(rel, n, total)
         self._write_html(wrap_text_html(rel, n, total, section_html, head_links, nav_html))
 
-    # --- path parsing helpers ---
-
-    @staticmethod
-    def _parse_path_segments(path: str, prefix: str, expect_n: bool):
-        """Parse /_dev/<endpoint>/<n>/<file...> form. Returns (n, file) or None.
-
-        n optional (only required when expect_n=True). file may contain slashes.
-        """
-        if not path.startswith(prefix):
-            return None
-        rest = path[len(prefix):]
-        # strip query string and hash if any
-        rest = rest.split('?', 1)[0].split('#', 1)[0]
-        if not rest:
-            return None
-        parts = rest.lstrip('/').split('/', 1) if expect_n else ['', rest.lstrip('/')]
-        if expect_n:
-            if len(parts) < 2:
-                return None
-            try:
-                n = int(parts[0])
-            except ValueError:
-                return None
-            file_path = parts[1]
-        else:
-            n = None
-            file_path = parts[1] if len(parts) > 1 else parts[0]
-        if not file_path:
-            return None
-        return (n, file_path)
-
     # --- helpers ---
 
     def _resolve_file_path(self, f):
@@ -1026,37 +924,6 @@ class DevHandler(SimpleHTTPRequestHandler):
             return None
         return full, f
 
-    def _resolve_request(self, prefix: str, expect_n: bool):
-        """Try path-segment form first, then fall back to query form.
-
-        Returns (full, rel, n) or None (with error already sent).
-        """
-        # path-segment: /_dev/<endpoint>/<n?>/<file...>
-        seg = self._parse_path_segments(self.path, prefix + '/', expect_n)
-        if seg is not None:
-            n, f = seg
-            resolved = self._resolve_file_path(f)
-            if resolved is None:
-                return None
-            return (resolved[0], resolved[1], n)
-        # query form: /_dev/<endpoint>?file=...&n=...
-        q = parse_qs(urlparse(self.path).query)
-        f = (q.get('file', [None])[0] or '').strip()
-        if not f:
-            self.send_error(400, 'either path /_dev/<n>/<file> or query ?file=<path> required')
-            return None
-        resolved = self._resolve_file_path(f)
-        if resolved is None:
-            return None
-        n = None
-        if expect_n:
-            try:
-                n = int(q.get('n', ['1'])[0])
-            except ValueError:
-                self.send_error(400, '"n" must be an integer (1-base)')
-                return None
-        return (resolved[0], resolved[1], n)
-
     def _read_file(self, full):
         with open(full, 'r', encoding='utf-8') as fh:
             return fh.read()
@@ -1077,160 +944,6 @@ class DevHandler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
-    # --- endpoints ---
-
-    def _serve_raw(self):
-        """Design-fidelity view: 302 redirect to live URL with #/N hash.
-
-        URL forms (both supported):
-          path-segment (zsh-friendly): /_dev/raw/<n>/<file path>
-          query (legacy):              /_dev/raw?file=<path>&n=<n>
-        """
-        resolved = self._resolve_request('/_dev/raw', expect_n=True)
-        if resolved is None:
-            return
-        full, rel, n = resolved
-        html = self._read_file(full)
-        spans = find_top_section_spans(html)
-        if not spans:
-            self.send_error(404, f'no <section> found inside .slides for {rel}')
-            return
-        total = len(spans)
-        if n is None:
-            n = 1
-        if n < 1 or n > total:
-            self.send_error(404, f'slide {n} out of range (1..{total})')
-            return
-        target = '/' + rel.lstrip('/') + '#/' + str(n)
-        self.send_response(302)
-        self.send_header('Location', target)
-        self.send_header('Content-Length', '0')
-        self.end_headers()
-
-    def _serve_text(self):
-        """Plain-text view: only the N-th <section>, no reveal.js, no animation.
-
-        URL forms:
-          /_dev/text/<n>/<file path>          (zsh-friendly)
-          /_dev/text?file=<path>&n=<n>        (legacy)
-        """
-        resolved = self._resolve_request('/_dev/text', expect_n=True)
-        if resolved is None:
-            return
-        full, rel, n = resolved
-        html = self._read_file(full)
-        spans = find_top_section_spans(html)
-        if not spans:
-            self.send_error(404, f'no <section> found inside .slides for {rel}')
-            return
-        total = len(spans)
-        if n is None:
-            n = 1
-        if n < 1 or n > total:
-            self.send_error(404, f'slide {n} out of range (1..{total})')
-            return
-        s, e = spans[n - 1]
-        section_html = html[s:e]
-        head_links = '\n'.join(re.findall(
-            r'<link\s+rel="stylesheet"[^>]+>', html, flags=re.IGNORECASE))
-        nav_html = self._render_indexed_nav(rel, n, total)
-        self._write_html(wrap_text_html(rel, n, total, section_html, head_links, nav_html))
-
-    def _serve_list(self):
-        """Section index.
-
-        URL forms:
-          /_dev/list/<file path>              (zsh-friendly)
-          /_dev/list?file=<path>[&format=json] (legacy)
-        Query/Accept header controls JSON vs HTML output.
-        """
-        resolved = self._resolve_request('/_dev/list', expect_n=False)
-        if resolved is None:
-            return
-        full, rel, _ = resolved
-        q = parse_qs(urlparse(self.path).query)
-        html = self._read_file(full)
-        spans = find_top_section_spans(html)
-        sections = []
-        for i, (s, e) in enumerate(spans):
-            sec = html[s:e]
-            one = i + 1  # 1-base to match m2slide hashOneBasedIndex
-            sections.append({
-                'n': one,
-                'title': extract_section_title(sec),
-                'bytes': e - s,
-                # short /p/<P>/s/<chap>/<slide> form (legacy /Projects/... blocked)
-                # raw_url = design view (bare URL, default behavior)
-                'raw_url': self._file_path_to_short_indexed(rel, one)
-                           or f'/{rel.lstrip("/")}#/{one}',
-                'text_url': self._file_path_to_short_indexed(rel, one, 'text')
-                            or f'/_dev/text/{one}/{rel}',
-                # live_url = same as raw_url (both design view)
-                'live_url': self._file_path_to_short_indexed(rel, one)
-                            or f'/{rel.lstrip("/")}#/{one}',
-            })
-        # Content-negotiation by Accept header — HTML default, JSON if asked
-        accept = self.headers.get('Accept', '')
-        if 'application/json' in accept or q.get('format', [''])[0] == 'json':
-            return self._write_json({
-                'file': rel,
-                'count': len(spans),
-                'sections': sections,
-            })
-        # HTML index
-        rows = '\n'.join(
-            f'<tr><td>{s["n"]}</td>'
-            f'<td><a href="{s["raw_url"]}">{s["title"] or "(no title)"}</a></td>'
-            f'<td><a href="{s["text_url"]}">text</a></td>'
-            f'<td><a href="{s["live_url"]}">live</a></td>'
-            f'<td>{s["bytes"]}</td></tr>'
-            for s in sections
-        )
-        body = (
-            '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
-            f'<title>m2slide raw list — {rel}</title>'
-            '<style>body{font-family:sans-serif;max-width:900px;margin:0 auto;padding:24px;line-height:1.5}'
-            'table{border-collapse:collapse;width:100%}td,th{border:1px solid #ccc;padding:6px 10px;text-align:left}'
-            'th{background:#f0f8fa}'
-            '</style></head><body>'
-            f'<h1>raw section list</h1><p>file: <code>{rel}</code> · count: {len(spans)}</p>'
-            '<table><thead><tr><th>n</th><th>title (→ raw design)</th><th>text</th><th>live</th><th>bytes</th></tr></thead>'
-            f'<tbody>{rows}</tbody></table>'
-            '</body></html>'
-        )
-        self._write_html(body)
-
-    def _serve_help(self):
-        body = (
-            '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
-            '<title>m2slide dev-server — /_dev/</title>'
-            '<style>body{font-family:sans-serif;max-width:820px;margin:0 auto;padding:24px;line-height:1.6}'
-            'code{background:#f3f3f3;padding:2px 6px;border-radius:3px}'
-            'pre{background:#2d2d2d;color:#f8f8f2;padding:12px;border-radius:4px;overflow-x:auto}</style></head><body>'
-            '<h1>m2slide dev-server — endpoints (Issue236)</h1>'
-            '<h2>Short form (recommended — shortest URL)</h2>'
-            '<pre># 디자인 view (브라우저, 기본 — bare URL)\n'
-            'open http://127.0.0.1:9877/p/m2SlideStyle1_single/s/1/25\n\n'
-            '# N번째 슬라이드 text (curl 친화 — ?mode=text)\n'
-            'curl http://127.0.0.1:9877/p/m2SlideStyle1_single/s/1/25?mode=text\n\n'
-            '# chapter mode (chap idx 1-base)\n'
-            'open http://127.0.0.1:9877/p/&lt;P&gt;/s/&lt;chap&gt;/&lt;n&gt;\n\n'
-            '# 프로젝트 overview (슬라이드 목록 HTML)\n'
-            'curl http://127.0.0.1:9877/p/m2SlideStyle1_single</pre>'
-            '<h2>/_dev/ endpoints (보조 — 별도 .html path 받기)</h2>'
-            '<p>모든 <code>n</code>은 <b>1-base</b> (m2slide hashOneBasedIndex — live URL <code>#/N</code>과 동일).</p>'
-            '<p><b>주의</b>: <code>/Projects/&lt;P&gt;/slide/...</code> 직접 접근은 차단됨 (404). 짧은 <code>/p/...</code> 형태 사용 권장.</p>'
-            '<h2>/_dev/list — section 인덱스</h2>'
-            '<p>모든 section 목록 (title + bytes). HTML 기본, JSON <code>?format=json</code> 또는 '
-            '<code>Accept: application/json</code>.</p>'
-            '<pre>curl -H "Accept: application/json" http://127.0.0.1:9877/p/m2SlideStyle1_single</pre>'
-            '<h2>file path 보안</h2>'
-            '<p>document root 기준 상대. traversal 차단. <code>.html</code>만 허용.</p>'
-            '</body></html>'
-        )
-        self._write_html(body)
-
-
 # ---------- entry point ----------
 
 def main():
@@ -1249,9 +962,9 @@ def main():
     server = ThreadingHTTPServer((args.bind, args.port), DevHandler)
     sys.stderr.write("m2slide dev-server listening on http://%s:%d/ root=%s\n" % (
         args.bind, args.port, root))
-    sys.stderr.write("  /_dev/        — help\n")
-    sys.stderr.write("  /_dev/list?file=PATH         — section index\n")
-    sys.stderr.write("  /_dev/raw?file=PATH&n=N      — single section (curl-friendly)\n")
+    sys.stderr.write("  /p/<P>                        — slide list overview\n")
+    sys.stderr.write("  /p/<P>/s/<chap>/<n>           — design view (proxy)\n")
+    sys.stderr.write("  /p/<P>/s/<chap>/<n>?mode=text — plain text section\n")
     sys.stderr.flush()
 
     try:

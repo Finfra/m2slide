@@ -59,10 +59,13 @@ m2slide 저장소(`lib/m2slide/`) 내 다음 파일을 수정한 직후 자동 �
 
 검증 의도에 따라 두 채널 분기:
 
-| 채널            | URL                                                      | 도구                 | 용도                              |
-| :-------------- | :------------------------------------------------------- | :------------------- | :-------------------------------- |
-| 시각 (file://)  | `file:///abs/.../slide/X.html?fwd=1#/N`                  | AppleScript Chrome   | 사용자 직접 확인, 배포 시뮬레이션 |
-| 헤드리스 (http) | `http://localhost:9877/Projects/<P>/slide/X.html#/N`     | Playwright MCP, curl | DOM·console·screenshot 자동 검증  |
+| 채널            | URL                                                          | 도구                 | 용도                              |
+| :-------------- | :----------------------------------------------------------- | :------------------- | :-------------------------------- |
+| 시각 (file://)  | `file:///abs/.../slide/X.html?fwd=1#/N`                      | AppleScript Chrome   | 사용자 직접 확인, 배포 시뮬레이션 |
+| 헤드리스 (http) | `http://localhost:9877/p/<P>/s/<chap>/<slide>[?mode=text]`   | Playwright MCP, curl | DOM·console·screenshot·curl 검증  |
+
+> ⚠️ legacy `http://localhost:9877/Projects/<P>/slide/<X>.html` 직접 접근은 차단됨 (Issue236.11 — 404). 반드시 short form 사용.
+> chap·slide 는 1-base 인덱스 (m2slide hashOneBasedIndex 정합). chap=1 = sorted chapter files 첫 번째 (single mode 면 index.html).
 
 선택 기준:
 
@@ -83,15 +86,35 @@ m2slide 저장소(`lib/m2slide/`) 내 다음 파일을 수정한 직후 자동 �
 ./m2slide.sh --serve restart
 ```
 
-Playwright 사용:
+Playwright 사용 (short form 필수):
 
 ```
-mcp__playwright__browser_navigate("http://localhost:9877/Projects/aTest_v1/slide/08.4....html#/6")
-mcp__playwright__browser_take_screenshot(filename="_doc_work/capture/verify-aTest_v1-08.4-6.png")
+mcp__playwright__browser_navigate("http://localhost:9877/p/aTest_v1/s/8/6")
+mcp__playwright__browser_take_screenshot(filename="_doc_work/capture/verify-aTest_v1-chap8-slide6.png")
 mcp__playwright__browser_console_messages()
 ```
 
-`?fwd=1` query는 헤드리스에서 불필요 — m2slide 내부 cross-page 트랜지션 cue 전용, 외부 진입은 `#/N` 단독으로 충분.
+curl 사용 (text mode — DOM 추출 없이 빠른 텍스트 검증):
+
+```bash
+# slide N section 텍스트 응답 (curl 친화)
+curl http://localhost:9877/p/aTest_v1/s/8/6?mode=text
+
+# slide 전체 HTML (브라우저 디자인 view, 기본)
+curl http://localhost:9877/p/aTest_v1/s/8/6
+```
+
+`?fwd=1` query 는 headless 채널에서 불필요 — m2slide 내부 cross-page 트랜지션 cue 전용, 외부 진입은 short form 인덱스(`<chap>/<slide>`)로 절대 좌표 직접 지정.
+
+chap·slide 인덱스 결정 방법:
+
+```bash
+# 프로젝트 chapter 목록 + chap_idx 확인
+curl http://localhost:9877/p/aTest_v1
+
+# JSON 형태 (스크립트 친화)
+curl -H 'Accept: application/json' http://localhost:9877/p/aTest_v1
+```
 
 ### 시각 채널 (AppleScript file://)
 
@@ -133,11 +156,16 @@ mcp__playwright__browser_console_messages()
 
 2. **Playwright MCP (`mcp__playwright__browser_*`)** — 페이지 콘텐츠 자동 검증 필요 시
     * `mcp__playwright__browser_navigate` / `browser_tabs new`
-    * **주의**: playwright MCP는 `file://` **차단** (보안 기본값). 사용 시 HTTP 서버 띄워야 함:
-        ```bash
-        python3 -m http.server 8765 >/tmp/m2slide-http.log 2>&1 &
-        # 이후 http://localhost:8765/Projects/{Name}/slide/{chapter}.html?fwd=1#/N 로 navigate
+    * **주의**: playwright MCP 는 `file://` **차단** (보안 기본값). m2slide dev-server(port 9877) 경유 short form URL 사용:
         ```
+        http://localhost:9877/p/{Name}/s/{chap}/{slide}
+        ```
+        ```bash
+        # dev-server idempotent 시동 (빌드 시 자동, 수동 가능)
+        ./m2slide.sh --serve start
+        ```
+        * legacy `http://localhost:9877/Projects/<P>/slide/<X>.html` 직접 진입은 차단됨 (Issue236.11 — 404)
+        * 별도 `python3 -m http.server 8765` fallback 사용 금지 — dev-server 가 단일 진입점
     * stale Chrome 인스턴스 lock 시 `pkill -f "user-data-dir=.*ms-playwright"` 후 재시도
     * 페이지 snapshot·screenshot·console 캡처가 필요한 검증 단계에서만 사용 (단순 "열어보기"에는 과함)
 
