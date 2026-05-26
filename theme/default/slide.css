@@ -23,17 +23,16 @@
    1. Keynote Nowage 색상 변수 (테마 브랜딩)
    ========================================================================= */
 :root {
-  /* Issue210: --kn-accent / --kn-text 는 m2 팔레트 시스템 신규 슬롯 alias
-     (theme/default/palettes/{palette}.css 가 --m2-accent-1 등을 override 하면
-     --kn-* 도 자동 따라감 → 팔레트 교체 시 카드·기타 컴포넌트도 일관 적용).
-     default 팔레트의 --m2-accent-1 값(#F5C518) 이 기존 --kn-accent 와 동일 — 회귀 0. */
-  --kn-accent: var(--m2-accent-1, #F5C518);          /* keynote 노랑 */
+  /* Issue238: --kn-accent는 theme 고정 식별색(노랑). palette --m2-accent-1 alias 제거.
+     컴포넌트(cards/htmlArt)는 --m2-accent-1~6 직접 참조로 palette 교체에 반응함.
+     theme 구조색(border, toc, agenda markmap 테두리 등)은 --kn-accent 고정 노랑 유지. */
+  --kn-accent: #F5C518;                             /* keynote 노랑 — theme 고정 식별색 */
   --kn-accent-soft: #FFE15A;     /* 보조 노랑 */
-  --kn-text: var(--m2-text, #111111);
+  --kn-text: #111111;
   --kn-page-num-color: #777777;
-  /* 카드 컴포넌트(`::: cards`) 색상 — 테마 기존 변수 상속이 기본. 특정 색 지정 시 이 값만 교체 */
-  --m2-card-title-bg: var(--kn-accent);     /* 제목 밴드: 테마 accent 색 */
-  --m2-card-title-fg: var(--kn-text);       /* 제목 글자: 테마 텍스트 색 */
+  /* 카드 컴포넌트(`::: cards`) 색상 — palette에 반응하도록 --m2-accent-1 직접 참조 */
+  --m2-card-title-bg: var(--m2-accent-1, #F5C518);  /* 제목 밴드: palette accent */
+  --m2-card-title-fg: var(--m2-text, #111111);       /* 제목 글자: palette text */
   --m2-card-body-bg: rgba(0, 0, 0, 0.04);   /* 본문: 슬라이드 배경 위 옅은 틴트 */
   --m2-card-border: rgba(0, 0, 0, 0.12);    /* 테두리: 옅은 중립색 */
 }

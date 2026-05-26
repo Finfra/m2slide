@@ -14,14 +14,14 @@
    1. Keynote Nowage 색상 변수 (테마 브랜딩)
    ========================================================================= */
 :root {
-  /* Issue210: m2 팔레트 시스템 alias (default 팔레트 = 회귀 0). 상세 default/slide.css 참조 */
-  --kn-accent: var(--m2-accent-1, #F5C518);          /* keynote 노랑 */
+  /* Issue238: --kn-accent theme 고정 식별색(노랑). palette --m2-accent-1 alias 제거. 상세 default/slide.css 참조 */
+  --kn-accent: #F5C518;                             /* keynote 노랑 — theme 고정 식별색 */
   --kn-accent-soft: #FFE15A;     /* 보조 노랑 */
-  --kn-text: var(--m2-text, #111111);
+  --kn-text: #111111;
   --kn-page-num-color: #777777;
-  /* 카드 컴포넌트(`::: cards`) 색상 — 테마 기존 변수 상속이 기본. 특정 색 지정 시 이 값만 교체 */
-  --m2-card-title-bg: var(--kn-accent);     /* 제목 밴드: 테마 accent 색 */
-  --m2-card-title-fg: var(--kn-text);       /* 제목 글자: 테마 텍스트 색 */
+  /* 카드 컴포넌트(`::: cards`) 색상 — palette에 반응하도록 --m2-accent-1 직접 참조 */
+  --m2-card-title-bg: var(--m2-accent-1, #F5C518);  /* 제목 밴드: palette accent */
+  --m2-card-title-fg: var(--m2-text, #111111);       /* 제목 글자: palette text */
   --m2-card-body-bg: rgba(0, 0, 0, 0.04);   /* 본문: 슬라이드 배경 위 옅은 틴트 */
   --m2-card-border: rgba(0, 0, 0, 0.12);    /* 테두리: 옅은 중립색 */
 }

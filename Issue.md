@@ -30,23 +30,21 @@
 
 # 📙 일반
 
-## Issue238. palette --m2-accent-1이 --kn-accent를 오염시켜 theme 구조색 변경 (등록: 2026-05-26)
+# 📗 선택
+
+# ✅ 완료
+
+## Issue238. palette --m2-accent-1이 --kn-accent를 오염시켜 theme 구조색 변경 (등록: 2026-05-26, 해결: 2026-05-26, commit: TBD) ✅
 * 목적: palette 교체 시 agenda markmap 테두리·title 밑줄 등 theme 구조색이 의도치 않게 바뀌는 문제 수정
 * 상세:
-    - `theme/default/slide.css` line 391: `--kn-accent: var(--m2-accent-1, #F5C518)` — palette 첫 accent에 alias
+    - `theme/default/slide.css`: `--kn-accent: var(--m2-accent-1, #F5C518)` — palette 첫 accent에 alias
     - `office_rainbow` palette: `--m2-accent-1: #0365C0` (파랑) → `--kn-accent`가 파랑이 되어 markmap border·card title bg 등도 파랑으로 바뀜
     - palette는 htmlArt·component 시각화용 의도였으나 theme 구조색까지 오염
     - 발견 위치: `BasicKnowledgeForAI_small` agenda 페이지 markmap 테두리 파란색으로 표시
 * 구현 명세:
-    - `--kn-accent`를 `--m2-accent-1` alias에서 분리: theme 고정 노랑(`#F5C518`)으로 복원
-    - component/htmlArt 색은 `--m2-accent-1`~`--m2-accent-6` 직접 참조로 변경
-    - `.m2-card-title-bg`, `.htmlart-accent` 등 컴포넌트 변수 확인 후 `--kn-accent` 의존 제거
-    - `default` / `default_lec` 양쪽 theme 동시 수정 필요
-    - 수정 후 회귀 테스트: `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest` 대표 3종
-
-# 📗 선택
-
-# ✅ 완료
+    - `--kn-accent: #F5C518` 고정 (alias 제거) — `default` / `default_lec` 양쪽 theme 동시 수정
+    - `--m2-card-title-bg: var(--m2-accent-1, #F5C518)` — 카드 제목 밴드는 palette에 반응하도록 직접 참조
+    - 회귀 테스트: `m2SlideStyle1_single`, `m2SlideStyle2_chapter` 모두 `--kn-accent: #F5C518` 확인
 
 ## Issue239. dev-server /p/P/s/ — chapter mode에서 agenda로 리다이렉트되어 #hash 소실 (등록: 2026-05-26, 해결: 2026-05-26, commit: 12baaa6) ✅
 * 목적: `/p/<P>/s/#/2` 접근 시 첫 챕터 슬라이드가 표시되지 않고 agenda로 리다이렉트되는 버그 수정
