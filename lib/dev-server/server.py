@@ -119,20 +119,25 @@ def inject_raw_design_view(html: str, n: int, total: int, file_path: str) -> str
         '.raw-nav a{color:#7dd}.raw-nav code{background:#1a1a1a}}'
         '</style>'
     )
-    # init script: wait for Reveal, disable transitions, jump to slide(n-1)
-    # m2slide uses hashOneBasedIndex — Reveal.slide() is 0-base internally, so n-1
+    # init script: wait for Reveal.ready, disable transitions only, jump to slide(n-1)
+    # m2slide hashOneBasedIndex — Reveal.slide() is 0-base internally, so pass n-1
+    # Use Reveal.on('ready', ...) so reveal.js full init (layout calc, CSS apply) completes first
     init_script = (
         '<script id="raw-design-init">'
         '(function(){'
-        'function go(){'
-        'if(window.Reveal&&typeof Reveal.configure==="function"&&typeof Reveal.slide==="function"){'
-        'try{Reveal.configure({transition:"none",backgroundTransition:"none",autoSlide:0,'
-        'fragments:false,help:false,viewDistance:0});}catch(e){}'
+        'function disableTransitions(){'
+        'try{Reveal.configure({transition:"none",backgroundTransition:"none",autoSlide:0});}catch(e){}'
         f'try{{Reveal.slide({n - 1}, 0);}}catch(e){{}}'
+        '}'
+        'function hook(){'
+        'if(window.Reveal&&typeof Reveal.on==="function"){'
+        'if(Reveal.isReady&&Reveal.isReady()){disableTransitions();}'
+        'else{Reveal.on("ready",disableTransitions);}'
         'return;}'
-        'setTimeout(go,30);}'
-        'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",go);}'
-        'else{go();}'
+        'setTimeout(hook,30);'
+        '}'
+        'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",hook);}'
+        'else{hook();}'
         '})();'
         '</script>'
     )
@@ -253,9 +258,18 @@ class DevHandler(SimpleHTTPRequestHandler):
     # --- endpoints ---
 
     def _serve_raw(self):
-        """Design-fidelity view: original HTML + reveal.js + transition:none + jump to slide n.
+        """Design-fidelity view: 302 redirect to live URL with #/N hash.
 
-        n is 1-base to match m2slide's hashOneBasedIndex (URL #/N convention).
+        m2slide build artifact has all the design (theme CSS, layouts, guide-line
+        decorations, head-bar, etc.) wired through reveal.js init. Reproducing that
+        accurately from a synthesized wrapper is fragile (scale timing, guide-line
+        ::after decorations, layout slot generation, etc.).
+
+        Simplest 100% fidelity: redirect to the live URL with the hash set to slide N
+        (1-base, matches m2slide hashOneBasedIndex). Browser navigates, reveal.js
+        runs its normal init path, and the user sees exactly the live design.
+
+        For curl + grep (no JS), use /_dev/text instead.
         """
         q = parse_qs(urlparse(self.path).query)
         resolved = self._resolve_file(q)
@@ -276,8 +290,11 @@ class DevHandler(SimpleHTTPRequestHandler):
         if n < 1 or n > total:
             self.send_error(404, f'slide {n} out of range (1..{total})')
             return
-        # Serve the original build artifact with raw-design overlay injected
-        self._write_html(inject_raw_design_view(html, n, total, rel))
+        target = '/' + rel.lstrip('/') + '#/' + str(n)
+        self.send_response(302)
+        self.send_header('Location', target)
+        self.send_header('Content-Length', '0')
+        self.end_headers()
 
     def _serve_text(self):
         """Plain-text-style view: only the N-th <section>, no reveal.js, no animation.
