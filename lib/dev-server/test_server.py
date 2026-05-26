@@ -124,5 +124,43 @@ class StemRewriteTest(unittest.TestCase):
         )
 
 
+class ScriptProtectTest(unittest.TestCase):
+    """`<script>` 블록 안 JS regex literal·string 보호 (Issue241)."""
+
+    def _h(self):
+        return DevHandler.__new__(DevHandler)
+
+    def test_script_block_regex_literal_untouched(self):
+        html = (
+            '<html><body>'
+            '<a href="foo.png">img</a>'
+            '<script>const m = "x".match(/href="([^"]+)"/);</script>'
+            '</body></html>'
+        )
+        out = self._h()._rewrite_relative_assets(html, 'm2Slide')
+        # Outside script: foo.png rewritten
+        self.assertIn('href="/p/m2Slide/s/foo.png"', out)
+        # Inside script: regex literal preserved (no /p/m2Slide/s/ injected)
+        self.assertIn('match(/href="([^"]+)"/)', out)
+        self.assertNotIn('match(/href="/p/m2Slide/s/', out)
+
+    def test_multiple_script_blocks_protected(self):
+        html = (
+            '<img src="a.png">'
+            '<script>var r = /href="([^"]+)"/;</script>'
+            '<img src="b.png">'
+            '<script>var s = /src="([^"]+)"/;</script>'
+            '<img src="c.png">'
+        )
+        out = self._h()._rewrite_relative_assets(html, 'P')
+        # All 3 image srcs rewritten
+        self.assertIn('src="/p/P/s/a.png"', out)
+        self.assertIn('src="/p/P/s/b.png"', out)
+        self.assertIn('src="/p/P/s/c.png"', out)
+        # Both script regex literals intact
+        self.assertIn('var r = /href="([^"]+)"/;', out)
+        self.assertIn('var s = /src="([^"]+)"/;', out)
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -638,6 +638,8 @@ class DevHandler(SimpleHTTPRequestHandler):
     def _rewrite_relative_assets(self, content: str, project: str) -> str:
         """Rewrite relative href/src attrs to absolute /p/<P>/s/<rel>.
         Skip *.html (handled by _rewrite_nav_strings) and absolute/external URLs.
+        Skip <script>...</script> blocks — JS regex literals like /href="([^"]+)"/
+        would otherwise be corrupted (Issue241).
         """
         prefix = f'/p/{project}/s/'
 
@@ -649,7 +651,14 @@ class DevHandler(SimpleHTTPRequestHandler):
                 return m.group(0)
             return f'{attr}{q1}{prefix}{val}{q2}'
 
-        return self._REL_ASSET_RE.sub(repl, content)
+        # Split by <script>...</script>; rewrite only outside script blocks.
+        # re.split with a capture group returns alternating non-match/match/...
+        # so even indices (0, 2, 4, ...) are outside scripts.
+        parts = re.split(r'(<script\b[^>]*>.*?</script\s*>)', content,
+                         flags=re.IGNORECASE | re.DOTALL)
+        for i in range(0, len(parts), 2):
+            parts[i] = self._REL_ASSET_RE.sub(repl, parts[i])
+        return ''.join(parts)
 
     def _stem_to_short_path(self, project: str, stem: str) -> str:
         # Issue240: short URL 통일 — index → /s/c (cover), agenda → /s/a (agenda).
