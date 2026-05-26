@@ -85,10 +85,11 @@ _PATH_PROJECT_RE = re.compile(
 
 
 def to_short_url(file_path: str, n=None, mode: str = '') -> str:
-    """Convert Projects/<P>/slide/<X>.html [+ n] to /p/<P>[/<X>]/s/<n>[?mode=raw].
+    """Convert Projects/<P>/slide/<X>.html [+ n] to /p/<P>[/<X>]/s/<n>[?mode=text].
 
     Returns shortened URL when path matches build-artifact convention, else falls
     back to the long path-segment form.
+    Default (bare) = browser design view. ?mode=text = curl-friendly text section.
     """
     m = _PATH_PROJECT_RE.match(file_path.lstrip('/'))
     if not m:
@@ -98,8 +99,8 @@ def to_short_url(file_path: str, n=None, mode: str = '') -> str:
         return f'/_dev/text/{n}/{file_path}'
     project, stem = m.group(1), m.group(2)
     chapter_seg = '' if stem == 'index' else f'/{stem}'
-    # text is default — only raw needs ?mode=raw
-    suffix = '?mode=raw' if mode == 'raw' else ''
+    # design view is default — only text needs ?mode=text
+    suffix = '?mode=text' if mode == 'text' else ''
     if n is None:
         # list/overview link — chapter dropped (always project root)
         return f'/p/{project}'
@@ -122,16 +123,16 @@ def render_raw_nav_with_urls(file_path: str, n: int, total: int,
     )
 
 
-def render_raw_nav(file_path: str, n: int, total: int, mode: str = 'raw') -> str:
+def render_raw_nav(file_path: str, n: int, total: int, mode: str = 'text') -> str:
     """Legacy fallback for callers without chap_idx context — uses to_short_url."""
     prev_n = max(1, n - 1)
     next_n = min(total, n + 1)
     return render_raw_nav_with_urls(
         file_path, n, total,
-        prev_url=to_short_url(file_path, prev_n),
-        next_url=to_short_url(file_path, next_n),
+        prev_url=to_short_url(file_path, prev_n, 'text'),
+        next_url=to_short_url(file_path, next_n, 'text'),
         list_url=to_short_url(file_path),
-        live_url=to_short_url(file_path, n, 'raw'),
+        live_url=to_short_url(file_path, n),
     )
 
 
@@ -256,13 +257,13 @@ class DevHandler(SimpleHTTPRequestHandler):
     _LEGACY_BUILD_DIR_RE = re.compile(
         r'^/Projects(?:/([^/]+)(?:/slide/?)?)?/?$', re.IGNORECASE)
     # Short form (zsh-friendly, curl-only):
-    #   /p/<project>/s/<chap>/<slide>      → text section. chap, slide both 1-base
+    #   /p/<project>/s/<chap>/<slide>      → design view (proxy). chap, slide both 1-base
     #   /p/<project>/s/<slide>             → chap=1 (single mode index.html) shorthand
-    #   /p/<project>/<chapter_name>/s/<n>  → text section, chapter named (legacy)
+    #   /p/<project>/<chapter_name>/s/<n>  → design view, chapter named (legacy)
     #   /p/<project>                       → HTML overview page
     #   /p/<project>/<chapter_name>        → proxy build artifact (no legacy URL)
     #   /p/<project>/slide/<path>          → static asset (CSS/JS/img) from build dir
-    # ?mode=raw  → 302 to live URL with #/N (browser design view)
+    # ?mode=text → curl-friendly text section (bare = design view default)
     _SHORT_SLIDE_CHAP_RE = re.compile(r'^/p/([^/]+)/s/(\d+)/(\d+)/?$')
     _SHORT_SLIDE_RE = re.compile(r'^/p/([^/]+)(?:/([^/]+))?/s/(\d+)/?$')
     # Static asset routing — /p/<P>/s/<asset> or legacy /p/<P>/slide/<asset>
@@ -384,7 +385,7 @@ class DevHandler(SimpleHTTPRequestHandler):
             f'is no longer supported on dev-server (Issue236.11).</p>'
             f'<p>Use the short form: <a href="{suggested}"><code>{suggested}</code></a></p>'
             f'<p>For a specific slide: <code>/p/&lt;P&gt;/s/&lt;chap&gt;/&lt;n&gt;</code> '
-            f'(text) or <code>?mode=raw</code> (design view).</p>'
+            f'(design view, default) or <code>?mode=text</code> (curl text).</p>'
             f'</body></html>'
         ).encode('utf-8')
         self.send_response(404)
@@ -462,10 +463,11 @@ class DevHandler(SimpleHTTPRequestHandler):
         return None
 
     def _file_path_to_short_indexed(self, file_path: str, slide_idx=None, mode: str = ''):
-        """Convert Projects/<P>/slide/<X>.html [+ slide] to /p/<P>/s/<chap>/<slide>[?mode=raw].
+        """Convert Projects/<P>/slide/<X>.html [+ slide] to /p/<P>/s/<chap>/<slide>[?mode=text].
 
         Returns None if file_path not a build artifact under Projects/<P>/slide/.
         Falls back to long form for unknown paths.
+        Default (bare) = browser design view. ?mode=text = curl-friendly text section.
         """
         m = _PATH_PROJECT_RE.match(file_path.lstrip('/'))
         if not m:
@@ -474,48 +476,53 @@ class DevHandler(SimpleHTTPRequestHandler):
         chap_idx = self._stem_to_chapter_index(project, stem)
         if chap_idx is None:
             return None
-        suffix = '?mode=raw' if mode == 'raw' else ''
+        suffix = '?mode=text' if mode == 'text' else ''
         if slide_idx is None:
             return f'/p/{project}'
         return f'/p/{project}/s/{chap_idx}/{slide_idx}{suffix}'
 
     def _serve_short_slide(self, project: str, chapter, n: int):
-        """Handle /p/<project>[/<chapter>]/s/<n>."""
+        """Handle /p/<project>[/<chapter>]/s/<n>.
+
+        Default (bare URL): proxy build artifact + navigate to slide N (browser design view).
+        ?mode=text: plain text section (curl-friendly).
+        ?mode=raw: alias for bare (backward compat).
+        """
         file_rel = self._short_file_rel(project, chapter)
-        # mode=raw → proxy build artifact content + base href + hash navigate
-        # (Issue236.9 — no longer 302 to /Projects/...; URL bar stays short)
         q = parse_qs(urlparse(self.path).query)
-        if q.get('mode', [''])[0] == 'raw':
-            return self._proxy_build_artifact(file_rel, slide_n=n)
-        # default: text section
-        resolved = self._resolve_file_path(file_rel)
-        if resolved is None:
+        if q.get('mode', [''])[0] == 'text':
+            # text section (curl-friendly)
+            resolved = self._resolve_file_path(file_rel)
+            if resolved is None:
+                return
+            full, rel = resolved
+            html = self._read_file(full)
+            spans = find_top_section_spans(html)
+            if not spans:
+                self.send_error(404, f'no <section> found in {rel}')
+                return
+            total = len(spans)
+            if n < 1 or n > total:
+                self.send_error(404, f'slide {n} out of range (1..{total})')
+                return
+            s, e = spans[n - 1]
+            section_html = html[s:e]
+            head_links = '\n'.join(re.findall(
+                r'<link\s+rel="stylesheet"[^>]+>', html, flags=re.IGNORECASE))
+            nav_html = self._render_indexed_nav(rel, n, total)
+            self._write_html(wrap_text_html(rel, n, total, section_html, head_links, nav_html))
             return
-        full, rel = resolved
-        html = self._read_file(full)
-        spans = find_top_section_spans(html)
-        if not spans:
-            self.send_error(404, f'no <section> found in {rel}')
-            return
-        total = len(spans)
-        if n < 1 or n > total:
-            self.send_error(404, f'slide {n} out of range (1..{total})')
-            return
-        s, e = spans[n - 1]
-        section_html = html[s:e]
-        head_links = '\n'.join(re.findall(
-            r'<link\s+rel="stylesheet"[^>]+>', html, flags=re.IGNORECASE))
-        nav_html = self._render_indexed_nav(rel, n, total)
-        self._write_html(wrap_text_html(rel, n, total, section_html, head_links, nav_html))
+        # default: proxy build artifact (browser design view) + navigate to slide N
+        return self._proxy_build_artifact(file_rel, slide_n=n)
 
     def _render_indexed_nav(self, file_path: str, n: int, total: int):
         """Build nav bar with chap_idx-aware URLs (/p/<P>/s/<chap>/<slide>)."""
         prev_n = max(1, n - 1)
         next_n = min(total, n + 1)
-        prev = self._file_path_to_short_indexed(file_path, prev_n)
-        nxt = self._file_path_to_short_indexed(file_path, next_n)
+        prev = self._file_path_to_short_indexed(file_path, prev_n, 'text')
+        nxt = self._file_path_to_short_indexed(file_path, next_n, 'text')
         lst = self._file_path_to_short_indexed(file_path)
-        live = self._file_path_to_short_indexed(file_path, n, 'raw')
+        live = self._file_path_to_short_indexed(file_path, n)
         # fallback to legacy form for non-build-artifact paths
         if prev is None:
             return render_raw_nav(file_path, n, total, mode='text')
@@ -530,8 +537,13 @@ class DevHandler(SimpleHTTPRequestHandler):
         * chapter absent   → HTML overview page (project slide list)
         """
         if chapter in ('s', 'slide'):
-            # Deck entry — proxy index.html
-            file_rel = self._short_file_rel(project, None)
+            # chapter mode: proxy first chapter HTML so #hash is preserved by browser.
+            # single mode: proxy index.html (the deck itself). Issue238.
+            first_stem = self._resolve_chapter_index(project, 1)
+            if first_stem is not None and first_stem != 'index':
+                file_rel = self._short_file_rel(project, first_stem)
+            else:
+                file_rel = self._short_file_rel(project, None)
             return self._proxy_build_artifact(file_rel)
         if chapter is not None:
             file_rel = self._short_file_rel(project, chapter)
@@ -735,8 +747,8 @@ class DevHandler(SimpleHTTPRequestHandler):
             '<table><thead><tr><th>URL</th><th>응답</th></tr></thead><tbody>'
             '<tr><td><code>/p/</code></td><td>프로젝트 목록 페이지</td></tr>'
             '<tr><td><code>/p/&lt;P&gt;</code></td><td>프로젝트 슬라이드 목록 (overview)</td></tr>'
-            '<tr><td><code>/p/&lt;P&gt;/s/&lt;chap&gt;/&lt;n&gt;</code></td><td>N번째 슬라이드 text (curl 친화)</td></tr>'
-            '<tr><td><code>/p/&lt;P&gt;/s/&lt;chap&gt;/&lt;n&gt;?mode=raw</code></td><td>디자인 view (브라우저)</td></tr>'
+            '<tr><td><code>/p/&lt;P&gt;/s/&lt;chap&gt;/&lt;n&gt;</code></td><td>디자인 view (브라우저, 기본)</td></tr>'
+            '<tr><td><code>/p/&lt;P&gt;/s/&lt;chap&gt;/&lt;n&gt;?mode=text</code></td><td>N번째 슬라이드 text (curl 친화)</td></tr>'
             '<tr><td><code>/p/&lt;P&gt;/s/&lt;n&gt;</code></td><td>chap=1 자동 (single mode shorthand)</td></tr>'
             '<tr><td><code>/_dev/list/&lt;file&gt;</code></td><td>section JSON·HTML 인덱스</td></tr>'
             '<tr><td><code>/_dev/text/&lt;n&gt;/&lt;file&gt;</code></td><td>plain text section</td></tr>'
@@ -768,7 +780,7 @@ class DevHandler(SimpleHTTPRequestHandler):
                 meta_label = f'{len(chapter_files)} chapter (chapter mode)'
             else:
                 meta_label = '1 deck (single mode)'
-            first_link = f'/p/{p}/s/1/1?mode=raw'
+            first_link = f'/p/{p}/s/1/1'
             cards.append(
                 f'<div class="card"><h3><a href="{first_link}">{p}</a></h3>'
                 f'<div class="meta">{meta_label} · 진입: <code>{entry}</code></div>'
@@ -878,11 +890,11 @@ class DevHandler(SimpleHTTPRequestHandler):
                 one = i + 1
                 rows.append(
                     f'<tr><td>{one}</td>'
-                    f'<td><a href="/p/{project}/s/{chap_idx}/{one}?mode=raw">{title}</a></td>'
-                    f'<td><a href="/p/{project}/s/{chap_idx}/{one}">text</a></td>'
+                    f'<td><a href="/p/{project}/s/{chap_idx}/{one}">{title}</a></td>'
+                    f'<td><a href="/p/{project}/s/{chap_idx}/{one}?mode=text">text</a></td>'
                     f'<td>{e - s}</td></tr>'
                 )
-            chapter_entry = f'/p/{project}/s/{chap_idx}/1?mode=raw'
+            chapter_entry = f'/p/{project}/s/{chap_idx}/1'
             section = (
                 f'<h3>chap {chap_idx} — {stem} '
                 f'<small style="color:#888">({count} slides · '
@@ -1132,12 +1144,13 @@ class DevHandler(SimpleHTTPRequestHandler):
                 'title': extract_section_title(sec),
                 'bytes': e - s,
                 # short /p/<P>/s/<chap>/<slide> form (legacy /Projects/... blocked)
-                'raw_url': self._file_path_to_short_indexed(rel, one, 'raw')
-                           or f'/_dev/raw/{one}/{rel}',
-                'text_url': self._file_path_to_short_indexed(rel, one)
+                # raw_url = design view (bare URL, default behavior)
+                'raw_url': self._file_path_to_short_indexed(rel, one)
+                           or f'/{rel.lstrip("/")}#/{one}',
+                'text_url': self._file_path_to_short_indexed(rel, one, 'text')
                             or f'/_dev/text/{one}/{rel}',
-                # live_url = design view (mode=raw) — same target as raw_url here
-                'live_url': self._file_path_to_short_indexed(rel, one, 'raw')
+                # live_url = same as raw_url (both design view)
+                'live_url': self._file_path_to_short_indexed(rel, one)
                             or f'/{rel.lstrip("/")}#/{one}',
             })
         # Content-negotiation by Accept header — HTML default, JSON if asked
@@ -1180,14 +1193,14 @@ class DevHandler(SimpleHTTPRequestHandler):
             'pre{background:#2d2d2d;color:#f8f8f2;padding:12px;border-radius:4px;overflow-x:auto}</style></head><body>'
             '<h1>m2slide dev-server — endpoints (Issue236)</h1>'
             '<h2>Short form (recommended — shortest URL)</h2>'
-            '<pre># N번째 슬라이드 text (single mode — chap=1)\n'
-            'curl http://127.0.0.1:9877/p/m2SlideStyle1_single/s/25\n\n'
+            '<pre># 디자인 view (브라우저, 기본 — bare URL)\n'
+            'open http://127.0.0.1:9877/p/m2SlideStyle1_single/s/1/25\n\n'
+            '# N번째 슬라이드 text (curl 친화 — ?mode=text)\n'
+            'curl http://127.0.0.1:9877/p/m2SlideStyle1_single/s/1/25?mode=text\n\n'
             '# chapter mode (chap idx 1-base)\n'
-            'curl http://127.0.0.1:9877/p/&lt;P&gt;/s/&lt;chap&gt;/&lt;n&gt;\n\n'
+            'open http://127.0.0.1:9877/p/&lt;P&gt;/s/&lt;chap&gt;/&lt;n&gt;\n\n'
             '# 프로젝트 overview (슬라이드 목록 HTML)\n'
-            'curl http://127.0.0.1:9877/p/m2SlideStyle1_single\n\n'
-            '# 디자인 view (브라우저)\n'
-            'open \'http://127.0.0.1:9877/p/m2SlideStyle1_single/s/25?mode=raw\'</pre>'
+            'curl http://127.0.0.1:9877/p/m2SlideStyle1_single</pre>'
             '<h2>/_dev/ endpoints (보조 — 별도 .html path 받기)</h2>'
             '<p>모든 <code>n</code>은 <b>1-base</b> (m2slide hashOneBasedIndex — live URL <code>#/N</code>과 동일).</p>'
             '<p><b>주의</b>: <code>/Projects/&lt;P&gt;/slide/...</code> 직접 접근은 차단됨 (404). 짧은 <code>/p/...</code> 형태 사용 권장.</p>'
