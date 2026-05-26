@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 236
+* Issue HWM: 237
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -33,6 +33,17 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue237. explicit #layout-* H1 슬라이드 End/Home 키 sibling 점프 불가 — headingLevel 누락 (등록: 2026-05-26, 해결: 2026-05-26, commit: f330c5b) ✅
+* 목적: m2SlideStyle1_single `index.html#/2`(H1 + `#layout-_cover` 명시 슬라이드)에서 End 키 눌러도 다음 H1 anchor로 이동하지 않음. slide-parser.js 앵커 감지 패스에서 explicit layout 지정 슬라이드가 early return되어 headingLevel 미설정 → data-heading-level 미주입 → isAnchorSlide() false → findNextSiblingAnchorIndex() -1 → End key noop.
+* 상세:
+    - 재현: `./m2slide.sh m2SlideStyle1_single` 후 `index.html?fwd=1#/2`에서 End 키 → 아무 반응 없음 (의도: 다음 H1 섹션 첫 슬라이드로 점프)
+    - 원인: `lib/slide-parser.js` forEach에서 `if (s.layout) return;` early exit이 explicit #layout-* H1 슬라이드의 headingLevel 설정을 차단
+    - 추가: `lib/html-builder.js` isCoverSlide() chapter mode 조건 누락 (Issue230 후속) 동시 수정
+* 구현 명세:
+    - slide-parser.js: `if (s.layout && level === 1 && !s.headingLevel)` 분기 추가 → headingLevel=1 보존 후 return
+    - html-builder.js: `if (M2SLIDE_MODE !== 'single') return false;` 추가 (chapter mode cover는 leaf 처리)
+* 카테고리: Generator (slide-parser) + Frontend (End/Home navigation)
 
 ## Issue230. Single mode 중간 H1 슬라이드가 cover로 분류되어 →/↓/End 시 agenda.html 점프 — isCoverSlide() deck 위치 한정 누락 (등록: 2026-05-25, 컨텐츠 잘못 만들어진 것이 문제 였음. 기능에 문제 없음.)
 * 목적: m2SlideStyle1_single 등 single mode 프로젝트에서 `index.html#/2`(`# 2. 코드 ...` H1 챕터 divider)에서 → 키 누르면 `agenda.html?fwd=1`로 점프. layout-selector가 모든 본문 H1에 `#layout-_cover` 자동 부착 → `isCoverSlide()`가 deck 진입점이 아닌 중간 슬라이드까지 cover로 판정 → cover navigation 룰(↓·→·End → agenda) 발동. cover는 의미상 deck 진입점(#/0)만이어야 함.
