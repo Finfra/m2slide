@@ -135,19 +135,26 @@ curl http://localhost:9877/p/aTest_v1
 curl -H 'Accept: application/json' http://localhost:9877/p/aTest_v1
 ```
 
-명시적 진입 (Issue240+ short form):
+명시적 진입 (Issue240+ short form, Issue248 v2 path-based):
 
 ```bash
 # 데크 첫 진입 — cover/agenda/toc/first slide fallback chain
-curl http://localhost:9877/p/<P>/s/c
+curl http://localhost:9877/p/<P>/n/c
 
-# cover/agenda/toc 명시 진입
-curl http://localhost:9877/p/<P>/s/c    # cover (없으면 a→t→1/1)
-curl http://localhost:9877/p/<P>/s/a    # agenda (없으면 t→1/1)
-curl http://localhost:9877/p/<P>/s/t    # toc (없으면 1/1)
+# cover/agenda/toc 명시 진입 (deck navigation)
+curl http://localhost:9877/p/<P>/n/c    # cover (없으면 a→t→1/1)
+curl http://localhost:9877/p/<P>/n/a    # agenda (없으면 t→1/1)
+curl http://localhost:9877/p/<P>/n/t    # toc (없으면 1/1)
 
-# 본문 slide 지정 (chap=1-base, slide=1-base)
+# deck 본문 slide 지정 (chap=1-base, slide=1-base 또는 reveal.js section id)
+curl http://localhost:9877/p/<P>/n/<chap>/<slide>
+curl http://localhost:9877/p/<P>/n/<chap>/<section-id>
+
+# solo design view (단일 슬라이드 디자인 확인)
 curl http://localhost:9877/p/<P>/s/<chap>/<slide>
+
+# legacy 진입 (302 redirect to /n/ form)
+curl -L http://localhost:9877/p/<P>/s/c   # → /n/c
 ```
 
 ### 시각 채널 (AppleScript file://)
