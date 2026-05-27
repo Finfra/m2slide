@@ -62,11 +62,16 @@ m2slide 저장소(`lib/m2slide/`) 내 다음 파일을 수정한 직후 자동 �
 | 채널            | URL                                                                       | 도구                 | 용도                              |
 | :-------------- | :------------------------------------------------------------------------ | :------------------- | :-------------------------------- |
 | 시각 (file://)  | `file:///abs/.../slide/X.html?fwd=1#/N`                                   | AppleScript Chrome   | 사용자 직접 확인, 배포 시뮬레이션 |
-| 헤드리스 (http) | `http://localhost:9877/p/<P>/s/<chap>/<slide>[?mode=nav\|text]`           | Playwright MCP, curl | DOM·console·screenshot·curl 검증  |
+| 헤드리스 — solo | `http://localhost:9877/p/<P>/s/<chap>/<slide>[?mode=text]`                | Playwright MCP, curl | 단일 슬라이드 design 검증         |
+| 헤드리스 — deck | `http://localhost:9877/p/<P>/n/<chap>/<slide_or_id>`                      | Playwright MCP, curl | 전체 deck navigation 검증         |
 
 > ⚠️ legacy `http://localhost:9877/Projects/<P>/slide/<X>.html` 직접 접근은 차단됨 (Issue236.11 — 404). 반드시 short form 사용.
 > chap·slide 는 1-base 인덱스 (m2slide hashOneBasedIndex 정합). chap=1 = sorted chapter files 첫 번째 (single mode 면 index.html).
-> **Issue248 — bare URL semantic 반전**: `/p/<P>/s/<chap>/<slide>` 기본 응답은 **단일 슬라이드 design view(solo)** — 해당 section 1개 + 풀 테마/JS. deck navigation 검증이 필요하면 `?mode=nav` 명시. plain text 검증은 `?mode=text` (불변). 브라우저는 hash `#/N`을 서버로 전송하지 않으므로 모드는 쿼리로만 선택 가능.
+> **Issue248 — path-based mode separation**:
+>   * `/p/<P>/s/<chap>/<slide>` = **solo design view** (단일 section + 풀 테마/JS). plain text는 `?mode=text`.
+>   * `/p/<P>/n/<chap>/<slide>` = **deck navigation** (전체 deck + reveal.js nav). slide는 1-base 정수 또는 reveal.js section id (`toc-placeholder` 등).
+>   * 진입 단축: `/p/<P>/n/c` (cover), `/p/<P>/n/a` (agenda), `/p/<P>/n/t` (toc) — fallback chain 자동 처리.
+>   * legacy `?mode=nav`는 302로 `/n/` form 변환. cross-page nav rewrites도 모두 `/n/`.
 
 선택 기준:
 
@@ -90,23 +95,29 @@ m2slide 저장소(`lib/m2slide/`) 내 다음 파일을 수정한 직후 자동 �
 Playwright 사용 (short form 필수):
 
 ```
-# 단일 슬라이드 design 검증 (bare = solo, Issue248 기본)
+# 단일 슬라이드 design 검증 (/s/ path = solo)
 mcp__playwright__browser_navigate("http://localhost:9877/p/aTest_v1/s/8/6")
 mcp__playwright__browser_take_screenshot(filename="_doc_work/capture/verify-aTest_v1-chap8-slide6.png")
 mcp__playwright__browser_console_messages()
 
-# deck navigation 검증 (?mode=nav 명시 — 좌우 키, agenda 링크, reveal.js nav UI)
-mcp__playwright__browser_navigate("http://localhost:9877/p/aTest_v1/s/8/6?mode=nav")
+# deck navigation 검증 (/n/ path — 좌우 키, agenda 링크, reveal.js nav UI)
+mcp__playwright__browser_navigate("http://localhost:9877/p/aTest_v1/n/8/6")
+
+# deck navigation with named section id (reveal.js auto-id)
+mcp__playwright__browser_navigate("http://localhost:9877/p/aTest_v1/n/1/toc-placeholder")
 ```
 
 curl 사용:
 
 ```bash
-# 단일 슬라이드 design HTML (Issue248 기본 — 페이지별 디자인 확인용)
+# 단일 슬라이드 design HTML (페이지별 디자인 확인용)
 curl http://localhost:9877/p/aTest_v1/s/8/6
 
 # deck navigation HTML (전체 deck, reveal.js + 좌우 nav UI)
-curl 'http://localhost:9877/p/aTest_v1/s/8/6?mode=nav'
+curl http://localhost:9877/p/aTest_v1/n/8/6
+
+# deck navigation with named section id
+curl http://localhost:9877/p/aTest_v1/n/1/toc-placeholder
 
 # plain text section (curl + grep 친화, reveal.js 없이)
 curl 'http://localhost:9877/p/aTest_v1/s/8/6?mode=text'

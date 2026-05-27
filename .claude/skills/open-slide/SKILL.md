@@ -62,16 +62,19 @@ file://<absolute_path>/Projects/<project>/slide/<resolved>.html?fwd=1#/<N>
 `--verify` (헤드리스 채널, HTTP dev-server — Issue235, short form 필수):
 
 ```
-http://localhost:9877/p/<project>/s/<chap>/<N>            # bare = 단일 슬라이드 design view (Issue248)
-http://localhost:9877/p/<project>/s/<chap>/<N>?mode=nav   # full deck + navigation
+http://localhost:9877/p/<project>/s/<chap>/<N>             # /s/ = solo (단일 슬라이드 design)
+http://localhost:9877/p/<project>/n/<chap>/<N>             # /n/ = deck navigation
+http://localhost:9877/p/<project>/n/<chap>/<section-id>    # deck nav + reveal.js id hash
 ```
 
 * `<chap>`: chapter 1-base 인덱스 (sorted chapter files 기준, single mode 는 chap=1)
+* `<N>`: slide 1-base 정수 (m2slide hashOneBasedIndex 정합)
+* `<section-id>`: reveal.js 자동 id (`toc-placeholder` 등) — `/n/` path만 지원
 * `<absolute_path>`: `pwd -P` 결과 또는 git root (시각 채널 file:// 전용)
 * `?fwd=1` 쿼리는 `#hash` 앞에 배치 (Reveal.js hash 파싱 충돌 회피 — apply-verify-rules §4.1)
 * `?fwd=1`은 시각 채널에서만 사용 (m2slide 내부 fade-in 트랜지션 cue). 헤드리스에서는 short form 인덱스로 절대 좌표 직접 지정
 * legacy `http://localhost:9877/Projects/<project>/slide/<X>.html` 형식은 차단됨 (Issue236.11 — 404)
-* **Issue248**: bare URL은 단일 슬라이드 design view(solo). 전체 deck navigation 검증이 필요하면 `?mode=nav` 추가
+* **Issue248**: `/s/` = solo design view (단일 section), `/n/` = deck navigation. legacy `?mode=nav`는 302로 `/n/` 변환
 * URL 전체 single-quote 인용 (zsh `#` 주석 회피)
 
 ## 4. 브라우저 실행 + 포커스 강제

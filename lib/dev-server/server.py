@@ -227,6 +227,13 @@ class DevHandler(SimpleHTTPRequestHandler):
     _SHORT_COVER_C_RE = re.compile(r'^/p/([^/]+)/s/c/?$')
     _SHORT_AGENDA_A_RE = re.compile(r'^/p/([^/]+)/s/a/?$')
     _SHORT_TOC_T_RE = re.compile(r'^/p/([^/]+)/s/t/?$')
+    # Issue248 follow-up — `/n/` path = deck nav mode (replaces `?mode=nav` query)
+    # slide token = digits OR reveal.js section id (kebab-case with letters/digits/dashes)
+    _SHORT_NAV_CHAP_RE = re.compile(r'^/p/([^/]+)/n/(\d+)/([A-Za-z0-9][\w-]*)/?$')
+    _SHORT_NAV_CHAPONLY_RE = re.compile(r'^/p/([^/]+)/n/(\d+)/?$')
+    _SHORT_NAV_C_RE = re.compile(r'^/p/([^/]+)/n/c/?$')
+    _SHORT_NAV_A_RE = re.compile(r'^/p/([^/]+)/n/a/?$')
+    _SHORT_NAV_T_RE = re.compile(r'^/p/([^/]+)/n/t/?$')
 
     def do_GET(self):
         # Direct slide form: /<build path>/X.html/<n>  → plain text section
@@ -266,6 +273,37 @@ class DevHandler(SimpleHTTPRequestHandler):
         m = self._SHORT_TOC_T_RE.match(path_only)
         if m:
             return self._serve_short_t(m.group(1))
+        # Issue248 follow-up — /n/ path = deck navigation mode (replaces ?mode=nav)
+        m = self._SHORT_NAV_CHAP_RE.match(path_only)
+        if m:
+            project, chap_str, slide_token = m.group(1), m.group(2), m.group(3)
+            try:
+                chap_idx = int(chap_str)
+            except ValueError:
+                return super().do_GET()
+            # slide_token may be int (1-base index) or str (reveal.js section id)
+            try:
+                slide_value = int(slide_token)
+            except ValueError:
+                slide_value = slide_token
+            return self._serve_short_nav_indexed(project, chap_idx, slide_value)
+        m = self._SHORT_NAV_CHAPONLY_RE.match(path_only)
+        if m:
+            project, chap_str = m.group(1), m.group(2)
+            try:
+                chap_idx = int(chap_str)
+            except ValueError:
+                return super().do_GET()
+            return self._serve_short_nav_indexed(project, chap_idx, 1)
+        m = self._SHORT_NAV_C_RE.match(path_only)
+        if m:
+            return self._serve_nav_c(m.group(1))
+        m = self._SHORT_NAV_A_RE.match(path_only)
+        if m:
+            return self._serve_nav_a(m.group(1))
+        m = self._SHORT_NAV_T_RE.match(path_only)
+        if m:
+            return self._serve_nav_t(m.group(1))
         # Legacy named routes (Issue239) — 302 to new short form for compatibility:
         # /p/<P>/s/cover → /s/c · /p/<P>/s/<chap>/toc → /s/t (chap 무시)
         m = self._SHORT_COVER_RE.match(path_only)
@@ -444,11 +482,12 @@ class DevHandler(SimpleHTTPRequestHandler):
     def _serve_short_slide(self, project: str, chapter, n: int):
         """Handle /p/<project>[/<chapter>]/s/<n>.
 
-        Issue248 — bare semantic flip:
-        * bare URL (no mode query): solo design view (single section, full theme)
-        * ?mode=nav: deck design view (full deck + navigation, prior default)
+        Issue248 — `/s/` path = solo design view (single section, no deck nav).
+        Deck navigation moved to `/n/` path (see `_serve_short_nav_indexed`).
+
+        * bare URL: solo design view (single section, full theme)
         * ?mode=text: plain text section (curl-friendly)
-        * ?mode=raw: alias for ?mode=nav (backward compat for old callers)
+        * Legacy ?mode=nav / ?mode=raw → 302 to `/p/<P>/n/<chap>/<n>` (path-based)
 
         Issue240: chapter 모드에서 chapter=None 으로 `/p/<P>/s/<N>` 가 들어오면
         N=chap_idx 로 해석하여 chap N 의 첫 슬라이드로 위임 (index.html cover 진입 회피).
@@ -485,8 +524,19 @@ class DevHandler(SimpleHTTPRequestHandler):
             self._write_html(wrap_text_html(rel, n, total, section_html, head_links, nav_html))
             return
         if mode in ('nav', 'raw'):
-            # full deck + navigation (legacy default before Issue248)
-            return self._proxy_build_artifact(file_rel, slide_n=n)
+            # Legacy compat: redirect to new /n/ path form (Issue248 follow-up).
+            # Need chap_idx for /n/<chap>/<n> form.
+            chap_idx = None
+            if chapter is None:
+                # /p/<P>/s/<N> shorthand → N already became chap in upper if-branch.
+                # If we reach here, single mode with chapter=None — chap_idx=1.
+                chap_idx = 1
+            else:
+                chap_idx = self._stem_to_chapter_index(project, chapter)
+            if chap_idx is None:
+                self.send_error(404, f'chapter not found for {chapter}')
+                return
+            return self._redirect_302(f'/p/{project}/n/{chap_idx}/{n}')
         # Issue248 default (bare): solo design view — single section, full theme/JS preserved
         return self._serve_solo_slide(file_rel, n)
 
@@ -625,19 +675,51 @@ class DevHandler(SimpleHTTPRequestHandler):
         return self._proxy_build_artifact(file_rel, slide_n=1)
 
     def _serve_short_c(self, project: str):
-        """/p/<P>/s/c — cover. Fallback: not active → 302 /s/a (preserves query)."""
+        """/p/<P>/s/c — legacy deck cover entry → 302 /p/<P>/n/c (Issue248 follow-up).
+        Entry routes (c/a/t) are always deck navigation by nature, so they now
+        live under the /n/ path. /s/c → /n/c preserves URL convention.
+        """
+        return self._redirect_302(f'/p/{project}/n/c')
+
+    def _serve_short_a(self, project: str):
+        """/p/<P>/s/a — legacy deck agenda entry → 302 /p/<P>/n/a."""
+        return self._redirect_302(f'/p/{project}/n/a')
+
+    # ---- Issue248 follow-up: /n/ deck navigation handlers ----
+
+    def _serve_short_nav_indexed(self, project: str, chap_idx: int, slide):
+        """Handle /p/<project>/n/<chap_idx>/<slide_token>.
+
+        slide may be int (1-base section index) or str (reveal.js section id).
+        Always serves full deck proxy with hash inject for the requested slide.
+        """
+        stem = self._resolve_chapter_index(project, chap_idx)
+        if stem is None:
+            self.send_error(404, f'chapter {chap_idx} not found in {project}')
+            return
+        chapter = None if stem == 'index' else stem
+        file_rel = self._short_file_rel(project, chapter)
+        return self._proxy_build_artifact(file_rel, slide_n=slide)
+
+    def _serve_nav_c(self, project: str):
+        """/p/<P>/n/c — cover (deck). Fallback: not active → 302 /n/a."""
         if not self._cover_active(project):
-            return self._redirect_302(self._with_query(f'/p/{project}/s/a'))
-        # cover 활성 — chapter mode·single mode 모두 index.html proxy (markmap or cover slide)
+            return self._redirect_302(self._with_query(f'/p/{project}/n/a'))
         file_rel = self._short_file_rel(project, None)  # index.html
         return self._proxy_build_artifact(file_rel)
 
-    def _serve_short_a(self, project: str):
-        """/p/<P>/s/a — agenda. Fallback: not active → 302 /s/t (preserves query)."""
+    def _serve_nav_a(self, project: str):
+        """/p/<P>/n/a — agenda (deck). Fallback: not active → 302 /n/t."""
         if not self._agenda_active(project):
-            return self._redirect_302(self._with_query(f'/p/{project}/s/t'))
+            return self._redirect_302(self._with_query(f'/p/{project}/n/t'))
         file_rel = f'Projects/{project}/slide/agenda.html'
         return self._proxy_build_artifact(file_rel)
+
+    def _serve_nav_t(self, project: str):
+        """/p/<P>/n/t — toc (deck). Fallback: not active → 302 /n/1/1."""
+        if not self._toc_active(project):
+            return self._redirect_302(f'/p/{project}/n/1/1')
+        return self._serve_short_nav_indexed(project, 1, 2)
 
     def _with_query(self, location: str) -> str:
         """Append current request's query string to a redirect location.
@@ -651,27 +733,8 @@ class DevHandler(SimpleHTTPRequestHandler):
         return f'{location}{sep}{q}'
 
     def _serve_short_t(self, project: str):
-        """/p/<P>/s/t — toc. Fallback: not active → 302 /s/1/1?mode=nav.
-
-        Issue248: entry routes (c/a/t + fallback chain) always serve deck mode.
-        Bare /s/1/1 would now mean solo (single section) which is wrong for
-        entry navigation. Force ?mode=nav explicitly.
-        """
-        if not self._toc_active(project):
-            # Terminal hop — /s/1/1?mode=nav fixed (no further propagation needed)
-            return self._redirect_302(f'/p/{project}/s/1/1?mode=nav')
-        # toc slide 위치:
-        #   single mode: index.html#/2 (cover=#/1, toc=#/2)
-        #   chapter mode: 첫 chapter html#/2 (chapter 페이지 첫 슬라이드 = toc 자동 주입)
-        # 모두 chap=1, slide=2 로 통일 가능 (m2slide hashOneBasedIndex 정합).
-        # Issue248: 반드시 deck proxy 경유 (solo 회피).
-        stem = self._resolve_chapter_index(project, 1)
-        if stem is None:
-            self.send_error(404, f'chapter 1 not found in {project}')
-            return
-        chapter = None if stem == 'index' else stem
-        file_rel = self._short_file_rel(project, chapter)
-        return self._proxy_build_artifact(file_rel, slide_n=2)
+        """/p/<P>/s/t — legacy deck toc entry → 302 /p/<P>/n/t."""
+        return self._redirect_302(f'/p/{project}/n/t')
 
     def _redirect_302(self, location: str):
         """Generic 302 redirect helper."""
@@ -690,14 +753,13 @@ class DevHandler(SimpleHTTPRequestHandler):
           - prevents legacy /Projects/<P>/slide/<X>.html URLs from appearing in
             the address bar after m2slide internal navigation
 
-        slide_n (optional): if provided AND > 1, injects a script to navigate
-        to #/N when the browser has not already set a hash. URL hash from the
-        user (preserved by browser across our 302) wins.
-
-        slide_n=1 case skips inject — reveal.js default entry is first slide,
-        and hashOneBasedIndex maps it to #/1 lazily on first navigation.
-        Avoids redundant `#/1` appearing in the URL bar on first-slide entry
-        (e.g. clicking a /p/<P>/s/<chap>/1 link from the overview page).
+        slide_n (optional): if provided, injects a script to navigate to
+        `#/<slide_n>` when the browser has not already set a hash. Accepts:
+          - int  → `#/N` (1-base reveal.js hashOneBasedIndex)
+          - str  → `#/<id>` for reveal.js section id (Issue248 named hash,
+                   e.g. "toc-placeholder")
+          - None or int=1 → skip inject (reveal.js default = first slide;
+                   avoids redundant `#/1` in URL bar on first-slide entry)
         """
         resolved = self._resolve_file_path(file_rel)
         if resolved is None:
@@ -727,12 +789,19 @@ class DevHandler(SimpleHTTPRequestHandler):
         # Inject into <head> BEFORE Reveal.js scripts/initialize so hash is set
         # at Reveal init time. Body-end inject was racing Reveal init and lost
         # (Reveal navigated to slide 1, id-based hash `#/toc-placeholder` won).
-        if slide_n is not None and slide_n > 1:
+        # slide_n may be int (slide index) OR str (reveal.js section id).
+        # Skip inject for None and int=1 (reveal.js default first slide).
+        do_inject = slide_n is not None and not (
+            isinstance(slide_n, int) and slide_n <= 1
+        )
+        if do_inject:
+            # JS-safe escape of slide_n token (digits or kebab id).
+            hash_token = json.dumps(str(slide_n))[1:-1]
             nav_script = (
                 f'<script>(function(){{'
                 f'if(!window.location.hash){{'
-                f'try{{history.replaceState(null,"",location.pathname+location.search+"#/{slide_n}");}}catch(e){{'
-                f'window.location.hash="#/{slide_n}";'
+                f'try{{history.replaceState(null,"",location.pathname+location.search+"#/{hash_token}");}}catch(e){{'
+                f'window.location.hash="#/{hash_token}";'
                 f'}}'
                 f'}}'
                 f'}})();</script>'
@@ -833,16 +902,17 @@ class DevHandler(SimpleHTTPRequestHandler):
         return ''.join(parts)
 
     def _stem_to_short_path(self, project: str, stem: str) -> str:
-        # Issue240: short URL 통일 — index → /s/c (cover), agenda → /s/a (agenda).
-        # Issue242: chapter stem → /s/<chap_idx>/ (user 명시 형식).
+        # Issue248 follow-up: cross-page navigation rewrites target /n/ form
+        # (deck navigation) so internal m2slide clicks stay in nav mode.
+        # /s/ path is now solo design view only.
         s = stem.lower()
         if s == 'index':
-            return f'/p/{project}/s/c'
+            return f'/p/{project}/n/c'
         if s == 'agenda':
-            return f'/p/{project}/s/a'
+            return f'/p/{project}/n/a'
         chap_idx = self._stem_to_chapter_index(project, stem)
         if chap_idx is not None:
-            return f'/p/{project}/s/{chap_idx}/'
+            return f'/p/{project}/n/{chap_idx}/1'
         return f'/p/{project}/{stem}'
 
     def _rewrite_nav_strings(self, content: str, project: str) -> str:
@@ -1023,9 +1093,9 @@ class DevHandler(SimpleHTTPRequestHandler):
                 meta_label = f'{len(chapter_files)} chapter (chapter mode)'
             else:
                 meta_label = '1 deck (single mode)'
-            # Issue248: explicit ?mode=nav so URL bar shows convention + fallback
-            # chain (/s/c → /s/a → /s/t → /s/1/1) propagates mode=nav via _with_query.
-            first_link = f'/p/{p}/s/c?mode=nav'
+            # Issue248 follow-up: /n/ path = deck navigation entry
+            # (fallback chain /n/c → /n/a → /n/t → /n/1/1 propagates _with_query).
+            first_link = f'/p/{p}/n/c'
             cards.append(
                 f'<div class="card"><h3><a href="{first_link}">{p}</a></h3>'
                 f'<div class="meta">{meta_label} · 진입: <code>{entry}</code></div>'
@@ -1134,10 +1204,10 @@ class DevHandler(SimpleHTTPRequestHandler):
                 title = extract_section_title(sec_html) or '(no title)'
                 one = i + 1
                 solo_url = f'/p/{project}/s/{chap_idx}/{one}'
-                nav_url = f'{solo_url}?mode=nav'
+                nav_url = f'/p/{project}/n/{chap_idx}/{one}'
                 text_url = f'{solo_url}?mode=text'
-                # Issue248: title link → ?mode=nav (deck navigation enabled).
-                # Preview cell iframe → bare (solo design view per slide).
+                # Issue248 follow-up: title link → /n/ path (deck navigation).
+                # Preview cell iframe → /s/ path (solo design view per slide).
                 rows.append(
                     f'<tr><td>{one}</td>'
                     f'<td><a href="{nav_url}">{title}</a><br>'
@@ -1149,7 +1219,7 @@ class DevHandler(SimpleHTTPRequestHandler):
                     f'</td>'
                     f'<td>{e - s}</td></tr>'
                 )
-            chapter_entry = f'/p/{project}/s/{chap_idx}/1?mode=nav'
+            chapter_entry = f'/p/{project}/n/{chap_idx}/1'
             section = (
                 f'<h3>chap {chap_idx} — {stem} '
                 f'<small style="color:#888">({count} slides · '

@@ -103,17 +103,17 @@ class StemRewriteTest(unittest.TestCase):
         return DevHandler.__new__(DevHandler)
 
     def test_index_stem_to_cover(self):
-        # index.html (cover entry) → /s/c (was /s/)
+        # Issue248 follow-up: index.html → /n/c (deck nav, was /s/c)
         self.assertEqual(
             self._h()._stem_to_short_path('m2Slide', 'index'),
-            '/p/m2Slide/s/c'
+            '/p/m2Slide/n/c'
         )
 
     def test_agenda_stem_to_agenda_short(self):
-        # agenda.html → /s/a (was /p/<P>/agenda)
+        # Issue248 follow-up: agenda.html → /n/a (deck nav, was /s/a)
         self.assertEqual(
             self._h()._stem_to_short_path('m2Slide', 'agenda'),
-            '/p/m2Slide/s/a'
+            '/p/m2Slide/n/a'
         )
 
     def test_chapter_stem_unchanged(self):
@@ -193,6 +193,36 @@ class SoloSliceTest(unittest.TestCase):
         html = '<div class="slides"><section>A</section>'  # no close
         body_start = html.index('>') + 1
         self.assertEqual(self._h()._find_matching_div_close(html, body_start), -1)
+
+
+class NavRouteRegexTest(unittest.TestCase):
+    """Issue248 follow-up — /n/ path regex matching."""
+
+    def test_nav_chap_slide_digit(self):
+        m = DevHandler._SHORT_NAV_CHAP_RE.match('/p/X/n/1/3')
+        self.assertIsNotNone(m)
+        self.assertEqual(m.group(1), 'X')
+        self.assertEqual(m.group(2), '1')
+        self.assertEqual(m.group(3), '3')
+
+    def test_nav_chap_slide_id(self):
+        m = DevHandler._SHORT_NAV_CHAP_RE.match('/p/X/n/1/toc-placeholder')
+        self.assertIsNotNone(m)
+        self.assertEqual(m.group(3), 'toc-placeholder')
+
+    def test_nav_chap_only(self):
+        m = DevHandler._SHORT_NAV_CHAPONLY_RE.match('/p/X/n/2')
+        self.assertIsNotNone(m)
+        self.assertEqual(m.group(2), '2')
+
+    def test_nav_named_c_a_t(self):
+        self.assertIsNotNone(DevHandler._SHORT_NAV_C_RE.match('/p/X/n/c'))
+        self.assertIsNotNone(DevHandler._SHORT_NAV_A_RE.match('/p/X/n/a'))
+        self.assertIsNotNone(DevHandler._SHORT_NAV_T_RE.match('/p/X/n/t'))
+
+    def test_nav_slide_token_excludes_digits_only_chapter(self):
+        # /p/X/n/1 should NOT match _SHORT_NAV_CHAP_RE (only 2 segments after /n/)
+        self.assertIsNone(DevHandler._SHORT_NAV_CHAP_RE.match('/p/X/n/1'))
 
 
 if __name__ == '__main__':
