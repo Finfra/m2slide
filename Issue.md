@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 243
+* Issue HWM: 247
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -23,10 +23,55 @@
 # 🌱 이슈후보
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
 2. HtmlArtEval cover 슬라이드 제목 우측 끝 빈 박스 렌더 (Issue202 등록 시 동반 발견 — word-break와 별개. `_cover.html` 변수 미치환 또는 frontmatter 빈 값 추정)
+3. `_doc_arch/authoring-pipeline.md` 내부 모순 — md2tts-txt 데이터 접근 표(L159 `(없음)`) ↔ 운영 상태 표(L283 `data/md2tts-txt/ (글로벌 룰)`) 불일치. 실제 `data/md2tts-txt/` 폴더 존재(확인됨)하므로 L159가 stale. 둘 중 한 쪽으로 통일 필요 (운영 상태 표 채택 권장). 발견 경위: noteForHuman.md 단계 표 유동 연결 검토(2026-05-27)
 
 # 🔥 진행 중
 
- — source(PDF/PPTX) ↔ 웹 캡처 side-by-side 일괄 피드백 자동화 (등록: 2026-05-26)
+## Issue246. ppt2m2slide 사후 diff 학습 — 변환본 vs 사용자 수정본 차이 자동 추출 (등록: 2026-05-27)
+* 목적: Issue245 Phase C — ppt2m2slide로 .pptx 변환 후 사용자가 markdown/*.md를 수정한 내용을 원본 변환본과 diff하여 mappings.yml 학습 후보로 추출. `data/_proposals/post-convert-<ts>.md` 작성. ppt2m2slide의 후속 변환 정확도를 점진 향상.
+* plan: `_doc_work/plan/ppt2m2slide-post-diff_plan.md` (구현 시 작성)
+* 상세:
+    - 현 격차: ppt2m2slide 변환 후 사용자 수정 사항이 1회성으로 끝남. 같은 종류 패턴(예: SmartArt 매핑 누락·layout 자동 선택 오류) 재발 시 사용자가 매번 같은 수정 반복
+    - 입력: 변환 직후 산출물 스냅샷(`_pipeline/artifacts/06-stage/markdown/*.md`) + 현재 사용자 수정본(`Projects/<N>/markdown/*.md`)
+    - 출력: 의미 있는 차이를 카테고리화하여 `data/_proposals/post-convert-<ts>.md`에 추가
+* 구현 명세:
+    - Phase C-1: 신규 스크립트 `lib/tuner/ppt-post-diff.py` — 두 markdown 폴더의 line-level diff + 의미 분류
+    - Phase C-2: 분류 카테고리 — `layout_changed` / `slot_added` / `text_corrected` / `image_replaced` / `mapping_missing` 등
+    - Phase C-3: ppt2m2slide agent에 사후 diff Step 추가 (변환 종결 후 일정 시간 또는 사용자 트리거 시 실행)
+    - Phase C-4: 출력 `post-convert-<ts>.md`를 promote-to-data.py 동일 워크플로우로 처리 (status: pending → merged/rejected/held)
+* 관련:
+    - Issue245 (Phase A·B 완료)
+    - Issue244 (slide-tuner v1)
+
+# 📕 중요
+
+# 📙 일반
+
+# 📗 선택
+
+# ✅ 완료
+
+## Issue247. data-access-rules backup·lint 강화 — promotion 머지 시 자동 backup + 일관성 검증 (등록: 2026-05-27, 해결: 2026-05-27, commit: e53b0bf) ✅
+* 목적: Issue245 Phase D — promote-to-data.py로 yml 머지 결정 시 해당 `data/<stage>/*.yml`이 사용자에 의해 실제 수정될 때 자동 backup이 보장되고, 정합성 위반 시 lint로 사전 차단. 학습 루프의 신뢰성·되돌리기 가능성 확보.
+* 결과 (Phase D-1·D-2·D-3 모두 완료):
+    - D-1: `lib/tuner/backup-data-yml.sh` 신규 — `data/<stage>/_backup/<YYYYMMDD-HHMMSS>-<원본>.yml` 자동 백업, 30개 회전
+    - D-2: `promote-to-data.py --action merge` 시 backup 자동 호출 + `.claude/rules/data-access-rules.md`에 "Promotion 머지 시 backup 의무" 절 추가
+    - D-3: `./m2slide.sh --lint-data` 신규 subcommand — yml 파싱·patterns categories↔priority 일관성·promotion-*.md status 유효성 3종 lint
+* 검증: `./m2slide.sh --lint-data` 통과 (모든 data/*.yml 파싱 OK, patterns 매핑 OK, promotion status 유효)
+
+## Issue245. 피드백 → `data/<stage>/` 학습 루프 v1 — slide-tuner · ppt2m2slide 사용자 피드백 자동 분류·격리·promotion (등록: 2026-05-27, 해결: 2026-05-27, commit: e53b0bf) ✅
+* 목적: slide-tuner / ppt2m2slide 사용 중 발생하는 사용자 피드백을 forward 단계 표(noteForHuman.md L42-58)의 참조 `data/<stage>/*.yml`에 자동·반자동으로 누적하여, 다음 회차 작업 시 같은 패턴 반복 수정을 회피하는 학습 루프 구축. v1 MVP는 slide-tuner 측 집계기 + promotion 폼까지.
+* plan: `_doc_work/plan/feedback-learning-loop_plan.md`
+* 결과 (Phase A·B 완료):
+    - Phase A: `lib/tuner/aggregate-feedback.py` 신규 + slide-tuner agent Step 9 — round-N.md 파싱 후 카테고리별 카운트, 임계치 초과 시 `data/_proposals/promotion-<ts>-<cat>.md` 자동 생성
+    - Phase B: `lib/tuner/promote-to-data.py` 신규 (list/show/action merge|reject|hold) + Step 10 — AskUserQuestion 카드 컨펌 후 status 갱신 + 카테고리별 머지 가이드 출력
+    - patterns.yml `promotion` 절 추가 — thresholds·target_yml·output 정책 외부화
+    - 검증: BasicKnowledgeForAI_small_model round-1.md → novel 1건 → `promotion-1779801709-novel.md` 자동 생성
+* 후속 분리:
+    - Issue246: Phase C (ppt2m2slide 사후 diff) — 진행 중
+    - Issue247: Phase D (backup·lint 강화) — 완료
+
+## Issue244. slide-tuner — source(PDF/PPTX) ↔ 웹 캡처 side-by-side 일괄 피드백 자동화 (등록: 2026-05-26, 해결: 2026-05-27, commit: 3ae083a) ✅
 * 목적: ppt2m2slide 변환 후 사용자가 매번 스크린샷 + CSV로 피드백을 주는 수동 워크플로우를, 사용자가 폼 한 장으로 N장 슬라이드의 의견을 일괄 제출하면 agent가 자동 수정 + 재빌드 + 재확인까지 반복하는 학습 루프로 자동화
 * plan: `_doc_work/plan/slide-tuner_plan.md`
 * task: `_doc_work/tasks/slide-tuner_task.md`
@@ -48,7 +93,7 @@
         * `data/slide-tuner/patterns.yml` (v1 4종 카테고리)
         * `.claude/agents/slide-tuner.md`
         * `_doc_arch/slide-tuner.md`, `_doc_work/tuner/probe-mode-b.md`
-    - 발견 이슈 (v2+ 후속):
+    - 발견 이슈 (v2+ 후속 — 별도 이슈로 분리 권장):
         * PDF offset 자동 검출 한계 — Step 4.8 사용자 컨펌 사전 검증 의무 (현재 채택안)
         * fetch URL `cwd` 파라미터 raw `/` Firefox fetch 실패 — `quote(safe="")` 완전 인코딩 필수
         * v1 카테고리로 미커버되는 novel 패턴 — `layout_bullet_merge` 카테고리 후보 (`_proposals/tuner-1779804147-novel-c2s3.md`)
@@ -62,14 +107,6 @@
     - Step 6: 피드백 회수 + md 단순 수정 (v1 카테고리 4종)
     - Step 7: 재빌드 + 변경 슬라이드 재캡처 (max-rounds 5)
     - Step 8: Issue.md 갱신 + 라운드별 이력 보존
-
-# 📕 중요
-
-# 📙 일반
-
-# 📗 선택
-
-# ✅ 완료
 
 ## Issue243. _config.yml `agenda_enabled: false` 옵션 — agenda.html 생성·네비게이션 fallback 차단 (등록: 2026-05-27, 해결: 2026-05-27, commit: b256042) ✅
 * 목적: PDF SSOT 변환 프로젝트(예: GenContentProd_v1.1)에서 agenda.html이 불필요. cover_enabled·toc_placeholder·cards_placeholder와 동등한 opt-out 플래그 제공. 빌드 산출물에서 agenda.html 미생성 + index.html cover/redirect를 첫 챕터로 직행.
