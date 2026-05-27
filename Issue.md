@@ -27,22 +27,6 @@
 
 # 🔥 진행 중
 
-## Issue246. ppt2m2slide 사후 diff 학습 — 변환본 vs 사용자 수정본 차이 자동 추출 (등록: 2026-05-27)
-* 목적: Issue245 Phase C — ppt2m2slide로 .pptx 변환 후 사용자가 markdown/*.md를 수정한 내용을 원본 변환본과 diff하여 mappings.yml 학습 후보로 추출. `data/_proposals/post-convert-<ts>.md` 작성. ppt2m2slide의 후속 변환 정확도를 점진 향상.
-* plan: `_doc_work/plan/ppt2m2slide-post-diff_plan.md` (구현 시 작성)
-* 상세:
-    - 현 격차: ppt2m2slide 변환 후 사용자 수정 사항이 1회성으로 끝남. 같은 종류 패턴(예: SmartArt 매핑 누락·layout 자동 선택 오류) 재발 시 사용자가 매번 같은 수정 반복
-    - 입력: 변환 직후 산출물 스냅샷(`_pipeline/artifacts/06-stage/markdown/*.md`) + 현재 사용자 수정본(`Projects/<N>/markdown/*.md`)
-    - 출력: 의미 있는 차이를 카테고리화하여 `data/_proposals/post-convert-<ts>.md`에 추가
-* 구현 명세:
-    - Phase C-1: 신규 스크립트 `lib/tuner/ppt-post-diff.py` — 두 markdown 폴더의 line-level diff + 의미 분류
-    - Phase C-2: 분류 카테고리 — `layout_changed` / `slot_added` / `text_corrected` / `image_replaced` / `mapping_missing` 등
-    - Phase C-3: ppt2m2slide agent에 사후 diff Step 추가 (변환 종결 후 일정 시간 또는 사용자 트리거 시 실행)
-    - Phase C-4: 출력 `post-convert-<ts>.md`를 promote-to-data.py 동일 워크플로우로 처리 (status: pending → merged/rejected/held)
-* 관련:
-    - Issue245 (Phase A·B 완료)
-    - Issue244 (slide-tuner v1)
-
 # 📕 중요
 
 # 📙 일반
@@ -50,6 +34,24 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue246. ppt2m2slide 사후 diff 학습 — 변환본 vs 사용자 수정본 차이 자동 추출 (등록: 2026-05-27, 해결: 2026-05-27, commit: 31aa92d) ✅
+* 목적: Issue245 Phase C — ppt2m2slide로 .pptx 변환 후 사용자가 markdown/*.md를 수정한 내용을 원본 변환본과 diff하여 mappings.yml 학습 후보로 추출. ppt2m2slide의 후속 변환 정확도를 점진 향상.
+* plan: `_doc_work/plan/ppt2m2slide-post-diff_plan.md`
+* 결과 (Phase C-1·C-2·C-3·C-4 모두 완료):
+    - C-1: `lib/tuner/ppt-post-diff.py` 신규 — line-level diff + 카테고리화 + `data/_proposals/post-convert-<ts>-<cat>.md` 자동 생성
+    - C-2: 6종 카테고리(layout_changed·slot_added·image_replaced·mapping_missing·frontmatter_changed·text_corrected) 정의 + 카테고리별 임계치(mapping_missing=1, layout/slot=2, image=3, text=5)
+    - C-3: ppt2m2slide agent Step 7(변환 직후 markdown 스냅샷 저장 `_pipeline/post-convert/markdown/`) + Step 8(사후 diff 사용자 명시 트리거) 추가
+    - C-4: `promote-to-data.py` 일반화 — `post-convert-*.md`도 promotion-*과 동일 워크플로우(list/show/merge/reject/hold) 처리. `--lint-data` Step 3도 양쪽 status 검증
+* 정책 SSOT: `data/ppt2m2slide/post-diff-rules.yml` (untracked, gitignored)
+* 검증: 인공 시나리오(`/tmp/ppt-diff-test`)로 4 events 검출(frontmatter_changed·mapping_missing·layout_changed·slot_added) → mapping_missing 1건만 임계치 충족 후 후보 생성
+* v2 후속:
+    - frontmatter 라인 분류 정밀도 (현재 snapshot 기준이라 사용자 추가 frontmatter는 body로 오분류 가능)
+    - 카테고리별 removed/added 정확 분리 (현재 body 전체 표시)
+    - cross-project 누적 임계치 (한 프로젝트 1회 발생이 다른 프로젝트와 합쳐 임계치 도달 시 학습)
+* 관련:
+    - Issue245 (학습 루프 v1, 완료) — 본 이슈와 통합 워크플로우 (promote-to-data.py)
+    - Issue247 (backup·lint, 완료) — 본 이슈도 backup 의무 동일 적용
 
 ## Issue247. data-access-rules backup·lint 강화 — promotion 머지 시 자동 backup + 일관성 검증 (등록: 2026-05-27, 해결: 2026-05-27, commit: e53b0bf) ✅
 * 목적: Issue245 Phase D — promote-to-data.py로 yml 머지 결정 시 해당 `data/<stage>/*.yml`이 사용자에 의해 실제 수정될 때 자동 backup이 보장되고, 정합성 위반 시 lint로 사전 차단. 학습 루프의 신뢰성·되돌리기 가능성 확보.
