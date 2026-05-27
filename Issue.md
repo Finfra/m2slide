@@ -35,7 +35,7 @@
 
 # ✅ 완료
 
-## Issue248. dev-server bare URL semantic 반전 — 기본 = 단일 슬라이드 design view (solo), navigation 은 `?mode=nav` 옵션 (등록: 2026-05-28, 해결: 2026-05-28, commit: TBD) ✅
+## Issue248. dev-server bare URL semantic 반전 — 기본 = 단일 슬라이드 design view (solo), navigation 은 `?mode=nav` 옵션 (등록: 2026-05-28, 해결: 2026-05-28, commit: ebbca88) ✅
 * 목적: 슬라이드 디자인 확인 시 `curl http://127.0.0.1:9877/p/<P>/s/<chap>/<slide>`로 해당 슬라이드 단일 section의 design HTML만 추출. 페이지별 디자인 비교/검증 편의성 향상.
 * 결과:
     - `lib/dev-server/server.py`:
