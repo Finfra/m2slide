@@ -625,19 +625,30 @@ class DevHandler(SimpleHTTPRequestHandler):
         return self._proxy_build_artifact(file_rel, slide_n=1)
 
     def _serve_short_c(self, project: str):
-        """/p/<P>/s/c — cover. Fallback: not active → 302 /s/a."""
+        """/p/<P>/s/c — cover. Fallback: not active → 302 /s/a (preserves query)."""
         if not self._cover_active(project):
-            return self._redirect_302(f'/p/{project}/s/a')
+            return self._redirect_302(self._with_query(f'/p/{project}/s/a'))
         # cover 활성 — chapter mode·single mode 모두 index.html proxy (markmap or cover slide)
         file_rel = self._short_file_rel(project, None)  # index.html
         return self._proxy_build_artifact(file_rel)
 
     def _serve_short_a(self, project: str):
-        """/p/<P>/s/a — agenda. Fallback: not active → 302 /s/t."""
+        """/p/<P>/s/a — agenda. Fallback: not active → 302 /s/t (preserves query)."""
         if not self._agenda_active(project):
-            return self._redirect_302(f'/p/{project}/s/t')
+            return self._redirect_302(self._with_query(f'/p/{project}/s/t'))
         file_rel = f'Projects/{project}/slide/agenda.html'
         return self._proxy_build_artifact(file_rel)
+
+    def _with_query(self, location: str) -> str:
+        """Append current request's query string to a redirect location.
+        Used by entry-route fallback chain (/s/c → /s/a → /s/t → /s/1/1) so
+        ?mode=nav from the original URL propagates through all hops.
+        """
+        q = urlparse(self.path).query
+        if not q:
+            return location
+        sep = '&' if '?' in location else '?'
+        return f'{location}{sep}{q}'
 
     def _serve_short_t(self, project: str):
         """/p/<P>/s/t — toc. Fallback: not active → 302 /s/1/1?mode=nav.
@@ -647,6 +658,7 @@ class DevHandler(SimpleHTTPRequestHandler):
         entry navigation. Force ?mode=nav explicitly.
         """
         if not self._toc_active(project):
+            # Terminal hop — /s/1/1?mode=nav fixed (no further propagation needed)
             return self._redirect_302(f'/p/{project}/s/1/1?mode=nav')
         # toc slide 위치:
         #   single mode: index.html#/2 (cover=#/1, toc=#/2)
@@ -1011,7 +1023,9 @@ class DevHandler(SimpleHTTPRequestHandler):
                 meta_label = f'{len(chapter_files)} chapter (chapter mode)'
             else:
                 meta_label = '1 deck (single mode)'
-            first_link = f'/p/{p}/s/c'  # was /s/1/1 — fallback chain 보장
+            # Issue248: explicit ?mode=nav so URL bar shows convention + fallback
+            # chain (/s/c → /s/a → /s/t → /s/1/1) propagates mode=nav via _with_query.
+            first_link = f'/p/{p}/s/c?mode=nav'
             cards.append(
                 f'<div class="card"><h3><a href="{first_link}">{p}</a></h3>'
                 f'<div class="meta">{meta_label} · 진입: <code>{entry}</code></div>'
