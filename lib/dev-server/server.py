@@ -640,14 +640,26 @@ class DevHandler(SimpleHTTPRequestHandler):
         return self._proxy_build_artifact(file_rel)
 
     def _serve_short_t(self, project: str):
-        """/p/<P>/s/t — toc. Fallback: not active → 302 /s/1/1."""
+        """/p/<P>/s/t — toc. Fallback: not active → 302 /s/1/1?mode=nav.
+
+        Issue248: entry routes (c/a/t + fallback chain) always serve deck mode.
+        Bare /s/1/1 would now mean solo (single section) which is wrong for
+        entry navigation. Force ?mode=nav explicitly.
+        """
         if not self._toc_active(project):
-            return self._redirect_302(f'/p/{project}/s/1/1')
+            return self._redirect_302(f'/p/{project}/s/1/1?mode=nav')
         # toc slide 위치:
         #   single mode: index.html#/2 (cover=#/1, toc=#/2)
         #   chapter mode: 첫 chapter html#/2 (chapter 페이지 첫 슬라이드 = toc 자동 주입)
-        # 모두 chap=1, slide=2 로 통일 가능 (m2slide hashOneBasedIndex 정합)
-        return self._serve_short_slide_indexed(project, 1, 2)
+        # 모두 chap=1, slide=2 로 통일 가능 (m2slide hashOneBasedIndex 정합).
+        # Issue248: 반드시 deck proxy 경유 (solo 회피).
+        stem = self._resolve_chapter_index(project, 1)
+        if stem is None:
+            self.send_error(404, f'chapter 1 not found in {project}')
+            return
+        chapter = None if stem == 'index' else stem
+        file_rel = self._short_file_rel(project, chapter)
+        return self._proxy_build_artifact(file_rel, slide_n=2)
 
     def _redirect_302(self, location: str):
         """Generic 302 redirect helper."""
