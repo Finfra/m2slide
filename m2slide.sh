@@ -145,14 +145,14 @@ PY
     echo "ℹ️ $PATTERNS_YML 없음 — skip"
   fi
 
-  # 3. promotion-*.md frontmatter status 유효성
+  # 3. promotion-*.md + post-convert-*.md frontmatter status 유효성
   echo ""
-  echo "── 3. promotion-*.md status 유효성 ──"
+  echo "── 3. promotion-*·post-convert-*.md status 유효성 ──"
   VALID_STATUSES="pending merged rejected held"
   PROP_DIR="$SCRIPT_DIR/data/_proposals"
   PROP_FAIL=0
   if [ -d "$PROP_DIR" ]; then
-    for md in "$PROP_DIR"/promotion-*.md; do
+    for md in "$PROP_DIR"/promotion-*.md "$PROP_DIR"/post-convert-*.md; do
       [ -f "$md" ] || continue
       STATUS=$(awk '/^---$/{f=!f;next} f && /^status:/{print $2; exit}' "$md")
       if [ -z "$STATUS" ]; then

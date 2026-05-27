@@ -97,11 +97,16 @@ def parse_proposal(path: Path) -> Optional[Proposal]:
 
 
 def list_proposals(repo_root: Path, status_filter: str) -> List[Proposal]:
+    """`promotion-*.md` (slide-tuner Phase A·B) + `post-convert-*.md` (ppt2m2slide Phase C) 모두 스캔."""
     proposals_dir = repo_root / "data" / "_proposals"
     if not proposals_dir.exists():
         return []
     out: List[Proposal] = []
-    for p in sorted(proposals_dir.glob("promotion-*.md")):
+    patterns = ("promotion-*.md", "post-convert-*.md")
+    files: List[Path] = []
+    for pat in patterns:
+        files.extend(proposals_dir.glob(pat))
+    for p in sorted(set(files)):
         prop = parse_proposal(p)
         if not prop:
             continue
