@@ -162,5 +162,38 @@ class ScriptProtectTest(unittest.TestCase):
         self.assertIn('var s = /src="([^"]+)"/;', out)
 
 
+class SoloSliceTest(unittest.TestCase):
+    """Issue248 — solo mode body slice + matching </div> finder."""
+
+    def _h(self):
+        return DevHandler.__new__(DevHandler)
+
+    def test_find_matching_div_close_basic(self):
+        html = '<div class="slides"><section>A</section></div>tail'
+        # body starts right after opening tag
+        body_start = html.index('>') + 1
+        close = self._h()._find_matching_div_close(html, body_start)
+        # close should point at the </div> opening '<'
+        self.assertEqual(html[close:close + 6], '</div>')
+
+    def test_find_matching_div_close_nested(self):
+        html = (
+            '<div class="slides">'
+            '<section><div>inner</div></section>'
+            '<section><div><div>x</div></div></section>'
+            '</div>tail'
+        )
+        body_start = html.index('class="slides">') + len('class="slides">')
+        close = self._h()._find_matching_div_close(html, body_start)
+        # the final </div> after second section, before "tail"
+        self.assertEqual(html[close:close + 6], '</div>')
+        self.assertTrue(html[close + 6:].startswith('tail'))
+
+    def test_find_matching_div_close_imbalanced(self):
+        html = '<div class="slides"><section>A</section>'  # no close
+        body_start = html.index('>') + 1
+        self.assertEqual(self._h()._find_matching_div_close(html, body_start), -1)
+
+
 if __name__ == '__main__':
     unittest.main()

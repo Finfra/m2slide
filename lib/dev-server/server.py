@@ -5,12 +5,19 @@ localhost-only static HTTP server for m2slide build artifacts.
 Document root = m2slide project root (passed via --root).
 Bound to 127.0.0.1 only.
 
-Short URL routing (Issue236.5~12):
-  GET /p/<project>/s/<chap>/<slide>           → design view (proxy build artifact)
-  GET /p/<project>/s/<chap>/<slide>?mode=text → plain text section (curl-friendly)
-  GET /p/<project>                            → slide list overview
-  GET /p/<project>/s/cover                    → index.html proxy (markmap)
-  GET /p/<project>/s/<chap>/toc               → chap N first slide
+Short URL routing (Issue236.5~12 · Issue248):
+  GET /p/<project>/s/<chap>/<slide>            → solo design view (single section)
+  GET /p/<project>/s/<chap>/<slide>?mode=nav   → deck design view (full deck + navigation)
+  GET /p/<project>/s/<chap>/<slide>?mode=text  → plain text section (curl-friendly)
+  GET /p/<project>                             → slide list overview
+  GET /p/<project>/s/cover                     → index.html proxy (markmap)
+  GET /p/<project>/s/<chap>/toc                → chap N first slide
+
+Issue248 — bare semantic flip:
+  - Default (bare) = solo: single <section> only, full theme/CSS/JS preserved
+  - ?mode=nav = legacy deck behavior (Issue236 default before Issue248)
+  - ?mode=text = curl-friendly plain text (unchanged)
+  - Hash #/N is not transmitted to server (browser-strip) → mode must be query
 
 This server is dev-only; it is NOT part of build artifacts and does not affect
 file:// deployment. The file-deployment rule remains intact.
@@ -437,9 +444,11 @@ class DevHandler(SimpleHTTPRequestHandler):
     def _serve_short_slide(self, project: str, chapter, n: int):
         """Handle /p/<project>[/<chapter>]/s/<n>.
 
-        Default (bare URL): proxy build artifact + navigate to slide N (browser design view).
-        ?mode=text: plain text section (curl-friendly).
-        ?mode=raw: alias for bare (backward compat).
+        Issue248 — bare semantic flip:
+        * bare URL (no mode query): solo design view (single section, full theme)
+        * ?mode=nav: deck design view (full deck + navigation, prior default)
+        * ?mode=text: plain text section (curl-friendly)
+        * ?mode=raw: alias for ?mode=nav (backward compat for old callers)
 
         Issue240: chapter 모드에서 chapter=None 으로 `/p/<P>/s/<N>` 가 들어오면
         N=chap_idx 로 해석하여 chap N 의 첫 슬라이드로 위임 (index.html cover 진입 회피).
@@ -452,8 +461,9 @@ class DevHandler(SimpleHTTPRequestHandler):
                 return self._serve_short_slide_indexed(project, n, 1)
         file_rel = self._short_file_rel(project, chapter)
         q = parse_qs(urlparse(self.path).query)
-        if q.get('mode', [''])[0] == 'text':
-            # text section (curl-friendly)
+        mode = q.get('mode', [''])[0]
+        if mode == 'text':
+            # text section (curl-friendly, no reveal.js)
             resolved = self._resolve_file_path(file_rel)
             if resolved is None:
                 return
@@ -474,8 +484,103 @@ class DevHandler(SimpleHTTPRequestHandler):
             nav_html = self._render_indexed_nav(rel, n, total)
             self._write_html(wrap_text_html(rel, n, total, section_html, head_links, nav_html))
             return
-        # default: proxy build artifact (browser design view) + navigate to slide N
-        return self._proxy_build_artifact(file_rel, slide_n=n)
+        if mode in ('nav', 'raw'):
+            # full deck + navigation (legacy default before Issue248)
+            return self._proxy_build_artifact(file_rel, slide_n=n)
+        # Issue248 default (bare): solo design view — single section, full theme/JS preserved
+        return self._serve_solo_slide(file_rel, n)
+
+    # Issue248: solo design view — replace <div class="slides">…</div> body with
+    # only the N-th top-level section. theme CSS, reveal.js, component dispatchers
+    # (KaTeX · chart · model3d · p5 · d3 · react) preserved unchanged.
+    _SLIDES_OPEN_RE = re.compile(
+        r'<div\b[^>]*\bclass="[^"]*\bslides\b[^"]*"[^>]*>', re.IGNORECASE)
+
+    def _serve_solo_slide(self, file_rel: str, n: int):
+        """Issue248 — bare default. Single section design view.
+
+        Reads build artifact, finds top-level <section> spans, keeps only the
+        N-th section as the body of `.reveal .slides`, drops the rest.
+        Theme stylesheets, reveal.js, component CDNs all preserved → full visual
+        fidelity for a single slide.
+
+        Cross-page nav rewriting + relative asset rewriting still applied so the
+        single-slide response renders correctly under file:// → dev-server proxy
+        boundary.
+        """
+        resolved = self._resolve_file_path(file_rel)
+        if resolved is None:
+            return
+        full, rel = resolved
+        try:
+            with open(full, 'r', encoding='utf-8') as f:
+                content = f.read()
+        except (OSError, UnicodeDecodeError) as e:
+            self.send_error(500, f'cannot read {rel}: {e}')
+            return
+        spans = find_top_section_spans(content)
+        if not spans:
+            self.send_error(404, f'no <section> found in {rel}')
+            return
+        total = len(spans)
+        if n < 1 or n > total:
+            self.send_error(
+                404, f'slide {n} out of range (1..{total}) in {rel}')
+            return
+        # Locate <div class="slides"> opening tag and its matching </div>.
+        slides_open = self._SLIDES_OPEN_RE.search(content)
+        if not slides_open:
+            self.send_error(500, f'.reveal .slides container not found in {rel}')
+            return
+        # Walk forward to balance <div>…</div>. Section span(start,end) lies
+        # inside this container; we replace the inner body with single section.
+        body_start = slides_open.end()
+        slides_end = self._find_matching_div_close(content, body_start)
+        if slides_end < 0:
+            self.send_error(500, f'unbalanced .slides container in {rel}')
+            return
+        s, e = spans[n - 1]
+        section_html = content[s:e]
+        new_content = (
+            content[:body_start] + section_html + content[slides_end:]
+        )
+        # Extract project name for nav/asset rewriting (same as proxy path).
+        m = _PATH_PROJECT_RE.match(rel.lstrip('/'))
+        project = m.group(1) if m else None
+        if project:
+            new_content = self._rewrite_relative_assets(new_content, project)
+            new_content = self._rewrite_nav_strings(new_content, project)
+        data = new_content.encode('utf-8')
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Length', str(len(data)))
+        self.send_header('Cache-Control', 'no-store')
+        self.end_headers()
+        self.wfile.write(data)
+
+    @staticmethod
+    def _find_matching_div_close(html: str, pos: int) -> int:
+        """Return offset of matching </div> close for the <div> opened just
+        before pos. Returns -1 on imbalance.
+        """
+        depth = 1
+        open_re = re.compile(r'<div\b', re.IGNORECASE)
+        close_re = re.compile(r'</div\s*>', re.IGNORECASE)
+        while pos < len(html):
+            om = open_re.search(html, pos)
+            cm = close_re.search(html, pos)
+            if not cm:
+                return -1
+            if om and om.start() < cm.start():
+                depth += 1
+                gt = html.find('>', om.end())
+                pos = (gt + 1) if gt >= 0 else om.end()
+            else:
+                depth -= 1
+                if depth == 0:
+                    return cm.start()
+                pos = cm.end()
+        return -1
 
     def _render_indexed_nav(self, file_path: str, n: int, total: int):
         """Build nav bar with chap_idx-aware URLs (/p/<P>/s/<chap>/<slide>)."""

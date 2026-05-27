@@ -59,13 +59,14 @@ m2slide 저장소(`lib/m2slide/`) 내 다음 파일을 수정한 직후 자동 �
 
 검증 의도에 따라 두 채널 분기:
 
-| 채널            | URL                                                          | 도구                 | 용도                              |
-| :-------------- | :----------------------------------------------------------- | :------------------- | :-------------------------------- |
-| 시각 (file://)  | `file:///abs/.../slide/X.html?fwd=1#/N`                      | AppleScript Chrome   | 사용자 직접 확인, 배포 시뮬레이션 |
-| 헤드리스 (http) | `http://localhost:9877/p/<P>/s/<chap>/<slide>[?mode=text]`   | Playwright MCP, curl | DOM·console·screenshot·curl 검증  |
+| 채널            | URL                                                                       | 도구                 | 용도                              |
+| :-------------- | :------------------------------------------------------------------------ | :------------------- | :-------------------------------- |
+| 시각 (file://)  | `file:///abs/.../slide/X.html?fwd=1#/N`                                   | AppleScript Chrome   | 사용자 직접 확인, 배포 시뮬레이션 |
+| 헤드리스 (http) | `http://localhost:9877/p/<P>/s/<chap>/<slide>[?mode=nav\|text]`           | Playwright MCP, curl | DOM·console·screenshot·curl 검증  |
 
 > ⚠️ legacy `http://localhost:9877/Projects/<P>/slide/<X>.html` 직접 접근은 차단됨 (Issue236.11 — 404). 반드시 short form 사용.
 > chap·slide 는 1-base 인덱스 (m2slide hashOneBasedIndex 정합). chap=1 = sorted chapter files 첫 번째 (single mode 면 index.html).
+> **Issue248 — bare URL semantic 반전**: `/p/<P>/s/<chap>/<slide>` 기본 응답은 **단일 슬라이드 design view(solo)** — 해당 section 1개 + 풀 테마/JS. deck navigation 검증이 필요하면 `?mode=nav` 명시. plain text 검증은 `?mode=text` (불변). 브라우저는 hash `#/N`을 서버로 전송하지 않으므로 모드는 쿼리로만 선택 가능.
 
 선택 기준:
 
@@ -89,19 +90,26 @@ m2slide 저장소(`lib/m2slide/`) 내 다음 파일을 수정한 직후 자동 �
 Playwright 사용 (short form 필수):
 
 ```
+# 단일 슬라이드 design 검증 (bare = solo, Issue248 기본)
 mcp__playwright__browser_navigate("http://localhost:9877/p/aTest_v1/s/8/6")
 mcp__playwright__browser_take_screenshot(filename="_doc_work/capture/verify-aTest_v1-chap8-slide6.png")
 mcp__playwright__browser_console_messages()
+
+# deck navigation 검증 (?mode=nav 명시 — 좌우 키, agenda 링크, reveal.js nav UI)
+mcp__playwright__browser_navigate("http://localhost:9877/p/aTest_v1/s/8/6?mode=nav")
 ```
 
-curl 사용 (text mode — DOM 추출 없이 빠른 텍스트 검증):
+curl 사용:
 
 ```bash
-# slide N section 텍스트 응답 (curl 친화)
-curl http://localhost:9877/p/aTest_v1/s/8/6?mode=text
-
-# slide 전체 HTML (브라우저 디자인 view, 기본)
+# 단일 슬라이드 design HTML (Issue248 기본 — 페이지별 디자인 확인용)
 curl http://localhost:9877/p/aTest_v1/s/8/6
+
+# deck navigation HTML (전체 deck, reveal.js + 좌우 nav UI)
+curl 'http://localhost:9877/p/aTest_v1/s/8/6?mode=nav'
+
+# plain text section (curl + grep 친화, reveal.js 없이)
+curl 'http://localhost:9877/p/aTest_v1/s/8/6?mode=text'
 ```
 
 `?fwd=1` query 는 headless 채널에서 불필요 — m2slide 내부 cross-page 트랜지션 cue 전용, 외부 진입은 short form 인덱스(`<chap>/<slide>`)로 절대 좌표 직접 지정.

@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 247
+* Issue HWM: 248
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -34,6 +34,20 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue248. dev-server bare URL semantic 반전 — 기본 = 단일 슬라이드 design view (solo), navigation 은 `?mode=nav` 옵션 (등록: 2026-05-28, 해결: 2026-05-28, commit: TBD) ✅
+* 목적: 슬라이드 디자인 확인 시 `curl http://127.0.0.1:9877/p/<P>/s/<chap>/<slide>`로 해당 슬라이드 단일 section의 design HTML만 추출. 페이지별 디자인 비교/검증 편의성 향상.
+* 결과:
+    - `lib/dev-server/server.py`:
+        - `_serve_short_slide()` mode 분기: `text` → 기존 text wrap (불변), `nav`/`raw` → `_proxy_build_artifact(slide_n=n)` (기존 deck), bare → 신규 `_serve_solo_slide()`
+        - `_serve_solo_slide(file_rel, n)`: build artifact 읽고 `find_top_section_spans()`로 모든 top-level section 찾은 후 N번째만 남기고 `<div class="slides">…</div>` 본문 재작성, `_rewrite_relative_assets` + `_rewrite_nav_strings` 적용 → theme CSS/JS·reveal.js·컴포넌트 dispatcher 그대로 유지
+        - `_find_matching_div_close()` helper — depth-balanced `<div>` 매칭으로 `.slides` 컨테이너 끝 위치 정확 추적
+    - `lib/dev-server/test_server.py`: `SoloSliceTest` 신규 3개 — basic span, nested, imbalanced (총 14 → 17 tests OK)
+    - `.claude/rules/apply-verify-rules.md`: playwright/curl 예제에 `?mode=nav` (deck) vs bare (solo) 구분 명시, Issue248 경고 박스 추가
+    - `_doc_arch/dev-server.md`: 라우팅 표·URL 구조·사용 예시 갱신
+    - `.claude/skills/open-slide/SKILL.md`: `--verify` URL에 bare/?mode=nav 양쪽 명시
+* hash `#/N`은 브라우저가 서버로 전송하지 않음 → 모드 선택은 쿼리 파라미터로만 가능
+* 검증: `curl http://127.0.0.1:9877/p/AgenticCoding_v1.0/s/2/48` → bare=1 section, `?mode=nav`=50 sections (full deck), `?mode=text`=1 section text, out-of-range=404. 17 tests OK.
 
 ## Issue246. ppt2m2slide 사후 diff 학습 — 변환본 vs 사용자 수정본 차이 자동 추출 (등록: 2026-05-27, 해결: 2026-05-27, commit: 31aa92d) ✅
 * 목적: Issue245 Phase C — ppt2m2slide로 .pptx 변환 후 사용자가 markdown/*.md를 수정한 내용을 원본 변환본과 diff하여 mappings.yml 학습 후보로 추출. ppt2m2slide의 후속 변환 정확도를 점진 향상.
