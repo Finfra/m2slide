@@ -35,7 +35,7 @@
 
 # ✅ 완료
 
-## Issue248. dev-server URL semantic 분리 — `/s/` = solo design view (단일 슬라이드), `/n/` = deck navigation (path-based) (등록: 2026-05-28, 해결: 2026-05-28, commit: ebbca88, 91ea9db, b7d7a3d, 95d431c, TBD) ✅
+## Issue248. dev-server URL semantic 분리 — `/s/` = solo design view (단일 슬라이드), `/n/` = deck navigation (path-based) (등록: 2026-05-28, 해결: 2026-05-28, commit: ebbca88, 91ea9db, b7d7a3d, 95d431c, 7ce2bf5) ✅
 * 목적: 슬라이드 디자인 확인 시 단일 section만 추출(solo) + deck navigation 시 URL 안정성 보장. 초기 v1은 `?mode=nav` 쿼리로 구현했으나 cross-page nav 시 query가 손실(`/s/1/?fwd=1#/toc-placeholder` 깨짐)되어 path-based로 재설계.
 * 최종 설계 (v2):
     - `/p/<P>/s/<chap>/<slide>` = **solo design view** (단일 section + 풀 테마/JS). plain text는 `?mode=text`
