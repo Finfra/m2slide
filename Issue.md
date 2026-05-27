@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 239
+* Issue HWM: 243
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -24,7 +24,44 @@
 1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
 2. HtmlArtEval cover 슬라이드 제목 우측 끝 빈 박스 렌더 (Issue202 등록 시 동반 발견 — word-break와 별개. `_cover.html` 변수 미치환 또는 frontmatter 빈 값 추정)
 
-# 🚧 진행중
+# 🔥 진행 중
+
+ — source(PDF/PPTX) ↔ 웹 캡처 side-by-side 일괄 피드백 자동화 (등록: 2026-05-26)
+* 목적: ppt2m2slide 변환 후 사용자가 매번 스크린샷 + CSV로 피드백을 주는 수동 워크플로우를, 사용자가 폼 한 장으로 N장 슬라이드의 의견을 일괄 제출하면 agent가 자동 수정 + 재빌드 + 재확인까지 반복하는 학습 루프로 자동화
+* plan: `_doc_work/plan/slide-tuner_plan.md`
+* task: `_doc_work/tasks/slide-tuner_task.md`
+* arch: `_doc_arch/slide-tuner.md`
+* round-1: `_doc_work/tuner/1779801709/round-1.md`
+* 상세:
+    - source: Issue241 학습 사례 — 사용자 스크린샷·CSV 수동 매칭 부담 인식
+    - 핵심 UX: 비교폼 카드 N개 (좌: 현재 슬라이드 / 우: PDF 페이지 / 하: 정상 체크 + textarea)
+    - Mode B form 자동 회수 인프라(`htm-ask-intercept.sh`) 활용
+    - v1 범위: 캡처 + PDF 페어링 + 단일 라운드 폼 + 자유 텍스트 피드백 + md 단순 수정 (4 카테고리 분류)
+    - v2+ 분리: PDF crop 자동화, LLM 분류, data yml 자동 반영, Issue commit
+* v1 MVP 진행 결과 (2026-05-26):
+    - Step 1~8 + Step 4.8(alignment) 전 단계 시연 완료
+    - BasicKnowledgeForAI_small_model 21장 비교 라운드 1회 완주
+    - 회수 결과: 20장 정상 / 1장 수정(c2/s3 "윈도우에서 접속시")
+    - patch 적용: bullet 2+3 통합 ("file은 fileZilla ftp 사용 / upload(일명 sftp)")
+    - 신규 산출물:
+        * `lib/tuner/extract-pdf-pages.py`, `build-pairing.py`, `detect-viewport.py`, `build-form.py`, `build-align-form.py`
+        * `data/slide-tuner/patterns.yml` (v1 4종 카테고리)
+        * `.claude/agents/slide-tuner.md`
+        * `_doc_arch/slide-tuner.md`, `_doc_work/tuner/probe-mode-b.md`
+    - 발견 이슈 (v2+ 후속):
+        * PDF offset 자동 검출 한계 — Step 4.8 사용자 컨펌 사전 검증 의무 (현재 채택안)
+        * fetch URL `cwd` 파라미터 raw `/` Firefox fetch 실패 — `quote(safe="")` 완전 인코딩 필수
+        * v1 카테고리로 미커버되는 novel 패턴 — `layout_bullet_merge` 카테고리 후보 (`_proposals/tuner-1779804147-novel-c2s3.md`)
+* 구현 명세:
+    - Step 1 (선행): raw HTML form vs AskUserQuestion 호환성 검증 — `_doc_work/tuner/probe-mode-b.md` 결정
+    - Step 2: 보조 스크립트 3개 (extract-pdf-pages.py, build-pairing.py, detect-viewport.py)
+    - Step 3: `.claude/agents/slide-tuner.md` 운영 명세
+    - Step 4: Playwright 캡처 + pdftoppm + 페어링 매핑
+    - Step 4.8 (Issue242 후속): PDF↔슬라이드 alignment 사전 검증 (offset 사용자 컨펌)
+    - Step 5: 비교·피드백 폼 HTML 생성기
+    - Step 6: 피드백 회수 + md 단순 수정 (v1 카테고리 4종)
+    - Step 7: 재빌드 + 변경 슬라이드 재캡처 (max-rounds 5)
+    - Step 8: Issue.md 갱신 + 라운드별 이력 보존
 
 # 📕 중요
 
@@ -33,6 +70,48 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue243. _config.yml `agenda_enabled: false` 옵션 — agenda.html 생성·네비게이션 fallback 차단 (등록: 2026-05-27, 해결: 2026-05-27, commit: TBD) ✅
+* 목적: PDF SSOT 변환 프로젝트(예: GenContentProd_v1.1)에서 agenda.html이 불필요. cover_enabled·toc_placeholder·cards_placeholder와 동등한 opt-out 플래그 제공. 빌드 산출물에서 agenda.html 미생성 + index.html cover/redirect를 첫 챕터로 직행.
+* 결과:
+    - `lib/config.js`: `agendaEnabled: true` default + `agenda_enabled:` 파싱 추가
+    - `lib/generate-slides.js`: `cfg.agendaEnabled === false` 시 agenda.html 생성 skip + cover_enabled=false redirect target = 첫 챕터로 분기 + generateCoverHTML에 `agendaEnabled`·`firstChapter` 인자 전달
+    - `lib/html-builder.js`:
+        * deck nav `M2SLIDE_AGENDA_URL`(back) + 신규 `M2SLIDE_AGENDA_FWD_URL`(forward) 변수화 — agenda_enabled=false 시 forward = `<firstChapter>?fwd=1`
+        * deck nav 하드코딩 3건(↓ cover→agenda, → cover override, End cover→agenda) 변수 치환
+        * generateCoverHTML 신규 인자 `agendaEnabled`·`firstChapter` 수용 + cover nav `COVER_AGENDA_FWD` 변수 추가
+        * cover nav 하드코딩 4건(→/↓/Space, PgUp, End, click) 변수 치환
+    - `lib/agenda.js`: `getFirstChapter()` helper 신규 + module.exports 등록
+    - 회귀 검증: `aTest_v1` (agenda_enabled 미설정 → 기존 동작 그대로) + `GenContentProd_v1.1` (agenda_enabled=false → agenda.html 미생성 + cover `01-opening.html?fwd=1` 직행) 양쪽 빌드 통과 + lint-deployment 0 violations
+
+## Issue241. BasicKnowledgeForAI_small_model 슬라이드 7건 PDF 정합 + data 정책 보강 (등록: 2026-05-26, 해결: 2026-05-26, commit: TBD) ✅
+* 목적: `BasicKnowledgeForAI_small_model` 모델 7개 슬라이드(#/7, #/8, #/10, #/12, #/13, #/14, #/15)의 PDF 원본 대비 누락·md 렌더링 오류 수정 + 학습 패턴을 `data/ppt2m2slide/heuristics.yml`·`data/media-creater/tools.yml`에 영구 보강
+* 결과:
+    - 슬라이드 수정 7건 — pipe-table source PDF crop, 화살표 합성 이미지 추출, 외부 URL 로컬화, inline 링크 백틱 wrap, flex pair_comparison_layout 적용
+    - 신규 이미지 8개 추출 (`s07_ordered_left/right`, `s08_unordered_left`, `s12_python_arrow`, `s12_html_arrow`, `s13_pipe_source`, `s14_finfra_logo`, `s15_pipe_source`) — PDF p8/9/13/14/15/16에서 `pdftoppm -r 200` + `magick -crop` 사용
+    - `data/ppt2m2slide/heuristics.yml` +98 lines: `composite_shape_images`(텍스트+화살표+이미지 합성 shape → PDF crop 전략), `external_url_image`(http URL → 로컬 crop), `image_source_decision`(pptx native picture > PDF crop > web fetch 우선순위)
+    - `data/media-creater/tools.yml` +25 lines: `pair_comparison_layout`(flex container, 동일 height, gap 30px — `::: columns` 비율 강제 빈 공간 회피)
+    - 검증: dev-server `/p/BasicKnowledgeForAI_small_model/s/1/{7,8,10,12,13,14,15}` Playwright capture 통과, PDF p8/9/11/13/14/15/16 시각 일치
+* 학습 인사이트:
+    - pptx 임베디드 이미지(`ppt/media/imageN.png`)는 PICTURE shape 만 커버. 텍스트박스·화살표·라인 shape 은 미커버 → PDF render + crop 이 유일한 보존 경로
+    - `::: columns` width 강제는 이미지 폭과 column 폭 불일치 시 빈 공간 발생. 동일 height flex container 가 시각 균형 + 화살표 연결에 우월
+    - PPT pipe-table syntax 텍스트박스는 코드블록 wrap 필수 (m2slide markdown 파서가 HTML `<table>` 자동 렌더 회피)
+    - 외부 URL 이미지는 `.claude/rules/file-deployment-rules.md` 위반 — PDF crop fallback 권장
+* 목적: `Projects/_ppt/BasicKnowledgeForAI_small.pptx`를 ppt2m2slide로 변환하여 `Projects/BasicKnowledgeForAI_small_model`과 일치 여부 확인 + 차이 발견 시 data 정책 yml 보강 (최대 10턴 반복)
+* 결과:
+    - **Turn 1에서 0 diff 수렴** — 추가 반복 불필요
+    - 비교 결과 (turn 1):
+        - `AGENDA.md`: byte-equal (12 lines)
+        - `01-markdown.md`: byte-equal (269 lines, H1 16개)
+        - `02-linux.md`: byte-equal (90 lines, H1 4개)
+        - `_config.yml` / `Info.md`: byte-equal
+        - `markdown/img/`: 동일 16장 (파일명 일치)
+    - 빌드 검증: `./m2slide.sh BasicKnowledgeForAI_small` 성공 (21 slides total = 16 + 5, chapter mode, palette office_rainbow exact, slide_ratio 3:2)
+    - mode 판정·layout 분류·htmlart/chart/palette 매핑·이미지 추출 모두 모델과 일치
+* 구현 명세:
+    - 변경된 data yml: **0건** (정책이 이미 잘 튜닝되어 있음 — Issue228 후속 원본 보존 + Issue227 cover 회피 정책 정상 작동)
+    - 보고서: `data/_proposals/BasicKnowledgeForAI_small-2026-05-26.md` (기존 파일 갱신, 신규 후보 0건)
+    - PDF 23 페이지 → m2slide 21 슬라이드 (slide 1 cover_root + slide 23 빈 슬라이드 skip은 정책 의도)
 
 ## Issue238. palette --m2-accent-1이 --kn-accent를 오염시켜 theme 구조색 변경 (등록: 2026-05-26, 해결: 2026-05-26, commit: cefe39e) ✅
 * 목적: palette 교체 시 agenda markmap 테두리·title 밑줄 등 theme 구조색이 의도치 않게 바뀌는 문제 수정
