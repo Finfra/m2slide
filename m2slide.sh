@@ -78,6 +78,115 @@ if [ "$1" = "--serve" ]; then
   esac
 fi
 
+# Subcommand: --lint-data (Issue247 Phase D-3)
+# data/<stage>/*.yml schema·일관성 검증 + data/_proposals/promotion-*.md status 유효성 검사
+if [ "$1" = "--lint-data" ]; then
+  echo "🔍 Lint data/ schema·일관성 (Issue247)"
+  FAIL=0
+
+  # 1. data/<stage>/*.yml yaml 파싱 검증
+  echo ""
+  echo "── 1. data/*.yml 파싱 검증 ──"
+  for yml in "$SCRIPT_DIR"/data/*/*.yml; do
+    [ -f "$yml" ] || continue
+    # _backup/ 하위 제외
+    case "$yml" in
+      */_backup/*) continue ;;
+    esac
+    if ! python3 -c "
+import sys
+try:
+    import yaml
+    with open('$yml') as f:
+        yaml.safe_load(f)
+except ImportError:
+    sys.exit(0)
+except Exception as e:
+    print('❌ ' + '$yml' + ': ' + str(e), file=sys.stderr)
+    sys.exit(1)
+" 2>&1; then
+      FAIL=1
+    fi
+  done
+  if [ "$FAIL" -eq 0 ]; then
+    echo "✅ 모든 data/*.yml 파싱 OK"
+  fi
+
+  # 2. patterns.yml categories ↔ priority 매핑 검증
+  echo ""
+  echo "── 2. patterns.yml categories ↔ priority 일관성 ──"
+  PATTERNS_YML="$SCRIPT_DIR/data/slide-tuner/patterns.yml"
+  if [ -f "$PATTERNS_YML" ]; then
+    python3 - "$PATTERNS_YML" <<'PY' 2>&1 || FAIL=1
+import sys
+try:
+    import yaml
+except ImportError:
+    sys.exit(0)
+path = sys.argv[1]
+with open(path) as f:
+    cfg = yaml.safe_load(f) or {}
+cat_ids = {c.get("id") for c in cfg.get("categories", []) if c.get("id")}
+priority = set(cfg.get("priority", []))
+missing_in_priority = cat_ids - priority
+extra_in_priority = priority - cat_ids
+fail = False
+if missing_in_priority:
+    print(f"❌ {path}: categories에 있으나 priority 누락 — {sorted(missing_in_priority)}", file=sys.stderr)
+    fail = True
+if extra_in_priority:
+    print(f"❌ {path}: priority에 있으나 categories 미정의 — {sorted(extra_in_priority)}", file=sys.stderr)
+    fail = True
+if not fail:
+    print(f"✅ {path}: categories ↔ priority 매핑 OK")
+sys.exit(1 if fail else 0)
+PY
+  else
+    echo "ℹ️ $PATTERNS_YML 없음 — skip"
+  fi
+
+  # 3. promotion-*.md frontmatter status 유효성
+  echo ""
+  echo "── 3. promotion-*.md status 유효성 ──"
+  VALID_STATUSES="pending merged rejected held"
+  PROP_DIR="$SCRIPT_DIR/data/_proposals"
+  PROP_FAIL=0
+  if [ -d "$PROP_DIR" ]; then
+    for md in "$PROP_DIR"/promotion-*.md; do
+      [ -f "$md" ] || continue
+      STATUS=$(awk '/^---$/{f=!f;next} f && /^status:/{print $2; exit}' "$md")
+      if [ -z "$STATUS" ]; then
+        echo "❌ $md: frontmatter status 누락" >&2
+        PROP_FAIL=1
+        FAIL=1
+        continue
+      fi
+      VALID=0
+      for v in $VALID_STATUSES; do
+        if [ "$STATUS" = "$v" ]; then VALID=1; break; fi
+      done
+      if [ "$VALID" -eq 0 ]; then
+        echo "❌ $md: status=$STATUS (valid: $VALID_STATUSES)" >&2
+        PROP_FAIL=1
+        FAIL=1
+      fi
+    done
+    if [ "$PROP_FAIL" -eq 0 ]; then
+      echo "✅ 모든 promotion-*.md status 유효"
+    fi
+  else
+    echo "ℹ️ $PROP_DIR 없음 — skip"
+  fi
+
+  echo ""
+  if [ "$FAIL" -ne 0 ]; then
+    echo "❌ lint-data 실패 — 위 위반 항목 수정 필요" >&2
+    exit 1
+  fi
+  echo "✅ lint-data 통과"
+  exit 0
+fi
+
 # Subcommand: --lint-deployment [project] (Issue235)
 # Lint build artifacts for file-deployment-rules violations.
 if [ "$1" = "--lint-deployment" ]; then
