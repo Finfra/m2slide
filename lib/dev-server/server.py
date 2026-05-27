@@ -916,6 +916,14 @@ class DevHandler(SimpleHTTPRequestHandler):
             'table{border-collapse:collapse;width:100%}'
             'td,th{border:1px solid #ddd;padding:6px 12px;text-align:left;vertical-align:top}'
             'th{background:#f0f8fa}'
+            # Issue248 — solo preview iframe (per-slide thumbnail in overview).
+            # iframe renders at native 1920x1080, scaled down 0.25 → 480x270 visible.
+            # Negative margins absorb the post-scale layout box so siblings flow tightly.
+            '.slide-preview{display:block;width:1920px;height:1080px;border:0;'
+            'background:#fff;transform-origin:top left;transform:scale(0.25);'
+            'margin:0 -1440px -810px 0;pointer-events:none}'
+            '.preview-cell{width:480px;height:270px;overflow:hidden;border:1px solid #ccc;'
+            'border-radius:4px;background:#fff}'
             'code{background:#f3f3f3;padding:2px 6px;border-radius:3px;font-size:0.9em}'
             'pre{background:#2d2d2d;color:#f8f8f2;padding:12px;border-radius:4px;overflow-x:auto}'
             '@media (prefers-color-scheme:dark){body{background:#1a1a1a;color:#e0e0e0}'
@@ -1099,18 +1107,31 @@ class DevHandler(SimpleHTTPRequestHandler):
                 sec_html = html[s:e]
                 title = extract_section_title(sec_html) or '(no title)'
                 one = i + 1
+                solo_url = f'/p/{project}/s/{chap_idx}/{one}'
+                nav_url = f'{solo_url}?mode=nav'
+                text_url = f'{solo_url}?mode=text'
+                # Issue248: title link → ?mode=nav (deck navigation enabled).
+                # Preview cell iframe → bare (solo design view per slide).
                 rows.append(
                     f'<tr><td>{one}</td>'
-                    f'<td><a href="/p/{project}/s/{chap_idx}/{one}">{title}</a></td>'
-                    f'<td><a href="/p/{project}/s/{chap_idx}/{one}?mode=text">text</a></td>'
+                    f'<td><a href="{nav_url}">{title}</a><br>'
+                    f'<small><a href="{solo_url}">solo</a> · '
+                    f'<a href="{text_url}">text</a></small></td>'
+                    f'<td class="preview-cell">'
+                    f'<iframe class="slide-preview" loading="lazy" src="{solo_url}" '
+                    f'title="slide {one} preview"></iframe>'
+                    f'</td>'
                     f'<td>{e - s}</td></tr>'
                 )
-            chapter_entry = f'/p/{project}/s/{chap_idx}/1'
+            chapter_entry = f'/p/{project}/s/{chap_idx}/1?mode=nav'
             section = (
                 f'<h3>chap {chap_idx} — {stem} '
                 f'<small style="color:#888">({count} slides · '
-                f'<a href="{chapter_entry}">open</a>)</small></h3>'
-                '<table><thead><tr><th>n</th><th>title (→ live)</th><th>text</th><th>bytes</th></tr></thead>'
+                f'<a href="{chapter_entry}">open deck</a>)</small></h3>'
+                '<table><thead><tr><th>n</th>'
+                '<th>title (→ deck nav)</th>'
+                '<th>preview (solo)</th>'
+                '<th>bytes</th></tr></thead>'
                 f'<tbody>{"".join(rows) or "<tr><td colspan=4>no sections</td></tr>"}</tbody></table>'
             )
             sections_html_blocks.append(section)
