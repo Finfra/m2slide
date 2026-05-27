@@ -71,7 +71,7 @@
 
 # ✅ 완료
 
-## Issue243. _config.yml `agenda_enabled: false` 옵션 — agenda.html 생성·네비게이션 fallback 차단 (등록: 2026-05-27, 해결: 2026-05-27, commit: TBD) ✅
+## Issue243. _config.yml `agenda_enabled: false` 옵션 — agenda.html 생성·네비게이션 fallback 차단 (등록: 2026-05-27, 해결: 2026-05-27, commit: b256042) ✅
 * 목적: PDF SSOT 변환 프로젝트(예: GenContentProd_v1.1)에서 agenda.html이 불필요. cover_enabled·toc_placeholder·cards_placeholder와 동등한 opt-out 플래그 제공. 빌드 산출물에서 agenda.html 미생성 + index.html cover/redirect를 첫 챕터로 직행.
 * 결과:
     - `lib/config.js`: `agendaEnabled: true` default + `agenda_enabled:` 파싱 추가
