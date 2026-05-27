@@ -595,17 +595,23 @@ class DevHandler(SimpleHTTPRequestHandler):
         # Optional: navigate to slide N when hash not preset by client.
         # Skip inject for slide_n=1 — reveal.js default entry is first slide,
         # avoids redundant `#/1` in URL bar on first-slide entry.
+        # Inject into <head> BEFORE Reveal.js scripts/initialize so hash is set
+        # at Reveal init time. Body-end inject was racing Reveal init and lost
+        # (Reveal navigated to slide 1, id-based hash `#/toc-placeholder` won).
         if slide_n is not None and slide_n > 1:
             nav_script = (
                 f'<script>(function(){{'
                 f'if(!window.location.hash){{'
+                f'try{{history.replaceState(null,"",location.pathname+location.search+"#/{slide_n}");}}catch(e){{'
                 f'window.location.hash="#/{slide_n}";'
+                f'}}'
                 f'}}'
                 f'}})();</script>'
             )
-            new_content, _ = re.subn(
-                r'(</body\s*>)', nav_script + r'\1', content, count=1, flags=re.IGNORECASE)
-            content = new_content if _ else content + nav_script
+            # Inject right after opening <head> tag (highest priority — before any script/style)
+            new_content, n_inj = re.subn(
+                r'(<head\b[^>]*>)', r'\1' + nav_script, content, count=1, flags=re.IGNORECASE)
+            content = new_content if n_inj else nav_script + content
         # Issue242: cross-page cue query(?fwd=1·?back=1·?last=1) URL bar 정리.
         # m2slide JS 가 Reveal.on('ready') 에서 location.search 읽어 애니메이션·점프 처리.
         # 그 후 본 inject 가 replaceState 로 query 만 제거 → URL `/s/<chap>#/N` 깔끔.
