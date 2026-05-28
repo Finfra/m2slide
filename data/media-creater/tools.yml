@@ -382,6 +382,31 @@ ppt_extracted_media:
     image_background: extract        # 배경 이미지는 별도 추출 → #background-image-* 디렉티브 사용 후보
     gradient: ignored                # 그라데이션 미지원 (v2)
 
+  # ── 두 이미지 side-by-side 비교 레이아웃 ──────────────────────────
+  # "source → arrow → rendered" 학습 패턴 또는 "before / after" 비교 슬라이드.
+  # `::: columns` 는 width 강제로 빈 공간 발생 가능 → flex container 권장.
+  pair_comparison_layout:
+    trigger: |
+      한 슬라이드에 두 이미지 (source/before + rendered/after) + 동일 height 비교 필요.
+      ppt2m2slide heuristics composite_shape_images 도 이 패턴을 emit.
+    emit_pattern: |
+      <div style="display:flex; align-items:center; justify-content:center; gap:30px; margin:30px 0;">
+        <img src="./img/{left}.png" alt="..." style="height:520px;">
+        <img src="./img/{right}.png" alt="..." style="height:520px;">
+      </div>
+    rationale: |
+      `::: columns` width 60/40 등 비율 강제 시 우측 column 폭 > 이미지 폭으로
+      빈 공간 발생. flex + 동일 height 통일 시 자연스러운 시각 균형 + 화살표 연결.
+      학습 사례: BasicKnowledgeForAI_small 표 슬라이드 — columns 60/40 → 빈 공간
+      → flex + height:520px 로 전환.
+    height_recommendation:
+      default: 520px                  # 1080p 슬라이드 viewport 의 약 48%
+      compact: 380px                  # 캡션·추가 텍스트 많을 때
+      max: 600px                      # cf) 캡션 + bullet 있는 경우 상한
+    when_not_to_use:
+      - text_heavy_pair: "양쪽 모두 텍스트 위주면 ::: columns + .column width 권장"
+      - asymmetric_size: "두 요소 size 차이 4배 이상이면 columns 명시 width 권장"
+
 # ============================================================================
 # 10. htmlArt 구조 도해 카탈로그 (active — core parser 구현 완료, Issue188)
 # ============================================================================

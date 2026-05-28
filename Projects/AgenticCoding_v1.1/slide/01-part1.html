@@ -1,0 +1,3573 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>"Agentic Coding — Part1"</title>
+  <script>
+    // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
+    try {
+      document.documentElement.classList.add('m2-initial-loading');
+      var s = location.search;
+      if (s.indexOf('back=1') !== -1 || s.indexOf('fwd=1') !== -1 || s.indexOf('last=1') !== -1) {
+        document.documentElement.classList.add('m2-cross-loading');
+      }
+    } catch (e) {}
+  </script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"1","slideOffset":0,"totalSlides":89};</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
+  <style data-m2slide-base="true">
+/* =========================================================================
+   m2slide base.css — 모든 테마 공통 기본 스타일 (Issue64 도입)
+   - 주입 방식: html-builder.js가 inline <style data-m2slide-base="true">로 주입
+   - 설계 SSOT (원칙·정책·공식·금지): _doc_design/css.md
+   - 본 파일은 모든 슬라이드의 골격(레이아웃·컴포넌트·반응형·CSS 변수 기본값) 제공
+   - 테마는 색상·이미지·시각 언어만 theme/{name}/slide.css로 추가
+
+   본 파일 목차:
+     §1  @import (외부 폰트 CDN)
+     §2  :root CSS 변수 기본값 (1.b 정책: _config.yml 명시값 전체 흡수)
+     §3  Reveal.js 변수 보정 (--r-* sky.css 의존 제거용)
+     §4  공통 레이아웃 (*, .outline-title, .title, Flex 컨테이너)
+     §5  컴포넌트 (lists, tables, media-container 4 enlarge modes, graph-scroll)
+     §6  특수 슬라이드 (title-slide, chapter-list)
+     §7  다분할 레이아웃 (m2-cols/columns, m2-rows/rows)
+     §8  디버깅 (guide-line-mode)
+     §9  Layout 골격 (cover/contents/contents-full/split-image-text/chapter-toc/chapter/exercise/exercise-small/blank/closing/toc)
+     §10 Layout-* 공통 (padding, header 정렬, list markers ●─▶•)
+     §11 반응형 (cover-title clamp 공식 — _doc_design/css.md §3 근거)
+     §12 Standalone agenda.html (Issue69 — reveal.js 컨텍스트 외 ratio fit + letterbox)
+   ========================================================================= */
+
+/* =========================================================================
+   1. @import — 외부 폰트 (CDN)
+   ========================================================================= */
+@import url('https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css');
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap');
+
+/* =========================================================================
+   2. :root — CSS 변수 기본값 (1.b 정책: _config.yml 명시값 전체 흡수)
+   - 사용자가 _config.yml에 명시한 값 = 본 :root 기본값
+   - 사용자는 기본값에서 벗어나는 값만 _config.yml에 명시
+   - <body style="..."> 인라인이 더 높은 specificity로 override
+   ========================================================================= */
+:root {
+  /* ─────────────────────────────────────────────────────────────────────
+     m2 컬러 팔레트 9 슬롯 (Issue210) — Accent 1-6 + Text + Bg + Surface
+     설계 SSOT: _doc_arch/color-palette.md
+     카탈로그: data/palettes/catalog.yml (default 팔레트와 일치)
+     theme/{name}/palettes/{palette}.css 가 :root override 로 교체.
+     기존 --kn-* 변수는 신규 슬롯 alias 로 회귀 0 보증.
+     ───────────────────────────────────────────────────────────────────── */
+  --m2-accent-1: #F5C518;          /* default 팔레트 — 기존 --kn-accent 값 */
+  --m2-accent-2: #4ABDAC;
+  --m2-accent-3: #FC4A1A;
+  --m2-accent-4: #7B68EE;
+  --m2-accent-5: #2ECC71;
+  --m2-accent-6: #E74C3C;
+  --m2-text: #111111;
+  --m2-bg: #ffffff;
+  --m2-surface: #f4f4f5;
+
+  /* 기존 --kn-* 변수 호환 alias — theme/slide.css 가 override 가능 (회귀 0 보증) */
+  --kn-accent: var(--m2-accent-1);
+  --kn-text: var(--m2-text);
+
+  /* Global */
+  --global-font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+
+  /* Main Title (개요/표지 큰 제목) */
+  --main-title-font-family: 'GmarketSansBold', sans-serif;
+  --main-title-font-size: 2em;
+  --main-title-font-weight: 400;
+  --main-title-color: #333333;
+  --main-title-align: center;
+  --main-title-padding: 40px 0 20px 0;
+
+  /* Outline Title (목차/개요 제목) */
+  --outline-title-font-family: 'GmarketSansBold', sans-serif;
+  --outline-title-font-size: 2em;
+  --outline-title-font-weight: 600;
+  --outline-title-color: #000000;
+  --outline-title-align: center;
+  --outline-title-padding: 0;
+
+  /* Outline Title Sub (개요 부제) */
+  --outline-title-sub-font-family: 'GmarketSansBold', sans-serif;
+  --outline-title-sub-font-size: 0.5em;
+  --outline-title-sub-font-weight: 100;
+  --outline-title-sub-color: #666666;
+  --outline-title-sub-align: right;
+  --outline-title-sub-padding: 5px;
+
+  /* Title (슬라이드 제목) */
+  --title-font-family: 'GmarketSansBold', sans-serif;
+  --title-font-size: 1.5em;
+  --title-font-weight: 50;
+  --title-color: #000000;
+  --title-align: center;
+  --title-padding: 1%;
+
+  /* Content (theContents 본문) */
+  --content-font-family: 'Nanum Gothic Coding', monospace;
+  --content-font-size: 1em;
+  --content-color: #000000;
+  --content-align: left;
+  --content-padding: 1%;
+
+  /* Layout 변수 */
+  --title-contents-gap-pct: 0;
+
+  /* Slide 기하 (Issue63 + Issue65) — slide_ratio 기반 크기 체계
+     - --slide-ratio: width/height 무차원 비율 (16:9 → 1.7778, 3:2 → 1.5, fill → auto)
+     - --slide-outer-padding: 슬라이드↔뷰포트 대칭 패딩 (CSS length)
+     - --slide-inner-padding: 콘텐츠↔슬라이드 경계 대칭 패딩 (CSS length)
+     - 본 변수는 _config.yml slide_ratio/slide_outer_padding/slide_inner_padding로 override
+     - JS↔CSS 동기화 의무 (1.b 정책): lib/config.js createDefaultConfig 기본값과 동일 유지
+     - 기하 관계: contents_width = contents_height × var(--slide-ratio)
+  */
+  --slide-ratio: 1.7778;
+  --slide-outer-padding: 0px;
+  --slide-inner-padding: 0px;
+}
+
+/* =========================================================================
+   3. Reveal.js 변수 보정 (sky.css 의존 제거 후 누락 방지)
+   - slide.css 9.2에서 이관
+   ========================================================================= */
+.reveal {
+  --r-main-font-size: 40px;
+  --r-heading1-size: 3.77em;
+  --r-heading2-size: 2.11em;
+  --r-heading3-size: 1.55em;
+  --r-heading4-size: 1em;
+  --r-heading-text-transform: none;
+  --r-heading-font-weight: 700;
+  background: #ffffff;
+  color: inherit;
+  font-family: var(--global-font-family);
+  font-size: var(--r-main-font-size);
+}
+
+.reveal .slides {
+  color: inherit;
+}
+
+/* =========================================================================
+   4. 공통 레이아웃 (Layout Utilities) — slide.css §1·§2 이관
+   ========================================================================= */
+* {
+  box-sizing: border-box;
+}
+
+.reveal .outline-title {
+  font-family: var(--outline-title-font-family, var(--global-font-family, inherit));
+  font-size: var(--outline-title-font-size, 2.5em);
+  color: var(--outline-title-color, inherit);
+  text-align: var(--outline-title-align, center);
+  padding: var(--outline-title-padding, 0);
+  text-transform: none;
+  font-weight: var(--outline-title-font-weight, 700);
+}
+
+.reveal .title {
+  font-family: var(--title-font-family, var(--global-font-family, inherit));
+  font-size: var(--title-font-size, 1.6em);
+  color: var(--title-color, inherit);
+  text-align: var(--title-align, center);
+  padding: var(--title-padding, 0);
+  text-transform: none;
+  font-weight: var(--title-font-weight, 700);
+}
+
+/* Issue90: title_contents_gap을 모든 *-title 클래스에 일관 적용 (JS 타이밍 독립).
+   기존엔 .reveal .title에만 적용되어 chapter 모드(.contents-title 사용 시) 무효였음.
+   cover-title은 표지 디자인 padding이 제어하므로 제외. */
+.reveal .title,
+.reveal .contents-title,
+.reveal .chapter-title,
+.reveal .chapter-toc-title,
+.reveal .toc-title,
+.reveal .blank-title,
+.reveal .closing-title,
+.reveal .exercise-title {
+  margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);
+}
+
+/* 공통 Flex Column 패턴 */
+.reveal pre,
+.reveal .slides section,
+.reveal .theContents,
+.reveal .media-container,
+.graph-scroll,
+.reveal section.title-slide {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 전체 크기 헬퍼
+   - Issue63: ratio-16-9/ratio-3-2는 Reveal.js fixed dimensions로 자동 비율 fit (CSS 개입 불필요)
+   - ratio-fill만 100%/100% 명시 적용 (비율 무제약)
+*/
+.reveal.ratio-fill .slides,
+.reveal .slides section,
+.reveal .media-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* 슬라이드 컨테이너 */
+.reveal .slides {
+  display: block;
+}
+
+.reveal.ratio-fill .slides {
+  inset: 0;
+  transform: none;
+}
+
+/* Issue63 + Issue: outer padding (슬라이드↔뷰포트 대칭).
+   - body에 padding 적용 + box-sizing: border-box로 Reveal scaling 영역(body content box) 축소
+   - Reveal.js가 측정하는 viewport 크기 자체가 줄어들어 4면 균등 inset + 자동 fit
+   - 기존 .reveal { inset } 방식은 left/top만 밀려나고 scale은 원본 viewport 기준이라 right/bottom 오버플로
+   - 0이면 효과 없음 (기존과 동일)
+   - A안(애니메이션 outer padding 영역까지 가시화):
+     html/body/.reveal/.slides 의 overflow를 visible로 풀어 슬라이드 transition 시
+     section이 .reveal 영역(=padding 안쪽)을 벗어나도 body padding 영역에 paint 되도록 함.
+*/
+html,
+body {
+  overflow: visible !important;
+}
+body {
+  padding: var(--slide-outer-padding, 0) !important;
+  box-sizing: border-box !important;
+}
+.reveal,
+.reveal .slides {
+  overflow: visible !important;
+}
+
+/* Issue215: ESC overview 모드에서 우리 CSS의 size·overflow 강제를 모두 해제.
+   - Issue109 visible 강제 + Issue63 height:100% + theme min-height:100% 결합으로
+     overview 그리드 모드에서 section들이 풀사이즈 적층 또는 viewport 밖 이탈
+   - .reveal.overview 클래스는 ESC 진입 시 reveal.js가 자동 부착
+   - overview 모드에서는 reveal.js 기본 grid 동작에 위임 (우리 강제 해제)
+   Issue220: `.reveal.overview .slides`에 `overflow: hidden`을 부여하면 reveal.js Overview가
+   sections를 `.slides` box(1920px width) 밖 좌표(translate3d 1990/3980/...px)에 transform 배치하는데
+   clip되어 1장만 시각 paint. `.reveal.overview`(viewport 루트)는 hidden 유지, `.slides`만 visible로 분리. */
+.reveal.overview {
+  overflow: hidden !important;
+}
+.reveal.overview .slides {
+  overflow: visible !important;
+}
+.reveal.overview .slides section,
+.reveal.overview .slides section[class*="layout-"] {
+  min-height: 0 !important;
+  max-height: none !important;
+}
+
+/* 개별 슬라이드 섹션
+   - Flexbox Column 레이아웃 (공통 패턴 §3에서 display:flex 적용)
+   - Issue63 후속 수정: height/max-height/overflow override를 ratio-fill 한정으로 분리.
+     Reveal.js fixed dimensions 모드(16:9/3:2)에서는 Reveal이 1080px(또는 1280px) 논리 높이를 설정해야
+     transform: scale 비율 fit이 정상 동작함. 기존 height:auto !important가 이를 깨뜨려 height-bound 시
+     슬라이드가 콘텐츠 높이로 축소되는 버그 발생 → 본 수정에서 ratio-fill로 한정.
+*/
+.reveal .slides section {
+  padding: var(--slide-inner-padding, 0);
+  margin: 0;
+  top: 0;
+  left: 0;
+  align-items: stretch;
+  justify-content: flex-start;
+  box-sizing: border-box;
+}
+
+/* ratio-fill 모드 전용: 비율 무제약 viewport 채움 + 콘텐츠 overflow 시 스크롤 */
+.reveal.ratio-fill .slides section {
+  height: auto !important;
+  max-height: 100vh !important;
+  overflow-y: auto !important;
+}
+
+/* 콘텐츠 컨테이너
+   - 남은 세로 공간을 모두 차지 (flex-grow: 1)
+   - 내용이 넘치면 스크롤 (overflow-y: auto)
+   - min-height: 0은 flex item이 내용물 크기보다 작아질 수 있게 함 (스크롤 동작 필수)
+   - max-height: 100% 추가로 부모 높이를 넘지 않도록 제한
+*/
+.reveal .theContents {
+  /* flex properties removed to allow natural flow */
+  overflow-wrap: break-word;
+  /* Prevent horizontal scroll for long words */
+  word-wrap: break-word;
+  font-family: var(--content-font-family, inherit);
+  font-size: var(--content-font-size, 1em);
+  color: var(--content-color, inherit);
+  text-align: var(--content-align, left);
+  padding: var(--content-padding, 0);
+}
+
+/* Preformatted Text */
+.reveal pre {
+  width: 100%;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.reveal pre code {
+  overflow: auto;
+  max-height: none;
+  text-align: left;
+}
+
+/* =========================================================================
+   5. 컴포넌트 (Components) — slide.css §3 이관
+   ========================================================================= */
+/* 리스트 */
+.reveal ul,
+.reveal ol {
+  display: block;
+  text-align: left;
+  padding-left: 1.5em;
+}
+
+/* Nested lists
+   Issue72: !important 제거 — layout-* 셀렉터(higher specificity)가 자연 override */
+.reveal ul ul,
+.reveal ul ol,
+.reveal ol ul,
+.reveal ol ol {
+  display: block;
+  margin-left: 1.5em;
+  margin-top: 0.2em;
+  font-size: 90%;
+}
+
+/* Custom Bullet Styles */
+.reveal li.bullet-dot {
+  list-style-type: disc;
+}
+
+.reveal li.bullet-dash {
+  list-style-type: "- ";
+}
+
+/* 표 */
+.reveal table {
+  width: auto;
+  min-width: 50%;
+  max-width: 90%;
+  border-collapse: collapse;
+  margin: 0.5em auto;
+}
+.reveal table th,
+.reveal table td {
+  padding: 0.4em 1em;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  vertical-align: middle;
+}
+.reveal table thead th {
+  font-weight: bold;
+  background-color: rgba(0, 0, 0, 0.06);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.25);
+}
+.reveal table tbody tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Issue 22: 테이블 내 이미지 크기 자동 조절 */
+.reveal table img {
+  max-height: 1.5em;
+  width: auto;
+  vertical-align: middle;
+}
+
+/* 이미지 및 다이어그램 */
+.reveal .media-container {
+  flex-grow: 1;
+  justify-content: center;
+  align-items: center;
+  min-height: 0;
+}
+
+/* Default (Original) Mode - controlled by body class */
+.reveal .media-container img,
+.reveal .media-container svg {
+  display: block;
+  margin: 0 auto;
+}
+
+/* 1. Original: 원본 크기 유지 (단, 화면 넘지 않음) */
+.media-enlarge-original .reveal .media-container img,
+.media-enlarge-original .reveal .media-container svg {
+  max-width: 100% !important;
+  max-height: 100% !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
+}
+
+/* 2. Width: 너비 최대화 */
+.media-enlarge-width .reveal .media-container img,
+.media-enlarge-width .reveal .media-container svg {
+  width: 100% !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain !important;
+}
+
+/* 3. Height: 높이 최대화 */
+/* Issue: `display: flex !important` 가 모든 section 에 적용되면 reveal.js 가 비활성
+   슬라이드에 inline 으로 부여하는 `display: none` 을 덮어서 cross-page 전환 직후
+   다중 슬라이드가 한 프레임 겹쳐 paint 되는 잔상이 발생. `section.present` 한정으로
+   변경하여 활성 슬라이드만 flex 레이아웃을 강제. height/overflow 도 동일 한정. */
+.media-enlarge-height .reveal .slides section.present {
+  /* Issue63: 100vh → 100% (parent .slides는 ratio 모드에서 Reveal이 1080px 논리 높이 설정,
+     fill 모드에서는 viewport 채움). 100vh는 ratio 모드에서 transform scale 비율 fit을 깨뜨림. */
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow-y: hidden !important;
+  overflow-x: auto !important;
+}
+
+.media-enlarge-height .reveal .theContents {
+  flex-grow: 1 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.media-enlarge-height .reveal .media-container,
+.media-enlarge-height .graph-scroll {
+  height: auto !important;
+  min-height: 0 !important;
+  flex-grow: 1 !important;
+}
+
+.media-enlarge-height .reveal .media-container img,
+.media-enlarge-height .reveal .media-container svg,
+.media-enlarge-height .graph-scroll img,
+.media-enlarge-height .graph-scroll svg {
+  height: 100% !important;
+  width: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain !important;
+}
+
+/* 4. Fit: 화면에 꽉 차게 맞춤 (스크롤 없음) */
+/* Issue: `section.present` 한정 (위 height 모드와 동일 사유 — cross-page 잔상 차단) */
+.media-enlarge-fit .reveal .slides section.present {
+  /* Issue63: 100vh → 100% (ratio 모드 transform scale 비율 fit 보존, 동일 사유) */
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.media-enlarge-fit .reveal .theContents {
+  flex-grow: 1 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.media-enlarge-fit .reveal .media-container,
+.media-enlarge-fit .graph-scroll {
+  height: 100% !important;
+  min-height: 0 !important;
+  flex-grow: 1 !important;
+  overflow: hidden !important;
+}
+
+.media-enlarge-fit .reveal .media-container img,
+.media-enlarge-fit .reveal .media-container svg,
+.media-enlarge-fit .graph-scroll img,
+.media-enlarge-fit .graph-scroll svg {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain !important;
+}
+
+/* Handle nested flex layouts (e.g. columns) in fit mode */
+.media-enlarge-fit .reveal .theContents div {
+  flex-grow: 1 !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Hide empty paragraphs that might interfere with flex layout */
+.media-enlarge-fit .reveal .theContents>p:empty {
+  display: none !important;
+}
+
+.graph-scroll {
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.graph-scroll svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* =========================================================================
+   6. 특수 슬라이드 (Special Slides) — slide.css §4 이관
+   ========================================================================= */
+/* 제목 슬라이드 (개요) */
+.reveal section.title-slide {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* 챕터 제목 오버레이
+   - 슬라이드 우측 상단에 현재 챕터 제목을 고정 표시
+   - data-chapter-title 속성 값을 content로 사용
+   - pointer-events: none으로 클릭 이벤트가 뒤쪽 슬라이드에 전달되도록 함
+*/
+.reveal section[data-chapter-title]::after {
+  content: attr(data-chapter-title);
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-family: var(--outline-title-sub-font-family, var(--global-font-family, inherit));
+  font-size: var(--outline-title-sub-font-size, 1em);
+  color: var(--outline-title-sub-color, inherit);
+  pointer-events: none;
+  z-index: 10;
+  text-transform: none;
+  font-weight: var(--outline-title-sub-font-weight, 500);
+  text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000;
+}
+
+/* 챕터 목록 */
+.chapter-list {
+  font-size: 0.8em;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 8px 24px;
+  width: 100%;
+  align-self: stretch;
+  list-style-position: inside;
+  padding-left: 0;
+}
+
+.chapter-list li {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* 카드형 챕터 목록 (toc_placeholder_new 실험) */
+.chapter-list.chapter-list--cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  justify-content: center;
+}
+
+.chapter-list--cards .chapter-card {
+  flex: 0 1 calc((100% - 16px * 2) / 3);
+  min-width: 240px;
+  max-width: 360px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  list-style: none;
+}
+
+.chapter-list--cards .chapter-card::marker {
+  content: "";
+}
+
+.chapter-list--cards .chapter-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.chapter-list--cards .chapter-card a {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  font-size: 0.9em;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+/* =========================================================================
+   7. 다분할 레이아웃 (Multi-column / Multi-row) — slide.css §6 이관
+   - Issue34: 좌/우, 상/하, N분할, 그리드
+   - 클래스 alias: .m2-cols/.columns, .m2-col/.column, .m2-rows/.rows, .m2-row/.row
+   ========================================================================= */
+.reveal .m2-cols,
+.reveal .columns {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;   /* top-align — 좌·우 column 콘텐츠 양 다를 때 위쪽 정렬 (center → 짧은 column이 중간에 떠 어색) */
+  justify-content: space-between;
+  gap: 4%;
+  width: 100%;
+  /* Issue96: contents-body(flex column) 안에서 남은 높이 채워서 nested rows가
+     비율대로 분할될 수 있도록 함. 자연 콘텐츠는 영향 없음 (children 자연 크기 유지) */
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Issue96: rows가 중첩될 때만 column 박스를 풀-height로 stretch.
+   단순 image+text 2-col은 기존 center 정렬 유지 (image 수직 중앙) */
+.reveal .m2-cols:has(.m2-rows),
+.reveal .m2-cols:has(.rows),
+.reveal .columns:has(.m2-rows),
+.reveal .columns:has(.rows) {
+  align-items: stretch;
+}
+
+.reveal .m2-col,
+.reveal .column {
+  flex: 1;
+  min-width: 0;
+  /* Issue96: 내부 .m2-rows가 flex item으로 작동하여 column 높이를 채울 수 있도록
+     flex 컨테이너로 변환. 자연 콘텐츠(텍스트/이미지)는 동일하게 top-down 스택 */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Issue95: .m2-rows가 부모 .contents-body(flex column) 의 남은 높이를 채우고,
+   .m2-row가 균등(또는 인라인 height 비례)으로 분할되도록 flex 보강 */
+.reveal .m2-rows,
+.reveal .rows {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.reveal .m2-row,
+.reveal .row {
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  /* Issue95: 행 내부 콘텐츠(텍스트+미디어)가 세로로 쌓이고, .media-container가
+     남은 높이를 채워서 이미지/SVG가 행 경계를 넘지 않도록 flex column 컨테이너로 동작 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Issue95: .m2-row 내부의 .media-container가 남은 높이를 채우도록.
+   기존 `.contents-body > .media-container` 규칙(theme/default/slide.css)은
+   contents-body 직속 자식만 매칭하므로 row 내부에서는 적용되지 않음 */
+.reveal .m2-row > .media-container,
+.reveal .row > .media-container {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.reveal .m2-row > .media-container img,
+.reveal .m2-row > .media-container svg,
+.reveal .row > .media-container img,
+.reveal .row > .media-container svg {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.reveal .card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.reveal .m2-cols img,
+.reveal .columns img,
+.reveal .m2-rows img,
+.reveal .rows img {
+  max-width: 100%;
+  /* slide 영역 초과 방지 — Reveal.js 논리 높이는 720/683px,
+     scale 변환 후 viewport vh와 다름. min(...)로 vh + 절대 px 양쪽 가드 */
+  max-height: min(60vh, 500px);
+  height: auto;
+  object-fit: contain;
+}
+
+/* m2-col 안의 <p><img></p> wrapper도 flex column 안에서 column 높이 초과 방지 */
+.reveal .m2-col > p,
+.reveal .column > p {
+  min-height: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* =========================================================================
+   8. 디버깅 (Debugging) — slide.css §7 이관
+   ========================================================================= */
+/* Guide Line Mode */
+.guide-line-mode .reveal .slides section {
+  border: 5px solid rgba(255, 0, 0, 0.5) !important;
+  background-color: rgba(255, 0, 0, 0.05) !important;
+}
+
+.guide-line-mode .reveal h1,
+.guide-line-mode .reveal h2,
+.guide-line-mode .reveal h3 {
+  border: 3px solid rgba(0, 255, 0, 0.5) !important;
+  background-color: rgba(0, 255, 0, 0.05) !important;
+}
+
+.guide-line-mode .reveal .theContents {
+  border: 3px solid rgba(0, 0, 255, 0.5) !important;
+  background-color: rgba(0, 0, 255, 0.05) !important;
+}
+
+/* =========================================================================
+   9. Layout 타입별 골격 (Layout Skeletons) — slide.css §8 이관
+   ========================================================================= */
+
+/* === 공통 header/body 구조 === */
+.reveal section[class*="layout-"] {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.reveal section[class*="layout-"] > div[class$="-header"] {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.reveal section[class*="layout-"] > div[class$="-body"] {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1em 0;
+}
+
+/* === Accent line (divider) — 공통 골격, 색상은 theme에서 override === */
+.reveal section[class*="layout-"] > div[class*="-divider"],
+.reveal section[class*="layout-"] .reveal [class*="-divider"] {
+  height: 3px;
+  background: currentColor;
+  margin: 0.5em 0;
+  opacity: 0.6;
+}
+
+/* 1. Cover Layout */
+.reveal section.layout-_cover {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-_cover .cover-header {
+  padding: 2em 0 1em 0;
+}
+
+.reveal section.layout-_cover .cover-title {
+  font-size: 3.2em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-_cover .cover-visual {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.reveal section.layout-_cover .cover-visual img,
+.reveal section.layout-_cover .cover-visual svg {
+  max-width: 90%;
+  max-height: 80%;
+  width: auto;
+  height: auto;
+}
+
+.reveal section.layout-_cover .cover-meta {
+  flex-shrink: 0;
+  padding: 1em 0;
+  font-size: 1.2em;
+}
+
+/* 2. Contents Layout */
+.reveal section.layout-_contents {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-_contents .contents-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-_contents .contents-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-_contents .contents-divider {
+  width: 40%;
+  margin: 0.5em 0 0 0;
+}
+
+.reveal section.layout-_contents .contents-body {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-_contents ul,
+.reveal section.layout-_contents ol {
+  text-align: left;
+  font-size: 1.1em;
+  line-height: 1.6;
+}
+
+/* 2.2 Contents-Full Layout (전체 높이 활용) */
+.reveal section.layout-contents-full {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-contents-full .contents-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-contents-full .contents-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-contents-full .contents-divider {
+  width: 40%;
+  margin: 0.5em 0 0 0;
+}
+
+.reveal section.layout-contents-full .contents-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-contents-full ul,
+.reveal section.layout-contents-full ol {
+  text-align: left;
+  font-size: 1.1em;
+  line-height: 1.6;
+}
+
+/* 3. Split/Image-Text Layout */
+.reveal section.layout-split-image-text {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-split-image-text .split-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-split-image-text .split-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-split-image-text .split-divider {
+  width: 40%;
+  margin: 0.5em 0 0 0;
+}
+
+.reveal section.layout-split-image-text .split-row {
+  display: flex;
+  gap: 2.5em;
+  align-items: flex-start;
+  flex-grow: 1;
+  min-height: 0;
+  padding: 1em 0;
+}
+
+.reveal section.layout-split-image-text .split-left,
+.reveal section.layout-split-image-text .split-right {
+  flex: 1;
+  min-width: 0;
+}
+
+.reveal section.layout-split-image-text .split-left img,
+.reveal section.layout-split-image-text .split-right img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 4. Chapter TOC Layout */
+.reveal section.layout-chapter-toc {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-chapter-toc .chapter-toc-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-chapter-toc .chapter-toc-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-chapter-toc .chapter-toc-divider {
+  width: 40%;
+  margin: 0.5em 0 0 0;
+}
+
+.reveal section.layout-chapter-toc .chapter-toc-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.5em 0;
+}
+
+/* 5. Chapter Layout */
+.reveal section.layout-chapter {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-chapter .chapter-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-chapter .chapter-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-chapter .chapter-divider {
+  width: 40%;
+  margin: 0.5em 0 0 0;
+}
+
+.reveal section.layout-chapter .chapter-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.5em 0;
+}
+
+/* 6. Exercise Layout */
+.reveal section.layout-exercise {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-exercise .exercise-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-exercise .exercise-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-exercise .exercise-divider {
+  width: 40%;
+  margin: 0.5em 0 0 0;
+}
+
+.reveal section.layout-exercise .exercise-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.5em 0;
+}
+
+/* 6.2 Exercise-Small Layout */
+.reveal section.layout-exercise-small {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-exercise-small .exercise-header {
+  padding: 1em 0;
+}
+
+.reveal section.layout-exercise-small .exercise-title {
+  font-size: 2.2em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-exercise-small .exercise-divider {
+  width: 30%;
+  margin: 0.3em 0 0 0;
+  height: 2px;
+}
+
+.reveal section.layout-exercise-small .exercise-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1em 0;
+}
+
+/* 8. Blank Layout */
+.reveal section.layout-_blank {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-_blank .blank-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-_blank .blank-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-_blank .blank-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.5em 0;
+}
+
+/* image-only / full-video 자동 감지 시 풀스크린 미디어 표시 (공통 패턴) */
+/* 특이도 (0,3,2) — L1129 `.reveal section[class*="layout-"]` (0,2,2) 와 충돌 회피.
+   두 클래스(`.layout-_blank` + `.layout-_blank--full-*`) 동시 매칭으로 source order 의존 제거 */
+.reveal section.layout-_blank.layout-_blank--full-image,
+.reveal section.layout-_blank.layout-_blank--full-video {
+  padding: 0;
+}
+.reveal section.layout-_blank--full-image .blank-header,
+.reveal section.layout-_blank--full-video .blank-header {
+  display: none;
+}
+.reveal section.layout-_blank--full-image .blank-body,
+.reveal section.layout-_blank--full-video .blank-body {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.reveal section.layout-_blank--full-image .blank-body p,
+.reveal section.layout-_blank--full-video .blank-body p,
+.reveal section.layout-_blank--full-video .blank-body .media-container {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reveal section.layout-_blank--full-image .blank-body img,
+.reveal section.layout-_blank--full-video .blank-body video {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* 9. Closing Layout */
+.reveal section.layout-closing {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2em;
+}
+
+.reveal section.layout-closing .closing-header {
+  margin-bottom: 1em;
+}
+
+.reveal section.layout-closing .closing-title {
+  font-size: 3.2em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-closing .closing-body {
+  flex-grow: 0;
+  padding: 1em 0;
+  font-size: 1.3em;
+}
+
+/* TOC (목차) Layout */
+.reveal section.layout-toc {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-toc .toc-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-toc .toc-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-toc .toc-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-toc .toc-markmap {
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+}
+
+/* =========================================================================
+   10. Layout-* 공통 패딩 + 헤더 정렬 + 리스트 마커 — slide.css §9.5·§9.6 이관
+   - 두 테마 동일 마커 사용 → Common 분류 (사용자 결정)
+   - 색상은 var(--kn-text)가 아닌 currentColor/inherit 사용 → theme이 자유롭게 설정
+   ========================================================================= */
+/* layout-* 슬라이드 공통 패딩
+   주의: position 속성을 설정하지 말 것. reveal.js 기본 position:absolute 가
+   pseudo-element 의 positioned ancestor 역할을 이미 수행하며, 여기서 relative 로
+   덮으면 슬라이드 스택이 깨져 자동 layout 슬라이드가 viewport 밖으로 밀려남 (Issue54). */
+.reveal section[class*="layout-"] {
+  padding: 28px 56px 56px 56px;
+}
+
+/* 본문 영역 헤더 정렬: 제목은 가운데 정렬을 기본으로 함 */
+.reveal section[class*="layout-"] > div[class$="-header"] {
+  text-align: center;
+  align-items: center;
+}
+
+/* 리스트 — 레벨별 마커 차별화 */
+.reveal section[class*="layout-"] ul,
+.reveal section[class*="layout-"] ol {
+  list-style: none;
+  padding-left: 0;
+}
+
+.reveal section[class*="layout-"] ul > li,
+.reveal section[class*="layout-"] ol > li {
+  position: relative;
+  padding-left: 1.4em;
+  line-height: 1.7;
+  margin: 0.18em 0;
+}
+
+/* L1: ● */
+.reveal section[class*="layout-"] ul > li::before {
+  content: "●";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: currentColor;
+  font-size: 0.8em;
+}
+
+/* L2: ─ (em dash) */
+.reveal section[class*="layout-"] ul ul > li::before {
+  content: "─";
+  font-size: 0.95em;
+}
+
+/* L3: ▶ */
+.reveal section[class*="layout-"] ul ul ul > li::before {
+  content: "▶";
+  font-size: 0.7em;
+  top: 0.18em;
+}
+
+/* L4·L5: • (작은 점) */
+.reveal section[class*="layout-"] ul ul ul ul > li::before,
+.reveal section[class*="layout-"] ul ul ul ul ul > li::before {
+  content: "•";
+  font-size: 0.9em;
+}
+
+/* 들여쓰기 누적
+   Issue72: !important 제거 — 본 셀렉터 specificity (0,1,1,2)가 base nested list (0,0,1,2)보다 높아 자연 우선 */
+.reveal section[class*="layout-"] ul ul {
+  margin-left: 1.2em;
+  font-size: 100%; /* 글로벌의 90% 축소 무시 — 가독성 우선 */
+}
+
+/* =========================================================================
+   11. 반응형 (Responsive) — cover-title clamp 공식 (Issue62)
+   - 공식 근거: _doc_design/css.md §3.2
+   - 30자 한·영 혼합 가정, 5vw = 100/(30 × 0.6)
+   ========================================================================= */
+.reveal section.layout-_cover .cover-title {
+  font-size: clamp(1.2em, 5vw, 3.4em);
+}
+
+/* =========================================================================
+   12. Standalone agenda.html — ratio fit + letterbox (Issue69)
+   - reveal.js 컨텍스트 없는 standalone 페이지에서 cfg.slideRatio 기반 ratio fit
+   - body.agenda-page = letterbox 컨테이너 (cover의 .reveal 흰색 bg와 일관성 확보)
+   - .agenda-frame   = ratio 박스 (var(--slide-ratio) 활용 min() 공식)
+   - html.ratio-fill = frame이 viewport 채움 (auto 산술 불가 회피용 override)
+   ========================================================================= */
+body.agenda-page {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  overflow: hidden;
+  font-family: var(--global-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif);
+}
+.agenda-frame {
+  /* outer padding 반영: viewport 단위에서 좌우/상하 padding 합계만큼 차감 */
+  width: min(
+    calc(100vw - 2 * var(--slide-outer-padding, 0px)),
+    calc((100vh - 2 * var(--slide-outer-padding, 0px)) * var(--slide-ratio))
+  );
+  height: min(
+    calc(100vh - 2 * var(--slide-outer-padding, 0px)),
+    calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
+  );
+  background: #ffffff;
+  overflow: hidden;
+  position: relative;
+}
+html.ratio-fill .agenda-frame {
+  width: calc(100vw - 2 * var(--slide-outer-padding, 0px));
+  height: calc(100vh - 2 * var(--slide-outer-padding, 0px));
+}
+.agenda-frame .layout-_toc,
+.agenda-frame .layout-_agenda {
+  padding: 24px;
+  box-sizing: border-box;
+  height: 100%;
+}
+.agenda-frame .toc-mindmap-svg {
+  width: 100%;
+  height: calc(100% - 200px);
+  display: block;
+}
+.agenda-frame .toc-markmap {
+  padding: 12px 0;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Issue234 — source slot (출처·인용) 기본 스타일 (모든 theme 공통)
+ * `::: source ...출처... :::` fenced div → 슬라이드 하단 가운데 작은 글씨
+ * theme/{name}/slide.css 가 색·강조 override 가능 (font-size·position 등 보존 권장)
+ * ────────────────────────────────────────────────────────────────────────── */
+.reveal .m2-source {
+  position: absolute;
+  bottom: -0.3em;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.28em;
+  font-style: italic;
+  color: var(--m2-text, #111);
+  opacity: 0.55;
+  pointer-events: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 1em;
+  box-sizing: border-box;
+}
+.reveal .m2-source p {
+  margin: 0;
+  line-height: 1.4;
+}
+.reveal .m2-source a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+.reveal .m2-source a::after {
+  content: ' (' attr(href) ')';
+  margin-left: 0.3em;
+  font-style: normal;
+  opacity: 0.7;
+  text-decoration: none;
+}
+
+  </style>
+  <style data-m2slide-palette="office_rainbow">
+/* theme/default/palettes/office_rainbow.css — PowerPoint Office Theme 6색 무지개
+ * 카탈로그 SSOT: data/palettes/catalog.yml (palettes.office_rainbow)
+ * 설계 SSOT: _doc_arch/color-palette.md
+ * 용도: 강의·튜토리얼·다카테고리 비교 (PPT 변환 호환, Issue233)
+ */
+:root {
+  --m2-accent-1: #0365C0;
+  --m2-accent-2: #00882B;
+  --m2-accent-3: #DCBD23;
+  --m2-accent-4: #DE6A10;
+  --m2-accent-5: #C82506;
+  --m2-accent-6: #773F9B;
+  --m2-text: #000000;
+  --m2-bg: #FFFFFF;
+  --m2-surface: #DCDEE0;
+}
+
+  </style>
+  <link rel="stylesheet" href="css/custom.css?v=1779883728507">
+  <script>
+    // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
+    (function() {
+      const originalConsoleError = console.error;
+      console.error = function(...args) {
+        if (args.length > 0 && typeof args[0] === 'string' &&
+            (args[0].includes('attribute transform') || args[0].includes('translate(NaN'))) {
+          return;
+        }
+        originalConsoleError.apply(console, args);
+      };
+
+      // Monkey patch D3 if available to prevent NaN attributes
+      window.addEventListener('load', function() {
+        if (window.d3 && window.d3.selection) {
+          const originalAttr = window.d3.selection.prototype.attr;
+          window.d3.selection.prototype.attr = function(name, value) {
+            if (name === 'transform' && typeof value === 'string' && (value.includes('NaN') || value.includes('undefined'))) {
+              return this;
+            }
+            return originalAttr.apply(this, arguments);
+          };
+        }
+      });
+    })();
+  </script>
+  <style>
+    /* Issue53: 페이지 번호 클릭 비활성화 — prev arrow 클릭 영역 침범 방지 */
+    .reveal .slide-number,
+    .reveal .slide-number a {
+      pointer-events: none;
+      text-decoration: none;
+    }
+    /* Markmap SVG baseline (allow container to control size) */
+    #toc-mindmap {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+      overflow: hidden;
+      display: block;
+    }
+    #toc-mindmap a {
+      text-decoration: none;
+      color: inherit;
+    }
+    #toc-mindmap text {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif !important;
+      font-size: 16px !important;
+      font-weight: 700;
+    }
+    /* Issue55 Phase 7: #toc-container 오버레이 제거 — TOC slide 내부 .toc-mindmap-svg + agenda.html에서 마크맵 렌더 */
+    /* Issue107: Reveal 기본 ↑/↓ 컨트롤을 ←/→ 사이 다이아몬드 위치에 강제 노출 + 비활성 회색 처리 */
+    /* Reveal default ↓ bottom: -1.4em 으로 비대칭 → bottom: 0em 으로 보정해 정사각 마름모 만듦 */
+    /* (↑ bottom 6.4em center y 8.2em / ←/→ bottom 3.2em center y 5em / ↓ bottom 0em center y 1.8em → ↑↔↓ 6.4em == ←↔→ 6.4em) */
+    .reveal .controls .navigate-up {
+      bottom: 2.9em !important;
+    }
+    .reveal .controls .navigate-right {
+      right: 0.8em !important;
+    }
+    .reveal .controls .navigate-down {
+      bottom: 0em !important;
+      padding-bottom: 0 !important;
+    }
+    .reveal .controls .navigate-up,
+    .reveal .controls .navigate-down {
+      display: block !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+      opacity: 0.25;
+      transition: opacity 0.2s;
+      cursor: default;
+    }
+    .reveal .controls .navigate-up.m2-enabled,
+    .reveal .controls .navigate-down.m2-enabled {
+      opacity: 1;
+      cursor: pointer;
+    }
+    .reveal .controls .navigate-up.m2-enabled:hover,
+    .reveal .controls .navigate-down.m2-enabled:hover {
+      opacity: 0.7;
+    }
+    /* 페이지 번호 — 마름모 정중앙 */
+    /* theme/default/slide.css:80 에서 .reveal .controls를 position: fixed + bottom:0 right:0 으로 viewport 기준 강제 */
+    /* → .controls 안의 화살표 button 좌표가 viewport 우측 하단 기준이 됨. 페이지번호도 같은 기준 위해 fixed */
+    /* theme/default/slide.css 의 .slide-number !important 룰을 덮어쓰기 위해 일부 속성은 !important 필요 */
+    .reveal .slide-number {
+      position: fixed !important;
+      right: 20px !important;
+      bottom: 20px !important;
+      width: 60px !important;
+      height: 14px !important;
+      background: transparent !important;
+      color: rgba(0, 0, 0, 0.6) !important;
+      padding: 0 !important;
+      font-size: 13px !important;
+      text-align: center;
+      transform: none;
+      line-height: 1;
+      pointer-events: none;
+      z-index: 200;
+    }
+    /* Issue112: breadcrumb 모드에서는 페이지 번호 너비 확장 (1.2 › 5/123 등) */
+    body.m2-breadcrumb-mode .reveal .slide-number {
+      width: auto !important;
+      min-width: 60px !important;
+      padding: 0 6px !important;
+      white-space: nowrap;
+    }
+    /* Issue115: nav_indicator — 우측 하단 표시 모드 (both | diamond | page) */
+    /* diamond: 페이지번호만 숨김 (마름모만 노출) */
+    body[data-nav-indicator="diamond"] .reveal .slide-number {
+      display: none !important;
+    }
+    /* page: 마름모(↑/↓) + 좌우 화살표(←/→) 모두 숨김 (페이지번호만 노출) */
+    body[data-nav-indicator="page"] .reveal .controls .navigate-up,
+    body[data-nav-indicator="page"] .reveal .controls .navigate-down,
+    body[data-nav-indicator="page"] .reveal .controls .navigate-left,
+    body[data-nav-indicator="page"] .reveal .controls .navigate-right {
+      display: none !important;
+    }
+    /* Last slide message */
+    #last-slide-message {
+      display: none;
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      font-size: 16px;
+      z-index: 1000;
+      text-align: center;
+    }
+    /* Issue104: 챕터 간 cross-page 이동 시 진입 방향 애니메이션 (Reveal.js 표준 컨벤션) */
+    @keyframes m2-slide-from-left {
+      from { transform: translate3d(-100%, 0, 0); opacity: 0; }
+      to   { transform: translate3d(0, 0, 0); opacity: 1; }
+    }
+    @keyframes m2-slide-from-right {
+      from { transform: translate3d(100%, 0, 0); opacity: 0; }
+      to   { transform: translate3d(0, 0, 0); opacity: 1; }
+    }
+    /* backward (← 키): 좌측에서 등장 → 우측 모션 (Reveal backward와 동일) */
+    body.m2-back-enter .reveal .slides > section.present {
+      animation: m2-slide-from-left 400ms ease-out !important;
+    }
+    /* forward (→ 키): 우측에서 등장 → 좌측 모션 (Reveal forward와 동일) */
+    body.m2-fwd-enter .reveal .slides > section.present {
+      animation: m2-slide-from-right 400ms ease-out !important;
+    }
+    
+    /* Issue110/125: visibility 가드 — Reveal·agenda 양쪽 컨테이너 적용 */
+    html.m2-initial-loading .reveal,
+    html.m2-initial-loading .agenda-frame,
+    html.m2-cross-loading .reveal,
+    html.m2-cross-loading .agenda-frame,
+    body.m2-cross-loading .reveal,
+    body.m2-cross-loading .agenda-frame { visibility: hidden; }
+    /* Issue120: cross-page 페이지 진입 fade-in (cover↔agenda↔deck 모두 적용) */
+    @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
+    body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
+  </style>
+</head>
+<body class="  media-enlarge-width" data-nav-indicator="both" style="
+  --global-font-family: Pretendard, sans-serif;
+  --title-font-family: GmarketSansBold;
+  --title-font-weight: 50;
+  --title-font-size: 1.5em;
+  --title-color: #000000;
+  --title-align: center;
+  --title-padding: 1%;
+  --main-title-font-family: inherit;
+  --main-title-font-weight: 400;
+  --main-title-font-size: 2em;
+  --main-title-color: #333333;
+  --main-title-align: center;
+  --main-title-padding: 40px 0 20px 0;
+  --outline-title-font-family: GmarketSansBold;
+  --outline-title-font-weight: 600;
+  --outline-title-font-size: 2em;
+  --outline-title-color: #000000;
+  --outline-title-align: center;
+  --outline-title-padding: 0;
+  --outline-title-sub-font-family: GmarketSansBold;
+  --outline-title-sub-font-weight: 100;
+  --outline-title-sub-font-size: 0.5em;
+  --outline-title-sub-color: #666666;
+  --outline-title-sub-align: right;
+  --outline-title-sub-padding: 5px;
+  --content-font-family: inherit;
+  --content-font-size: 1em;
+  --content-color: #000000;
+  --content-align: left;
+  --content-padding: 1%;
+  --title-contents-gap-pct: 30;
+  --slide-ratio: 1.5;
+  --slide-outer-padding: 0px;
+  --slide-inner-padding: 0px;
+  --m2-card-columns: auto-fit;
+">
+  <!-- Issue107: nav-up-btn 제거 — Reveal 기본 .controls .navigate-up/.navigate-down에 동작 위임 -->
+  <!-- Issue55 Phase 7: #toc-container 오버레이 제거 — 마크맵은 _toc.html layout 내부 SVG 또는 agenda.html에서 렌더 -->
+
+  <div id="last-slide-message">마지막 페이지입니다. 다음 챕터로 이동하려면 다시 →를 누르세요.</div>
+
+  <div class="reveal ratio-3-2">
+    <div class="slides">
+
+<!--
+  Issue138: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
+  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
+-->
+<section data-slide-hash="#/1" class="layout-_cards layout-_toc title-slide" id="toc-placeholder">
+  <header class="toc-page-header">
+    <h1 class="toc-page-title">"Agentic Coding — Part1"</h1>
+  </header>
+  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="38">
+<li class="chapter-card"><a href="#/2">강의 시작 — 인사·강사 소개</a></li>
+<li class="chapter-card"><a href="#/3">강의 목표·4시간 흐름 미리보기</a></li>
+<li class="chapter-card"><a href="#/4">Agentic Coding — Part1</a></li>
+<li class="chapter-card"><a href="#/5">강의 범위·비포함</a></li>
+<li class="chapter-card"><a href="#/6">바이브 코딩(Vibe Coding)이란?</a></li>
+<li class="chapter-card"><a href="#/7">프롬프트 엔지니어링이란?</a></li>
+<li class="chapter-card"><a href="#/8">하네스(Harness)란?</a></li>
+<li class="chapter-card"><a href="#/9">Agentic Engineering이란?</a></li>
+<li class="chapter-card"><a href="#/10">4가지 개념 한눈에 비교표</a></li>
+<li class="chapter-card"><a href="#/11">Agentic Coding의 흐름</a></li>
+<li class="chapter-card"><a href="#/12">Agentic Engineering의 필요성</a></li>
+<li class="chapter-card"><a href="#/13">사전 설치 환경 점검</a></li>
+<li class="chapter-card"><a href="#/14">VsCode기반 ClaudeCode환경 구축.</a></li>
+<li class="chapter-card"><a href="#/15">Node·VsCode·Git·Docker 한눈에 보기</a></li>
+<li class="chapter-card"><a href="#/16">Markdown이란?</a></li>
+<li class="chapter-card"><a href="#/17">Markdown Rendering</a></li>
+<li class="chapter-card"><a href="#/18">PRD, tasks, CLAUDE.md 작성 기반</a></li>
+<li class="chapter-card"><a href="#/19">Docker혁명: 무거운 가상머신(VM)을 넘어서다!</a></li>
+<li class="chapter-card"><a href="#/20">Docker가 Agentic에 각광받는 이유</a></li>
+<li class="chapter-card"><a href="#/21">Docker 핵식 라이프사이클</a></li>
+<li class="chapter-card"><a href="#/22">리눅스 명령어 빠르게 보기</a></li>
+<li class="chapter-card"><a href="#/23">Git이 Agentic에 각광받는 이유</a></li>
+<li class="chapter-card"><a href="#/24">(시연) Claude Code로 Node 스크립트 1줄 실행</a></li>
+<li class="chapter-card"><a href="#/25">(시연) Claude Code로 Git 커밋·롤백</a></li>
+<li class="chapter-card"><a href="#/26">(시연) Claude Code로 Docker 명령 안전 실행</a></li>
+<li class="chapter-card"><a href="#/27">Claude Code란?</a></li>
+<li class="chapter-card"><a href="#/28">다른 에이전트와의 차이 (Cursor·Copilot 비교)</a></li>
+<li class="chapter-card"><a href="#/29">Claude Code 환경설정 — ~/.claude/ 구조</a></li>
+<li class="chapter-card"><a href="#/30">CLAUDE.md / settings.json 역할</a></li>
+<li class="chapter-card"><a href="#/31">Claude CLI 모델 정책 (Opus / Sonnet / Haiku)</a></li>
+<li class="chapter-card"><a href="#/32">슬래시 커맨드 자주 쓰는 5종</a></li>
+<li class="chapter-card"><a href="#/33">하네스 정의·구성요소 (재정리)</a></li>
+<li class="chapter-card"><a href="#/34">하네스 없이 vs 있을 때 비교</a></li>
+<li class="chapter-card"><a href="#/35">(시연) 빈 디렉토리에서 Claude Code 시작</a></li>
+<li class="chapter-card"><a href="#/36">SCAR 4요소 (Skill / Command / Agent / Rule)</a></li>
+<li class="chapter-card"><a href="#/37">PRD.md / tasks.md 소개</a></li>
+<li class="chapter-card"><a href="#/38">(실습) PRD·tasks 빈칸 채워보기</a></li>
+<li class="chapter-card"><a href="#/39">nPTiR 5단계 흐름도</a></li>
+</ul></div>
+</section>
+
+
+<section data-slide-hash="#/2" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">강의 시작 — 인사·강사 소개</div>
+    
+  </div>
+  <h1 class="title">강의 시작 — 인사·강사 소개</h1>
+  <div class="contents-body">
+
+
+
+<ul>
+<li class="bullet-dot">강사 남중구 (핀프라)
+<ul>
+<li class="bullet-dot">보조강사 : 환경 구성 오류 1차 응답·실습 도우미 역할</li>
+</ul>
+</li>
+<li class="bullet-dot">Q&A는 각 섹션 끝·쉬는 시간에 분산 운영</li>
+<li class="bullet-dot">본 강의 자료는 계속 업데이트되는 다이나믹 자료 입니다
+<ul>
+<li class="bullet-dot">현재 기준 : Claude Model Sonnet 4.6 or Opus 4.7</li>
+</ul>
+</li>
+</ul></div>
+</section>
+
+<section data-slide-hash="#/3" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">강의 목표·4시간 흐름 미리보기</div>
+    
+  </div>
+  <h1 class="title">강의 목표·4시간 흐름 미리보기</h1>
+  <div class="contents-body">
+
+<p>목표1: 바이브 코딩 vs Agentic Coding 차이 이해</p>
+
+<p>목표2: Claude Code 하네스 직접 셋업</p>
+
+<p>목표3: 미니 프로젝트로 웹서비스 MVP 완성</p>
+
+<p>흐름: Part1 이론·실습 1.5h → 휴식 → Part2 미니 프로젝트 2.5h</p>
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_0.png" alt="강의 목표·4시간 흐름 미리보기"></div></div>
+</section>
+
+<section data-slide-hash="#/4" data-heading-level="1" class="layout-chapter">
+  <div class="chapter-header">
+    <h1 class="chapter-title">Agentic Coding — Part1</h1>
+  </div>
+  <div class="chapter-body"><p>도입·환경·하네스·SCAR·nPTiR</p></div>
+</section>
+
+
+<section data-slide-hash="#/5" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">강의 범위·비포함</div>
+    
+  </div>
+  <h1 class="title">강의 범위·비포함</h1>
+  <div class="contents-body">
+
+<p>✅ 다룸: Agentic Coding · 하네스 · Claude Code · SCAR · nPTiR · 미니 프로젝트</p>
+
+<p>❌ 다루지 않음: LLM 일반 이론 / 멀티미디어 생성 / HWP 자동화</p>
+
+<p>사전 설치 가정: Node.js / VsCode / Docker / Git for Windows</p></div>
+</section>
+
+<section data-slide-hash="#/6" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">바이브 코딩(Vibe Coding)이란?</div>
+    
+  </div>
+  <h1 class="title">바이브 코딩(Vibe Coding)이란?</h1>
+  <div class="contents-body">
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_1.png" alt="바이브 코딩(Vibe Coding)이란?"></div>
+
+<p>정의: 자연어 대화 기반 즉흥 개발 — 즉각 결과·낮은 진입장벽</p>
+
+<p>한계: 휘발성·재현 불가·맥락 단기 기억 — 1회용 코드에 적합</p>
+
+<p>Andrej Karpathy의 “Vibe Coding” 개념 (2025) 인용</p>
+
+<p>비유: “스케치하듯 즉흥적으로 그리는 코딩”</p></div>
+</section>
+
+<section data-slide-hash="#/7" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">프롬프트 엔지니어링이란?</div>
+    
+  </div>
+  <h1 class="title">프롬프트 엔지니어링이란?</h1>
+  <div class="contents-body">
+
+<p>정의: 단발 LLM 요청을 정교화하는 기술 (역할·맥락·제약·예시 4요소)</p>
+
+<p>페르소나(Persona)·6대 기본 요소: 지시·맥락·페르소나·제약·예시·출력형식</p>
+
+<p>한계: 단발성·재사용 어려움 — Agentic 코딩의 일부일 뿐 전부가 아님</p>
+
+<p>Agentic 맥락 재해석: 프롬프트는 SCAR의 Skill·Rule에 흡수되어 재사용 가능해짐</p>
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_2.png" alt="프롬프트 엔지니어링이란?"></div></div>
+</section>
+
+<section data-slide-hash="#/8" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">하네스(Harness)란?</div>
+    
+  </div>
+  <h1 class="title">하네스(Harness)란?</h1>
+  <div class="contents-body">
+
+<p>정의: 반복·재현 가능한 Agentic 작업 환경 (도구 + 규칙 + 맥락 + 자동화 후크)</p>
+
+<p>구성: SCAR (Skill/Command/Agent/Rule) + 설정파일(CLAUDE.md/settings.json) + Hook</p>
+
+<p>비유: “신입 개발자에게 사규·매뉴얼·체크리스트를 갖춰주는 작업장”</p>
+
+<p>실습에서 셋업할 하네스 = ~/.claude/ 글로벌 + 프로젝트별 .claude/</p>
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_3.png" alt="하네스(Harness)란?"></div></div>
+</section>
+
+<section data-slide-hash="#/9" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Agentic Engineering이란?</div>
+    
+  </div>
+  <h1 class="title">Agentic Engineering이란?</h1>
+  <div class="contents-body">
+
+<p>정의: ’Agentic 코드’의 휘발성을 극복하고 장기 유지보수·확장을 가능하게 하는 패러다임</p>
+
+<p>핵심 원칙: 격리(Git·Docker)·재현성(설정파일)·검증(test·review)·문서화(PRD/tasks)</p>
+
+<p>바이브 코딩 vs Agentic Engineering: 1회용 vs 지속 가능</p>
+
+<p>이 강의의 방향성 — ‘도구 사용법’이 아니라 ’엔지니어링 사고’</p></div>
+</section>
+
+<section data-slide-hash="#/10" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">4가지 개념 한눈에 비교표</div>
+    
+  </div>
+  <h1 class="title">4가지 개념 한눈에 비교표</h1>
+  <div class="contents-body">
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_4.png" alt="4가지 개념 한눈에 비교표"></div>
+
+<p>4분면: 바이브 코딩 / 프롬프트 엔지니어링 / 하네스 / Agentic Engineering</p>
+
+<p>비교축: 입력·출력·재현성·확장성·유지보수성</p>
+
+<p>우리가 목표하는 위치: Agentic Engineering (4사분면 우상단)</p>
+
+<p>“프롬프트 엔지니어링은 입문, Agentic Engineering은 졸업”</p></div>
+</section>
+
+<section data-slide-hash="#/11" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Agentic Coding의 흐름</div>
+    
+  </div>
+  <h1 class="title">Agentic Coding의 흐름</h1>
+  <div class="contents-body">
+
+<p>1턴 사이클: 사용자 의도 → Plan → Tool 실행(Bash·Edit·Read) → 검증</p>
+
+<p>1턴 평균 시간: 5~30초 (모델·도구 따라 변동)</p>
+
+<p>자율 반복 루프 vs 단발 프롬프트 차이</p>
+
+<p>Part2 실습에서 직접 체험할 흐름</p>
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_5.png" alt="Agentic Coding의 흐름"></div></div>
+</section>
+
+<section data-slide-hash="#/12" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Agentic Engineering의 필요성</div>
+    
+  </div>
+  <h1 class="title">Agentic Engineering의 필요성</h1>
+  <div class="contents-body">
+
+<p>문제: ‘뚝딱 개발’ → 다음날 같은 작업 재현 불가, 다른 맥락에서 깨짐</p>
+
+<p>해법: SCAR로 능력·규칙 외재화, Git/Docker로 격리, PRD/tasks로 의도 보존</p>
+
+<p>비용: 초기 셋업 1~2일 vs 장기 유지보수 절감 N개월</p>
+
+<p>도구 사용법이 아닌 엔지니어링 사고를 배우는 이유</p></div>
+</section>
+
+<section data-slide-hash="#/13" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">사전 설치 환경 점검</div>
+    
+  </div>
+  <h1 class="title">사전 설치 환경 점검</h1>
+  <div class="contents-body">
+
+
+
+<ul>
+<li class="bullet-dot">점검 명령:
+<ul>
+<ul>
+<ul>
+<ul>
+<ul>
+<ul>
+<ul>
+<li class="bullet-dot">node -vcode --version docker --versiongit --version</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="bullet-dot">모두 출력되면 통과. 오류 시 보조강사에게 손들기</li>
+<li class="bullet-dot">권한 테스트: docker ps (Desktop 실행 여부 확인)</li>
+<li class="bullet-dot">VsCode 확장: Claude Code, GitLens (선택)</li>
+<li class="bullet-dot">🖥️ 점검 시연</li>
+</ul></div>
+</section>
+
+<section data-slide-hash="#/14" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">VsCode기반 ClaudeCode환경 구축.</div>
+    
+  </div>
+  <h1 class="title">VsCode기반 ClaudeCode환경 구축.</h1>
+  <div class="contents-body">
+
+<p>확장 설치: Ctrl+Shift+X → “Claude Code” 검색 → Install</p>
+
+<p>로그인: 설치 후 사이드바 Claude 아이콘 클릭 → 브라우저 인증 (claude.ai 계정) 또는 API Key 입력</p>
+
+<p>실행: 사이드바 채팅창 진입 or VsCode 터미널에서 claude 명령</p>
+
+<p>확인: 채팅창에 “안녕” 입력 → 응답 수신 시 환경 구성 완료</p>
+
+<p>터미널 병행: claude CLI와 VsCode 확장은 동일 설정 공유</p>
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_6.png" alt="VsCode기반 ClaudeCode환경 구축."></div></div>
+</section>
+
+<section data-slide-hash="#/15" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Node·VsCode·Git·Docker 한눈에 보기</div>
+    
+  </div>
+  <h1 class="title">Node·VsCode·Git·Docker 한눈에 보기</h1>
+  <div class="contents-body">
+
+<p>Node.js: Claude Code CLI 실행 런타임 (≥ 18.x)</p>
+
+<p>VsCode: 편집기 + Claude Code 확장 진입점</p>
+
+<p>Git: 변경 격리·롤백·기록 (Agentic 안전망)</p>
+
+<p>Docker: 실행 격리·재현 환경 (Agentic 샌드박스)</p>
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_7.png" alt="Node·VsCode·Git·Docker 한눈에 보기"></div></div>
+</section>
+
+<section data-slide-hash="#/16" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Markdown이란?</div>
+    
+  </div>
+  <h1 class="title">Markdown이란?</h1>
+  <div class="contents-body">
+
+<p>John Gruber가 2005년 개발. 텍스트로 저장되어 용량이 적고 버전관리 용이함.</p>
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_8.png" alt="Markdown이란?"></div></div>
+</section>
+
+<section data-slide-hash="#/17" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Markdown Rendering</div>
+    
+  </div>
+  <h1 class="title">Markdown Rendering</h1>
+  <div class="contents-body">
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_9.png" alt="Markdown Rendering"></div></div>
+</section>
+
+<section data-slide-hash="#/18" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">PRD, tasks, CLAUDE.md 작성 기반</div>
+    
+  </div>
+  <h1 class="title">PRD, tasks, CLAUDE.md 작성 기반</h1>
+  <div class="contents-body">
+
+<p>이 강의에서 작성할 모든 문서: Markdown 기반   PRD.md / tasks.md / CLAUDE.md / Issue.md</p>
+
+<p>핵심 문법 5종: Header(#) / List(*,-) / Code(```) / Link / Bold(**)</p>
+
+<p>LLM이 Markdown을 좋아하는 이유: 구조화된 입력 → 정확한 파싱</p>
+
+<p>도구: VsCode 미리보기 (Ctrl+Shift+V)</p></div>
+</section>
+
+<section data-slide-hash="#/19" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Docker혁명: 무거운 가상머신(VM)을 넘어서다!</div>
+    
+  </div>
+  <h1 class="title">Docker혁명: 무거운 가상머신(VM)을 넘어서다!</h1>
+  <div class="contents-body">
+
+<p>내 컴퓨터에서 되는 코드는, 전 세계 으느 서버에서도 똑같이 돌아간다.</p>
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_10.png" alt="Docker혁명: 무거운 가상머신(VM)을 넘어서다!"></div></div>
+</section>
+
+<section data-slide-hash="#/20" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Docker가 Agentic에 각광받는 이유</div>
+    
+  </div>
+  <h1 class="title">Docker가 Agentic에 각광받는 이유</h1>
+  <div class="contents-body">
+
+<p>샌드박스: 컨테이너 안에서만 명령 실행 → 호스트 PC 안전</p>
+
+<p>재현: Dockerfile 로 동일 환경 재구성 — 다른 PC에서도 작동</p>
+
+<p>일회성: docker run --rm 으로 실행 후 삭제 — 흔적 없음</p>
+
+<p>비유: “내 PC를 더럽히지 않는 임시 작업실”</p>
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_11.png" alt="Docker가 Agentic에 각광받는 이유"></div></div>
+</section>
+
+<section data-slide-hash="#/21" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Docker 핵식 라이프사이클</div>
+    
+  </div>
+  <h1 class="title">Docker 핵식 라이프사이클</h1>
+  <div class="contents-body">
+
+<p>"claudeCode로 실행가능!"</p>
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_12.png" alt="Docker 핵식 라이프사이클"></div></div>
+</section>
+
+<section data-slide-hash="#/22" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">리눅스 명령어 빠르게 보기</div>
+    
+  </div>
+  <h1 class="title">리눅스 명령어 빠르게 보기</h1>
+  <div class="contents-body">
+
+<p>docker run -it ubuntu bash</p>
+
+<p>Claude Code는 Bash 도구로 OS 명령 실행 — 명령어 1줄 읽기 능력 필요</p>
+
+<p>핵심 5종: ls / <strong>cd</strong> / cat / grep / find</p>
+
+<p>절대경로 vs 상대경로 (/Users/... vs ./...)</p>
+
+<p>Windows에서: Git Bash 또는 WSL 사용 (Git for Windows에 포함)</p>
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_13.png" alt="리눅스 명령어 빠르게 보기"></div></div>
+</section>
+
+<section data-slide-hash="#/23" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Git이 Agentic에 각광받는 이유</div>
+    
+  </div>
+  <h1 class="title">Git이 Agentic에 각광받는 이유</h1>
+  <div class="contents-body">
+
+<p>격리: git worktree 로 에이전트 작업을 별도 디렉토리에 분리</p>
+
+<p>롤백: 자동 변경이 망가지면 git reset --hard 1초 복구</p>
+
+<p>기록: 누가·언제·왜 바꿨는지 추적 (commit 메시지 + 해시)</p>
+
+<p>협업: Pull Request 단위 코드 리뷰 — Agentic 산출물도 동일 흐름</p>
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_14.png" alt="Git이 Agentic에 각광받는 이유"></div></div>
+</section>
+
+<section data-slide-hash="#/24" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">(시연) Claude Code로 Node 스크립트 1줄 실행</div>
+    
+  </div>
+  <h1 class="title">(시연) Claude Code로 Node 스크립트 1줄 실행</h1>
+  <div class="contents-body">
+
+
+
+<ul>
+<li class="bullet-dot">hello.js 만들고 console.log 한 줄 추가해서 실행해줘</li>
+<li class="bullet-dot">Claude가 Edit 도구로 파일 생성 → Bash로 node hello.js 실행
+<ul>
+<ul>
+<li class="bullet-dot">1턴에 파일 작성·실행·결과 확인까지 완료</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul></div>
+</section>
+
+<section data-slide-hash="#/25" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">(시연) Claude Code로 Git 커밋·롤백</div>
+    
+  </div>
+  <h1 class="title">(시연) Claude Code로 Git 커밋·롤백</h1>
+  <div class="contents-body">
+
+
+
+<ul>
+<li class="bullet-dot">이 변경 커밋해줘</li>
+<li class="bullet-dot">어 잘못했네, 직전 커밋으로 되돌려줘</li>
+<li class="bullet-dot">git add/git commit → git reset 자동 실행
+<ul>
+<li class="bullet-dot">Agentic 자율 실행에서도 망가지면 1초 복구</li>
+</ul>
+</li>
+</ul></div>
+</section>
+
+<section data-slide-hash="#/26" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">(시연) Claude Code로 Docker 명령 안전 실행</div>
+    
+  </div>
+  <h1 class="title">(시연) Claude Code로 Docker 명령 안전 실행</h1>
+  <div class="contents-body">
+
+
+
+<ul>
+<ul>
+<ul>
+<li class="bullet-dot">node:22 컨테이너에서 hello.js 실행해줘</li>
+<li class="bullet-dot">docker run --rm node:22 node -e "..." 자동 구성</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="bullet-dot">( 호스트 PC에 흔적 없음 — 컨테이너 종료 시 삭제)</li>
+<li class="bullet-dot">🖥️ 시연</li>
+</ul></div>
+</section>
+
+<section data-slide-hash="#/27" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Claude Code란?</div>
+    
+  </div>
+  <h1 class="title">Claude Code란?</h1>
+  <div class="contents-body">
+
+<p>Anthropic 공식 CLI 기반 Agentic 코딩 도구 (Claude.ai/code)</p>
+
+<p>위치: 터미널·VsCode·웹앱·IDE 확장 (이 강의에서는 VsCode 확장 사용)</p>
+
+<p>모델: Opus 4.7 / Sonnet 4.6 / Haiku 4.5 선택 가능</p>
+
+<p>Claude Code를 사용하는 이유: SCAR·하네스·nPTiR 친화도</p></div>
+</section>
+
+<section data-slide-hash="#/28" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">다른 에이전트와의 차이 (Cursor·Copilot 비교)</div>
+    
+  </div>
+  <h1 class="title">다른 에이전트와의 차이 (Cursor·Copilot 비교)</h1>
+  <div class="contents-body">
+
+<p>GitHub Copilot: 자동완성 중심 — 1줄 보조</p>
+
+<p>Cursor: 편집기 통합 채팅 — 파일 단위 편집</p>
+
+<p>Claude Code: CLI + 멀티 도구 (Bash·Edit·WebFetch) — 전체 작업 자율</p>
+
+<p>전체 작업 자율이 필요한 실무 시나리오에 최적</p>
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_15.png" alt="다른 에이전트와의 차이 (Cursor·Copilot 비교)"></div></div>
+</section>
+
+<section data-slide-hash="#/29" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Claude Code 환경설정 — ~/.claude/ 구조</div>
+    
+  </div>
+  <h1 class="title">Claude Code 환경설정 — ~/.claude/ 구조</h1>
+  <div class="contents-body">
+
+<p>글로벌 설정: ~/.claude/ (모든 프로젝트 공통)</p>
+
+<p>프로젝트 설정: {프로젝트}/.claude/ (해당 프로젝트만)</p>
+
+<p>우선순위: 프로젝트 > 글로벌 (덮어쓰기)</p>
+
+<p>핵심 디렉토리: commands/ skills/ agents/ rules/ settings.json CLAUDE.md</p></div>
+</section>
+
+<section data-slide-hash="#/30" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">CLAUDE.md / settings.json 역할</div>
+    
+  </div>
+  <h1 class="title">CLAUDE.md / settings.json 역할</h1>
+  <div class="contents-body">
+
+<p>CLAUDE.md: 프로젝트 컨텍스트·규칙 (LLM이 매 턴 자동 로드)</p>
+
+<p>settings.json: 권한·모델·환경변수·hook (CLI 동작 제어)</p>
+
+<p>작성 팁: CLAUDE.md는 200줄 이내 권장 (컨텍스트 절약)</p>
+
+<p>Part2에서 /init 명령으로 자동 생성</p></div>
+</section>
+
+<section data-slide-hash="#/31" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">Claude CLI 모델 정책 (Opus / Sonnet / Haiku)</div>
+    
+  </div>
+  <h1 class="title">Claude CLI 모델 정책 (Opus / Sonnet / Haiku)</h1>
+  <div class="contents-body">
+
+<p>Opus 4.7: 설계·복잡 추론 (느림·비쌈) — Plan·아키텍처 단계</p>
+
+<p>Sonnet 4.6: 구현·반복 (빠름·중간) — 일반 작업</p>
+
+<p>Haiku 4.5: subagent·간단 작업 (매우 빠름·쌈) — 보조 호출</p>
+
+<p>Blueprint(Opus)+Execute(Sonnet) 패턴 권장</p>
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_16.png" alt="Claude CLI 모델 정책 (Opus / Sonnet / Haiku)"></div></div>
+</section>
+
+<section data-slide-hash="#/32" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">슬래시 커맨드 자주 쓰는 5종</div>
+    
+  </div>
+  <h1 class="title">슬래시 커맨드 자주 쓰는 5종</h1>
+  <div class="contents-body">
+
+<table>
+<thead>
+<tr><th style="text-align:center">커맨드</th><th style="text-align:center">역할</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align:center">/init</td><td style="text-align:center">CLAUDE.md 신규 생성</td></tr>
+<tr><td style="text-align:center">/clear</td><td style="text-align:center">컨텍스트 초기화</td></tr>
+<tr><td style="text-align:center">/review</td><td style="text-align:center">코드 리뷰</td></tr>
+<tr><td style="text-align:center">/cost</td><td style="text-align:center">사용량·요금 확인</td></tr>
+<tr><td style="text-align:center">/help</td><td style="text-align:center">전체 커맨드 목록</td></tr>
+</tbody>
+</table></div>
+</section>
+
+<section data-slide-hash="#/33" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">하네스 정의·구성요소 (재정리)</div>
+    
+  </div>
+  <h1 class="title">하네스 정의·구성요소 (재정리)</h1>
+  <div class="contents-body">
+
+<p>정의 복습: 도구 + 규칙 + 맥락 + 자동화 후크</p>
+
+<p>4계층 매핑: Tools(Bash/Edit) / Rules(rules/) / Memory(CLAUDE.md) / Hooks(settings.json)</p>
+
+<p>이번 실습 셋업 목표: SCAR 1세트 + nPTiR 사이클 1회 동작</p>
+
+<p>글로벌 하네스 예시: ~/.claude/ 200+ 파일 (참고용)</p>
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_17.png" alt="하네스 정의·구성요소 (재정리)"></div></div>
+</section>
+
+<section data-slide-hash="#/34" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">하네스 없이 vs 있을 때 비교</div>
+    
+  </div>
+  <h1 class="title">하네스 없이 vs 있을 때 비교</h1>
+  <div class="contents-body">
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_18.png" alt="하네스 없이 vs 있을 때 비교"></div></div>
+</section>
+
+<section data-slide-hash="#/35" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">(시연) 빈 디렉토리에서 Claude Code 시작</div>
+    
+  </div>
+  <h1 class="title">(시연) 빈 디렉토리에서 Claude Code 시작</h1>
+  <div class="contents-body">
+
+<p>/init</p>
+
+<p>디렉토리 구조 스캔 → 핵심 정보 추출 → CLAUDE.md 자동 작성</p>
+
+<p>Part2 미니 프로젝트 시작 시 동일하게 사용</p>
+
+<p>🖥️ 시연 (빈 디렉토리 → CLAUDE.md 생성 화면)</p></div>
+</section>
+
+<section data-slide-hash="#/36" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">SCAR 4요소 (Skill / Command / Agent / Rule)</div>
+    
+  </div>
+  <h1 class="title">SCAR 4요소 (Skill / Command / Agent / Rule)</h1>
+  <div class="contents-body">
+
+<p>S (Skill): 트리거 키워드 → 자동 호출되는 능력 단위. ex) /needs → plan 생성</p>
+
+<p>C (Command): 사용자 진입점 — 슬래시 입력으로 트리거. ex) /init /review</p>
+
+<p>A (Agent): 별도 컨텍스트의 subagent — 메인 컨텍스트 보호 + 병렬 실행. ex) code-reviewer</p>
+
+<p>R (Rule): 모델 행동 제약 정책. ex) “한국어 답변” “1단계 *, 2단계 -”</p>
+
+<p>4요소가 결합되어 하네스의 핵심 구성. 이 강의에서는 사용 위주 (처음부터 자작 X)</p>
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_19.png" alt="SCAR 4요소 (Skill / Command / Agent / Rule)"></div></div>
+</section>
+
+<section data-slide-hash="#/37" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">PRD.md / tasks.md 소개</div>
+    
+  </div>
+  <h1 class="title">PRD.md / tasks.md 소개</h1>
+  <div class="contents-body">
+
+
+
+<ul>
+<li class="bullet-dot">PRD.md = Product Requirements Document — 무엇을·왜 (요구사항)</li>
+<li class="bullet-dot">tasks.md = 실행 체크리스트 — 어떻게·언제 (단계별 작업)
+<ul>
+<li class="bullet-dot">두 문서가 Agentic 사이클의 입력 역할</li>
+<li class="bullet-dot">이 강의의 nPTiR 변형: PRD → Plan, tasks → Task (개념 동일)</li>
+</ul>
+</li>
+</ul></div>
+</section>
+
+<section data-slide-hash="#/38" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">(실습) PRD·tasks 빈칸 채워보기</div>
+    
+  </div>
+  <h1 class="title">(실습) PRD·tasks 빈칸 채워보기</h1>
+  <div class="contents-body">
+
+<p>🙋 직접 따라 하세요</p>
+
+<p>미니 시나리오: “방문자 카운터 표시하는 홈페이지”</p>
+
+<p>PRD 3줄 + tasks 5단계 직접 작성 (3분)</p>
+
+<p>작성 후: 옆 사람과 1분 비교 → 차이 발견</p>
+
+<p>Part2 미니 프로젝트의 입력 자료가 됨</p></div>
+</section>
+
+<section data-slide-hash="#/39" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">nPTiR 5단계 흐름도</div>
+    
+  </div>
+  <h1 class="title">nPTiR 5단계 흐름도</h1>
+  <div class="contents-body">
+
+<div class="media-container"><img src="./img/AgenticCoding_v10_20.png" alt="nPTiR 5단계 흐름도"></div>
+
+<p>n (needs): 무엇이 필요한가 — 신호 탐색</p>
+
+<p>P (Plan): 어떻게 할까 — 계획서 (_doc_work/plan/)</p>
+
+<p>T (Task): 단계별 체크리스트 (_doc_work/tasks/)</p>
+
+<p>i (issue): 진행 추적 (Issue.md)</p>
+
+<p>R (Report): 완료 회고 (_doc_work/report/)</p>
+
+<p>Part2에서 1 사이클 직접 실습</p></div>
+</section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/markdown/markdown.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script>
+    // Allow URL toggle: ?top=1 to enable top-align-mode regardless of config
+    try {
+      var qs = new URLSearchParams(window.location.search);
+      if (qs.get('top') === '1') document.body.classList.add('top-align-mode');
+    } catch (e) {}
+
+    // Issue110: cross-page 가드는 head의 M2_CROSS_GUARD_HEAD_HTML(documentElement.classList.add)에서 처리됨
+
+    // Issue112: chapterMeta breadcrumb 모드 시 body class 토글 (페이지 번호 너비 확장)
+    try {
+      if (window.M2_CHAPTER_META && window.M2_CHAPTER_META.breadcrumb && window.M2_CHAPTER_META.chapterNum) {
+        document.body.classList.add('m2-breadcrumb-mode');
+      }
+    } catch (e) {}
+
+    var isPrintMode = /print-pdf/gi.test(window.location.search);
+
+    // Issue125: hash-jump CSS transition은 reveal.js .reveal .slides에 박힌 transform transition이므로
+    // JS 옵션으로 막을 수 없음. M2_CROSS_GUARD의 m2-initial-loading visibility 가드로 시각적 차단.
+    // (Issue123/124의 transition gating 시도는 실효 없어 원복)
+    Reveal.initialize({
+      hash: true,
+      // Issue108: URL hash와 페이지 번호 표시 모두 1-based로 통일 (#/1이 첫 슬라이드)
+      hashOneBasedIndex: true,
+      plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
+      // Issue215: ratio-3-2/16-9는 number, fill만 string. 무조건 인용 시 number를 문자열로
+      // 전달하여 reveal.js Overview의 width+70 연산이 문자열 concat (192070) 되고
+      // grid spacing이 100배 비정상 → ESC overview 그리드 깨짐. cover Reveal.initialize(L2261-2262)
+      // 패턴과 일치시킴.
+      width: 1920,
+      height: 1280,
+      margin: 0.0,
+      // Issue63: width 남을 때 horizontal center / height 남을 때 top 정렬.
+      // ratio 모드에서는 항상 false (Reveal vertical centering이 ratio fit과 충돌하는 이슈 회피).
+      // ratio-fill 모드에서만 사용자 top_align 설정 따름.
+      center: false,
+      // Issue112: 챕터 모드 page_number_mode=global일 때 chapterMeta 기반 callback.
+      //   reveal.js 5.x callback은 [a, separator, b] array 반환 형식 표준.
+      //   문자열 반환은 무시되어 fallback(챕터 인덱스만)으로 떨어지는 회귀 발생.
+      //   그 외(local/single)는 'c/t' 유지
+      slideNumber: (window.M2_CHAPTER_META && window.M2_CHAPTER_META.mode === 'global')
+        ? function(slide) {
+            var m = window.M2_CHAPTER_META;
+            var idx = (typeof Reveal.getIndices === 'function') ? Reveal.getIndices(slide) : { h: 0 };
+            var globalNum = (m.slideOffset || 0) + (idx.h || 0) + 1;
+            var left = (m.breadcrumb && m.chapterNum) ? (m.chapterNum + ' › ' + globalNum) : String(globalNum);
+            return [left, '/', m.totalSlides];
+          }
+        : 'c/t',
+      // Issue111: 전역 transition·배경 트랜지션은 _config.yml animation: 섹션에서 override 가능
+      //   기본값(slide / fade)은 lib/config.js createDefaultConfig에서 정의 (이전 하드코딩과 동일)
+      transition: 'convex',
+      transitionSpeed: 'default',
+      backgroundTransition: 'zoom',
+      touch: false,  // Issue51: 커스텀 드래그 핸들러가 touch 이벤트를 직접 관리
+      // Issue89: Home/End/PgUp/PgDown은 m2slide 매트릭스가 처리. Reveal 기본 keymap 비활성화로 hijack 차단
+      // Issue226: ESC(27)는 표준 reveal.js toggleOverview 명시 등록 — m2slide custom keydown capture phase에서 가로채일 가능성 차단
+      keyboard: {
+        36: null,  // Home
+        35: null,  // End
+        33: null,  // PageUp
+        34: null,  // PageDown
+        27: 'toggleOverview'  // ESC = overview 토글 (reveal.js 표준)
+      }
+    });
+
+    // Initialize mermaid for diagrams (manual rendering)
+    mermaid.initialize({
+      startOnLoad: false,  // Disable auto-render, we'll render manually
+      theme: 'default',
+      securityLevel: 'loose',
+      themeVariables: {
+        fontFamily: '"Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif'
+      },
+      flowchart: {
+        htmlLabels: true,
+        curve: 'basis',
+        useMaxWidth: false
+      },
+      sequence: {
+        diagramMarginX: 50,
+        diagramMarginY: 10,
+        actorMargin: 50,
+        width: 150,
+        height: 65,
+        boxMargin: 10,
+        boxTextMargin: 5,
+        noteMargin: 10,
+        messageMargin: 35,
+        mirrorActors: true,
+        useMaxWidth: false
+      },
+      timeline: {
+        useMaxWidth: false
+      }
+    });
+
+    // Render all Mermaid diagrams when Reveal.js is ready
+    Reveal.on('ready', function() {
+      // Find all mermaid elements in all slides
+      const allMermaidElements = document.querySelectorAll('.mermaid');
+
+      if (allMermaidElements && allMermaidElements.length > 0) {
+        allMermaidElements.forEach(function(element, index) {
+          // Skip if already rendered
+          if (element.querySelector('svg')) {
+            return;
+          }
+
+          const graphDefinition = element.textContent;
+          if (!graphDefinition || !graphDefinition.trim()) {
+            return;
+          }
+
+          const graphId = 'mermaid-diagram-' + index;
+
+          try {
+            mermaid.render(graphId, graphDefinition).then(function(result) {
+              if (result && result.svg) {
+                element.innerHTML = '<div class="graph-scroll">' + result.svg + '</div>';
+              }
+            }).catch(function(error) {
+              console.error('Mermaid rendering error for diagram ' + index + ':', error);
+            });
+          } catch (e) {
+            console.error('Mermaid rendering error for diagram ' + index + ':', e);
+          }
+        });
+      }
+    });
+
+    // Render all Kroki diagrams (runtime fallback).
+    //   빌드 타임에 SVG 캐시가 채워져 있으면 .kroki img는 이미 로컬 SVG를 가리키므로 본 핸들러는 skip.
+    //   data-type 속성이 남아 있는 .kroki 컨테이너만 (캐시 누락 시) 안내 메시지 표시.
+    //   참고: 빌드 타임에 path-based URL이 박힌 .kroki img는 onerror로 자체 처리됨.
+    Reveal.on('ready', function() {
+      var allKrokiElements = document.querySelectorAll('.kroki');
+      if (!allKrokiElements || allKrokiElements.length === 0) return;
+      for (var i = 0; i < allKrokiElements.length; i++) {
+        var element = allKrokiElements[i];
+        if (element.querySelector('svg') || element.querySelector('img')) continue;
+        var diagramType = element.getAttribute('data-type') || 'kroki';
+        element.innerHTML = '<div class="kroki-error"><strong>' + diagramType + ' diagram</strong> 빌드 타임 SVG 캐시 누락. m2slide 재빌드 필요</div>';
+      }
+    });
+
+
+    // Inject configuration
+    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"head_left":"d1","head_right":"now","head_breadcum":true,"cardColumns":"auto-fit","style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":[]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"width"}}};
+
+    // Dynamic Styling and Resizing Script
+    let observer; // Define observer at top level
+
+    function applyDynamicStyles() {
+      const config = window.slideConfig;
+      if (!config) return;
+
+      // 1. Apply Title Styles - REMOVED (Migrated to CSS)
+
+      const allSlides = document.querySelectorAll('.reveal .slides section');
+      // No dynamic title styling anymore
+
+      // 2. Resize Lists in current slide
+      const currentSlide = Reveal.getCurrentSlide();
+      if (!currentSlide) return;
+
+      // 1. Fit lists (ul/ol)
+      // Only target top-level lists to avoid double-sizing nested ones
+      // 1. Fit content (theContents + Issue224 보강 3: .toc-cards)
+      // Target the container itself
+      // .toc-cards는 layout-_cards/layout-_toc 슬라이드의 chapter cards 컨테이너.
+      // .theContents 없는 cards 슬라이드는 카드 28+ 케이스에서 폰트 36px 고정되어 잘림 발생.
+      // 동일 binary search fit 로직을 .toc-cards에도 적용하여 카드 폰트 자동 축소.
+      const contents = currentSlide.querySelectorAll('.theContents, .toc-cards');
+      if (contents.length === 0) return;
+
+      contents.forEach(content => {
+        // Check if auto font size is enabled
+        if (config.style.theContents.font_size_auto === false) {
+            return;
+        }
+
+        // Get title size for reference (from current slide or config)
+        let titleSizePx = 60; // fallback
+        const titleEl = currentSlide.querySelector('h1, h2');
+        if (titleEl) {
+          titleSizePx = parseFloat(window.getComputedStyle(titleEl).fontSize);
+        }
+
+        const maxFontSize = titleSizePx * (config.style.theContents.fontSizeMaxRatio || 0.66);
+        const minFontSize = parseFloat(config.style.theContents.fontSizeMin || '20px');
+
+        // Binary search or iterative approach to find best fit
+        // Range: [minFontSize, maxFontSize]
+
+        let low = minFontSize;
+        let high = maxFontSize;
+        let bestFit = minFontSize;
+
+        // Reset styles for measurement
+        content.style.fontSize = maxFontSize + 'px';
+        content.style.lineHeight = '1.2'; // Tighter line height for large text
+
+        // .toc-cards: fit 임계값에 8% 하단 여백 적용 (페이지 인디케이터·시각적 압박 회피).
+        // Reveal section 의 scrollHeight 는 min-height:100% 로 인해 clientHeight 미만으로 안 떨어짐 →
+        // section 기반 측정 불가. content 의 슬라이드 내부 bottom 좌표를 직접 측정.
+        // 다른 .theContents 는 기존대로 section.scrollHeight 100% 채움.
+        const isTocCards = content.classList && content.classList.contains('toc-cards');
+        const fitTarget = currentSlide.clientHeight * (isTocCards ? 0.92 : 1.0);
+        const measureExtent = () => {
+          if (!isTocCards) return currentSlide.scrollHeight;
+          const slideTop = currentSlide.getBoundingClientRect().top;
+          const contentBottom = content.getBoundingClientRect().bottom;
+          return contentBottom - slideTop;
+        };
+
+        // Check if it fits at max
+        if (measureExtent() <= fitTarget) {
+           bestFit = maxFontSize;
+        } else {
+           // Binary search
+           for (let i = 0; i < 10; i++) { // 10 iterations is enough precision
+              const mid = (low + high) / 2;
+              content.style.fontSize = mid + 'px';
+              if (measureExtent() <= fitTarget) {
+                 bestFit = mid;
+                 low = mid;
+              } else {
+                 high = mid;
+              }
+           }
+        }
+
+        // Unobserve to prevent infinite loop (style change -> resize -> observer -> style change)
+        if (observer) observer.unobserve(content);
+
+        // Apply best fit
+        content.style.fontSize = bestFit + 'px';
+
+        // If even at min size it overflows, enable scroll (already auto in CSS)
+        if (bestFit <= minFontSize + 1) {
+           content.style.fontSize = minFontSize + 'px';
+        }
+
+        // Re-observe after a delay to skip the immediate resize caused by our change
+        if (observer) {
+          requestAnimationFrame(() => {
+            observer.observe(content);
+          });
+        }
+      });
+    }
+
+    Reveal.on('ready', () => {
+      applyDynamicStyles();
+
+      // Use ResizeObserver to handle dynamic content changes (images loading, etc.)
+      observer = new ResizeObserver(entries => {
+        // Debounce or throttle could be added if needed, but for now direct call
+        // Check if the resized element is the current slide
+        const currentSlide = Reveal.getCurrentSlide();
+        if (currentSlide && entries.some(entry => entry.target === currentSlide || currentSlide.contains(entry.target))) {
+           applyDynamicStyles();
+        }
+      });
+
+      // Observe all content containers to detect changes (e.g. images/diagrams loading)
+      document.querySelectorAll('.reveal .slides section .theContents').forEach(content => {
+        observer.observe(content);
+      });
+    });
+    Reveal.on('slidechanged', applyDynamicStyles);
+    // Also re-apply on resize
+    window.addEventListener('resize', applyDynamicStyles);
+
+    // Issue55 Phase 6/7: TOC 슬라이드 내부 .toc-mindmap-svg에 markmap 렌더 (#toc-container 오버레이 폐기)
+    var tocData = {
+      "content": "",
+      "children": [
+            {
+                  "content": "<a href=\"#/1\">강의 시작 — 인사·강사 소개</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/2\">강의 목표·4시간 흐름 미리보기</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/3\">Agentic Coding — Part1</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/4\">강의 범위·비포함</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/5\">바이브 코딩(Vibe Coding)이란?</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/6\">프롬프트 엔지니어링이란?</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/7\">하네스(Harness)란?</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/8\">Agentic Engineering이란?</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/9\">4가지 개념 한눈에 비교표</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/10\">Agentic Coding의 흐름</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/11\">Agentic Engineering의 필요성</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/12\">사전 설치 환경 점검</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/13\">VsCode기반 ClaudeCode환경 구축.</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/14\">Node·VsCode·Git·Docker 한눈에 보기</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/15\">Markdown이란?</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/16\">Markdown Rendering</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/17\">PRD, tasks, CLAUDE.md 작성 기반</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/18\">Docker혁명: 무거운 가상머신(VM)을 넘어서다!</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/19\">Docker가 Agentic에 각광받는 이유</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/20\">Docker 핵식 라이프사이클</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/21\">리눅스 명령어 빠르게 보기</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/22\">Git이 Agentic에 각광받는 이유</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/23\">(시연) Claude Code로 Node 스크립트 1줄 실행</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/24\">(시연) Claude Code로 Git 커밋·롤백</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/25\">(시연) Claude Code로 Docker 명령 안전 실행</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/26\">Claude Code란?</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/27\">다른 에이전트와의 차이 (Cursor·Copilot 비교)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/28\">Claude Code 환경설정 — ~/.claude/ 구조</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/29\">CLAUDE.md / settings.json 역할</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/30\">Claude CLI 모델 정책 (Opus / Sonnet / Haiku)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/31\">슬래시 커맨드 자주 쓰는 5종</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/32\">하네스 정의·구성요소 (재정리)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/33\">하네스 없이 vs 있을 때 비교</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/34\">(시연) 빈 디렉토리에서 Claude Code 시작</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/35\">SCAR 4요소 (Skill / Command / Agent / Rule)</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/36\">PRD.md / tasks.md 소개</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/37\">(실습) PRD·tasks 빈칸 채워보기</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/38\">nPTiR 5단계 흐름도</a>",
+                  "children": []
+            }
+      ]
+};
+    var markmapInitialized = false;
+    var markmapInstance = null;
+
+    function findTocSlideSvg() {
+      var tocSlide = document.getElementById('toc-placeholder');
+      if (!tocSlide) return null;
+      return tocSlide.querySelector('.toc-mindmap-svg');
+    }
+
+    /* Issue134 후속: refit을 외부 스코프로 끌어내 initial·slidechanged·resize 모든 호출 경로가
+       동일 monkey-patch 적용 fit을 사용하도록 통일. 이전엔 slidechanged 시 markmapInitialized=true
+       early-return 경로에서 raw fit()을 호출해 같은 페이지 내 슬라이드 이동 시 transform scale
+       영향으로 markmap이 작게 다시 그려지는 회귀 발생.
+
+       refit 핵심: markmap.fit()은 svg.getBoundingClientRect()로 컨테이너 크기를 측정하는데
+       reveal.js의 transform: scale이 부모(.slides)에 걸려 있어 BCR은 visual(scaled) 크기를 반환.
+       윈도우 높이가 작을수록 측정값이 작아져 markmap content가 작게 그려짐.
+       해결: fit 동안 svg.getBoundingClientRect를 일시 monkey-patch하여 offsetWidth/offsetHeight
+       (transform 적용 전 logical px)를 반환하도록 함. fit() 후 try/finally로 원복. */
+    function refitMarkmap(){
+      if (!markmapInstance || !markmapInstance.fit) return;
+      var svg = findTocSlideSvg();
+      if (!svg) return;
+      try {
+        var p = svg.parentNode;
+        var w = p ? p.offsetWidth : 0;
+        var h = p ? p.offsetHeight : 0;
+        if (w > 0 && h > 0) {
+          svg.setAttribute('width', w);
+          svg.setAttribute('height', h);
+          var origGBCR = svg.getBoundingClientRect.bind(svg);
+          svg.getBoundingClientRect = function(){
+            return { x: 0, y: 0, top: 0, left: 0, right: w, bottom: h, width: w, height: h };
+          };
+          try { markmapInstance.fit(); } finally { svg.getBoundingClientRect = origGBCR; }
+        } else {
+          markmapInstance.fit();
+        }
+      } catch(e){}
+    }
+
+    function initTocMarkmapIfNeeded() {
+      if (markmapInitialized) {
+        /* Issue134 후속: raw fit() 대신 monkey-patch 적용 refitMarkmap 호출 + 다단 retry */
+        if (!isPrintMode) {
+          requestAnimationFrame(refitMarkmap);
+          setTimeout(refitMarkmap, 50);
+          setTimeout(refitMarkmap, 300);
+        }
+        return;
+      }
+      if (!window.markmap) return;
+      var svg = findTocSlideSvg();
+      if (!svg) return;
+      try {
+        /* Issue: agenda(deriveOptions 기본값)와 동일 옵션으로 통일 — 일관된 시각언어
+           기본값: paddingX:8, spacingHorizontal:80, spacingVertical:5, fitRatio:0.95 */
+        var opts = window.markmap.deriveOptions
+          ? window.markmap.deriveOptions({ initialExpandLevel: 3 })
+          : { autoFit: true, fitRatio: 0.95, spacingHorizontal: 80, spacingVertical: 5, paddingX: 8, initialExpandLevel: 3 };
+        opts.autoFit = true;  /* deriveOptions는 autoFit:false가 기본이므로 명시 */
+        markmapInstance = window.markmap.Markmap.create(svg, opts, tocData);
+        markmapInitialized = true;
+        if (!isPrintMode) {
+          requestAnimationFrame(refitMarkmap);
+          setTimeout(refitMarkmap, 50);
+          setTimeout(refitMarkmap, 300);
+          setTimeout(refitMarkmap, 800);
+          /* Issue: 컨테이너 크기 변경(flex 재계산·reveal 슬라이드 전환 transform 완료) 시 자동 재맞춤 */
+          if (window.ResizeObserver) {
+            try {
+              var ro = new ResizeObserver(function(){ refitMarkmap(); });
+              ro.observe(svg.parentNode);
+            } catch(e){}
+          }
+        } else {
+          setTimeout(refitMarkmap, 1000);
+        }
+      } catch(e) {
+        console.warn('Markmap initialization failed:', e);
+      }
+    }
+
+    Reveal.on('ready', function() {
+      initTocMarkmapIfNeeded();
+    });
+    Reveal.on('slidechanged', function() {
+      var cur = Reveal.getCurrentSlide();
+      if (cur && cur.id === 'toc-placeholder') {
+        initTocMarkmapIfNeeded();
+      }
+    });
+
+    // Keep Markmap fitted on window resize
+    var resizeTimeout;
+    window.addEventListener('resize', function(){
+      if (isPrintMode) return; // Skip resize logic in print mode
+
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(function() {
+        /* Issue135: window resize 핸들러도 monkey-patch 적용 refitMarkmap 사용 */
+        refitMarkmap();
+        adjustGraphScrollHeights();
+        fitSmallDiagrams();
+        topBiasCurrentSlide();
+      }, 100);
+    });
+
+    // Adjust scroll height for tall diagrams based on Reveal scale
+    function adjustGraphScrollHeights() {
+      // Use Reveal logical size and subtract actual header height on current slide
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { width: 1280, height: 720 };
+      var baseH = cfg && cfg.height ? cfg.height : 720;
+
+      var cur = (typeof Reveal.getCurrentSlide === 'function') ? Reveal.getCurrentSlide() : null;
+      var headerSpace = 0;
+      if (cur) {
+        // Sum heights of visible H1/H2 in current slide
+        var heads = cur.querySelectorAll('h1, h2');
+        heads.forEach(function(h){
+          var cs = window.getComputedStyle(h);
+          var mh = parseFloat(cs.marginTop) + parseFloat(cs.marginBottom);
+          headerSpace += h.offsetHeight + mh;
+        });
+        // Add a small buffer below titles
+        headerSpace += 40;
+      }
+
+      var available = baseH - headerSpace - 40; // smaller buffer to allow larger content
+      if (available < 200) available = 200;
+
+      // Only adjust graph-scroll inside current slide to avoid layout thrash
+      var apply = function(scope){
+        scope.querySelectorAll('.graph-scroll').forEach(function(el){
+          el.style.maxHeight = available + 'px';
+          el.style.overflowY = 'auto';
+          // Prefer height-based fit for diagrams
+          el.querySelectorAll('svg, img').forEach(function(di){
+            di.style.maxHeight = available + 'px';
+            di.style.height = 'auto';
+            di.style.width = 'auto';
+            di.style.maxWidth = '100%';
+          });
+        });
+      };
+      if (cur) apply(cur); else apply(document);
+    }
+
+    // title_contents_gap: title 높이의 % 만큼 margin-bottom을 h*.title에 적용
+    // .present 셀렉터로 현재 슬라이드만 처리해 hidden slide의 offsetHeight=0 오진 방지
+    function applyTitleContentsGap() {
+      var raw = getComputedStyle(document.body).getPropertyValue('--title-contents-gap-pct');
+      var pct = parseFloat(raw);
+      if (isNaN(pct)) pct = 30;
+      document.querySelectorAll(
+        '.reveal .slides section.present h1.title,' +
+        '.reveal .slides section.present h2.title,' +
+        '.reveal .slides section.present h3.title'
+      ).forEach(function(el) {
+        var h = el.offsetHeight;
+        if (h > 0) el.style.marginBottom = Math.round(h * pct / 100) + 'px';
+      });
+    }
+
+    // Vertically bias content to top by reducing extra center spacing using margin
+    var lastAdjustedSlide = null;
+    function topBiasCurrentSlide() {
+      if (typeof Reveal.getCurrentSlide !== 'function') return;
+      var slide = Reveal.getCurrentSlide();
+      if (!slide) return;
+      // reset previous
+      if (lastAdjustedSlide && lastAdjustedSlide !== slide) {
+        lastAdjustedSlide.style.marginTop = '';
+      }
+      // compute extra space when content is short (Reveal may center it)
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { height: 720 };
+      var logicalH = cfg && cfg.height ? cfg.height : 720;
+      var contentH = slide.scrollHeight;
+      var extra = (logicalH - contentH) / 2; // space added by vertical centering
+      if (extra > 10) {
+        // leave a small 10px top padding, pull the rest up via negative margin
+        var offset = Math.min(extra - 10, logicalH * 0.25); // cap shift to 25% of slide height
+        slide.style.marginTop = '-' + Math.round(offset) + 'px';
+        lastAdjustedSlide = slide;
+      } else {
+        slide.style.marginTop = '';
+      }
+    }
+
+    // Enlarge small diagrams up to slide width, capping height to 3:2
+    function fitSmallDiagrams() {
+      var cfg = (typeof Reveal.getConfig === 'function') ? Reveal.getConfig() : { width: 1280, height: 720 };
+      var contentW = (cfg && cfg.width ? cfg.width : 1280) - 120; // padding (60px each side)
+      if (contentW < 320) contentW = 320;
+      var capH = Math.floor(contentW * 2 / 3);
+
+      document.querySelectorAll('.graph-scroll > svg, .graph-scroll > img').forEach(function(el){
+        var rect = el.getBoundingClientRect();
+        var curW = rect && rect.width ? rect.width : 0;
+        // Only upscale when clearly smaller than container
+        if (curW > 0 && curW < contentW * 0.7) {
+          el.style.width = contentW + 'px';
+          el.style.maxHeight = capH + 'px';
+          el.style.height = 'auto';
+        } else {
+          // Do not force width for already large diagrams
+          el.style.removeProperty('width');
+          el.style.removeProperty('max-height');
+        }
+      });
+    }
+
+    Reveal.on('ready', function(){
+      if (document.body.classList.contains('top-align-mode')) {
+        // Enforce top alignment in case theme defaults differ
+        if (typeof Reveal.configure === 'function') { Reveal.configure({ center: false }); }
+        // Remove extra top padding on current slide to keep content tight to top
+        var cur = Reveal.getCurrentSlide();
+        if (cur) cur.style.paddingTop = '10px';
+        topBiasCurrentSlide();
+      }
+      adjustGraphScrollHeights();
+      fitSmallDiagrams();
+      // rAF: 첫 슬라이드 레이아웃 완료 후 gap 적용
+      requestAnimationFrame(applyTitleContentsGap);
+    });
+    Reveal.on('slidechanged', function(){
+      adjustGraphScrollHeights();
+      fitSmallDiagrams();
+      // rAF: slide 전환 애니메이션/레이아웃 완료 후 gap 적용
+      requestAnimationFrame(applyTitleContentsGap);
+      if (document.body.classList.contains('top-align-mode')) { topBiasCurrentSlide(); }
+    });
+    window.addEventListener('resize', function(){
+      adjustGraphScrollHeights();
+      fitSmallDiagrams();
+      applyTitleContentsGap();
+      if (document.body.classList.contains('top-align-mode')) { topBiasCurrentSlide(); }
+    });
+
+    // Last slide message state
+    var lastSlideMessageShown = false;
+    var lastSlideMessage = document.getElementById('last-slide-message');
+
+    // Issue55 Phase 9 + Issue70: 키 네비게이션 — 페이지 계층 단계별 이동
+    // M2SLIDE_MODE: 'single' | 'chapter' (빌드 시점 주입)
+    // M2SLIDE_COVER: 'true' | 'false' (cover_enabled, Single mode ← override 판정용)
+    // PREV_CHAPTER: 이전 챕터 HTML 파일명 (chapter mode TOC slide ← 대상)
+    // NEXT_CHAPTER: 다음 챕터 HTML 파일명 (chapter mode ↓ 대상, key_navigation.md K9)
+    var M2SLIDE_MODE = 'chapter';
+    var M2SLIDE_COVER = true;
+    // agenda.html 존재 여부 — false 시 back/agenda 점프 대상이 index.html 로 fallback.
+    var M2SLIDE_AGENDA_URL = 'agenda.html?back=1';
+    // Issue243: forward(child) 방향 agenda 점프 — agenda_enabled=false 시 첫 챕터?fwd=1로 직행.
+    var M2SLIDE_AGENDA_FWD_URL = 'agenda.html?fwd=1';
+    // Issue119: cover layout 이름 (_config.yml cover_layout, 기본 _cover). isCoverSlide() 판정에 사용.
+    var M2SLIDE_COVER_LAYOUT = '_cover';
+    var PREV_CHAPTER = '';
+    var NEXT_CHAPTER = '02-part2.html';
+    // Issue136: ⇤/⇥ 단축키 전용 — main/sub 계층 인식 sibling 점프 (NEXT/PREV_CHAPTER는 sequential 파일 순서 그대로)
+    var PREV_SIBLING_CHAPTER = '';
+    var NEXT_SIBLING_CHAPTER = '02-part2.html';
+    // Issue87: ⇟ PgDown(마지막 페이지 직행) — Single mode은 '' (deck last로 자체 계산)
+    var LAST_CHAPTER = '02-part2.html';
+    function isCoverSlide(slide) {
+      if (!slide) return false;
+      if (!slide.classList || !slide.classList.contains('layout-' + M2SLIDE_COVER_LAYOUT)) return false;
+      // Issue230: cover navigation은 deck 진입점(#/0)만. layout-selector가 중간 H1을
+      //   _cover로 일괄 분류해도 navigation 의미상 leaf로 처리(시각 스타일은 유지).
+      // Issue234: chapter mode chapter file의 cover(#/0)는 navigation상 leaf 처리.
+      //   chapter mode의 cover→agenda redirect 의미는 별도 index.html(generateCoverHTML)이 담당.
+      //   chapter file은 deck 시작이라도 → 키로 #/1 advance(시각 스타일 _cover는 유지).
+      if (M2SLIDE_MODE !== 'single') return false;
+      try {
+        var hs = Reveal.getHorizontalSlides();
+        return hs && hs.length > 0 && hs[0] === slide;
+      } catch (e) {
+        return true;  // Reveal 미초기화 — 보수적으로 cover 유지
+      }
+    }
+    function isTocSlide(slide) {
+      if (!slide) return false;
+      return slide.id === 'toc-placeholder';
+    }
+    // Issue71: section anchor — layout-_toc 또는 layout-_cards class를 가진 슬라이드 (H1·H2 sub-section autoToc 모두 포함)
+    // Issue137: toc-placeholder id를 가진 슬라이드도 anchor 자격 보유.
+    // Issue138: Cards Page(layout-_cards)가 새 anchor 클래스. 기존 layout-_toc는 호환성 유지(#layout-_toc 명시 케이스).
+    // 2026-05-10: Single 모드 H1 슬라이드(autoToc 미변환, layout-_contents)도 data-heading-level 속성으로 anchor 자격 부여.
+    function isAnchorSlide(slide) {
+      if (!slide) return false;
+      if (!slide.classList) return false;
+      if (slide.classList.contains('layout-_cards') || slide.classList.contains('layout-_toc')) return true;
+      if (slide.dataset && slide.dataset.headingLevel) return true;
+      return false;
+    }
+    // Issue92: H1 레벨 anchor만 sibling 점프(Home/End) 및 본문 ↑ 부모 lookup 대상
+    // (H2 sub-section autoToc는 isAnchorSlide==true이지만 isH1Anchor==false → sibling/parent 후보에서 제외)
+    function isH1Anchor(slide) {
+      if (!isAnchorSlide(slide)) return false;
+      return slide.dataset && slide.dataset.headingLevel === '1';
+    }
+    function findTocSlideIndex() {
+      // 0X-*.html (chapter)에서 #/toc-placeholder의 horizontal index 찾기
+      var slides = Reveal.getHorizontalSlides();
+      for (var i = 0; i < slides.length; i++) {
+        if (slides[i].id === 'toc-placeholder') return i;
+      }
+      return -1;
+    }
+    // Issue71+92: 현재 horizontal index 이전에서 가장 가까운 H1 anchor 슬라이드 index 반환 (Home sibling 점프용)
+    function findPrevH1AnchorIndex(currentH) {
+      var slides = Reveal.getHorizontalSlides();
+      for (var i = currentH - 1; i >= 0; i--) {
+        if (isH1Anchor(slides[i])) return i;
+      }
+      return -1;
+    }
+    // K9+Issue92: 현재 horizontal index 이후에서 가장 가까운 H1 anchor 슬라이드 index 반환 (End sibling, ↓ TOC 첫 H1)
+    function findNextH1AnchorIndex(currentH) {
+      var slides = Reveal.getHorizontalSlides();
+      for (var i = currentH + 1; i < slides.length; i++) {
+        if (isH1Anchor(slides[i])) return i;
+      }
+      return -1;
+    }
+    // Issue99: 현재 horizontal index 이전에서 가장 가까운 anchor (H1 또는 H2 sub) 반환 — ↑ 부모 점프용
+    // 본문 leaf의 직속 부모는 H2 sub-anchor가 우선(있을 때), 없으면 H1 anchor로 폴백
+    function findPrevAnyAnchorIndex(currentH) {
+      var slides = Reveal.getHorizontalSlides();
+      for (var i = currentH - 1; i >= 0; i--) {
+        if (isAnchorSlide(slides[i])) return i;
+      }
+      return -1;
+    }
+    // Issue105: enclosing anchor의 heading level 반환 (현재가 anchor면 자기 level, 본문이면 직전 anchor level, 없으면 1)
+    function getEnclosingAnchorLevel(currentH) {
+      var slides = Reveal.getHorizontalSlides();
+      var cur = slides[currentH];
+      if (isAnchorSlide(cur) && cur.dataset && cur.dataset.headingLevel) {
+        return parseInt(cur.dataset.headingLevel, 10) || 1;
+      }
+      for (var i = currentH - 1; i >= 0; i--) {
+        var s = slides[i];
+        if (isAnchorSlide(s) && s.dataset && s.dataset.headingLevel) {
+          return parseInt(s.dataset.headingLevel, 10) || 1;
+        }
+      }
+      return 1;
+    }
+    // Issue105: 트리 탐색 sibling 점프 (Home/End용)
+    // currentH 이전/이후 슬라이드 중 anchor && headingLevel <= level 첫 매치 반환
+    function findPrevSiblingAnchorIndex(currentH, level) {
+      var slides = Reveal.getHorizontalSlides();
+      for (var i = currentH - 1; i >= 0; i--) {
+        var s = slides[i];
+        if (!isAnchorSlide(s)) continue;
+        var lv = (s.dataset && s.dataset.headingLevel) ? parseInt(s.dataset.headingLevel, 10) : 1;
+        if (lv <= level) return i;
+      }
+      return -1;
+    }
+    function findNextSiblingAnchorIndex(currentH, level) {
+      var slides = Reveal.getHorizontalSlides();
+      for (var i = currentH + 1; i < slides.length; i++) {
+        var s = slides[i];
+        if (!isAnchorSlide(s)) continue;
+        var lv = (s.dataset && s.dataset.headingLevel) ? parseInt(s.dataset.headingLevel, 10) : 1;
+        if (lv <= level) return i;
+      }
+      return -1;
+    }
+    // Issue106: 자식 sub-anchor (level > 현재) 첫 매치 반환 — anchor에서 ↓ 시 outline 우선 이동
+    // currentH+1부터 scan, anchor 발견 시 level > 현재면 자식, level ≤ 현재면 scope 종료(-1)
+    function findFirstChildAnchorIndex(currentH, level) {
+      var slides = Reveal.getHorizontalSlides();
+      for (var i = currentH + 1; i < slides.length; i++) {
+        var s = slides[i];
+        if (!isAnchorSlide(s)) continue;
+        var lv = (s.dataset && s.dataset.headingLevel) ? parseInt(s.dataset.headingLevel, 10) : 1;
+        if (lv > level) return i;
+        return -1;
+      }
+      return -1;
+    }
+
+    // Issue107: Reveal 기본 ↑/↓ 컨트롤을 ArrowUp/ArrowDown 키 시뮬레이션으로 hijack + 활성 상태 가시화
+    function m2DispatchKey(key, code) {
+      var ev = new KeyboardEvent('keydown', { key: key, keyCode: code, which: code, bubbles: true, cancelable: true });
+      document.dispatchEvent(ev);
+    }
+    function m2EvalDownEnabled() {
+      var cur = Reveal.getCurrentSlide();
+      if (!cur) return false;
+      if (isCoverSlide(cur) || isTocSlide(cur) || isAnchorSlide(cur)) return true;
+      // leaf
+      if (M2SLIDE_MODE === 'chapter') {
+        return !!(NEXT_CHAPTER && NEXT_CHAPTER !== 'index.html');
+      }
+      return findNextH1AnchorIndex(Reveal.getIndices().h) >= 0;
+    }
+    function m2UpdateNavControls() {
+      var upBtn = document.querySelector('.reveal .controls .navigate-up');
+      var downBtn = document.querySelector('.reveal .controls .navigate-down');
+      if (!upBtn || !downBtn) return;
+      var cur = Reveal.getCurrentSlide();
+      if (!cur) return;
+      // ↑ : Cover면 비활성, 그 외 활성 (Cover는 최상위)
+      upBtn.classList.toggle('m2-enabled', !isCoverSlide(cur));
+      // ↓ : leaf fall-through 가능 여부 + Cover/TOC/Anchor 항상 활성
+      downBtn.classList.toggle('m2-enabled', m2EvalDownEnabled());
+    }
+    Reveal.on('ready', function() {
+      var upBtn = document.querySelector('.reveal .controls .navigate-up');
+      var downBtn = document.querySelector('.reveal .controls .navigate-down');
+      if (upBtn) {
+        upBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          if (!upBtn.classList.contains('m2-enabled')) return;
+          m2DispatchKey('ArrowUp', 38);
+        }, true);
+      }
+      if (downBtn) {
+        downBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          if (!downBtn.classList.contains('m2-enabled')) return;
+          m2DispatchKey('ArrowDown', 40);
+        }, true);
+      }
+      m2UpdateNavControls();
+    });
+    Reveal.on('slidechanged', m2UpdateNavControls);
+
+    // Issue110: cross-page 가드 해제 + 진입 애니메이션 (Issue70/Issue104 통합)
+    //   ?last=1&back=1 → 마지막 슬라이드 점프 + backward 애니메이션
+    //   ?last=1        → 마지막 슬라이드 점프 (애니메이션 없음, PgDown jump)
+    //   ?back=1        → backward 애니메이션 (← cross-chapter)
+    //   ?fwd=1         → forward 애니메이션 (→ cross-chapter)
+    function m2ReleaseCrossGuard(){
+      // Issue122: cross-page navigation(?fwd=1/?back=1/?last=1)으로 진입한 경우만 fade-in 적용.
+      // M2_CROSS_GUARD_HEAD_HTML이 cross-page 시그널 진입 시에만 m2-cross-loading class를 부여하므로
+      // 이 클래스 보유 여부로 cross-page 여부 판정 → 단순 페이지 리프레쉬·새 탭 진입은 fade-in 미발동.
+      var wasCrossLoading = document.documentElement.classList.contains('m2-cross-loading')
+                         || document.body.classList.contains('m2-cross-loading');
+      document.documentElement.classList.remove('m2-cross-loading');
+      document.body.classList.remove('m2-cross-loading');
+      // Issue125: m2-initial-loading 가드도 함께 해제 (모든 첫 로드의 visibility 차단 풀기).
+      document.documentElement.classList.remove('m2-initial-loading');
+      if (!wasCrossLoading) return;
+      // Issue120: 가드 해제 직후 body에 .m2-cross-loaded 부여 → CSS @keyframes m2-page-fade-in 250ms 재생.
+      // animationend 후 class 제거(once). CSS selector가 없는 경우(default_background_transition: none)에는 효과 없음.
+      try {
+        document.body.classList.add('m2-cross-loaded');
+        document.body.addEventListener('animationend', function _m2FadeEnd(e){
+          if (e.animationName === 'm2-page-fade-in') {
+            document.body.classList.remove('m2-cross-loaded');
+            document.body.removeEventListener('animationend', _m2FadeEnd);
+          }
+        });
+      } catch (_) {}
+    }
+    function m2PlayEnterAnim(direction) {
+      // direction: 'back' | 'fwd'
+      requestAnimationFrame(function() {
+        m2ReleaseCrossGuard();
+        var cls = direction === 'back' ? 'm2-back-enter' : 'm2-fwd-enter';
+        document.body.classList.add(cls);
+        setTimeout(function(){ document.body.classList.remove(cls); }, 450);
+      });
+    }
+    Reveal.on('ready', function(){
+      try {
+        var s = location.search;
+        var hasLast = s.indexOf('last=1') !== -1;
+        var hasBack = s.indexOf('back=1') !== -1;
+        var hasFwd  = s.indexOf('fwd=1') !== -1;
+        if (hasLast) {
+          var totalH = Reveal.getHorizontalSlides().length;
+          if (totalH > 0) {
+            if (hasBack) {
+              Reveal.configure({ transition: 'none' });
+              Reveal.slide(totalH - 1, 0);
+              requestAnimationFrame(function() {
+                m2ReleaseCrossGuard();
+                document.body.classList.add('m2-back-enter');
+                setTimeout(function() {
+                  Reveal.configure({ transition: 'slide' });
+                  document.body.classList.remove('m2-back-enter');
+                }, 450);
+              });
+            } else {
+              // last=1 단독 (PgDown jump): 트랜지션 없이 점프 + 가드만 해제
+              Reveal.slide(totalH - 1, 0);
+              requestAnimationFrame(m2ReleaseCrossGuard);
+            }
+          } else {
+            requestAnimationFrame(m2ReleaseCrossGuard);
+          }
+        } else if (hasBack) {
+          m2PlayEnterAnim('back');
+        } else if (hasFwd) {
+          m2PlayEnterAnim('fwd');
+        } else {
+          // Issue125: 일반 진입(시그널 없음, 단순 refresh·새 탭) — m2-initial-loading 가드만 해제
+          requestAnimationFrame(m2ReleaseCrossGuard);
+        }
+      } catch (_) {}
+    });
+
+    // Issue89: capture phase 등록 — Reveal.js 5.0.4가 Home/End 등 일부 키를 자체 keymap으로 가로채므로
+    // bubble보다 먼저 호출되는 capture phase에서 stop()으로 차단해야 본 매트릭스가 우선 적용됨
+    document.addEventListener('keydown', function(event) {
+      var cur = Reveal.getCurrentSlide();
+      // 키 동작 종결 헬퍼: 브라우저 default + Reveal.js 기본 핸들러까지 차단 (key_navigation.md 매트릭스 강제)
+      function stop() { event.preventDefault(); event.stopImmediatePropagation(); }
+      // chapter 모드의 deck 내 TOC slide 폴백 점프 (없으면 agenda)
+      function gotoTocOrAgenda() {
+        if (M2SLIDE_MODE === 'chapter') {
+          var i = findTocSlideIndex();
+          if (i >= 0) { Reveal.slide(i, 0); return; }
+        }
+        // Issue110: chapter→agenda는 parent 이동 → backward 시그널
+        window.location.href = M2SLIDE_AGENDA_URL;
+      }
+
+      // Issue87: ⇞ PgUp — 어디서든 agenda.html 직행 (구 ⌂ Home 동작 승계)
+      if (event.key === 'PageUp' || event.keyCode === 33) {
+        stop();
+        // Issue110: PgUp은 parent 점프 → backward 시그널
+        window.location.href = M2SLIDE_AGENDA_URL;
+        return;
+      }
+
+      // Issue87: ⇟ PgDown — 마지막 페이지 직행 (Reveal 기본 hijack)
+      // Chapter: LAST_CHAPTER + ?last=1 → Reveal.on('ready')에서 마지막 슬라이드로 이동
+      // Single: 같은 deck 마지막 horizontal 슬라이드
+      if (event.key === 'PageDown' || event.keyCode === 34) {
+        stop();
+        if (M2SLIDE_MODE === 'chapter' && LAST_CHAPTER) {
+          window.location.href = LAST_CHAPTER + '?last=1';
+        } else {
+          var totalLast = Reveal.getHorizontalSlides().length;
+          if (totalLast > 0) Reveal.slide(totalLast - 1, 0);
+        }
+        return;
+      }
+
+      // Issue87 (2026-05-04 swap): ↑ 키 — 페이지 계층 parent 이동 (K3, 구 ⇤ Home 동작 승계)
+      // Issue101: 페이지 계층 = leaf → H2 sub-anchor → H1 anchor → TOC/agenda → cover
+      //   leaf 본문 → 직전 anchor (H2 우선, 없으면 H1)
+      //   H2 sub-anchor → 직전 H1 anchor (없으면 TOC/agenda 폴백)
+      //   H1 anchor → TOC/agenda
+      if (event.key === 'ArrowUp' || event.keyCode === 38) {
+        if (isCoverSlide(cur)) { stop(); return; } // Cover: 최상위
+        if (isTocSlide(cur))   { stop(); window.location.href = M2SLIDE_AGENDA_URL; return; }
+        if (isH1Anchor(cur))   { stop(); gotoTocOrAgenda(); return; }
+        if (isAnchorSlide(cur)) {
+          // H2 sub-anchor → 직전 H1 anchor
+          var h1Idx = findPrevH1AnchorIndex(Reveal.getIndices().h);
+          stop();
+          if (h1Idx >= 0) { Reveal.slide(h1Idx, 0); return; }
+          gotoTocOrAgenda();
+          return;
+        }
+        // 본문 leaf → 같은 deck 직전 anchor (H2 우선, 없으면 H1) — Issue100 회복
+        var anchorIdx = findPrevAnyAnchorIndex(Reveal.getIndices().h);
+        stop();
+        if (anchorIdx >= 0) { Reveal.slide(anchorIdx, 0); return; }
+        gotoTocOrAgenda();
+        return;
+      }
+
+      // Issue87 (2026-05-04 swap): ↓ 키 — 페이지 계층 child 이동 (K3, 구 ⇥ End 동작 승계)
+      // Cover→agenda 포함. deck 내부:
+      //   TOC slide → 첫 H1 anchor (없으면 첫 본문 #/1)
+      //   H1 anchor → 같은 deck 직후 슬라이드
+      //   본문(leaf) → Chapter 모드: 다음 챕터 첫 슬라이드 (TOC slide, 메시지 없음·1회) [Issue99]
+      //                Single 모드: 동작 없음 (leaf 유지)
+      if (event.key === 'ArrowDown' || event.keyCode === 40) {
+        if (isCoverSlide(cur)) { stop(); window.location.href = M2SLIDE_AGENDA_FWD_URL; return; }
+        if (isTocSlide(cur)) {
+          var firstAnchor = findNextH1AnchorIndex(-1);
+          stop();
+          if (firstAnchor >= 0) Reveal.slide(firstAnchor, 0);
+          else if (Reveal.getHorizontalSlides().length > 1) Reveal.slide(1, 0);
+          return;
+        }
+        if (isAnchorSlide(cur)) {
+          // Issue106: 자식 sub-anchor (level > 현재) 우선 — outline 트리 의미. 없으면 직후 슬라이드 (기존)
+          var idxD = Reveal.getIndices().h;
+          var anchorLv = getEnclosingAnchorLevel(idxD);
+          var firstChild = findFirstChildAnchorIndex(idxD, anchorLv);
+          stop();
+          if (firstChild >= 0) {
+            Reveal.slide(firstChild, 0);
+          } else if (idxD + 1 < Reveal.getHorizontalSlides().length) {
+            Reveal.slide(idxD + 1, 0);
+          }
+          return;
+        }
+        // 본문(leaf): leaf fall-through, 메시지 없이 즉시 이동
+        //   Chapter 모드 → 다음 챕터 첫 슬라이드 (Issue99)
+        //   Single 모드 → 다음 H1 anchor (Issue103). 마지막 H1 섹션이면 무동작
+        stop();
+        if (M2SLIDE_MODE === 'chapter') {
+          if (NEXT_CHAPTER && NEXT_CHAPTER !== 'index.html') {
+            // Issue104: 다음 챕터 진입은 forward — ?fwd=1 시그널로 forward 애니메이션
+            window.location.href = NEXT_CHAPTER + '?fwd=1';
+          }
+        } else {
+          var leafNextH1 = findNextH1AnchorIndex(Reveal.getIndices().h);
+          if (leafNextH1 >= 0) Reveal.slide(leafNextH1, 0);
+        }
+        return;
+      }
+
+      // Issue87 (2026-05-04 swap): ⇤ Home — 이전 sibling 점프 (K4)
+      // Chapter: 이전 챕터 TOC slide / Single: 같은 deck 직전 H1 anchor
+      // Issue92: ',' (Comma) 를 fallback 으로 매핑 — 일부 macOS·외장 키보드 환경에서 Home keydown이 OS 단계에서 가로채져 페이지로 전달되지 않음
+      // Issue92_1: ⌘+← 도 Home fallback — Keyboard Maestro 등 키 리매핑 도구가 Home → ⌘ArrowLeft 변환 시 호환
+      if (event.key === 'Home' || event.keyCode === 36 || event.code === 'Comma' || (event.metaKey && event.key === 'ArrowLeft')) {
+        if (isCoverSlide(cur)) { stop(); return; } // Cover: 최상위
+        if (M2SLIDE_MODE === 'chapter') {
+          stop();
+          // Issue104: 이전 챕터 진입은 backward 방향 — ?back=1 시그널로 backward 애니메이션 재생
+          // Issue114: 첫 챕터(sibling 빈값)는 agenda fallback (parent 진입)
+          // Issue136: PREV_CHAPTER(파일 순서) → PREV_SIBLING_CHAPTER(main↔main, sub↔sub 계층 인식)
+          if (PREV_SIBLING_CHAPTER) window.location.href = PREV_SIBLING_CHAPTER + '?back=1';
+          else window.location.href = M2SLIDE_AGENDA_URL;
+          return;
+        }
+        // Issue105: Single — 트리 탐색 sibling. enclosing anchor 레벨 N 기준 직전 anchor at level ≤ N
+        // Issue133: sibling 부재 시 agenda.html?back=1 fallback (Chapter Issue114 대칭)
+        var curHForHome = Reveal.getIndices().h;
+        var encLevelHome = getEnclosingAnchorLevel(curHForHome);
+        var prevAnchorIdx = findPrevSiblingAnchorIndex(curHForHome, encLevelHome);
+        stop();
+        if (prevAnchorIdx >= 0) Reveal.slide(prevAnchorIdx, 0);
+        else window.location.href = M2SLIDE_AGENDA_URL;
+        return;
+      }
+
+      // ← 키 처리 — Issue70 통일 매트릭스
+      // Issue92_1: ⌘+← 는 Home fallback 으로 위에서 처리되었으므로 제외
+      if ((event.key === 'ArrowLeft' || event.keyCode === 37) && !event.metaKey) {
+        var idxL = Reveal.getIndices();
+        // Chapter mode TOC slide 또는 (TOC 없는 chapter의) 첫 슬라이드 #/0 → 이전 챕터 마지막 (없으면 agenda)
+        var atChapterDeckStart = (M2SLIDE_MODE === 'chapter' && idxL.h === 0 && idxL.v === 0);
+        if (isTocSlide(cur) || atChapterDeckStart) {
+          event.preventDefault();
+          if (M2SLIDE_MODE === 'chapter' && PREV_CHAPTER) {
+            // Issue104: ← 이전 챕터 마지막 진입은 backward — &back=1 시그널 추가
+            window.location.href = PREV_CHAPTER + '?last=1&back=1';
+          } else {
+            // Issue110: ← 첫 deck에서 agenda 폴백 — backward 시그널
+            window.location.href = M2SLIDE_AGENDA_URL;
+          }
+          return;
+        }
+        // Single mode + cover_enabled + 본문 첫 슬라이드(#/1) → agenda.html (Cover 우회)
+        if (M2SLIDE_MODE === 'single' && M2SLIDE_COVER && idxL.h === 1 && idxL.v === 0) {
+          event.preventDefault();
+          // Issue110: ← 본문에서 agenda로 — backward 시그널
+          window.location.href = M2SLIDE_AGENDA_URL;
+          return;
+        }
+      }
+
+      // → 키: Cover 슬라이드 override → agenda.html (D6 결정)
+      // (↓는 위 child 이동 블록에서 이미 Cover 처리됨)
+      // Issue92_1: ⌘+→ 는 End fallback 으로 아래에서 처리되므로 제외
+      if ((event.key === 'ArrowRight' || event.keyCode === 39) && !event.metaKey) {
+        if (isCoverSlide(cur)) {
+          event.preventDefault();
+          // Issue110: → from cover → agenda는 forward (child 이동)
+          // Issue243: agenda_enabled=false 시 첫 챕터로 직행
+          window.location.href = M2SLIDE_AGENDA_FWD_URL;
+          return;
+        }
+      }
+
+      // Issue87 (2026-05-04 swap): ⇥ End — 다음 sibling 점프 (K4, ⇤와 대칭)
+      // Chapter: 다음 챕터 TOC slide / Single: 같은 deck 직후 H1 anchor
+      // Issue92: '.' (Period) 를 fallback 으로 매핑 — Home/End 동일 사유
+      // Issue92_1: ⌘+→ 도 End fallback — Keyboard Maestro 등이 End → ⌘ArrowRight 변환 시 호환
+      if (event.key === 'End' || event.keyCode === 35 || event.code === 'Period' || (event.metaKey && event.key === 'ArrowRight')) {
+        // 2026-05-10: cover 슬라이드 End → agenda.html?fwd=1 (Single 모드 deck #/0 cover 슬라이드 + Chapter 모드 cover 슬라이드 양쪽 대칭)
+        // agenda Home → cover(index.html?back=1) 역방향 이동과 짝 (사용자 요청)
+        if (isCoverSlide(cur)) { stop(); window.location.href = M2SLIDE_AGENDA_FWD_URL; return; }
+        if (M2SLIDE_MODE === 'chapter') {
+          stop();
+          // Issue136: NEXT_CHAPTER(파일 순서, ↓·→ 그대로 사용) → NEXT_SIBLING_CHAPTER(main↔main, sub↔sub)
+          // Issue114·K5: sibling 부재(마지막 main, 또는 마지막 sub의 부모도 마지막) → 동작 없음 (한쪽 끝)
+          if (NEXT_SIBLING_CHAPTER && NEXT_SIBLING_CHAPTER !== 'index.html') {
+            window.location.href = NEXT_SIBLING_CHAPTER + '?fwd=1';
+          }
+          return;
+        }
+        // Issue105: Single — 트리 탐색 sibling. enclosing anchor 레벨 N 기준 직후 anchor at level ≤ N
+        // Issue139: sibling 부재 시 무동작 (Issue133 agenda fallback 제거 — Chapter 마지막 main End 무동작과 대칭)
+        var curHForEnd = Reveal.getIndices().h;
+        var encLevelEnd = getEnclosingAnchorLevel(curHForEnd);
+        var nextAnchorIdx = findNextSiblingAnchorIndex(curHForEnd, encLevelEnd);
+        stop();
+        if (nextAnchorIdx >= 0) Reveal.slide(nextAnchorIdx, 0);
+        return;
+      }
+
+      // → 키: 마지막 슬라이드 → 다음 챕터 (기존 동작 유지)
+      if (event.key === 'ArrowRight' || event.keyCode === 39) {
+        var totalSlides = Reveal.getTotalSlides();
+        var currentSlideNumber = Reveal.getSlidePastCount() + 1;
+        var hasNextChapter = '02-part2.html' !== '';
+        if (currentSlideNumber >= totalSlides) {
+          if (hasNextChapter) {
+            if (lastSlideMessageShown) {
+              lastSlideMessage.style.display = 'none';
+              lastSlideMessageShown = false;
+              // Issue104: 다음 챕터 진입은 forward — ?fwd=1 시그널
+              window.location.href = '02-part2.html?fwd=1';
+            } else {
+              event.preventDefault();
+              lastSlideMessage.style.display = 'block';
+              lastSlideMessageShown = true;
+            }
+          } else {
+            event.preventDefault();
+          }
+        }
+      }
+    }, true);  // Issue89: capture phase
+
+    // Hide message when slide changes
+    Reveal.on('slidechanged', function() {
+      lastSlideMessage.style.display = 'none';
+      lastSlideMessageShown = false;
+    });
+
+    // Issue51: touch/mouse 드래그 네비게이션 (Reveal touch:false이므로 직접 구현)
+    // synthetic keydown으로 기존 Phase 9 키 핸들러(isCoverSlide, M2SLIDE_MODE 등) 재사용
+    (function(){
+      var startX, startY, startTime;
+      var SWIPE_MIN_PX = 50;
+      var SWIPE_MAX_MS = 700;
+
+      function simulateKey(key, keyCode) {
+        document.dispatchEvent(new KeyboardEvent('keydown', {
+          key: key, keyCode: keyCode, bubbles: true, cancelable: true
+        }));
+      }
+
+      function onSwipe(dx, dy) {
+        var adx = Math.abs(dx), ady = Math.abs(dy);
+        if (adx >= ady && adx >= SWIPE_MIN_PX) {
+          // 수평 swipe: 좌→우 = ← (prev), 우→좌 = → (next)
+          simulateKey(dx < 0 ? 'ArrowRight' : 'ArrowLeft', dx < 0 ? 39 : 37);
+        } else if (ady > adx && ady >= SWIPE_MIN_PX) {
+          // 수직 swipe (Issue87 2026-05-04 swap): 위→아래 = ↑(parent), 아래→위 = ↓(child)
+          // 단축키(⇤/⇥/⇞/⇟)는 swipe로 트리거 불가 — sibling/끝단 점프는 키보드 전용
+          simulateKey(dy > 0 ? 'ArrowUp' : 'ArrowDown', dy > 0 ? 38 : 40);
+        }
+      }
+
+      // ── Touch (모바일/태블릿) ──
+      document.addEventListener('touchstart', function(e) {
+        if (e.touches.length !== 1) return;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        startTime = Date.now();
+      }, { passive: true });
+
+      document.addEventListener('touchend', function(e) {
+        if (e.changedTouches.length !== 1) return;
+        if (Date.now() - startTime > SWIPE_MAX_MS) return;
+        onSwipe(
+          e.changedTouches[0].clientX - startX,
+          e.changedTouches[0].clientY - startY
+        );
+      }, { passive: true });
+
+      // ── Mouse drag (데스크톱) ──
+      var isDragging = false;
+      document.addEventListener('mousedown', function(e) {
+        if (e.button !== 0) return;
+        startX = e.clientX; startY = e.clientY;
+        startTime = Date.now(); isDragging = false;
+      });
+      document.addEventListener('mousemove', function(e) {
+        if (e.buttons !== 1) return;
+        if (Math.abs(e.clientX - startX) > 10 || Math.abs(e.clientY - startY) > 10) {
+          isDragging = true;
+        }
+      });
+      document.addEventListener('mouseup', function(e) {
+        if (e.button !== 0 || !isDragging) { isDragging = false; return; }
+        isDragging = false;
+        // 텍스트 선택 시 드래그 무시
+        if (window.getSelection && window.getSelection().toString().length > 0) return;
+        if (Date.now() - startTime > SWIPE_MAX_MS) return;
+        onSwipe(e.clientX - startX, e.clientY - startY);
+      });
+    })();
+  </script>
+
+</body>
+</html>

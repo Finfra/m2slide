@@ -6,16 +6,60 @@
 ---
 schema_version: 1
 
+# ── 변환 모드 (Issue + 사용자 결정 2026-05-27) ─────────────────
+# ppt2m2slide는 기본적으로 텍스트·SmartArt·이미지 등 의미 단위로 마크다운을 재구성함 (md_first).
+# PDF 페이지 통째 PNG·슬라이드 전체 PNG fallback (이른바 "카피 모드")는 사용자가 명시적으로
+# `--copy` 플래그를 줄 때만 발현. md_first 기본 모드에서는 텍스트 추출 실패 슬라이드도
+# 자동 PNG fallback 금지 — 대신 _proposals/에 "수동 마크다운 작성 필요" 기록.
+#
+# 결정 근거: GenContentProd_v1.1 (2026-05-27) 변환 결과 모든 슬라이드가 PNG 풀스크린으로
+# 떨어져 텍스트 검색·복사·접근성 모두 손상. 사용자 명시 옵트인 없이 카피 모드가 발현된
+# 것이 사실상 사용자 의도 위반.
+conversion_mode:
+  default: md_first                       # 기본: 의미 단위 텍스트·이미지 재구성
+  allowed:
+    - md_first                            # 텍스트·SmartArt·이미지 추출 우선. PNG fallback 금지
+    - copy                                # PDF/슬라이드 페이지 통째 PNG. 사용자 `--copy` 명시 시만
+  trigger:
+    md_first: "기본값 (인자 없음)"
+    copy: "--copy 플래그 명시"
+  copy_mode_constraints:
+    require_explicit_flag: true           # 자동 승격 금지 — 사용자 명시 옵트인 필수
+    require_user_confirmation: true       # 체크포인트 1에서 한 번 더 확인
+    log_to_proposals: true                # _proposals/에 카피 모드 사용 사실 기록
+  md_first_constraints:
+    block_full_page_png_fallback: true    # slide_png_fallback 단계 자동 발현 금지
+    block_pdf_visual_ssot: true           # PDF 1차 SSOT 패턴 차단 (GenContentProd_v1.1 같은 변환 금지)
+    text_extraction_failure_action: proposal  # 텍스트 추출 실패 슬라이드는 _proposals/ 기록 + 사용자 수동 작성 유도
+
 # ── layout 자동 판정 휴리스틱 ─────────────────────────────────
 # PPT 슬라이드의 제목 위치·이미지 비율·텍스트 양을 기준으로
 # m2slide layout(_cover / _blank / _contents_no_title / _contents) 판정.
 # 우선순위: cover → blank → contents_no_title → contents (fallback)
 layout_detection:
   cover:
-    # 제목이 슬라이드 상단 40% 영역 안에 위치 + 본문 텍스트 50자 미만
-    # PPT 표지·섹션 구분 슬라이드 패턴
+    # PPT slide 1 (cover_root, 강의 전체 표지) 패턴
+    # 제목이 슬라이드 상단 40% 영역 안 + 본문 텍스트 50자 미만 + 첫 슬라이드(idx==1)
+    # → `_cover` layout (강의 전체 표지, deck index.html 단일 슬라이드로 분리)
+    # → _config.yml `cover_enabled: true` 자동 출력
     title_top_ratio_max: 0.4
     body_text_chars_max: 50
+    first_slide_only: true                  # PPT slide 1만 _cover. 중간 챕터 표지는 _chapter 사용
+  chapter:
+    # PPT 챕터 진입 표지 패턴 — "Part 1" / "Chapter N" / "Section N" 등
+    # 제목 짧음(50자 미만) + 본문 짧음 + 슬러그가 `*-cover`·`*-part`·`*-section` 패턴
+    # 또는 사용자가 명시한 chapter_markers_detected[].kind == 'part_cover' / 'section_cover'
+    # → `_chapter` layout (챕터 진입 표지, 각 챕터의 첫 슬라이드)
+    title_top_ratio_max: 0.4
+    body_text_chars_max: 80
+    slug_patterns:
+      - "*-cover"
+      - "*-part*"
+      - "*-section*"
+    marker_kinds:                            # ppt-meta.yml chapter_markers_detected[].kind
+      - part_cover
+      - section_cover
+      - chapter_cover
   blank:
     # 제목 없음 + 이미지 1개가 슬라이드 면적의 60% 이상 점유
     # PPT 풀스크린 이미지 슬라이드 패턴
@@ -372,6 +416,38 @@ image_extraction:
     H1~H6 list). pptx2md는 1개만(_1.png) 추출. ppt-images-extract-all.py로
     s06_i1·s06_i2·s06_i3 모두 보존. .md에는 3컬럼 layout으로 배치.
 
+# ── 원본 PPTX 추출 정책 (claude-htm-1748328000 진단) ─────────
+# 사전 변환 `<pptx>_out/` 재사용 금지 + 원본 zip 직접 추출 + SmartArt XML 파싱.
+# 학습 사례: AgenticCoding_V1.0 — 원본 73 미디어 → pptx2md 36 (37건 손실).
+# SmartArt 6건 proposal 기록만 했고 htmlart 재구성 0건 → 시각 정보 대량 손실.
+extraction_policy:
+  reuse_pre_converted_out: false        # `<pptx>_out/` 존재해도 무시. 항상 원본 .pptx 재추출
+  reuse_flag: "--reuse-out"             # 사용자 명시 시만 재사용 허용 (현재 미구현)
+  raw_media_unzip:
+    enabled: true
+    command: "unzip -o -j '{pptx}' 'ppt/media/*' -d {project}/_pipeline/raw-media/"
+    cross_check: pptx2md_count          # pptx2md 추출본과 비교, 차이분 raw-media에서 보충
+    emf_wmf_convert: "magick {src} {dst_png}"  # ImageMagick 가용 시
+    fallback_action: proposal           # ImageMagick 미가용 시 _proposals/ 기록
+  smartart_xml_direct_parse:
+    enabled: true
+    unzip_paths:
+      - "ppt/diagrams/*"
+      - "ppt/slides/_rels/*"
+    layout_type_extraction: "<dgm:layoutDef> + layout*.xml namespace urn"
+    node_extraction: "<dgm:pt> 텍스트 + 계층 depth"
+    proposal_when_unmatched: true       # mappings.yml smartart_to_htmlart 매칭 실패 시
+  slide_png_fallback:
+    enabled: false                       # 기본 비활성화 (md_first 모드 보호. 2026-05-27)
+    enable_when: "conversion_mode == 'copy'"   # `--copy` 플래그 명시 시만 활성화
+    tool_chain:
+      - "libreoffice --headless --convert-to pdf"
+      - "pdftoppm -r 150 -png"
+    apply_when: "image_count==0 && smartart_count==0 && shape_count>=3"
+    layout: _blank                      # 풀스크린 배치
+    fallback_action: proposal           # libreoffice/pdftoppm 미가용 시 _proposals/
+    md_first_action: proposal           # md_first 모드에서는 PNG 자동 생성 금지 → _proposals/ 기록 + 수동 작성 유도
+
 image_assignment_policy:
   rationale: |
     pptx2md 단독 사용 시 전역 카운터 번호 부여로 슬라이드 매핑 혼선 발생.
@@ -429,6 +505,38 @@ preservation:
     #   카드 메뉴를 어지럽힘. 보존 필요 시 사용자가 수동으로 복원)
     chapter_mode_action: drop
     note: "PPT cover_root dropped in chapter mode — toc-placeholder가 챕터 진입 표현"
+
+# ── AGENDA.md / <Name>.md frontmatter emit 양식 ────────────────
+# ppt2m2slide 가 슬라이드 소스 메타 파일(chapter mode = markdown/AGENDA.md,
+# single mode = <Name>.md) 작성 시 cover layout(`_cover`)이 요구하는 운영 메타
+# 필드를 모두 포함하여 emit. cover slide 빈 슬롯(instructor_name / version /
+# lecture_date 등) 회귀 차단.
+#
+# 자동 채움 정책 (identifier-meta-rules 준수):
+#   1. PPT 자산에서 명시적으로 추출 가능한 값(예: 표지 텍스트의 instructor_contact)만 채움
+#   2. 그 외 식별자성 메타(instructor_name·author·version 등)는 빈 문자열로 emit
+#      → 사용자가 후속 편집 또는 grep-차용(같은 레포 grep 1건 일치 시) 으로 채움
+#   3. PPT 본명을 한글로 추측 변환 금지 (로마자→한글 역변환 금지)
+#   4. version 은 프로젝트 폴더명에서 추출 가능 (예: AgenticCoding_v1.0 → v1.0).
+#      이 경우만 자동 채움 허용 (식별자 아님)
+agenda_frontmatter_emit_template:
+  enabled: true
+  fields:
+    title:               "{title}"            # PPT 표지 / 파일명 기반
+    subtitle:            "{subtitle}"         # PPT subtitle 추출, 없으면 빈
+    author:              ""                   # 자동 채움 금지 (사용자 입력)
+    date:                "{today}"            # 변환일 (YYYY-MM-DD)
+    type:                "ppt"                # 슬라이드 type 고정
+    instructor_name:     ""                   # 자동 채움 금지
+    instructor_contact:  "{contact_from_ppt}" # PPT 표지 텍스트에서 추출 가능 시
+    release_date:        "{today}"            # 변환일 = 초기 release
+    version:             "{version_from_project_name}"  # 프로젝트 폴더명 끝 vX.Y 패턴 추출
+  emit_comment: |
+    # 식별자 필드(instructor_name·author) 가 빈 경우 cover slide 해당 span 도 빈 채로 렌더됨.
+    # 같은 레포 grep 후 1건 일치 시 차용, 없으면 사용자 명시 후 채울 것.
+  required_for_cover: |
+    cover layout(`_cover`) slot 요구 필드 — 빈 값이어도 frontmatter 키 자체는 emit
+    하여 사용자가 즉시 발견·편집할 수 있게 함.
 
 # ── _config.yml emit 시 default 권장값 ──────────────────────────
 # ppt2m2slide가 _config.yml 생성 시 다음 키를 항상 포함하여 회귀 차단.
@@ -503,8 +611,91 @@ config_yml_emit_defaults:
     # 현 fallback: 캡션 텍스트들이 orphan bullet 로 변환되어 콘텐츠 손실 가능
     # 권장: 추가 텍스트박스를 별도 caption slot으로 분리 또는 이미지 캡쳐 후 합성
     enabled: false                       # v2 — 미구현
-    fallback_action: extra_bullets       # 현재 동작 (orphan bullet으로 변환)
+    fallback_action: extra_bullets       # 현재 동작 (unhandled bullet으로 변환)
     note: "PPT 이미지 위 텍스트박스 callout은 정확한 위치 유지가 어려움. v2 — 이미지 + 합성 PNG 캡처 fallback 권장"
+
+  # ── PPT shape 기반 합성 이미지 (text + arrow + image) ───────────
+  # PPT 슬라이드에 텍스트박스(source code), 화살표 shape, 이미지(rendered output)가
+  # 별도 shape로 배치된 "before-arrow-after" 학습 패턴.
+  # pptx2md는 이미지만 추출 (텍스트박스는 본문 텍스트로, 화살표는 손실).
+  # 결과적으로 visual narrative (source → arrow → rendered) 가 깨짐.
+  composite_shape_images:
+    enabled: true                        # 학습 사례 — BasicKnowledgeForAI_small slide 13 (코드,HTML 블록), 15 (html삽입), 16 (표)
+    detection:
+      shape_combination:                 # 한 슬라이드 내 다음 조합 모두 존재
+        - text_box_with_code_or_table    # 텍스트박스에 ```·| 등 syntax 포함
+        - line_shape_or_arrow            # CONNECTOR / FREE_FORM shape (화살표)
+        - picture_shape                  # PICTURE shape (rendered output)
+    fallback_strategy: pdf_crop_composite
+    pdf_crop_composite:
+      # PDF에서 슬라이드 페이지 추출 후 shape 영역 통째로 crop
+      # → 이미지 + 화살표 + (선택적) 소스 텍스트 영역을 단일 PNG로 보존
+      tool: "pdftoppm -r 200 + magick -crop {WxH+x+y}"
+      hires_dpi: 200                     # 200 DPI 권장 (1920px slide width 가독성)
+      crop_strategy:
+        - id: source_only                # source 텍스트박스만 crop (PPT shape bbox 기준)
+          desc: "소스 코드 박스만 단독 추출. 우측 컬럼에 PPT image 별도 배치"
+        - id: source_plus_arrow          # source + 화살표 tip 까지 crop
+          desc: "단일 이미지에 source+arrow 포함. 우측 PPT image와 시각 연결"
+          example_crop: "magick page.png -crop 980x500+300+450"
+      naming: "sNN_composite.png"        # NN=slide 1-base
+      manifest_field: composite_source   # bullets-manifest 와 별도 manifest
+    md_emit_pattern: |
+      <div style="display:flex; align-items:center; justify-content:center; gap:30px;">
+        <img src="./img/sNN_composite.png" style="height:520px;">
+        <img src="./img/sNN_iM.png" style="height:520px;">
+      </div>
+    rationale: |
+      `::: columns` 사용 시 width 비율 강제로 이미지가 작아지거나 빈 공간 발생.
+      flex container + 동일 height 으로 두 이미지를 시각적으로 균형 배치.
+      학습 사례: BasicKnowledgeForAI_small 표 슬라이드 — columns 60/40 시도 시
+      우측 column 에 빈 공간 발생, flex 로 전환 후 자연스러운 시각 연결 회복.
+    proposal_when_uncertain: |
+      shape combination 검출 실패 또는 PPT shape bbox 추출 불가 시
+      _proposals/{project}-composite-{slide}.md 에 후보 영역 좌표 + 수동 crop 명령 기록
+
+  # ── external URL 이미지 로컬화 ─────────────────────────────────
+  # PPT에 외부 URL 이미지(`<img src="http://...">` 또는 markdown `![](http://...)`)
+  # 가 포함된 경우, 빌드 산출물 단일 파일 배포 정책(.claude/rules/file-deployment-rules.md)
+  # 위반 + 외부 도메인 다운 시 깨짐 위험.
+  external_url_image:
+    detection:
+      url_pattern: '!\[[^\]]*\]\(https?://[^\)]+\)'
+    fallback_strategy:
+      - id: crop_from_pdf
+        desc: "PDF 렌더된 페이지에서 해당 이미지 영역 crop → 로컬 저장"
+        tool: "pdftoppm + magick -crop"
+        naming: "sNN_logo.png"           # 의미별 suffix (logo, badge, ...)
+      - id: download_and_cache
+        desc: "URL fetch → 로컬 캐시 (TLS·robots.txt 확인 필요)"
+        risk: "도메인 정책에 따라 robots violation 가능. crop 우선"
+    rationale: |
+      file-deployment-rules.md: 빌드 산출물은 임의 단일 .html + img/ 만으로
+      file:// 동작해야 함. http://finfra.com/f/f.png 같은 외부 URL 의존 금지.
+      학습 사례: BasicKnowledgeForAI_small 이미지 슬라이드 — `![logo](http://finfra.com/f/f.png)`
+      를 PDF p15 logo 영역 crop 으로 대체 → `./img/sNN_finfra_logo.png`
+
+  # ── pptx media 추출 vs PDF crop 결정 트리 ─────────────────────────
+  # 이미지 소스 선택 우선순위:
+  image_source_decision:
+    priority:
+      - id: pptx_native_picture
+        desc: "PPT 임베디드 PICTURE shape — pptx2md 또는 ppt-images-extract-all.py"
+        when: "PPT shape_type == PICTURE (13). 원본 해상도·품질 최선"
+        coverage: "rendered output, 다이어그램 이미지, 사진"
+      - id: pdf_crop
+        desc: "PDF 페이지 렌더에서 영역 crop"
+        when: "PPT 내용이 텍스트박스 + shape (화살표·도형) 조합 → pptx2md 미커버"
+        coverage: "source code 텍스트 박스, 화살표·합성 다이어그램"
+        tool: "pdftoppm -r 200 + magick -crop"
+      - id: web_fetch
+        desc: "외부 URL fetch (robots.txt 확인 후)"
+        when: "위 둘 다 실패 + 외부 URL 명시. 최후 수단"
+    rationale: |
+      pptx2md는 PPT 임베디드 미디어만 추출 가능. shape 기반 콘텐츠(텍스트박스·라인·도형)
+      는 PDF 렌더 후 crop 이 유일한 보존 경로. 학습 사례: BasicKnowledgeForAI_small
+      slide 16 표 — image55.png (rendered table) 만 pptx 임베디드, source pipe-table
+      텍스트 + 화살표는 shape → PDF crop 필요.
 
 # ── chapter vs single mode 판정 ───────────────────────────────
 # 슬라이드 수 + H1 분포로 mode 자동 판정.

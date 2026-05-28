@@ -1,23 +1,25 @@
 <!-- @meta
-description: 강의용 챕터 진입 표지 layout. 큰 제목 + 챕터 본문(서브챕터 목록 또는 학습 목표).
+description: 강의용 챕터 진입 표지 layout. 좌상단 part 라벨(빨강) + 큰 제목 + 푸퍼피쉬 마스코트 배경 + 노란 brushstroke divider.
 recommended_for:
   - 챕터 시작 슬라이드
   - 섹션 표지 (cover 다음)
-  - 학습 목표·서브챕터 안내
+  - Part 1 · Part 2 등 큰 단원 구분
 not_recommended_for:
   - 일반 본문 슬라이드 (_contents 사용)
   - 전체 강의 표지 (_cover 사용)
 slots:
+  - part
   - title
   - content
 example: |
-  ## 1. 환경 구성
+  ::: part
+  Part 1.
+  :::
 
-  * Python 설치
-  * 가상환경 생성
-  * 패키지 설치
+  # Prompt Engineering 기초 + AI 문서·이미지 생성
 -->
 <section class="layout-chapter">
+  <div class="chapter-part">{{part}}</div>
   <div class="chapter-header">
     <h1 class="chapter-title">{{title}}</h1>
     <div class="chapter-divider"></div>

@@ -143,7 +143,7 @@ Projects/
 - AGENDA.md 파싱으로 계층 구조 파악 (메인/하위 챕터, 상위 페이지 링크)
   - 각 HTML 페이지의 첫 슬라이드에 해당 챕터 목차를 Markmap으로 렌더링
   - 하위 챕터가 있으면 자동으로 목차에 링크 추가
-- 이미지 자동 복사 (`markdown/img/` → `slide/img/`)
+- 이미지 자동 복사 (`markdown/img/` → `slide/img/`, chapter mode는 `Projects/<Name>/img/` → `slide/img/`도 병합 복사 — ppt2m2slide 산출물 호환)
 
 #### EPUB 전자책 생성
 

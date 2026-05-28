@@ -1,0 +1,94 @@
+# post-diff-rules.yml — ppt2m2slide 사후 diff 분류 정책 (Issue246 Phase C)
+#
+# ppt-post-diff.py가 두 markdown 폴더(변환 직후 스냅샷 vs 현재 사용자 수정본)를
+# line-level diff한 후, 변경 종류를 카테고리로 분류하기 위한 regex·정책 카탈로그.
+#
+# 출력: data/_proposals/post-convert-<ts>.md (post-convert-form, status: pending)
+#
+# 데이터 접근 격리 (data-access-rules.md): 본 yml은 ppt2m2slide 전용.
+# 다른 단계 SCAR이 본 파일을 읽지 않음.
+
+version: 1
+
+categories:
+
+  - id: layout_changed
+    description: "#layout-X 메타가 사용자에 의해 다른 값으로 변경됨"
+    trigger:
+      removed_regex: '^#layout-[a-z][a-z0-9_-]*$'
+      added_regex: '^#layout-[a-z][a-z0-9_-]*$'
+    target_yml: "data/layout-selector/rules.yml + data/ppt2m2slide/heuristics.yml"
+    notes: |
+      "변환본은 X를 선택했으나 사용자는 Y로 교체" 패턴.
+      heuristics.yml의 layout 자동 선택 룰 또는 layout-selector rules.yml 보강 후보.
+
+  - id: slot_added
+    description: "변환본에 없던 ::: slotName 슬롯이 사용자에 의해 추가"
+    trigger:
+      added_regex: '^::: [a-zA-Z][a-zA-Z0-9_-]*(?:\s|$)'
+    target_yml: "data/slot-designer/patterns.yml"
+    notes: |
+      특정 layout에서 사용자가 반복적으로 같은 슬롯을 수동 추가하면
+      slot-designer agent가 자동 주입하도록 패턴 정책 추가 후보.
+
+  - id: image_replaced
+    description: "이미지 경로·파일이 사용자에 의해 교체됨"
+    trigger:
+      removed_regex: '^!\[.*?\]\(.*?\)'
+      added_regex: '^!\[.*?\]\(.*?\)'
+    target_yml: "data/ppt2m2slide/mappings.yml (image)"
+    notes: |
+      PPT raw 이미지 추출본을 사용자가 더 적절한 자산으로 교체.
+      mappings.yml의 raw-media → img/ 매핑 정책 보강 후보.
+
+  - id: mapping_missing
+    description: "변환본의 raw HTML·placeholder가 적절히 매핑되지 않아 사용자가 수동 교체"
+    trigger:
+      removed_regex: '(<!-- SmartArt unmapped -->|\{\{[a-zA-Z_]+\}\}|<svg.*?>|<div class="raw)'
+    target_yml: "data/ppt2m2slide/mappings.yml (smartart·composite)"
+    notes: |
+      SmartArt·composite shape이 mapping 누락되어 raw HTML로 떨어진 것을
+      사용자가 m2slide 친화 형태로 직접 작성한 경우. 매핑 후보로 가장 중요.
+
+  - id: frontmatter_changed
+    description: "운영 메타(release_date, instructor_*, version 등) 변경"
+    trigger:
+      line_within_frontmatter: true
+    target_yml: "(무시 — 운영 메타라 자동 학습 부적합)"
+    notes: |
+      release_date·instructor_name·version 등 운영 메타는 매번 사용자가 갱신.
+      자동 학습 의미 없음. 분류 시 별도 카운트만, target_yml 후보 생성 안 함.
+
+  - id: text_corrected
+    description: "bullet·paragraph 텍스트 단순 수정 (오타·재구성)"
+    trigger:
+      fallback: true   # 위 카테고리 모두 미매칭 시
+    target_yml: "data/md-builder/styles.yml (또는 무시)"
+    notes: |
+      같은 종류 텍스트 보정(예: 영문 단어 사이 공백, 약어 한글 풀이)이 반복되면
+      md-builder/styles.yml에 패턴 룰 추가 후보. 1회성 오타 수정은 무시 가능.
+
+# 카테고리 매칭 우선순위 (위→아래 first-match)
+priority:
+  - frontmatter_changed   # 가장 명확 — 빠른 분류
+  - mapping_missing       # 의미 가장 큼 — 우선 검출
+  - layout_changed
+  - slot_added
+  - image_replaced
+  - text_corrected        # fallback
+
+# promotion 임계치 (post-convert-<ts>.md 생성 조건)
+# 같은 카테고리가 한 변환 후 N개 슬라이드에서 발생하면 후보 생성
+promotion:
+  thresholds:
+    mapping_missing: 1       # 매핑 누락은 1건만 발생해도 후보 (학습 가치 큼)
+    layout_changed: 2        # 2건 이상이면 패턴 의심
+    slot_added: 2
+    image_replaced: 3
+    text_corrected: 5        # 5건 이상이어야 일반화 가능
+    frontmatter_changed: -1  # 후보 대상 아님
+
+# 처리 상한 (Opus 4.7 가드)
+limits:
+  max_slides_per_diff: 500       # 한 번의 diff 처리 슬라이드 상한
+  max_proposals_per_run: 20      # 한 번 run에서 생성 가능한 promotion 후보 상한

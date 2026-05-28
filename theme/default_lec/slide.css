@@ -333,6 +333,21 @@
   justify-content: flex-end;
 }
 
+/* Part 라벨 — 좌상단 빨간색 (PDF 원본 디자인 호환) */
+.reveal section.layout-chapter .chapter-part {
+  position: absolute;
+  top: 4%;
+  left: 6%;
+  font-size: 1.6em;
+  font-weight: 700;
+  color: var(--m2-accent-5, #C82506);
+  letter-spacing: 0.02em;
+  z-index: 2;
+}
+.reveal section.layout-chapter .chapter-part:empty {
+  display: none;
+}
+
 .reveal section.layout-chapter .chapter-header {
   text-align: center;
   padding-bottom: 12%;
@@ -340,6 +355,16 @@
 
 .reveal section.layout-chapter .chapter-title {
   font-size: 3em;
+}
+
+/* layout-chapter 본문 박스 제거 — PDF 원본은 단순 표지 디자인 */
+.reveal section.layout-chapter .chapter-body {
+  border: none;
+  background: transparent;
+  padding: 0;
+}
+.reveal section.layout-chapter .chapter-body:empty {
+  display: none;
 }
 
 /* 4.5 exercise: butterfly 좌측 + cat 우하단 */

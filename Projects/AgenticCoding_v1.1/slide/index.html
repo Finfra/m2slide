@@ -1,0 +1,1521 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Agentic Coding</title>
+  <script>
+    // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
+    try {
+      document.documentElement.classList.add('m2-initial-loading');
+      var s = location.search;
+      if (s.indexOf('back=1') !== -1 || s.indexOf('fwd=1') !== -1 || s.indexOf('last=1') !== -1) {
+        document.documentElement.classList.add('m2-cross-loading');
+      }
+    } catch (e) {}
+  </script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
+  <style data-m2slide-base="true">
+/* =========================================================================
+   m2slide base.css — 모든 테마 공통 기본 스타일 (Issue64 도입)
+   - 주입 방식: html-builder.js가 inline <style data-m2slide-base="true">로 주입
+   - 설계 SSOT (원칙·정책·공식·금지): _doc_design/css.md
+   - 본 파일은 모든 슬라이드의 골격(레이아웃·컴포넌트·반응형·CSS 변수 기본값) 제공
+   - 테마는 색상·이미지·시각 언어만 theme/{name}/slide.css로 추가
+
+   본 파일 목차:
+     §1  @import (외부 폰트 CDN)
+     §2  :root CSS 변수 기본값 (1.b 정책: _config.yml 명시값 전체 흡수)
+     §3  Reveal.js 변수 보정 (--r-* sky.css 의존 제거용)
+     §4  공통 레이아웃 (*, .outline-title, .title, Flex 컨테이너)
+     §5  컴포넌트 (lists, tables, media-container 4 enlarge modes, graph-scroll)
+     §6  특수 슬라이드 (title-slide, chapter-list)
+     §7  다분할 레이아웃 (m2-cols/columns, m2-rows/rows)
+     §8  디버깅 (guide-line-mode)
+     §9  Layout 골격 (cover/contents/contents-full/split-image-text/chapter-toc/chapter/exercise/exercise-small/blank/closing/toc)
+     §10 Layout-* 공통 (padding, header 정렬, list markers ●─▶•)
+     §11 반응형 (cover-title clamp 공식 — _doc_design/css.md §3 근거)
+     §12 Standalone agenda.html (Issue69 — reveal.js 컨텍스트 외 ratio fit + letterbox)
+   ========================================================================= */
+
+/* =========================================================================
+   1. @import — 외부 폰트 (CDN)
+   ========================================================================= */
+@import url('https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css');
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap');
+
+/* =========================================================================
+   2. :root — CSS 변수 기본값 (1.b 정책: _config.yml 명시값 전체 흡수)
+   - 사용자가 _config.yml에 명시한 값 = 본 :root 기본값
+   - 사용자는 기본값에서 벗어나는 값만 _config.yml에 명시
+   - <body style="..."> 인라인이 더 높은 specificity로 override
+   ========================================================================= */
+:root {
+  /* ─────────────────────────────────────────────────────────────────────
+     m2 컬러 팔레트 9 슬롯 (Issue210) — Accent 1-6 + Text + Bg + Surface
+     설계 SSOT: _doc_arch/color-palette.md
+     카탈로그: data/palettes/catalog.yml (default 팔레트와 일치)
+     theme/{name}/palettes/{palette}.css 가 :root override 로 교체.
+     기존 --kn-* 변수는 신규 슬롯 alias 로 회귀 0 보증.
+     ───────────────────────────────────────────────────────────────────── */
+  --m2-accent-1: #F5C518;          /* default 팔레트 — 기존 --kn-accent 값 */
+  --m2-accent-2: #4ABDAC;
+  --m2-accent-3: #FC4A1A;
+  --m2-accent-4: #7B68EE;
+  --m2-accent-5: #2ECC71;
+  --m2-accent-6: #E74C3C;
+  --m2-text: #111111;
+  --m2-bg: #ffffff;
+  --m2-surface: #f4f4f5;
+
+  /* 기존 --kn-* 변수 호환 alias — theme/slide.css 가 override 가능 (회귀 0 보증) */
+  --kn-accent: var(--m2-accent-1);
+  --kn-text: var(--m2-text);
+
+  /* Global */
+  --global-font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+
+  /* Main Title (개요/표지 큰 제목) */
+  --main-title-font-family: 'GmarketSansBold', sans-serif;
+  --main-title-font-size: 2em;
+  --main-title-font-weight: 400;
+  --main-title-color: #333333;
+  --main-title-align: center;
+  --main-title-padding: 40px 0 20px 0;
+
+  /* Outline Title (목차/개요 제목) */
+  --outline-title-font-family: 'GmarketSansBold', sans-serif;
+  --outline-title-font-size: 2em;
+  --outline-title-font-weight: 600;
+  --outline-title-color: #000000;
+  --outline-title-align: center;
+  --outline-title-padding: 0;
+
+  /* Outline Title Sub (개요 부제) */
+  --outline-title-sub-font-family: 'GmarketSansBold', sans-serif;
+  --outline-title-sub-font-size: 0.5em;
+  --outline-title-sub-font-weight: 100;
+  --outline-title-sub-color: #666666;
+  --outline-title-sub-align: right;
+  --outline-title-sub-padding: 5px;
+
+  /* Title (슬라이드 제목) */
+  --title-font-family: 'GmarketSansBold', sans-serif;
+  --title-font-size: 1.5em;
+  --title-font-weight: 50;
+  --title-color: #000000;
+  --title-align: center;
+  --title-padding: 1%;
+
+  /* Content (theContents 본문) */
+  --content-font-family: 'Nanum Gothic Coding', monospace;
+  --content-font-size: 1em;
+  --content-color: #000000;
+  --content-align: left;
+  --content-padding: 1%;
+
+  /* Layout 변수 */
+  --title-contents-gap-pct: 0;
+
+  /* Slide 기하 (Issue63 + Issue65) — slide_ratio 기반 크기 체계
+     - --slide-ratio: width/height 무차원 비율 (16:9 → 1.7778, 3:2 → 1.5, fill → auto)
+     - --slide-outer-padding: 슬라이드↔뷰포트 대칭 패딩 (CSS length)
+     - --slide-inner-padding: 콘텐츠↔슬라이드 경계 대칭 패딩 (CSS length)
+     - 본 변수는 _config.yml slide_ratio/slide_outer_padding/slide_inner_padding로 override
+     - JS↔CSS 동기화 의무 (1.b 정책): lib/config.js createDefaultConfig 기본값과 동일 유지
+     - 기하 관계: contents_width = contents_height × var(--slide-ratio)
+  */
+  --slide-ratio: 1.7778;
+  --slide-outer-padding: 0px;
+  --slide-inner-padding: 0px;
+}
+
+/* =========================================================================
+   3. Reveal.js 변수 보정 (sky.css 의존 제거 후 누락 방지)
+   - slide.css 9.2에서 이관
+   ========================================================================= */
+.reveal {
+  --r-main-font-size: 40px;
+  --r-heading1-size: 3.77em;
+  --r-heading2-size: 2.11em;
+  --r-heading3-size: 1.55em;
+  --r-heading4-size: 1em;
+  --r-heading-text-transform: none;
+  --r-heading-font-weight: 700;
+  background: #ffffff;
+  color: inherit;
+  font-family: var(--global-font-family);
+  font-size: var(--r-main-font-size);
+}
+
+.reveal .slides {
+  color: inherit;
+}
+
+/* =========================================================================
+   4. 공통 레이아웃 (Layout Utilities) — slide.css §1·§2 이관
+   ========================================================================= */
+* {
+  box-sizing: border-box;
+}
+
+.reveal .outline-title {
+  font-family: var(--outline-title-font-family, var(--global-font-family, inherit));
+  font-size: var(--outline-title-font-size, 2.5em);
+  color: var(--outline-title-color, inherit);
+  text-align: var(--outline-title-align, center);
+  padding: var(--outline-title-padding, 0);
+  text-transform: none;
+  font-weight: var(--outline-title-font-weight, 700);
+}
+
+.reveal .title {
+  font-family: var(--title-font-family, var(--global-font-family, inherit));
+  font-size: var(--title-font-size, 1.6em);
+  color: var(--title-color, inherit);
+  text-align: var(--title-align, center);
+  padding: var(--title-padding, 0);
+  text-transform: none;
+  font-weight: var(--title-font-weight, 700);
+}
+
+/* Issue90: title_contents_gap을 모든 *-title 클래스에 일관 적용 (JS 타이밍 독립).
+   기존엔 .reveal .title에만 적용되어 chapter 모드(.contents-title 사용 시) 무효였음.
+   cover-title은 표지 디자인 padding이 제어하므로 제외. */
+.reveal .title,
+.reveal .contents-title,
+.reveal .chapter-title,
+.reveal .chapter-toc-title,
+.reveal .toc-title,
+.reveal .blank-title,
+.reveal .closing-title,
+.reveal .exercise-title {
+  margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);
+}
+
+/* 공통 Flex Column 패턴 */
+.reveal pre,
+.reveal .slides section,
+.reveal .theContents,
+.reveal .media-container,
+.graph-scroll,
+.reveal section.title-slide {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 전체 크기 헬퍼
+   - Issue63: ratio-16-9/ratio-3-2는 Reveal.js fixed dimensions로 자동 비율 fit (CSS 개입 불필요)
+   - ratio-fill만 100%/100% 명시 적용 (비율 무제약)
+*/
+.reveal.ratio-fill .slides,
+.reveal .slides section,
+.reveal .media-container {
+  width: 100%;
+  height: 100%;
+}
+
+/* 슬라이드 컨테이너 */
+.reveal .slides {
+  display: block;
+}
+
+.reveal.ratio-fill .slides {
+  inset: 0;
+  transform: none;
+}
+
+/* Issue63 + Issue: outer padding (슬라이드↔뷰포트 대칭).
+   - body에 padding 적용 + box-sizing: border-box로 Reveal scaling 영역(body content box) 축소
+   - Reveal.js가 측정하는 viewport 크기 자체가 줄어들어 4면 균등 inset + 자동 fit
+   - 기존 .reveal { inset } 방식은 left/top만 밀려나고 scale은 원본 viewport 기준이라 right/bottom 오버플로
+   - 0이면 효과 없음 (기존과 동일)
+   - A안(애니메이션 outer padding 영역까지 가시화):
+     html/body/.reveal/.slides 의 overflow를 visible로 풀어 슬라이드 transition 시
+     section이 .reveal 영역(=padding 안쪽)을 벗어나도 body padding 영역에 paint 되도록 함.
+*/
+html,
+body {
+  overflow: visible !important;
+}
+body {
+  padding: var(--slide-outer-padding, 0) !important;
+  box-sizing: border-box !important;
+}
+.reveal,
+.reveal .slides {
+  overflow: visible !important;
+}
+
+/* Issue215: ESC overview 모드에서 우리 CSS의 size·overflow 강제를 모두 해제.
+   - Issue109 visible 강제 + Issue63 height:100% + theme min-height:100% 결합으로
+     overview 그리드 모드에서 section들이 풀사이즈 적층 또는 viewport 밖 이탈
+   - .reveal.overview 클래스는 ESC 진입 시 reveal.js가 자동 부착
+   - overview 모드에서는 reveal.js 기본 grid 동작에 위임 (우리 강제 해제)
+   Issue220: `.reveal.overview .slides`에 `overflow: hidden`을 부여하면 reveal.js Overview가
+   sections를 `.slides` box(1920px width) 밖 좌표(translate3d 1990/3980/...px)에 transform 배치하는데
+   clip되어 1장만 시각 paint. `.reveal.overview`(viewport 루트)는 hidden 유지, `.slides`만 visible로 분리. */
+.reveal.overview {
+  overflow: hidden !important;
+}
+.reveal.overview .slides {
+  overflow: visible !important;
+}
+.reveal.overview .slides section,
+.reveal.overview .slides section[class*="layout-"] {
+  min-height: 0 !important;
+  max-height: none !important;
+}
+
+/* 개별 슬라이드 섹션
+   - Flexbox Column 레이아웃 (공통 패턴 §3에서 display:flex 적용)
+   - Issue63 후속 수정: height/max-height/overflow override를 ratio-fill 한정으로 분리.
+     Reveal.js fixed dimensions 모드(16:9/3:2)에서는 Reveal이 1080px(또는 1280px) 논리 높이를 설정해야
+     transform: scale 비율 fit이 정상 동작함. 기존 height:auto !important가 이를 깨뜨려 height-bound 시
+     슬라이드가 콘텐츠 높이로 축소되는 버그 발생 → 본 수정에서 ratio-fill로 한정.
+*/
+.reveal .slides section {
+  padding: var(--slide-inner-padding, 0);
+  margin: 0;
+  top: 0;
+  left: 0;
+  align-items: stretch;
+  justify-content: flex-start;
+  box-sizing: border-box;
+}
+
+/* ratio-fill 모드 전용: 비율 무제약 viewport 채움 + 콘텐츠 overflow 시 스크롤 */
+.reveal.ratio-fill .slides section {
+  height: auto !important;
+  max-height: 100vh !important;
+  overflow-y: auto !important;
+}
+
+/* 콘텐츠 컨테이너
+   - 남은 세로 공간을 모두 차지 (flex-grow: 1)
+   - 내용이 넘치면 스크롤 (overflow-y: auto)
+   - min-height: 0은 flex item이 내용물 크기보다 작아질 수 있게 함 (스크롤 동작 필수)
+   - max-height: 100% 추가로 부모 높이를 넘지 않도록 제한
+*/
+.reveal .theContents {
+  /* flex properties removed to allow natural flow */
+  overflow-wrap: break-word;
+  /* Prevent horizontal scroll for long words */
+  word-wrap: break-word;
+  font-family: var(--content-font-family, inherit);
+  font-size: var(--content-font-size, 1em);
+  color: var(--content-color, inherit);
+  text-align: var(--content-align, left);
+  padding: var(--content-padding, 0);
+}
+
+/* Preformatted Text */
+.reveal pre {
+  width: 100%;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.reveal pre code {
+  overflow: auto;
+  max-height: none;
+  text-align: left;
+}
+
+/* =========================================================================
+   5. 컴포넌트 (Components) — slide.css §3 이관
+   ========================================================================= */
+/* 리스트 */
+.reveal ul,
+.reveal ol {
+  display: block;
+  text-align: left;
+  padding-left: 1.5em;
+}
+
+/* Nested lists
+   Issue72: !important 제거 — layout-* 셀렉터(higher specificity)가 자연 override */
+.reveal ul ul,
+.reveal ul ol,
+.reveal ol ul,
+.reveal ol ol {
+  display: block;
+  margin-left: 1.5em;
+  margin-top: 0.2em;
+  font-size: 90%;
+}
+
+/* Custom Bullet Styles */
+.reveal li.bullet-dot {
+  list-style-type: disc;
+}
+
+.reveal li.bullet-dash {
+  list-style-type: "- ";
+}
+
+/* 표 */
+.reveal table {
+  width: auto;
+  min-width: 50%;
+  max-width: 90%;
+  border-collapse: collapse;
+  margin: 0.5em auto;
+}
+.reveal table th,
+.reveal table td {
+  padding: 0.4em 1em;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  vertical-align: middle;
+}
+.reveal table thead th {
+  font-weight: bold;
+  background-color: rgba(0, 0, 0, 0.06);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.25);
+}
+.reveal table tbody tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Issue 22: 테이블 내 이미지 크기 자동 조절 */
+.reveal table img {
+  max-height: 1.5em;
+  width: auto;
+  vertical-align: middle;
+}
+
+/* 이미지 및 다이어그램 */
+.reveal .media-container {
+  flex-grow: 1;
+  justify-content: center;
+  align-items: center;
+  min-height: 0;
+}
+
+/* Default (Original) Mode - controlled by body class */
+.reveal .media-container img,
+.reveal .media-container svg {
+  display: block;
+  margin: 0 auto;
+}
+
+/* 1. Original: 원본 크기 유지 (단, 화면 넘지 않음) */
+.media-enlarge-original .reveal .media-container img,
+.media-enlarge-original .reveal .media-container svg {
+  max-width: 100% !important;
+  max-height: 100% !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
+}
+
+/* 2. Width: 너비 최대화 */
+.media-enlarge-width .reveal .media-container img,
+.media-enlarge-width .reveal .media-container svg {
+  width: 100% !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain !important;
+}
+
+/* 3. Height: 높이 최대화 */
+/* Issue: `display: flex !important` 가 모든 section 에 적용되면 reveal.js 가 비활성
+   슬라이드에 inline 으로 부여하는 `display: none` 을 덮어서 cross-page 전환 직후
+   다중 슬라이드가 한 프레임 겹쳐 paint 되는 잔상이 발생. `section.present` 한정으로
+   변경하여 활성 슬라이드만 flex 레이아웃을 강제. height/overflow 도 동일 한정. */
+.media-enlarge-height .reveal .slides section.present {
+  /* Issue63: 100vh → 100% (parent .slides는 ratio 모드에서 Reveal이 1080px 논리 높이 설정,
+     fill 모드에서는 viewport 채움). 100vh는 ratio 모드에서 transform scale 비율 fit을 깨뜨림. */
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow-y: hidden !important;
+  overflow-x: auto !important;
+}
+
+.media-enlarge-height .reveal .theContents {
+  flex-grow: 1 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.media-enlarge-height .reveal .media-container,
+.media-enlarge-height .graph-scroll {
+  height: auto !important;
+  min-height: 0 !important;
+  flex-grow: 1 !important;
+}
+
+.media-enlarge-height .reveal .media-container img,
+.media-enlarge-height .reveal .media-container svg,
+.media-enlarge-height .graph-scroll img,
+.media-enlarge-height .graph-scroll svg {
+  height: 100% !important;
+  width: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain !important;
+}
+
+/* 4. Fit: 화면에 꽉 차게 맞춤 (스크롤 없음) */
+/* Issue: `section.present` 한정 (위 height 모드와 동일 사유 — cross-page 잔상 차단) */
+.media-enlarge-fit .reveal .slides section.present {
+  /* Issue63: 100vh → 100% (ratio 모드 transform scale 비율 fit 보존, 동일 사유) */
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.media-enlarge-fit .reveal .theContents {
+  flex-grow: 1 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.media-enlarge-fit .reveal .media-container,
+.media-enlarge-fit .graph-scroll {
+  height: 100% !important;
+  min-height: 0 !important;
+  flex-grow: 1 !important;
+  overflow: hidden !important;
+}
+
+.media-enlarge-fit .reveal .media-container img,
+.media-enlarge-fit .reveal .media-container svg,
+.media-enlarge-fit .graph-scroll img,
+.media-enlarge-fit .graph-scroll svg {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain !important;
+}
+
+/* Handle nested flex layouts (e.g. columns) in fit mode */
+.media-enlarge-fit .reveal .theContents div {
+  flex-grow: 1 !important;
+  min-height: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Hide empty paragraphs that might interfere with flex layout */
+.media-enlarge-fit .reveal .theContents>p:empty {
+  display: none !important;
+}
+
+.graph-scroll {
+  flex-grow: 1;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  min-height: 0;
+  width: 100%;
+}
+
+.graph-scroll svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* =========================================================================
+   6. 특수 슬라이드 (Special Slides) — slide.css §4 이관
+   ========================================================================= */
+/* 제목 슬라이드 (개요) */
+.reveal section.title-slide {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* 챕터 제목 오버레이
+   - 슬라이드 우측 상단에 현재 챕터 제목을 고정 표시
+   - data-chapter-title 속성 값을 content로 사용
+   - pointer-events: none으로 클릭 이벤트가 뒤쪽 슬라이드에 전달되도록 함
+*/
+.reveal section[data-chapter-title]::after {
+  content: attr(data-chapter-title);
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-family: var(--outline-title-sub-font-family, var(--global-font-family, inherit));
+  font-size: var(--outline-title-sub-font-size, 1em);
+  color: var(--outline-title-sub-color, inherit);
+  pointer-events: none;
+  z-index: 10;
+  text-transform: none;
+  font-weight: var(--outline-title-sub-font-weight, 500);
+  text-shadow: -1px 0 #000, 1px 0 #000, 0 -1px #000, 0 1px #000;
+}
+
+/* 챕터 목록 */
+.chapter-list {
+  font-size: 0.8em;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 8px 24px;
+  width: 100%;
+  align-self: stretch;
+  list-style-position: inside;
+  padding-left: 0;
+}
+
+.chapter-list li {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* 카드형 챕터 목록 (toc_placeholder_new 실험) */
+.chapter-list.chapter-list--cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+  justify-content: center;
+}
+
+.chapter-list--cards .chapter-card {
+  flex: 0 1 calc((100% - 16px * 2) / 3);
+  min-width: 240px;
+  max-width: 360px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  list-style: none;
+}
+
+.chapter-list--cards .chapter-card::marker {
+  content: "";
+}
+
+.chapter-list--cards .chapter-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.chapter-list--cards .chapter-card a {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  font-size: 0.9em;
+  line-height: 1.4;
+  word-break: keep-all;
+}
+
+/* =========================================================================
+   7. 다분할 레이아웃 (Multi-column / Multi-row) — slide.css §6 이관
+   - Issue34: 좌/우, 상/하, N분할, 그리드
+   - 클래스 alias: .m2-cols/.columns, .m2-col/.column, .m2-rows/.rows, .m2-row/.row
+   ========================================================================= */
+.reveal .m2-cols,
+.reveal .columns {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;   /* top-align — 좌·우 column 콘텐츠 양 다를 때 위쪽 정렬 (center → 짧은 column이 중간에 떠 어색) */
+  justify-content: space-between;
+  gap: 4%;
+  width: 100%;
+  /* Issue96: contents-body(flex column) 안에서 남은 높이 채워서 nested rows가
+     비율대로 분할될 수 있도록 함. 자연 콘텐츠는 영향 없음 (children 자연 크기 유지) */
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Issue96: rows가 중첩될 때만 column 박스를 풀-height로 stretch.
+   단순 image+text 2-col은 기존 center 정렬 유지 (image 수직 중앙) */
+.reveal .m2-cols:has(.m2-rows),
+.reveal .m2-cols:has(.rows),
+.reveal .columns:has(.m2-rows),
+.reveal .columns:has(.rows) {
+  align-items: stretch;
+}
+
+.reveal .m2-col,
+.reveal .column {
+  flex: 1;
+  min-width: 0;
+  /* Issue96: 내부 .m2-rows가 flex item으로 작동하여 column 높이를 채울 수 있도록
+     flex 컨테이너로 변환. 자연 콘텐츠(텍스트/이미지)는 동일하게 top-down 스택 */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Issue95: .m2-rows가 부모 .contents-body(flex column) 의 남은 높이를 채우고,
+   .m2-row가 균등(또는 인라인 height 비례)으로 분할되도록 flex 보강 */
+.reveal .m2-rows,
+.reveal .rows {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.reveal .m2-row,
+.reveal .row {
+  width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  /* Issue95: 행 내부 콘텐츠(텍스트+미디어)가 세로로 쌓이고, .media-container가
+     남은 높이를 채워서 이미지/SVG가 행 경계를 넘지 않도록 flex column 컨테이너로 동작 */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Issue95: .m2-row 내부의 .media-container가 남은 높이를 채우도록.
+   기존 `.contents-body > .media-container` 규칙(theme/default/slide.css)은
+   contents-body 직속 자식만 매칭하므로 row 내부에서는 적용되지 않음 */
+.reveal .m2-row > .media-container,
+.reveal .row > .media-container {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.reveal .m2-row > .media-container img,
+.reveal .m2-row > .media-container svg,
+.reveal .row > .media-container img,
+.reveal .row > .media-container svg {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+
+.reveal .card {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.reveal .m2-cols img,
+.reveal .columns img,
+.reveal .m2-rows img,
+.reveal .rows img {
+  max-width: 100%;
+  /* slide 영역 초과 방지 — Reveal.js 논리 높이는 720/683px,
+     scale 변환 후 viewport vh와 다름. min(...)로 vh + 절대 px 양쪽 가드 */
+  max-height: min(60vh, 500px);
+  height: auto;
+  object-fit: contain;
+}
+
+/* m2-col 안의 <p><img></p> wrapper도 flex column 안에서 column 높이 초과 방지 */
+.reveal .m2-col > p,
+.reveal .column > p {
+  min-height: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* =========================================================================
+   8. 디버깅 (Debugging) — slide.css §7 이관
+   ========================================================================= */
+/* Guide Line Mode */
+.guide-line-mode .reveal .slides section {
+  border: 5px solid rgba(255, 0, 0, 0.5) !important;
+  background-color: rgba(255, 0, 0, 0.05) !important;
+}
+
+.guide-line-mode .reveal h1,
+.guide-line-mode .reveal h2,
+.guide-line-mode .reveal h3 {
+  border: 3px solid rgba(0, 255, 0, 0.5) !important;
+  background-color: rgba(0, 255, 0, 0.05) !important;
+}
+
+.guide-line-mode .reveal .theContents {
+  border: 3px solid rgba(0, 0, 255, 0.5) !important;
+  background-color: rgba(0, 0, 255, 0.05) !important;
+}
+
+/* =========================================================================
+   9. Layout 타입별 골격 (Layout Skeletons) — slide.css §8 이관
+   ========================================================================= */
+
+/* === 공통 header/body 구조 === */
+.reveal section[class*="layout-"] {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.reveal section[class*="layout-"] > div[class$="-header"] {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+}
+
+.reveal section[class*="layout-"] > div[class$="-body"] {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1em 0;
+}
+
+/* === Accent line (divider) — 공통 골격, 색상은 theme에서 override === */
+.reveal section[class*="layout-"] > div[class*="-divider"],
+.reveal section[class*="layout-"] .reveal [class*="-divider"] {
+  height: 3px;
+  background: currentColor;
+  margin: 0.5em 0;
+  opacity: 0.6;
+}
+
+/* 1. Cover Layout */
+.reveal section.layout-_cover {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-_cover .cover-header {
+  padding: 2em 0 1em 0;
+}
+
+.reveal section.layout-_cover .cover-title {
+  font-size: 3.2em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-_cover .cover-visual {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.reveal section.layout-_cover .cover-visual img,
+.reveal section.layout-_cover .cover-visual svg {
+  max-width: 90%;
+  max-height: 80%;
+  width: auto;
+  height: auto;
+}
+
+.reveal section.layout-_cover .cover-meta {
+  flex-shrink: 0;
+  padding: 1em 0;
+  font-size: 1.2em;
+}
+
+/* 2. Contents Layout */
+.reveal section.layout-_contents {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-_contents .contents-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-_contents .contents-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-_contents .contents-divider {
+  width: 40%;
+  margin: 0.5em 0 0 0;
+}
+
+.reveal section.layout-_contents .contents-body {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-_contents ul,
+.reveal section.layout-_contents ol {
+  text-align: left;
+  font-size: 1.1em;
+  line-height: 1.6;
+}
+
+/* 2.2 Contents-Full Layout (전체 높이 활용) */
+.reveal section.layout-contents-full {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-contents-full .contents-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-contents-full .contents-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-contents-full .contents-divider {
+  width: 40%;
+  margin: 0.5em 0 0 0;
+}
+
+.reveal section.layout-contents-full .contents-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-contents-full ul,
+.reveal section.layout-contents-full ol {
+  text-align: left;
+  font-size: 1.1em;
+  line-height: 1.6;
+}
+
+/* 3. Split/Image-Text Layout */
+.reveal section.layout-split-image-text {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-split-image-text .split-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-split-image-text .split-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-split-image-text .split-divider {
+  width: 40%;
+  margin: 0.5em 0 0 0;
+}
+
+.reveal section.layout-split-image-text .split-row {
+  display: flex;
+  gap: 2.5em;
+  align-items: flex-start;
+  flex-grow: 1;
+  min-height: 0;
+  padding: 1em 0;
+}
+
+.reveal section.layout-split-image-text .split-left,
+.reveal section.layout-split-image-text .split-right {
+  flex: 1;
+  min-width: 0;
+}
+
+.reveal section.layout-split-image-text .split-left img,
+.reveal section.layout-split-image-text .split-right img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* 4. Chapter TOC Layout */
+.reveal section.layout-chapter-toc {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-chapter-toc .chapter-toc-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-chapter-toc .chapter-toc-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-chapter-toc .chapter-toc-divider {
+  width: 40%;
+  margin: 0.5em 0 0 0;
+}
+
+.reveal section.layout-chapter-toc .chapter-toc-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.5em 0;
+}
+
+/* 5. Chapter Layout */
+.reveal section.layout-chapter {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-chapter .chapter-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-chapter .chapter-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-chapter .chapter-divider {
+  width: 40%;
+  margin: 0.5em 0 0 0;
+}
+
+.reveal section.layout-chapter .chapter-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.5em 0;
+}
+
+/* 6. Exercise Layout */
+.reveal section.layout-exercise {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-exercise .exercise-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-exercise .exercise-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-exercise .exercise-divider {
+  width: 40%;
+  margin: 0.5em 0 0 0;
+}
+
+.reveal section.layout-exercise .exercise-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.5em 0;
+}
+
+/* 6.2 Exercise-Small Layout */
+.reveal section.layout-exercise-small {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-exercise-small .exercise-header {
+  padding: 1em 0;
+}
+
+.reveal section.layout-exercise-small .exercise-title {
+  font-size: 2.2em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-exercise-small .exercise-divider {
+  width: 30%;
+  margin: 0.3em 0 0 0;
+  height: 2px;
+}
+
+.reveal section.layout-exercise-small .exercise-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1em 0;
+}
+
+/* 8. Blank Layout */
+.reveal section.layout-_blank {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-_blank .blank-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-_blank .blank-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-_blank .blank-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.5em 0;
+}
+
+/* image-only / full-video 자동 감지 시 풀스크린 미디어 표시 (공통 패턴) */
+/* 특이도 (0,3,2) — L1129 `.reveal section[class*="layout-"]` (0,2,2) 와 충돌 회피.
+   두 클래스(`.layout-_blank` + `.layout-_blank--full-*`) 동시 매칭으로 source order 의존 제거 */
+.reveal section.layout-_blank.layout-_blank--full-image,
+.reveal section.layout-_blank.layout-_blank--full-video {
+  padding: 0;
+}
+.reveal section.layout-_blank--full-image .blank-header,
+.reveal section.layout-_blank--full-video .blank-header {
+  display: none;
+}
+.reveal section.layout-_blank--full-image .blank-body,
+.reveal section.layout-_blank--full-video .blank-body {
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.reveal section.layout-_blank--full-image .blank-body p,
+.reveal section.layout-_blank--full-video .blank-body p,
+.reveal section.layout-_blank--full-video .blank-body .media-container {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.reveal section.layout-_blank--full-image .blank-body img,
+.reveal section.layout-_blank--full-video .blank-body video {
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+/* 9. Closing Layout */
+.reveal section.layout-closing {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2em;
+}
+
+.reveal section.layout-closing .closing-header {
+  margin-bottom: 1em;
+}
+
+.reveal section.layout-closing .closing-title {
+  font-size: 3.2em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-closing .closing-body {
+  flex-grow: 0;
+  padding: 1em 0;
+  font-size: 1.3em;
+}
+
+/* TOC (목차) Layout */
+.reveal section.layout-toc {
+  justify-content: flex-start;
+}
+
+.reveal section.layout-toc .toc-header {
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-toc .toc-title {
+  font-size: 2.8em;
+  font-weight: 700;
+  margin: 0;
+}
+
+.reveal section.layout-toc .toc-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 1.5em 0;
+}
+
+.reveal section.layout-toc .toc-markmap {
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+}
+
+/* =========================================================================
+   10. Layout-* 공통 패딩 + 헤더 정렬 + 리스트 마커 — slide.css §9.5·§9.6 이관
+   - 두 테마 동일 마커 사용 → Common 분류 (사용자 결정)
+   - 색상은 var(--kn-text)가 아닌 currentColor/inherit 사용 → theme이 자유롭게 설정
+   ========================================================================= */
+/* layout-* 슬라이드 공통 패딩
+   주의: position 속성을 설정하지 말 것. reveal.js 기본 position:absolute 가
+   pseudo-element 의 positioned ancestor 역할을 이미 수행하며, 여기서 relative 로
+   덮으면 슬라이드 스택이 깨져 자동 layout 슬라이드가 viewport 밖으로 밀려남 (Issue54). */
+.reveal section[class*="layout-"] {
+  padding: 28px 56px 56px 56px;
+}
+
+/* 본문 영역 헤더 정렬: 제목은 가운데 정렬을 기본으로 함 */
+.reveal section[class*="layout-"] > div[class$="-header"] {
+  text-align: center;
+  align-items: center;
+}
+
+/* 리스트 — 레벨별 마커 차별화 */
+.reveal section[class*="layout-"] ul,
+.reveal section[class*="layout-"] ol {
+  list-style: none;
+  padding-left: 0;
+}
+
+.reveal section[class*="layout-"] ul > li,
+.reveal section[class*="layout-"] ol > li {
+  position: relative;
+  padding-left: 1.4em;
+  line-height: 1.7;
+  margin: 0.18em 0;
+}
+
+/* L1: ● */
+.reveal section[class*="layout-"] ul > li::before {
+  content: "●";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: currentColor;
+  font-size: 0.8em;
+}
+
+/* L2: ─ (em dash) */
+.reveal section[class*="layout-"] ul ul > li::before {
+  content: "─";
+  font-size: 0.95em;
+}
+
+/* L3: ▶ */
+.reveal section[class*="layout-"] ul ul ul > li::before {
+  content: "▶";
+  font-size: 0.7em;
+  top: 0.18em;
+}
+
+/* L4·L5: • (작은 점) */
+.reveal section[class*="layout-"] ul ul ul ul > li::before,
+.reveal section[class*="layout-"] ul ul ul ul ul > li::before {
+  content: "•";
+  font-size: 0.9em;
+}
+
+/* 들여쓰기 누적
+   Issue72: !important 제거 — 본 셀렉터 specificity (0,1,1,2)가 base nested list (0,0,1,2)보다 높아 자연 우선 */
+.reveal section[class*="layout-"] ul ul {
+  margin-left: 1.2em;
+  font-size: 100%; /* 글로벌의 90% 축소 무시 — 가독성 우선 */
+}
+
+/* =========================================================================
+   11. 반응형 (Responsive) — cover-title clamp 공식 (Issue62)
+   - 공식 근거: _doc_design/css.md §3.2
+   - 30자 한·영 혼합 가정, 5vw = 100/(30 × 0.6)
+   ========================================================================= */
+.reveal section.layout-_cover .cover-title {
+  font-size: clamp(1.2em, 5vw, 3.4em);
+}
+
+/* =========================================================================
+   12. Standalone agenda.html — ratio fit + letterbox (Issue69)
+   - reveal.js 컨텍스트 없는 standalone 페이지에서 cfg.slideRatio 기반 ratio fit
+   - body.agenda-page = letterbox 컨테이너 (cover의 .reveal 흰색 bg와 일관성 확보)
+   - .agenda-frame   = ratio 박스 (var(--slide-ratio) 활용 min() 공식)
+   - html.ratio-fill = frame이 viewport 채움 (auto 산술 불가 회피용 override)
+   ========================================================================= */
+body.agenda-page {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  overflow: hidden;
+  font-family: var(--global-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif);
+}
+.agenda-frame {
+  /* outer padding 반영: viewport 단위에서 좌우/상하 padding 합계만큼 차감 */
+  width: min(
+    calc(100vw - 2 * var(--slide-outer-padding, 0px)),
+    calc((100vh - 2 * var(--slide-outer-padding, 0px)) * var(--slide-ratio))
+  );
+  height: min(
+    calc(100vh - 2 * var(--slide-outer-padding, 0px)),
+    calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
+  );
+  background: #ffffff;
+  overflow: hidden;
+  position: relative;
+}
+html.ratio-fill .agenda-frame {
+  width: calc(100vw - 2 * var(--slide-outer-padding, 0px));
+  height: calc(100vh - 2 * var(--slide-outer-padding, 0px));
+}
+.agenda-frame .layout-_toc,
+.agenda-frame .layout-_agenda {
+  padding: 24px;
+  box-sizing: border-box;
+  height: 100%;
+}
+.agenda-frame .toc-mindmap-svg {
+  width: 100%;
+  height: calc(100% - 200px);
+  display: block;
+}
+.agenda-frame .toc-markmap {
+  padding: 12px 0;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * Issue234 — source slot (출처·인용) 기본 스타일 (모든 theme 공통)
+ * `::: source ...출처... :::` fenced div → 슬라이드 하단 가운데 작은 글씨
+ * theme/{name}/slide.css 가 색·강조 override 가능 (font-size·position 등 보존 권장)
+ * ────────────────────────────────────────────────────────────────────────── */
+.reveal .m2-source {
+  position: absolute;
+  bottom: -0.3em;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.28em;
+  font-style: italic;
+  color: var(--m2-text, #111);
+  opacity: 0.55;
+  pointer-events: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 1em;
+  box-sizing: border-box;
+}
+.reveal .m2-source p {
+  margin: 0;
+  line-height: 1.4;
+}
+.reveal .m2-source a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+}
+.reveal .m2-source a::after {
+  content: ' (' attr(href) ')';
+  margin-left: 0.3em;
+  font-style: normal;
+  opacity: 0.7;
+  text-decoration: none;
+}
+
+  </style>
+  <style data-m2slide-palette="office_rainbow">
+/* theme/default/palettes/office_rainbow.css — PowerPoint Office Theme 6색 무지개
+ * 카탈로그 SSOT: data/palettes/catalog.yml (palettes.office_rainbow)
+ * 설계 SSOT: _doc_arch/color-palette.md
+ * 용도: 강의·튜토리얼·다카테고리 비교 (PPT 변환 호환, Issue233)
+ */
+:root {
+  --m2-accent-1: #0365C0;
+  --m2-accent-2: #00882B;
+  --m2-accent-3: #DCBD23;
+  --m2-accent-4: #DE6A10;
+  --m2-accent-5: #C82506;
+  --m2-accent-6: #773F9B;
+  --m2-text: #000000;
+  --m2-bg: #FFFFFF;
+  --m2-surface: #DCDEE0;
+}
+
+  </style>
+  <link rel="stylesheet" href="css/custom.css?v=1779883728522">
+  <style>
+    /* 커버 페이지 전용: 컨트롤·슬라이드번호·프로그레스 숨김 */
+    .reveal .controls, .reveal .progress, .reveal .slide-number { display: none !important; }
+    .reveal { cursor: pointer; }
+    
+    /* Issue110/125: visibility 가드 — Reveal·agenda 양쪽 컨테이너 적용 */
+    html.m2-initial-loading .reveal,
+    html.m2-initial-loading .agenda-frame,
+    html.m2-cross-loading .reveal,
+    html.m2-cross-loading .agenda-frame,
+    body.m2-cross-loading .reveal,
+    body.m2-cross-loading .agenda-frame { visibility: hidden; }
+    /* Issue120: cross-page 페이지 진입 fade-in (cover↔agenda↔deck 모두 적용) */
+    @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
+    body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
+  </style>
+</head>
+<body data-nav-indicator="both" style="
+  --global-font-family: Pretendard, sans-serif;
+  --title-font-family: GmarketSansBold;
+  --title-font-weight: 50;
+  --title-font-size: 1.5em;
+  --title-color: #000000;
+  --title-align: center;
+  --title-padding: 1%;
+  --main-title-font-family: inherit;
+  --main-title-font-weight: 400;
+  --main-title-font-size: 2em;
+  --main-title-color: #333333;
+  --main-title-align: center;
+  --main-title-padding: 40px 0 20px 0;
+  --outline-title-font-family: GmarketSansBold;
+  --outline-title-font-weight: 600;
+  --outline-title-font-size: 2em;
+  --outline-title-color: #000000;
+  --outline-title-align: center;
+  --outline-title-padding: 0;
+  --outline-title-sub-font-family: GmarketSansBold;
+  --outline-title-sub-font-weight: 100;
+  --outline-title-sub-font-size: 0.5em;
+  --outline-title-sub-color: #666666;
+  --outline-title-sub-align: right;
+  --outline-title-sub-padding: 5px;
+  --content-font-family: inherit;
+  --content-font-size: 1em;
+  --content-color: #000000;
+  --content-align: left;
+  --content-padding: 1%;
+  --title-contents-gap-pct: 30;
+  --slide-ratio: 1.5;
+  --slide-outer-padding: 0px;
+  --slide-inner-padding: 0px;
+">
+<div class="reveal ratio-3-2">
+  <div class="slides">
+<section class="layout-_cover">
+  <div class="cover-header">
+    <h1 class="cover-title">Agentic Coding</h1>
+    <div class="cover-subtitle">하네스 엔지니어링 실무</div>
+    
+  </div>
+
+  <div class="cover-body">
+    <div class="cover-instructor">
+      <span class="cover-instructor-name">남중구 (핀프라)</span>
+      <span class="cover-instructor-contact">nowage@gmail.com</span>
+    </div>
+
+    <div class="cover-meta">
+      
+      <span class="cover-version">v1.0</span>
+    </div>
+  </div>
+
+  
+</section>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.js"></script>
+<script>
+Reveal.initialize({
+  controls: false,
+  progress: false,
+  slideNumber: false,
+  hash: false,
+  // Issue66: ratio 모드(16:9/3:2)는 vertical centering이 ratio fit과 충돌하므로 false 강제.
+  // ratio-fill 모드만 사용자 top_align 설정 따름 (generateHTML 정책과 일관)
+  center: false,
+  // Issue111 후속: cover 페이지(chapter mode 별도 index.html)도 _config.yml animation: 섹션 따름.
+  // 이전 'none' 하드코딩은 Issue110의 cross-page guard(visibility:hidden)와 별개로
+  // Cover 자체의 슬라이드 transition이었음. 일관성을 위해 deck/agenda와 동일 정책 적용.
+  transition: 'convex',
+  transitionSpeed: 'default',
+  backgroundTransition: 'zoom',
+  touch: false,
+  // Issue66: cover 페이지도 cfg.slideRatio 기반 dimensions 적용 (이전엔 100%/100% 하드코딩 → fill 강제 동작 버그)
+  width: 1920,
+  height: 1280,
+  margin: 0.0,
+  // Issue89: m2slide가 처리하는 키 — Reveal 기본 keymap 비활성화
+  // Issue226: ESC(27) 표준 toggleOverview 명시 (cover Reveal.initialize도 동일 패턴)
+  keyboard: { 36: null, 35: null, 33: null, 34: null, 27: 'toggleOverview' }
+});
+// Issue110: cross-page 가드 해제 (cross-page visibility:hidden은 유지 — Issue111 후속은 슬라이드 transition만 cfg화)
+function m2ReleaseCrossGuard(){
+      // Issue122: cross-page navigation(?fwd=1/?back=1/?last=1)으로 진입한 경우만 fade-in 적용.
+      // M2_CROSS_GUARD_HEAD_HTML이 cross-page 시그널 진입 시에만 m2-cross-loading class를 부여하므로
+      // 이 클래스 보유 여부로 cross-page 여부 판정 → 단순 페이지 리프레쉬·새 탭 진입은 fade-in 미발동.
+      var wasCrossLoading = document.documentElement.classList.contains('m2-cross-loading')
+                         || document.body.classList.contains('m2-cross-loading');
+      document.documentElement.classList.remove('m2-cross-loading');
+      document.body.classList.remove('m2-cross-loading');
+      // Issue125: m2-initial-loading 가드도 함께 해제 (모든 첫 로드의 visibility 차단 풀기).
+      document.documentElement.classList.remove('m2-initial-loading');
+      if (!wasCrossLoading) return;
+      // Issue120: 가드 해제 직후 body에 .m2-cross-loaded 부여 → CSS @keyframes m2-page-fade-in 250ms 재생.
+      // animationend 후 class 제거(once). CSS selector가 없는 경우(default_background_transition: none)에는 효과 없음.
+      try {
+        document.body.classList.add('m2-cross-loaded');
+        document.body.addEventListener('animationend', function _m2FadeEnd(e){
+          if (e.animationName === 'm2-page-fade-in') {
+            document.body.classList.remove('m2-cross-loaded');
+            document.body.removeEventListener('animationend', _m2FadeEnd);
+          }
+        });
+      } catch (_) {}
+    }
+Reveal.on('ready', function(){
+  try { requestAnimationFrame(m2ReleaseCrossGuard); } catch (_) {}
+});
+// Issue87 (2026-05-04 swap): Cover 페이지 키 매핑 (key_navigation.md 매트릭스)
+//   →/↓/Space → agenda.html (Cover의 child = Agenda)
+//   ↑/⇤/← : Cover 최상위·sibling 없음 → 동작 없음
+//   ⇥ End : agenda.html (Agenda Home → Cover 대칭 fall-through 복원, 사용자 요청 2026-05-10)
+//   ⇞ PgUp → agenda.html (어디서든 직행)
+//   ⇟ PgDown → LAST_CHAPTER?last=1 (chapter) / 동작 없음 (single — cover==index 자체가 deck)
+var COVER_LAST_CHAPTER = '02-part2.html';
+var COVER_MODE = 'chapter';
+// Issue243: agenda_enabled=false 시 cover→agenda forward를 첫 챕터로 직행
+var COVER_AGENDA_FWD = 'agenda.html?fwd=1';
+// Issue89: capture phase — Reveal 기본 keymap이 Home/End를 가로채는 것 차단
+document.addEventListener('keydown', function(e) {
+  // Issue92_1: ⌘+→ 는 End fallback(agenda fall-through)으로 아래에서 처리, 일반 → 만 child 이동
+  if (((e.key === 'ArrowRight' || e.keyCode === 39) && !e.metaKey) ||
+      e.key === 'ArrowDown' || e.keyCode === 40 ||
+      e.key === ' ' || e.keyCode === 32) {
+    e.preventDefault(); e.stopImmediatePropagation(); window.location.href = COVER_AGENDA_FWD; return;
+  }
+  if (e.key === 'PageUp' || e.keyCode === 33) {
+    e.preventDefault(); e.stopImmediatePropagation(); window.location.href = COVER_AGENDA_FWD; return;
+  }
+  if (e.key === 'PageDown' || e.keyCode === 34) {
+    e.preventDefault(); e.stopImmediatePropagation();
+    if (COVER_MODE === 'chapter' && COVER_LAST_CHAPTER) {
+      window.location.href = COVER_LAST_CHAPTER + '?last=1';
+    }
+    return;
+  }
+  // ⇥ End — Cover → agenda.html (Agenda Home → Cover 대칭, 사용자 요청 2026-05-10)
+  // Issue92: '.' (Period) fallback / Issue92_1: ⌘+→ fallback 동일 처리
+  if (e.key === 'End' || e.keyCode === 35 || e.code === 'Period' ||
+      (e.metaKey && e.key === 'ArrowRight')) {
+    e.preventDefault(); e.stopImmediatePropagation(); window.location.href = COVER_AGENDA_FWD; return;
+  }
+  // ↑(parent)·⇤(이전 sibling)·← : Cover 최상위·sibling 없음 → 동작 없음
+  // Issue92: ',' (Comma) Home fallback — Cover Home은 동작 없음 유지
+  // Issue92_1: ⌘+← Home fallback — 동일 no-op
+  if (e.key === 'ArrowUp' || e.keyCode === 38 ||
+      e.key === 'Home' || e.keyCode === 36 || e.code === 'Comma' ||
+      e.key === 'ArrowLeft' || e.keyCode === 37 ||
+      (e.metaKey && e.key === 'ArrowLeft')) {
+    e.preventDefault(); e.stopImmediatePropagation(); return;
+  }
+}, true);
+document.querySelector('.reveal').addEventListener('click', function() { window.location.href = COVER_AGENDA_FWD; });
+</script>
+
+</body>
+</html>

@@ -579,10 +579,21 @@
 }
 /* Issue: 일반 (non-agenda) layout-_toc에서 toc-markmap이 남은 세로 공간을 채우지 못해
    markmap이 좁게 렌더되는 문제 해결 — agenda-frame 패턴(§7)을 layout-_toc에도 적용.
-   .layout-_toc는 base.css §10에서 display:flex; flex-direction:column이 이미 적용되어 있음.
+   .layout-_toc section은 reveal.js 기본 display:block 이므로 자식 flex가 동작하지 않음.
+   base.css §3의 media-enlarge-height/-fit 모드가 활성일 때만 .present에 flex 부여되므로
+   non-media-enlarge 프로젝트(media_container_enlarge: width 등)에서는 toc-markmap이
+   자연 높이(SVG 37px)로 압축돼 markmap 본문이 보이지 않는 회귀가 발생함.
+   해결: .layout-_toc.present 한정으로 flex 강제(reveal inline display:block override 필요해서
+   !important 사용). .present scope는 base.css §3의 cross-page 잔상 방지 정책과 정합.
+   - layout-_toc.present: flex column + height 100% → 자식 flex context 확보
    - toc-markmap: flex:1 1 0으로 남은 vertical 공간을 점유
    - toc-mindmap-svg: height:100%로 toc-markmap 전체를 채우고 markmap autoFit이 충분히 확장되게 함
    .toc-body가 비어있지 않은 placeholder 슬라이드는 §6.5 :has() 규칙으로 toc-markmap이 display:none이라 영향 없음. */
+.reveal section.layout-_toc.present {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
 .reveal section.layout-_toc > .toc-markmap {
   flex: 1 1 0;
   min-height: 0;
