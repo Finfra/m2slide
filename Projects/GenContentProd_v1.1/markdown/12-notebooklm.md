@@ -1,0 +1,94 @@
+# 12. NotebookLM 활용
+
+## NotebookLM — 소스 기반 AI 노트북
+
+* **정의**: Google이 제공하는 소스 기반 AI 노트북 서비스 (notebooklm.google)
+* 업로드한 자료만 컨텍스트로 사용 → 출처 인용·환각 최소화가 강점
+* 일반 챗봇과의 결정적 차이: “내가 올린 자료만 보는 AI 비서”
+* 무료 — Google 계정만 있으면 즉시 사용
+
+![NotebookLM — 소스 기반 AI 노트북](img/GenContetntsProd_v10_33.png)
+
+![NotebookLM — 소스 기반 AI 노트북](img/GenContetntsProd_v10_34.png)
+
+---
+
+## 소스·노트북·인사이트 — 3대 개념
+
+
+
+* 소스 (Source): 업로드한 자료 — PDF·Google Docs·웹 URL·YouTube 자막·Markdown·텍스트
+  * 1 노트북당 최대 50개 소스, 소스당 50만 단어 (Free)
+* 노트북 (Notebook): 소스 묶음 단위 — 도메인·프로젝트별로 분리 권장
+* 인사이트 (Studio 패널): Audio Overview·Mind Map·Briefing Doc·Study Guide·FAQ·Timeline 6종 자동 생성
+* 첫 질문까지 5초 — 업로드 직후 즉시 Q&A 가능
+* Audio Overview: 두 명의 AI 호스트가 자료 기반 대화 생성 (한국어 포함 80+ 언어)
+* 강사 메모: “Studio 패널 6종”은 청중 처음 보면 놀라는 포인트. 시연 시 6종 아이콘 한 번씩 클릭만으로도 충분
+
+
+---
+
+## 🙋 직접 따라 하세요 — 소스 업로드
+
+* 1단계: notebooklm.google 접속 → Google 계정 로그인
+* 2단계: “Create new notebook” → 첫 화면에서 소스 추가 안내 표시
+* 3단계: 본인 PDF·Google Docs 1개 업로드 (없으면 본 강의 어젠다 PDF 사용)
+* 4단계: 자동 인덱싱 완료 후 좌측에 소스 목록·인덱싱 상태 확인
+* ✅ 통과 조건: 소스 1개 등록 + 인덱싱 완료 표시 + 첫 자동 요약 노출
+* 강사 메모: PDF 없는 청중을 위해 공유 PDF URL 1개를 채팅창에 사전 게시. 5분 안에 모두 소스 1개 확보 목표
+
+---
+
+## 🙋 직접 따라 하세요 — Q&A + 출처 인용 확인
+
+* 1단계: 노트북 메인의 채팅창에 질문 입력 — ex) “이 자료의 핵심 주제 3가지는?”
+* 2단계: 응답 본문 끝에 출처 인용 [1] [2] 형태로 표시 확인
+* 3단계: 인용 번호 클릭 → 우측 패널에 원문 위치 강조 표시
+* 4단계: 후속 질문 — “주제 1에 대해 더 자세히” → 컨텍스트 유지하며 심화 답변
+* ✅ 통과 조건: 답변 본문에 출처 인용 2건 이상 + 클릭 시 원문 점프
+* 강사 메모: 출처 클릭 데모는 청중이 직접 해봐야 체감. “지금 클릭해보세요” 콜아웃 필수
+
+---
+
+## 🙋 직접 따라 하세요 — Audio Overview 생성
+
+* 1단계: 우측 Studio 패널 → Audio Overview 카드 클릭
+* 2단계: 포맷 선택 — Brief(2분 요약, 영어) / Critique(두 호스트 비평) / Debate(찬반 토론)
+* 3단계: “Customize” 선택 시 사용자 프롬프트 입력 가능 — ex) “한국어로, 초보 청취자 대상”
+* 4단계: 생성 대기 (2~5분) → 완료 후 재생 → 30초만 들어보고 다음 단계로
+* ✅ 통과 조건: Audio Overview 1건 생성 + 한국어 음성 재생 확인
+* 강사 메모: 생성 대기 시간 활용 — 그 사이 비교 슬라이드로 진행. 강의 흐름 끊지 않는 페이싱 핵심
+
+---
+
+## NotebookLM vs ChatGPT·Claude — 어디서 무엇을 쓸까
+
+| 축 | <span style="color:#ffffff"> __NotebookLM__ </span> | <span style="color:#ffffff"> __ChatGPT·Claude__ </span> |
+| :-: | :-: | :-: |
+| 컨텍스트 | 업로드 소스만 | 학습 데이터 + 웹 + 첨부 |
+| 출처 인용 | 자동·클릭 점프 | 대체로 없음 |
+| 환각 가능성 | 낮음 (소스 한정) | 중간~높음 |
+| 강점 | 자료 합성·연구 정리 | 범용 추론·창작·코딩 |
+| 권장 시나리오 | 강의 준비·논문 정리·회의록 | 초안 작성·코드·일반 Q&A |
+
+![NotebookLM vs ChatGPT·Claude — 어디서 무엇을 쓸까](img/GenContetntsProd_v10_35.png)
+
+---
+
+## 도구 선택 한 줄 요약
+
+* "소스에 답이 있을 때"는 NotebookLM, "소스 밖 추론·창작"은 ChatGPT·Claude
+* 본 강의 Part1(ChatGPT·Claude 중심) ↔ Part2(NotebookLM)의 상호 보완 관계
+
+![도구 선택 한 줄 요약](img/GenContetntsProd_v10_36.png)
+
+---
+
+## 활용 패턴 — 강의·연구·업무
+
+* **강의 준비**: 참고 자료 5~10개 업로드 → Briefing Doc 자동 생성 → 강의 초안 골격
+* **논문 정리**: 관련 논문 PDF 10편 → Mind Map으로 주제 클러스터 자동 분석
+* **회의록 요약**: 회의 녹음·문서 업로드 → FAQ로 핵심 결정사항 추출
+* **통근 청취 학습**: 학술 자료를 Audio Overview로 → 이동 시간 활용
+* 본 강의 자료 자체도 NotebookLM에 업로드해 두면 청중이 강의 후 자유 Q&A 가능
+
