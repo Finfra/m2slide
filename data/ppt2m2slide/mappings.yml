@@ -25,6 +25,9 @@ smartart_to_htmlart:
   Relationship: balance         # Balance / Counterbalance 등 (compare는 별도 신호)
   Matrix: matrix                # Basic Matrix / Titled Matrix 등
   List: numbered                # Vertical Bullet List / Numbered List 등
+  # 제목 밴드 + 본문 구조의 box-list(색상 박스 세로/그리드)는 htmlart 대신
+  # ::: cards 가 더 충실 — heuristics.yml box_group_to_cards 참조.
+  # SmartArt diagram XML 검출 시 본 numbered 매핑, 수동 그룹 도형이면 cards 경로.
   Picture: img                  # Picture Strips / Picture Caption List 등 (이미지는 컴포넌트 아닌 자산)
 
   # 구체 layout 단위 (PPT SmartArt 개별 layout 이름)
