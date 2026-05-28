@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 248
+* Issue HWM: 249
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -34,6 +34,16 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue249. layout-contents-full 이미지/SVG 세로 overflow — contents 영역 초과 (등록: 2026-05-28, 해결: 2026-05-28, commit: TBD)
+* 목적: `#layout-contents-full` 슬라이드의 이미지·SVG(단일·다중 모두)가 contents 영역(하단 프레임선)을 넘어가는 문제 해결.
+* 근본 원인: contents-full만 html-builder의 title hoist 대상에서 누락 → title이 `.contents-body` 내부에 남아 media-container와 flex 자식 경쟁 → media flex:1 collapse(이미지 소멸) 또는 height 제약 부재로 overflow. 추가로 default_lec에 `section[class*="layout-"] { min-height:100% }` 누락(default 테마엔 존재)되어 flex 높이 chain 단절.
+* 해결 (3-part, _contents와 동일 구조로 통일):
+    1. `lib/html-builder.js` hoist 정규식 `^_?contents(_no_title)?$` → `^_?contents(_no_title|-full)?$` — contents-full도 title을 section 직속으로 hoist (body엔 media만 남김)
+    2. `theme/{default,default_lec}/slide.css` — `layout-contents-full > .contents-body`를 flex-column 처리 추가 (기존 `_contents`/`_contents_no_title`와 동일)
+    3. `theme/default_lec/slide.css` — `section[class*="layout-"] { min-height:100% }` 포팅(default 동등). flex 높이 chain definite 확보
+* 검증: /n/4/1 단일 다이어그램 fit ✅, /n/2/1#/8 이미지 2개(matrix+pdf-p013) 양쪽 fit ✅, 텍스트 슬라이드·chapter divider 회귀 0
+* 참고: 단일 이미지 fit용 base.css `.media-enlarge-width img { max-height:100% }`도 2026-05-28 동반 적용
 
 ## Issue248. dev-server URL semantic 분리 — `/s/` = solo design view (단일 슬라이드), `/n/` = deck navigation (path-based) (등록: 2026-05-28, 해결: 2026-05-28, commit: ebbca88, 91ea9db, b7d7a3d, 95d431c, 7ce2bf5) ✅
 * 목적: 슬라이드 디자인 확인 시 단일 section만 추출(solo) + deck navigation 시 URL 안정성 보장. 초기 v1은 `?mode=nav` 쿼리로 구현했으나 cross-page nav 시 query가 손실(`/s/1/?fwd=1#/toc-placeholder` 깨짐)되어 path-based로 재설계.

@@ -56,14 +56,24 @@
   position: absolute;
   left: 56px;
   right: 56px;
-  height: 2px;
-  background: var(--kn-accent);
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
   pointer-events: none;
-  z-index: 0;
+  z-index: 100;            /* layout 자식(flex item) 위로 — 하단 가로선이 본문에 가려지지 않도록 */
 }
 
 .reveal section[class*="layout-"]::before { top: 12px; }
 .reveal section[class*="layout-"]::after  { bottom: 12px; }
+
+/* 모든 layout-* section min-height:100% (default 테마 동등 포팅) — flex 높이 chain 확보.
+   default_lec엔 누락되어 있어 contents-body flex-grow가 definite height를 못 받음 →
+   media-container flex:1 자식이 0으로 collapse(이미지 소멸) 또는 제약 없이 overflow.
+   title hoist + contents-body flex-column과 함께 이 규칙이 있어야 이미지가 contents 영역에 fit. */
+.reveal section[class*="layout-"] {
+  min-height: 100% !important;
+}
 
 /* Issue97: 페이지 번호·controls·progress — outer padding 바깥(viewport edge)에 위치
    - body { padding: var(--slide-outer-padding) } 으로 .reveal이 outer padding 안쪽에 있음
@@ -106,6 +116,7 @@
    3. 제목 — 두꺼운 sketch 느낌 + 노랑 밑줄 (hr.png)
    ========================================================================= */
 .reveal section[class*="layout-"] h1,
+.reveal section[class*="layout-"] > .title,
 .reveal section[class*="layout-"] .cover-title,
 .reveal section[class*="layout-"] .contents-title,
 .reveal section[class*="layout-"] .chapter-title,
@@ -119,12 +130,13 @@
   letter-spacing: -0.01em;
   color: var(--kn-text);
   position: relative;
-  display: inline-block;
+  display: block;
   padding-bottom: 0.15em;
   margin: 0 auto;
 }
 
 .reveal section[class*="layout-"] h1::after,
+.reveal section[class*="layout-"] > .title::after,
 .reveal section[class*="layout-"] .cover-title::after,
 .reveal section[class*="layout-"] .contents-title::after,
 .reveal section[class*="layout-"] .chapter-title::after,
@@ -163,7 +175,8 @@
    - .contents-body를 flex column으로 만들고 .media-container에 flex-grow 1으로
      남은 영역 가득 차게 하여 SVG의 max-height: 100% 기준 영역 확보 */
 .reveal section.layout-_contents > .contents-body,
-.reveal section.layout-_contents_no_title > .contents-body {
+.reveal section.layout-_contents_no_title > .contents-body,
+.reveal section.layout-contents-full > .contents-body {
   display: flex;
   flex-direction: column;
   min-height: 0;
@@ -285,6 +298,41 @@
   background-size: auto 119%;  /* Issue143 후속: 90% → 108% (20%) → 119% (+10%) */
 }
 
+/* layout-_contents 제목: 풀폭 가운데 정렬 → hr.png 하단 브러시(§3 > .title::after)가 폭 가득. */
+.reveal section.layout-_contents > .title {
+  width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* 상단 프레임 브러시를 head-bar(head_left/head_right breadcrumb) "아래"에 배치.
+   §2 ::before(top:12px, head-bar 위)는 _contents에서 숨기고, head-bar 하단에 브러시를 그려
+   head_left 라벨이 항상 바 위에 오도록 함 (사용자 요구: "바가 무조건 아래"). */
+.reveal section.layout-_contents::before {
+  display: none !important;
+}
+/* head-bar가 비어 숨김된 _contents(단일모드 등)는 상단 §2 브러시 복원 — 상단 무바 회귀 방지 */
+.reveal section.layout-_contents:has(> .contents-head-bar:empty)::before,
+.reveal section.layout-_contents:has(> .contents-head-bar > .contents-head-left:empty):has(> .contents-head-bar > .contents-head-right:empty)::before {
+  display: block !important;
+}
+.reveal section.layout-_contents > .contents-head-bar {
+  position: relative;
+}
+.reveal section.layout-_contents > .contents-head-bar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 100;
+}
+
 /* Issue97 (Issue80 §2.5 동기): _contents_no_title — 헤더 영역 없음, 본문이 위까지 차지 */
 .reveal section.layout-_contents_no_title > .contents-body,
 .reveal section.layout-contents_no_title > .contents-body {
@@ -323,14 +371,19 @@
   max-width: 55%;
 }
 
-/* 4.4 chapter: puffer2 중앙-좌측 + 제목 하단
+/* 4.4 chapter: puffer2 위쪽 + 제목 아래 (원본 PDF p6 배치 — 복어 위, 텍스트 아래)
    Issue72: !important 제거 — base.css와 동일 specificity. theme 후순위 로드로 자연 우선 */
 .reveal section.layout-chapter {
   background-image: url('../theme-img/finfraPuffer2.png');
   background-repeat: no-repeat;
-  background-position: 18% 38%;
+  background-position: 0% 26%;        /* 복어 완전 좌측 + 제목보다 위 */
   background-size: 16% auto;
-  justify-content: flex-end;
+  justify-content: flex-start;
+}
+
+/* 챕터 divider 상단 프레임선(첫번째 라인) 제거 — 원본 PDF divider 상단 라인 없음 (사용자 요구) */
+.reveal section.layout-chapter::before {
+  display: none !important;
 }
 
 /* Part 라벨 — 좌상단 빨간색 (PDF 원본 디자인 호환) */
@@ -350,11 +403,14 @@
 
 .reveal section.layout-chapter .chapter-header {
   text-align: center;
-  padding-bottom: 12%;
+  padding-top: 32%;       /* 제목을 복어(26%) 아래 + 세로 중앙 쪽으로 */
+  padding-bottom: 0;
 }
 
 .reveal section.layout-chapter .chapter-title {
-  font-size: 3em;
+  font-size: 3.6em;       /* 키워서 획 굵게 + line1 일찍 wrap → 원본처럼 중앙 균형 */
+  font-weight: 900;
+  -webkit-text-stroke: 0.5px var(--kn-text);
 }
 
 /* layout-chapter 본문 박스 제거 — PDF 원본은 단순 표지 디자인 */
@@ -553,11 +609,13 @@
 }
 .reveal section.layout-_cover .cover-body {
   margin-top: auto;
-  padding: 0.6em 0;
+  padding: 0.6em 5% 0.6em 0;
   font-size: 0.75em;
   display: flex;
   flex-direction: column;
   gap: 0.3em;
+  /* Keynote 정렬: instructor 박스를 콘텐츠 폭으로 줄이고 우하단 우측 정렬 */
+  align-items: flex-end;
 }
 /* Issue130: instructor(author+contact) 영역 노란 사각형 테두리 강조 */
 .reveal section.layout-_cover .cover-instructor {

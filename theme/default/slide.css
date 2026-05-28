@@ -291,7 +291,8 @@
 .reveal section.layout-_contents > .contents-body,
 .reveal section.layout-contents > .contents-body,
 .reveal section.layout-_contents_no_title > .contents-body,
-.reveal section.layout-contents_no_title > .contents-body {
+.reveal section.layout-contents_no_title > .contents-body,
+.reveal section.layout-contents-full > .contents-body {
   display: flex;
   flex-direction: column;
   min-height: 0;

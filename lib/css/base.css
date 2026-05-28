@@ -391,13 +391,13 @@ body {
   object-fit: contain !important;
 }
 
-/* 2. Width: 너비 최대화 */
+/* 2. Width: 너비 최대화 (단, contents 영역 높이 초과 금지) */
 .media-enlarge-width .reveal .media-container img,
 .media-enlarge-width .reveal .media-container svg {
   width: 100% !important;
   height: auto !important;
   max-width: none !important;
-  max-height: none !important;
+  max-height: 100% !important;   /* 세로 긴 이미지가 contents 영역 넘지 않도록 클램프 (object-fit:contain 으로 letterbox) */
   object-fit: contain !important;
 }
 
