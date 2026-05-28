@@ -31,16 +31,6 @@ conversion_mode:
     block_full_page_png_fallback: true    # slide_png_fallback 단계 자동 발현 금지
     block_pdf_visual_ssot: true           # PDF 1차 SSOT 패턴 차단 (GenContentProd_v1.1 같은 변환 금지)
     text_extraction_failure_action: proposal  # 텍스트 추출 실패 슬라이드는 _proposals/ 기록 + 사용자 수동 작성 유도
-    # ── 원본 PDF 통짜 스크린샷 재활용 정책 (글로벌, GenContentProd_v1.1 후속) ──
-    # PDF 페이지 통짜 캡처(pdf-pNNN.png)는 재구성 작업의 "참조 소스"로만 활용.
-    # 어떤 재구성 경로(텍스트·이미지·카드·htmlart)든 성공한 슬라이드는 같은 슬라이드의
-    # pdf-pNNN.png active 참조를 최종 md에서 무조건 제거. box_group_to_cards 한정 정책
-    # (rules.drop_redundant_page_screenshot)을 전역으로 승격 — 매트릭스 표 등 일반 재구성
-    # 슬라이드도 적용. 빌드(generate-slides.js = HTML 생성) 단계 의존 금지: md 생성 단계
-    # (본 agent)에서 잔재 0건을 보장해야 함 (사용자 요청 — "html 생성 이전 SCAR에서 처리 필수").
-    drop_redundant_page_screenshot: true
-    redundant_screenshot_pattern: '!\[[^\]]*\]\((\./)?img/pdf-p\d+\.png\)'  # 잔재 검출 정규식 (md active 이미지 참조)
-    keep_screenshot_when: "재구성 실패(텍스트 빈약) + copy 모드 명시 — 이 경우만 pdf-pNNN.png 보존 (시각 SSOT 손실 방지)"
 
 # ── layout 자동 판정 휴리스틱 ─────────────────────────────────
 # PPT 슬라이드의 제목 위치·이미지 비율·텍스트 양을 기준으로
@@ -530,7 +520,7 @@ box_group_to_cards:
     - all_boxes_must_be_emitted: true   # 박스 1개라도 누락 금지 (slide 9 첫 박스 누락 회귀 차단)
     - title_band_to_strong: true        # 제목 밴드 → 카드 제목(**볼드**)
     - body_to_nested_bullet: true       # 본문 → 카드 본문(중첩 `-`)
-    - drop_redundant_page_screenshot: true  # 텍스트 재구성 성공 시 같은 슬라이드의 pdf-pNNN.png 잔존 제거 (글로벌 승격됨 — conversion_mode.md_first_constraints.drop_redundant_page_screenshot 가 SSOT. 모든 재구성 경로 적용)
+    - drop_redundant_page_screenshot: true  # 텍스트 재구성 성공 시 같은 슬라이드의 pdf-pNNN.png 잔존 제거
   # SmartArt diagram XML이 검출된 경우는 mappings.smartart_to_htmlart 우선
   # (List/Vertical Box List → htmlart). 본 규칙은 수동 그룹 도형 fallback 경로.
   priority: "사용자 #layout 명시 > smartart_xml_direct_parse(htmlart) > box_group_to_cards > 텍스트 bullet"
