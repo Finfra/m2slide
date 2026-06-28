@@ -942,7 +942,10 @@ class DevHandler(SimpleHTTPRequestHandler):
             # Issue242: cross-page nav URL에 hash 없으면 #/1 자동 주입.
             # reveal.js 가 default slide #/1 진입하지만 URL bar 에 명시 표기되어
             # share·reload·history 추적 일관성 확보. ?fwd=1 같은 cue 는 hash 앞에 유지.
-            if not frag:
+            # agenda(/n/a)는 reveal.js 없는 메타 페이지 — hash #/N 은 "deck #/N 로
+            # redirect" 신호라 default #/1 주입 시 cover↔agenda 무한 루프 발생.
+            # 따라서 agenda 대상에는 hash 자동 주입 skip.
+            if not frag and not new.endswith('/n/a'):
                 frag = '#/1'
             return f'{q1}{new}{qry}{frag}{q2}'
         content = self._NAV_HTML_RE.sub(repl_quoted, content)
@@ -952,7 +955,10 @@ class DevHandler(SimpleHTTPRequestHandler):
                 m.group(1), m.group(2), m.group(3) or '', m.group(4) or ''
             )
             new = self._stem_to_short_path(project, stem)
-            if not frag:
+            # agenda(/n/a)는 reveal.js 없는 메타 페이지 — hash #/N 은 "deck #/N 로
+            # redirect" 신호라 default #/1 주입 시 cover↔agenda 무한 루프 발생.
+            # 따라서 agenda 대상에는 hash 자동 주입 skip.
+            if not frag and not new.endswith('/n/a'):
                 frag = '#/1'
             return f'{prefix}{new}{qry}{frag}'
         content = self._META_REFRESH_RE.sub(repl_meta, content)
@@ -963,7 +969,10 @@ class DevHandler(SimpleHTTPRequestHandler):
                 m.group(1), m.group(2), m.group(3) or '', m.group(4) or '', m.group(5)
             )
             new = self._stem_to_short_path(project, stem)
-            if not frag:
+            # agenda(/n/a)는 reveal.js 없는 메타 페이지 — hash #/N 은 "deck #/N 로
+            # redirect" 신호라 default #/1 주입 시 cover↔agenda 무한 루프 발생.
+            # 따라서 agenda 대상에는 hash 자동 주입 skip.
+            if not frag and not new.endswith('/n/a'):
                 frag = '#/1'
             return f'{q1}{new}{qry}{frag}{q2}'
         content = self._NAV_HTML_ESCAPED_RE.sub(repl_escaped, content)
