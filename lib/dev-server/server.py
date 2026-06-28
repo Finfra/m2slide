@@ -702,8 +702,20 @@ class DevHandler(SimpleHTTPRequestHandler):
         return self._proxy_build_artifact(file_rel, slide_n=slide)
 
     def _serve_nav_c(self, project: str):
-        """/p/<P>/n/c — cover (deck). Fallback: not active → 302 /n/a."""
-        if not self._cover_active(project):
+        """/p/<P>/n/c — cover/deck entry.
+
+        index.html is always the deck (single mode = full deck whose #/1 is the
+        cover slide; chapter mode = markmap cover). Serve it directly so a
+        carried slide fragment (#/N) is honored client-side. Previously this
+        redirected to /n/a when cover_enabled was unset (_cover_active False),
+        which bounced single-mode deck deep-links (index.html#/N → /n/c#/N)
+        onto the standalone, non-reveal agenda.html and dropped the slide hash
+        — the single-mode analog of the chapter-mode bug fixed in Issue239.
+        Fall back to the agenda chain only if index.html is genuinely absent.
+        """
+        index_abs = os.path.join(os.getcwd(), 'Projects', project,
+                                 'slide', 'index.html')
+        if not os.path.isfile(index_abs):
             return self._redirect_302(self._with_query(f'/p/{project}/n/a'))
         file_rel = self._short_file_rel(project, None)  # index.html
         return self._proxy_build_artifact(file_rel)
