@@ -9,11 +9,9 @@
 
 # Allow project directories
 !/aTest/
-!/AgenticCoding_v1.1/
-!/GenContentProd_v1.0/
-!/GenContentProd_v1.1/
+!/AgenticCoding/
+!/GenContentProd/
 !/LlmAndVibeCoding/
-!/LlmAndVibeCoding_v2/
 !/graphify/
 !/m2Slide/
 
@@ -21,3 +19,5 @@
 # /z_just_test/
 
 !/slide.css.md
+
+!/LlmFlow/
