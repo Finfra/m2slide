@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 249
+* Issue HWM: 252
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -29,11 +29,41 @@
 
 # 📕 중요
 
+## Issue250. layout 제목 폰트 누락 — base.css title SSOT 통합 (등록: 2026-06-30)
+* 목적: layout 제목군(`.chapter-title`·`.contents-title`·`.cover-title` 등)이 GmarketSansBold(`--main-title-font-family`)를 적용받지 못하고 `.reveal` 의 `--global-font-family`(Pretendard, 미로드) → 시스템 폰트(Apple SD Gothic Neo)로 폴백되던 회귀를 단일 출처로 영구 차단.
+* 근본 원인: `lib/css/base.css` 의 title font-family 룰(`.reveal .title { font-family: var(--title-font-family) }`)이 `.chapter-title`·`.contents-title` 등 layout 제목 클래스를 selector 에 포함하지 않음. base.css 의 같은 클래스 묶음 룰은 `margin-bottom` 만 줌(L167-178). 결과적으로 각 theme(`default`·`default_lec`)의 §3 공유 title 블록도 font-family 를 안 줘서 양쪽 테마 모두 깨짐. 테마 단위로 고치면 신규 theme 추가 시 또 누락하는 두더지 잡기.
+* 임시 조치 (2026-06-30, 미커밋): `theme/default/slide.css`·`theme/default_lec/slide.css` 공유 title 블록에 `font-family: var(--main-title-font-family, 'GmarketSansBold', sans-serif)` 직접 추가. m2Slide_visual_component_v1.0 챕터 제목 GmarketSansBold 렌더 검증 완료(computed fontFamily·gmarketLoaded:true·스크린샷).
+* 구현 명세 (영구 SSOT):
+    - `lib/css/base.css` — title font-family 룰(또는 margin-bottom 묶음 룰)을 확장하여 모든 layout 제목 클래스(`.title`·`.cover-title`·`.contents-title`·`.chapter-title`·`.chapter-toc-title`·`.exercise-title`·`.blank-title`·`.closing-title`·`.summary-title`·`.toc-title`)에 `font-family: var(--main-title-font-family, ...)` 적용. 각 theme 은 `--main-title-font-family` 변수만 override.
+    - 위 확정 후 임시 조치로 넣은 `theme/{default,default_lec}/slide.css` 의 중복 `font-family` 라인 제거 (SSOT 단일화).
+    - ⚠️ base.css = 컨펌 게이트 (CLAUDE.md "base.css 수정 가드") — 수정 전 사용자 컨펌 + 대표 3종(`m2SlideStyle1_single`·`m2SlideStyle2_chapter`·`layoutTest`) 회귀 빌드 필수.
+* 검증: 위 3종 + m2Slide_visual_component_v1.0 챕터/표지/contents 제목 모두 GmarketSansBold 적용, "테스트 필수 항목" 4종 통과, 회귀 0.
+
 # 📙 일반
+
+## Issue251. config 가 AGENDA frontmatter theme 미반영 — chapter mode 조용한 테마 불일치 (등록: 2026-06-30)
+* 목적: chapter mode 프로젝트가 `markdown/AGENDA.md` frontmatter 에 `theme: <name>` 만 선언하고 `_config.yml` 이 없으면, config.js 가 themeName=null→`default` 로 빌드하여 선언 테마가 조용히 무시되는 함정 차단.
+* 근본 원인: `lib/config.js` 의 theme 해석(L155-157 `^theme:` regex)은 `_config.yml`/`_config.org.yml` 만 읽음. AGENDA.md frontmatter 의 `theme:` 는 themeName 으로 전달되지 않음. md-m2slide-rules 는 "frontmatter 는 보조 수단" 으로 명시하나 현재는 chapter mode theme 해석에 전혀 반영 안 됨.
+* 발견 경위: m2Slide_visual_component_v1.0 이 AGENDA 에 `theme: default_lec` 선언했으나 빌드는 `default` 사용(Issue250 조사 중 확인).
+* 구현 명세 (택1):
+    - (권장) `lib/config.js` loadConfig 또는 generate-slides.js 가 chapter mode 일 때 AGENDA.md frontmatter `theme:` 를 읽어 themeName 으로 반영. 우선순위는 `_config.yml` > AGENDA frontmatter (md-m2slide-rules "_config.yml 이 더 강력한 SSOT" 준수).
+    - (대안) `m2slide.sh --lint-config` 에 "AGENDA theme ≠ 빌드 적용 theme" 경고 추가 — 코드 동작 무변경, 사람이 알아채게만.
+* 검증: AGENDA 에만 theme 선언한 프로젝트 빌드 시 선언 테마로 빌드(권장안) 또는 빌드 시 경고 출력(대안). `_config.yml` 우선순위 유지 회귀 확인.
 
 # 📗 선택
 
 # ✅ 완료
+
+## Issue252. dev-server cross-page `?last=1` 진입 실패 — chapter-nav 변수에 `#/1` 오주입으로 이전 챕터 마지막 슬라이드 대신 toc-placeholder 착지 (등록: 2026-07-02, 해결: 2026-07-02, commit: 72ec356) ✅
+* 목적: `/p/<P>/n/<chap>/1` deck 에서 ← (또는 TOC ←) 키로 이전 챕터로 넘어갈 때 마지막 슬라이드(K2)로 가야 하나 첫 슬라이드(`#/toc-placeholder`)에 착지하던 회귀 수정.
+* 근본 원인: dev-server `_rewrite_nav_strings` 가 빌드 산출물의 모든 `'*.html'` 문자열에 `#/1` 을 자동 주입(Issue242). chapter-nav JS 변수(`PREV_CHAPTER` 등)는 런타임에 `VAR + '?last=1&back=1'` 로 쿼리를 **뒤에** 붙이므로 최종 URL 이 `…/n/N/1#/1?last=1&back=1` 가 됨. (1) 강제 `#/1` → 첫 슬라이드 진입 (2) 쿼리가 hash 뒤로 밀려 `location.search` 빔 → 빌드 산출물의 `Reveal.on('ready')` `?last=1` 핸들러 미발화 → 마지막 슬라이드 점프 소실. 사용자가 본 `#/toc-placeholder` 는 점프 실패 후 잔류 상태.
+* 영향 범위: 런타임에 쿼리를 붙이는 7개 변수 — `PREV_CHAPTER`·`NEXT_CHAPTER`·`PREV_SIBLING_CHAPTER`·`NEXT_SIBLING_CHAPTER`·`LAST_CHAPTER`(PgDown)·`COVER_LAST_CHAPTER`·`AGENDA_LAST_CHAPTER`.
+* 해결:
+    1. `lib/dev-server/server.py` — `_NAV_CHAPTER_VAR_RE` 정규식 추가 + `_rewrite_nav_strings` 선행 pre-pass. 이 7개 변수 선언만 hash 미주입 bare short-path(`/p/<P>/n/N/1`)로 rewrite. 빈 값(`''`, 첫 챕터)은 `.html` 부재로 미매칭 → 보존. 정적 href·`_tocData` JSON href 는 기존 `#/1` 유지(쿼리 미부착이라 안전).
+    2. `lib/dev-server/test_server.py` — `ChapterNavVarRewriteTest` 5 케이스(변수 매칭·전체 변수명·빈 값 skip·이미 치환된 값 skip·hash 미포함).
+    3. `_doc_arch/dev-server.md` — proxy rewrite 예외 규칙 문서화.
+* 검증: 서버 응답 `PREV_CHAPTER='/p/FpmIntro/n/1/1'`(hash 제거) ✅. Playwright — ch2 TOC 에서 ← → `/p/FpmIntro/n/1/1#/8`(ch1 마지막, curIdx 7/8) ✅. dev-server 단위 테스트 30 pass(25 기존 + 5 신규) ✅.
+* 근거: 로직(설계 문서 `key_navigation.md` K2)은 정확했고 결함은 dev-server rewrite 구현에 있었음.
 
 ## Issue249. layout-contents-full 이미지/SVG 세로 overflow — contents 영역 초과 (등록: 2026-05-28, 해결: 2026-05-28, commit: TBD)
 * 목적: `#layout-contents-full` 슬라이드의 이미지·SVG(단일·다중 모두)가 contents 영역(하단 프레임선)을 넘어가는 문제 해결.
