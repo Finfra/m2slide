@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"4","slideOffset":23,"totalSlides":63};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"4","slideOffset":23,"totalSlides":64};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1342,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783003500561">
+  <link rel="stylesheet" href="css/custom.css?v=1783004587059">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -2778,6 +2778,10 @@ graph LR
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
         var hasNextChapter = '05-components.html' !== '';
         if (currentSlideNumber >= totalSlides) {
+          // 남은 fragment가 있으면 reveal 기본 fragment 진행에 맡김 —
+          // 마지막 슬라이드에서 fragment 도중 안내 메시지·다음 챕터 점프 금지
+          var remainingFrag = (typeof Reveal.availableFragments === 'function') ? Reveal.availableFragments() : null;
+          if (remainingFrag && remainingFrag.next) return;
           if (hasNextChapter) {
             if (lastSlideMessageShown) {
               lastSlideMessage.style.display = 'none';

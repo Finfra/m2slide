@@ -59,3 +59,23 @@ Chapter 8.
 | 설계 문서 | `_doc_arch/` |
 | 예시 프로젝트 | `Projects/AgenticCoding` |
 | 이 자료의 소스 | `Projects/m2slide_info/markdown/` |
+
+---
+
+## 핵심 요약 — 한 장 정리
+
+```wordart
+<h1 class="wordart-gradient" style="font-size:2.4em;margin:0.1em 0;">m2slide</h1>
+<p class="wordart-shadow" style="font-size:1em;color:#666;margin:0;">마크다운 한 벌로 발표·전자책·영상까지</p>
+```
+
+::: cards
+* **저작**
+  - `AGENDA.md` + 챕터 md → `./m2slide.sh <Project>` 한 줄 빌드
+* **표현**
+  - theme/layout + `_config.yml` + 내장 컴포넌트(chart·d3·React·p5·3D)
+* **산출**
+  - HTML·EPUB·PDF·PPTX 동시 생성, `file://` 단독 동작 보장
+* **자동화**
+  - 9단계 authoring pipeline + dev-server 실시간 검증
+:::

@@ -1,9 +1,12 @@
 ---
 title: m2slide 소개
-subtitle: "Markdown 기반 Reveal.js 프레젠테이션 저작 도구 — 구조·기능·워크플로우 설명"
+subtitle: "마크다운 한 벌로 발표 슬라이드·<strong>EPUB·PDF·PPTX</strong>까지 — Chapter Mode·theme/layout 시스템·내장 컴포넌트(chart·d3·React·p5·3D)·dev-server 미리보기·9단계 저작 파이프라인 안내"
 date: 2026-06-30
 type: ppt
-release_date: 2026-07-02
+release_date: 2026-07-03
+version_badge: "v0.9"
+github_url: "github.com/Finfra/m2slide"
+homepage: "finfra.kr"
 ---
 
 ## [01. m2slide란?](./01-what-is-m2slide.md)

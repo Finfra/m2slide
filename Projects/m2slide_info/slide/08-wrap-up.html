@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"8","slideOffset":57,"totalSlides":63};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"8","slideOffset":57,"totalSlides":64};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1342,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783003500567">
+  <link rel="stylesheet" href="css/custom.css?v=1783004587064">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1575,11 +1575,12 @@ html.ratio-fill .agenda-frame {
   <header class="toc-page-header">
     <h1 class="toc-page-title">마무리</h1>
   </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="4">
+  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="5">
 <li class="chapter-card"><a href="#/3">핵심 요약 — m2slide 5가지 강점</a></li>
 <li class="chapter-card"><a href="#/4">핵심 정리 — 체크리스트</a></li>
 <li class="chapter-card"><a href="#/5">다음 단계 — 직접 시작하기</a></li>
 <li class="chapter-card"><a href="#/6">링크 모음</a></li>
+<li class="chapter-card"><a href="#/7">핵심 요약 — 한 장 정리</a></li>
 </ul></div>
 </section>
 
@@ -1664,6 +1665,45 @@ html.ratio-fill .agenda-frame {
 <tr><td style="text-align:left">이 자료의 소스</td><td style="text-align:left"><code>Projects/m2slide_info/markdown/</code></td></tr>
 </tbody>
 </table></div>
+</section>
+
+<section data-slide-hash="#/7" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">08. 마무리</div>
+    
+  </div>
+  <h2 class="title">핵심 요약 — 한 장 정리</h2>
+  <div class="contents-body">
+
+<div class="component-container wordart-block">
+<h1 class="wordart-gradient" style="font-size:2.4em;margin:0.1em 0;">m2slide</h1>
+<p class="wordart-shadow" style="font-size:1em;color:#666;margin:0;">마크다운 한 벌로 발표·전자책·영상까지</p>
+</div>
+
+<div class="m2-cards cards">
+<ul>
+<li class="bullet-dot"><strong>저작</strong>
+<ul>
+<li class="bullet-dash"><code>AGENDA.md</code> + 챕터 md → <code>./m2slide.sh &lt;Project&gt;</code> 한 줄 빌드</li>
+</ul>
+</li>
+<li class="bullet-dot"><strong>표현</strong>
+<ul>
+<li class="bullet-dash">theme/layout + <code>_config.yml</code> + 내장 컴포넌트(chart·d3·React·p5·3D)</li>
+</ul>
+</li>
+<li class="bullet-dot"><strong>산출</strong>
+<ul>
+<li class="bullet-dash">HTML·EPUB·PDF·PPTX 동시 생성, <code>file://</code> 단독 동작 보장</li>
+</ul>
+</li>
+<li class="bullet-dot"><strong>자동화</strong>
+<ul>
+<li class="bullet-dash">9단계 authoring pipeline + dev-server 실시간 검증</li>
+</ul>
+</li>
+</ul>
+</div></div>
 </section>
 
     </div>
@@ -1983,6 +2023,10 @@ html.ratio-fill .agenda-frame {
                         },
                         {
                               "content": "<a href=\"#/5\">링크 모음</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/6\">핵심 요약 — 한 장 정리</a>",
                               "children": []
                         }
                   ]
@@ -2704,6 +2748,10 @@ html.ratio-fill .agenda-frame {
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
         var hasNextChapter = 'index.html' !== '';
         if (currentSlideNumber >= totalSlides) {
+          // 남은 fragment가 있으면 reveal 기본 fragment 진행에 맡김 —
+          // 마지막 슬라이드에서 fragment 도중 안내 메시지·다음 챕터 점프 금지
+          var remainingFrag = (typeof Reveal.availableFragments === 'function') ? Reveal.availableFragments() : null;
+          if (remainingFrag && remainingFrag.next) return;
           if (hasNextChapter) {
             if (lastSlideMessageShown) {
               lastSlideMessage.style.display = 'none';
