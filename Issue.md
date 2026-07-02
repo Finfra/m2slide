@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 252
+* Issue HWM: 253
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -26,6 +26,21 @@
 3. `_doc_arch/authoring-pipeline.md` 내부 모순 — md2tts-txt 데이터 접근 표(L159 `(없음)`) ↔ 운영 상태 표(L283 `data/md2tts-txt/ (글로벌 룰)`) 불일치. 실제 `data/md2tts-txt/` 폴더 존재(확인됨)하므로 L159가 stale. 둘 중 한 쪽으로 통일 필요 (운영 상태 표 채택 권장). 발견 경위: noteForHuman.md 단계 표 유동 연결 검토(2026-05-27)
 
 # 🔥 진행 중
+
+## Issue253. VERSION 파일 컴파일 시점 임베드 + Projects.md 표 자동 동기화 SCAR (등록: 2026-07-02)
+* 목적: (1) 빌드 시 `Projects/<Name>/VERSION` 을 읽어 슬라이드 HTML(cover 등)에 버전 문자열을 **컴파일 시점에 정적 임베드** — 런타임 파일 참조 없이 산출물 자체에 박제. (2) `Projects.md` 활성 표의 버전 열을 VERSION 파일 기준으로 자동 동기화하고, 프로젝트 폴더 신설·제거를 표 행 추가·비활성(z_done) 표 이동으로 반영하는 로컬 SCAR 신설.
+* 배경: VERSION 파일은 `project-version-rules` 상 프로젝트 버전 SSOT 이나 빌드 코드가 읽지 않음. 버전은 frontmatter `version:` 을 통해서만 cover `{{version}}`/`{{version_badge}}` 로 흘러 이중 관리. VERSION 이 계속 바뀌므로 산출물에는 참조가 아니라 값을 넣어야 함.
+* 상세:
+    - B. `lib/config.js loadProjectMeta` — VERSION 파일 존재 시 `cfg.projectMeta.version` 을 VERSION 값으로 주입(VERSION 우선, frontmatter fallback). 템플릿 치환이 이미 정적 문자열을 산출하므로 컴파일 시점 임베드 자동 충족.
+    - C. `lib/sync-projects-md.js` (신규) + `m2slide.sh --sync-projects` subcommand + `.claude/commands/sync-projects.md`. 동작:
+        * 활성 표: `Projects/<Name>/`(단, `_*`·`z_*`·`z_done` 제외) 스캔 → 버전 열 = VERSION 값. 설명·Manual Check·publishing·작업 열은 **기존 행 보존**(사람 작성 열 머지). 신규 폴더는 행 추가.
+        * 제거(표에 있으나 폴더 없음): `# 비활성 프로젝트 (z_done)` 표로 행 이동.
+        * idempotent — 재실행 시 안정.
+* 구현 명세:
+    - VERSION 읽기: `fs.existsSync(path.join(projectDir,'VERSION'))` → `fs.readFileSync().trim()`. 빈 값·미존재 시 주입 생략(기존 frontmatter version 유지).
+    - sync 스크립트는 markdown 표 파서/렌더러 — 열 정렬(공백 패딩) `md-rules` Table 규칙 준수.
+    - 로컬 SCAR: `project-version-rules` 에 sync 커맨드 참조 1줄 추가.
+* 검증: 대표 프로젝트 1종 빌드 후 cover HTML 에 VERSION 값 임베드 확인 + `--sync-projects` 재실행 idempotent 확인 + 배포 lint 무영향.
 
 # 📕 중요
 

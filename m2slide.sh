@@ -187,6 +187,13 @@ PY
   exit 0
 fi
 
+# Subcommand: --sync-projects [--check] (Issue253)
+# Projects.md 활성/비활성 표를 Projects/<Name>/VERSION 기준으로 동기화.
+if [ "$1" = "--sync-projects" ]; then
+  node "$SCRIPT_DIR/lib/sync-projects-md.js" "$2"
+  exit $?
+fi
+
 # Subcommand: --lint-deployment [project] (Issue235)
 # Lint build artifacts for file-deployment-rules violations.
 if [ "$1" = "--lint-deployment" ]; then
