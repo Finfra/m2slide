@@ -13,11 +13,11 @@ chapter_markmap_depth: 3
 
 cover_enabled: true
 
-# chapter mode: agenda + toc-placeholder 비활성화 (사용자 요청 2026-05-27)
-toc_placeholder: false              # chapter 진입 toc-placeholder 미주입
+# chapter mode: toc-placeholder 재활성화 (사용자 요청 2026-07-02) — 커버 다음 TOC 슬라이드 주입
+toc_placeholder: true               # chapter 진입 toc-placeholder 주입 (markmap/카드 TOC)
 cards_placeholder: false            # cards-placeholder 자동 주입 미사용 (사용자 요청 2026-05-27)
-toc_card_mode: true                 # (toc_placeholder=false 라서 무영향, 기록만 유지)
-agenda_enabled: false               # agenda.html 미생성 — cover → 첫 챕터 직행
+toc_card_mode: true                 # TOC 를 카드 형태로 렌더
+agenda_enabled: false               # agenda.html 미생성 — cover → TOC → 첫 챕터
 
 # layout 자동 감지 활성 — image-only 슬라이드는 _blank, 본문 슬라이드는 _contents
 auto_layout_detect: true

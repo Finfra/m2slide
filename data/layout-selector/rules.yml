@@ -182,9 +182,9 @@ pattern_rules:
 
   # Issue179: closing_summary 분리 — summary_recap(학습 정리·요약) vs qna_closing(Q&A·마무리)
   - id: summary_recap
-    condition: "title_matches('정리|요약|핵심|복습|학습한 내용|오늘 학습|Recap|Summary|Review')"
+    condition: "title_matches('정리|요약|핵심|복습|Recap|Summary|Review')"
     triggers:
-      title_keywords: ["정리", "요약", "핵심", "복습", "학습한 내용", "오늘 학습", "Recap", "Summary", "Review"]
+      title_keywords: ["정리", "요약", "핵심", "복습", "Recap", "Summary", "Review"]
     layout: summary
     layout_fallback: contents
     priority: 82

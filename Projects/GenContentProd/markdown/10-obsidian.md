@@ -1,4 +1,4 @@
-# 10. Obsidian 지식 베이스
+# 07. Obsidian 지식 베이스
 
 #layout-contents-full
 ## 왜 Obsidian인가?
@@ -17,12 +17,16 @@
 
 ---
 
-#layout-contents-full
 ## 볼트(Vault) — 폴더가 곧 지식 단위
 
-![볼트(Vault) — 폴더가 곧 지식 단위](img/GenContetntsProd_v10_28.png)
-
-![볼트(Vault) — 폴더가 곧 지식 단위](img/GenContetntsProd_v10_29.png)
+::: columns
+::: {.column width="50%"}
+![Vault 구조 개념도](img/GenContetntsProd_v10_28.png)
+:::
+::: {.column width="50%"}
+![Obsidian 화면 예시](img/GenContetntsProd_v10_29.png)
+:::
+:::
 
 ---
 
@@ -70,10 +74,15 @@
 
 ## Obsidian 플러그인 설치
 
+::: rows
+::: {.row height="30%"}
 * 설치 경로: 설정 → Community plugins → Browse → 이름 검색 → Install → Enable
 * 첫 실행 시 안전 모드(Safe mode) 해제 필요 — 1회만 클릭
-
+:::
+::: {.row height="70%"}
 ![Obsidian 플러그인 설치](img/GenContetntsProd_v10_30.png)
+:::
+:::
 
 ---
 

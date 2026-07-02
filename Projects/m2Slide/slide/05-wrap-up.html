@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"5","slideOffset":20,"totalSlides":24};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"5","slideOffset":15,"totalSlides":20};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -194,6 +194,24 @@
 .reveal .closing-title,
 .reveal .exercise-title {
   margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);
+}
+
+/* Issue250: layout 제목 클래스 공통 폰트 SSOT.
+   --main-title-font-family(기본 GmarketSansBold)를 모든 layout headline 제목에 적용.
+   이 SSOT가 없으면 각 theme 의 §3 공유 title 블록이 font-family 를 빠뜨릴 때
+   .reveal 의 --global-font-family(Pretendard 미로드) → 시스템 폰트로 폴백되는 회귀 발생.
+   .title(슬라이드 소제목)은 위 .reveal .title 룰에서 --title-font-family 로 별도 처리. */
+.reveal .cover-title,
+.reveal .contents-title,
+.reveal .chapter-title,
+.reveal .chapter-toc-title,
+.reveal .toc-title,
+.reveal .blank-title,
+.reveal .closing-title,
+.reveal .summary-title,
+.reveal .exercise-title,
+.reveal section[class*="layout-"] h1 {
+  font-family: var(--main-title-font-family, 'GmarketSansBold', sans-serif);
 }
 
 /* 공통 Flex Column 패턴 */
@@ -1324,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1782664191568">
+  <link rel="stylesheet" href="css/custom.css?v=1783006115468">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1556,23 +1574,50 @@ html.ratio-fill .agenda-frame {
   
   <h2 class="title">핵심 가치 요약</h2>
   <div class="contents-body">
+
 <ul>
-<li class="bullet-dot"><strong>단일 SSOT</strong>: 마크다운 하나로 모든 형식 산출</li>
+<li class="bullet-dot"><strong>단일 SSOT</strong>: 마크다운 하나로 HTML·EPUB·PDF·PPTX 산출</li>
 <li class="bullet-dot"><strong>Git 친화적</strong>: 텍스트 기반 협업·리뷰</li>
-<li class="bullet-dot"><strong>확장 가능</strong>: theme·layout·디렉티브로 디자인 자유도 확보</li>
+<li class="bullet-dot"><strong>확장 가능</strong>: theme·layout·컴포넌트로 디자인 자유</li>
 <li class="bullet-dot"><strong>저비용 진입</strong>: 마크다운만 알면 즉시 시작</li>
 </ul></div>
 </section>
 
 <section data-slide-hash="#/4" class="layout-_contents">
   
-  <h2 class="title">참고</h2>
+  <h2 class="title">다음 단계 — 전체 튜토리얼</h2>
   <div class="contents-body">
+
 <ul>
-<li class="bullet-dot">온라인 데모: <a href="https://finfra.github.io/m2slide/">finfra.github.io/m2slide</a></li>
-<li class="bullet-dot">GitHub: <a href="https://github.com/Finfra/m2slide">github.com/Finfra/m2slide</a></li>
-<li class="bullet-dot">문의: nowage@gmail.com</li>
+<li class="bullet-dot">설치부터 배포까지 40분 심화 튜토리얼로 이어집니다</li>
+</ul>
+
+<blockquote>
+## 👉 m2slide Showcase<br>
+### https://finfra.github.io/m2slide/m2slideShowcase/
+</blockquote>
+
+<ul>
+<li class="bullet-dot">Chapter Mode·내장 컴포넌트·EPUB·저작 파이프라인을 실습과 함께 학습</li>
 </ul></div>
+</section>
+
+<section data-slide-hash="#/5" class="layout-_contents">
+  
+  <h2 class="title">참고 링크</h2>
+  <div class="contents-body">
+
+<table>
+<thead>
+<tr><th style="text-align:left">자료</th><th style="text-align:left">주소</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align:left">이 소개 슬라이드</td><td style="text-align:left">finfra.github.io/m2slide/m2Slide/</td></tr>
+<tr><td style="text-align:left">전체 튜토리얼</td><td style="text-align:left">finfra.github.io/m2slide/m2slideShowcase/</td></tr>
+<tr><td style="text-align:left">GitHub</td><td style="text-align:left">github.com/Finfra/m2slide</td></tr>
+<tr><td style="text-align:left">문의</td><td style="text-align:left">nowage@gmail.com</td></tr>
+</tbody>
+</table></div>
 </section>
 
     </div>
@@ -1794,12 +1839,18 @@ html.ratio-fill .agenda-frame {
         // section 기반 측정 불가. content 의 슬라이드 내부 bottom 좌표를 직접 측정.
         // 다른 .theContents 는 기존대로 section.scrollHeight 100% 채움.
         const isTocCards = content.classList && content.classList.contains('toc-cards');
-        const fitTarget = currentSlide.clientHeight * (isTocCards ? 0.92 : 1.0);
+        // isTocCards 0.9: measureExtent(header+cards)만 잡고 section 하단 padding·nav indicator는
+        // 미포함 → 여유 10%로 수용 (28카드 7행 케이스 상단 제목 clip 방지).
+        const fitTarget = currentSlide.clientHeight * (isTocCards ? 0.9 : 1.0);
+        // 단위 통일: getBoundingClientRect는 reveal transform scale 적용된 화면 px,
+        // clientHeight(fitTarget 기준)는 미scale layout px → getScale()로 나눠 layout px 로 환산.
+        // (환산 누락 시 scaled extent < unscaled target 로 항상 "맞음" 판정 → 카드 max 폰트 고정 → 축소 불가)
+        const _revealScale = (window.Reveal && Reveal.getScale) ? (Reveal.getScale() || 1) : 1;
         const measureExtent = () => {
           if (!isTocCards) return currentSlide.scrollHeight;
           const slideTop = currentSlide.getBoundingClientRect().top;
           const contentBottom = content.getBoundingClientRect().bottom;
-          return contentBottom - slideTop;
+          return (contentBottom - slideTop) / _revealScale;
         };
 
         // Check if it fits at max
@@ -1870,7 +1921,11 @@ html.ratio-fill .agenda-frame {
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">참고</a>",
+                  "content": "<a href=\"#/3\">다음 단계 — 전체 튜토리얼</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/4\">참고 링크</a>",
                   "children": []
             }
       ]
@@ -2590,6 +2645,10 @@ html.ratio-fill .agenda-frame {
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
         var hasNextChapter = 'index.html' !== '';
         if (currentSlideNumber >= totalSlides) {
+          // 남은 fragment가 있으면 reveal 기본 fragment 진행에 맡김 —
+          // 마지막 슬라이드에서 fragment 도중 안내 메시지·다음 챕터 점프 금지
+          var remainingFrag = (typeof Reveal.availableFragments === 'function') ? Reveal.availableFragments() : null;
+          if (remainingFrag && remainingFrag.next) return;
           if (hasNextChapter) {
             if (lastSlideMessageShown) {
               lastSlideMessage.style.display = 'none';

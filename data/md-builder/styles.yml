@@ -143,11 +143,13 @@ slide_patterns:
 
   - id: summary_next
     label: 정리·다음 단계
-    triggers: [정리, 요약, 다음, summary, conclusion, next, 학습한 내용, 복습, recap, review]
+    # 제목은 톤 무관 중립 고정 "핵심 요약" — 강의 편향 어휘("오늘 학습한 내용" 등) 생성 차단.
+    # triggers 에서도 강의 특화 어휘(학습한 내용) 제거, 복습/recap 은 범용 요약어라 유지.
+    triggers: [정리, 요약, 핵심, 다음, summary, conclusion, next, 복습, recap, review]
     body_template: |
-      ## {slide_title}
+      ## 핵심 요약
 
-      * **핵심 요약**
+      * **요약**
           - {summary_1}
           - {summary_2}
           - {summary_3}
@@ -378,6 +380,50 @@ long_list_multi_column_policy:
     학습 사례: BasicKnowledgeForAI_small 명령어 리스트 슬라이드 (30 items → 3-col).
 
 # ============================================================================
+# 4-C-2. 대비형 2 라벨 그룹 → 2단 columns (예/한계, 장점/단점 등)
+# ============================================================================
+dual_group_column_policy:
+  description: |
+    한 슬라이드에 서로 대비되는 라벨 그룹 2개가 각각 bullet 목록을 가지면
+    세로 스택 대신 Pandoc `::: columns` 2단으로 저작. 좌우 대비가 시각적으로
+    즉시 읽히고 세로 스크롤/여백 낭비를 막음.
+    학습 사례(2026-07-02): LlmFlow 01-concepts "② API — 예 / 한계" 슬라이드가
+    예 2개 + 한계 3개를 세로 스택 → 2단(좌 예 / 우 한계)으로 재구조화.
+  trigger:
+    # 아래 중 하나라도 해당하면 2단 후보
+    title_slash_pattern: true          # 제목이 "A / B" 형태 (예 / 한계, 장점 / 단점, 전 / 후)
+    dual_labeled_bullet_groups: true   # 본문에 라벨 2개(예:/한계:, 장점/단점 등) 각각 bullet 그룹 보유
+    label_pairs:                       # 대표 대비 라벨쌍 (완전 목록 아님 — 대비 의미면 확장)
+      - [예, 한계]
+      - [장점, 단점]
+      - [정의, 예]
+      - [전, 후]
+      - [before, after]
+      - [Pros, Cons]
+  constraints:
+    max_items_per_group: 6             # 그룹당 6개 초과면 2단이 좁아 가독성 저하 → 슬라이드 분할 고려
+    balance_hint: true                 # 좌우 항목 수 크게 불균형(3배 이상)이면 단일 스택도 허용
+  output_template: |
+    ## {slide_title}
+
+    ::: columns
+    ::: {.column width="50%"}
+    ### {label_a}
+
+    * {a_items}
+    :::
+    ::: {.column width="50%"}
+    ### {label_b}
+
+    * {b_items}
+    :::
+    :::
+  rationale: |
+    comparison_table(행/열 표) 패턴은 정형 항목별 비교에 적합하나, 각 측이
+    자유 bullet 목록이면 표보다 2단 컬럼이 자연스러움. 비교·대조 triggers
+    (비교/대조/vs)에 안 걸리는 "예/한계"류 슬래시 제목·대비 라벨 케이스를 커버.
+
+# ============================================================================
 # 4-D. 마크다운 syntax 본문 → 코드블록 wrap (literal 표시 보장)
 # ============================================================================
 backtick_marker_conflict_policy:
@@ -467,6 +513,23 @@ validation_rules:
     on_failure:
       retry_count: 0
       escalate_to_user: true
+    # 자기 검증용 빌드 표식 (사용자 혼동 방지)
+    # build_compile은 최종 산출물이 아니라 md-builder 자기 검증용 빌드. 사용자가
+    # slide/*.html을 열었을 때 최종본으로 오인하지 않도록 첫 슬라이드에 표식 주입.
+    verification_marker:
+      enabled: true
+      placement: first_slide          # 첫 파일의 첫 슬라이드 (single·chapter 모두 첫 .md)
+      mechanism: temp_frontmatter     # 소스 .md frontmatter에 임시 플래그 주입 → 빌드 → 제거
+      flag_key: build_verification    # frontmatter `build_verification: true`
+      banner_text: "🔧 검증용 빌드 — md-builder self-verification (최종본 아님)"
+      banner_slot: subtitle           # cover/contents의 subtitle 영역에 append (기존 subtitle 보존)
+      steps:
+        - "빌드 직전: 첫 .md frontmatter에 `build_verification: true` 임시 주입 + 첫 슬라이드 본문 최상단에 banner_text 1줄 prepend"
+        - "build_compile.command 실행 → slide/*.html 생성 (첫 슬라이드에 표식 노출)"
+        - "content_checks 통과 + 사용자 검토 승인 확인"
+        - "표식 제거: frontmatter `build_verification` 키 삭제 + banner_text 줄 삭제 → 최종 빌드 1회 재실행"
+      removal_condition: "content_checks 전부 통과 AND 사용자 승인(checkpoint) 완료"
+      skip_if: "--no-checkpoint 지정 시에도 표식은 주입하되, 자동 승인 직후 제거 단계 즉시 수행"
   content_checks:
     - id: all_h2_slides_have_body
       desc: "모든 H2 슬라이드에 본문 1줄 이상"
@@ -518,6 +581,17 @@ component_syntax:
   cards:
     block: "::: cards\n* **제목**\n  - 본문\n:::"
     guide: "균질 항목 N개를 박스로 병렬 제시. 본문 없는 title-only 카드(`* **제목**`만)만 모인 블록은 빌드 시 가로 행으로 자동 렌더 → 한 줄 강조 문장 묶음(핵심 요약 등)에 카드 사용 OK."
+    line_break_alignment:
+      # 카드 여러 장을 나란히 놓을 때 제목 밴드 높이·본문 줄바꿈이 카드마다 달라
+      # 정렬이 어긋나 보이는 문제를 markdown 단계에서 `<br>` 로 명시 제어 (2026-07-02 GenContentProd 튜닝).
+      title_uniform_height:
+        rule: "제목이 `영문 (한글)` 형태면 괄호 앞에 `<br>` 삽입해 2줄 강제 → 모든 카드 제목 밴드 높이 균일"
+        example: "`* **Form (형식)**` → `* **Form<br>(형식)**`"
+        apply_when: "한 블록 내 제목 길이가 제각각이라 일부만 자동 wrap 되어 밴드 높이가 불균일할 때"
+      body_wrap:
+        rule: "본문이 좁은 카드 열에서 어색하게 wrap 되면 의미 단위(절·괄호 예시 앞)에 `<br>` 삽입해 줄바꿈 위치 통일"
+        example: "`- 응답받고자 하는 정보의 형태를 지정함<br>(예: 목록, 요약).`"
+      note: "`<br>` 은 카드 title(`<strong>`)·body 양쪽에서 실제 태그로 렌더됨(escape 안 됨). 과용 금지 — 정렬 목적에 한정."
 
 # ============================================================================
 # 9.6. PPT 변환 본문 보존 정책 (Issue233 — ppt2m2slide 학습)

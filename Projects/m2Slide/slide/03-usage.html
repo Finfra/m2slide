@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"3","slideOffset":10,"totalSlides":24};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"3","slideOffset":8,"totalSlides":20};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -194,6 +194,24 @@
 .reveal .closing-title,
 .reveal .exercise-title {
   margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);
+}
+
+/* Issue250: layout 제목 클래스 공통 폰트 SSOT.
+   --main-title-font-family(기본 GmarketSansBold)를 모든 layout headline 제목에 적용.
+   이 SSOT가 없으면 각 theme 의 §3 공유 title 블록이 font-family 를 빠뜨릴 때
+   .reveal 의 --global-font-family(Pretendard 미로드) → 시스템 폰트로 폴백되는 회귀 발생.
+   .title(슬라이드 소제목)은 위 .reveal .title 룰에서 --title-font-family 로 별도 처리. */
+.reveal .cover-title,
+.reveal .contents-title,
+.reveal .chapter-title,
+.reveal .chapter-toc-title,
+.reveal .toc-title,
+.reveal .blank-title,
+.reveal .closing-title,
+.reveal .summary-title,
+.reveal .exercise-title,
+.reveal section[class*="layout-"] h1 {
+  font-family: var(--main-title-font-family, 'GmarketSansBold', sans-serif);
 }
 
 /* 공통 Flex Column 패턴 */
@@ -1324,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1782664191567">
+  <link rel="stylesheet" href="css/custom.css?v=1783006115467">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1554,27 +1572,8 @@ html.ratio-fill .agenda-frame {
 
 <section data-slide-hash="#/3" class="layout-_contents">
   
-  <h2 class="title">동작 모드 두 가지</h2>
+  <h2 class="title">두 가지 모드</h2>
   <div class="contents-body">
-<ul>
-<li class="bullet-dot"><strong>단일 페이지 모드</strong>: <code>Projects/{이름}/{이름}.md</code> 한 파일
-<ul>
-<ul>
-<li class="bullet-dash">짧은 발표·요약 자료에 적합</li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="bullet-dot"><strong>챕터 모드</strong>: <code>Projects/{이름}/markdown/AGENDA.md</code> + 챕터별 <code>.md</code>
-<ul>
-<ul>
-<li class="bullet-dash">긴 강의·다중 섹션 자료에 적합</li>
-<li class="bullet-dash"><code>markdown/</code> 폴더 안 <code>AGENDA.md</code> 존재 여부로 자동 판정</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
 
 <div class="m2-htmlart htmlart-compare" data-htmlart="compare" style="--htmlart-n:2">
 <ul>
@@ -1600,6 +1599,7 @@ html.ratio-fill .agenda-frame {
   
   <h2 class="title">빌드 명령어</h2>
   <div class="contents-body">
+
 <pre class="code-wrapper"><code class="language-bash hljs">## HTML 슬라이드 생성
 ./m2slide.sh m2Slide
 
@@ -1607,28 +1607,7 @@ html.ratio-fill .agenda-frame {
 ./m2slide.sh m2Slide --epub
 
 ## 브라우저로 바로 확인
-./run.sh m2Slide</code></pre></div>
-</section>
-
-<section data-slide-hash="#/5" class="layout-_contents">
-  
-  <h2 class="title">슬라이드 작성 예시</h2>
-  <div class="contents-body">
-<pre class="code-wrapper"><code class="language-markdown hljs">---
-title: 발표 제목
-type: ppt
----
-
-## 첫 슬라이드
-
-* 항목 1
-* 항목 2
-
----
-
-## 두 번째 슬라이드
-
-* `---` 한 줄로 슬라이드 분리</code></pre>
+./run.sh m2Slide</code></pre>
 
 <ul>
 <li class="bullet-dot">마크다운만 알면 누구나 작성 가능</li>
@@ -2965,11 +2944,16 @@ type: ppt
 
     var fo=svg.append('foreignObject')
       .attr('x',0).attr('y',cy-60).attr('width',W).attr('height',120);
+    // 주의: 바깥 div 가 flex 면 내부 span 들이 flex item 으로 blockify 되어
+    // (inline-block → block) 줄바꿈·측정이 깨짐. inner span 으로 한 번 감싸
+    // 주석 span 들을 일반 inline 콘텐츠로 유지한다.
     fo.append('xhtml:div')
       .attr('style','width:100%;height:100%;display:flex;align-items:center;justify-content:center;'
         +'color:var(--htmlart-annotate-target-fg,var(--htmlart-accent,#2b8a9d));'
         +'font-weight:800;font-size:'+targetFs+'px;line-height:1.2;text-align:center;'
         +'word-break:keep-all;letter-spacing:0.02em;')
+      .append('xhtml:span')
+      .attr('style','display:inline;')
       .html(html);
 
     function drawLines(){
@@ -2991,12 +2975,13 @@ type: ppt
         });
       });
 
-      var left=[], right=[];
-      boxes.forEach(function(b){
-        if(b.x+b.w/2 < cx) left.push(b); else right.push(b);
-      });
-      left.sort(function(a,b){ return a.y-b.y; });
-      right.sort(function(a,b){ return a.y-b.y; });
+      // span 가로 위치(x) 순으로 좌/우 균형 분할 — 왼쪽 절반 span 은 좌측 라벨,
+      // 오른쪽 절반 span 은 우측 라벨. 라벨 세로 순서도 span x 순을 따라
+      // 연결 곡선이 교차하지 않게 한다 (이전: x중점 기준 분할 → 불균형·교차).
+      boxes.sort(function(a,b){ return (a.x+a.w/2) - (b.x+b.w/2); });
+      var half=Math.ceil(boxes.length/2);
+      var left=boxes.slice(0,half);
+      var right=boxes.slice(half);
 
       function drawOne(b, side, sideIdx, sideN){
         var stroke=colorOf(b.a.color);
@@ -3106,6 +3091,8 @@ type: ppt
     var hubW=920, hubH=210;
     var labelW=480, labelH=150;
     var hubFontSize=82;
+    // fan: 세로 여유 큰 캔버스 + hub 를 하단에 두고 위로 부채꼴 → 큰 radius·stagger 로 라벨 겹침 방지
+    if(orient==='fan'){ W=2200; H=1500; cx=W/2; cy=1180; }
 
     // ── 8 zone 슬롯 — (x,y)=arrow tip = 라벨 inner-edge 정렬점 ──────
     var hubR=cx+hubW/2, hubL=cx-hubW/2, hubB=cy+hubH/2, hubT=cy-hubH/2;
@@ -3166,10 +3153,16 @@ type: ppt
         8:[165,141,118,94,71,47,24,8]
       };
       if(orient==='fan'){
-        var angs=F_p[N]||F_p[8].concat(d3.range(N-8).map(function(){return 90;}));
-        var r=460;
-        return angs.map(function(a){
+        // 대칭 부채꼴 — N 클수록 호 넓힘 + 인접 라벨 radius 번갈아(stagger)
+        // → 각도상 인접한 라벨을 반경차로 분리하여 apex(수직) 부근 겹침 방지
+        var span=Math.min(168, 72 + N*14);    // 호 각도 폭 (최대 168°)
+        var angs=[];
+        if(N===1){ angs=[90]; }
+        else { var step=span/(N-1), a0=90+span/2; for(var ai=0;ai<N;ai++) angs.push(a0-step*ai); }
+        var rO=920, rI=560, rS=740;            // 바깥/안쪽 ring + 소수 branch 단일 radius
+        return angs.map(function(a,idx){
           var rad=a*Math.PI/180;
+          var r=(N>=5) ? ((idx%2===0)?rO:rI) : rS;
           var x=cx+Math.cos(rad)*r, y=cy-Math.sin(rad)*r;
           var ox=Math.cos(rad), oy=-Math.sin(rad);
           var hAlign='center', tAlign='center', boxAlign='bottom';
@@ -3545,12 +3538,18 @@ type: ppt
         // section 기반 측정 불가. content 의 슬라이드 내부 bottom 좌표를 직접 측정.
         // 다른 .theContents 는 기존대로 section.scrollHeight 100% 채움.
         const isTocCards = content.classList && content.classList.contains('toc-cards');
-        const fitTarget = currentSlide.clientHeight * (isTocCards ? 0.92 : 1.0);
+        // isTocCards 0.9: measureExtent(header+cards)만 잡고 section 하단 padding·nav indicator는
+        // 미포함 → 여유 10%로 수용 (28카드 7행 케이스 상단 제목 clip 방지).
+        const fitTarget = currentSlide.clientHeight * (isTocCards ? 0.9 : 1.0);
+        // 단위 통일: getBoundingClientRect는 reveal transform scale 적용된 화면 px,
+        // clientHeight(fitTarget 기준)는 미scale layout px → getScale()로 나눠 layout px 로 환산.
+        // (환산 누락 시 scaled extent < unscaled target 로 항상 "맞음" 판정 → 카드 max 폰트 고정 → 축소 불가)
+        const _revealScale = (window.Reveal && Reveal.getScale) ? (Reveal.getScale() || 1) : 1;
         const measureExtent = () => {
           if (!isTocCards) return currentSlide.scrollHeight;
           const slideTop = currentSlide.getBoundingClientRect().top;
           const contentBottom = content.getBoundingClientRect().bottom;
-          return contentBottom - slideTop;
+          return (contentBottom - slideTop) / _revealScale;
         };
 
         // Check if it fits at max
@@ -3617,15 +3616,11 @@ type: ppt
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/2\">동작 모드 두 가지</a>",
+                  "content": "<a href=\"#/2\">두 가지 모드</a>",
                   "children": []
             },
             {
                   "content": "<a href=\"#/3\">빌드 명령어</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/4\">슬라이드 작성 예시</a>",
                   "children": []
             }
       ]
@@ -4345,6 +4340,10 @@ type: ppt
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
         var hasNextChapter = '04-extensibility.html' !== '';
         if (currentSlideNumber >= totalSlides) {
+          // 남은 fragment가 있으면 reveal 기본 fragment 진행에 맡김 —
+          // 마지막 슬라이드에서 fragment 도중 안내 메시지·다음 챕터 점프 금지
+          var remainingFrag = (typeof Reveal.availableFragments === 'function') ? Reveal.availableFragments() : null;
+          if (remainingFrag && remainingFrag.next) return;
           if (hasNextChapter) {
             if (lastSlideMessageShown) {
               lastSlideMessage.style.display = 'none';

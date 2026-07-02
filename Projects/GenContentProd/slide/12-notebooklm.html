@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>12-notebooklm</title>
+  <title>09. NotebookLM 활용</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"10","slideOffset":83,"totalSlides":102};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"10","slideOffset":95,"totalSlides":117};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -194,6 +194,24 @@
 .reveal .closing-title,
 .reveal .exercise-title {
   margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);
+}
+
+/* Issue250: layout 제목 클래스 공통 폰트 SSOT.
+   --main-title-font-family(기본 GmarketSansBold)를 모든 layout headline 제목에 적용.
+   이 SSOT가 없으면 각 theme 의 §3 공유 title 블록이 font-family 를 빠뜨릴 때
+   .reveal 의 --global-font-family(Pretendard 미로드) → 시스템 폰트로 폴백되는 회귀 발생.
+   .title(슬라이드 소제목)은 위 .reveal .title 룰에서 --title-font-family 로 별도 처리. */
+.reveal .cover-title,
+.reveal .contents-title,
+.reveal .chapter-title,
+.reveal .chapter-toc-title,
+.reveal .toc-title,
+.reveal .blank-title,
+.reveal .closing-title,
+.reveal .summary-title,
+.reveal .exercise-title,
+.reveal section[class*="layout-"] h1 {
+  font-family: var(--main-title-font-family, 'GmarketSansBold', sans-serif);
 }
 
 /* 공통 Flex Column 패턴 */
@@ -1324,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1779978678224">
+  <link rel="stylesheet" href="css/custom.css?v=1783006069126">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1537,9 +1555,31 @@ html.ratio-fill .agenda-frame {
   <div class="reveal ratio-3-2">
     <div class="slides">
 
-<section data-slide-hash="#/1" class="layout-_contents">
+<!--
+  Issue138/Issue177: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default_lec/slide.css) 호환성 유지
+-->
+<section data-slide-hash="#/1" class="layout-_cards layout-_toc title-slide" id="toc-placeholder">
+  <header class="toc-page-header">
+    <h1 class="toc-page-title">09. NotebookLM 활용</h1>
+  </header>
+  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="7">
+<li class="chapter-card"><a href="#/2">소스·노트북·인사이트 — 3대 개념</a></li>
+<li class="chapter-card"><a href="#/3">🙋 직접 따라 하세요 — 소스 업로드</a></li>
+<li class="chapter-card"><a href="#/4">🙋 직접 따라 하세요 — Q&A + 출처 인용 확인</a></li>
+<li class="chapter-card"><a href="#/5">🙋 직접 따라 하세요 — Audio Overview 생성</a></li>
+<li class="chapter-card"><a href="#/6">NotebookLM vs ChatGPT·Claude — 어디서 무엇을 쓸까</a></li>
+<li class="chapter-card"><a href="#/7">도구 선택 한 줄 요약</a></li>
+<li class="chapter-card"><a href="#/8">활용 패턴 — 강의·연구·업무</a></li>
+</ul></div>
+</section>
+
+
+<section data-slide-hash="#/2" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">12. NotebookLM 활용</div>
+    <div class="contents-head-left">09. NotebookLM 활용</div>
     
   </div>
   <h2 class="title">소스·노트북·인사이트 — 3대 개념</h2>
@@ -1561,9 +1601,9 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/2" class="layout-_contents">
+<section data-slide-hash="#/3" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">12. NotebookLM 활용</div>
+    <div class="contents-head-left">09. NotebookLM 활용</div>
     
   </div>
   <h2 class="title">🙋 직접 따라 하세요 — 소스 업로드</h2>
@@ -1579,9 +1619,9 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/3" class="layout-_contents">
+<section data-slide-hash="#/4" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">12. NotebookLM 활용</div>
+    <div class="contents-head-left">09. NotebookLM 활용</div>
     
   </div>
   <h2 class="title">🙋 직접 따라 하세요 — Q&A + 출처 인용 확인</h2>
@@ -1597,9 +1637,9 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/4" class="layout-_contents">
+<section data-slide-hash="#/5" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">12. NotebookLM 활용</div>
+    <div class="contents-head-left">09. NotebookLM 활용</div>
     
   </div>
   <h2 class="title">🙋 직접 따라 하세요 — Audio Overview 생성</h2>
@@ -1615,9 +1655,9 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/5" class="layout-_contents">
+<section data-slide-hash="#/6" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">12. NotebookLM 활용</div>
+    <div class="contents-head-left">09. NotebookLM 활용</div>
     
   </div>
   <h2 class="title">NotebookLM vs ChatGPT·Claude — 어디서 무엇을 쓸까</h2>
@@ -1625,7 +1665,7 @@ html.ratio-fill .agenda-frame {
 
 <table>
 <thead>
-<tr><th style="text-align:center">축</th><th style="text-align:center"><span style="color:#ffffff"> __NotebookLM__ </span></th><th style="text-align:center"><span style="color:#ffffff"> __ChatGPT·Claude__ </span></th></tr>
+<tr><th style="text-align:center">축</th><th style="text-align:center">NotebookLM</th><th style="text-align:center">ChatGPT·Claude</th></tr>
 </thead>
 <tbody>
 <tr><td style="text-align:center">컨텍스트</td><td style="text-align:center">업로드 소스만</td><td style="text-align:center">학습 데이터 + 웹 + 첨부</td></tr>
@@ -1634,36 +1674,26 @@ html.ratio-fill .agenda-frame {
 <tr><td style="text-align:center">강점</td><td style="text-align:center">자료 합성·연구 정리</td><td style="text-align:center">범용 추론·창작·코딩</td></tr>
 <tr><td style="text-align:center">권장 시나리오</td><td style="text-align:center">강의 준비·논문 정리·회의록</td><td style="text-align:center">초안 작성·코드·일반 Q&A</td></tr>
 </tbody>
-</table>
-
-<div class="media-container"><img src="img/GenContetntsProd_v10_35.png" alt="NotebookLM vs ChatGPT·Claude — 어디서 무엇을 쓸까"></div></div>
+</table></div>
 </section>
 
-<section data-slide-hash="#/6" class="layout-_contents">
+<section data-slide-hash="#/7" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">12. NotebookLM 활용</div>
+    <div class="contents-head-left">09. NotebookLM 활용</div>
     
   </div>
   <h2 class="title">도구 선택 한 줄 요약</h2>
   <div class="contents-body">
 
-<div class="m2-cols">
-<div class="m2-col">
 <ul>
 <li class="bullet-dot">"소스에 답이 있을 때"는 NotebookLM, "소스 밖 추론·창작"은 ChatGPT·Claude</li>
 <li class="bullet-dot">본 강의 Part1(ChatGPT·Claude 중심) ↔ Part2(NotebookLM)의 상호 보완 관계</li>
-</ul>
-
-</div>
-<div class="m2-col">
-<div class="media-container"><img src="img/GenContetntsProd_v10_36.png" alt="도구 선택 한 줄 요약"></div>
-</div>
-</div></div>
+</ul></div>
 </section>
 
-<section data-slide-hash="#/7" class="layout-_contents">
+<section data-slide-hash="#/8" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">12. NotebookLM 활용</div>
+    <div class="contents-head-left">09. NotebookLM 활용</div>
     
   </div>
   <h2 class="title">활용 패턴 — 강의·연구·업무</h2>
@@ -1897,12 +1927,18 @@ html.ratio-fill .agenda-frame {
         // section 기반 측정 불가. content 의 슬라이드 내부 bottom 좌표를 직접 측정.
         // 다른 .theContents 는 기존대로 section.scrollHeight 100% 채움.
         const isTocCards = content.classList && content.classList.contains('toc-cards');
-        const fitTarget = currentSlide.clientHeight * (isTocCards ? 0.92 : 1.0);
+        // isTocCards 0.9: measureExtent(header+cards)만 잡고 section 하단 padding·nav indicator는
+        // 미포함 → 여유 10%로 수용 (28카드 7행 케이스 상단 제목 clip 방지).
+        const fitTarget = currentSlide.clientHeight * (isTocCards ? 0.9 : 1.0);
+        // 단위 통일: getBoundingClientRect는 reveal transform scale 적용된 화면 px,
+        // clientHeight(fitTarget 기준)는 미scale layout px → getScale()로 나눠 layout px 로 환산.
+        // (환산 누락 시 scaled extent < unscaled target 로 항상 "맞음" 판정 → 카드 max 폰트 고정 → 축소 불가)
+        const _revealScale = (window.Reveal && Reveal.getScale) ? (Reveal.getScale() || 1) : 1;
         const measureExtent = () => {
           if (!isTocCards) return currentSlide.scrollHeight;
           const slideTop = currentSlide.getBoundingClientRect().top;
           const contentBottom = content.getBoundingClientRect().bottom;
-          return contentBottom - slideTop;
+          return (contentBottom - slideTop) / _revealScale;
         };
 
         // Check if it fits at max
@@ -1969,7 +2005,7 @@ html.ratio-fill .agenda-frame {
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">12. NotebookLM 활용</a>",
+                  "content": "<a href=\"#/1\">09. NotebookLM 활용</a>",
                   "children": [
                         {
                               "content": "<a href=\"#/1\">NotebookLM — 소스 기반 AI 노트북</a>",
@@ -2722,6 +2758,10 @@ html.ratio-fill .agenda-frame {
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
         var hasNextChapter = '13-mini-project.html' !== '';
         if (currentSlideNumber >= totalSlides) {
+          // 남은 fragment가 있으면 reveal 기본 fragment 진행에 맡김 —
+          // 마지막 슬라이드에서 fragment 도중 안내 메시지·다음 챕터 점프 금지
+          var remainingFrag = (typeof Reveal.availableFragments === 'function') ? Reveal.availableFragments() : null;
+          if (remainingFrag && remainingFrag.next) return;
           if (hasNextChapter) {
             if (lastSlideMessageShown) {
               lastSlideMessage.style.display = 'none';

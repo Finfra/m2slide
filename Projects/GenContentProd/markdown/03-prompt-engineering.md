@@ -1,4 +1,4 @@
-# 03. 프롬프트 엔지니어링 6대 패턴
+# 01. 프롬프트 엔지니어링 6대 패턴
 
 #layout-chapter
 
@@ -72,18 +72,18 @@ Part 1.
 ## 프롬프트 엔지니어링의 6대 기본 요소
 
 ::: cards
-* **Persona (페르소나)**
-  - AI가 취할 인격이나 역할을 정의함.
-* **Context (맥락)**
-  - 프롬프트가 제시되는 상황이나 배경 정보를 명시함.
-* **Example (예시)**
-  - 원하는 응답 형식이나 내용에 대한 구체적 예시를 제공함.
-* **Form (형식)**
-  - 응답받고자 하는 정보의 형태를 지정함 (예: 목록, 요약, 상세 설명).
-* **Tone (톤)**
-  - AI 응답의 어조나 성격을 지정함 (예: 친절한, 전문적인, 유머러스한).
-* **Task (과제)**
-  - AI에게 요청하는 구체적인 작업이나 목표를 명시함.
+* **Persona<br>(페르소나)**
+  - AI가 취할 인격이나<br>역할을 정의함.
+* **Context<br>(맥락)**
+  - 프롬프트가 제시되는<br>상황이나 배경 정보를 명시함.
+* **Example<br>(예시)**
+  - 원하는 응답 형식이나<br>내용에 대한 구체적 예시를 제공함.
+* **Form<br>(형식)**
+  - 응답받고자 하는 정보의 형태를 지정함<br>(예: 목록, 요약, 상세 설명).
+* **Tone<br>(톤)**
+  - AI 응답의 어조나 성격을 지정함<br>(예: 친절한, 전문적인, 유머러스한).
+* **Task<br>(과제)**
+  - AI에게 요청하는<br>구체적인 작업이나 목표를 명시함.
 :::
 
 
@@ -185,10 +185,18 @@ Part 1.
   * Step 4: CoT 지시 없이 같은 입력 → 결과 차이 비교
 * 평가: 단계별 비교 표·이유 설명이 자연스럽게 등장하는지 확인
 
+---
 
-![🙋 CoT 실습 — 직접 따라 하세요](img/GenContetntsProd_v10_3.png)
+## 🙋 CoT 실습 — 프롬프트·기대 출력
 
-![🙋 CoT 실습 — 직접 따라 하세요](img/GenContetntsProd_v10_4.png)
+::: columns
+::: {.column width="48%"}
+![프롬프트](img/GenContetntsProd_v10_3.png)
+:::
+::: {.column width="46%"}
+![기대 출력](img/GenContetntsProd_v10_4.png)
+:::
+:::
 
 ---
 
@@ -235,10 +243,18 @@ Part 1.
 * 비용: 호출 N배 증가 — 중요한 결정에만 선택적 사용
 * 도구 팁: Claude·ChatGPT 채팅에서 “이 답변을 더 정확하게 다시 써줘”가 Self-Refine
 
+---
 
-![Self-Consistency·Self-Refine](img/GenContetntsProd_v10_5.png)
+## Self-Refine 예제
 
-![Self-Consistency·Self-Refine](img/GenContetntsProd_v10_6.png)
+::: columns
+::: {.column width="50%"}
+![Self-Refine 예제 — 1차/2차 프롬프트](img/GenContetntsProd_v10_5.png)
+:::
+::: {.column width="50%"}
+![Self-Refine 예제 — 재작성 결과](img/GenContetntsProd_v10_6.png)
+:::
+:::
 
 ---
 

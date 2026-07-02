@@ -1,22 +1,28 @@
 <!-- @meta
-description: 강의용 head-bar 없는 풀와이드 본문 슬라이드. _contents에서 head 영역 제거한 변형.
+description: 강의용 풀와이드 본문 슬라이드. _contents의 넓은 본문 변형 + head-bar(좌/우) 유지.
 recommended_for:
   - 본문 콘텐츠를 더 넓게 표시할 때
-  - head-bar outline 불필요한 슬라이드
+  - 풀와이드 인포그래픽·다이어그램 이미지 슬라이드
 not_recommended_for:
-  - 챕터 outline 표시가 필요한 슬라이드 (_contents 사용)
+  - 표지·섹션 표지 (cover 사용)
 slots:
   - title
   - content
+  - head_left
+  - head_right
 example: |
   ## 핵심 메시지
 
-  단일 결론 슬라이드 — outline 없이 본문 강조.
+  단일 결론 슬라이드 — 넓은 본문 강조 + 챕터 breadcrumb.
 -->
 <section class="layout-contents-full">
   <div class="contents-header">
     <h1 class="contents-title">{{title}}</h1>
     <div class="contents-divider"></div>
+  </div>
+  <div class="contents-head-bar">
+    <div class="contents-head-left">{{head_left}}</div>
+    <div class="contents-head-right">{{head_right}}</div>
   </div>
   <div class="contents-body">{{content}}</div>
 </section>

@@ -1,7 +1,7 @@
 ---
 name: sync-projects
-description: Projects.md 활성/비활성 표 동기화 + publishing 열 SSOT 로 Projects/.gitignore 자동 생성
-date: 2026-07-02
+description: Projects.md 활성/비활성 표 동기화 + publishing 열 SSOT 로 Projects/.gitignore·Projects_org.md 자동 생성
+date: 2026-07-03
 ---
 
 # /sync-projects — Projects.md 표 + Projects/.gitignore 동기화
@@ -23,14 +23,16 @@ date: 2026-07-02
     - **publishing 시드(회귀 방지)**: publishing 값이 비어 있고 폴더가 **현재 `Projects/.gitignore` 에 이미 허용**돼 있으면 `publishing='o'` 로 자동 채움 — 기존 추적 상태를 그대로 보존. `Projects.md` 는 gitignored 로컬 파일이라 fresh clone 시 publishing 값이 사라지므로, 커밋된 `Projects/.gitignore` 로부터 역시드
     - **이미 커밋된 폴더를 `x` 로 제외 시**: gitignore 재생성은 새 파일만 무시함. 기존 추적을 실제로 끊으려면 `git rm --cached -r Projects/<Name>` 별도 실행(파일 디스크 보존, 다음 push 시 github 제거)
     - 실행 로그에 추적 추가/제외 diff 출력
-* **idempotent**: 재실행 시 안정(Projects.md + Projects/.gitignore 양쪽). 표 정렬은 East-Asian 표시 폭 기준 공백 패딩(md-rules Table 준수)
+* **`Projects_org.md` 자동 생성**: `publishing` 이 affirmative 인 행만 `분류`·`프로젝트`·`버전`·`설명` 4열로 추출해 공개용 문서로 파생. `Manual Check`·`작업` 등 내부 메모 열은 제외. 표 내용이 그대로면 date 갱신도 skip(노이즈 방지). **직접 편집 금지** — SSOT 는 `Projects.md`
+* **idempotent**: 재실행 시 안정(Projects.md + Projects/.gitignore + Projects_org.md 전체). 표 정렬은 East-Asian 표시 폭 기준 공백 패딩(md-rules Table 준수)
 
 ## Projects.md ↔ Projects/.gitignore 관계 (Issue254)
 
 * `Projects.md` 는 **gitignored 로컬 인덱스**(루트 `.gitignore` 에 `Projects.md` 등록). Issue.md·CLAUDE.md 처럼 추적하지 않음
 * `Projects/.gitignore` 는 **커밋되는 산출물** — `Projects.md` publishing 열이 구동하는 추적 결정의 영속 형태(SSOT 는 Projects.md, 커밋 스냅샷은 .gitignore)
 * 프로젝트 추적 on/off: `Projects.md` publishing 열을 편집 → `--sync-projects` 재실행 (`Projects/.gitignore` 직접 수동 편집 금지)
-* 데이터 흐름: `Projects/` 폴더 + `VERSION` + `Projects/.gitignore`(publishing 시드) → **Projects.md** → **Projects/.gitignore**
+* 데이터 흐름: `Projects/` 폴더 + `VERSION` + `Projects/.gitignore`(publishing 시드) → **Projects.md** → **Projects/.gitignore** + **Projects_org.md**
+* `Projects.md` = 개인용(전체, gitignored) / `Projects_org.md` = 공개용(publishing=o 만, git 추적, README.md 에서 링크) — 역할 분리
 
 ## 사용
 
@@ -51,5 +53,7 @@ date: 2026-07-02
 ## 참조
 
 * 스크립트: [`lib/sync-projects-md.js`](../../lib/sync-projects-md.js)
+* 공개 프로젝트 목록: [`Projects_org.md`](../../Projects_org.md) (README.md 에서 링크)
+* dev-server `/p/` 페이지: `Projects.md` 활성 표를 읽기 전용으로 미러링 (`lib/dev-server/server.py` `_read_projects_md_active_rows`)
 * 버전 규칙: [`.claude/rules/project-version-rules.md`](../rules/project-version-rules.md)
 * VERSION 컴파일 임베드: `lib/config.js loadProjectMeta` (Issue253)

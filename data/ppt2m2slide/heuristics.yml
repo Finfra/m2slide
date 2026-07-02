@@ -343,6 +343,27 @@ content_layout_rules:
       학습 사례: BasicKnowledgeForAI_small html삽입 슬라이드 PPT 좌측 텍스트박스
       `|id|name|...|`를 pipe-table 로 자동 렌더하지 말고 코드블록으로 표시.
 
+  - id: dense_slide_auto_split
+    desc: "과밀 슬라이드(그룹 다수·긴 서브불릿) → 2장 이상으로 자동 분리"
+    trigger:
+      top_level_bullets_min: 5          # 최상위 그룹 5개 이상
+      or_signal: "각 그룹이 2~3줄 완결 문장의 서브불릿을 동반하여 세로 overflow 예상"
+    output: |
+      {group_1..k}
+
+      ---
+
+      ## {title} (계속)
+
+      {group_k+1..n}
+    also_consider: |
+      분리 대신 서브불릿을 한 줄 핵심 구문으로 압축하는 방법도 가치. 원문 보존이 중요하면 분리,
+      요점 전달이 목적이면 압축. 판단 모호하면 사용자 확인.
+    rationale: |
+      한 슬라이드에 5개 이상 기능 그룹 + 긴 서브문장을 몰면 하단이 잘려 대부분 안 보임.
+      학습 사례(2026-07-02 GenContentProd): '추천 기능'(5그룹)·'주요 기능'(5그룹) 하단 잘림 →
+      전자는 2장 분리, 후자는 단문 압축으로 해소.
+
 # ── markdown syntax 정제 규칙 ────────────────────────────────
 # pptx2md 출력 정제 단계에서 적용할 마크다운 문법 변환 규칙.
 # 적용 순서: source 변환 → content_layout 변환 → 본 정제 순.
@@ -366,6 +387,31 @@ markdown_syntax_cleanup:
     replacement: '`<$1>`'
     rationale: "URL autolink와 동일 이유. email autolink도 브라우저가 태그로 인식"
     scope: body_text_only
+
+  - id: strip_invisible_white_color_span
+    desc: "흰색 color span 제거 (PPT 표 헤더 흰 글자 → m2slide 밝은 배경서 안 보임)"
+    pattern: '<span style="color:\s*#(?:fff|ffffff|FFF|FFFFFF)\s*">\s*(.*?)\s*</span>'
+    replacement: '$1'
+    rationale: |
+      pptx2md가 PPT 표 헤더(어두운 채움 + 흰 글자)를 <span style="color:#ffffff">…</span> 로 emit.
+      m2slide 표 헤더 배경은 밝은 회색 → 흰 글자가 사실상 안 보임(가독성 0).
+      color span 제거 시 theme 표 헤더 색(어두운 글자)이 적용됨.
+      표 셀 __bold__ 마커도 th는 CSS로 이미 볼드 → 리터럴 언더스코어 노출 방지 위해 함께 정리 권장.
+      학습 사례(2026-07-02): GenContentProd 12-notebooklm 비교표 헤더 흰 글자 안 보임 + 11-pandoc 화살표 셀.
+    scope: body_text_only
+    apply_after: pptx2md_raw
+
+  - id: strip_bold_in_table_header
+    desc: "표 헤더 셀 __bold__/**bold** 마커 제거 (th는 theme CSS로 이미 볼드 → 리터럴 마커 노출 방지)"
+    pattern: 'table_header_row: __(.+?)__ 또는 **(.+?)**'   # 구현: 헤더행(| ... |)에서만 강조 마커 strip
+    replacement: '$1'
+    rationale: |
+      m2slide 표 파서는 셀 안 __bold__ 를 완전 변환하지 못해 리터럴 언더스코어(_x_)가 노출됨.
+      th 는 theme CSS(strong/th 셀렉터)로 이미 볼드 처리되므로 헤더행 강조 마커는 불필요.
+      strip_invisible_white_color_span 로 흰 span 제거 후 남는 __X__ 를 헤더행에 한해 제거.
+      학습 사례(2026-07-02): GenContentProd 표 헤더 `__NotebookLM__` → `_NotebookLM_` 리터럴 노출.
+    scope: table_header_row_only
+    apply_after: strip_invisible_white_color_span
 
 # ── pptx2md bullet markers 손실 보완 도구 ───────────────────────
 # pptx2md는 PPT 텍스트박스의 bullet markers(•/-/숫자) 를 제거하고 plain paragraph 로
@@ -417,6 +463,47 @@ image_extraction:
     pattern: "s{slide_n:02d}_i{idx}.{ext}"
     rationale: |
       슬라이드+인덱스 명시로 매핑 추적 용이. pptx2md 전역 순번(img_0007)과 격리.
+  decoration_image_filter:
+    # PPT 장식(가로 divider/hr 브러시 바)이 PICTURE shape 로 들어가면 콘텐츠 이미지로 오추출됨.
+    # 초광폭·초박형(가로»세로) raster 는 콘텐츠 아님 → .md 본문 삽입 금지.
+    enabled: true
+    skip_when: "(width_px / height_px) >= 8 AND height_px <= 12"
+    action: quarantine          # _proposals/ 기록만, .md 본문에 ![]() 미삽입
+    rationale: |
+      PPT 상/하단 노랑 브러시 divider 등이 sNN_iM.png 로 추출되어 본문 이미지로 삽입되면
+      얇은 색 띠가 콘텐츠처럼 보이는 오류 발생. m2slide 는 자체 hr.png(theme 장식)를 layout 이
+      그리므로 PPT 장식바는 불필요·중복.
+      학습 사례(2026-07-02): GenContentProd v10_35(859x8)·v10_36(1001x8)·v10_12/13/14 노랑 divider bar 오삽입.
+    detection_hint: "sips -g pixelWidth -g pixelHeight {img} 로 비율 판정. manifest.yml 에 width/height 기록 권장"
+  low_info_doodle_filter:
+    # 초광폭 바(decoration_image_filter)로 안 걸리는 '정보 없는 손그림/윤곽선' 장식.
+    # PPT 원본의 자유 도형(빈 말풍선·의자/화살표 스케치·단색 브러시 곡선)이 PICTURE 로 추출되면
+    # 강의 내용과 무관한 낙서가 본문에 삽입됨.
+    enabled: true
+    signals:
+      - "이미지에 텍스트·데이터·다이어그램 노드가 없고 단색 윤곽선/브러시 획만 존재"
+      - "가로세로 비율은 정상(정사각~세로형)이라 decoration_image_filter(비율≥8) 미검출"
+      - "동일 슬라이드에 이미 충분한 불릿/도해가 있고 이미지는 장식 목적"
+    action: quarantine          # _proposals/ 기록만, .md 본문에 ![]() 미삽입
+    verify_step: |
+      의미 판정은 자동 픽셀 규칙으로 불가 → agent 가 이미지를 실제로 열어(Read) 내용 확인 후 판정.
+      "정보 전달 이미지(스크린샷·차트·표·개념도)"면 유지, "빈 윤곽선/브러시 낙서"면 quarantine.
+    rationale: |
+      학습 사례(2026-07-02 GenContentProd): v10_15(빨간 의자 스케치 527x829)·v10_16(빈 빨간 말풍선)·
+      v10_12(노랑 브러시선)가 '추천 기능'·'편집 기능' 슬라이드에 본문 이미지로 삽입됨.
+      비율 필터(≥8)로는 세로형 낙서를 못 걸러 → agent 의 내용 확인 단계 필수.
+  wrong_slide_assignment_guard:
+    # 이미지가 '다음 슬라이드' 내용을 담고 있는데 이전 슬라이드에 붙는 오배치 방지.
+    enabled: true
+    signals:
+      - "이미지 내용(코드·제목·캡션)이 현재 슬라이드 제목/불릿과 불일치, 인접 슬라이드와 일치"
+      - "PPT 원본에서 이미지가 슬라이드 경계 근처에 위치해 추출 순번이 밀림"
+    verify_step: |
+      agent 가 이미지를 Read 하여 내용을 슬라이드 제목·불릿과 대조. 불일치 시 올바른 슬라이드로 재배치.
+      라이브 코드블록으로 이미 표현된 내용의 스크린샷 이미지는 중복 → 제거.
+    rationale: |
+      학습 사례(2026-07-02): python 코드 스크린샷(v10_19)이 '강조' 슬라이드에 오배치. 코드 블록 슬라이드는
+      이미 라이브 ```python 블록을 가져 이미지 중복 → 제거가 정답.
   use_when:
     - 다중 이미지 슬라이드가 1개 이상 존재 (python-pptx shape 카운트로 사전 검증)
     - TIFF/BMP 등 브라우저 비호환 raster 포함

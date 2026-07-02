@@ -1,4 +1,4 @@
-# 12. NotebookLM 활용
+# 09. NotebookLM 활용
 
 ## NotebookLM — 소스 기반 AI 노트북
 
@@ -63,7 +63,7 @@
 
 ## NotebookLM vs ChatGPT·Claude — 어디서 무엇을 쓸까
 
-| 축 | <span style="color:#ffffff"> __NotebookLM__ </span> | <span style="color:#ffffff"> __ChatGPT·Claude__ </span> |
+| 축 | NotebookLM | ChatGPT·Claude |
 | :-: | :-: | :-: |
 | 컨텍스트 | 업로드 소스만 | 학습 데이터 + 웹 + 첨부 |
 | 출처 인용 | 자동·클릭 점프 | 대체로 없음 |
@@ -71,16 +71,12 @@
 | 강점 | 자료 합성·연구 정리 | 범용 추론·창작·코딩 |
 | 권장 시나리오 | 강의 준비·논문 정리·회의록 | 초안 작성·코드·일반 Q&A |
 
-![NotebookLM vs ChatGPT·Claude — 어디서 무엇을 쓸까](img/GenContetntsProd_v10_35.png)
-
 ---
 
 ## 도구 선택 한 줄 요약
 
 * "소스에 답이 있을 때"는 NotebookLM, "소스 밖 추론·창작"은 ChatGPT·Claude
 * 본 강의 Part1(ChatGPT·Claude 중심) ↔ Part2(NotebookLM)의 상호 보완 관계
-
-![도구 선택 한 줄 요약](img/GenContetntsProd_v10_36.png)
 
 ---
 

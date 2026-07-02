@@ -27,9 +27,39 @@ m2slide 저장소(`lib/m2slide/`) 내 다음 파일을 수정한 직후 자동 �
 | 1    | 사용자가 명시한 프로젝트명 | "MarkdownGraph 빌드해줘" 등 직접 지시                                |
 | 2    | 수정한 파일이 속한 프로젝트 | `Projects/{Name}/...` 경로에서 `{Name}` 추출                          |
 | 3    | IDE 컨텍스트          | `<ide_opened_file>` / `<ide_selection>`에서 `Projects/{Name}/` 캡처   |
-| 4    | 영향 범위가 글로벌(`generate-slides.js`, `theme/default/`, `lib/css/base.css` 등) | 대표 프로젝트 다수 빌드 — `m2SlideStyle1_single`, `m2SlideStyle2_chapter`, `layoutTest` |
+| 4    | 영향 범위가 글로벌(`generate-slides.js`, `theme/default/`, `lib/css/base.css` 등) | 대표 프로젝트 다수 빌드 — `m2Slide_single_mode`, `m2Slide_chapter_mode`, `layoutTest` |
 
 결정 근거를 한 줄로 사용자에게 알림.
+
+## 1.5 Effective theme 확정 (theme/**/slide.css·layouts 편집 시 필수)
+
+`theme/{name}/slide.css`, `theme/{name}/layouts/*.html`, `theme/{name}/palettes/*.css` 등 **theme 자산을 편집하기 전** 반드시 *실제 적용되는 theme*을 먼저 확정함. 잘못된 theme 파일을 고치면 빌드 산출물(`slide/css/custom.css`)에 반영되지 않아 헛수고 발생.
+
+### theme 결정 우선순위 (lib/config.js 레이어 — 나중이 이김)
+
+| 순위 | 소스 | 비고 |
+| :--- | :--- | :--- |
+| 1 | `_config.yml`의 `slide_css:` | 있으면 최우선 (theme 무시) |
+| 2 | `projectDir/_config.yml`의 `theme:` | 프로젝트 단위 override |
+| 3 | `ROOT/_config.yml`의 `theme:` | 전역 기본 |
+| 4 | `ROOT/_config.org.yml`의 `theme:` | 최후 fallback |
+
+* **⚠️ AGENDA.md / 슬라이드 소스 `.md` frontmatter의 `theme:`는 theme 해석에 쓰이지 않음** (Issue79 — frontmatter는 instructor 등 *메타 전용*). frontmatter에 `theme:`이 있어도 무시되므로, 그 값을 보고 편집 대상 theme을 판단하면 안 됨.
+
+### 확정 절차 (편집 직전)
+
+```bash
+# 1) 적용 theme 추출 (projectDir _config > ROOT _config 순)
+grep -h '^theme:' Projects/<P>/_config.yml _config.yml _config.org.yml 2>/dev/null | head -1
+
+# 2) 빌드 로그로 교차 확인 (SSOT)
+./m2slide.sh <P> 2>&1 | grep 'Theme applied:'
+#   → "✅ Theme applied: <name> (.../theme/<name>/slide.css)"
+```
+
+* 편집 대상 = **빌드 로그가 보고한 `<name>`**의 `theme/<name>/slide.css`.
+* 구조성(레이아웃·정렬) 규칙이면 `theme/_shared/` 우선 검토 (모든 theme 공유).
+* 자매 theme(default·default_lec 등) 간 parity가 필요한 변경이면 양쪽 모두 반영하되, **실제 적용 theme을 1순위로 검증**.
 
 ## 2. 빌드 실행
 
@@ -255,6 +285,22 @@ file:///<abs_path>/Projects/{Name}/slide/{chapter}.html?fwd=1#/N
 * HTML 검증 항목 + 통과 여부
 * 검증 채널(시각/헤드리스) + 사용 도구 + 경로/URL
 * 파일 단위 배포 lint 통과 여부 (§4.5 적용 시)
+
+### 5.1 결과 링크 의무 (필수)
+
+슬라이드를 빌드·수정·검증한 응답은 채팅 말미에 **결과 링크(deck deep-link)** 를 반드시 포함함. 사용자가 변경 결과를 즉시 브라우저로 열 수 있어야 함. 캡처·문서가 있으면 함께 3종 묶음으로 제시:
+
+```
+캡처: _doc_work/capture/<파일>.png
+문서: http://jm4.local:9876/htm-doc?path=<.htm 절대경로>
+결과 링크: http://127.0.0.1:9877/p/<P>/n/<chap>/<slide>#/<hash>
+```
+
+* **결과 링크 형식**: dev-server deck navigation deep-link `http://127.0.0.1:9877/p/<P>/n/<chap>/<slide>` (chap·slide 1-base). 특정 슬라이드를 가리킬 땐 `#/<hash>` 또는 `#/toc-placeholder` 등 reveal.js hash 부가
+    - 변경이 특정 슬라이드면 그 슬라이드를 직접 가리킴 (ex: TOC 변경 → `/n/6/1#/toc-placeholder`)
+    - 변경이 데크 전반이면 진입점 `/n/c` (cover) 또는 대표 슬라이드 1장
+* **3종 라벨 고정**: `캡처:` / `문서:` / `결과 링크:` — 라벨명·순서 유지. 해당 항목 없으면 그 줄 생략 가능하나 **결과 링크는 슬라이드 작업 시 항상 포함**
+* 캡처·문서가 없는 단순 빌드라도 결과 링크는 제시 (사용자가 결과를 열어볼 1차 수단)
 
 # 예외 (절차 생략 가능)
 

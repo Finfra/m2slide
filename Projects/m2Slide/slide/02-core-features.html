@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"2","slideOffset":4,"totalSlides":24};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"2","slideOffset":4,"totalSlides":20};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -194,6 +194,24 @@
 .reveal .closing-title,
 .reveal .exercise-title {
   margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);
+}
+
+/* Issue250: layout 제목 클래스 공통 폰트 SSOT.
+   --main-title-font-family(기본 GmarketSansBold)를 모든 layout headline 제목에 적용.
+   이 SSOT가 없으면 각 theme 의 §3 공유 title 블록이 font-family 를 빠뜨릴 때
+   .reveal 의 --global-font-family(Pretendard 미로드) → 시스템 폰트로 폴백되는 회귀 발생.
+   .title(슬라이드 소제목)은 위 .reveal .title 룰에서 --title-font-family 로 별도 처리. */
+.reveal .cover-title,
+.reveal .contents-title,
+.reveal .chapter-title,
+.reveal .chapter-toc-title,
+.reveal .toc-title,
+.reveal .blank-title,
+.reveal .closing-title,
+.reveal .summary-title,
+.reveal .exercise-title,
+.reveal section[class*="layout-"] h1 {
+  font-family: var(--main-title-font-family, 'GmarketSansBold', sans-serif);
 }
 
 /* 공통 Flex Column 패턴 */
@@ -1324,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1782664191566">
+  <link rel="stylesheet" href="css/custom.css?v=1783006115465">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1548,14 +1566,18 @@ html.ratio-fill .agenda-frame {
 
 <section data-slide-hash="#/2" class="layout-_contents_no_title">
   <div class="contents-body"><ul>
-<li class="bullet-dot">4종 출력 형식 + 자동 목차 + 인터랙티브 마인드맵</li>
+<li class="bullet-dot">마크다운 한 벌 → 4종 산출물 + 인터랙티브 목차</li>
 </ul></div>
 </section>
 
 <section data-slide-hash="#/3" class="layout-_contents">
-  
-  <h2 class="title">출력 형식</h2>
+  <div class="contents-head-bar">
+    <div class="contents-head-left">4종 출력 형식</div>
+    
+  </div>
+  <h2 class="title">4종 출력 형식</h2>
   <div class="contents-body">
+
 <table>
 <thead>
 <tr><th style="text-align:left">형식</th><th style="text-align:left">옵션</th><th style="text-align:left">용도</th></tr>
@@ -1563,45 +1585,26 @@ html.ratio-fill .agenda-frame {
 <tbody>
 <tr><td style="text-align:left">HTML</td><td style="text-align:left">(기본)</td><td style="text-align:left">Reveal.js 프레젠테이션 (브라우저 발표)</td></tr>
 <tr><td style="text-align:left">EPUB</td><td style="text-align:left"><code>--epub</code></td><td style="text-align:left">전자책 (iBooks·Calibre·Google Play)</td></tr>
-<tr><td style="text-align:left">PDF</td><td style="text-align:left"><code>--pdf</code></td><td style="text-align:left">챕터별 합본 PDF (decktape 기반)</td></tr>
-<tr><td style="text-align:left">PPTX</td><td style="text-align:left"><code>--pptx</code></td><td style="text-align:left">PowerPoint 호환 (pandoc 기반)</td></tr>
+<tr><td style="text-align:left">PDF</td><td style="text-align:left"><code>--pdf</code></td><td style="text-align:left">챕터별 합본 PDF (decktape)</td></tr>
+<tr><td style="text-align:left">PPTX</td><td style="text-align:left"><code>--pptx</code></td><td style="text-align:left">PowerPoint 호환 (pandoc)</td></tr>
 </tbody>
-</table></div>
+</table>
+
+<ul>
+<li class="bullet-dot">하나의 <code>.md</code>가 모든 형식의 원본(SSOT)</li>
+</ul></div>
 </section>
 
 <section data-slide-hash="#/4" class="layout-_contents">
   
-  <h2 class="title">Reveal.js HTML 프레젠테이션</h2>
+  <h2 class="title">발표를 돕는 요소</h2>
   <div class="contents-body">
+
 <ul>
-<li class="bullet-dot"><code>---</code> 구분자로 슬라이드 자동 분리</li>
 <li class="bullet-dot"><strong>Markmap 목차</strong>: 클릭 가능한 인터랙티브 마인드맵 자동 생성</li>
-<li class="bullet-dot"><strong>계층적 네비게이션</strong>: 메인·하위 챕터 자동 연결, 상위 페이지 버튼</li>
-<li class="bullet-dot">반응형 디자인 (데스크톱·모바일 최적화)</li>
-</ul></div>
-</section>
-
-<section data-slide-hash="#/5" class="layout-_contents">
-  
-  <h2 class="title">EPUB 전자책</h2>
-  <div class="contents-body">
-<ul>
-<li class="bullet-dot">EPUB 3.0 표준 준수</li>
-<li class="bullet-dot">AGENDA.md 기반 자동 목차</li>
-<li class="bullet-dot"><strong>Mermaid 다이어그램</strong>: SVG 이미지로 자동 변환 (mmdc 설치 시)</li>
-<li class="bullet-dot">이미지 자동 임베딩</li>
-</ul></div>
-</section>
-
-<section data-slide-hash="#/6" class="layout-_contents">
-  
-  <h2 class="title">인터랙티브 요소</h2>
-  <div class="contents-body">
-<ul>
-<li class="bullet-dot"><strong>Markmap 마인드맵</strong>: 챕터 구조를 시각화한 목차</li>
-<li class="bullet-dot"><strong>단계별 등장</strong>: <code>{.fragment}</code> 인라인 attribute로 fragment 효과</li>
-<li class="bullet-dot"><strong>슬라이드 단위 디렉티브</strong>: <code>#transition-zoom</code>, <code>#background-image-...</code> 등</li>
-<li class="bullet-dot"><strong>자동 layout 감지</strong>: 이미지만 있는 슬라이드는 자동 풀스크린</li>
+<li class="bullet-dot"><strong>계층 네비게이션</strong>: 챕터·하위 챕터 자동 연결, 상위 페이지 버튼</li>
+<li class="bullet-dot"><strong>단계별 등장</strong>: <code>{.fragment}</code>로 항목 순차 표시</li>
+<li class="bullet-dot"><strong>자동 layout</strong>: 이미지만 있는 슬라이드는 자동 풀스크린</li>
 </ul></div>
 </section>
 
@@ -1824,12 +1827,18 @@ html.ratio-fill .agenda-frame {
         // section 기반 측정 불가. content 의 슬라이드 내부 bottom 좌표를 직접 측정.
         // 다른 .theContents 는 기존대로 section.scrollHeight 100% 채움.
         const isTocCards = content.classList && content.classList.contains('toc-cards');
-        const fitTarget = currentSlide.clientHeight * (isTocCards ? 0.92 : 1.0);
+        // isTocCards 0.9: measureExtent(header+cards)만 잡고 section 하단 padding·nav indicator는
+        // 미포함 → 여유 10%로 수용 (28카드 7행 케이스 상단 제목 clip 방지).
+        const fitTarget = currentSlide.clientHeight * (isTocCards ? 0.9 : 1.0);
+        // 단위 통일: getBoundingClientRect는 reveal transform scale 적용된 화면 px,
+        // clientHeight(fitTarget 기준)는 미scale layout px → getScale()로 나눠 layout px 로 환산.
+        // (환산 누락 시 scaled extent < unscaled target 로 항상 "맞음" 판정 → 카드 max 폰트 고정 → 축소 불가)
+        const _revealScale = (window.Reveal && Reveal.getScale) ? (Reveal.getScale() || 1) : 1;
         const measureExtent = () => {
           if (!isTocCards) return currentSlide.scrollHeight;
           const slideTop = currentSlide.getBoundingClientRect().top;
           const contentBottom = content.getBoundingClientRect().bottom;
-          return contentBottom - slideTop;
+          return (contentBottom - slideTop) / _revealScale;
         };
 
         // Check if it fits at max
@@ -1896,19 +1905,11 @@ html.ratio-fill .agenda-frame {
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/2\">출력 형식</a>",
+                  "content": "<a href=\"#/2\">4종 출력 형식</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">Reveal.js HTML 프레젠테이션</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/4\">EPUB 전자책</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/5\">인터랙티브 요소</a>",
+                  "content": "<a href=\"#/3\">발표를 돕는 요소</a>",
                   "children": []
             }
       ]
@@ -2628,6 +2629,10 @@ html.ratio-fill .agenda-frame {
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
         var hasNextChapter = '03-usage.html' !== '';
         if (currentSlideNumber >= totalSlides) {
+          // 남은 fragment가 있으면 reveal 기본 fragment 진행에 맡김 —
+          // 마지막 슬라이드에서 fragment 도중 안내 메시지·다음 챕터 점프 금지
+          var remainingFrag = (typeof Reveal.availableFragments === 'function') ? Reveal.availableFragments() : null;
+          if (remainingFrag && remainingFrag.next) return;
           if (hasNextChapter) {
             if (lastSlideMessageShown) {
               lastSlideMessage.style.display = 'none';

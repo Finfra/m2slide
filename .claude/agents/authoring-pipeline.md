@@ -149,8 +149,8 @@ Projects/<Name>/                # 대상 프로젝트 경로 (필수)
 # 검증
 
 본 agent 자체 검증 (운영 전):
-* `Projects/m2SlideStyle1_single/`에 `--from-stage 6 --to-stage 8 --dry-run` 실행 시 로그 파일 생성·단계 6/7/8 항목 기록 확인.
-* `Projects/m2SlideStyle2_chapter/`에 `--from-stage 8 --to-stage 8` 실행 시 빌드 성공 + 검증 PASS.
+* `Projects/m2Slide_single_mode/`에 `--from-stage 6 --to-stage 8 --dry-run` 실행 시 로그 파일 생성·단계 6/7/8 항목 기록 확인.
+* `Projects/m2Slide_chapter_mode/`에 `--from-stage 8 --to-stage 8` 실행 시 빌드 성공 + 검증 PASS.
 * 잘못된 단계 번호(`--from-stage 0`, `--to-stage 10`) 입력 시 즉시 오류 반환.
 
 # Out of Scope

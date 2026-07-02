@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>07-markdown-mermaid</title>
+  <title>05. Markdown·Mermaid</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"6","slideOffset":46,"totalSlides":102};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"6","slideOffset":54,"totalSlides":117};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -194,6 +194,24 @@
 .reveal .closing-title,
 .reveal .exercise-title {
   margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);
+}
+
+/* Issue250: layout 제목 클래스 공통 폰트 SSOT.
+   --main-title-font-family(기본 GmarketSansBold)를 모든 layout headline 제목에 적용.
+   이 SSOT가 없으면 각 theme 의 §3 공유 title 블록이 font-family 를 빠뜨릴 때
+   .reveal 의 --global-font-family(Pretendard 미로드) → 시스템 폰트로 폴백되는 회귀 발생.
+   .title(슬라이드 소제목)은 위 .reveal .title 룰에서 --title-font-family 로 별도 처리. */
+.reveal .cover-title,
+.reveal .contents-title,
+.reveal .chapter-title,
+.reveal .chapter-toc-title,
+.reveal .toc-title,
+.reveal .blank-title,
+.reveal .closing-title,
+.reveal .summary-title,
+.reveal .exercise-title,
+.reveal section[class*="layout-"] h1 {
+  font-family: var(--main-title-font-family, 'GmarketSansBold', sans-serif);
 }
 
 /* 공통 Flex Column 패턴 */
@@ -1324,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1779978678217">
+  <link rel="stylesheet" href="css/custom.css?v=1783006069122">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1537,9 +1555,35 @@ html.ratio-fill .agenda-frame {
   <div class="reveal ratio-3-2">
     <div class="slides">
 
-<section data-slide-hash="#/1" class="layout-_contents">
+<!--
+  Issue138/Issue177: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default_lec/slide.css) 호환성 유지
+-->
+<section data-slide-hash="#/1" class="layout-_cards layout-_toc title-slide" id="toc-placeholder">
+  <header class="toc-page-header">
+    <h1 class="toc-page-title">05. Markdown·Mermaid</h1>
+  </header>
+  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="11">
+<li class="chapter-card"><a href="#/2">Markdown의 장-단점</a></li>
+<li class="chapter-card"><a href="#/3">Markdown Example</a></li>
+<li class="chapter-card"><a href="#/4">Markdown 문법 - 강조</a></li>
+<li class="chapter-card"><a href="#/5">Markdown 문법 - 코드,HTML 블록</a></li>
+<li class="chapter-card"><a href="#/6">Markdown 문법 - html삽입</a></li>
+<li class="chapter-card"><a href="#/7">Mermaid 개요</a></li>
+<li class="chapter-card"><a href="#/8">Mermaid vs Excalidraw 비교</a></li>
+<li class="chapter-card"><a href="#/9">Mermaid 핵심 특징</a></li>
+<li class="chapter-card"><a href="#/10">Mermaid Live Editor</a></li>
+<li class="chapter-card"><a href="#/11">Mermaid Samples <!-- nosplit --></a></li>
+<li class="chapter-card"><a href="#/12">🙋 Mermaid 실습 — 프롬프트로 코드 생성</a></li>
+</ul></div>
+</section>
+
+
+<section data-slide-hash="#/2" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">07. Markdown·Mermaid</div>
+    <div class="contents-head-left">05. Markdown·Mermaid</div>
     
   </div>
   <h2 class="title">Markdown의 장-단점</h2>
@@ -1566,14 +1610,16 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/2" class="layout-_contents">
+<section data-slide-hash="#/3" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">07. Markdown·Mermaid</div>
+    <div class="contents-head-left">05. Markdown·Mermaid</div>
     
   </div>
   <h2 class="title">Markdown Example</h2>
   <div class="contents-body">
 
+<div class="m2-cols columns">
+<div class="m2-col column" style="flex: 0 0 55%; max-width: 55%">
 <pre class="code-wrapper"><code class="language-markdown hljs"># 개요1
 ## 개요2
 &lt;http://chenluois.com&gt;
@@ -1587,43 +1633,43 @@ html.ratio-fill .agenda-frame {
 | 1  | aaa  |
 | 2  | bbb  |
 | 3  | cccc |</code></pre>
-
-<div class="media-container"><img src="img/GenContetntsProd_v10_17.png" alt="Markdown Example"></div></div>
+</div>
+<div class="m2-col column" style="flex: 0 0 45%; max-width: 45%">
+<div class="media-container"><img src="img/GenContetntsProd_v10_17.png" alt="Markdown Example 렌더 결과"></div>
+</div>
+</div></div>
 </section>
 
-<section data-slide-hash="#/3" class="layout-_contents">
+<section data-slide-hash="#/4" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">07. Markdown·Mermaid</div>
+    <div class="contents-head-left">05. Markdown·Mermaid</div>
     
   </div>
   <h2 class="title">Markdown 문법 - 강조</h2>
   <div class="contents-body">
 
-<div class="media-container"><img src="img/GenContetntsProd_v10_18.png" alt="Markdown 문법 - 강조"></div>
-
-<div class="media-container"><img src="img/GenContetntsProd_v10_19.png" alt="Markdown 문법 - 강조 결과"></div></div>
+<div class="media-container"><img src="img/GenContetntsProd_v10_18.png" alt="Markdown 문법 - 강조"></div></div>
 </section>
 
-<section data-slide-hash="#/4" class="layout-_contents">
+<section data-slide-hash="#/5" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">07. Markdown·Mermaid</div>
+    <div class="contents-head-left">05. Markdown·Mermaid</div>
     
   </div>
   <h2 class="title">Markdown 문법 - 코드,HTML 블록</h2>
   <div class="contents-body">
 
-<div class="m2-cols">
-<div class="m2-col">
-<pre class="code-wrapper"><code class="language-python hljs">
-for i in range(10):
-
-print(i)
-</code></pre>
-
-
-
+<div class="m2-cols columns">
+<div class="m2-col column" style="flex: 0 0 52%; max-width: 52%">
 <ul>
-<li class="bullet-dot">코드 블록 ( 언어명은 생략 가능)</li>
+<li class="bullet-dot">코드 블록 (언어명은 생략 가능)</li>
+</ul>
+
+<pre class="code-wrapper"><code class="language-python hljs">for i in range(10):
+    print(i)</code></pre>
+</div>
+<div class="m2-col column" style="flex: 0 0 48%; max-width: 48%">
+<ul>
 <li class="bullet-dot">HTML 블록
 <ul>
 <li class="bullet-dot">Markdown에서 표현 안되는 것 표현할 때 사용</li>
@@ -1631,37 +1677,38 @@ print(i)
 </li>
 </ul>
 
-
-</div>
-<div class="m2-col">
-<div class="media-container"><img src="img/GenContetntsProd_v10_20.png" alt="Markdown 문법 - 코드,HTML 블록"></div>
+<div class="media-container"><img src="img/GenContetntsProd_v10_20.png" alt="HTML 블록 예시"></div>
 </div>
 </div></div>
 </section>
 
-<section data-slide-hash="#/5" class="layout-_contents">
+<section data-slide-hash="#/6" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">07. Markdown·Mermaid</div>
+    <div class="contents-head-left">05. Markdown·Mermaid</div>
     
   </div>
   <h2 class="title">Markdown 문법 - html삽입</h2>
   <div class="contents-body">
 
-<div class="media-container"><img src="img/GenContetntsProd_v10_21.png" alt="Markdown 문법 - html삽입"></div>
-
-<table>
-<thead>
-<tr><th>id</th><th>name</th></tr>
-</thead>
-<tbody>
-<tr><td>1</td><td>aaa</td></tr>
-<tr><td>2</td><td>bbb</td></tr>
-<tr><td>3</td><td>cccc</td></tr>
-</tbody>
-</table></div>
+<div class="m2-cols columns">
+<div class="m2-col column" style="flex: 0 0 50%; max-width: 50%">
+<pre class="code-wrapper"><code class="language-markdown hljs">| id | name |
+|----|------|
+| 1  | aaa  |
+| 2  | bbb  |
+| 3  | cccc |</code></pre>
+</div>
+<div class="m2-col column" style="flex: 0 0 50%; max-width: 50%">
+<div class="media-container"><img src="img/GenContetntsProd_v10_21.png" alt="렌더 결과"></div>
+</div>
+</div></div>
 </section>
 
-<section data-slide-hash="#/6" class="layout-contents-full">
+<section data-slide-hash="#/7" class="layout-contents-full">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">05. Markdown·Mermaid</div>
+    
+  </div>
   <h2 class="title">Mermaid 개요</h2>
   <div class="contents-body">
 
@@ -1669,7 +1716,11 @@ print(i)
 </section>
 
 
-<section data-slide-hash="#/7" class="layout-contents-full">
+<section data-slide-hash="#/8" class="layout-contents-full">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">05. Markdown·Mermaid</div>
+    
+  </div>
   <h2 class="title">Mermaid vs Excalidraw 비교</h2>
   <div class="contents-body">
 
@@ -1677,9 +1728,9 @@ print(i)
 </section>
 
 
-<section data-slide-hash="#/8" class="layout-_contents">
+<section data-slide-hash="#/9" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">07. Markdown·Mermaid</div>
+    <div class="contents-head-left">05. Markdown·Mermaid</div>
     
   </div>
   <h2 class="title">Mermaid 핵심 특징</h2>
@@ -1687,16 +1738,16 @@ print(i)
 
 <ul>
 <li class="bullet-dot">Mermaid: 텍스트 DSL로 다이어그램 작성 — flowchart·sequence·class·gantt 등 10여 종 지원</li>
-<li class="bullet-dot">작성 위치: Markdown 코드블록 안 (<code> </code>`<code>mermaid </code>)</li>
+<li class="bullet-dot">작성 위치: Markdown 코드블록 안 — <code>mermaid</code> 펜스 블록</li>
 <li class="bullet-dot">렌더링: VSCode + Mermaid Preview 확장 / GitHub / Notion / Obsidian 등 다수 환경 지원</li>
 <li class="bullet-dot">장점: 텍스트 기반 → Git 관리 / AI 생성 친화 / 수정 용이</li>
 <li class="bullet-dot">비교: Excalidraw(자유 손그림) vs Mermaid(정형·코드 기반)</li>
 </ul></div>
 </section>
 
-<section data-slide-hash="#/9" class="layout-_contents">
+<section data-slide-hash="#/10" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">07. Markdown·Mermaid</div>
+    <div class="contents-head-left">05. Markdown·Mermaid</div>
     
   </div>
   <h2 class="title">Mermaid Live Editor</h2>
@@ -1718,9 +1769,9 @@ print(i)
 </div></div>
 </section>
 
-<section data-slide-hash="#/10" class="layout-_contents">
+<section data-slide-hash="#/11" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">07. Markdown·Mermaid</div>
+    <div class="contents-head-left">05. Markdown·Mermaid</div>
     
   </div>
   <h2 class="title">Mermaid Samples </h2>
@@ -1733,9 +1784,9 @@ print(i)
 </ul></div>
 </section>
 
-<section data-slide-hash="#/11" class="layout-_contents">
+<section data-slide-hash="#/12" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">07. Markdown·Mermaid</div>
+    <div class="contents-head-left">05. Markdown·Mermaid</div>
     
   </div>
   <h2 class="title">🙋 Mermaid 실습 — 프롬프트로 코드 생성</h2>
@@ -1753,7 +1804,7 @@ print(i)
 </ul>
 </li>
 <li class="bullet-dot">Step 2: 출력된 mermaid 코드 복사</li>
-<li class="bullet-dot">Step 3: VSCode에서 process.md 파일 생성 → ```mermaid 블록 안에 붙여넣기</li>
+<li class="bullet-dot">Step 3: VSCode에서 process.md 파일 생성 → <code>mermaid</code> 펜스 블록 안에 붙여넣기</li>
 <li class="bullet-dot">Step 4: Cmd/Ctrl+Shift+V 미리보기로 렌더링 확인 (Kroki extension 추천)</li>
 <li class="bullet-dot">Step 5: 텍스트 수정 → 미리보기 실시간 갱신 확인</li>
 </ul>
@@ -1981,12 +2032,18 @@ print(i)
         // section 기반 측정 불가. content 의 슬라이드 내부 bottom 좌표를 직접 측정.
         // 다른 .theContents 는 기존대로 section.scrollHeight 100% 채움.
         const isTocCards = content.classList && content.classList.contains('toc-cards');
-        const fitTarget = currentSlide.clientHeight * (isTocCards ? 0.92 : 1.0);
+        // isTocCards 0.9: measureExtent(header+cards)만 잡고 section 하단 padding·nav indicator는
+        // 미포함 → 여유 10%로 수용 (28카드 7행 케이스 상단 제목 clip 방지).
+        const fitTarget = currentSlide.clientHeight * (isTocCards ? 0.9 : 1.0);
+        // 단위 통일: getBoundingClientRect는 reveal transform scale 적용된 화면 px,
+        // clientHeight(fitTarget 기준)는 미scale layout px → getScale()로 나눠 layout px 로 환산.
+        // (환산 누락 시 scaled extent < unscaled target 로 항상 "맞음" 판정 → 카드 max 폰트 고정 → 축소 불가)
+        const _revealScale = (window.Reveal && Reveal.getScale) ? (Reveal.getScale() || 1) : 1;
         const measureExtent = () => {
           if (!isTocCards) return currentSlide.scrollHeight;
           const slideTop = currentSlide.getBoundingClientRect().top;
           const contentBottom = content.getBoundingClientRect().bottom;
-          return contentBottom - slideTop;
+          return (contentBottom - slideTop) / _revealScale;
         };
 
         // Check if it fits at max
@@ -2053,7 +2110,7 @@ print(i)
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">07. Markdown·Mermaid</a>",
+                  "content": "<a href=\"#/1\">05. Markdown·Mermaid</a>",
                   "children": [
                         {
                               "content": "<a href=\"#/1\">Markdown이란?</a>",
@@ -2822,6 +2879,10 @@ print(i)
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
         var hasNextChapter = '08-excalidraw-wrap.html' !== '';
         if (currentSlideNumber >= totalSlides) {
+          // 남은 fragment가 있으면 reveal 기본 fragment 진행에 맡김 —
+          // 마지막 슬라이드에서 fragment 도중 안내 메시지·다음 챕터 점프 금지
+          var remainingFrag = (typeof Reveal.availableFragments === 'function') ? Reveal.availableFragments() : null;
+          if (remainingFrag && remainingFrag.next) return;
           if (hasNextChapter) {
             if (lastSlideMessageShown) {
               lastSlideMessage.style.display = 'none';

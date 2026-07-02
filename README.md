@@ -6,6 +6,9 @@
 **🌐 온라인 데모**: https://finfra.github.io/m2slide/
 > 실제 생성된 프레젠테이션을 웹브라우저에서 바로 확인할 수 있습니다.
 
+**📋 공개 프로젝트 목록**: [Projects_org.md](./Projects_org.md)
+> 이 저장소에 포함된 예제 프로젝트 목록. `./m2slide.sh --sync-projects` 로 자동 생성되므로 직접 편집하지 마세요.
+
 ## 핵심 기능
 
 ### 1. Reveal.js HTML 프레젠테이션 생성

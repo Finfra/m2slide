@@ -1,4 +1,4 @@
-# 07. Markdown·Mermaid
+# 05. Markdown·Mermaid
 
 ## Markdown이란?
 
@@ -35,6 +35,8 @@
 
 ## Markdown Example
 
+::: columns
+::: {.column width="55%"}
 ```markdown
 # 개요1
 ## 개요2
@@ -50,8 +52,11 @@
 | 2  | bbb  |
 | 3  | cccc |
 ```
-
-![Markdown Example](img/GenContetntsProd_v10_17.png)
+:::
+::: {.column width="45%"}
+![Markdown Example 렌더 결과](img/GenContetntsProd_v10_17.png)
+:::
+:::
 
 ---
 
@@ -59,40 +64,45 @@
 
 ![Markdown 문법 - 강조](img/GenContetntsProd_v10_18.png)
 
-![Markdown 문법 - 강조 결과](img/GenContetntsProd_v10_19.png)
-
 ---
 
 ## Markdown 문법 - 코드,HTML 블록
 
+::: columns
+::: {.column width="52%"}
+* 코드 블록 (언어명은 생략 가능)
+
 ```python
-
 for i in range(10):
-
-print(i)
-
+    print(i)
 ```
-
-
-
-* 코드 블록 ( 언어명은 생략 가능)
+:::
+::: {.column width="48%"}
 * HTML 블록
   * Markdown에서 표현 안되는 것 표현할 때 사용
 
-
-![Markdown 문법 - 코드,HTML 블록](img/GenContetntsProd_v10_20.png)
+![HTML 블록 예시](img/GenContetntsProd_v10_20.png)
+:::
+:::
 
 ---
 
 ## Markdown 문법 - html삽입
 
-![Markdown 문법 - html삽입](img/GenContetntsProd_v10_21.png)
-
+::: columns
+::: {.column width="50%"}
+```markdown
 | id | name |
 |----|------|
 | 1  | aaa  |
 | 2  | bbb  |
 | 3  | cccc |
+```
+:::
+::: {.column width="50%"}
+![렌더 결과](img/GenContetntsProd_v10_21.png)
+:::
+:::
 
 ---
 
@@ -113,7 +123,7 @@ print(i)
 ## Mermaid 핵심 특징
 
 * Mermaid: 텍스트 DSL로 다이어그램 작성 — flowchart·sequence·class·gantt 등 10여 종 지원
-* 작성 위치: Markdown 코드블록 안 (` ```mermaid `)
+* 작성 위치: Markdown 코드블록 안 — `mermaid` 펜스 블록
 * 렌더링: VSCode + Mermaid Preview 확장 / GitHub / Notion / Obsidian 등 다수 환경 지원
 * 장점: 텍스트 기반 → Git 관리 / AI 생성 친화 / 수정 용이
 * 비교: Excalidraw(자유 손그림) vs Mermaid(정형·코드 기반)
@@ -149,7 +159,7 @@ print(i)
   * Step 1: ChatGPT 또는 Claude에 프롬프트
     * “신청서 처리 절차를 Mermaid flowchart 코드로 작성해줘. 단계: 접수→검토→승인 or 반려→통보”
   * Step 2: 출력된 mermaid 코드 복사
-  * Step 3: VSCode에서 process.md 파일 생성 → ```mermaid 블록 안에 붙여넣기
+  * Step 3: VSCode에서 process.md 파일 생성 → `mermaid` 펜스 블록 안에 붙여넣기
   * Step 4: Cmd/Ctrl+Shift+V 미리보기로 렌더링 확인 (Kroki extension 추천)
   * Step 5: 텍스트 수정 → 미리보기 실시간 갱신 확인
 * 시간: 7분

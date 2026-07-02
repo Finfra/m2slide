@@ -1,4 +1,4 @@
-# 04. Diffusion·인포그래픽·시각 자산
+# 02. Diffusion·인포그래픽·시각 자산
 
 ## Diffusion 이미지 생성 도구 비교
 

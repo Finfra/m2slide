@@ -195,6 +195,24 @@
   margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);
 }
 
+/* Issue250: layout 제목 클래스 공통 폰트 SSOT.
+   --main-title-font-family(기본 GmarketSansBold)를 모든 layout headline 제목에 적용.
+   이 SSOT가 없으면 각 theme 의 §3 공유 title 블록이 font-family 를 빠뜨릴 때
+   .reveal 의 --global-font-family(Pretendard 미로드) → 시스템 폰트로 폴백되는 회귀 발생.
+   .title(슬라이드 소제목)은 위 .reveal .title 룰에서 --title-font-family 로 별도 처리. */
+.reveal .cover-title,
+.reveal .contents-title,
+.reveal .chapter-title,
+.reveal .chapter-toc-title,
+.reveal .toc-title,
+.reveal .blank-title,
+.reveal .closing-title,
+.reveal .summary-title,
+.reveal .exercise-title,
+.reveal section[class*="layout-"] h1 {
+  font-family: var(--main-title-font-family, 'GmarketSansBold', sans-serif);
+}
+
 /* 공통 Flex Column 패턴 */
 .reveal pre,
 .reveal .slides section,
@@ -1323,7 +1341,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1782664191569">
+  <link rel="stylesheet" href="css/custom.css?v=1783006115469">
   <style>
     /* 커버 페이지 전용: 컨트롤·슬라이드번호·프로그레스 숨김 */
     .reveal .controls, .reveal .progress, .reveal .slide-number { display: none !important; }
@@ -1380,6 +1398,9 @@ html.ratio-fill .agenda-frame {
 <div class="reveal ratio-3-2">
   <div class="slides">
 <section class="layout-_cover">
+  <div class="cover-corner cover-tl">github.com/Finfra/m2slide</div>
+  
+  <div class="cover-corner cover-br">https://finfra.kr</div>
   <div class="cover-header">
     <h1 class="cover-title">m2Slide 소개</h1>
     <div class="cover-subtitle">마크다운 한 벌로 슬라이드·전자책·PDF·PPTX까지</div>
@@ -1394,7 +1415,7 @@ html.ratio-fill .agenda-frame {
 
     <div class="cover-meta">
       
-      <span class="cover-version">1.0.0</span>
+      <span class="cover-version">0.9</span>
     </div>
   </div>
 

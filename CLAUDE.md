@@ -97,8 +97,8 @@ CSS 수정 후 **반드시 확인**:
 
 3. **수정 후 Project 테스트 필수**
     - base.css 변경 후에는 반드시 다음 대표 프로젝트들을 빌드·확인:
-        - `Projects/m2SlideStyle1_single` (단일 페이지 기본)
-        - `Projects/m2SlideStyle2_chapter` (다중 챕터 + AGENDA.md)
+        - `Projects/m2Slide_single_mode` (단일 페이지 기본)
+        - `Projects/m2Slide_chapter_mode` (다중 챕터 + AGENDA.md)
         - `Projects/layoutTest` (모든 layout 시각 검증)
     - 빌드 명령: `./m2slide.sh {ProjectName}`
     - "테스트 필수 항목"(위 섹션) 4가지 체크리스트도 함께 적용

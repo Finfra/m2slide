@@ -1072,16 +1072,18 @@ class DevHandler(SimpleHTTPRequestHandler):
             '</style>'
         )
 
-    def _common_header(self, title: str):
-        return (
-            f'<header><h1>{title}</h1>'
-            '<div><a href="/">🏠 home</a> · <a href="/p/">📂 projects</a></div></header>'
-        )
+    def _common_header(self, title: str, show_projects_link: bool = True):
+        links = ['<a href="/">🏠 home</a>']
+        if show_projects_link:
+            links.append('<a href="/p/">📂 projects</a>')
+        else:
+            links.append('<a href="https://finfra.github.io/m2slide/" target="_blank">🌐 finfra.github.io/m2slide</a>')
+        return f'<header><h1>{title}</h1><div>' + ' · '.join(links) + '</div></header>'
 
     def _serve_root(self):
         """GET / — landing page with server info + main navigation."""
         projects = self._list_projects()
-        sample = projects[0] if projects else 'm2SlideStyle1_single'
+        sample = projects[0] if projects else 'm2Slide_single_mode'
         body = (
             '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
             '<title>m2slide dev-server</title>'
@@ -1117,18 +1119,95 @@ class DevHandler(SimpleHTTPRequestHandler):
         )
         self._write_html(body)
 
+    @staticmethod
+    def _esc_html(s: str) -> str:
+        return (s or '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+    def _read_projects_md_active_rows(self):
+        """Parse the '# 활성 프로젝트' markdown table from Projects.md (read-only reflection).
+
+        Projects.md is the personal/local index (gitignored); this just mirrors its
+        active-project table onto the dev-server /p/ page. No edit capability — SSOT
+        for editing remains Projects.md + `./m2slide.sh --sync-projects`.
+        """
+        md_path = os.path.join(os.getcwd(), 'Projects.md')
+        if not os.path.isfile(md_path):
+            return []
+        with open(md_path, 'r', encoding='utf-8') as f:
+            lines = f.read().split('\n')
+        header = '# 활성 프로젝트'
+        hidx = next((i for i, l in enumerate(lines) if l.strip() == header), None)
+        if hidx is None:
+            return []
+        i = hidx + 1
+        while i < len(lines) and lines[i].strip() == '':
+            i += 1
+        if i >= len(lines) or not lines[i].strip().startswith('|'):
+            return []
+        i += 1  # header row
+        if i < len(lines) and '-' in lines[i] and re.match(r'^\s*\|?[\s:|-]+\|?\s*$', lines[i]):
+            i += 1  # separator row
+        rows = []
+        while i < len(lines) and lines[i].strip().startswith('|'):
+            cells = [c.strip() for c in lines[i].strip().strip('|').split('|')]
+            if len(cells) >= 7:
+                rows.append({
+                    'category': cells[0], 'name': cells[1], 'version': cells[2],
+                    'desc': cells[3], 'manual': cells[4], 'publishing': cells[5], 'work': cells[6],
+                })
+            i += 1
+        return rows
+
+    _CATEGORY_EMOJI = {
+        'pr': '📢', 'info': 'ℹ️', 'lec': '🎓', 'm2': '🧩', 'test': '🧪',
+    }
+    _PUBLISH_AFFIRM_RE = re.compile(r'^(o|y|yes|true|1|✓|v|ok)$', re.IGNORECASE)
+
+    @classmethod
+    def _manual_check_badge(cls, v: str) -> str:
+        v = (v or '').strip()
+        if not v:
+            return '⬜ 미검증'
+        if v in ('n/a', 'N/A'):
+            return '➖ 해당없음'
+        if cls._PUBLISH_AFFIRM_RE.match(v):
+            return '✅ 검증됨'
+        return f'🚧 {v}'  # ex) "개발필요"
+
+    @classmethod
+    def _publishing_badge(cls, v: str) -> str:
+        return '🌐 공개' if cls._PUBLISH_AFFIRM_RE.match((v or '').strip()) else '🔒 비공개'
+
     def _serve_project_list(self):
         """GET /p/ — project directory listing."""
         projects = self._list_projects()
+        meta_by_name = {r['name']: r for r in self._read_projects_md_active_rows()}
         cards = []
         for p in projects:
             files = self._list_slide_files(p)
             entry = 'index.html' if 'index.html' in files else (files[0] if files else None)
-            count = len(files)
+            meta = meta_by_name.get(p)
+            cat_emoji = self._CATEGORY_EMOJI.get((meta['category'] if meta else '').strip().lower(), '📁')
+            title_html = f'{cat_emoji} {self._esc_html(p)}'
+            meta_line = ''
+            if meta:
+                manual_badge = self._manual_check_badge(meta['manual'])
+                pub_badge = self._publishing_badge(meta['publishing'])
+                bits = []
+                if meta['version']:
+                    bits.append(f'🏷️ v{self._esc_html(meta["version"])}')
+                if meta['desc']:
+                    bits.append(f'📝 {self._esc_html(meta["desc"])}')
+                bits.append(manual_badge)
+                bits.append(pub_badge)
+                meta_line = f'<div class="meta">{" · ".join(bits)}</div>'
+                if meta['work']:
+                    meta_line += f'<div class="meta">📌 {self._esc_html(meta["work"])}</div>'
             if not entry:
                 cards.append(
-                    f'<div class="card"><h3>{p}</h3>'
-                    f'<div class="meta">⚠️ 빌드 산출물 없음 (slide/ 비어있음)</div>'
+                    f'<div class="card"><h3>{title_html}</h3>'
+                    + meta_line +
+                    '<div class="meta">⚠️ 빌드 산출물 없음 (slide/ 비어있음)</div>'
                     f'<div class="links"><a href="/p/{p}">목록 보기</a></div></div>'
                 )
                 continue
@@ -1136,15 +1215,16 @@ class DevHandler(SimpleHTTPRequestHandler):
             deck_files = [f for f in files if f != 'agenda.html']
             chapter_files = [f for f in deck_files if f != 'index.html']
             if chapter_files:
-                meta_label = f'{len(chapter_files)} chapter (chapter mode)'
+                build_label = f'{len(chapter_files)} chapter (chapter mode)'
             else:
-                meta_label = '1 deck (single mode)'
+                build_label = '1 deck (single mode)'
             # Issue248 follow-up: /n/ path = deck navigation entry
             # (fallback chain /n/c → /n/a → /n/t → /n/1/1 propagates _with_query).
             first_link = f'/p/{p}/n/c'
             cards.append(
-                f'<div class="card"><h3><a href="{first_link}">{p}</a></h3>'
-                f'<div class="meta">{meta_label} · 진입: <code>{entry}</code></div>'
+                f'<div class="card"><h3><a href="{first_link}">{title_html}</a></h3>'
+                + meta_line +
+                f'<div class="meta">{build_label} · 진입: <code>{entry}</code></div>'
                 '<div class="links">'
                 f'<a href="/p/{p}">📋 슬라이드 목록</a>'
                 f'<a href="{first_link}">🎬 진입 (cover/agenda/toc/첫슬라이드 fallback)</a>'
@@ -1155,8 +1235,10 @@ class DevHandler(SimpleHTTPRequestHandler):
             '<title>m2slide — projects</title>'
             + self._common_styles() +
             '</head><body>'
-            + self._common_header('📂 프로젝트 목록') +
-            f'<p>총 <b>{len(projects)}</b>개 프로젝트.</p>'
+            + self._common_header('📂 프로젝트 목록', show_projects_link=False) +
+            f'<p>총 <b>{len(projects)}</b>개 프로젝트. '
+            '(🏷️버전 · 📝설명 · ✅/🚧/⬜/➖ Manual Check · 🌐공개/🔒비공개 — '
+            f'<code>Projects.md</code> 반영, 읽기 전용)</p>'
             '<div class="grid">' + '\n'.join(cards) + '</div>'
             '</body></html>'
         )

@@ -632,6 +632,29 @@ p.draw = function() {
 * 슬라이드 전환 시 비활성 p5 인스턴스는 자동 `noLoop()` 일시정지 → 활성 시 `loop()` 재개 (CPU 절약)
 * 변환·실행 실패 시 슬라이드에 `.component-error` 메시지 표시 (빌드 중단 안 함)
 
+## text-wireframe — 원문 ASCII (D2Coding)
+
+ASCII 와이어프레임을 변환 없이 **원문 그대로** D2Coding 모노스페이스 textarea로 표시. ditaa(Kroki)와 달리 도형 변환을 하지 않음.
+
+````markdown
+```text-wireframe
+┌────────┐      ┌────────┐      ┌────────┐
+│  입력  │ ───▶ │  파서  │ ───▶ │  출력  │
+└────────┘      └────────┘      └────────┘
+```
+````
+
+* `` ```text-wireframe `` fenced block 본문 = ASCII 아트 원문. 그대로 escape 후 `<textarea class="text-wireframe" readonly>`로 렌더
+* **박스드로잉 전용 기호 권장**: `+ - |` 대신 유니코드 박스드로잉 문자를 사용하면 선이 끊김 없이 이어져 깔끔함
+    - 모서리: `┌ ┐ └ ┘` / 가로선: `─` / 세로선: `│` / 분기: `├ ┬ ┤ ┴ ┼`
+    - 화살표: `▶ ◀ ▲ ▼ → ←` / 연결: `─▶` `◀─`
+* **D2Coding 필수**: D2Coding은 한글을 정확히 ASCII 2자 폭으로 렌더하므로, 한글 라벨이 들어간 박스아트도 plain text 상태로 정렬이 보장됨 — ditaa의 **CJK code-point 격자 정렬 문제를 원천 회피** (한글 박스 깨짐 없음)
+* **자간·라인 고정**: textarea에 `letter-spacing:0`·`word-spacing:0`·리거처 비활성·좁은 `line-height`가 적용되어 박스드로잉 가로선·세로선이 인접 문자/줄과 끊김 없이 이어짐
+* **작성 정렬 규칙**: 박스 테두리·세로변을 **D2Coding 컬럼 기준**(한글 1자 = 2칸)으로 맞춰 작성. 일반 모노스페이스 에디터(한글 ≈ 2칸이지만 글꼴마다 다름)에서는 어긋나 보일 수 있으나 D2Coding 렌더에서 정렬됨
+* readonly textarea — 발표 중 선택·스크롤 가능, 편집 차단(`readonly`). `white-space:pre`·`wrap=off`로 줄바꿈·공백 보존
+* D2Coding 웹폰트(CDN `d2coding@1.3.2`)는 `text-wireframe` 블록이 있는 데크에만 조건 주입 (file:// 배포 호환)
+* 도형 렌더가 필요하면 `ditaa`(영문 라벨 권장) 또는 `mermaid` 사용. 한글 라벨 + 텍스트 보존이 목적이면 `text-wireframe`
+
 # 이미지·자산
 
 * 이미지는 `Projects/{Name}/img/` 또는 `markdown/img/`에 배치

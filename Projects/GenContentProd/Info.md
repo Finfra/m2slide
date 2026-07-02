@@ -19,8 +19,9 @@ date: 2026-05-27
 * PNG 풀스크린 자동 fallback 금지 — `_proposals/GenContentProd_v1.1-2026-05-27.md` 의 "수동 마크다운 작성 필요" 섹션 참조
 
 # 후속 작업 가이드
-
+* 시연해보고 중요 스크린 샷 추가.
 * `markdown/*.md` 의 텍스트·bullet 위계가 PPT 원본과 다르면 수정
 * 이미지 alt 텍스트 (현재 H1 제목으로 자동 채움) 의 구체화
 * `_proposals/` 의 수동 작성 필요 슬라이드 보완
 * `markdown/AGENDA.md` frontmatter 확인 후 release_date·version 관리
+

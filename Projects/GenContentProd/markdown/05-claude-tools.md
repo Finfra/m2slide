@@ -1,4 +1,4 @@
-# 05. Claude Artifacts·Design
+# 03. Claude Artifacts·Design
 
 #layout-contents-full
 ## Claude Artifacts vs Claude Design — 진입점 비교

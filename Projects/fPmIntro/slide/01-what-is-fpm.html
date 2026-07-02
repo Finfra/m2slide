@@ -1342,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1782981310336">
+  <link rel="stylesheet" href="css/custom.css?v=1783007385334">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1603,7 +1603,7 @@ html.ratio-fill .agenda-frame {
 <p>  <p style="text-align:center;font-size:0.6em;line-height:1.5;color:#555;margin:0 0 0.5rem;"></p>
 <p>    <strong>hub 렌더 → 실시간 대시보드 → 다중 프로젝트 이동</strong>까지 전체 흐름을 압축한 종합 데모 · 지금은 "이런 게 가능하구나" 정도만 봐두면 됨 (각 장면은 뒤에서 자세히)</p>
 <p>  </p></p>
-<p>  <video controls src="./img/video/00-fpm-overview.mp4" style="width:100%;display:block;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,0.18);"></video></p>
+<p>  <video controls src="https://finfra.kr/mp4/00-fpm-overview.mp4" style="width:100%;display:block;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,0.18);"></video></p>
 </div></div>
 </section>
 
@@ -3689,12 +3689,18 @@ html.ratio-fill .agenda-frame {
         // section 기반 측정 불가. content 의 슬라이드 내부 bottom 좌표를 직접 측정.
         // 다른 .theContents 는 기존대로 section.scrollHeight 100% 채움.
         const isTocCards = content.classList && content.classList.contains('toc-cards');
-        const fitTarget = currentSlide.clientHeight * (isTocCards ? 0.92 : 1.0);
+        // isTocCards 0.9: measureExtent(header+cards)만 잡고 section 하단 padding·nav indicator는
+        // 미포함 → 여유 10%로 수용 (28카드 7행 케이스 상단 제목 clip 방지).
+        const fitTarget = currentSlide.clientHeight * (isTocCards ? 0.9 : 1.0);
+        // 단위 통일: getBoundingClientRect는 reveal transform scale 적용된 화면 px,
+        // clientHeight(fitTarget 기준)는 미scale layout px → getScale()로 나눠 layout px 로 환산.
+        // (환산 누락 시 scaled extent < unscaled target 로 항상 "맞음" 판정 → 카드 max 폰트 고정 → 축소 불가)
+        const _revealScale = (window.Reveal && Reveal.getScale) ? (Reveal.getScale() || 1) : 1;
         const measureExtent = () => {
           if (!isTocCards) return currentSlide.scrollHeight;
           const slideTop = currentSlide.getBoundingClientRect().top;
           const contentBottom = content.getBoundingClientRect().bottom;
-          return contentBottom - slideTop;
+          return (contentBottom - slideTop) / _revealScale;
         };
 
         // Check if it fits at max
@@ -4514,6 +4520,10 @@ html.ratio-fill .agenda-frame {
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
         var hasNextChapter = '01.1-fpm-vs-plain-claude.html' !== '';
         if (currentSlideNumber >= totalSlides) {
+          // 남은 fragment가 있으면 reveal 기본 fragment 진행에 맡김 —
+          // 마지막 슬라이드에서 fragment 도중 안내 메시지·다음 챕터 점프 금지
+          var remainingFrag = (typeof Reveal.availableFragments === 'function') ? Reveal.availableFragments() : null;
+          if (remainingFrag && remainingFrag.next) return;
           if (hasNextChapter) {
             if (lastSlideMessageShown) {
               lastSlideMessage.style.display = 'none';

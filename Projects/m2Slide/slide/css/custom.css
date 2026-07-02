@@ -495,6 +495,7 @@
 .reveal section[class*="layout-"] .blank-title,
 .reveal section[class*="layout-"] .closing-title,
 .reveal section[class*="layout-"] .toc-title {
+  /* 폰트(font-family)는 base.css §title SSOT(Issue250)에서 --main-title-font-family로 일괄 적용 */
   font-weight: 900;
   letter-spacing: -0.01em;
   color: var(--kn-text);
@@ -639,8 +640,10 @@
   display: none !important;
 }
 
-/* 기존 contents-divider 등은 hr.png로 대체되었으므로 숨김 */
-.reveal section[class*="layout-"] [class$="-divider"] {
+/* 기존 contents-divider 등은 hr.png로 대체되었으므로 숨김.
+   단 htmlart 컴포넌트의 시각적 divider(htmlart-compare-divider 등)는 제외 —
+   grid 트랙을 차지하는 in-flow 요소라 숨기면 좌우 컬럼 배치가 무너짐. */
+.reveal section[class*="layout-"] [class$="-divider"]:not([class*="htmlart-"]) {
   display: none !important;
 }
 
@@ -899,6 +902,22 @@
   display: inline-block;
   letter-spacing: -0.02em;
 }
+
+/* 제목 슬라이드(_toc title-slide): 제목 밑줄(h1::after, hr.png)을 상단 가로선(§2 ::before,
+   left:56 right:56)과 동일한 full-width 로 맞춤. 사용자 결정(2026-06-30 hub 폼).
+   - title-slide 는 flex column + align-items:center → 자식이 content 폭으로 shrink
+     → h1::after(left:0 right:0)가 제목 텍스트 폭에 머묾.
+   - toc-page-header 를 stretch + 좌우 padding 제거하고 h1 을 full 폭 block 으로 펴서
+     ::after 가 section padding(56px) 기준 가로 가득 → 상단선과 길이 일치. */
+.reveal section.layout-_toc.title-slide > .toc-page-header {
+  align-self: stretch;       /* flex 자식을 section content box(=좌우 56px inset) 폭으로 채움 */
+  padding-left: 0;           /* header 자체 좌우 패딩 제거 → h1 이 section content edge(56px)까지 */
+  padding-right: 0;
+}
+.reveal section.layout-_toc.title-slide .toc-page-title {
+  display: block;            /* block → header content box 가득 → ::after(left:0 right:0)가 상단선과 동일 폭 */
+  text-align: center;
+}
 /* Issue: agenda 페이지 다운로드 버튼 위치를 우하단으로 이동
    (헤더 안 우측 정렬 시 마스코트와 시각적 충돌 — Issue80 §2.2 회피 마진으로도 부족)
    .layout-_agenda는 position: relative이므로 그 기준으로 absolute 잡힘 */
@@ -1047,12 +1066,13 @@
   font-size: 0.9em;
 }
 /* Issue80 §2.1: cover-meta — 우상단 absolute, 박스 없이 작게
-   - top 24px: 노랑 가로선(top:12px + height:2px = 14px 끝)과 10px 여백
-   - line-height 1: 텍스트 baseline이 가로선 위로 침범하지 않도록 박스 높이 최소화
+   - top 1px: 노랑 가로선(section top:12px + height:10px = 22px 끝) *위쪽* 흰 strip(0~12px)에 배치.
+     기존 top:24px 는 version 박스(약 10px)가 가로선(12~22px)과 완전히 겹쳐 라인이 version 을 덮었음 → 라인 위로 이동.
+   - line-height 1: 텍스트 baseline 이 가로선 위로 침범하지 않도록 박스 높이 최소화
    - right 5%: 가로선(right: 4%) 안쪽 1% 들여쓰기 — 픽셀 단위(56px) 사용 시 가로선 우측 끝보다 바깥으로 나가는 문제 회피 */
 .reveal section.layout-_cover .cover-meta {
   position: absolute;
-  top: 24px;
+  top: 0;
   right: 5%;
   align-self: auto;
   margin: 0;
@@ -1060,7 +1080,7 @@
   border: none;
   background: transparent;
   max-width: none;
-  font-size: 0.55em;
+  font-size: 0.4em;   /* 0.55em→0.4em: 라인 위 흰 strip(12px)에 박스가 완전히 들어가도록 축소 (라인 침범 방지) */
   line-height: 1;
   display: flex;
   gap: 0.6em;
@@ -1097,6 +1117,23 @@
   display: none;
 }
 
+/* 표지 코너 메타 — version(좌상)·github(우상)·homepage(우하). 미정의 시 빈 → strip */
+.reveal section.layout-_cover .cover-corner {
+  position: absolute;
+  font-size: 0.31em;
+  line-height: 1;
+  font-weight: 700;
+  opacity: 0.9;
+  color: var(--kn-text);
+  z-index: 3;
+}
+/* 위 코너: 상단 노랑 선(::before top:12px) 바깥(edge~선 사이 띠)에 배치 */
+.reveal section.layout-_cover .cover-tl { top: 1px; left: 5%; }
+.reveal section.layout-_cover .cover-tr { top: 1px; right: 5%; text-align: right; }
+/* 아래 코너: 하단 노랑 선(::after bottom:12px) 바깥에 배치 */
+.reveal section.layout-_cover .cover-br { bottom: 1px; right: 5%; text-align: right; }
+.reveal section.layout-_cover .cover-corner:empty { display: none; }
+
 /* =========================================================================
    6.5 _toc Layout — toc-body 카드화
    - base.css §공통 [class*="layout-"] > [class$="-body"] 의 flex-grow:1 override
@@ -1131,6 +1168,65 @@
 .reveal section[class*="layout-"] li.bullet-dot,
 .reveal section[class*="layout-"] li.bullet-dash {
   list-style: none;
+}
+
+/* 순서있는 목록(ol) 번호 복원.
+   base.css §10(`.layout-* ol { list-style:none }`)이 ol 네이티브 번호를 제거하는데
+   ::before 마커는 ul 에만 정의돼 있어 layout 내부 ol 이 번호를 완전히 잃음.
+   CSS counter 로 "N. " 마커를 재부여. (base.css 는 수정 가드 대상이라 theme 에서 교정) */
+.reveal section[class*="layout-"] ol {
+  counter-reset: m2ol;
+}
+.reveal section[class*="layout-"] ol > li {
+  counter-increment: m2ol;
+}
+.reveal section[class*="layout-"] ol > li::before {
+  content: counter(m2ol) ". ";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: currentColor;
+  font-variant-numeric: tabular-nums;
+}
+
+/* opt-in 녹색 강조 — 전역 strong(빨강 accent-5)과 별개로, 슬라이드 로컬에서
+   `<span class="emph-green">…</span>` 로 녹색 라벨/강조를 쓰고 싶을 때. */
+.reveal .slides section .emph-green {
+  color: #1a7f37;
+  font-weight: 700;
+}
+
+/* opt-in 데모 패널 — 소스↔렌더 대비 위젯. 컬럼을 통일된 카드로 만들고
+   상단 녹색 헤더밴드(`.panel-head`)에 라벨을 넣어 라벨이 박스와 분리돼 보이는
+   문제를 해소. `::: {.column ... .demo-panel}` + 첫 줄 `<div class="panel-head">라벨</div>`. */
+.reveal section[class*="layout-"] .demo-panel {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.015);
+  padding: 0;
+}
+.reveal section[class*="layout-"] .demo-panel .panel-head {
+  background: #1a7f37;
+  color: #fff;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.35em 0.6em;
+  font-size: 0.95em;
+}
+.reveal section[class*="layout-"] .demo-panel > *:not(.panel-head) {
+  margin: 0.55em 0.9em;
+}
+.reveal section[class*="layout-"] .demo-panel pre {
+  margin: 0.55em 0.9em;
+  box-shadow: none;
+}
+@media (prefers-color-scheme: dark) {
+  .reveal section[class*="layout-"] .demo-panel {
+    border-color: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.04);
+  }
 }
 
 /* 챕터 카드 그림자 강조 — base.css 기본 box-shadow rgba(0,0,0,0.08) 가

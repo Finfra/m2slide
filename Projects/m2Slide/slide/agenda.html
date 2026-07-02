@@ -192,6 +192,24 @@
   margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);
 }
 
+/* Issue250: layout 제목 클래스 공통 폰트 SSOT.
+   --main-title-font-family(기본 GmarketSansBold)를 모든 layout headline 제목에 적용.
+   이 SSOT가 없으면 각 theme 의 §3 공유 title 블록이 font-family 를 빠뜨릴 때
+   .reveal 의 --global-font-family(Pretendard 미로드) → 시스템 폰트로 폴백되는 회귀 발생.
+   .title(슬라이드 소제목)은 위 .reveal .title 룰에서 --title-font-family 로 별도 처리. */
+.reveal .cover-title,
+.reveal .contents-title,
+.reveal .chapter-title,
+.reveal .chapter-toc-title,
+.reveal .toc-title,
+.reveal .blank-title,
+.reveal .closing-title,
+.reveal .summary-title,
+.reveal .exercise-title,
+.reveal section[class*="layout-"] h1 {
+  font-family: var(--main-title-font-family, 'GmarketSansBold', sans-serif);
+}
+
 /* 공통 Flex Column 패턴 */
 .reveal pre,
 .reveal .slides section,
@@ -1332,7 +1350,7 @@ html.ratio-fill .agenda-frame {
     @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
 </style>
-<link rel="stylesheet" href="css/custom.css?v=1782664191569">
+<link rel="stylesheet" href="css/custom.css?v=1783006115469">
 </head>
 <body class="agenda-page" data-nav-indicator="both">
 <div class="agenda-frame">
@@ -1343,7 +1361,7 @@ html.ratio-fill .agenda-frame {
   <div class="toc-markmap">
     <svg class="toc-mindmap-svg"></svg>
   </div>
-  
+  <div class="toc-page-downloads"><a href="m2Slide.epub" download class="toc-download-btn toc-download-epub">📚 EPUB</a></div>
 </div>
 </div>
 
@@ -1351,7 +1369,7 @@ html.ratio-fill .agenda-frame {
 <script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
 <script>
 (function(){
-  const tocData = {"content":"","children":[{"content":"<a href=\"01-m2slide-intro.html\">1. m2Slide란?</a>","children":[]},{"content":"<a href=\"02-core-features.html\">2. 핵심 기능</a>","children":[]},{"content":"<a href=\"03-usage.html\">3. 사용법</a>","children":[]},{"content":"<a href=\"04-extensibility.html\">4. 확장성</a>","children":[]},{"content":"<a href=\"05-wrap-up.html\">5. 마무리</a>","children":[]}]};
+  const tocData = {"content":"","children":[{"content":"<a href=\"01-m2slide-intro.html\">1. m2Slide란?</a>","children":[]},{"content":"<a href=\"02-core-features.html\">2. 핵심 기능</a>","children":[]},{"content":"<a href=\"03-usage.html\">3. 사용법</a>","children":[]},{"content":"<a href=\"04-extensibility.html\">4. 더 할 수 있는 것</a>","children":[]},{"content":"<a href=\"05-wrap-up.html\">5. 마무리</a>","children":[]}]};
   function init() {
     if (!window.markmap) { return setTimeout(init, 50); }
     const svg = document.querySelector('.toc-mindmap-svg');
@@ -1406,7 +1424,7 @@ html.ratio-fill .agenda-frame {
       var sep = base.indexOf('?') === -1 ? '?' : '&';
       return base + sep + signal + hash;
     }
-  const _tocData = {"content":"","children":[{"content":"<a href=\"01-m2slide-intro.html\">1. m2Slide란?</a>","children":[]},{"content":"<a href=\"02-core-features.html\">2. 핵심 기능</a>","children":[]},{"content":"<a href=\"03-usage.html\">3. 사용법</a>","children":[]},{"content":"<a href=\"04-extensibility.html\">4. 확장성</a>","children":[]},{"content":"<a href=\"05-wrap-up.html\">5. 마무리</a>","children":[]}]};
+  const _tocData = {"content":"","children":[{"content":"<a href=\"01-m2slide-intro.html\">1. m2Slide란?</a>","children":[]},{"content":"<a href=\"02-core-features.html\">2. 핵심 기능</a>","children":[]},{"content":"<a href=\"03-usage.html\">3. 사용법</a>","children":[]},{"content":"<a href=\"04-extensibility.html\">4. 더 할 수 있는 것</a>","children":[]},{"content":"<a href=\"05-wrap-up.html\">5. 마무리</a>","children":[]}]};
   function firstHrefFromToc(node){
     if (!node || !node.children || node.children.length === 0) return null;
     for (const child of node.children) {

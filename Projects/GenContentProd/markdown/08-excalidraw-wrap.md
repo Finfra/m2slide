@@ -1,4 +1,4 @@
-# 08. Excalidraw + Part1 정리
+# 06. Excalidraw + Part1 정리
 
 ## Excalidraw 개요 — 손그림 + AI 보조
 

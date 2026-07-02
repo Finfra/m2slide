@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"2","slideOffset":3,"totalSlides":102};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"2","slideOffset":4,"totalSlides":117};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -194,6 +194,24 @@
 .reveal .closing-title,
 .reveal .exercise-title {
   margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);
+}
+
+/* Issue250: layout 제목 클래스 공통 폰트 SSOT.
+   --main-title-font-family(기본 GmarketSansBold)를 모든 layout headline 제목에 적용.
+   이 SSOT가 없으면 각 theme 의 §3 공유 title 블록이 font-family 를 빠뜨릴 때
+   .reveal 의 --global-font-family(Pretendard 미로드) → 시스템 폰트로 폴백되는 회귀 발생.
+   .title(슬라이드 소제목)은 위 .reveal .title 룰에서 --title-font-family 로 별도 처리. */
+.reveal .cover-title,
+.reveal .contents-title,
+.reveal .chapter-title,
+.reveal .chapter-toc-title,
+.reveal .toc-title,
+.reveal .blank-title,
+.reveal .closing-title,
+.reveal .summary-title,
+.reveal .exercise-title,
+.reveal section[class*="layout-"] h1 {
+  font-family: var(--main-title-font-family, 'GmarketSansBold', sans-serif);
 }
 
 /* 공통 Flex Column 패턴 */
@@ -1324,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1779978678199">
+  <link rel="stylesheet" href="css/custom.css?v=1783006069116">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1547,9 +1565,43 @@ html.ratio-fill .agenda-frame {
 </section>
 
 
-<section data-slide-hash="#/2" class="layout-_contents">
+<!--
+  Issue138/Issue177: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default_lec/slide.css) 호환성 유지
+-->
+<section data-slide-hash="#/2" class="layout-_cards layout-_toc title-slide" id="toc-placeholder">
+  <header class="toc-page-header">
+    <h1 class="toc-page-title">01. 프롬프트 엔지니어링 6대 패턴</h1>
+  </header>
+  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="19">
+<li class="chapter-card"><a href="#/3">프롬프트 엔지니어링이란?</a></li>
+<li class="chapter-card"><a href="#/4">프롬프트 엔지니어링이란?</a></li>
+<li class="chapter-card"><a href="#/5">프롬프트 엔지니어링의 원리</a></li>
+<li class="chapter-card"><a href="#/6">페르소나(Persona)?</a></li>
+<li class="chapter-card"><a href="#/7">프롬프트 엔지니어링의 6대 기본 요소</a></li>
+<li class="chapter-card"><a href="#/8">기본 요소의 실제 예</a></li>
+<li class="chapter-card"><a href="#/9">프롬프트 엔지니어링 6대 패턴 매트릭스</a></li>
+<li class="chapter-card"><a href="#/10">Zero-shot — 예시 없이 바로 묻기</a></li>
+<li class="chapter-card"><a href="#/11">Few-shot — 예시 2~3개로 톤 잡기</a></li>
+<li class="chapter-card"><a href="#/12">🙋 Few-shot 실습 — 직접 따라 하세요</a></li>
+<li class="chapter-card"><a href="#/13">Chain of Thought — 단계별 추론 유도</a></li>
+<li class="chapter-card"><a href="#/14">🙋 CoT 실습 — 직접 따라 하세요</a></li>
+<li class="chapter-card"><a href="#/15">🙋 CoT 실습 — 프롬프트·기대 출력</a></li>
+<li class="chapter-card"><a href="#/16">Role Prompting — 역할 부여</a></li>
+<li class="chapter-card"><a href="#/17">Constraint·Format — 출력 형식 통제</a></li>
+<li class="chapter-card"><a href="#/18">Self-Consistency·Self-Refine</a></li>
+<li class="chapter-card"><a href="#/19">Self-Refine 예제</a></li>
+<li class="chapter-card"><a href="#/20">🙋 패턴 조합 실습 — 직접 따라 하세요</a></li>
+<li class="chapter-card"><a href="#/21">Q&A + 6대 패턴 정리</a></li>
+</ul></div>
+</section>
+
+
+<section data-slide-hash="#/3" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">03. 프롬프트 엔지니어링 6대 패턴</div>
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
     
   </div>
   <h2 class="title">프롬프트 엔지니어링이란?</h2>
@@ -1575,9 +1627,9 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/3" class="layout-_contents">
+<section data-slide-hash="#/4" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">03. 프롬프트 엔지니어링 6대 패턴</div>
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
     
   </div>
   <h2 class="title">프롬프트 엔지니어링이란?</h2>
@@ -1609,9 +1661,9 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/4" class="layout-_contents">
+<section data-slide-hash="#/5" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">03. 프롬프트 엔지니어링 6대 패턴</div>
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
     
   </div>
   <h2 class="title">프롬프트 엔지니어링의 원리</h2>
@@ -1643,9 +1695,9 @@ html.ratio-fill .agenda-frame {
 </div></div>
 </section>
 
-<section data-slide-hash="#/5" class="layout-_contents">
+<section data-slide-hash="#/6" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">03. 프롬프트 엔지니어링 6대 패턴</div>
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
     
   </div>
   <h2 class="title">페르소나(Persona)?</h2>
@@ -1669,9 +1721,9 @@ html.ratio-fill .agenda-frame {
 </div></div>
 </section>
 
-<section data-slide-hash="#/6" class="layout-_contents">
+<section data-slide-hash="#/7" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">03. 프롬프트 엔지니어링 6대 패턴</div>
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
     
   </div>
   <h2 class="title">프롬프트 엔지니어링의 6대 기본 요소</h2>
@@ -1679,43 +1731,43 @@ html.ratio-fill .agenda-frame {
 
 <div class="m2-cards cards">
 <ul>
-<li class="bullet-dot"><strong>Persona (페르소나)</strong>
+<li class="bullet-dot"><strong>Persona<br>(페르소나)</strong>
 <ul>
-<li class="bullet-dash">AI가 취할 인격이나 역할을 정의함.</li>
+<li class="bullet-dash">AI가 취할 인격이나<br>역할을 정의함.</li>
 </ul>
 </li>
-<li class="bullet-dot"><strong>Context (맥락)</strong>
+<li class="bullet-dot"><strong>Context<br>(맥락)</strong>
 <ul>
-<li class="bullet-dash">프롬프트가 제시되는 상황이나 배경 정보를 명시함.</li>
+<li class="bullet-dash">프롬프트가 제시되는<br>상황이나 배경 정보를 명시함.</li>
 </ul>
 </li>
-<li class="bullet-dot"><strong>Example (예시)</strong>
+<li class="bullet-dot"><strong>Example<br>(예시)</strong>
 <ul>
-<li class="bullet-dash">원하는 응답 형식이나 내용에 대한 구체적 예시를 제공함.</li>
+<li class="bullet-dash">원하는 응답 형식이나<br>내용에 대한 구체적 예시를 제공함.</li>
 </ul>
 </li>
-<li class="bullet-dot"><strong>Form (형식)</strong>
+<li class="bullet-dot"><strong>Form<br>(형식)</strong>
 <ul>
-<li class="bullet-dash">응답받고자 하는 정보의 형태를 지정함 (예: 목록, 요약, 상세 설명).</li>
+<li class="bullet-dash">응답받고자 하는 정보의 형태를 지정함<br>(예: 목록, 요약, 상세 설명).</li>
 </ul>
 </li>
-<li class="bullet-dot"><strong>Tone (톤)</strong>
+<li class="bullet-dot"><strong>Tone<br>(톤)</strong>
 <ul>
-<li class="bullet-dash">AI 응답의 어조나 성격을 지정함 (예: 친절한, 전문적인, 유머러스한).</li>
+<li class="bullet-dash">AI 응답의 어조나 성격을 지정함<br>(예: 친절한, 전문적인, 유머러스한).</li>
 </ul>
 </li>
-<li class="bullet-dot"><strong>Task (과제)</strong>
+<li class="bullet-dot"><strong>Task<br>(과제)</strong>
 <ul>
-<li class="bullet-dash">AI에게 요청하는 구체적인 작업이나 목표를 명시함.</li>
+<li class="bullet-dash">AI에게 요청하는<br>구체적인 작업이나 목표를 명시함.</li>
 </ul>
 </li>
 </ul>
 </div></div>
 </section>
 
-<section data-slide-hash="#/7" class="layout-_contents">
+<section data-slide-hash="#/8" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">03. 프롬프트 엔지니어링 6대 패턴</div>
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
     
   </div>
   <h2 class="title">기본 요소의 실제 예</h2>
@@ -1757,7 +1809,11 @@ html.ratio-fill .agenda-frame {
 </div></div>
 </section>
 
-<section data-slide-hash="#/8" class="layout-contents-full">
+<section data-slide-hash="#/9" class="layout-contents-full">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
+    
+  </div>
   <h2 class="title">프롬프트 엔지니어링 6대 패턴 매트릭스</h2>
   <div class="contents-body">
 
@@ -1765,9 +1821,9 @@ html.ratio-fill .agenda-frame {
 </section>
 
 
-<section data-slide-hash="#/9" class="layout-_contents">
+<section data-slide-hash="#/10" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">03. 프롬프트 엔지니어링 6대 패턴</div>
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
     
   </div>
   <h2 class="title">Zero-shot — 예시 없이 바로 묻기</h2>
@@ -1782,9 +1838,9 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/10" class="layout-_contents">
+<section data-slide-hash="#/11" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">03. 프롬프트 엔지니어링 6대 패턴</div>
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
     
   </div>
   <h2 class="title">Few-shot — 예시 2~3개로 톤 잡기</h2>
@@ -1807,9 +1863,9 @@ html.ratio-fill .agenda-frame {
 </div></div>
 </section>
 
-<section data-slide-hash="#/11" class="layout-_contents">
+<section data-slide-hash="#/12" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">03. 프롬프트 엔지니어링 6대 패턴</div>
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
     
   </div>
   <h2 class="title">🙋 Few-shot 실습 — 직접 따라 하세요</h2>
@@ -1832,9 +1888,9 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/12" class="layout-_contents">
+<section data-slide-hash="#/13" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">03. 프롬프트 엔지니어링 6대 패턴</div>
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
     
   </div>
   <h2 class="title">Chain of Thought — 단계별 추론 유도</h2>
@@ -1849,9 +1905,9 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/13" class="layout-_contents">
+<section data-slide-hash="#/14" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">03. 프롬프트 엔지니어링 6대 패턴</div>
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
     
   </div>
   <h2 class="title">🙋 CoT 실습 — 직접 따라 하세요</h2>
@@ -1859,8 +1915,6 @@ html.ratio-fill .agenda-frame {
 
 
 
-<div class="m2-cols">
-<div class="m2-col">
 <ul>
 <li class="bullet-dot">작업: “회식 장소 후보 3곳 중 1곳을 선정하라”를 CoT로 풀기</li>
 <li class="bullet-dot">절차:
@@ -1872,21 +1926,30 @@ html.ratio-fill .agenda-frame {
 </ul>
 </li>
 <li class="bullet-dot">평가: 단계별 비교 표·이유 설명이 자연스럽게 등장하는지 확인</li>
-</ul>
+</ul></div>
+</section>
 
+<section data-slide-hash="#/15" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
+    
+  </div>
+  <h2 class="title">🙋 CoT 실습 — 프롬프트·기대 출력</h2>
+  <div class="contents-body">
 
-
+<div class="m2-cols columns">
+<div class="m2-col column" style="flex: 0 0 48%; max-width: 48%">
+<div class="media-container"><img src="img/GenContetntsProd_v10_3.png" alt="프롬프트"></div>
 </div>
-<div class="m2-col">
-<div class="media-container"><img src="img/GenContetntsProd_v10_3.png" alt="🙋 CoT 실습 — 직접 따라 하세요"></div>
-<div class="media-container"><img src="img/GenContetntsProd_v10_4.png" alt="🙋 CoT 실습 — 직접 따라 하세요"></div>
+<div class="m2-col column" style="flex: 0 0 46%; max-width: 46%">
+<div class="media-container"><img src="img/GenContetntsProd_v10_4.png" alt="기대 출력"></div>
 </div>
 </div></div>
 </section>
 
-<section data-slide-hash="#/14" class="layout-_contents">
+<section data-slide-hash="#/16" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">03. 프롬프트 엔지니어링 6대 패턴</div>
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
     
   </div>
   <h2 class="title">Role Prompting — 역할 부여</h2>
@@ -1909,9 +1972,9 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/15" class="layout-_contents">
+<section data-slide-hash="#/17" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">03. 프롬프트 엔지니어링 6대 패턴</div>
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
     
   </div>
   <h2 class="title">Constraint·Format — 출력 형식 통제</h2>
@@ -1933,9 +1996,9 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/16" class="layout-_contents">
+<section data-slide-hash="#/18" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">03. 프롬프트 엔지니어링 6대 패턴</div>
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
     
   </div>
   <h2 class="title">Self-Consistency·Self-Refine</h2>
@@ -1943,8 +2006,6 @@ html.ratio-fill .agenda-frame {
 
 
 
-<div class="m2-cols">
-<div class="m2-col">
 <ul>
 <li class="bullet-dot">Self-Consistency: 같은 질문을 N회 반복 → 다수결로 최종 답 채택
 <ul>
@@ -1959,21 +2020,30 @@ html.ratio-fill .agenda-frame {
 <li class="bullet-dot">핵심 차이: SC는 “다수결”, SR은 “되돌아보기”</li>
 <li class="bullet-dot">비용: 호출 N배 증가 — 중요한 결정에만 선택적 사용</li>
 <li class="bullet-dot">도구 팁: Claude·ChatGPT 채팅에서 “이 답변을 더 정확하게 다시 써줘”가 Self-Refine</li>
-</ul>
+</ul></div>
+</section>
 
+<section data-slide-hash="#/19" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
+    
+  </div>
+  <h2 class="title">Self-Refine 예제</h2>
+  <div class="contents-body">
 
-
+<div class="m2-cols columns">
+<div class="m2-col column" style="flex: 0 0 50%; max-width: 50%">
+<div class="media-container"><img src="img/GenContetntsProd_v10_5.png" alt="Self-Refine 예제 — 1차/2차 프롬프트"></div>
 </div>
-<div class="m2-col">
-<div class="media-container"><img src="img/GenContetntsProd_v10_5.png" alt="Self-Consistency·Self-Refine"></div>
-<div class="media-container"><img src="img/GenContetntsProd_v10_6.png" alt="Self-Consistency·Self-Refine"></div>
+<div class="m2-col column" style="flex: 0 0 50%; max-width: 50%">
+<div class="media-container"><img src="img/GenContetntsProd_v10_6.png" alt="Self-Refine 예제 — 재작성 결과"></div>
 </div>
 </div></div>
 </section>
 
-<section data-slide-hash="#/17" class="layout-_contents">
+<section data-slide-hash="#/20" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">03. 프롬프트 엔지니어링 6대 패턴</div>
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
     
   </div>
   <h2 class="title">🙋 패턴 조합 실습 — 직접 따라 하세요</h2>
@@ -1996,9 +2066,9 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/18" class="layout-_contents">
+<section data-slide-hash="#/21" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">03. 프롬프트 엔지니어링 6대 패턴</div>
+    <div class="contents-head-left">01. 프롬프트 엔지니어링 6대 패턴</div>
     
   </div>
   <h2 class="title">Q&A + 6대 패턴 정리</h2>
@@ -2241,12 +2311,18 @@ html.ratio-fill .agenda-frame {
         // section 기반 측정 불가. content 의 슬라이드 내부 bottom 좌표를 직접 측정.
         // 다른 .theContents 는 기존대로 section.scrollHeight 100% 채움.
         const isTocCards = content.classList && content.classList.contains('toc-cards');
-        const fitTarget = currentSlide.clientHeight * (isTocCards ? 0.92 : 1.0);
+        // isTocCards 0.9: measureExtent(header+cards)만 잡고 section 하단 padding·nav indicator는
+        // 미포함 → 여유 10%로 수용 (28카드 7행 케이스 상단 제목 clip 방지).
+        const fitTarget = currentSlide.clientHeight * (isTocCards ? 0.9 : 1.0);
+        // 단위 통일: getBoundingClientRect는 reveal transform scale 적용된 화면 px,
+        // clientHeight(fitTarget 기준)는 미scale layout px → getScale()로 나눠 layout px 로 환산.
+        // (환산 누락 시 scaled extent < unscaled target 로 항상 "맞음" 판정 → 카드 max 폰트 고정 → 축소 불가)
+        const _revealScale = (window.Reveal && Reveal.getScale) ? (Reveal.getScale() || 1) : 1;
         const measureExtent = () => {
           if (!isTocCards) return currentSlide.scrollHeight;
           const slideTop = currentSlide.getBoundingClientRect().top;
           const contentBottom = content.getBoundingClientRect().bottom;
-          return contentBottom - slideTop;
+          return (contentBottom - slideTop) / _revealScale;
         };
 
         // Check if it fits at max
@@ -2313,7 +2389,7 @@ html.ratio-fill .agenda-frame {
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">03. 프롬프트 엔지니어링 6대 패턴</a>",
+                  "content": "<a href=\"#/1\">01. 프롬프트 엔지니어링 6대 패턴</a>",
                   "children": [
                         {
                               "content": "<a href=\"#/1\">Prompt Engineering 기초 + AI 문서·이미지 생성</a>",
@@ -2368,23 +2444,31 @@ html.ratio-fill .agenda-frame {
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/14\">Role Prompting — 역할 부여</a>",
+                              "content": "<a href=\"#/14\">🙋 CoT 실습 — 프롬프트·기대 출력</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/15\">Constraint·Format — 출력 형식 통제</a>",
+                              "content": "<a href=\"#/15\">Role Prompting — 역할 부여</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/16\">Self-Consistency·Self-Refine</a>",
+                              "content": "<a href=\"#/16\">Constraint·Format — 출력 형식 통제</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/17\">🙋 패턴 조합 실습 — 직접 따라 하세요</a>",
+                              "content": "<a href=\"#/17\">Self-Consistency·Self-Refine</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/18\">Q&A + 6대 패턴 정리</a>",
+                              "content": "<a href=\"#/18\">Self-Refine 예제</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/19\">🙋 패턴 조합 실습 — 직접 따라 하세요</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/20\">Q&A + 6대 패턴 정리</a>",
                               "children": []
                         }
                   ]
@@ -3106,6 +3190,10 @@ html.ratio-fill .agenda-frame {
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
         var hasNextChapter = '04-diffusion-visual.html' !== '';
         if (currentSlideNumber >= totalSlides) {
+          // 남은 fragment가 있으면 reveal 기본 fragment 진행에 맡김 —
+          // 마지막 슬라이드에서 fragment 도중 안내 메시지·다음 챕터 점프 금지
+          var remainingFrag = (typeof Reveal.availableFragments === 'function') ? Reveal.availableFragments() : null;
+          if (remainingFrag && remainingFrag.next) return;
           if (hasNextChapter) {
             if (lastSlideMessageShown) {
               lastSlideMessage.style.display = 'none';

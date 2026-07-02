@@ -168,6 +168,17 @@ Glob refs/*.md → 키워드별 발췌 인덱싱
     - 실패 시 즉시 사용자 보고
 * `content_checks[]` 자동 검사
 
+### 7-1. 검증용 빌드 표식 (사용자 혼동 방지)
+
+`build_compile`은 **최종 산출물이 아니라 md-builder 자기 검증용 빌드**. 사용자가 `slide/*.html`을 열었을 때 최종본으로 오인하지 않도록 `validation_rules.build_compile.verification_marker` 정책(`enabled: true`)에 따라 첫 슬라이드에 표식을 주입한다. 절차는 yml `verification_marker.steps`를 SSOT로 따르며 순서 고정:
+
+1. **표식 주입** — 빌드 직전, 첫 `.md`(single 모드는 유일 파일, chapter 모드는 알파벳/숫자 순 첫 파일) frontmatter에 `build_verification: true` 임시 추가 + 첫 슬라이드 본문 최상단에 `banner_text`(`🔧 검증용 빌드 — md-builder self-verification (최종본 아님)`) 1줄 prepend
+2. **검증 빌드 실행** — `build_compile.command` 실행 → 첫 슬라이드에 표식이 노출된 채 `slide/*.html` 생성
+3. **검증·승인 확인** — `content_checks[]` 전부 통과 AND 단계 6 사용자 검토 승인 완료 (`--no-checkpoint` 시 자동 승인 직후)
+4. **표식 제거 + 최종 빌드** — frontmatter `build_verification` 키 삭제 + `banner_text` 줄 삭제 → 최종 빌드 1회 재실행 → 최종본 산출
+
+> 표식 미제거 상태로 종료 금지. `removal_condition` 충족 전에는 항상 표식이 살아 있어야 하며, 충족 즉시 4단계를 같은 호출 내에서 수행한다.
+
 ## 8. 종료 보고
 
 `report_template` 양식. 변수 치환:
@@ -182,6 +193,7 @@ Glob refs/*.md → 키워드별 발췌 인덱싱
 - [ ] frontmatter `release_date` 오늘 날짜 (`md_rules_compliance` release-date-rules)
 - [ ] `./run.sh --lint-layouts` 통과 (`validation_rules.build_lint`)
 - [ ] `./m2slide.sh <Name>` 빌드 성공 (`validation_rules.build_compile`)
+- [ ] 검증용 빌드 표식 주입→제거 완료 (`verification_marker`) — 최종본에 `build_verification`·banner 잔재 없음
 - [ ] 슬라이드 구분자 `---` 일관성 (`content_checks.slide_separator_consistency`)
 - [ ] 코드블록 언어 지정 (`content_checks.code_block_language_specified`)
 - [ ] 이미지 alt 텍스트 (`content_checks.image_alt_text_required`)

@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 253
+* Issue HWM: 255
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -26,6 +26,19 @@
 3. `_doc_arch/authoring-pipeline.md` 내부 모순 — md2tts-txt 데이터 접근 표(L159 `(없음)`) ↔ 운영 상태 표(L283 `data/md2tts-txt/ (글로벌 룰)`) 불일치. 실제 `data/md2tts-txt/` 폴더 존재(확인됨)하므로 L159가 stale. 둘 중 한 쪽으로 통일 필요 (운영 상태 표 채택 권장). 발견 경위: noteForHuman.md 단계 표 유동 연결 검토(2026-05-27)
 
 # 🔥 진행 중
+
+## Issue255. 모든 PPT 메타에 github_url·homepage 글로벌 기본값 주입 (등록: 2026-07-02)
+* 목적: 생성되는 모든 PPT 의 cover 메타에 GitHub 주소(`github.com/Finfra/m2slide`)와 finfra.kr 주소(`https://finfra.kr`)가 항상 포함되도록 글로벌 기본값을 도입. 사용자 요청 — "생성되는 모든 pt 메타데이터에 github·finfra.kr 주소 삽입".
+* 상세:
+    - 결정(폼 회수): github=`github.com/Finfra/m2slide`, homepage=`https://finfra.kr`, 적용 범위=둘 다(SSOT 기본값 + 기존 소급).
+    - cover 템플릿(default theme)에 `{{github_url}}`(좌상)·`{{homepage}}`(우하) 슬롯은 이미 존재하나, `loadProjectMeta`가 frontmatter만 파싱 → 기본값 없어 미치환(빈 wrapper 제거)되던 상태.
+    - meta-yml.md line 32 "글로벌 기본값 없음" 정책에 이 두 필드를 예외로 추가.
+* 구현 명세:
+    - `lib/config.js` `loadProjectMeta`: `DEFAULT_PROJECT_META = { github_url, homepage }` 를 base 로 병합 (frontmatter·VERSION 이 override). frontmatter 부재(early return) 경로에도 기본값 주입 → **모든 빌드 소급 적용**(기존 프로젝트 포함 = "둘 다" 충족).
+    - `_doc_arch/meta-yml.md`: 글로벌 기본값 정책·스키마 표·cover 슬롯 표에 `github_url`·`homepage` 추가.
+    - `data/info-filler/questions.yml`·`data/md-builder` 템플릿: 신규 저작 frontmatter 가 두 필드를 명시 emit (선택 — fallback 이 이미 보장).
+    - default_lec cover 는 두 슬롯 미보유 → 메타는 주입되나 미렌더(현행 유지, 후속 판단).
+* 검증: cover_enabled default theme 프로젝트(m2Slide_single_mode) 빌드 → cover HTML 에 github.com/Finfra/m2slide·finfra.kr 치환 확인.
 
 # 📕 중요
 
@@ -53,6 +66,19 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue254. Projects.md gitignored + publishing 열 SSOT 로 Projects/.gitignore 자동 생성 (등록: 2026-07-02, 해결: 2026-07-02) ✅
+* 목적: `Projects.md` 를 git 미추적 로컬 인덱스로 전환하고, 그 publishing 열을 SSOT 로 `Projects/.gitignore` 추적 허용목록을 `--sync-projects` 가 자동 생성하도록 함. 수동 유지되던 `Projects/.gitignore` 를 Projects.md 로 일원 관리.
+* 상세:
+    - **추적 드라이버 = publishing 열**(사용자 결정): publishing 값 있으면 `!/<Name>/` 추적, 없으면 ignore. Projects.md note "publishing 아닌 건 github 동기화 안 함"과 정합
+    - **Projects.md gitignored**: 루트 `.gitignore` 에 `Projects.md` 추가 + `git rm --cached Projects.md`. Issue.md·CLAUDE.md 처럼 로컬 파일화
+    - **회귀 방지 시드**: publishing 미기입 폴더는 현재 `Projects/.gitignore` 허용 여부로 `x` 역시드 → 기존 추적 상태 보존(드롭 0). aTest 는 기존 publishing=x 존중하여 추적 추가(explicit)
+* 구현 명세:
+    - `lib/sync-projects-md.js`: `readGitignoreAllow()`·`renderGitignore()` 추가, publishing 시드 로직, `Projects/.gitignore` 생성·`--check` 양쪽 판정, 추적 add/drop diff 로그
+    - `.gitignore`: `Projects.md` 등록. `Projects/.gitignore`: 자동 생성본으로 교체(11 폴더 추적, 헤더에 수동편집 금지 안내)
+    - 문서: `.claude/commands/sync-projects.md`(관계 섹션 신설)·`.claude/rules/project-version-rules.md`(구동 원칙 추가)
+    - 검증: `node -c` OK, `--sync-projects` idempotent, `git check-ignore` 로 추적 폴더 new file 허용·미추적 폴더 ignore·기존 커밋 파일 신규 ignore 0건 확인
+    - **후속(사용자 Projects.md 재편)**: (1) `분류` 열 신설 → 스크립트 7열 스키마 대응(`rowToMeta` 7/6열 자동감지). (2) publishing 판정 재정의 — "값 있음"→**`o`=추적 / `x`·빈값=제외**(`AFFIRM_RE`/`isTracked`), seed 값도 `o`. (3) 재동기화: 추적 10(+BasicKnowledgeForAI_small·fPmIntro·m2Slide_visual_component), 제외 4(AgenticCoding·LlmFlow·aTest·graphify). (4) publishing=x 이며 커밋돼 있던 AgenticCoding(395)·graphify(1) 은 사용자 승인 후 `git rm --cached -r` untrack(디스크 보존)
 
 ## Issue253. VERSION 파일 컴파일 시점 임베드 + Projects.md 표 자동 동기화 SCAR (등록: 2026-07-02, 해결: 2026-07-02, commit: efea317) ✅
 * 목적: (1) 빌드 시 `Projects/<Name>/VERSION` 을 읽어 슬라이드 HTML(cover)에 버전 문자열을 **컴파일 시점에 정적 임베드** — 런타임 파일 참조 없이 산출물에 박제. (2) `Projects.md` 활성/비활성 표를 VERSION·폴더 기준으로 자동 동기화하는 로컬 SCAR 신설.

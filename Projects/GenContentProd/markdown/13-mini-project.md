@@ -1,4 +1,4 @@
-# 13. 미니 프로젝트 — Prompt-to-Publish 5단계
+# 10. 미니 프로젝트 — Prompt-to-Publish 5단계
 
 ## 미니 프로젝트 개요 — Prompt-to-Publish 5단계
 

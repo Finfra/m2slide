@@ -1,0 +1,15 @@
+theme: default
+palette: office_rainbow
+slide_ratio: "3:2"   # 원본 PPT 비율 3:2 보존
+
+# chapter mode — markdown/AGENDA.md + 01-markdown.md + 02-linux.md
+markmap_depth: 2
+chapter_markmap_depth: 3
+
+cover_enabled: true
+toc_card_mode: true
+
+# layout 자동 감지
+auto_layout_detect: true
+font_size_auto: true
+guide_line: false

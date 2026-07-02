@@ -48,6 +48,7 @@ date: 2026-05-26
 다음 파일은 모든 단계에서 읽기 허용 — 단계 종속이 아닌 범용 카탈로그이기 때문:
 
 * `data/component-libraries.yml` — 시각화 라이브러리 메타 SSOT
+* `data/visual-elements.yml` — 시각 구성요소 인벤토리 SSOT (요소 존재·범주·문법·백엔드 라우팅)
 * `data/symbol-usage.yml` — 심벌(Font Awesome) 상황별 사용 가이드
 * `data/emoji-usage.yml` — 이모지 상황별 사용 가이드
 * `data/Info.template.md` — Info.md 템플릿 (info-filler 외 안내용)

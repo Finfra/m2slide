@@ -1,4 +1,4 @@
-# 11. Pandoc 출판 파이프라인
+# 08. Pandoc 출판 파이프라인
 
 #layout-contents-full
 ## Pandoc — 범용 문서 변환기 개요
@@ -21,7 +21,7 @@
 
 * 공식 문서: [pandoc.org](https://pandoc.org/)
 
-| 입력 | <span style="color:#ffffff"> __→__ </span> | 출력 | 용도 |
+| 입력 | → | 출력 | 용도 |
 | :-: | :-: | :-: | :-: |
 | .md | → | .docx | Word 보고서·회의 자료 |
 | .md | → | .pdf | 인쇄·정식 배포 |

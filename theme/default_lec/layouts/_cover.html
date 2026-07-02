@@ -9,6 +9,9 @@ not_recommended_for:
 slots:
   - title
   - subtitle
+  - github_url
+  - version_badge
+  - homepage
   - part_subtitle
   - instructor_name
   - instructor_contact
@@ -24,6 +27,9 @@ example: |
   :::
 -->
 <section class="layout-_cover">
+  <div class="cover-corner cover-tl">{{github_url}}</div>
+  <div class="cover-corner cover-tr">{{version_badge}}</div>
+  <div class="cover-corner cover-br">{{homepage}}</div>
   <div class="cover-header">
     <h1 class="cover-title">{{title}}</h1>
     <div class="cover-subtitle">{{subtitle}}</div>

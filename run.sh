@@ -1,6 +1,6 @@
 #!/bin/bash
 # Usage:
-#   ./run.sh [ProjectName]            # 빌드 후 Chrome으로 열기 (default: m2SlideStyle1_single)
+#   ./run.sh [ProjectName]            # 빌드 후 Chrome으로 열기 (default: m2Slide_single_mode)
 #   ./run.sh --lint-config            # 모든 Projects/*/_config.yml의 theme_default_layout 값 검증
 #   ./run.sh --lint-layouts           # 모든 theme/*/layouts/*.html @meta frontmatter 검증
 
@@ -78,7 +78,7 @@ done
 set -- "${_args[@]}"
 
 # 기본 동작: 프로젝트 빌드 + 브라우저 열기
-_arg="${1:-m2SlideStyle1_single}"
+_arg="${1:-m2Slide_single_mode}"
 # 인자 형태별 분기:
 #   1) 절대 경로 (/...)           → 그대로 사용 (lib/m2slide 외부 프로젝트 지원)
 #   2) Projects/* 또는 ./Projects/* → 상대 경로 그대로 사용

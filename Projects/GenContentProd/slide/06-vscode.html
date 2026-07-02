@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>06-vscode</title>
+  <title>04. VSCode 기본기</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"5","slideOffset":39,"totalSlides":102};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"5","slideOffset":45,"totalSlides":117};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -194,6 +194,24 @@
 .reveal .closing-title,
 .reveal .exercise-title {
   margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);
+}
+
+/* Issue250: layout 제목 클래스 공통 폰트 SSOT.
+   --main-title-font-family(기본 GmarketSansBold)를 모든 layout headline 제목에 적용.
+   이 SSOT가 없으면 각 theme 의 §3 공유 title 블록이 font-family 를 빠뜨릴 때
+   .reveal 의 --global-font-family(Pretendard 미로드) → 시스템 폰트로 폴백되는 회귀 발생.
+   .title(슬라이드 소제목)은 위 .reveal .title 룰에서 --title-font-family 로 별도 처리. */
+.reveal .cover-title,
+.reveal .contents-title,
+.reveal .chapter-title,
+.reveal .chapter-toc-title,
+.reveal .toc-title,
+.reveal .blank-title,
+.reveal .closing-title,
+.reveal .summary-title,
+.reveal .exercise-title,
+.reveal section[class*="layout-"] h1 {
+  font-family: var(--main-title-font-family, 'GmarketSansBold', sans-serif);
 }
 
 /* 공통 Flex Column 패턴 */
@@ -1324,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1779978678214">
+  <link rel="stylesheet" href="css/custom.css?v=1783006069120">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1537,49 +1555,49 @@ html.ratio-fill .agenda-frame {
   <div class="reveal ratio-3-2">
     <div class="slides">
 
-<section data-slide-hash="#/1" class="layout-_contents">
+<!--
+  Issue138/Issue177: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default_lec/slide.css) 호환성 유지
+-->
+<section data-slide-hash="#/1" class="layout-_cards layout-_toc title-slide" id="toc-placeholder">
+  <header class="toc-page-header">
+    <h1 class="toc-page-title">04. VSCode 기본기</h1>
+  </header>
+  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="8">
+<li class="chapter-card"><a href="#/2">주요 기능</a></li>
+<li class="chapter-card"><a href="#/3">다운로드 및 설치</a></li>
+<li class="chapter-card"><a href="#/4">편집 기능 - 여러줄 선택</a></li>
+<li class="chapter-card"><a href="#/5">추천 기능</a></li>
+<li class="chapter-card"><a href="#/6">추천 기능 (계속)</a></li>
+<li class="chapter-card"><a href="#/7">플러그인 설치</a></li>
+<li class="chapter-card"><a href="#/8">필수 단축키 5개</a></li>
+<li class="chapter-card"><a href="#/9">필수 확장 4종</a></li>
+</ul></div>
+</section>
+
+
+<section data-slide-hash="#/2" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">06. VSCode 기본기</div>
+    <div class="contents-head-left">04. VSCode 기본기</div>
     
   </div>
   <h2 class="title">주요 기능</h2>
   <div class="contents-body">
 
-
-
 <ul>
-<li class="bullet-dot">코드 편집 기능
-<ul>
-<li class="bullet-dot">vsCode는 코드 편집에 필요한 다양한 기능을 제공함. 자동 완성, 구문 강조, 들여쓰기 등의 기능을 통해 코드 작성을 쉽고 편리하게 함.</li>
-<li class="bullet-dot">플러그인을 통해 다양한 언어와 프레임워크를 지원함.</li>
-</ul>
-</li>
-<li class="bullet-dot">디버깅 기능
-<ul>
-<li class="bullet-dot">vsCode는 강력한 디버깅 기능을 제공함. 개발 중에 발생하는 버그를 찾고 수정하는 데 도움을 줍니다. 디버깅 모드에서 코드를 실행하고 중단점을 설정하여 변수의 값이나 코드의 동작을 확인함.</li>
-</ul>
-</li>
-<li class="bullet-dot">Git 통합
-<ul>
-<li class="bullet-dot">vsCode는 Git을 쉽게 사용할 수 있는 기능을 제공함. 코드 변경 내역을 추적하고 버전 관리 가능. 변경 내역을 비교하고 병합하는 등의 작업을 간편하게 수행함.</li>
-</ul>
-</li>
-<li class="bullet-dot">플러그인 생태계
-<ul>
-<li class="bullet-dot">vsCode는 확장 가능한 플러그인 아키텍처를 제공함. 다양한 플러그인을 설치하여 개발 환경을 커스터마이징함. 플러그인을 통해 색 테마, 코드 스니펫, 추가 언어 지원 등을 확장함.</li>
-</ul>
-</li>
-<li class="bullet-dot">통합 터미널
-<ul>
-<li class="bullet-dot">vsCode는 내장된 터미널을 제공하여 개발 작업을 편리하게 수행함. 터미널에서 명령어를 실행하고 프로젝트 관리 가능. 터미널과 코드 편집기를 함께 사용하여 개발 작업을 원할하게 진행함.</li>
-</ul>
-</li>
+<li class="bullet-dot"><strong>코드 편집</strong>: 자동 완성·구문 강조·들여쓰기, 플러그인으로 다양한 언어·프레임워크 지원</li>
+<li class="bullet-dot"><strong>디버깅</strong>: 중단점 설정·변수 값 확인으로 버그 추적·수정</li>
+<li class="bullet-dot"><strong>Git 통합</strong>: 변경 내역 추적·버전 관리·비교·병합을 편집기 안에서 수행</li>
+<li class="bullet-dot"><strong>플러그인 생태계</strong>: 색 테마·스니펫·언어 지원 등 확장으로 개발 환경 커스터마이징</li>
+<li class="bullet-dot"><strong>통합 터미널</strong>: 내장 터미널에서 명령 실행 → 편집기와 함께 개발 효율화</li>
 </ul></div>
 </section>
 
-<section data-slide-hash="#/2" class="layout-_contents">
+<section data-slide-hash="#/3" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">06. VSCode 기본기</div>
+    <div class="contents-head-left">04. VSCode 기본기</div>
     
   </div>
   <h2 class="title">다운로드 및 설치</h2>
@@ -1598,48 +1616,29 @@ html.ratio-fill .agenda-frame {
 </div></div>
 </section>
 
-<section data-slide-hash="#/3" class="layout-_contents">
+<section data-slide-hash="#/4" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">06. VSCode 기본기</div>
+    <div class="contents-head-left">04. VSCode 기본기</div>
     
   </div>
   <h2 class="title">편집 기능 - 여러줄 선택</h2>
   <div class="contents-body">
 
-<div class="m2-cols">
-<div class="m2-col">
 <ul>
 <li class="bullet-dot">단축키: <code>Ctrl + Alt + (↑, ↓)</code></li>
 <li class="bullet-dot">1단계: Ctrl + Alt 키를 누른 상태에서 위·아래 방향 화살표로 세로 선택 영역 조절</li>
 <li class="bullet-dot">2단계: 세로로 여러 줄 선택 후, <code>Shift + (←, →)</code>로 가로 영역 선택 가능</li>
 <li class="bullet-dot">3단계: 세로 영역 선택 상태에서 텍스트 수정 → 선택된 모든 줄에 동시 반영</li>
-</ul>
-
-</div>
-<div class="m2-col">
-<div class="media-container"><img src="img/GenContetntsProd_v10_12.png" alt="편집 기능 - 여러줄 선택"></div>
-</div>
-</div></div>
+</ul></div>
 </section>
 
-<section data-slide-hash="#/4" class="layout-_contents">
+<section data-slide-hash="#/5" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">06. VSCode 기본기</div>
+    <div class="contents-head-left">04. VSCode 기본기</div>
     
   </div>
   <h2 class="title">추천 기능</h2>
   <div class="contents-body">
-
-<div class="m2-cols">
-<div class="m2-col">
-<div class="media-container"><img src="img/GenContetntsProd_v10_13.png" alt="추천 기능"></div>
-<div class="media-container"><img src="img/GenContetntsProd_v10_14.png" alt="추천 기능"></div>
-<div class="media-container"><img src="img/GenContetntsProd_v10_15.png" alt="추천 기능"></div>
-<div class="media-container"><img src="img/GenContetntsProd_v10_16.png" alt="추천 기능"></div>
-</div>
-<div class="m2-col">
-
-
 
 <ul>
 <li class="bullet-dot">자동 완성 기능
@@ -1660,6 +1659,18 @@ html.ratio-fill .agenda-frame {
 <li class="bullet-dot">개발자는 들여쓰기에 신경 쓰지 않고 코드 작성에 집중 가능.</li>
 </ul>
 </li>
+</ul></div>
+</section>
+
+<section data-slide-hash="#/6" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">04. VSCode 기본기</div>
+    
+  </div>
+  <h2 class="title">추천 기능 (계속)</h2>
+  <div class="contents-body">
+
+<ul>
 <li class="bullet-dot">Git 통합
 <ul>
 <li class="bullet-dot">vsCode는 내장된 Git 통합 기능을 제공합니다. 코드 변경 내역을 추적하고 버전 관리 가능.</li>
@@ -1673,22 +1684,13 @@ html.ratio-fill .agenda-frame {
 <li class="bullet-dot">터미널과 코드 편집기를 함께 사용하여 개발 작업을 효율적으로 진행 가능.</li>
 </ul>
 </li>
-</ul>
-
-
-
-
-
-<ul>
-<li class="bullet-dot">안나오면: <code>Ctrl+Shift+A</code></li>
-</ul>
-</div>
-</div></div>
+<li class="bullet-dot">기능이 안 보이면: <code>Ctrl+Shift+A</code> (명령 팔레트)</li>
+</ul></div>
 </section>
 
-<section data-slide-hash="#/5" class="layout-_contents">
+<section data-slide-hash="#/7" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">06. VSCode 기본기</div>
+    <div class="contents-head-left">04. VSCode 기본기</div>
     
   </div>
   <h2 class="title">플러그인 설치</h2>
@@ -1701,9 +1703,9 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/6" class="layout-_contents">
+<section data-slide-hash="#/8" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">06. VSCode 기본기</div>
+    <div class="contents-head-left">04. VSCode 기본기</div>
     
   </div>
   <h2 class="title">필수 단축키 5개</h2>
@@ -1719,9 +1721,9 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/7" class="layout-_contents">
+<section data-slide-hash="#/9" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">06. VSCode 기본기</div>
+    <div class="contents-head-left">04. VSCode 기본기</div>
     
   </div>
   <h2 class="title">필수 확장 4종</h2>
@@ -1956,12 +1958,18 @@ html.ratio-fill .agenda-frame {
         // section 기반 측정 불가. content 의 슬라이드 내부 bottom 좌표를 직접 측정.
         // 다른 .theContents 는 기존대로 section.scrollHeight 100% 채움.
         const isTocCards = content.classList && content.classList.contains('toc-cards');
-        const fitTarget = currentSlide.clientHeight * (isTocCards ? 0.92 : 1.0);
+        // isTocCards 0.9: measureExtent(header+cards)만 잡고 section 하단 padding·nav indicator는
+        // 미포함 → 여유 10%로 수용 (28카드 7행 케이스 상단 제목 clip 방지).
+        const fitTarget = currentSlide.clientHeight * (isTocCards ? 0.9 : 1.0);
+        // 단위 통일: getBoundingClientRect는 reveal transform scale 적용된 화면 px,
+        // clientHeight(fitTarget 기준)는 미scale layout px → getScale()로 나눠 layout px 로 환산.
+        // (환산 누락 시 scaled extent < unscaled target 로 항상 "맞음" 판정 → 카드 max 폰트 고정 → 축소 불가)
+        const _revealScale = (window.Reveal && Reveal.getScale) ? (Reveal.getScale() || 1) : 1;
         const measureExtent = () => {
           if (!isTocCards) return currentSlide.scrollHeight;
           const slideTop = currentSlide.getBoundingClientRect().top;
           const contentBottom = content.getBoundingClientRect().bottom;
-          return contentBottom - slideTop;
+          return (contentBottom - slideTop) / _revealScale;
         };
 
         // Check if it fits at max
@@ -2028,7 +2036,7 @@ html.ratio-fill .agenda-frame {
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">06. VSCode 기본기</a>",
+                  "content": "<a href=\"#/1\">04. VSCode 기본기</a>",
                   "children": [
                         {
                               "content": "<a href=\"#/1\">VsCode란?</a>",
@@ -2051,15 +2059,19 @@ html.ratio-fill .agenda-frame {
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/6\">플러그인 설치</a>",
+                              "content": "<a href=\"#/6\">추천 기능 (계속)</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/7\">필수 단축키 5개</a>",
+                              "content": "<a href=\"#/7\">플러그인 설치</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/8\">필수 확장 4종</a>",
+                              "content": "<a href=\"#/8\">필수 단축키 5개</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/9\">필수 확장 4종</a>",
                               "children": []
                         }
                   ]
@@ -2781,6 +2793,10 @@ html.ratio-fill .agenda-frame {
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
         var hasNextChapter = '07-markdown-mermaid.html' !== '';
         if (currentSlideNumber >= totalSlides) {
+          // 남은 fragment가 있으면 reveal 기본 fragment 진행에 맡김 —
+          // 마지막 슬라이드에서 fragment 도중 안내 메시지·다음 챕터 점프 금지
+          var remainingFrag = (typeof Reveal.availableFragments === 'function') ? Reveal.availableFragments() : null;
+          if (remainingFrag && remainingFrag.next) return;
           if (hasNextChapter) {
             if (lastSlideMessageShown) {
               lastSlideMessage.style.display = 'none';
