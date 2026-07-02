@@ -33,6 +33,19 @@ html {
   font-size: 16px;
   opacity: 0.9;
 }
+.header .repo-link {
+  display: inline-block;
+  margin-top: 14px;
+  color: white;
+  font-size: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  padding: 6px 16px;
+  border-radius: 20px;
+  transition: background 0.2s ease;
+}
+.header .repo-link:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
 .container {
   max-width: 960px;
   margin: 40px auto;
@@ -98,6 +111,7 @@ a {
 <div class="header">
   <h1>m2slide</h1>
   <p>마크다운 기반 프레젠테이션 모음</p>
+  <a class="repo-link" href="https://github.com/Finfra/m2slide" target="_blank" rel="noopener">⭐ GitHub 저장소 · github.com/Finfra/m2slide</a>
 </div>
 <div class="container">
   <div class="grid" id="project-list">
