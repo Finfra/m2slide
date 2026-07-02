@@ -124,6 +124,68 @@ class StemRewriteTest(unittest.TestCase):
         )
 
 
+class SubChapterNavRewriteTest(unittest.TestCase):
+    """서브챕터(01.1 등 번호에 dot 포함) nav 링크 rewrite 회귀 방지.
+    stem char class 가 dot 을 불허하면 NEXT_CHAPTER JS 리터럴이 rewrite 안 되어
+    /n/ deck nav 에서 다음 서브챕터로 넘어가지 못함(404)."""
+
+    def _h(self):
+        return DevHandler.__new__(DevHandler)
+
+    def test_nav_html_re_matches_dotted_stem(self):
+        m = DevHandler._NAV_HTML_RE.search("'01.1-fpm-vs-plain-claude.html?fwd=1'")
+        self.assertIsNotNone(m)
+        self.assertEqual(m.group(2), '01.1-fpm-vs-plain-claude')
+        self.assertEqual(m.group(3), '?fwd=1')
+
+    def test_nav_html_re_matches_plain_stem(self):
+        m = DevHandler._NAV_HTML_RE.search("'02-hub-mode.html'")
+        self.assertIsNotNone(m)
+        self.assertEqual(m.group(2), '02-hub-mode')
+
+    def test_escaped_re_matches_dotted_stem(self):
+        m = DevHandler._NAV_HTML_ESCAPED_RE.search('\\"05.2-sshf-remote.html\\"')
+        self.assertIsNotNone(m)
+        self.assertEqual(m.group(2), '05.2-sshf-remote')
+
+
+class ChapterNavVarRewriteTest(unittest.TestCase):
+    """chapter-nav JS 변수는 hash 주입 없이 bare short-path 로 rewrite (Issue242 follow-up).
+    `#/1` 을 주입하면 런타임 `VAR + '?last=1&back=1'` 가 `.../n/N/1#/1?last=1&back=1` 가 되어
+    (1) 첫 슬라이드(toc)로 가고 (2) query 가 hash 뒤로 밀려 ?last/?back/?fwd 무력화."""
+
+    def test_re_matches_prev_chapter_var(self):
+        m = DevHandler._NAV_CHAPTER_VAR_RE.search(
+            "var PREV_CHAPTER = '01.1-fpm-vs-plain-claude.html'")
+        self.assertIsNotNone(m)
+        self.assertEqual(m.group(3), '01.1-fpm-vs-plain-claude')
+
+    def test_re_matches_all_nav_var_names(self):
+        for name in ('PREV_CHAPTER', 'NEXT_CHAPTER', 'PREV_SIBLING_CHAPTER',
+                     'NEXT_SIBLING_CHAPTER', 'LAST_CHAPTER', 'COVER_LAST_CHAPTER',
+                     'AGENDA_LAST_CHAPTER'):
+            m = DevHandler._NAV_CHAPTER_VAR_RE.search(f"var {name} = '02-hub-mode.html'")
+            self.assertIsNotNone(m, f'{name} should match')
+            self.assertEqual(m.group(3), '02-hub-mode')
+
+    def test_re_skips_empty_value(self):
+        # 첫 챕터의 빈 PREV_CHAPTER 는 미매칭 → '' 그대로 보존
+        m = DevHandler._NAV_CHAPTER_VAR_RE.search("var PREV_CHAPTER = ''")
+        self.assertIsNone(m)
+
+    def test_re_skips_already_rewritten(self):
+        # 이미 /p/ short-path 로 치환된 값은 재매칭 금지 (negative lookahead)
+        m = DevHandler._NAV_CHAPTER_VAR_RE.search(
+            "var PREV_CHAPTER = '/p/FpmIntro/n/1/1'")
+        self.assertIsNone(m)
+
+    def test_re_does_not_capture_trailing_hash(self):
+        # bare 변수는 hash 없이 선언됨 — capture 는 stem 만 (hash 미포함 확인)
+        m = DevHandler._NAV_CHAPTER_VAR_RE.search("var NEXT_CHAPTER = '03-dashboard.html'")
+        self.assertIsNotNone(m)
+        self.assertEqual(m.group(4), "'")  # 종료 quote — hash 없음
+
+
 class ScriptProtectTest(unittest.TestCase):
     """`<script>` 블록 안 JS regex literal·string 보호 (Issue241)."""
 

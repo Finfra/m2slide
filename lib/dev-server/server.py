@@ -862,21 +862,37 @@ class DevHandler(SimpleHTTPRequestHandler):
         self.wfile.write(data)
 
     # Pattern A — X.html in quotes (JS string literal, HTML href/src attr direct).
+    # stem char class allows dots — sub-chapter numbering (01.1, 05.2, ...) puts a
+    # dot inside the file stem (01.1-fpm-vs-plain-claude.html). Excluding `.` made
+    # the regex silently skip sub-chapter nav links (NEXT_CHAPTER JS literal etc.),
+    # leaving the relative `.html` URL unrewritten → 404 under /n/ deck nav.
     _NAV_HTML_RE = re.compile(
-        r"""(['"])(?!/|https?:|file:|data:)([\w][\w-]*)\.html(\?[^'"#]*)?(#[^'"]*)?(\1)""",
+        r"""(['"])(?!/|https?:|file:|data:)([\w][\w.-]*?)\.html(\?[^'"#]*)?(#[^'"]*)?(\1)""",
         re.IGNORECASE,
     )
     # Pattern B — meta refresh: <meta http-equiv="refresh" content="0; url=agenda.html">
     # url= sits inside a quoted attribute, not at the quote boundary.
     _META_REFRESH_RE = re.compile(
-        r"""(\burl\s*=\s*)([\w][\w-]*)\.html(\?[^"'\s>]*)?(#[^"'\s>]*)?""",
+        r"""(\burl\s*=\s*)([\w][\w.-]*?)\.html(\?[^"'\s>]*)?(#[^"'\s>]*)?""",
         re.IGNORECASE,
     )
     # Pattern C — JSON-escaped quotes (Issue242). m2slide 빌드 산출물의 _tocData 등에
     # `\"01-markdown.html\"` 형태로 들어간 chapter href. Pattern A 는 escaped quote
     # 처리 안 함. \" 또는 &quot; HTML-entity 형 모두 매칭.
     _NAV_HTML_ESCAPED_RE = re.compile(
-        r"""(\\"|&quot;)(?!/|https?:|file:|data:)([\w][\w-]*)\.html(\?[^"'#\\&]*)?(#[^"'\\&]*)?(\1)""",
+        r"""(\\"|&quot;)(?!/|https?:|file:|data:)([\w][\w.-]*?)\.html(\?[^"'#\\&]*)?(#[^"'\\&]*)?(\1)""",
+        re.IGNORECASE,
+    )
+    # Issue242 follow-up — chapter-nav JS 변수(PREV_CHAPTER 등)는 런타임에
+    #   `VAR + '?last=1&back=1'` 처럼 쿼리를 **뒤에** 붙인다. 일반 nav rewrite 가
+    #   여기에 `#/1` 을 주입하면 최종 URL 이 `.../n/N/1#/1?last=1&back=1` 가 되어
+    #   (1) 항상 첫 슬라이드(toc-placeholder)로 가고
+    #   (2) 쿼리가 hash 뒤로 밀려 location.search 가 비어 ?last/?back/?fwd 핸들러가
+    #       모두 무력화된다(이전 챕터 마지막 슬라이드 진입 실패).
+    #   → 이 변수들은 hash 주입 없이 bare short-path 로만 rewrite 한다.
+    #   빈 값(`var PREV_CHAPTER = ''`)은 `.html` 부재로 매칭되지 않아 그대로 보존.
+    _NAV_CHAPTER_VAR_RE = re.compile(
+        r"""(\bvar\s+(?:PREV_CHAPTER|NEXT_CHAPTER|PREV_SIBLING_CHAPTER|NEXT_SIBLING_CHAPTER|LAST_CHAPTER|COVER_LAST_CHAPTER|AGENDA_LAST_CHAPTER)\s*=\s*)(['"])(?!/|https?:|file:|data:)([\w][\w.-]*?)\.html(\2)""",
         re.IGNORECASE,
     )
 
@@ -934,6 +950,15 @@ class DevHandler(SimpleHTTPRequestHandler):
           - HTML attrs: <a href="agenda.html">, <link href="agenda.html">
           - meta refresh: <meta http-equiv="refresh" content="0; url=agenda.html">
         """
+        # Issue242 follow-up: chapter-nav 변수는 hash 주입 없이 먼저 rewrite (위 regex 주석 참조).
+        # 일반 패턴보다 앞서 실행해 `.html` 을 제거 → 이후 _NAV_HTML_RE 가 재매칭하지 않음
+        # (rewrite 결과가 `/p/...` 로 시작 → negative lookahead 로 제외).
+        def repl_chapter_var(m):
+            var_kw, q1, stem, q2 = m.group(1), m.group(2), m.group(3), m.group(4)
+            new = self._stem_to_short_path(project, stem)
+            return f'{var_kw}{q1}{new}{q2}'
+        content = self._NAV_CHAPTER_VAR_RE.sub(repl_chapter_var, content)
+
         def repl_quoted(m):
             q1, stem, qry, frag, q2 = (
                 m.group(1), m.group(2), m.group(3) or '', m.group(4) or '', m.group(5)
