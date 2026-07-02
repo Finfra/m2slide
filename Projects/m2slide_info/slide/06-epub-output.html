@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>EPUB & 산출물</title>
+  <title>HTML · EPUB · PDF · PPTX 4종 산출물과 배포</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"6","slideOffset":36,"totalSlides":55};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"6","slideOffset":41,"totalSlides":63};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1342,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783002735518">
+  <link rel="stylesheet" href="css/custom.css?v=1783003500565">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1555,17 +1555,42 @@ html.ratio-fill .agenda-frame {
   <div class="reveal ratio-3-2">
     <div class="slides">
 
-      <section data-slide-hash="#/1" id="toc-placeholder" class="layout-_toc title-slide">
+<section data-slide-hash="#/1" data-heading-level="1" class="layout-chapter">
+  <div class="chapter-part"><p>Chapter 6.</p></div>
+  <div class="chapter-header">
+    <h1 class="chapter-title">HTML · EPUB · PDF · PPTX 4종 산출물과 배포</h1>
+    
+  </div>
+  
+</section>
+
+
+<!--
+  Issue138/Issue177: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default_lec/slide.css) 호환성 유지
+-->
+<section data-slide-hash="#/2" class="layout-_cards layout-_toc title-slide" id="toc-placeholder">
   <header class="toc-page-header">
     <h1 class="toc-page-title">EPUB & 산출물</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
-  </div>
-      </section>
+  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="6">
+<li class="chapter-card"><a href="#/3">HTML 슬라이드 산출물 구조</a></li>
+<li class="chapter-card"><a href="#/4">3-Page Model — Cover · Agenda · TOC</a></li>
+<li class="chapter-card"><a href="#/5">EPUB 동시 생성</a></li>
+<li class="chapter-card"><a href="#/6">PDF · PPTX 변환</a></li>
+<li class="chapter-card"><a href="#/7">배포 — file:// 단독 동작 보장</a></li>
+<li class="chapter-card"><a href="#/8">dev-server 실시간 미리보기</a></li>
+</ul></div>
+</section>
 
-<section data-slide-hash="#/2" class="layout-_contents">
-  
+
+<section data-slide-hash="#/3" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">06. EPUB & 산출물</div>
+    
+  </div>
   <h2 class="title">HTML 슬라이드 산출물 구조</h2>
   <div class="contents-body">
 
@@ -1580,10 +1605,10 @@ html.ratio-fill .agenda-frame {
 └── ...               # 챕터별 Reveal.js deck</code></pre></div>
 </section>
 
-<section data-slide-hash="#/3" class="layout-_contents">
+<section data-slide-hash="#/4" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">3-Page Model — Cover · Agenda · TOC</div>
-    
+    <div class="contents-head-left">06. EPUB & 산출물</div>
+    <div class="contents-head-right">3-Page Model — Cover · Agenda · TOC</div>
   </div>
   <h2 class="title">3-Page Model — Cover · Agenda · TOC</h2>
   <div class="contents-body">
@@ -1606,8 +1631,11 @@ graph LR
 </div></div>
 </section>
 
-<section data-slide-hash="#/4" class="layout-_contents">
-  
+<section data-slide-hash="#/5" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">06. EPUB & 산출물</div>
+    
+  </div>
   <h2 class="title">EPUB 동시 생성</h2>
   <div class="contents-body">
 
@@ -1624,8 +1652,11 @@ graph LR
 </ul></div>
 </section>
 
-<section data-slide-hash="#/5" class="layout-_contents">
-  
+<section data-slide-hash="#/6" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">06. EPUB & 산출물</div>
+    
+  </div>
   <h2 class="title">PDF · PPTX 변환</h2>
   <div class="contents-body">
 
@@ -1651,8 +1682,11 @@ graph LR
 </ul></div>
 </section>
 
-<section data-slide-hash="#/6" class="layout-_contents">
-  
+<section data-slide-hash="#/7" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">06. EPUB & 산출물</div>
+    
+  </div>
   <h2 class="title">배포 — file:// 단독 동작 보장</h2>
   <div class="contents-body">
 
@@ -1670,8 +1704,11 @@ server-side 의존(localhost·동적 endpoint·WebSocket) 금지 — 배포 SSOT
 </ul></div>
 </section>
 
-<section data-slide-hash="#/7" class="layout-_contents">
-  
+<section data-slide-hash="#/8" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">06. EPUB & 산출물</div>
+    
+  </div>
   <h2 class="title">dev-server 실시간 미리보기</h2>
   <div class="contents-body">
 
@@ -1984,28 +2021,37 @@ server-side 의존(localhost·동적 endpoint·WebSocket) 금지 — 배포 SSOT
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">HTML 슬라이드 산출물 구조</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/2\">3-Page Model — Cover · Agenda · TOC</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/3\">EPUB 동시 생성</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/4\">PDF · PPTX 변환</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/5\">배포 — file:// 단독 동작 보장</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/6\">dev-server 실시간 미리보기</a>",
-                  "children": []
+                  "content": "<a href=\"#/1\">06. EPUB & 산출물</a>",
+                  "children": [
+                        {
+                              "content": "<a href=\"#/1\">HTML · EPUB · PDF · PPTX 4종 산출물과 배포</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/2\">HTML 슬라이드 산출물 구조</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/3\">3-Page Model — Cover · Agenda · TOC</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/4\">EPUB 동시 생성</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/5\">PDF · PPTX 변환</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/6\">배포 — file:// 단독 동작 보장</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/7\">dev-server 실시간 미리보기</a>",
+                              "children": []
+                        }
+                  ]
             }
       ]
 };

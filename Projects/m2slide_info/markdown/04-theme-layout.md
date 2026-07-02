@@ -3,6 +3,18 @@ title: "Theme / Layout 시스템"
 type: ppt
 ---
 
+# 04. Theme / Layout 시스템
+
+#layout-chapter
+
+::: part
+Chapter 4.
+:::
+
+## _config.yml · layout override · 슬롯
+
+---
+
 ## _config.yml — 렌더링 설정 SSOT
 
 * 슬라이드 외관·구조를 코드 없이 키 몇 개로 제어

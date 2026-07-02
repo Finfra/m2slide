@@ -3,5 +3,6 @@ theme_default_layout: contents
 cover_enabled: true
 cover_layout: _cover
 markmap_depth: 2
+toc_card_mode: true              # TOC 를 카드 형태로 렌더 (markmap 변형의 제목 갭 회피)
 head_left: d1
 head_right: now

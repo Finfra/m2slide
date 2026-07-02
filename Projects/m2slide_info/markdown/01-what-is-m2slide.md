@@ -3,6 +3,18 @@ title: m2slide란?
 type: ppt
 ---
 
+# 01. m2slide란?
+
+#layout-chapter
+
+::: part
+Chapter 1.
+:::
+
+## 정체성 · 포지셔닝 · 기존 도구 대비 장점
+
+---
+
 ## m2slide 한 줄 정의
 
 * **마크다운(.md)으로 작성 → 한 줄 빌드 → Reveal.js HTML 슬라이드** 변환 도구

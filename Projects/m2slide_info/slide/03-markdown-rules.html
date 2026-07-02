@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>마크다운 작성 규칙</title>
+  <title>슬라이드 구분자 · 헤더 컨벤션 · AGENDA.md</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"3","slideOffset":13,"totalSlides":55};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"3","slideOffset":15,"totalSlides":63};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1342,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783002735509">
+  <link rel="stylesheet" href="css/custom.css?v=1783003500560">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1555,17 +1555,42 @@ html.ratio-fill .agenda-frame {
   <div class="reveal ratio-3-2">
     <div class="slides">
 
-      <section data-slide-hash="#/1" id="toc-placeholder" class="layout-_toc title-slide">
+<section data-slide-hash="#/1" data-heading-level="1" class="layout-chapter">
+  <div class="chapter-part"><p>Chapter 3.</p></div>
+  <div class="chapter-header">
+    <h1 class="chapter-title">슬라이드 구분자 · 헤더 컨벤션 · AGENDA.md</h1>
+    
+  </div>
+  
+</section>
+
+
+<!--
+  Issue138/Issue177: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default_lec/slide.css) 호환성 유지
+-->
+<section data-slide-hash="#/2" class="layout-_cards layout-_toc title-slide" id="toc-placeholder">
   <header class="toc-page-header">
     <h1 class="toc-page-title">마크다운 작성 규칙</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
-  </div>
-      </section>
+  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="6">
+<li class="chapter-card"><a href="#/3">슬라이드 구분자 — `---`</a></li>
+<li class="chapter-card"><a href="#/4">헤더 컨벤션</a></li>
+<li class="chapter-card"><a href="#/5">Frontmatter 필수 필드</a></li>
+<li class="chapter-card"><a href="#/6">AGENDA.md 형식</a></li>
+<li class="chapter-card"><a href="#/7">리스트 · 표 · 코드 블록</a></li>
+<li class="chapter-card"><a href="#/8">단계별 등장 (Fragment)</a></li>
+</ul></div>
+</section>
 
-<section data-slide-hash="#/2" class="layout-_contents">
-  
+
+<section data-slide-hash="#/3" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">03. 마크다운 작성 규칙</div>
+    
+  </div>
   <h2 class="title">슬라이드 구분자 — <code>---</code></h2>
   <div class="contents-body">
 
@@ -1586,8 +1611,11 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/3" class="layout-_contents">
-  
+<section data-slide-hash="#/4" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">03. 마크다운 작성 규칙</div>
+    
+  </div>
   <h2 class="title">헤더 컨벤션</h2>
   <div class="contents-body">
 
@@ -1607,8 +1635,11 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/4" class="layout-_contents">
-  
+<section data-slide-hash="#/5" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">03. 마크다운 작성 규칙</div>
+    
+  </div>
   <h2 class="title">Frontmatter 필수 필드</h2>
   <div class="contents-body">
 
@@ -1629,8 +1660,11 @@ date: 2026-06-30    # 선택
 </ul></div>
 </section>
 
-<section data-slide-hash="#/5" class="layout-_contents">
-  
+<section data-slide-hash="#/6" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">03. 마크다운 작성 규칙</div>
+    
+  </div>
   <h2 class="title">AGENDA.md 형식</h2>
   <div class="contents-body">
 
@@ -1648,8 +1682,11 @@ date: 2026-06-30    # 선택
 </ul></div>
 </section>
 
-<section data-slide-hash="#/6" class="layout-_contents">
-  
+<section data-slide-hash="#/7" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">03. 마크다운 작성 규칙</div>
+    
+  </div>
   <h2 class="title">리스트 · 표 · 코드 블록</h2>
   <div class="contents-body">
 
@@ -1673,8 +1710,11 @@ date: 2026-06-30    # 선택
 </ul></div>
 </section>
 
-<section data-slide-hash="#/7" class="layout-_contents">
-  
+<section data-slide-hash="#/8" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">03. 마크다운 작성 규칙</div>
+    
+  </div>
   <h2 class="title">단계별 등장 (Fragment)</h2>
   <div class="contents-body">
 
@@ -1987,28 +2027,37 @@ date: 2026-06-30    # 선택
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">슬라이드 구분자 — `---`</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/2\">헤더 컨벤션</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/3\">Frontmatter 필수 필드</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/4\">AGENDA.md 형식</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/5\">리스트 · 표 · 코드 블록</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/6\">단계별 등장 (Fragment)</a>",
-                  "children": []
+                  "content": "<a href=\"#/1\">03. 마크다운 작성 규칙</a>",
+                  "children": [
+                        {
+                              "content": "<a href=\"#/1\">슬라이드 구분자 · 헤더 컨벤션 · AGENDA.md</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/2\">슬라이드 구분자 — `---`</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/3\">헤더 컨벤션</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/4\">Frontmatter 필수 필드</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/5\">AGENDA.md 형식</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/6\">리스트 · 표 · 코드 블록</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/7\">단계별 등장 (Fragment)</a>",
+                              "children": []
+                        }
+                  ]
             }
       ]
 };

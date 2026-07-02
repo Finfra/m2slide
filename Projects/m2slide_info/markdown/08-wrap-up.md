@@ -3,6 +3,18 @@ title: 마무리
 type: ppt
 ---
 
+# 08. 마무리
+
+#layout-chapter
+
+::: part
+Chapter 8.
+:::
+
+## 핵심 요약과 다음 단계
+
+---
+
 ## 핵심 요약 — m2slide 5가지 강점
 
 ::: cards

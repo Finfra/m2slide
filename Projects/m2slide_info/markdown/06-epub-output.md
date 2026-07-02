@@ -3,6 +3,18 @@ title: "EPUB & 산출물"
 type: ppt
 ---
 
+# 06. EPUB & 산출물
+
+#layout-chapter
+
+::: part
+Chapter 6.
+:::
+
+## HTML · EPUB · PDF · PPTX 4종 산출물과 배포
+
+---
+
 ## HTML 슬라이드 산출물 구조
 
 * 빌드하면 `slide/`에 HTML이 자동 생성됨

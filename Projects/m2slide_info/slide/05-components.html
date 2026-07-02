@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>내장 컴포넌트</title>
+  <title>chart · d3 · React · p5 · model3d · cards · htmlArt</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"5","slideOffset":27,"totalSlides":55};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"5","slideOffset":31,"totalSlides":63};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1342,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783002735517">
+  <link rel="stylesheet" href="css/custom.css?v=1783003500564">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1557,17 +1557,44 @@ html.ratio-fill .agenda-frame {
   <div class="reveal ratio-3-2">
     <div class="slides">
 
-      <section data-slide-hash="#/1" id="toc-placeholder" class="layout-_toc title-slide">
+<section data-slide-hash="#/1" data-heading-level="1" class="layout-chapter">
+  <div class="chapter-part"><p>Chapter 5.</p></div>
+  <div class="chapter-header">
+    <h1 class="chapter-title">chart · d3 · React · p5 · model3d · cards · htmlArt</h1>
+    
+  </div>
+  
+</section>
+
+
+<!--
+  Issue138/Issue177: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default_lec/slide.css) 호환성 유지
+-->
+<section data-slide-hash="#/2" class="layout-_cards layout-_toc title-slide" id="toc-placeholder">
   <header class="toc-page-header">
     <h1 class="toc-page-title">내장 컴포넌트</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
-  </div>
-      </section>
+  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="8">
+<li class="chapter-card"><a href="#/3">컴포넌트 카탈로그 — 한눈에</a></li>
+<li class="chapter-card"><a href="#/4">chart.js — 데이터 시각화</a></li>
+<li class="chapter-card"><a href="#/5">d3 — 커스텀 인포그래픽</a></li>
+<li class="chapter-card"><a href="#/6">React — 인터랙티브 컴포넌트</a></li>
+<li class="chapter-card"><a href="#/7">p5.js — 캔버스 애니메이션</a></li>
+<li class="chapter-card"><a href="#/8">model3d — 3D 모델 뷰어</a></li>
+<li class="chapter-card"><a href="#/9">cards & htmlArt — 구조 도해</a></li>
+<li class="chapter-card"><a href="#/10">수식 · 심벌 · mermaid</a></li>
+</ul></div>
+</section>
 
-<section data-slide-hash="#/2" class="layout-_contents">
-  
+
+<section data-slide-hash="#/3" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">05. 내장 컴포넌트</div>
+    
+  </div>
   <h2 class="title">컴포넌트 카탈로그 — 한눈에</h2>
   <div class="contents-body">
 
@@ -1602,8 +1629,11 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/3" class="layout-_contents">
-  
+<section data-slide-hash="#/4" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">05. 내장 컴포넌트</div>
+    
+  </div>
   <h2 class="title">chart.js — 데이터 시각화</h2>
   <div class="contents-body">
 
@@ -1622,8 +1652,11 @@ html.ratio-fill .agenda-frame {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/4" class="layout-_contents">
-  
+<section data-slide-hash="#/5" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">05. 내장 컴포넌트</div>
+    
+  </div>
   <h2 class="title">d3 — 커스텀 인포그래픽</h2>
   <div class="contents-body">
 
@@ -1639,8 +1672,11 @@ svg.selectAll('rect').data([40, 80, 120]).enter().append('rect')
 </ul></div>
 </section>
 
-<section data-slide-hash="#/5" class="layout-_contents">
-  
+<section data-slide-hash="#/6" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">05. 내장 컴포넌트</div>
+    
+  </div>
   <h2 class="title">React — 인터랙티브 컴포넌트</h2>
   <div class="contents-body">
 
@@ -1657,8 +1693,11 @@ render(&lt;Counter /&gt;);
 </ul></div>
 </section>
 
-<section data-slide-hash="#/6" class="layout-_contents">
-  
+<section data-slide-hash="#/7" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">05. 내장 컴포넌트</div>
+    
+  </div>
   <h2 class="title">p5.js — 캔버스 애니메이션</h2>
   <div class="contents-body">
 
@@ -1676,8 +1715,11 @@ p.draw = function() {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/7" class="layout-_contents">
-  
+<section data-slide-hash="#/8" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">05. 내장 컴포넌트</div>
+    
+  </div>
   <h2 class="title">model3d — 3D 모델 뷰어</h2>
   <div class="contents-body">
 
@@ -1695,8 +1737,11 @@ p.draw = function() {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/8" class="layout-_contents">
-  
+<section data-slide-hash="#/9" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">05. 내장 컴포넌트</div>
+    
+  </div>
   <h2 class="title">cards & htmlArt — 구조 도해</h2>
   <div class="contents-body">
 
@@ -1724,8 +1769,11 @@ p.draw = function() {
 </ul></div>
 </section>
 
-<section data-slide-hash="#/9" class="layout-_contents">
-  
+<section data-slide-hash="#/10" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">05. 내장 컴포넌트</div>
+    
+  </div>
   <h2 class="title">수식 · 심벌 · mermaid</h2>
   <div class="contents-body">
 
@@ -2310,36 +2358,45 @@ graph LR
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">컴포넌트 카탈로그 — 한눈에</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/2\">chart.js — 데이터 시각화</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/3\">d3 — 커스텀 인포그래픽</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/4\">React — 인터랙티브 컴포넌트</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/5\">p5.js — 캔버스 애니메이션</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/6\">model3d — 3D 모델 뷰어</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/7\">cards & htmlArt — 구조 도해</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/8\">수식 · 심벌 · mermaid</a>",
-                  "children": []
+                  "content": "<a href=\"#/1\">05. 내장 컴포넌트</a>",
+                  "children": [
+                        {
+                              "content": "<a href=\"#/1\">chart · d3 · React · p5 · model3d · cards · htmlArt</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/2\">컴포넌트 카탈로그 — 한눈에</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/3\">chart.js — 데이터 시각화</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/4\">d3 — 커스텀 인포그래픽</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/5\">React — 인터랙티브 컴포넌트</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/6\">p5.js — 캔버스 애니메이션</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/7\">model3d — 3D 모델 뷰어</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/8\">cards & htmlArt — 구조 도해</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/9\">수식 · 심벌 · mermaid</a>",
+                              "children": []
+                        }
+                  ]
             }
       ]
 };

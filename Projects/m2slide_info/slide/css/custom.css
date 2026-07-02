@@ -667,8 +667,11 @@
   background-size: auto 119%;  /* Issue143 후속: 90% → 108% (20%) → 119% (+10%) */
 }
 
-/* layout-_contents 제목: 풀폭 가운데 정렬 → hr.png 하단 브러시(§3 > .title::after)가 폭 가득. */
-.reveal section.layout-_contents > .title {
+/* layout-_contents/contents/contents-full 제목: 풀폭 가운데 정렬 →
+   hr.png 하단 브러시(§3 > .title::after)가 폭 가득 (contents-full 만 텍스트 폭으로 짧게 나오던 문제 교정 2026-07-02). */
+.reveal section.layout-_contents > .title,
+.reveal section.layout-contents > .title,
+.reveal section.layout-contents-full > .title {
   width: 100%;
   text-align: center;
   box-sizing: border-box;

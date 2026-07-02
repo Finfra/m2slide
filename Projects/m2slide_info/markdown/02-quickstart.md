@@ -3,6 +3,18 @@ title: 빠른 시작
 type: ppt
 ---
 
+# 02. 빠른 시작
+
+#layout-chapter
+
+::: part
+Chapter 2.
+:::
+
+## 설치 · 프로젝트 생성 · 첫 빌드
+
+---
+
 ## 설치 — 필요한 것
 
 * **Node.js + npm** (외부 dependency 0 — 표준 라이브러리만 사용)

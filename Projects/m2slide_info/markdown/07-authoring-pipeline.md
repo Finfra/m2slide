@@ -3,6 +3,18 @@ title: Authoring Pipeline
 type: ppt
 ---
 
+# 07. Authoring Pipeline
+
+#layout-chapter
+
+::: part
+Chapter 7.
+:::
+
+## 기획부터 대본까지 9단계 자동화
+
+---
+
 ## 9단계 저작 파이프라인 개요
 
 ```mermaid
