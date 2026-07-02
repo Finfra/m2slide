@@ -27,21 +27,6 @@
 
 # 🔥 진행 중
 
-## Issue253. VERSION 파일 컴파일 시점 임베드 + Projects.md 표 자동 동기화 SCAR (등록: 2026-07-02)
-* 목적: (1) 빌드 시 `Projects/<Name>/VERSION` 을 읽어 슬라이드 HTML(cover 등)에 버전 문자열을 **컴파일 시점에 정적 임베드** — 런타임 파일 참조 없이 산출물 자체에 박제. (2) `Projects.md` 활성 표의 버전 열을 VERSION 파일 기준으로 자동 동기화하고, 프로젝트 폴더 신설·제거를 표 행 추가·비활성(z_done) 표 이동으로 반영하는 로컬 SCAR 신설.
-* 배경: VERSION 파일은 `project-version-rules` 상 프로젝트 버전 SSOT 이나 빌드 코드가 읽지 않음. 버전은 frontmatter `version:` 을 통해서만 cover `{{version}}`/`{{version_badge}}` 로 흘러 이중 관리. VERSION 이 계속 바뀌므로 산출물에는 참조가 아니라 값을 넣어야 함.
-* 상세:
-    - B. `lib/config.js loadProjectMeta` — VERSION 파일 존재 시 `cfg.projectMeta.version` 을 VERSION 값으로 주입(VERSION 우선, frontmatter fallback). 템플릿 치환이 이미 정적 문자열을 산출하므로 컴파일 시점 임베드 자동 충족.
-    - C. `lib/sync-projects-md.js` (신규) + `m2slide.sh --sync-projects` subcommand + `.claude/commands/sync-projects.md`. 동작:
-        * 활성 표: `Projects/<Name>/`(단, `_*`·`z_*`·`z_done` 제외) 스캔 → 버전 열 = VERSION 값. 설명·Manual Check·publishing·작업 열은 **기존 행 보존**(사람 작성 열 머지). 신규 폴더는 행 추가.
-        * 제거(표에 있으나 폴더 없음): `# 비활성 프로젝트 (z_done)` 표로 행 이동.
-        * idempotent — 재실행 시 안정.
-* 구현 명세:
-    - VERSION 읽기: `fs.existsSync(path.join(projectDir,'VERSION'))` → `fs.readFileSync().trim()`. 빈 값·미존재 시 주입 생략(기존 frontmatter version 유지).
-    - sync 스크립트는 markdown 표 파서/렌더러 — 열 정렬(공백 패딩) `md-rules` Table 규칙 준수.
-    - 로컬 SCAR: `project-version-rules` 에 sync 커맨드 참조 1줄 추가.
-* 검증: 대표 프로젝트 1종 빌드 후 cover HTML 에 VERSION 값 임베드 확인 + `--sync-projects` 재실행 idempotent 확인 + 배포 lint 무영향.
-
 # 📕 중요
 
 ## Issue250. layout 제목 폰트 누락 — base.css title SSOT 통합 (등록: 2026-06-30)
@@ -68,6 +53,14 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue253. VERSION 파일 컴파일 시점 임베드 + Projects.md 표 자동 동기화 SCAR (등록: 2026-07-02, 해결: 2026-07-02, commit: efea317) ✅
+* 목적: (1) 빌드 시 `Projects/<Name>/VERSION` 을 읽어 슬라이드 HTML(cover)에 버전 문자열을 **컴파일 시점에 정적 임베드** — 런타임 파일 참조 없이 산출물에 박제. (2) `Projects.md` 활성/비활성 표를 VERSION·폴더 기준으로 자동 동기화하는 로컬 SCAR 신설.
+* 구현:
+    - `lib/config.js loadProjectMeta` — VERSION 파일 존재 시 `cfg.projectMeta.version` 을 VERSION 값으로 주입(VERSION 우선, frontmatter fallback). `{{version}}` 치환이 정적 문자열 산출 → 컴파일 시점 임베드.
+    - `lib/sync-projects-md.js` (신규) + `m2slide.sh --sync-projects [--check]` + `.claude/commands/sync-projects.md`: 활성 표 버전 열 = VERSION 값, 사람 작성 열 보존, 폴더 제거 시 `# 비활성 프로젝트 (z_done)` 표로 이동, idempotent, East-Asian 표시폭 정렬.
+    - `.claude/rules/project-version-rules.md` — 빌드 임베드·표 동기화 원칙 반영. `Projects/{graphify,m2Slide}/VERSION` 추가(나머지 프로젝트는 `Projects/.gitignore` 미추적이라 커밋 제외, 파일은 디스크에 존재).
+* 검증: 빌드 3종(single/chapter/GenContentProd) 성공·회귀 0, GenContentProd cover 소스 `v1.1`→VERSION `1.1` 임베드 확인(VERSION 우선), `--sync-projects` idempotent + 팬텀 행 제거→비활성 이동 확인, `--lint-deployment` 위반 0.
 
 ## Issue252. dev-server cross-page `?last=1` 진입 실패 — chapter-nav 변수에 `#/1` 오주입으로 이전 챕터 마지막 슬라이드 대신 toc-placeholder 착지 (등록: 2026-07-02, 해결: 2026-07-02, commit: 72ec356) ✅
 * 목적: `/p/<P>/n/<chap>/1` deck 에서 ← (또는 TOC ←) 키로 이전 챕터로 넘어갈 때 마지막 슬라이드(K2)로 가야 하나 첫 슬라이드(`#/toc-placeholder`)에 착지하던 회귀 수정.
