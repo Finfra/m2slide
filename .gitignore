@@ -163,3 +163,6 @@ __pycache__/
 
 # 대용량 동영상은 git 미추적 — finfra.kr 서버 호스팅 참조 (Issue: deploy 아티팩트 경량화)
 *.mp4
+
+# ppt2m2slide 역변환 중간 산출물(raw-media·img-fullext·pptx2md-out) — 배포 자산 아님, 원본 pptx로 재생성 가능
+**/_pipeline/
