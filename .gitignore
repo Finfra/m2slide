@@ -160,3 +160,6 @@ __pycache__/
 /*.jpg
 /*.jpeg
 /*.webp
+
+# 대용량 동영상은 git 미추적 — finfra.kr 서버 호스팅 참조 (Issue: deploy 아티팩트 경량화)
+*.mp4

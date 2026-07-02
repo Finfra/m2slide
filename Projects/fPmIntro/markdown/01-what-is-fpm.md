@@ -25,7 +25,7 @@ release_date: 2026-07-02
   <p style="text-align:center;font-size:0.6em;line-height:1.5;color:#555;margin:0 0 0.5rem;">
     <strong>hub 렌더 → 실시간 대시보드 → 다중 프로젝트 이동</strong>까지 전체 흐름을 압축한 종합 데모 · 지금은 "이런 게 가능하구나" 정도만 봐두면 됨 (각 장면은 뒤에서 자세히)
   </p>
-  <video controls src="./img/video/00-fpm-overview.mp4" style="width:100%;display:block;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,0.18);"></video>
+  <video controls src="https://finfra.kr/mp4/00-fpm-overview.mp4" style="width:100%;display:block;border-radius:14px;box-shadow:0 6px 24px rgba(0,0,0,0.18);"></video>
 </div>
 
 ---
