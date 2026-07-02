@@ -25,3 +25,10 @@ date: 2026-05-27
 * `_proposals/` 의 수동 작성 필요 슬라이드 보완
 * `markdown/AGENDA.md` frontmatter 확인 후 release_date·version 관리
 
+# _pipeline/img-fullext 원본 이미지 외부 이관 (2026-07-03)
+* `_pipeline/img-fullext/`(ppt2md 원본 추출 이미지, 42개·11M)를 로컬에서 삭제하고 `finfra.kr:/nowage/www/f/m2slide/GenContentProd/img-fullext/` 로 이관
+* 접근 URL: `https://finfra.kr/f/m2slide/GenContentProd/img-fullext/<파일명>` (예: `s83_i1.png`)
+* `_pipeline/`는 git 미추적(`.gitignore`) 스크래치 산출물 — repo push 용량 절감 목적
+* 발행 슬라이드(`img/`, `slide/img/`)에 쓰이는 사본은 그대로 로컬·git 유지 — 이번 이관은 원본 풀사이즈 추출본에만 해당
+* **⚠️ 단독망(에어갭) 환경 주의**: git clone만으로는 이 폴더가 복원되지 않음(애초에 git 미추적). 인터넷 차단 환경에서 원본 풀사이즈 이미지가 필요하면 clone 전에 `finfra.kr`에서 미리 로컬로 내려받아 `_pipeline/img-fullext/`에 배치할 것. 또는 `Projects/_ppt/GenContentsProd_v1.0/GenContetntsProd_v1.0.pptx` 원본에서 `python3 lib/ppt-images-extract-all.py`로 재추출 가능(원본 PPT는 git 미추적이므로 이것도 별도 반입 필요)
+
