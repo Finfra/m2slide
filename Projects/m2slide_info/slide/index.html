@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="ko" class="ratio-3-2" style="--slide-ratio: 1.5; --slide-outer-padding: 10px; --slide-inner-padding: 0px;">
+<html lang="ko">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>m2Slide 소개 — Agenda</title>
-<script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>m2slide 소개</title>
+  <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
       document.documentElement.classList.add('m2-initial-loading');
@@ -14,7 +14,10 @@
       }
     } catch (e) {}
   </script>
-<style data-m2slide-base="true">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
+  <style data-m2slide-base="true">
 /* =========================================================================
    m2slide base.css — 모든 테마 공통 기본 스타일 (Issue64 도입)
    - 주입 방식: html-builder.js가 inline <style data-m2slide-base="true">로 주입
@@ -190,6 +193,24 @@
 .reveal .closing-title,
 .reveal .exercise-title {
   margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);
+}
+
+/* Issue250: layout 제목 클래스 공통 폰트 SSOT.
+   --main-title-font-family(기본 GmarketSansBold)를 모든 layout headline 제목에 적용.
+   이 SSOT가 없으면 각 theme 의 §3 공유 title 블록이 font-family 를 빠뜨릴 때
+   .reveal 의 --global-font-family(Pretendard 미로드) → 시스템 폰트로 폴백되는 회귀 발생.
+   .title(슬라이드 소제목)은 위 .reveal .title 룰에서 --title-font-family 로 별도 처리. */
+.reveal .cover-title,
+.reveal .contents-title,
+.reveal .chapter-title,
+.reveal .chapter-toc-title,
+.reveal .toc-title,
+.reveal .blank-title,
+.reveal .closing-title,
+.reveal .summary-title,
+.reveal .exercise-title,
+.reveal section[class*="layout-"] h1 {
+  font-family: var(--main-title-font-family, 'GmarketSansBold', sans-serif);
 }
 
 /* 공통 Flex Column 패턴 */
@@ -1316,11 +1337,16 @@ html.ratio-fill .agenda-frame {
   text-decoration: none;
 }
 
-</style>
-<style data-m2slide-palette="default">
+  </style>
+  <style data-m2slide-palette="default">
 
-</style>
-<style>
+  </style>
+  <link rel="stylesheet" href="css/custom.css?v=1783002735522">
+  <style>
+    /* 커버 페이지 전용: 컨트롤·슬라이드번호·프로그레스 숨김 */
+    .reveal .controls, .reveal .progress, .reveal .slide-number { display: none !important; }
+    .reveal { cursor: pointer; }
+    
     /* Issue110/125: visibility 가드 — Reveal·agenda 양쪽 컨테이너 적용 */
     html.m2-initial-loading .reveal,
     html.m2-initial-loading .agenda-frame,
@@ -1331,37 +1357,94 @@ html.ratio-fill .agenda-frame {
     /* Issue120: cross-page 페이지 진입 fade-in (cover↔agenda↔deck 모두 적용) */
     @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
-</style>
-<link rel="stylesheet" href="css/custom.css?v=1782664191569">
+  </style>
 </head>
-<body class="agenda-page" data-nav-indicator="both">
-<div class="agenda-frame">
-<div class="layout-_agenda">
-  <header class="toc-page-header">
-    <h1 class="toc-page-title">Agenda</h1>
-  </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
+<body data-nav-indicator="both" style="
+  --global-font-family: Pretendard, sans-serif;
+  --title-font-family: GmarketSansBold;
+  --title-font-weight: 50;
+  --title-font-size: 1.5em;
+  --title-color: #000000;
+  --title-align: center;
+  --title-padding: 1%;
+  --main-title-font-family: inherit;
+  --main-title-font-weight: 400;
+  --main-title-font-size: 2em;
+  --main-title-color: #333333;
+  --main-title-align: center;
+  --main-title-padding: 40px 0 20px 0;
+  --outline-title-font-family: GmarketSansBold;
+  --outline-title-font-weight: 600;
+  --outline-title-font-size: 2em;
+  --outline-title-color: #000000;
+  --outline-title-align: center;
+  --outline-title-padding: 0;
+  --outline-title-sub-font-family: GmarketSansBold;
+  --outline-title-sub-font-weight: 100;
+  --outline-title-sub-font-size: 0.5em;
+  --outline-title-sub-color: #666666;
+  --outline-title-sub-align: right;
+  --outline-title-sub-padding: 5px;
+  --content-font-family: inherit;
+  --content-font-size: 1em;
+  --content-color: #000000;
+  --content-align: left;
+  --content-padding: 1%;
+  --title-contents-gap-pct: 30;
+  --slide-ratio: 1.5;
+  --slide-outer-padding: 0px;
+  --slide-inner-padding: 0px;
+">
+<div class="reveal ratio-3-2">
+  <div class="slides">
+<section class="layout-_cover">
+  <div class="cover-header">
+    <h1 class="cover-title">m2slide 소개</h1>
+    <div class="cover-subtitle">Markdown 기반 Reveal.js 프레젠테이션 저작 도구 — 구조·기능·워크플로우 설명</div>
+    
   </div>
-  
-</div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
+  <div class="cover-body">
+    
+
+    <div class="cover-meta">
+      
+      <span class="cover-version">0.9</span>
+    </div>
+  </div>
+
+  
+</section>
+
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.js"></script>
 <script>
-(function(){
-  const tocData = {"content":"","children":[{"content":"<a href=\"01-m2slide-intro.html\">1. m2Slide란?</a>","children":[]},{"content":"<a href=\"02-core-features.html\">2. 핵심 기능</a>","children":[]},{"content":"<a href=\"03-usage.html\">3. 사용법</a>","children":[]},{"content":"<a href=\"04-extensibility.html\">4. 확장성</a>","children":[]},{"content":"<a href=\"05-wrap-up.html\">5. 마무리</a>","children":[]}]};
-  function init() {
-    if (!window.markmap) { return setTimeout(init, 50); }
-    const svg = document.querySelector('.toc-mindmap-svg');
-    if (!svg) return;
-    const opts = window.markmap.deriveOptions({ initialExpandLevel: 2 });
-    window.mm = window.markmap.Markmap.create(svg, opts, tocData);
-    // Issue110: cross-page 가드 해제 (markmap 렌더 후 다음 frame)
-    requestAnimationFrame(m2ReleaseCrossGuard);
-  }
-  function m2ReleaseCrossGuard(){
+Reveal.initialize({
+  controls: false,
+  progress: false,
+  slideNumber: false,
+  hash: false,
+  // Issue66: ratio 모드(16:9/3:2)는 vertical centering이 ratio fit과 충돌하므로 false 강제.
+  // ratio-fill 모드만 사용자 top_align 설정 따름 (generateHTML 정책과 일관)
+  center: false,
+  // Issue111 후속: cover 페이지(chapter mode 별도 index.html)도 _config.yml animation: 섹션 따름.
+  // 이전 'none' 하드코딩은 Issue110의 cross-page guard(visibility:hidden)와 별개로
+  // Cover 자체의 슬라이드 transition이었음. 일관성을 위해 deck/agenda와 동일 정책 적용.
+  transition: 'convex',
+  transitionSpeed: 'default',
+  backgroundTransition: 'zoom',
+  touch: false,
+  // Issue66: cover 페이지도 cfg.slideRatio 기반 dimensions 적용 (이전엔 100%/100% 하드코딩 → fill 강제 동작 버그)
+  width: 1920,
+  height: 1280,
+  margin: 0.0,
+  // Issue89: m2slide가 처리하는 키 — Reveal 기본 keymap 비활성화
+  // Issue226: ESC(27) 표준 toggleOverview 명시 (cover Reveal.initialize도 동일 패턴)
+  keyboard: { 36: null, 35: null, 33: null, 34: null, 27: 'toggleOverview' }
+});
+// Issue110: cross-page 가드 해제 (cross-page visibility:hidden은 유지 — Issue111 후속은 슬라이드 transition만 cfg화)
+function m2ReleaseCrossGuard(){
       // Issue122: cross-page navigation(?fwd=1/?back=1/?last=1)으로 진입한 경우만 fade-in 적용.
       // M2_CROSS_GUARD_HEAD_HTML이 cross-page 시그널 진입 시에만 m2-cross-loading class를 부여하므로
       // 이 클래스 보유 여부로 cross-page 여부 판정 → 단순 페이지 리프레쉬·새 탭 진입은 fade-in 미발동.
@@ -1384,108 +1467,55 @@ html.ratio-fill .agenda-frame {
         });
       } catch (_) {}
     }
-  // Issue110: markmap CDN 로드 실패·지연에도 무한 가드 방지 — 2초 후 강제 해제
-  setTimeout(m2ReleaseCrossGuard, 2000);
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
+Reveal.on('ready', function(){
+  try { requestAnimationFrame(m2ReleaseCrossGuard); } catch (_) {}
+});
+// Issue87 (2026-05-04 swap): Cover 페이지 키 매핑 (key_navigation.md 매트릭스)
+//   →/↓/Space → agenda.html (Cover의 child = Agenda)
+//   ↑/⇤/← : Cover 최상위·sibling 없음 → 동작 없음
+//   ⇥ End : agenda.html (Agenda Home → Cover 대칭 fall-through 복원, 사용자 요청 2026-05-10)
+//   ⇞ PgUp → agenda.html (어디서든 직행)
+//   ⇟ PgDown → LAST_CHAPTER?last=1 (chapter) / 동작 없음 (single — cover==index 자체가 deck)
+var COVER_LAST_CHAPTER = '08-wrap-up.html';
+var COVER_MODE = 'chapter';
+// Issue243: agenda_enabled=false 시 cover→agenda forward를 첫 챕터로 직행
+var COVER_AGENDA_FWD = 'agenda.html?fwd=1';
+// Issue89: capture phase — Reveal 기본 keymap이 Home/End를 가로채는 것 차단
+document.addEventListener('keydown', function(e) {
+  // Issue92_1: ⌘+→ 는 End fallback(agenda fall-through)으로 아래에서 처리, 일반 → 만 child 이동
+  if (((e.key === 'ArrowRight' || e.keyCode === 39) && !e.metaKey) ||
+      e.key === 'ArrowDown' || e.keyCode === 40 ||
+      e.key === ' ' || e.keyCode === 32) {
+    e.preventDefault(); e.stopImmediatePropagation(); window.location.href = COVER_AGENDA_FWD; return;
   }
-})();
-// Issue87 (2026-05-04 swap): agenda 키 핸들러 (key_navigation.md 매트릭스)
-//   ←/↑ (parent) → Cover (cover_enabled=true) / 동작 없음 (cover_enabled=false)
-//   →/↓ (child)/Space → 첫 챕터 TOC(Chapter) / 첫 H1 anchor·본문(Single)
-//   ⇤/⇥ (sibling) → 동작 없음 (Agenda는 메타 페이지, sibling 없음)
-//   ⇞ PgUp → 무시 (자기 페이지)
-//   ⇟ PgDown → LAST_CHAPTER?last=1 (Chapter) / index.html?last=1 (Single)
-(function(){
-  function m2NavWithSignal(url, signal){
-      var hashIdx = url.indexOf('#');
-      var base = hashIdx === -1 ? url : url.slice(0, hashIdx);
-      var hash = hashIdx === -1 ? '' : url.slice(hashIdx);
-      var sep = base.indexOf('?') === -1 ? '?' : '&';
-      return base + sep + signal + hash;
-    }
-  const _tocData = {"content":"","children":[{"content":"<a href=\"01-m2slide-intro.html\">1. m2Slide란?</a>","children":[]},{"content":"<a href=\"02-core-features.html\">2. 핵심 기능</a>","children":[]},{"content":"<a href=\"03-usage.html\">3. 사용법</a>","children":[]},{"content":"<a href=\"04-extensibility.html\">4. 확장성</a>","children":[]},{"content":"<a href=\"05-wrap-up.html\">5. 마무리</a>","children":[]}]};
-  function firstHrefFromToc(node){
-    if (!node || !node.children || node.children.length === 0) return null;
-    for (const child of node.children) {
-      if (child && child.content && typeof child.content === 'string') {
-        const m = child.content.match(/href="([^"]+)"/);
-        if (m) return m[1];
-      }
-      const nested = firstHrefFromToc(child);
-      if (nested) return nested;
-    }
-    return null;
+  if (e.key === 'PageUp' || e.keyCode === 33) {
+    e.preventDefault(); e.stopImmediatePropagation(); window.location.href = COVER_AGENDA_FWD; return;
   }
-  const AGENDA_MODE = 'chapter';
-  const AGENDA_LAST_CHAPTER = '05-wrap-up.html';
-  const AGENDA_COVER_ENABLED = true;
-  const nextUrl = firstHrefFromToc(_tocData);
-  // Agenda 진입 시 hash #/N 있으면 deck으로 자동 redirect (agenda 는 reveal.js 없으므로 hash 무의미)
-  try {
-    const _hashMatch = location.hash.match(/^#\/(\d+)$/);
-    if (_hashMatch && nextUrl) {
-      const _baseUrl = nextUrl.split('#')[0];
-      const _target = _baseUrl + '#/' + _hashMatch[1];
-      window.location.replace(m2NavWithSignal(_target, 'fwd=1'));
-      return;
+  if (e.key === 'PageDown' || e.keyCode === 34) {
+    e.preventDefault(); e.stopImmediatePropagation();
+    if (COVER_MODE === 'chapter' && COVER_LAST_CHAPTER) {
+      window.location.href = COVER_LAST_CHAPTER + '?last=1';
     }
-  } catch (_e) {}
-  // Issue89: capture phase — 일관성 (agenda는 reveal.js 미사용이라 hijack 우려는 적으나 동일 패턴 유지)
-  document.addEventListener('keydown', function(e){
-    // ← / ↑ (parent) → Cover (cover_enabled=true에 한함)
-    // Issue92_1: ⌘+← 는 Home fallback (sibling, no-op)으로 아래에서 처리되므로 제외
-    if (((e.key === 'ArrowLeft' || e.keyCode === 37) && !e.metaKey) ||
-        e.key === 'ArrowUp' || e.keyCode === 38) {
-      e.preventDefault(); e.stopImmediatePropagation();
-      if (AGENDA_COVER_ENABLED) window.location.href = 'index.html?back=1';
-      return;
-    }
-    // → / ↓ (child) / Space → 첫 챕터/첫 H1 anchor
-    // Issue92_1: ⌘+→ 는 End fallback (sibling, no-op)으로 아래에서 처리되므로 제외
-    if (((e.key === 'ArrowRight' || e.keyCode === 39) && !e.metaKey) ||
-        e.key === 'ArrowDown' || e.keyCode === 40 ||
-        e.key === ' ' || e.keyCode === 32) {
-      if (nextUrl) {
-        e.preventDefault(); e.stopImmediatePropagation();
-        // Issue110: hash 포함 URL(single 모드 'index.html#/2')에서도 ?fwd=1을 hash 앞에 안전 주입
-        window.location.href = m2NavWithSignal(nextUrl, 'fwd=1');
-      }
-      return;
-    }
-    // Issue114: ⇤ Home → Cover (parent fall-up, cover_enabled=true 한정) / ⇥ End → 첫 챕터 TOC (child fall-down)
-    // Issue92: ',' (Comma) / '.' (Period) fallback / Issue92_1: ⌘+← / ⌘+→ fallback 동일 처리
-    if (e.key === 'Home' || e.keyCode === 36 || e.code === 'Comma' ||
-        (e.metaKey && e.key === 'ArrowLeft')) {
-      e.preventDefault(); e.stopImmediatePropagation();
-      if (AGENDA_COVER_ENABLED) window.location.href = 'index.html?back=1';
-      return;
-    }
-    if (e.key === 'End' || e.keyCode === 35 || e.code === 'Period' ||
-        (e.metaKey && e.key === 'ArrowRight')) {
-      e.preventDefault(); e.stopImmediatePropagation();
-      if (nextUrl) window.location.href = m2NavWithSignal(nextUrl, 'fwd=1');
-      return;
-    }
-    // ⇞ PgUp → 자기 페이지 무시
-    if (e.key === 'PageUp' || e.keyCode === 33) {
-      e.preventDefault(); e.stopImmediatePropagation();
-      return;
-    }
-    // ⇟ PgDown → 마지막 페이지
-    if (e.key === 'PageDown' || e.keyCode === 34) {
-      e.preventDefault(); e.stopImmediatePropagation();
-      if (AGENDA_MODE === 'chapter' && AGENDA_LAST_CHAPTER) {
-        window.location.href = AGENDA_LAST_CHAPTER + '?last=1';
-      } else if (AGENDA_MODE === 'single') {
-        window.location.href = 'index.html?last=1';
-      }
-      return;
-    }
-  }, true);
-})();
+    return;
+  }
+  // ⇥ End — Cover → agenda.html (Agenda Home → Cover 대칭, 사용자 요청 2026-05-10)
+  // Issue92: '.' (Period) fallback / Issue92_1: ⌘+→ fallback 동일 처리
+  if (e.key === 'End' || e.keyCode === 35 || e.code === 'Period' ||
+      (e.metaKey && e.key === 'ArrowRight')) {
+    e.preventDefault(); e.stopImmediatePropagation(); window.location.href = COVER_AGENDA_FWD; return;
+  }
+  // ↑(parent)·⇤(이전 sibling)·← : Cover 최상위·sibling 없음 → 동작 없음
+  // Issue92: ',' (Comma) Home fallback — Cover Home은 동작 없음 유지
+  // Issue92_1: ⌘+← Home fallback — 동일 no-op
+  if (e.key === 'ArrowUp' || e.keyCode === 38 ||
+      e.key === 'Home' || e.keyCode === 36 || e.code === 'Comma' ||
+      e.key === 'ArrowLeft' || e.keyCode === 37 ||
+      (e.metaKey && e.key === 'ArrowLeft')) {
+    e.preventDefault(); e.stopImmediatePropagation(); return;
+  }
+}, true);
+document.querySelector('.reveal').addEventListener('click', function() { window.location.href = COVER_AGENDA_FWD; });
 </script>
+
 </body>
 </html>

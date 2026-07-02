@@ -1,23 +1,23 @@
+# Projects/.gitignore — Projects.md 의 publishing 열이 SSOT (Issue254).
+# `./m2slide.sh --sync-projects` 가 publishing=o(affirmative) 폴더만 추적 허용목록으로 자동 생성 (x·빈값=제외).
+# ⚠️ 수동 편집 금지 — 추적 여부는 Projects.md publishing 열을 고쳐 재동기화할 것.
+
 # Ignore all files and directories in Projects folder only (not recursive)
 /*
 
-# Track this .gitignore file itself
+# Track special files
 !/.gitignore
-
-# Track README.md (markdown writing guidelines)
 !/README.md
-
-# Allow project directories
-!/aTest/
-!/AgenticCoding/
-!/GenContentProd/
-!/LlmAndVibeCoding/
-!/graphify/
-!/m2Slide/
-
-# Excluded (intentionally ignored)
-# /z_just_test/
-
 !/slide.css.md
 
-!/LlmFlow/
+# Allow project directories (publishing = o)
+!/BasicKnowledgeForAI_small/
+!/fPmIntro/
+!/GenContentProd/
+!/LlmAndVibeCoding/
+!/m2Slide/
+!/m2Slide_chapter_mode/
+!/m2slide_info/
+!/m2Slide_MermaidExample/
+!/m2Slide_single_mode/
+!/m2Slide_visual_component/

@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ko" class="ratio-3-2" style="--slide-ratio: 1.5; --slide-outer-padding: 10px; --slide-inner-padding: 0px;">
+<html lang="ko" class="ratio-3-2" style="--slide-ratio: 1.5; --slide-outer-padding: 0px; --slide-inner-padding: 0px;">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>m2Slide 소개 — Agenda</title>
+<title>m2slide 소개 — Agenda</title>
 <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -190,6 +190,24 @@
 .reveal .closing-title,
 .reveal .exercise-title {
   margin-bottom: calc(var(--title-contents-gap-pct, 0) * 0.01em);
+}
+
+/* Issue250: layout 제목 클래스 공통 폰트 SSOT.
+   --main-title-font-family(기본 GmarketSansBold)를 모든 layout headline 제목에 적용.
+   이 SSOT가 없으면 각 theme 의 §3 공유 title 블록이 font-family 를 빠뜨릴 때
+   .reveal 의 --global-font-family(Pretendard 미로드) → 시스템 폰트로 폴백되는 회귀 발생.
+   .title(슬라이드 소제목)은 위 .reveal .title 룰에서 --title-font-family 로 별도 처리. */
+.reveal .cover-title,
+.reveal .contents-title,
+.reveal .chapter-title,
+.reveal .chapter-toc-title,
+.reveal .toc-title,
+.reveal .blank-title,
+.reveal .closing-title,
+.reveal .summary-title,
+.reveal .exercise-title,
+.reveal section[class*="layout-"] h1 {
+  font-family: var(--main-title-font-family, 'GmarketSansBold', sans-serif);
 }
 
 /* 공통 Flex Column 패턴 */
@@ -1332,26 +1350,28 @@ html.ratio-fill .agenda-frame {
     @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
 </style>
-<link rel="stylesheet" href="css/custom.css?v=1782664191569">
+<link rel="stylesheet" href="css/custom.css?v=1783002735522">
 </head>
 <body class="agenda-page" data-nav-indicator="both">
 <div class="agenda-frame">
 <div class="layout-_agenda">
   <header class="toc-page-header">
     <h1 class="toc-page-title">Agenda</h1>
+    
   </header>
   <div class="toc-markmap">
     <svg class="toc-mindmap-svg"></svg>
   </div>
   
 </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
 <script>
 (function(){
-  const tocData = {"content":"","children":[{"content":"<a href=\"01-m2slide-intro.html\">1. m2Slide란?</a>","children":[]},{"content":"<a href=\"02-core-features.html\">2. 핵심 기능</a>","children":[]},{"content":"<a href=\"03-usage.html\">3. 사용법</a>","children":[]},{"content":"<a href=\"04-extensibility.html\">4. 확장성</a>","children":[]},{"content":"<a href=\"05-wrap-up.html\">5. 마무리</a>","children":[]}]};
+  const tocData = {"content":"","children":[{"content":"<a href=\"01-what-is-m2slide.html\">01. m2slide란?</a>","children":[]},{"content":"<a href=\"02-quickstart.html\">02. 빠른 시작</a>","children":[]},{"content":"<a href=\"03-markdown-rules.html\">03. 마크다운 작성 규칙</a>","children":[]},{"content":"<a href=\"04-theme-layout.html\">04. Theme / Layout 시스템</a>","children":[]},{"content":"<a href=\"05-components.html\">05. 내장 컴포넌트</a>","children":[]},{"content":"<a href=\"06-epub-output.html\">06. EPUB & 산출물</a>","children":[]},{"content":"<a href=\"07-authoring-pipeline.html\">07. Authoring Pipeline</a>","children":[]},{"content":"<a href=\"08-wrap-up.html\">08. 마무리</a>","children":[]}]};
   function init() {
     if (!window.markmap) { return setTimeout(init, 50); }
     const svg = document.querySelector('.toc-mindmap-svg');
@@ -1406,7 +1426,7 @@ html.ratio-fill .agenda-frame {
       var sep = base.indexOf('?') === -1 ? '?' : '&';
       return base + sep + signal + hash;
     }
-  const _tocData = {"content":"","children":[{"content":"<a href=\"01-m2slide-intro.html\">1. m2Slide란?</a>","children":[]},{"content":"<a href=\"02-core-features.html\">2. 핵심 기능</a>","children":[]},{"content":"<a href=\"03-usage.html\">3. 사용법</a>","children":[]},{"content":"<a href=\"04-extensibility.html\">4. 확장성</a>","children":[]},{"content":"<a href=\"05-wrap-up.html\">5. 마무리</a>","children":[]}]};
+  const _tocData = {"content":"","children":[{"content":"<a href=\"01-what-is-m2slide.html\">01. m2slide란?</a>","children":[]},{"content":"<a href=\"02-quickstart.html\">02. 빠른 시작</a>","children":[]},{"content":"<a href=\"03-markdown-rules.html\">03. 마크다운 작성 규칙</a>","children":[]},{"content":"<a href=\"04-theme-layout.html\">04. Theme / Layout 시스템</a>","children":[]},{"content":"<a href=\"05-components.html\">05. 내장 컴포넌트</a>","children":[]},{"content":"<a href=\"06-epub-output.html\">06. EPUB & 산출물</a>","children":[]},{"content":"<a href=\"07-authoring-pipeline.html\">07. Authoring Pipeline</a>","children":[]},{"content":"<a href=\"08-wrap-up.html\">08. 마무리</a>","children":[]}]};
   function firstHrefFromToc(node){
     if (!node || !node.children || node.children.length === 0) return null;
     for (const child of node.children) {
@@ -1420,7 +1440,7 @@ html.ratio-fill .agenda-frame {
     return null;
   }
   const AGENDA_MODE = 'chapter';
-  const AGENDA_LAST_CHAPTER = '05-wrap-up.html';
+  const AGENDA_LAST_CHAPTER = '08-wrap-up.html';
   const AGENDA_COVER_ENABLED = true;
   const nextUrl = firstHrefFromToc(_tocData);
   // Agenda 진입 시 hash #/N 있으면 deck으로 자동 redirect (agenda 는 reveal.js 없으므로 hash 무의미)

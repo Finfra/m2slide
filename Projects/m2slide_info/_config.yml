@@ -1,0 +1,7 @@
+theme: default_lec
+theme_default_layout: contents
+cover_enabled: true
+cover_layout: _cover
+markmap_depth: 2
+head_left: d1
+head_right: now
