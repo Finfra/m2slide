@@ -176,7 +176,7 @@ class ChapterNavVarRewriteTest(unittest.TestCase):
     def test_re_skips_already_rewritten(self):
         # 이미 /p/ short-path 로 치환된 값은 재매칭 금지 (negative lookahead)
         m = DevHandler._NAV_CHAPTER_VAR_RE.search(
-            "var PREV_CHAPTER = '/p/FpmIntro/n/1/1'")
+            "var PREV_CHAPTER = '/p/fPmIntro/n/1/1'")
         self.assertIsNone(m)
 
     def test_re_does_not_capture_trailing_hash(self):
