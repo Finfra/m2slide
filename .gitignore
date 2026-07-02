@@ -166,3 +166,17 @@ __pycache__/
 
 # ppt2m2slide 역변환 중간 산출물(raw-media·img-fullext·pptx2md-out) — 배포 자산 아님, 원본 pptx로 재생성 가능
 **/_pipeline/
+
+# refs/ 는 리서치 참고자료 스크랩 — 배포 자산 아님, git 미추적
+Projects/*/refs/
+
+# pdf 는 배포 산출물 아님(m2slide 는 html/epub 만 배포) — git 미추적
+*.pdf
+
+# epub 는 https://finfra.github.io/m2slide/ 에 실제 퍼블리싱되는 것만 추적.
+# docs/ 미러에 없는 프로젝트의 epub 는 추적 제외
+*.epub
+!/Projects/m2Slide/slide/m2Slide.epub
+!/Projects/m2Slide_MermaidExample/slide/*.epub
+!/docs/m2Slide/m2Slide.epub
+!/docs/m2Slide_MermaidExample/*.epub
