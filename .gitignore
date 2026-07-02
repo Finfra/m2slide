@@ -13,6 +13,9 @@ noteForHuman*.md
 PROMPTS.md
 config.yml
 run.sh
+# Projects.md — Projects/.gitignore 를 구동하는 로컬 인덱스(SSOT). git 미추적 (Issue254)
+# 폴더 스캔 + Projects/.gitignore publishing 시드로 `--sync-projects` 재생성 가능.
+Projects.md
 
 # vscode
 .vscode
