@@ -35,7 +35,7 @@
 
 # ✅ 완료
 
-## Issue251. config 가 AGENDA frontmatter theme 미반영 — chapter mode 조용한 테마 불일치 (등록: 2026-06-30, 해결: 2026-07-03, commit: TBD) ✅
+## Issue251. config 가 AGENDA frontmatter theme 미반영 — chapter mode 조용한 테마 불일치 (등록: 2026-06-30, 해결: 2026-07-03, commit: 6925ccd) ✅
 * 목적: chapter mode 프로젝트가 `markdown/AGENDA.md` frontmatter 에 `theme: <name>` 만 선언하고 `_config.yml` 이 없으면, config.js 가 themeName=null→`default` 로 빌드하여 선언 테마가 조용히 무시되는 함정 차단.
 * 근본 원인 (1차): `lib/config.js` 의 theme 해석이 `_config.yml`/`_config.org.yml` 만 읽고 AGENDA.md frontmatter `theme:` 는 반영 안 함.
 * 근본 원인 (2차 — 실제 회귀 원인, 본 세션 재조사로 발견): 이전 세션(`01ad51a` 일괄 커밋)에서 frontmatter fallback 코드(`if (!cfg.themeName && projectDir) {...}`)가 이미 추가돼 있었으나 **죽은 코드**였음. `_config.org.yml` 이 전역 기본값으로 `theme: default` 를 선언 → `loadConfig` 최초 단계에서 `cfg.themeName` 이 이미 `'default'` 로 채워짐 → `!cfg.themeName` 조건이 항상 false → fallback 미실행. `/tmp` 스크래치 프로젝트(AGENDA `theme: default_lec`, `_config.yml` 없음)로 재현 확인.
