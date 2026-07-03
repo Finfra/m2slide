@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>단일 페이지 모드 대표</title>
+  <title>m2Slide Single mode Example : fWarrange 소개</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -1342,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783047854881">
+  <link rel="stylesheet" href="css/custom.css?v=1783050193008">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1560,7 +1560,7 @@ html.ratio-fill .agenda-frame {
   
   <div class="cover-corner cover-br">https://finfra.kr</div>
   <div class="cover-header">
-    <h1 class="cover-title">단일 페이지 모드 대표</h1>
+    <h1 class="cover-title">m2Slide Single mode Example : fWarrange 소개</h1>
     
     
   </div>
@@ -1591,8 +1591,8 @@ html.ratio-fill .agenda-frame {
   </div>
   <div class="chapter-body"><ul>
 <li class="bullet-dot">0.1. fWarrange 소개</li>
-<li class="bullet-dot">0.2. 설치 및 접근성 권한</li>
-<li class="bullet-dot">0.3. REST API 자동화</li>
+<li class="bullet-dot">0.2. 워크스페이스 저장·복원</li>
+<li class="bullet-dot">0.3. REST API·AI 에이전트 연동</li>
 </ul></div>
 </section>
 
@@ -1693,13 +1693,13 @@ html.ratio-fill .agenda-frame {
   <h2 class="title">JavaScript 코드 예시</h2>
   <div class="contents-body">
 
-<pre class="code-wrapper"><code class="language-javascript hljs">// REST API로 현재 레이아웃 저장 요청
-async function saveLayout(name) {
-  const res = await fetch("http://fwarrange-daemon:3016/layouts", {
+<pre class="code-wrapper"><code class="language-javascript hljs">// 현재 창 배치를 캡처하여 저장 (REST API)
+async function captureLayout(name) {
+  const res = await fetch("http://fwarrange-daemon:3016/api/v1/capture", {
     method: "POST",
     body: JSON.stringify({ name })
   });
-  return res.json();
+  return res.json(); // { app: "fWarrange", status: "ok" }
 }</code></pre></div>
 </section>
 
@@ -1771,12 +1771,11 @@ sequenceDiagram
     participant User
     participant MenuBar as fWarrange paidApp
     participant CliApp as cliApp REST API
-    User->>MenuBar: 레이아웃 저장 클릭
-    MenuBar->>CliApp: 창 정보 요청
-    CliApp-->>MenuBar: 위치·크기 YAML 반환
-    MenuBar-->>User: 워크스페이스 저장 완료
+    User->>MenuBar: 현재 배치 저장 클릭
+    MenuBar->>CliApp: POST /api/v1/capture
+    CliApp-->>MenuBar: 레이아웃 저장 완료
     User->>MenuBar: 단축키로 복원 요청
-    MenuBar->>CliApp: 저장된 레이아웃 적용 요청
+    MenuBar->>CliApp: POST /api/v1/layouts/{name}/restore
     CliApp-->>User: 창 위치·크기 복원
 </div></div>
 </section>
@@ -1835,8 +1834,8 @@ classDiagram
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot">fWarrange 실제 화면으로 이미지 배치 예제를 구성</li>
-<li class="bullet-dot">메뉴바 앱과 설정 화면 캡처를 사용</li>
+<li class="bullet-dot">fWarrange 실제 화면 9종 캡처로 이미지 배치 예제를 다양하게 구성</li>
+<li class="bullet-dot">메뉴바 앱, 설정 화면, 다중 모니터, 언어 선택까지 화면별로 다른 캡처 사용</li>
 </ul></div>
 </section>
 
@@ -1868,17 +1867,17 @@ classDiagram
     <div class="contents-head-left">4. 이미지 및 미디어</div>
     <div class="contents-head-right">4.1. 이미지</div>
   </div>
-  <h3 class="title">기본 이미지 배치 (설정 화면)</h3>
+  <h3 class="title">기본 이미지 배치 (일반 설정 화면)</h3>
   <div class="contents-body">
 
 <div class="m2-cols">
 <div class="m2-col">
-<div class="media-container"><img src="./img/scenery.png" alt="fWarrange 일반 설정 화면"></div>
+<div class="media-container"><img src="./img/chart.png" alt="fWarrange 일반 설정 화면"></div>
 </div>
 <div class="m2-col">
 
 <ul>
-<li class="bullet-dot">접근성 권한을 켜야 창 제어가 가능합니다.</li>
+<li class="bullet-dot">설정(Settings) 창의 첫 화면으로, 여기서 API·단축키·복원 옵션 탭으로 이동합니다.</li>
 </ul>
 </div>
 </div></div>
@@ -1951,14 +1950,14 @@ classDiagram
 
 
 <ul>
-<li class="bullet-dot">REST API 서버를 켜면 터미널·스크립트·AI 에이전트에서 원격 제어 가능</li>
-<li class="bullet-dot">기본 포트는 3016</li>
-<li class="bullet-dot">curl로 서버 상태 확인 가능</li>
+<li class="bullet-dot">설정 → API 탭에서 REST API 서버 활성화 토글을 켭니다.</li>
+<li class="bullet-dot">기본 포트는 3016이며 필요 시 변경할 수 있습니다.</li>
+<li class="bullet-dot"><code>curl http://&lt;host&gt;:3016/</code>로 서버 상태(Health Check)를 확인합니다.</li>
 <li class="bullet-dot">이미지가 있을 때 텍스트가 어떻게 배치되는지 확인</li>
 </ul>
 </div>
 <div class="m2-col">
-<div class="media-container"><img src="./img/chart.png" alt="API 설정 화면"></div>
+<div class="media-container"><img src="./img/settings_api.png" alt="API 설정 화면"></div>
 </div>
 </div></div>
 </section>
@@ -1988,12 +1987,12 @@ classDiagram
 <div class="m2-cols">
 <div class="m2-col">
 <ul>
-<li class="bullet-dot">paidApp은 App Store 배포용 Sandbox 호환 GUI 앱입니다.<br>-메뉴바 아이콘 클릭으로 워크스페이스 관리 패널을 엽니다.<br>-SwiftUI 기반으로 macOS 15.0 이상에서 동작합니다.</li>
+<li class="bullet-dot">메뉴바 아이콘을 클릭하면 저장된 워크스페이스 목록이 나타납니다.<br>-앱 이름·창 위치·크기가 세트로 저장됩니다.<br>-다중 모니터 환경에서는 각 창이 있던 모니터 정보도 함께 기록됩니다.</li>
 </ul>
 
 </div>
 <div class="m2-col">
-<div class="media-container"><img src="./img/chart.png" alt="설정 화면"></div>
+<div class="media-container"><img src="./img/main_apps_visible.png" alt="워크스페이스 목록 (다중 모니터)"></div>
 </div>
 </div></div>
 </section>
@@ -2008,12 +2007,12 @@ classDiagram
 
 <div class="m2-cols">
 <div class="m2-col">
-<div class="media-container"><img src="./img/chart.png" alt="설정 화면"></div>
+<div class="media-container"><img src="./img/settings_advanced.png" alt="고급 설정 화면"></div>
 </div>
 <div class="m2-col">
 
 <ul>
-<li class="bullet-dot">cliApp은 Sandbox 미적용 데몬으로 Accessibility API와 REST 서버를 제공합니다.<br>-paidApp과 별도 프로세스로 동작합니다.<br>-터미널·스크립트·AI 에이전트가 이 데몬을 통해 창을 제어합니다.</li>
+<li class="bullet-dot">cliApp은 Sandbox 미적용 데몬으로 Accessibility API와 REST 서버를 제공합니다.<br>-paidApp과 별도 프로세스로 동작합니다.<br>-고급 설정에서 로그 레벨과 데몬 연동 옵션을 조정합니다.</li>
 </ul>
 </div>
 </div></div>
@@ -2033,7 +2032,7 @@ classDiagram
 </ul>
 </div>
 <div class="m2-col">
-<div class="media-container"><img src="./img/chart.png" alt="설정 화면"></div>
+<div class="media-container"><img src="./img/app_selected.png" alt="워크스페이스에서 앱 선택 상태"></div>
 </div>
 </div></div>
 </section>
@@ -2049,17 +2048,17 @@ classDiagram
 <div class="m2-cols columns">
 <div class="m2-col column" style="flex: 0 0 48%; max-width: 48%">
 <ul>
-<li class="bullet-dot">접근성 권한이 없으면 창을 제어할 수 없습니다.
+<li class="bullet-dot">레이아웃 복원이 정확하지 않다면 접근성 권한부터 확인합니다.
 <ul>
 <li class="bullet-dash">시스템 설정 → 개인정보 보호 및 보안 → 접근성</li>
-<li class="bullet-dash">fWarrange 토글을 켜야 정상 동작합니다.</li>
-<li class="bullet-dash">앱이 목록에 없으면 + 버튼으로 직접 추가합니다.</li>
+<li class="bullet-dash">fWarrange 토글을 켜야 창 위치·크기를 정확히 읽고 씁니다.</li>
+<li class="bullet-dash">권한이 없으면 복원 시 위치가 어긋나는 경우가 많습니다.</li>
 </ul>
 </li>
 </ul>
 </div>
 <div class="m2-col column" style="flex: 0 0 48%; max-width: 48%">
-<div class="media-container"><img src="./img/chart.png" alt="설정 화면"></div>
+<div class="media-container"><img src="./img/settings_restore.png" alt="복원 옵션 설정 화면"></div>
 </div>
 </div></div>
 </section>
@@ -2074,20 +2073,20 @@ classDiagram
 
 <div class="m2-cols columns">
 <div class="m2-col column card">
-<div class="media-container"><img src="./img/chart.png" alt="메뉴바 실행 화면"></div>
+<div class="media-container"><img src="./img/lang_dropdown.png" alt="언어 선택 드롭다운"></div>
 </div>
 <div class="m2-col column card">
 <ul>
-<li class="bullet-dot">Agent 기반 워크플로우로 빌드·테스트·배포·이슈 관리를 자동화합니다.
+<li class="bullet-dot">Claude Code Skill과 MCP 서버로 자연어 명령이 가능합니다.
 <ul>
-<li class="bullet-dash">Gemini 및 Claude 에이전트 시스템 도입</li>
-<li class="bullet-dash">이슈 트래킹과 설계 문서 연동</li>
+<li class="bullet-dash"><code>/fwarrange capture</code>, <code>/fwarrange restore</code> 등 슬래시 커맨드 제공</li>
+<li class="bullet-dash">REST API 서버가 켜져 있어야 동작합니다.</li>
 </ul>
 </li>
 </ul>
 </div>
 <div class="m2-col column card">
-<div class="media-container"><img src="./img/scenery.png" alt="메뉴바 실행 화면"></div>
+<div class="media-container"><img src="./img/scenery.png" alt="fWarrange 메뉴바 실행 화면"></div>
 </div>
 </div></div>
 </section>
@@ -2104,13 +2103,13 @@ classDiagram
   <div style="width: 48%;">
 <p>    <h3>키보드 단축키</h3></p>
 <p>    <ul></p>
+<p>      <li>워크스페이스별로 원하는 키 조합을 직접 지정할 수 있습니다.</li></p>
 <p>      <li>글로벌 단축키는 데몬 기반으로 앱이 백그라운드여도 동작합니다.</li></p>
-<p>      <li>로컬 단축키는 fWarrange 앱이 활성 상태일 때만 동작합니다.</li></p>
-<p>      <li>설정 화면에서 자유롭게 재지정할 수 있습니다.</li></p>
+<p>      <li>Settings → Shortcuts 탭에서 즉시 저장됩니다.</li></p>
 <p>    </ul></p>
   </div>
   <div style="width: 48%;">
-<p>    <img src="./img/chart.png" alt="Settings" style="width: 100%; border-radius: 10px;"></p>
+<p>    <img src="./img/settings_shortcuts.png" alt="단축키 설정 화면" style="width: 100%; border-radius: 10px;"></p>
   </div>
 </div></div>
 </section>
