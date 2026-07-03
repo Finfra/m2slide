@@ -397,6 +397,7 @@ open Projects/LlmAndVibeCoding/slide/01-opening.html
 | `identifier-meta-rules` | instructor_name 등 식별자 메타 필드 자동 채움 금지 + grep 우선 절차. 로마자→한글 역변환 금지 |
 | `capture-output-rules`| 캡처·스크린샷 출력 경로 의무(`_doc_work/capture/`) 및 루트 오염 차단 절차       |
 | `project-version-rules` | 프로젝트 폴더 무버전 + `Projects/<Name>/VERSION` 파일 SSOT. z_done 이동 시 `<Name>_v<VERSION>` 버전 복원 |
+| `repo-tracking-rules`  | git push 용량 초과 재방지 — 배포 불필요 자산(`_pipeline/`·`refs/`·pdf·미발행 epub·`_doc_arch`·`_doc_work`) gitignore 정책 + 신규 자산 추가 시 추적 여부 판정 절차 |
 
 **슬라이드 마크다운 작성 시 의무 참조 순서**:
 1. `~/.claude/rules/md-rules.md` (일반 마크다운 기본)
