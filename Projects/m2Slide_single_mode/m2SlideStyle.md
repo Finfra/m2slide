@@ -1,5 +1,5 @@
 ---
-title: m2slide 단일 모드 예제
+title: 단일 페이지 모드 대표
 subtitle: 한 개의 md파일에서 테스트. 
 instructor_name: 남중구 (핀프라)
 instructor_contact: nowage@gmail.com

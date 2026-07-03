@@ -23,7 +23,7 @@ Chapter 2.
 ```bash
 node --version    # v18 이상 권장
 npm --version
-git clone <m2slide-repo>
+git clone https://github.com/Finfra/m2slide.git
 ```
 
 ---
@@ -39,6 +39,8 @@ Projects/MyDeck/
     ├── AGENDA.md        # 챕터 인덱스
     └── 01-intro.md      # 챕터 마크다운
 ```
+
+* **관련 스킬 제공**: `/m2 init <Name>` 커맨드가 위 골격을 자동 생성 + 저작 파이프라인 단계 1(기획 인터뷰)까지 이어서 시작함
 
 ---
 
@@ -64,8 +66,14 @@ Projects/MyDeck/
 | :--- | :--- |
 | `←` `→` | 이전 / 다음 슬라이드 |
 | `↑` | 상위 페이지로 이동 |
+| `Home` / `End` | 이전 / 다음 챕터(섹션)로 sibling 점프 |
+| `PageUp` / `PageDown` | 목차(Agenda) 직행 / 마지막 페이지 직행 |
 | `ESC` | 전체 개요 보기 |
 | `S` | 발표자 노트 모드 |
+
+::: source
+Home/End/PageUp/PageDown은 m2slide 고유 네비게이션 — reveal.js 기본 키맵과 다름
+:::
 
 ---
 
@@ -82,3 +90,4 @@ Projects/<Name>/
 ```
 
 * `slide/`는 빌드 산출물 — 직접 편집하지 않음
+* **단계별 생성 스킬 제공**: `Info.md → refs/ → AGENDA.md → markdown/` 순서를 사람이 다 채우지 않아도 됨 — authoring-pipeline(9단계) agent가 `/m2 init` → `/m2 continue`로 단계별 자동 생성 + 검토 체크포인트 진행

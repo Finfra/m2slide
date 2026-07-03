@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"8","slideOffset":57,"totalSlides":64};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"8","slideOffset":58,"totalSlides":65};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1342,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783005429834">
+  <link rel="stylesheet" href="css/custom.css?v=1783043841395">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1633,12 +1633,19 @@ html.ratio-fill .agenda-frame {
   <h2 class="title">다음 단계 — 직접 시작하기</h2>
   <div class="contents-body">
 
-<ol>
-<li>저장소를 <code>git clone</code>하고 <code>node --version</code> 확인</li>
-<li><code>Projects/MyDeck/</code>에 <code>AGENDA.md</code> + 챕터 <code>.md</code> + <code>_config.yml</code> 작성</li>
-<li><code>./m2slide.sh MyDeck</code>로 빌드 → 브라우저에서 확인</li>
-<li>막히면 GitHub Issues에 질문·버그를 등록</li>
-</ol>
+<pre class="code-wrapper"><code class="language-bash hljs"># 1) 저장소 클론 + Node 버전 확인
+git clone https://github.com/Finfra/m2slide.git
+node --version
+
+# 2) 프로젝트 초기화 — MyDeck은 예시명, 실제로는 원하는 이름으로 대체
+/m2 init MyDeck
+
+# 3) AGENDA.md + 챕터 .md + _config.yml 작성 (또는 파이프라인 단계 계속 진행)
+
+# 4) 빌드 → 브라우저에서 확인
+./m2slide.sh MyDeck
+
+# 5) 막히면 GitHub Issues에 질문·버그 등록</code></pre>
 
 <blockquote>
 가장 빠른 학습은 본 자료의 마크다운 소스를 직접 열어 따라 쓰는 것

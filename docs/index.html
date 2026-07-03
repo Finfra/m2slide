@@ -51,6 +51,27 @@ html {
   margin: 40px auto;
   padding: 0 24px;
 }
+.proj-section {
+  margin-bottom: 44px;
+}
+.proj-section:last-child {
+  margin-bottom: 0;
+}
+.section-header {
+  margin-bottom: 18px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #e2e8f0;
+}
+.section-header .section-title {
+  font-size: 22px;
+  color: #1a202c;
+  font-weight: 700;
+}
+.section-header .section-desc {
+  margin-top: 4px;
+  font-size: 14px;
+  color: #718096;
+}
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -114,64 +135,90 @@ a {
   <a class="repo-link" href="https://github.com/Finfra/m2slide" target="_blank" rel="noopener">⭐ GitHub 저장소 · github.com/Finfra/m2slide</a>
 </div>
 <div class="container">
-  <div class="grid" id="project-list">
-    <!-- PROJECT_ENTRIES_START -->
-    <a class="card" href="fPmIntro/index.html" data-project="fPmIntro">
-      <h2>fPM 소개: Claude Code 다중 프로젝트 자동화 프레임워크</h2>
-      <div class="project-id">fPmIntro</div>
-      <span class="badge">프레젠테이션</span>
-    </a>
-    <a class="card" href="BasicKnowledgeForAI_small/index.html" data-project="BasicKnowledgeForAI_small">
-      <h2>AI 기초 지식 (Partial)</h2>
-      <div class="project-id">BasicKnowledgeForAI_small</div>
-      <span class="badge">프레젠테이션</span>
-    </a>
-    <a class="card" href="LlmAndVibeCoding/index.html" data-project="LlmAndVibeCoding">
-      <h2>LLM 툴 진화와 바이브 코딩 세대 구분</h2>
-      <div class="project-id">LlmAndVibeCoding</div>
-      <span class="badge">프레젠테이션</span>
-      <span class="badge badge-epub">📚 EPUB</span>
-    </a>
-    <a class="card" href="GenContentProd/index.html" data-project="GenContentProd">
-      <h2>AI Prompt Engineering으로 시작하는 AI기반 문서작성 실습</h2>
-      <div class="project-id">GenContentProd</div>
-      <span class="badge">프레젠테이션</span>
-    </a>
-    <a class="card" href="m2Slide/index.html" data-project="m2Slide">
-      <h2>m2Slide 소개</h2>
-      <div class="project-id">m2Slide</div>
-      <span class="badge">프레젠테이션</span>
-      <span class="badge badge-epub">📚 EPUB</span>
-    </a>
-    <a class="card" href="m2slide_info/index.html" data-project="m2slide_info">
-      <h2>m2slide 소개</h2>
-      <div class="project-id">m2slide_info</div>
-      <span class="badge">프레젠테이션</span>
-    </a>
-    <a class="card" href="m2Slide_visual_component/index.html" data-project="m2Slide_visual_component">
-      <h2>m2slide 시각 구성요소 쇼케이스</h2>
-      <div class="project-id">m2Slide_visual_component</div>
-      <span class="badge">프레젠테이션</span>
-    </a>
-    <a class="card" href="m2Slide_MermaidExample/index.html" data-project="m2Slide_MermaidExample">
-      <h2>m2slide Mermaid 예제</h2>
-      <div class="project-id">m2Slide_MermaidExample</div>
-      <span class="badge">프레젠테이션</span>
-      <span class="badge badge-epub">📚 EPUB</span>
-    </a>
-    <a class="card" href="m2Slide_single_mode/index.html" data-project="m2Slide_single_mode">
-      <h2>Single Mode Example</h2>
-      <div class="project-id">m2Slide_single_mode</div>
-      <span class="badge">프레젠테이션</span>
-    </a>
-    <a class="card" href="m2Slide_chapter_mode/index.html" data-project="m2Slide_chapter_mode">
-      <h2>m2slide 챕터 모드 예제</h2>
-      <div class="project-id">m2Slide_chapter_mode</div>
-      <span class="badge">프레젠테이션</span>
-      <span class="badge badge-epub">📚 EPUB</span>
-    </a>
-    <!-- PROJECT_ENTRIES_END -->
-  </div>
+  <section class="proj-section" id="section-m2">
+    <div class="section-header">
+      <h2 class="section-title">m2Slide</h2>
+      <p class="section-desc">마크다운 → 프레젠테이션 도구: 소개·기능·예제</p>
+    </div>
+    <div class="grid">
+      <!-- PROJECT_ENTRIES_M2_START -->
+      <a class="card" href="m2Slide/index.html" data-project="m2Slide">
+        <h2>m2Slide 소개</h2>
+        <div class="project-id">m2Slide</div>
+        <span class="badge">프레젠테이션</span>
+        <span class="badge badge-epub">📚 EPUB</span>
+      </a>
+      <a class="card" href="m2slide_info/index.html" data-project="m2slide_info">
+        <h2>m2Slide란?</h2>
+        <div class="project-id">m2slide_info</div>
+        <span class="badge">프레젠테이션</span>
+      </a>
+      <a class="card" href="m2Slide_visual_component/index.html" data-project="m2Slide_visual_component">
+        <h2>m2slide 시각 구성요소 쇼케이스</h2>
+        <div class="project-id">m2Slide_visual_component</div>
+        <span class="badge">프레젠테이션</span>
+      </a>
+      <a class="card" href="m2Slide_MermaidExample/index.html" data-project="m2Slide_MermaidExample">
+        <h2>m2slide Mermaid 예제</h2>
+        <div class="project-id">m2Slide_MermaidExample</div>
+        <span class="badge">프레젠테이션</span>
+        <span class="badge badge-epub">📚 EPUB</span>
+      </a>
+      <a class="card" href="m2Slide_single_mode/index.html" data-project="m2Slide_single_mode">
+        <h2>단일 페이지 모드 대표</h2>
+        <div class="project-id">m2Slide_single_mode</div>
+        <span class="badge">프레젠테이션</span>
+      </a>
+      <a class="card" href="m2Slide_chapter_mode/index.html" data-project="m2Slide_chapter_mode">
+        <h2>다중 챕터 모드 대표</h2>
+        <div class="project-id">m2Slide_chapter_mode</div>
+        <span class="badge">프레젠테이션</span>
+        <span class="badge badge-epub">📚 EPUB</span>
+      </a>
+      <!-- PROJECT_ENTRIES_M2_END -->
+    </div>
+  </section>
+  <section class="proj-section" id="section-lec">
+    <div class="section-header">
+      <h2 class="section-title">강연 자료</h2>
+      <p class="section-desc">AI·LLM 강의용 프레젠테이션</p>
+    </div>
+    <div class="grid">
+      <!-- PROJECT_ENTRIES_LEC_START -->
+      <a class="card" href="BasicKnowledgeForAI_small/index.html" data-project="BasicKnowledgeForAI_small">
+        <h2>AI 기초 지식 (Partial)</h2>
+        <div class="project-id">BasicKnowledgeForAI_small</div>
+        <span class="badge">프레젠테이션</span>
+      </a>
+      <a class="card" href="LlmAndVibeCoding/index.html" data-project="LlmAndVibeCoding">
+        <h2>LLM 툴 진화와 바이브 코딩 세대 구분</h2>
+        <div class="project-id">LlmAndVibeCoding</div>
+        <span class="badge">프레젠테이션</span>
+        <span class="badge badge-epub">📚 EPUB</span>
+      </a>
+      <a class="card" href="GenContentProd/index.html" data-project="GenContentProd">
+        <h2>AI Prompt Engineering으로 시작하는 AI기반 문서작성 실습</h2>
+        <div class="project-id">GenContentProd</div>
+        <span class="badge">프레젠테이션</span>
+      </a>
+      <!-- PROJECT_ENTRIES_LEC_END -->
+    </div>
+  </section>
+  <section class="proj-section" id="section-pr">
+    <div class="section-header">
+      <h2 class="section-title">프레임워크</h2>
+      <p class="section-desc">Claude Code 다중 프로젝트 자동화</p>
+    </div>
+    <div class="grid">
+      <!-- PROJECT_ENTRIES_PR_START -->
+      <a class="card" href="fPmIntro/index.html" data-project="fPmIntro">
+        <h2>fPM 소개: Claude Code 다중 프로젝트 자동화 프레임워크</h2>
+        <div class="project-id">fPmIntro</div>
+        <span class="badge">프레젠테이션</span>
+      </a>
+      <!-- PROJECT_ENTRIES_PR_END -->
+    </div>
+  </section>
 </div>
 </body>
 </html>

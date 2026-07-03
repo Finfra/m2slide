@@ -1,5 +1,5 @@
 ---
-title: m2slide 챕터 모드 예제
+title: 다중 챕터 모드 대표
 subtitle: Chapter별로 분리된 여러 파일로 슬라이드 생성.
 instructor_name: 남중구 (핀프라)
 instructor_contact: nowage@gmail.com

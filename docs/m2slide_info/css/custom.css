@@ -1447,6 +1447,25 @@ body.agenda-page .agenda-frame {
   list-style-type: none;
 }
 
+/* 순서있는 목록(ol) 번호 복원 (default 테마 parity — Issue 없음, base.css §10 gap 동일 교정)
+   base.css §10(`.layout-* ol { list-style:none }`)이 ol 네이티브 번호를 제거하는데
+   ::before 마커는 ul 에만 정의돼 있어 layout 내부 ol 이 번호를 완전히 잃음.
+   CSS counter 로 "N. " 마커를 재부여. (base.css 는 수정 가드 대상이라 theme 에서 교정) */
+.reveal section[class*="layout-"] ol {
+  counter-reset: m2ol;
+}
+.reveal section[class*="layout-"] ol > li {
+  counter-increment: m2ol;
+}
+.reveal section[class*="layout-"] ol > li::before {
+  content: counter(m2ol) ". ";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: currentColor;
+  font-variant-numeric: tabular-nums;
+}
+
 /* chapter-card 내부 bullet 제거 — base.css §10 layout-* ul > li::before 의 ● override
    (default 테마 parity — toc_card_mode cards는 카드 UI라 마커 불필요) */
 .reveal section[class*="layout-"] ul.chapter-list--cards > li.chapter-card::before {

@@ -41,10 +41,21 @@ Chapter 8.
 
 ## 다음 단계 — 직접 시작하기
 
-1. 저장소를 `git clone`하고 `node --version` 확인
-2. `Projects/MyDeck/`에 `AGENDA.md` + 챕터 `.md` + `_config.yml` 작성
-3. `./m2slide.sh MyDeck`로 빌드 → 브라우저에서 확인
-4. 막히면 GitHub Issues에 질문·버그를 등록
+```bash
+# 1) 저장소 클론 + Node 버전 확인
+git clone https://github.com/Finfra/m2slide.git
+node --version
+
+# 2) 프로젝트 초기화 — MyDeck은 예시명, 실제로는 원하는 이름으로 대체
+/m2 init MyDeck
+
+# 3) AGENDA.md + 챕터 .md + _config.yml 작성 (또는 파이프라인 단계 계속 진행)
+
+# 4) 빌드 → 브라우저에서 확인
+./m2slide.sh MyDeck
+
+# 5) 막히면 GitHub Issues에 질문·버그 등록
+```
 
 > 가장 빠른 학습은 본 자료의 마크다운 소스를 직접 열어 따라 쓰는 것
 

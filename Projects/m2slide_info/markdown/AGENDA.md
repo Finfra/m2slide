@@ -1,5 +1,5 @@
 ---
-title: m2slide 소개
+title: m2Slide란?
 subtitle: "마크다운 한 벌로 발표 슬라이드·<strong>EPUB·PDF·PPTX</strong>까지 — Chapter Mode·theme/layout 시스템·내장 컴포넌트(chart·d3·React·p5·3D)·dev-server 미리보기·9단계 저작 파이프라인 안내"
 date: 2026-06-30
 type: ppt

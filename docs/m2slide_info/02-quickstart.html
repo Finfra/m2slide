@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"2","slideOffset":8,"totalSlides":64};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"2","slideOffset":8,"totalSlides":65};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1342,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783005429823">
+  <link rel="stylesheet" href="css/custom.css?v=1783043841367">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1600,7 +1600,7 @@ html.ratio-fill .agenda-frame {
 
 <pre class="code-wrapper"><code class="language-bash hljs">node --version    # v18 이상 권장
 npm --version
-git clone &lt;m2slide-repo&gt;</code></pre></div>
+git clone https://github.com/Finfra/m2slide.git</code></pre></div>
 </section>
 
 <section data-slide-hash="#/4" class="layout-_contents">
@@ -1619,7 +1619,11 @@ git clone &lt;m2slide-repo&gt;</code></pre></div>
 ├── _config.yml          # 빌드·렌더링 설정
 └── markdown/
     ├── AGENDA.md        # 챕터 인덱스
-    └── 01-intro.md      # 챕터 마크다운</code></pre></div>
+    └── 01-intro.md      # 챕터 마크다운</code></pre>
+
+<ul>
+<li class="bullet-dot"><strong>관련 스킬 제공</strong>: <code>/m2 init &lt;Name&gt;</code> 커맨드가 위 골격을 자동 생성 + 저작 파이프라인 단계 1(기획 인터뷰)까지 이어서 시작함</li>
+</ul></div>
 </section>
 
 <section data-slide-hash="#/5" class="layout-_contents">
@@ -1662,10 +1666,16 @@ git clone &lt;m2slide-repo&gt;</code></pre></div>
 <tbody>
 <tr><td style="text-align:left"><code>←</code> <code>→</code></td><td style="text-align:left">이전 / 다음 슬라이드</td></tr>
 <tr><td style="text-align:left"><code>↑</code></td><td style="text-align:left">상위 페이지로 이동</td></tr>
+<tr><td style="text-align:left"><code>Home</code> / <code>End</code></td><td style="text-align:left">이전 / 다음 챕터(섹션)로 sibling 점프</td></tr>
+<tr><td style="text-align:left"><code>PageUp</code> / <code>PageDown</code></td><td style="text-align:left">목차(Agenda) 직행 / 마지막 페이지 직행</td></tr>
 <tr><td style="text-align:left"><code>ESC</code></td><td style="text-align:left">전체 개요 보기</td></tr>
 <tr><td style="text-align:left"><code>S</code></td><td style="text-align:left">발표자 노트 모드</td></tr>
 </tbody>
-</table></div>
+</table>
+
+<div class="m2-source source">
+<p>Home/End/PageUp/PageDown은 m2slide 고유 네비게이션 — reveal.js 기본 키맵과 다름</p>
+</div></div>
 </section>
 
 <section data-slide-hash="#/7" class="layout-_contents">
@@ -1686,6 +1696,7 @@ git clone &lt;m2slide-repo&gt;</code></pre></div>
 
 <ul>
 <li class="bullet-dot"><code>slide/</code>는 빌드 산출물 — 직접 편집하지 않음</li>
+<li class="bullet-dot"><strong>단계별 생성 스킬 제공</strong>: <code>Info.md → refs/ → AGENDA.md → markdown/</code> 순서를 사람이 다 채우지 않아도 됨 — authoring-pipeline(9단계) agent가 <code>/m2 init</code> → <code>/m2 continue</code>로 단계별 자동 생성 + 검토 체크포인트 진행</li>
 </ul></div>
 </section>
 

@@ -95,14 +95,14 @@ p.draw = function() {
 
 ```model3d
 {
-  "src": "./img/model.glb",
-  "alt": "3D 모델 예시",
+  "src": "https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Models@main/2.0/Duck/glTF-Binary/Duck.glb",
+  "alt": "3D 모델 예시 (Khronos 샘플 — Duck)",
   "autoRotate": true
 }
 ```
 
 * `src`에 GLB/GLTF 경로. 마우스·터치로 회전·확대 (camera-controls 기본)
-* GLB 파일은 `img/`에 배치 후 상대 경로로 참조
+* `img/`에 배치한 로컬 파일도 상대 경로로 참조 가능 — 이 예시는 CDN 공개 샘플(Khronos glTF-Sample-Models) 사용
 
 ---
 
@@ -115,11 +115,11 @@ p.draw = function() {
   - 프로세스·계층 등 도해
 :::
 
-```htmlart process
+::: htmlart process
 * 입력
 * 처리
 * 출력
-```
+:::
 
 * 두 컴포넌트 모두 라이브러리 없이 CSS만으로 렌더됨
 

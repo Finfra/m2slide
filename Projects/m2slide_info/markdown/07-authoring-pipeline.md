@@ -17,15 +17,43 @@ Chapter 7.
 
 ## 9단계 저작 파이프라인 개요
 
-```mermaid
-graph LR
-  S1[1.info-filler] --> S2[2.refs-collector] --> S3[3.agenda-designer]
-  S3 --> S4[4.md-builder] --> S5[5.media-creater] --> S6[6.layout-selector]
-  S6 --> S7[7.slot-designer] --> S8[8.m2slide.sh] --> S9[9.md2tts-txt]
-```
+**1) 기획·자료·목차**
 
-* 기획부터 빌드·대본까지 단계별 전용 agent/skill이 담당
-* 각 단계는 산출물을 검증한 뒤 다음 단계로 진행
+::: htmlart process
+* 1. info-filler
+* 2. refs-collector
+* 3. agenda-designer
+:::
+
+**2) 본문·미디어·레이아웃·슬롯**
+
+::: htmlart process
+* 4. md-builder
+* 5. media-creater
+* 6. layout-selector
+* 7. slot-designer
+:::
+
+**3) 빌드 · TTS 대본**
+
+::: htmlart process
+* 8. m2slide.sh
+* 9. md2tts-txt
+:::
+
+* 각 단계는 전용 agent/skill이 담당 — 산출물을 검증한 뒤 다음 단계로 진행
+
+---
+
+## Policy — 파이프라인 정책이란?
+
+* **정의**: 각 단계 agent/skill의 동작 규칙을 코드가 아닌 `data/<단계>/*.yml`에 저장한 것
+    - 예: `md-builder/styles.yml`, `layout-selector/rules.yml`, `slot-designer/patterns.yml`
+* **역할**: 규칙을 데이터로 분리 — SCAR 코드를 고치지 않고도 정책만 수정해 동작 튜닝
+* **2-레이어 cascade**
+    - L1 글로벌 기본값 — `data/<단계>/*.yml` (전 프로젝트 공통)
+    - L2 프로젝트 override — `Projects/<N>/_pipeline/policy/<단계>.yml` (해당 프로젝트 한정)
+* **왜 쓰는가**: "이 프로젝트만 카드를 넓게" 같은 요청을 코드 수정 없이 안전하게 반영하고, 변경 이력을 `history.md`에 남겨 추적
 
 ---
 
