@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 255
+* Issue HWM: 257
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -27,7 +27,78 @@
 
 # 🔥 진행 중
 
-## Issue255. 모든 PPT 메타에 github_url·homepage 글로벌 기본값 주입 (등록: 2026-07-02)
+# 📕 중요
+
+# 📙 일반
+
+# 📗 선택
+
+# ✅ 완료
+
+## Issue251. config 가 AGENDA frontmatter theme 미반영 — chapter mode 조용한 테마 불일치 (등록: 2026-06-30, 해결: 2026-07-03, commit: TBD) ✅
+* 목적: chapter mode 프로젝트가 `markdown/AGENDA.md` frontmatter 에 `theme: <name>` 만 선언하고 `_config.yml` 이 없으면, config.js 가 themeName=null→`default` 로 빌드하여 선언 테마가 조용히 무시되는 함정 차단.
+* 근본 원인 (1차): `lib/config.js` 의 theme 해석이 `_config.yml`/`_config.org.yml` 만 읽고 AGENDA.md frontmatter `theme:` 는 반영 안 함.
+* 근본 원인 (2차 — 실제 회귀 원인, 본 세션 재조사로 발견): 이전 세션(`01ad51a` 일괄 커밋)에서 frontmatter fallback 코드(`if (!cfg.themeName && projectDir) {...}`)가 이미 추가돼 있었으나 **죽은 코드**였음. `_config.org.yml` 이 전역 기본값으로 `theme: default` 를 선언 → `loadConfig` 최초 단계에서 `cfg.themeName` 이 이미 `'default'` 로 채워짐 → `!cfg.themeName` 조건이 항상 false → fallback 미실행. `/tmp` 스크래치 프로젝트(AGENDA `theme: default_lec`, `_config.yml` 없음)로 재현 확인.
+* 구현 명세:
+    - `lib/config.js` `loadConfig()`: override 파일(`ROOT/_config.yml`, `projectDir/_config.yml`) 의 raw 텍스트에 `^theme:`/`^slide_css:` 라인이 실제로 있는지 검사해 `themeExplicitlySet` 플래그로 추적 (`_config.org.yml` 전역 기본값은 이 플래그에 영향 없음).
+    - frontmatter fallback 조건을 `if (!cfg.themeName && projectDir)` → `if (!themeExplicitlySet && projectDir)` 로 변경.
+    - 우선순위: `ROOT/_config.yml`·`projectDir/_config.yml` 의 `theme:`/`slide_css:` (최우선) > 슬라이드 소스 frontmatter `theme:` > `_config.org.yml` 전역 기본값(`default`).
+* 검증:
+    - `/tmp` 스크래치 프로젝트(AGENDA `theme: default_lec`, override `_config.yml` 없음) 빌드 → `✅ Theme from frontmatter: default_lec` + `theme/default_lec/slide.css` 적용 (수정 전에는 조용히 `default` 적용됨)
+    - 동일 프로젝트에 `_config.yml`(`theme: default`) 추가 → override 우선 적용되어 `default` 로 복귀 (우선순위 회귀 없음)
+    - 대표 프로젝트(`m2Slide_single_mode`, `m2Slide_chapter_mode`, `fPmIntro`) 재빌드 — 모두 기존과 동일하게 `default` 테마 적용, 에러 없음
+    - `./m2slide.sh --lint-data` 통과
+
+## Issue250. layout 제목 폰트 누락 — base.css title SSOT 통합 (등록: 2026-06-30, 해결: 2026-07-03, commit: 01ad51a) ✅
+* 목적: layout 제목군(`.chapter-title`·`.contents-title`·`.cover-title` 등)이 GmarketSansBold(`--main-title-font-family`)를 적용받지 못하고 `.reveal` 의 `--global-font-family`(Pretendard, 미로드) → 시스템 폰트(Apple SD Gothic Neo)로 폴백되던 회귀를 단일 출처로 영구 차단.
+* 근본 원인: `lib/css/base.css` 의 title font-family 룰(`.reveal .title { font-family: var(--title-font-family) }`)이 `.chapter-title`·`.contents-title` 등 layout 제목 클래스를 selector 에 포함하지 않음. base.css 의 같은 클래스 묶음 룰은 `margin-bottom` 만 줌. 결과적으로 각 theme(`default`·`default_lec`)의 §3 공유 title 블록도 font-family 를 안 줘서 양쪽 테마 모두 깨짐. 테마 단위로 고치면 신규 theme 추가 시 또 누락하는 두더지 잡기.
+* 구현 명세 (영구 SSOT):
+    - `lib/css/base.css` §title SSOT — `.reveal .cover-title, .contents-title, .chapter-title, .chapter-toc-title, .toc-title, .blank-title, .closing-title, .summary-title, .exercise-title, section[class*="layout-"] h1` 묶음에 `font-family: var(--main-title-font-family, 'GmarketSansBold', sans-serif)` 적용. 각 theme 은 `--main-title-font-family` 변수만 override.
+    - `theme/default/slide.css`·`theme/default_lec/slide.css` 의 중복 `font-family` 라인 제거, SSOT 위임 주석만 남김.
+* 결과: 코드 변경은 이전 세션에서 이미 커밋(`01ad51a` "chore: 진행 중 변경사항 일괄 커밋 — history rewrite 사전 정리")됨. 본 세션에서 재검증만 수행:
+    - `m2Slide_single_mode`·`m2Slide_chapter_mode`·`m2Slide_visual_component` 3종 빌드 성공, `--lint-config` 관련 에러 없음
+    - Playwright headless computed style 검증: `m2Slide_visual_component` `.chapter-title`(H1) → `GmarketSansBold, sans-serif`, `.title`(H2) 다수 → `GmarketSansBold`, `.toc-page-title` → `GmarketSansBold, sans-serif`, `m2Slide_chapter_mode` cover 페이지 `.cover-title`(H1) → `GmarketSansBold, sans-serif` — 전 클래스 시스템 폰트 폴백 없음, 회귀 0
+    - `custom.css`(theme 빌드 산출물)에는 중복 font-family 없음 확인, SSOT 규칙은 base.css inline `<style>`로만 주입됨(설계대로)
+
+## Issue257. note-writer agent 실장 + authoring-pipeline 단계 재번호(9=note-writer, 10=md2tts-txt, 11=외부) (등록: 2026-07-03, 해결: 2026-07-03, commit: TBD) ✅
+* 목적: Issue256에서 "4.5" 자리에 표만 등재하고 미구현으로 남겼던 note-writer agent를 실제 구현하고, 오케스트레이터 흐름에 정식 연동. 사용자 지시: note-writer는 md2tts-txt와 포지션이 같음(슬라이드 완전 구성 끝난 이후 시행) — 4.5가 아니라 단계 8(slide 생성) 다음, md2tts-txt 바로 앞자리(신규 단계 9)로 재번호.
+* depends: Issue256
+* plan: `_doc_work/plan/note-writer-agent_plan.md`
+* 상세:
+    - 재번호: 4.5(폐기) → 9=note-writer(신규) → 10=md2tts-txt(기존 9에서 이동) → 11=외부 videoMaker(기존 10에서 이동)
+    - 영향 파일: `_doc_arch/authoring-pipeline.md`(SSOT) · `.claude/agents/authoring-pipeline.md`(오케스트레이터, 실제 흐름 연동) · `.claude/commands/m2.md` · `.claude/rules/data-access-rules.md` · `Harness.md` · `noteForHuman.md` · `_doc_arch/speaker-notes-design.md`(포지션 재설계) · 기타 "단계 9"/"1~9" 언급 문서 다수
+    - 신규 SCAR: `.claude/agents/note-writer.md` (media-creater.md 패턴 준용, 데이터-주도) + `data/note-writer/patterns.yml`
+* 구현 명세: plan 파일 참조.
+* 검증: `/m2 continue` 흐름 문서상 단계 9(note-writer)가 더 이상 skip 서술 없음, 오케스트레이터 dispatch 목록에 9 포함, `--from-stage`/`--to-stage` 상한 1~10 반영, 회귀 문서 grep(구 "4.5" 잔존 0건, 구 "단계 9=md2tts-txt" 잔존 0건).
+* 결과(2026-07-03, 커밋 대기 — Issue256과 함께 미커밋): **완료**.
+    - 신규: `.claude/agents/note-writer.md`(media-creater.md 패턴 준용) + `data/note-writer/patterns.yml`(slug 생성·톤 프리셋·노트 길이 가이드·검증·체크포인트, YAML 파싱 확인)
+    - 재번호 반영: SSOT(`_doc_arch/authoring-pipeline.md`, 표+단계별 상세+코드블록+데이터 격리 표), 오케스트레이터(`.claude/agents/authoring-pipeline.md` — 상한 1~10, dispatch 목록에 9 추가, 체크포인트 4·5·7·9), `.claude/commands/m2.md`(resume 표에 "선택 단계" 로직 포함, 상한값), `data-access-rules.md`, `Harness.md`, `noteForHuman.md`, `_doc_arch/speaker-notes-design.md`(4.5안 폐기 기록 보존 + 최종 위치 서술), 2차 영향 7개 문서
+    - grep 회귀 검증: 잔존 "4.5"는 모두 의도된 폐기 기록(히스토리 서술)뿐, "단계 9=md2tts-txt" 오참조 0건, 테이블 컬럼 수 불일치 0건, YAML/frontmatter 파싱 정상
+    - ppt2m2slide.md의 기존 TODO("PPT speaker notes 변환처 미정")를 note-writer/note.md로 연결하는 후속 힌트도 함께 갱신
+    - 문서 정정: 2026-07-03 이슈-선후행-정리 작업에서 코드/문서 grep 대조로 완료 재확인 후 🔥 진행 중 → ✅ 완료 이동(원 이슈 텍스트 자체는 이미 "결과: 완료"로 자기보고했으나 섹션 이동이 누락되어 있었음). commit 미완료 상태라 commit: TBD.
+
+## Issue256. 발표자 노트 `{md파일명}_note.md` 분리 관리 — slide-id 매칭 + 빌드 병합 (등록: 2026-07-03, 해결: 2026-07-03, commit: TBD) ✅
+* 목적: 발표자 노트를 슬라이드 본문 `.md`에 인라인(`Note:`)하지 않고 `{md파일명}_note.md` 별도 파일로 분리 관리. reveal.js speaker view(`s` 키)가 실제로 노트를 표시하는지는 현재 미구현·미검증 상태(reveal.js notes plugin은 로드되어 있으나 파싱·병합 로직 전무) — 기술적 증명 필요.
+* plan: `_doc_work/plan/speaker-notes_plan.md`
+* task: `_doc_work/tasks/speaker-notes_task.md`
+* 상세:
+    - 설계 문서: `_doc_arch/speaker-notes-design.md` (Q&A로 확정 — 매칭 방식: slide id, 파이프라인 편입: 신규 stage `note-writer`)
+    - 본 이슈 범위: `#id-{slug}` 디렉티브 파싱 + `lib/notes.js` note.md 파서 + `lib/html-builder.js` 빌드 병합(`<aside class="notes">` 삽입) + aTest 프로젝트 기술 검증
+    - note-writer agent(신규 stage 4.5, Info.md/refs 기반 자동 노트 초안 생성)는 규모가 커 **범위 밖** — 본 이슈 완료 후 별도 이슈로 분리
+* 구현 명세:
+    - `lib/slide-parser.js` `extractDirectives()`에 `#id-{slug}` 매처 추가(legacy alias 매처보다 먼저 매칭되도록 위치 고정)
+    - `lib/notes.js` 신규 — `{stem}_note.md`를 `## {slide-id}` 기준으로 파싱해 `Map<slide-id, rawMarkdownText>` 반환
+    - `lib/html-builder.js` `generateHTML()`에서 파일별 note.md 로드 → `_applyDirectiveAttrs` 호출 두 지점(`generatePlainSlideHTML`·`generateSlideHTML`) 모두에 `_applyNotesAside` 추가
+* 검증: `Projects/aTest`에 노트 테스트 챕터 추가 → 1차(빌드 HTML 내 `<aside class="notes">` grep 대조) + 2차(Playwright로 `s` 키 입력 후 speaker view 팝업 스크린샷 노트 텍스트 확인) 2단계. 2차는 headless 환경 제약 가능 — 실패 시에도 결과를 있는 그대로 기록.
+* 결과(2026-07-03, 커밋 대기 — 미커밋): 1차·2차 검증 모두 **성공**, headless 제약 없음.
+    - 빌드 중 부수 발견 — `{stem}_note.md`가 별도 챕터로도 렌더되던 문제를 `lib/generate-slides.js`·`lib/generate-epub.js`의 `.md` glob 필터에 `_note.md` 제외 조건 추가로 해결
+    - 1차: `<aside class="notes">` 정확 삽입(2줄 노트는 `<p>` 2개 분리) · id 미부여 슬라이드는 `<aside>` 미삽입 · orphan note.md 항목 `console.warn` 정상 발화 · `--lint-deployment aTest` 위반 0건 · 기존 애니메이션 디렉티브 테스트 21/21 통과(회귀 없음)
+    - 2차: dev-server 접속 → `s` 키 → speaker view 팝업 즉시 포착 → 스크린샷 3장으로 노트 텍스트 실제 렌더 확인. 스크린샷: `_doc_work/capture/issue256-speaker-view-{notes-check-1,notes-check-2,no-id}.png`
+    - 상세는 `_doc_work/tasks/speaker-notes_task.md` "검증 결과" 섹션, 설계 문서 갱신은 `_doc_arch/speaker-notes-design.md`
+    - note-writer agent(stage 4.5)는 계획대로 범위 밖 유지 — 별도 이슈 필요 시 🌱 이슈후보 등록
+    - 문서 정정: 2026-07-03 이슈-선후행-정리 작업에서 코드(`lib/notes.js`·`lib/slide-parser.js`·`lib/html-builder.js`)·테스트(`node --test` 회귀 통과)·산출물(`Projects/aTest/markdown/20-speaker-notes-test_note.md` 등) 대조로 완료 재확인 후 🔥 진행 중 → ✅ 완료 이동. commit 미완료 상태라 commit: TBD.
+
+## Issue255. 모든 PPT 메타에 github_url·homepage 글로벌 기본값 주입 (등록: 2026-07-02, 해결: 2026-07-03, commit: 01ad51a) ✅
 * 목적: 생성되는 모든 PPT 의 cover 메타에 GitHub 주소(`github.com/Finfra/m2slide`)와 finfra.kr 주소(`https://finfra.kr`)가 항상 포함되도록 글로벌 기본값을 도입. 사용자 요청 — "생성되는 모든 pt 메타데이터에 github·finfra.kr 주소 삽입".
 * 상세:
     - 결정(폼 회수): github=`github.com/Finfra/m2slide`, homepage=`https://finfra.kr`, 적용 범위=둘 다(SSOT 기본값 + 기존 소급).
@@ -36,36 +107,10 @@
 * 구현 명세:
     - `lib/config.js` `loadProjectMeta`: `DEFAULT_PROJECT_META = { github_url, homepage }` 를 base 로 병합 (frontmatter·VERSION 이 override). frontmatter 부재(early return) 경로에도 기본값 주입 → **모든 빌드 소급 적용**(기존 프로젝트 포함 = "둘 다" 충족).
     - `_doc_arch/meta-yml.md`: 글로벌 기본값 정책·스키마 표·cover 슬롯 표에 `github_url`·`homepage` 추가.
-    - `data/info-filler/questions.yml`·`data/md-builder` 템플릿: 신규 저작 frontmatter 가 두 필드를 명시 emit (선택 — fallback 이 이미 보장).
-    - default_lec cover 는 두 슬롯 미보유 → 메타는 주입되나 미렌더(현행 유지, 후속 판단).
-* 검증: cover_enabled default theme 프로젝트(m2Slide_single_mode) 빌드 → cover HTML 에 github.com/Finfra/m2slide·finfra.kr 치환 확인.
-
-# 📕 중요
-
-## Issue250. layout 제목 폰트 누락 — base.css title SSOT 통합 (등록: 2026-06-30)
-* 목적: layout 제목군(`.chapter-title`·`.contents-title`·`.cover-title` 등)이 GmarketSansBold(`--main-title-font-family`)를 적용받지 못하고 `.reveal` 의 `--global-font-family`(Pretendard, 미로드) → 시스템 폰트(Apple SD Gothic Neo)로 폴백되던 회귀를 단일 출처로 영구 차단.
-* 근본 원인: `lib/css/base.css` 의 title font-family 룰(`.reveal .title { font-family: var(--title-font-family) }`)이 `.chapter-title`·`.contents-title` 등 layout 제목 클래스를 selector 에 포함하지 않음. base.css 의 같은 클래스 묶음 룰은 `margin-bottom` 만 줌(L167-178). 결과적으로 각 theme(`default`·`default_lec`)의 §3 공유 title 블록도 font-family 를 안 줘서 양쪽 테마 모두 깨짐. 테마 단위로 고치면 신규 theme 추가 시 또 누락하는 두더지 잡기.
-* 임시 조치 (2026-06-30, 미커밋): `theme/default/slide.css`·`theme/default_lec/slide.css` 공유 title 블록에 `font-family: var(--main-title-font-family, 'GmarketSansBold', sans-serif)` 직접 추가. m2Slide_visual_component_v1.0 챕터 제목 GmarketSansBold 렌더 검증 완료(computed fontFamily·gmarketLoaded:true·스크린샷).
-* 구현 명세 (영구 SSOT):
-    - `lib/css/base.css` — title font-family 룰(또는 margin-bottom 묶음 룰)을 확장하여 모든 layout 제목 클래스(`.title`·`.cover-title`·`.contents-title`·`.chapter-title`·`.chapter-toc-title`·`.exercise-title`·`.blank-title`·`.closing-title`·`.summary-title`·`.toc-title`)에 `font-family: var(--main-title-font-family, ...)` 적용. 각 theme 은 `--main-title-font-family` 변수만 override.
-    - 위 확정 후 임시 조치로 넣은 `theme/{default,default_lec}/slide.css` 의 중복 `font-family` 라인 제거 (SSOT 단일화).
-    - ⚠️ base.css = 컨펌 게이트 (CLAUDE.md "base.css 수정 가드") — 수정 전 사용자 컨펌 + 대표 3종(`m2SlideStyle1_single`·`m2SlideStyle2_chapter`·`layoutTest`) 회귀 빌드 필수.
-* 검증: 위 3종 + m2Slide_visual_component_v1.0 챕터/표지/contents 제목 모두 GmarketSansBold 적용, "테스트 필수 항목" 4종 통과, 회귀 0.
-
-# 📙 일반
-
-## Issue251. config 가 AGENDA frontmatter theme 미반영 — chapter mode 조용한 테마 불일치 (등록: 2026-06-30)
-* 목적: chapter mode 프로젝트가 `markdown/AGENDA.md` frontmatter 에 `theme: <name>` 만 선언하고 `_config.yml` 이 없으면, config.js 가 themeName=null→`default` 로 빌드하여 선언 테마가 조용히 무시되는 함정 차단.
-* 근본 원인: `lib/config.js` 의 theme 해석(L155-157 `^theme:` regex)은 `_config.yml`/`_config.org.yml` 만 읽음. AGENDA.md frontmatter 의 `theme:` 는 themeName 으로 전달되지 않음. md-m2slide-rules 는 "frontmatter 는 보조 수단" 으로 명시하나 현재는 chapter mode theme 해석에 전혀 반영 안 됨.
-* 발견 경위: m2Slide_visual_component_v1.0 이 AGENDA 에 `theme: default_lec` 선언했으나 빌드는 `default` 사용(Issue250 조사 중 확인).
-* 구현 명세 (택1):
-    - (권장) `lib/config.js` loadConfig 또는 generate-slides.js 가 chapter mode 일 때 AGENDA.md frontmatter `theme:` 를 읽어 themeName 으로 반영. 우선순위는 `_config.yml` > AGENDA frontmatter (md-m2slide-rules "_config.yml 이 더 강력한 SSOT" 준수).
-    - (대안) `m2slide.sh --lint-config` 에 "AGENDA theme ≠ 빌드 적용 theme" 경고 추가 — 코드 동작 무변경, 사람이 알아채게만.
-* 검증: AGENDA 에만 theme 선언한 프로젝트 빌드 시 선언 테마로 빌드(권장안) 또는 빌드 시 경고 출력(대안). `_config.yml` 우선순위 유지 회귀 확인.
-
-# 📗 선택
-
-# ✅ 완료
+    - default_lec cover 도 코너 슬롯 3종(`github_url`·`version_badge`·`homepage`) 추가 — default theme 과 parity 확보(당초 "미보유" 계획에서 범위 확장).
+* 결과: `lib/config.js` `DEFAULT_PROJECT_META` 구현 + `theme/default/layouts/_cover.html`·`theme/default_lec/layouts/_cover.html`·`theme/default_lec/slide.css` 코너 슬롯 반영, `_doc_arch/meta-yml.md` 문서화까지 커밋 01ad51a에 이미 포함되어 있었음(Issue.md 결과 기록만 누락된 상태였음).
+* 검증: frontmatter에 `github_url`/`homepage` 미선언한 `BasicKnowledgeForAI_small`(theme: default) 빌드 → `/p/BasicKnowledgeForAI_small/n/c` cover HTML에 `<div class="cover-corner cover-tl">github.com/Finfra/m2slide</div>`·`<div class="cover-corner cover-br">https://finfra.kr</div>` 기본값 치환 확인 (2026-07-03 재검증).
+    - `data/info-filler/questions.yml`·`data/md-builder` 템플릿 명시 emit(선택 사항)은 fallback이 이미 보장하므로 후속 필요 시에만 진행.
 
 ## Issue254. Projects.md gitignored + publishing 열 SSOT 로 Projects/.gitignore 자동 생성 (등록: 2026-07-02, 해결: 2026-07-02) ✅
 * 목적: `Projects.md` 를 git 미추적 로컬 인덱스로 전환하고, 그 publishing 열을 SSOT 로 `Projects/.gitignore` 추적 허용목록을 `--sync-projects` 가 자동 생성하도록 함. 수동 유지되던 `Projects/.gitignore` 를 Projects.md 로 일원 관리.
