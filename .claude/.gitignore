@@ -1,0 +1,3 @@
+# 세션별 휘발성 파일 — SCAR 공개 모드(2026-07-03)에서도 제외
+.DS_Store
+scheduled_tasks.lock

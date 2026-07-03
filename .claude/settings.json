@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Glob|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -f graphify-out/graph.json ] && echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"additionalContext\":\"graphify: Knowledge graph exists. Read graphify-out/GRAPH_REPORT.brief.md first (run /graphify-prune if missing). For code/arch questions prefer graphify query/path/explain over grep. NEVER Read GRAPH_REPORT.md/graph.json directly.\"}}' || true"
+          }
+        ]
+      }
+    ]
+  }
+}
