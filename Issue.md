@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 257
+* Issue HWM: 258
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -21,9 +21,6 @@
 * 진행: Issue149로 reveal.js 표준 `<!-- .element: class="..." -->` 주석 syntax 지원 추가 완료 (Pandoc `{.fragment}`와 병존)
 
 # 🌱 이슈후보
-1. 폰에는 화살표키 없음. 적용 방법 모색할 것.
-2. HtmlArtEval cover 슬라이드 제목 우측 끝 빈 박스 렌더 (Issue202 등록 시 동반 발견 — word-break와 별개. `_cover.html` 변수 미치환 또는 frontmatter 빈 값 추정)
-3. `_doc_arch/authoring-pipeline.md` 내부 모순 — md2tts-txt 데이터 접근 표(L159 `(없음)`) ↔ 운영 상태 표(L283 `data/md2tts-txt/ (글로벌 룰)`) 불일치. 실제 `data/md2tts-txt/` 폴더 존재(확인됨)하므로 L159가 stale. 둘 중 한 쪽으로 통일 필요 (운영 상태 표 채택 권장). 발견 경위: noteForHuman.md 단계 표 유동 연결 검토(2026-05-27)
 
 # 🔥 진행 중
 
@@ -34,6 +31,19 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue258. authoring-pipeline.md 단계 10 데이터 접근 표 불일치 (등록: 2026-07-03, 해결: 2026-07-03, commit: TBD) ✅
+* 목적: `_doc_arch/authoring-pipeline.md` 내부 두 표의 단계 10(md2tts-txt) data 접근 기술 모순 해소 — 접근 허용 표는 `(없음)`, 운영 상태 표는 `data/md2tts-txt/ (글로벌 룰)`.
+* 상세:
+    - 실제 `data/md2tts-txt/` 폴더는 존재하나 **빈 폴더**였음 (leftover) — Stage Policy 각주("단계 8·10은 data 정책 없어 cascade 미적용")·`.claude/rules/data-access-rules.md` 모두 `(없음)`과 정합, 운영 상태 표만 이탈
+    - 발견 경위: noteForHuman.md 단계 표 유동 연결 검토(2026-05-27), 이슈후보 3 승격
+* 구현 명세:
+    - 운영 상태 표 단계 10 행을 `(없음 — 글로벌 tts-pronunciation-rules.md만 허용)`으로 통일
+    - 디렉토리 트리에서 `data/md2tts-txt/` 항목 제거 (slot-designer가 마지막 자식으로 승격)
+    - 빈 `data/md2tts-txt/` 폴더 rmdir
+    - 검증: `grep -rn "data/md2tts-txt" _doc_arch/ .claude/ data/` → 잔존 참조 0건. 단계 10 표기 3곳(`authoring-pipeline.md` 두 표 + `data-access-rules.md`) 모두 `(없음)` 일치
+    - GitHub: https://github.com/Finfra/m2slide/issues/28
+    - 참고: `_doc_arch/`는 gitignore 대상이라 fix 본문은 커밋에 미포함 — commit은 Issue.md 종결 기록
 
 ## Issue251. config 가 AGENDA frontmatter theme 미반영 — chapter mode 조용한 테마 불일치 (등록: 2026-06-30, 해결: 2026-07-03, commit: 6925ccd) ✅
 * 목적: chapter mode 프로젝트가 `markdown/AGENDA.md` frontmatter 에 `theme: <name>` 만 선언하고 `_config.yml` 이 없으면, config.js 가 themeName=null→`default` 로 빌드하여 선언 테마가 조용히 무시되는 함정 차단.
