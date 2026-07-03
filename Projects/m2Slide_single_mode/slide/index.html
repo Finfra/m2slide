@@ -1342,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783043844066">
+  <link rel="stylesheet" href="css/custom.css?v=1783047854881">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1590,9 +1590,9 @@ html.ratio-fill .agenda-frame {
     <h1 class="chapter-title">0. Chapter Divider 테스트 (Issue229)</h1>
   </div>
   <div class="chapter-body"><ul>
-<li class="bullet-dot">0.1. sub-section A</li>
-<li class="bullet-dot">0.2. sub-section B</li>
-<li class="bullet-dot">0.3. sub-section C</li>
+<li class="bullet-dot">0.1. fWarrange 소개</li>
+<li class="bullet-dot">0.2. 설치 및 접근성 권한</li>
+<li class="bullet-dot">0.3. REST API 자동화</li>
 </ul></div>
 </section>
 
@@ -1606,10 +1606,10 @@ html.ratio-fill .agenda-frame {
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot">이것은 기본 리스트 아이템입니다.</li>
-<li class="bullet-dot"><strong>굵은 글씨</strong>와 *이탤릭체*를 지원합니다.</li>
-<li class="bullet-dot"><code>인라인 코드</code>도 사용할 수 있습니다.</li>
-<li class="bullet-dot">> 인용문(Blockquote) 스타일입니다.</li>
+<li class="bullet-dot">fWarrange는 macOS 활성 윈도우의 위치와 크기를 저장하고 복원하는 도구입니다.</li>
+<li class="bullet-dot"><strong>스마트 창 매칭</strong> 알고리즘과 *메뉴바 기반 GUI*를 함께 제공합니다.</li>
+<li class="bullet-dot">REST API 서버는 기본 포트 3016에서 상태를 확인할 수 있습니다.</li>
+<li class="bullet-dot">> 창이 닫혔다 다시 열려도 PID·제목·크기 유사도를 기준으로 정확히 복원됩니다.</li>
 </ul></div>
 </section>
 
@@ -1622,16 +1622,16 @@ html.ratio-fill .agenda-frame {
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot">레벨 1
+<li class="bullet-dot">fWarrange 앱 구조
 <ul>
 <ul>
-<li class="bullet-dash">레벨 2
+<li class="bullet-dash">paidApp (GUI)
 <ul>
 <ul>
-<li class="bullet-dash">레벨 3
+<li class="bullet-dash">SwiftUI 메뉴바 앱
 <ul>
 <ul>
-<li class="bullet-dot">레벨 4</li>
+<li class="bullet-dot">App Store 배포용 Sandbox 호환</li>
 </ul>
 </li>
 </ul>
@@ -1656,13 +1656,13 @@ html.ratio-fill .agenda-frame {
   <div class="contents-body">
 
 <ol>
-<li>첫 번째 항목</li>
-<li>두 번째 항목</li>
-<li>세 번째 항목
+<li>다운로드 및 설치</li>
+<li>접근성 권한 설정</li>
+<li>레이아웃 저장과 복원
 <ol>
 <ol>
-<li>중첩된 항목 1</li>
-<li>중첩된 항목 2</li>
+<li>현재 창 배치를 워크스페이스로 저장</li>
+<li>저장된 워크스페이스를 단축키로 즉시 복원</li>
 </ol>
 </li>
 </ol>
@@ -1693,10 +1693,13 @@ html.ratio-fill .agenda-frame {
   <h2 class="title">JavaScript 코드 예시</h2>
   <div class="contents-body">
 
-<pre class="code-wrapper"><code class="language-javascript hljs">function helloWorld() {
-  console.log("Hello, m2Slide!");
-  const number = 42;
-  return number * 2;
+<pre class="code-wrapper"><code class="language-javascript hljs">// REST API로 현재 레이아웃 저장 요청
+async function saveLayout(name) {
+  const res = await fetch("http://fwarrange-daemon:3016/layouts", {
+    method: "POST",
+    body: JSON.stringify({ name })
+  });
+  return res.json();
 }</code></pre></div>
 </section>
 
@@ -1708,13 +1711,17 @@ html.ratio-fill .agenda-frame {
   <h2 class="title">Python 코드 예시</h2>
   <div class="contents-body">
 
-<pre class="code-wrapper"><code class="language-python hljs">def fibonacci(n):
-    if n &lt;= 1:
-        return n
-    else:
-        return fibonacci(n-1) + fibonacci(n-2)
+<pre class="code-wrapper"><code class="language-python hljs"># 스마트 창 매칭 점수 계산 (PID / 제목 / 크기 유사도)
+def match_score(pid_ok, title_ok, size_ratio):
+    score = 0
+    if pid_ok:
+        score += 50
+    if title_ok:
+        score += 30
+    score += size_ratio * 20
+    return score
 
-print(fibonacci(10))</code></pre></div>
+print(match_score(True, True, 0.9))</code></pre></div>
 </section>
 
 <section data-slide-hash="#/10" data-heading-level="1" class="layout-_cover">
@@ -1742,10 +1749,12 @@ print(fibonacci(10))</code></pre></div>
 
 <div class="media-container mermaid">
 graph TD
-    A[Start] --> B{Is it working?}
-    B -- Yes --> C[Great!]
-    B -- No --> D[Debug]
-    D --> B
+    A[창 재탐색] --> B{PID 일치?}
+    B -- Yes --> E[즉시 복원]
+    B -- No --> C{제목 완전 일치?}
+    C -- Yes --> E
+    C -- No --> D[크기·비율 유사도 점수화]
+    D --> E
 </div></div>
 </section>
 
@@ -1759,16 +1768,16 @@ graph TD
 
 <div class="media-container mermaid">
 sequenceDiagram
-    participant Alice
-    participant Bob
-    Alice->>John: Hello John, how are you?
-    loop Healthcheck
-        John->>John: Fight against hypochondria
-    end
-    Note right of John: Rational thoughts <br/>prevail!
-    John-->>Alice: Great!
-    John->>Bob: How about you?
-    Bob-->>John: Jolly good!
+    participant User
+    participant MenuBar as fWarrange paidApp
+    participant CliApp as cliApp REST API
+    User->>MenuBar: 레이아웃 저장 클릭
+    MenuBar->>CliApp: 창 정보 요청
+    CliApp-->>MenuBar: 위치·크기 YAML 반환
+    MenuBar-->>User: 워크스페이스 저장 완료
+    User->>MenuBar: 단축키로 복원 요청
+    MenuBar->>CliApp: 저장된 레이아웃 적용 요청
+    CliApp-->>User: 창 위치·크기 복원
 </div></div>
 </section>
 
@@ -1782,25 +1791,22 @@ sequenceDiagram
 
 <div class="media-container mermaid">
 classDiagram
-    Animal <|-- Duck
-    Animal <|-- Fish
-    Animal <|-- Zebra
-    Animal : +int age
-    Animal : +String gender
-    Animal : +isMammal()
-    Animal : +mate()
-    class Duck{
-        +String beakColor
-        +swim()
-        +quack()
+    MatchStrategy <|-- PidMatch
+    MatchStrategy <|-- TitleMatch
+    MatchStrategy <|-- SizeSimilarityMatch
+    MatchStrategy : +int score
+    MatchStrategy : +match()
+    class PidMatch{
+        +int pid
+        +compare()
     }
-    class Fish{
-        -int sizeInFeet
-        -canEat()
+    class TitleMatch{
+        -String pattern
+        -isRegex()
     }
-    class Zebra{
-        +bool is_wild
-        +run()
+    class SizeSimilarityMatch{
+        +float ratio
+        +compare()
     }
 </div></div>
 </section>
@@ -1829,8 +1835,8 @@ classDiagram
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot">테스트 용도</li>
-<li class="bullet-dot">중간 노드임.</li>
+<li class="bullet-dot">fWarrange 실제 화면으로 이미지 배치 예제를 구성</li>
+<li class="bullet-dot">메뉴바 앱과 설정 화면 캡처를 사용</li>
 </ul></div>
 </section>
 
@@ -1853,7 +1859,7 @@ classDiagram
   <div class="blank-header">
     <h1 class="blank-title">이미지 Only</h1>
   </div>
-  <div class="blank-body"><div class="media-container"><img src="./img/scenery.png" alt="Scenery"></div></div>
+  <div class="blank-body"><div class="media-container"><img src="./img/scenery.png" alt="fWarrange 메뉴바 실행 화면"></div></div>
 </section>
 
 
@@ -1862,17 +1868,17 @@ classDiagram
     <div class="contents-head-left">4. 이미지 및 미디어</div>
     <div class="contents-head-right">4.1. 이미지</div>
   </div>
-  <h3 class="title">기본 이미지 배치 (Scenery)</h3>
+  <h3 class="title">기본 이미지 배치 (설정 화면)</h3>
   <div class="contents-body">
 
 <div class="m2-cols">
 <div class="m2-col">
-<div class="media-container"><img src="./img/scenery.png" alt="Scenery"></div>
+<div class="media-container"><img src="./img/scenery.png" alt="fWarrange 일반 설정 화면"></div>
 </div>
 <div class="m2-col">
 
 <ul>
-<li class="bullet-dot">이미지 아래 텍스트</li>
+<li class="bullet-dot">접근성 권한을 켜야 창 제어가 가능합니다.</li>
 </ul>
 </div>
 </div></div>
@@ -1902,9 +1908,9 @@ classDiagram
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot">매출이 상승하고 있습니다.</li>
-<li class="bullet-dot">1분기 대비 2분기 20% 성장</li>
-<li class="bullet-dot">3분기 예측치 달성 무난</li>
+<li class="bullet-dot">스마트 창 매칭 정확도가 지속적으로 개선되고 있습니다.</li>
+<li class="bullet-dot">레이아웃 일괄 정리 기능으로 선택·마지막·기본 3개만 남기고 삭제</li>
+<li class="bullet-dot">다국어 번역 커버리지 79~89% 진행 중</li>
 <li class="bullet-dot">이미지가 있을 때 텍스트가 어떻게 배치되는지 확인</li>
 </ul></div>
 </section>
@@ -1935,24 +1941,24 @@ classDiagram
 <div class="m2-cols">
 <div class="m2-col">
 <ul>
-<li class="bullet-dot">매출이 상승하고 있습니다.</li>
-<li class="bullet-dot">1분기 대비 2분기 20% 성장</li>
-<li class="bullet-dot">3분기 예측치 달성 무난</li>
+<li class="bullet-dot">스마트 창 매칭 정확도가 지속적으로 개선되고 있습니다.</li>
+<li class="bullet-dot">레이아웃 일괄 정리 기능으로 선택·마지막·기본 3개만 남기고 삭제</li>
+<li class="bullet-dot">다국어 번역 커버리지 79~89% 진행 중</li>
 <li class="bullet-dot">이미지가 있을 때 텍스트가 어떻게 배치되는지 확인</li>
 </ul>
 
-<h3 class="title">이미지와 리스트 (Chart)</h3>
+<h3 class="title">이미지와 리스트 (API 설정)</h3>
 
 
 <ul>
-<li class="bullet-dot">매출이 상승하고 있습니다.</li>
-<li class="bullet-dot">1분기 대비 2분기 20% 성장</li>
-<li class="bullet-dot">3분기 예측치 달성 무난</li>
+<li class="bullet-dot">REST API 서버를 켜면 터미널·스크립트·AI 에이전트에서 원격 제어 가능</li>
+<li class="bullet-dot">기본 포트는 3016</li>
+<li class="bullet-dot">curl로 서버 상태 확인 가능</li>
 <li class="bullet-dot">이미지가 있을 때 텍스트가 어떻게 배치되는지 확인</li>
 </ul>
 </div>
 <div class="m2-col">
-<div class="media-container"><img src="./img/chart.png" alt="Right Image"></div>
+<div class="media-container"><img src="./img/chart.png" alt="API 설정 화면"></div>
 </div>
 </div></div>
 </section>
@@ -1982,12 +1988,12 @@ classDiagram
 <div class="m2-cols">
 <div class="m2-col">
 <ul>
-<li class="bullet-dot">왼쪽 텍스트 영역<br>-HTML DIV 태그를 사용하여<br>-원하는 레이아웃을 직접 구성할 수 있습니다.<br>-flexbox 스타일을 활용하세요.</li>
+<li class="bullet-dot">paidApp은 App Store 배포용 Sandbox 호환 GUI 앱입니다.<br>-메뉴바 아이콘 클릭으로 워크스페이스 관리 패널을 엽니다.<br>-SwiftUI 기반으로 macOS 15.0 이상에서 동작합니다.</li>
 </ul>
 
 </div>
 <div class="m2-col">
-<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
+<div class="media-container"><img src="./img/chart.png" alt="설정 화면"></div>
 </div>
 </div></div>
 </section>
@@ -2002,12 +2008,12 @@ classDiagram
 
 <div class="m2-cols">
 <div class="m2-col">
-<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
+<div class="media-container"><img src="./img/chart.png" alt="설정 화면"></div>
 </div>
 <div class="m2-col">
 
 <ul>
-<li class="bullet-dot">왼쪽 텍스트 영역<br>-HTML DIV 태그를 사용하여<br>-원하는 레이아웃을 직접 구성할 수 있습니다.<br>-flexbox 스타일을 활용하세요.</li>
+<li class="bullet-dot">cliApp은 Sandbox 미적용 데몬으로 Accessibility API와 REST 서버를 제공합니다.<br>-paidApp과 별도 프로세스로 동작합니다.<br>-터미널·스크립트·AI 에이전트가 이 데몬을 통해 창을 제어합니다.</li>
 </ul>
 </div>
 </div></div>
@@ -2023,11 +2029,11 @@ classDiagram
 <div class="m2-cols">
 <div class="m2-col">
 <ul>
-<li class="bullet-dot">왼쪽 텍스트 영역<br>-HTML DIV 태그를 사용하여<br>-원하는 레이아웃을 직접 구성할 수 있습니다.<br>-flexbox 스타일을 활용하세요.</li>
+<li class="bullet-dot">스마트 창 매칭은 여러 기준으로 점수를 매깁니다.<br>-PID 일치<br>-제목 완벽 일치 또는 정규표현식 매칭<br>-창 크기·비율 유사도</li>
 </ul>
 </div>
 <div class="m2-col">
-<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
+<div class="media-container"><img src="./img/chart.png" alt="설정 화면"></div>
 </div>
 </div></div>
 </section>
@@ -2043,17 +2049,17 @@ classDiagram
 <div class="m2-cols columns">
 <div class="m2-col column" style="flex: 0 0 48%; max-width: 48%">
 <ul>
-<li class="bullet-dot">왼쪽 텍스트 영역
+<li class="bullet-dot">접근성 권한이 없으면 창을 제어할 수 없습니다.
 <ul>
-<li class="bullet-dash">HTML DIV 태그를 사용하여</li>
-<li class="bullet-dash">원하는 레이아웃을 직접 구성할 수 있습니다.</li>
-<li class="bullet-dash">flexbox 스타일을 활용하세요.</li>
+<li class="bullet-dash">시스템 설정 → 개인정보 보호 및 보안 → 접근성</li>
+<li class="bullet-dash">fWarrange 토글을 켜야 정상 동작합니다.</li>
+<li class="bullet-dash">앱이 목록에 없으면 + 버튼으로 직접 추가합니다.</li>
 </ul>
 </li>
 </ul>
 </div>
 <div class="m2-col column" style="flex: 0 0 48%; max-width: 48%">
-<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
+<div class="media-container"><img src="./img/chart.png" alt="설정 화면"></div>
 </div>
 </div></div>
 </section>
@@ -2068,21 +2074,20 @@ classDiagram
 
 <div class="m2-cols columns">
 <div class="m2-col column card">
-<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
+<div class="media-container"><img src="./img/chart.png" alt="메뉴바 실행 화면"></div>
 </div>
 <div class="m2-col column card">
 <ul>
-<li class="bullet-dot">왼쪽 텍스트 영역
+<li class="bullet-dot">Agent 기반 워크플로우로 빌드·테스트·배포·이슈 관리를 자동화합니다.
 <ul>
-<li class="bullet-dash">HTML DIV 태그를 사용하여</li>
-<li class="bullet-dash">원하는 레이아웃을 직접 구성할 수 있습니다.</li>
-<li class="bullet-dash">flexbox 스타일을 활용하세요.</li>
+<li class="bullet-dash">Gemini 및 Claude 에이전트 시스템 도입</li>
+<li class="bullet-dash">이슈 트래킹과 설계 문서 연동</li>
 </ul>
 </li>
 </ul>
 </div>
 <div class="m2-col column card">
-<div class="media-container"><img src="./img/scenery.png" alt="Chart"></div>
+<div class="media-container"><img src="./img/scenery.png" alt="메뉴바 실행 화면"></div>
 </div>
 </div></div>
 </section>
@@ -2097,15 +2102,15 @@ classDiagram
 
 <div style="display: flex; align-items: center; justify-content: space-between;">
   <div style="width: 48%;">
-<p>    <h3>왼쪽 텍스트 영역</h3></p>
+<p>    <h3>키보드 단축키</h3></p>
 <p>    <ul></p>
-<p>      <li>HTML DIV 태그를 사용하여</li></p>
-<p>      <li>원하는 레이아웃을 직접 구성할 수 있습니다.</li></p>
-<p>      <li>flexbox 스타일을 활용하세요.</li></p>
+<p>      <li>글로벌 단축키는 데몬 기반으로 앱이 백그라운드여도 동작합니다.</li></p>
+<p>      <li>로컬 단축키는 fWarrange 앱이 활성 상태일 때만 동작합니다.</li></p>
+<p>      <li>설정 화면에서 자유롭게 재지정할 수 있습니다.</li></p>
 <p>    </ul></p>
   </div>
   <div style="width: 48%;">
-<p>    <img src="./img/chart.png" alt="Chart" style="width: 100%; border-radius: 10px;"></p>
+<p>    <img src="./img/chart.png" alt="Settings" style="width: 100%; border-radius: 10px;"></p>
   </div>
 </div></div>
 </section>
@@ -2120,16 +2125,16 @@ classDiagram
 
 <div style="display: flex; justify-content: space-around;">
   <div style="width: 30%; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
-<p>    <h4>Card 1</h4></p>
-<p>    <p>첫 번째 카드의 내용입니다.</p></p>
+<p>    <h4>paidApp</h4></p>
+<p>    <p>App Store 배포용 GUI. 메뉴바에서 레이아웃 저장·복원.</p></p>
   </div>
   <div style="width: 30%; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
-<p>    <h4>Card 2</h4></p>
-<p>    <p>두 번째 카드의 내용입니다.</p></p>
+<p>    <h4>cliApp</h4></p>
+<p>    <p>Sandbox 미적용 데몬. Accessibility API와 REST 서버 제공.</p></p>
   </div>
   <div style="width: 30%; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
-<p>    <h4>Card 3</h4></p>
-<p>    <p>세 번째 카드의 내용입니다.</p></p>
+<p>    <h4>REST API</h4></p>
+<p>    <p>포트 3016. 터미널·스크립트·AI 에이전트가 원격 제어.</p></p>
   </div>
 </div></div>
 </section>
@@ -2159,12 +2164,12 @@ classDiagram
 
 <table>
 <thead>
-<tr><th style="text-align:left">헤더 1</th><th style="text-align:center">헤더 2</th><th style="text-align:right">헤더 3</th></tr>
+<tr><th style="text-align:left">항목</th><th style="text-align:center">paidApp</th><th style="text-align:right">cliApp</th></tr>
 </thead>
 <tbody>
-<tr><td style="text-align:left">왼쪽 정렬</td><td style="text-align:center">중앙 정렬</td><td style="text-align:right">오른쪽 정렬</td></tr>
-<tr><td style="text-align:left">데이터 1</td><td style="text-align:center">데이터 2</td><td style="text-align:right">데이터 3</td></tr>
-<tr><td style="text-align:left">내용 A</td><td style="text-align:center">내용 B</td><td style="text-align:right">내용 C</td></tr>
+<tr><td style="text-align:left">배포 방식</td><td style="text-align:center">App Store</td><td style="text-align:right">Helper 데몬</td></tr>
+<tr><td style="text-align:left">Sandbox</td><td style="text-align:center">적용</td><td style="text-align:right">미적용</td></tr>
+<tr><td style="text-align:left">역할</td><td style="text-align:center">GUI 관리</td><td style="text-align:right">창 제어 실행</td></tr>
 </tbody>
 </table></div>
 </section>
@@ -2182,9 +2187,9 @@ classDiagram
 <tr><th style="text-align:center">아이콘</th><th style="text-align:left">이름</th><th style="text-align:left">설명</th></tr>
 </thead>
 <tbody>
-<tr><td style="text-align:center"><img src="./img/icon.png" alt="Icon"></td><td style="text-align:left"><strong>Robot</strong></td><td style="text-align:left">AI Assistant</td></tr>
-<tr><td style="text-align:center"><img src="./img/icon.png" alt="Icon"></td><td style="text-align:left"><strong>User</strong></td><td style="text-align:left">Human Operator</td></tr>
-<tr><td style="text-align:center"><img src="./img/icon.png" alt="Icon"></td><td style="text-align:left"><strong>System</strong></td><td style="text-align:left">Control Unit</td></tr>
+<tr><td style="text-align:center"><img src="./img/icon.png" alt="Icon"></td><td style="text-align:left"><strong>paidApp</strong></td><td style="text-align:left">메뉴바 GUI 앱</td></tr>
+<tr><td style="text-align:center"><img src="./img/icon.png" alt="Icon"></td><td style="text-align:left"><strong>cliApp</strong></td><td style="text-align:left">REST API 데몬</td></tr>
+<tr><td style="text-align:center"><img src="./img/icon.png" alt="Icon"></td><td style="text-align:left"><strong>워크스페이스</strong></td><td style="text-align:left">저장된 레이아웃 YAML</td></tr>
 </tbody>
 </table>
 
@@ -2232,8 +2237,8 @@ classDiagram
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot">m2Slide를 사용하여 멋진 프레젠테이션을 만드세요.</li>
-<li class="bullet-dot">Markdown으로 쉽고 빠르게 작성할 수 있습니다.</li>
+<li class="bullet-dot">지금까지 fWarrange 소개 자료로 m2Slide 기능을 살펴봤습니다.</li>
+<li class="bullet-dot">Markdown으로 쉽고 빠르게 프레젠테이션을 작성할 수 있습니다.</li>
 </ul></div>
 </section>
 

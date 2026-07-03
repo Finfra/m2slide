@@ -6,7 +6,7 @@ instructor_contact: nowage@gmail.com
 description: 
 version: 1.1.0
 date: Nov 20, 2025
-release_date: 2026-05-24
+release_date: 2026-07-03
 created_at: 2026-05-02
 created_by: nowage
 tags: []
@@ -14,16 +14,16 @@ tags: []
 #layout-_cover
 
 # 1. 텍스트 레이아웃
-* 현재 예제는 1개의 md파일로 생성됨. 
+* 현재 예제는 1개의 md파일로 생성됨. fWarrange 소개 자료를 예시 데이터로 사용함.
 ---
 
 #layout-chapter
 
 # 0. Chapter Divider 테스트 (Issue229)
 
-* 0.1. sub-section A
-* 0.2. sub-section B
-* 0.3. sub-section C
+* 0.1. fWarrange 소개
+* 0.2. 설치 및 접근성 권한
+* 0.3. REST API 자동화
 
 ---
 
@@ -31,10 +31,10 @@ tags: []
 
 ## 기본 텍스트 스타일
 
-* 이것은 기본 리스트 아이템입니다.
-* **굵은 글씨**와 *이탤릭체*를 지원합니다.
-* `인라인 코드`도 사용할 수 있습니다.
-* > 인용문(Blockquote) 스타일입니다.
+* fWarrange는 macOS 활성 윈도우의 위치와 크기를 저장하고 복원하는 도구입니다.
+* **스마트 창 매칭** 알고리즘과 *메뉴바 기반 GUI*를 함께 제공합니다.
+* REST API 서버는 기본 포트 3016에서 상태를 확인할 수 있습니다.
+* > 창이 닫혔다 다시 열려도 PID·제목·크기 유사도를 기준으로 정확히 복원됩니다.
 
 ---
 
@@ -42,10 +42,10 @@ tags: []
 
 ## 중첩 리스트
 
-* 레벨 1
-    - 레벨 2
-        - 레벨 3
-            * 레벨 4
+* fWarrange 앱 구조
+    - paidApp (GUI)
+        - SwiftUI 메뉴바 앱
+            * App Store 배포용 Sandbox 호환
 
 ---
 
@@ -53,11 +53,11 @@ tags: []
 
 ## 번호 있는 리스트
 
-1. 첫 번째 항목
-2. 두 번째 항목
-3. 세 번째 항목
-    1. 중첩된 항목 1
-    2. 중첩된 항목 2
+1. 다운로드 및 설치
+2. 접근성 권한 설정
+3. 레이아웃 저장과 복원
+    1. 현재 창 배치를 워크스페이스로 저장
+    2. 저장된 워크스페이스를 단축키로 즉시 복원
 
 ---
 
@@ -72,10 +72,13 @@ tags: []
 ## JavaScript 코드 예시
 
 ```javascript
-function helloWorld() {
-  console.log("Hello, m2Slide!");
-  const number = 42;
-  return number * 2;
+// REST API로 현재 레이아웃 저장 요청
+async function saveLayout(name) {
+  const res = await fetch("http://fwarrange-daemon:3016/layouts", {
+    method: "POST",
+    body: JSON.stringify({ name })
+  });
+  return res.json();
 }
 ```
 
@@ -86,13 +89,17 @@ function helloWorld() {
 ## Python 코드 예시
 
 ```python
-def fibonacci(n):
-    if n <= 1:
-        return n
-    else:
-        return fibonacci(n-1) + fibonacci(n-2)
+# 스마트 창 매칭 점수 계산 (PID / 제목 / 크기 유사도)
+def match_score(pid_ok, title_ok, size_ratio):
+    score = 0
+    if pid_ok:
+        score += 50
+    if title_ok:
+        score += 30
+    score += size_ratio * 20
+    return score
 
-print(fibonacci(10))
+print(match_score(True, True, 0.9))
 ```
 
 ---
@@ -109,10 +116,12 @@ print(fibonacci(10))
 
 ```mermaid
 graph TD
-    A[Start] --> B{Is it working?}
-    B -- Yes --> C[Great!]
-    B -- No --> D[Debug]
-    D --> B
+    A[창 재탐색] --> B{PID 일치?}
+    B -- Yes --> E[즉시 복원]
+    B -- No --> C{제목 완전 일치?}
+    C -- Yes --> E
+    C -- No --> D[크기·비율 유사도 점수화]
+    D --> E
 ```
 
 ---
@@ -123,16 +132,16 @@ graph TD
 
 ```mermaid
 sequenceDiagram
-    participant Alice
-    participant Bob
-    Alice->>John: Hello John, how are you?
-    loop Healthcheck
-        John->>John: Fight against hypochondria
-    end
-    Note right of John: Rational thoughts <br/>prevail!
-    John-->>Alice: Great!
-    John->>Bob: How about you?
-    Bob-->>John: Jolly good!
+    participant User
+    participant MenuBar as fWarrange paidApp
+    participant CliApp as cliApp REST API
+    User->>MenuBar: 레이아웃 저장 클릭
+    MenuBar->>CliApp: 창 정보 요청
+    CliApp-->>MenuBar: 위치·크기 YAML 반환
+    MenuBar-->>User: 워크스페이스 저장 완료
+    User->>MenuBar: 단축키로 복원 요청
+    MenuBar->>CliApp: 저장된 레이아웃 적용 요청
+    CliApp-->>User: 창 위치·크기 복원
 ```
 
 ---
@@ -143,25 +152,22 @@ sequenceDiagram
 
 ```mermaid
 classDiagram
-    Animal <|-- Duck
-    Animal <|-- Fish
-    Animal <|-- Zebra
-    Animal : +int age
-    Animal : +String gender
-    Animal : +isMammal()
-    Animal : +mate()
-    class Duck{
-        +String beakColor
-        +swim()
-        +quack()
+    MatchStrategy <|-- PidMatch
+    MatchStrategy <|-- TitleMatch
+    MatchStrategy <|-- SizeSimilarityMatch
+    MatchStrategy : +int score
+    MatchStrategy : +match()
+    class PidMatch{
+        +int pid
+        +compare()
     }
-    class Fish{
-        -int sizeInFeet
-        -canEat()
+    class TitleMatch{
+        -String pattern
+        -isRegex()
     }
-    class Zebra{
-        +bool is_wild
-        +run()
+    class SizeSimilarityMatch{
+        +float ratio
+        +compare()
     }
 ```
 
@@ -177,8 +183,8 @@ classDiagram
 
 ## 개요
 
-* 테스트 용도
-* 중간 노드임.
+* fWarrange 실제 화면으로 이미지 배치 예제를 구성
+* 메뉴바 앱과 설정 화면 캡처를 사용
 ---
 
 #layout-_cover
@@ -191,17 +197,17 @@ classDiagram
 
 ### 이미지 Only
 
-![Scenery](./img/scenery.png)
+![fWarrange 메뉴바 실행 화면](./img/scenery.png)
 
 ---
 
 #layout-_contents
 
-### 기본 이미지 배치 (Scenery)
+### 기본 이미지 배치 (설정 화면)
 
-![Scenery](./img/scenery.png)
+![fWarrange 일반 설정 화면](./img/scenery.png)
 
-* 이미지 아래 텍스트
+* 접근성 권한을 켜야 창 제어가 가능합니다.
 
 ---
 
@@ -215,9 +221,9 @@ classDiagram
 
 ### 리스트 Only
 
-* 매출이 상승하고 있습니다.
-* 1분기 대비 2분기 20% 성장
-* 3분기 예측치 달성 무난
+* 스마트 창 매칭 정확도가 지속적으로 개선되고 있습니다.
+* 레이아웃 일괄 정리 기능으로 선택·마지막·기본 3개만 남기고 삭제
+* 다국어 번역 커버리지 79~89% 진행 중
 * 이미지가 있을 때 텍스트가 어떻게 배치되는지 확인
 
 ---
@@ -232,18 +238,18 @@ classDiagram
 
 ### 리스트 Only[서브 Chapter 테스트용.]
 
-* 매출이 상승하고 있습니다.
-* 1분기 대비 2분기 20% 성장
-* 3분기 예측치 달성 무난
+* 스마트 창 매칭 정확도가 지속적으로 개선되고 있습니다.
+* 레이아웃 일괄 정리 기능으로 선택·마지막·기본 3개만 남기고 삭제
+* 다국어 번역 커버리지 79~89% 진행 중
 * 이미지가 있을 때 텍스트가 어떻게 배치되는지 확인
 
-### 이미지와 리스트 (Chart)
+### 이미지와 리스트 (API 설정)
 
-![Right Image](./img/chart.png)
+![API 설정 화면](./img/chart.png)
 
-* 매출이 상승하고 있습니다.
-* 1분기 대비 2분기 20% 성장
-* 3분기 예측치 달성 무난
+* REST API 서버를 켜면 터미널·스크립트·AI 에이전트에서 원격 제어 가능
+* 기본 포트는 3016
+* curl로 서버 상태 확인 가능
 * 이미지가 있을 때 텍스트가 어떻게 배치되는지 확인
 
 ---
@@ -257,12 +263,11 @@ classDiagram
 #layout-_contents
 
 ## 2분할 레이아웃 - 1단계 
-* 왼쪽 텍스트 영역
-  -HTML DIV 태그를 사용하여
-  -원하는 레이아웃을 직접 구성할 수 있습니다.
-  -flexbox 스타일을 활용하세요.
+* paidApp은 App Store 배포용 Sandbox 호환 GUI 앱입니다.
+  -메뉴바 아이콘 클릭으로 워크스페이스 관리 패널을 엽니다.
+  -SwiftUI 기반으로 macOS 15.0 이상에서 동작합니다.
 
-![Chart](./img/chart.png)
+![설정 화면](./img/chart.png)
 
 ---
 
@@ -270,24 +275,23 @@ classDiagram
 
 ## 2분할 레이아웃 - 1단계 [좌이미지]
 
-![Chart](./img/chart.png)
+![설정 화면](./img/chart.png)
 
-* 왼쪽 텍스트 영역
-  -HTML DIV 태그를 사용하여
-  -원하는 레이아웃을 직접 구성할 수 있습니다.
-  -flexbox 스타일을 활용하세요.
+* cliApp은 Sandbox 미적용 데몬으로 Accessibility API와 REST 서버를 제공합니다.
+  -paidApp과 별도 프로세스로 동작합니다.
+  -터미널·스크립트·AI 에이전트가 이 데몬을 통해 창을 제어합니다.
 
 ---
 
 #layout-_contents
 
 ## 2분할 레이아웃 - 2단계
-* 왼쪽 텍스트 영역
-  -HTML DIV 태그를 사용하여
-  -원하는 레이아웃을 직접 구성할 수 있습니다.
-  -flexbox 스타일을 활용하세요.
+* 스마트 창 매칭은 여러 기준으로 점수를 매깁니다.
+  -PID 일치
+  -제목 완벽 일치 또는 정규표현식 매칭
+  -창 크기·비율 유사도
 ::right::
-![Chart](./img/chart.png)
+![설정 화면](./img/chart.png)
 
 ---
 
@@ -297,13 +301,13 @@ classDiagram
 
 ::: columns
 :::: {.column width="48%"}
-* 왼쪽 텍스트 영역
-  - HTML DIV 태그를 사용하여
-  - 원하는 레이아웃을 직접 구성할 수 있습니다.
-  - flexbox 스타일을 활용하세요.
+* 접근성 권한이 없으면 창을 제어할 수 없습니다.
+  - 시스템 설정 → 개인정보 보호 및 보안 → 접근성
+  - fWarrange 토글을 켜야 정상 동작합니다.
+  - 앱이 목록에 없으면 + 버튼으로 직접 추가합니다.
 ::::
 :::: {.column width="48%"}
-![Chart](./img/chart.png)
+![설정 화면](./img/chart.png)
 ::::
 :::
 
@@ -315,16 +319,15 @@ classDiagram
 
 ::: columns
 :::: {.column .card}
-![Chart](./img/chart.png)
+![메뉴바 실행 화면](./img/chart.png)
 ::::
 :::: {.column .card}
-* 왼쪽 텍스트 영역
-  - HTML DIV 태그를 사용하여
-  - 원하는 레이아웃을 직접 구성할 수 있습니다.
-  - flexbox 스타일을 활용하세요.
+* Agent 기반 워크플로우로 빌드·테스트·배포·이슈 관리를 자동화합니다.
+  - Gemini 및 Claude 에이전트 시스템 도입
+  - 이슈 트래킹과 설계 문서 연동
 ::::
 :::: {.column .card}
-![Chart](./img/scenery.png)
+![메뉴바 실행 화면](./img/scenery.png)
 ::::
 :::
 
@@ -336,15 +339,15 @@ classDiagram
 
 <div style="display: flex; align-items: center; justify-content: space-between;">
   <div style="width: 48%;">
-    <h3>왼쪽 텍스트 영역</h3>
+    <h3>키보드 단축키</h3>
     <ul>
-      <li>HTML DIV 태그를 사용하여</li>
-      <li>원하는 레이아웃을 직접 구성할 수 있습니다.</li>
-      <li>flexbox 스타일을 활용하세요.</li>
+      <li>글로벌 단축키는 데몬 기반으로 앱이 백그라운드여도 동작합니다.</li>
+      <li>로컬 단축키는 fWarrange 앱이 활성 상태일 때만 동작합니다.</li>
+      <li>설정 화면에서 자유롭게 재지정할 수 있습니다.</li>
     </ul>
   </div>
   <div style="width: 48%;">
-    <img src="./img/chart.png" alt="Chart" style="width: 100%; border-radius: 10px;">
+    <img src="./img/chart.png" alt="Settings" style="width: 100%; border-radius: 10px;">
   </div>
 </div>
 
@@ -358,16 +361,16 @@ classDiagram
 
 <div style="display: flex; justify-content: space-around;">
   <div style="width: 30%; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
-    <h4>Card 1</h4>
-    <p>첫 번째 카드의 내용입니다.</p>
+    <h4>paidApp</h4>
+    <p>App Store 배포용 GUI. 메뉴바에서 레이아웃 저장·복원.</p>
   </div>
   <div style="width: 30%; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
-    <h4>Card 2</h4>
-    <p>두 번째 카드의 내용입니다.</p>
+    <h4>cliApp</h4>
+    <p>Sandbox 미적용 데몬. Accessibility API와 REST 서버 제공.</p>
   </div>
   <div style="width: 30%; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
-    <h4>Card 3</h4>
-    <p>세 번째 카드의 내용입니다.</p>
+    <h4>REST API</h4>
+    <p>포트 3016. 터미널·스크립트·AI 에이전트가 원격 제어.</p>
   </div>
 </div>
 
@@ -383,11 +386,11 @@ classDiagram
 
 ## 기본 테이블
 
-| 헤더 1    |  헤더 2   |      헤더 3 |
-| :-------- | :-------: | ----------: |
-| 왼쪽 정렬 | 중앙 정렬 | 오른쪽 정렬 |
-| 데이터 1  | 데이터 2  |    데이터 3 |
-| 내용 A    |  내용 B   |      내용 C |
+| 항목      |  paidApp  |        cliApp |
+| :-------- | :-------: | ------------: |
+| 배포 방식 | App Store |   Helper 데몬 |
+| Sandbox   |   적용    |      미적용   |
+| 역할      | GUI 관리  | 창 제어 실행  |
 
 ---
 
@@ -395,11 +398,11 @@ classDiagram
 
 ## 이미지가 포함된 테이블
 
-|         아이콘          | 이름       | 설명           |
-| :---------------------: | :--------- | :------------- |
-| ![Icon](./img/icon.png) | **Robot**  | AI Assistant   |
-| ![Icon](./img/icon.png) | **User**   | Human Operator |
-| ![Icon](./img/icon.png) | **System** | Control Unit   |
+|         아이콘          | 이름             | 설명                 |
+| :----------------------: | :--------------- | :------------------- |
+| ![Icon](./img/icon.png) | **paidApp**       | 메뉴바 GUI 앱        |
+| ![Icon](./img/icon.png) | **cliApp**        | REST API 데몬        |
+| ![Icon](./img/icon.png) | **워크스페이스**  | 저장된 레이아웃 YAML |
 
 * 테이블 셀 내부에 마크다운 이미지 문법을 사용하여 아이콘을 넣을 수 있습니다.
 
@@ -425,6 +428,5 @@ classDiagram
 
 ## 마무리
 
-* m2Slide를 사용하여 멋진 프레젠테이션을 만드세요.
-* Markdown으로 쉽고 빠르게 작성할 수 있습니다.
-
+* 지금까지 fWarrange 소개 자료로 m2Slide 기능을 살펴봤습니다.
+* Markdown으로 쉽고 빠르게 프레젠테이션을 작성할 수 있습니다.
