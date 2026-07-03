@@ -1,8 +1,8 @@
 ---
-title: Basic Knowledge For AI<br>basic
+title: AI과정 부록 - 기초 지식편
 subtitle: AI 활용을 위한 기초 지식
 type: ppt
-release_date: 2026-07-02
+release_date: 2026-07-03
 instructor_name: 남중구 (핀프라)
 instructor_contact: nowage@gmail.com
 ---
