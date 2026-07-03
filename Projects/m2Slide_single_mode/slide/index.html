@@ -1342,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783050193008">
+  <link rel="stylesheet" href="css/custom.css?v=1783050610876">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1509,6 +1509,7 @@ html.ratio-fill .agenda-frame {
     @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
   </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 </head>
 <body class="top-align-mode  media-enlarge-fit" data-nav-indicator="both" style="
   --global-font-family: Pretendard, sans-serif;
@@ -1587,7 +1588,7 @@ html.ratio-fill .agenda-frame {
 
 <section data-slide-hash="#/3" data-heading-level="1" class="layout-chapter">
   <div class="chapter-header">
-    <h1 class="chapter-title">0. Chapter Divider 테스트 (Issue229)</h1>
+    <h1 class="chapter-title">0. Chapter Divider 테스트</h1>
   </div>
   <div class="chapter-body"><ul>
 <li class="bullet-dot">0.1. fWarrange 소개</li>
@@ -1599,7 +1600,7 @@ html.ratio-fill .agenda-frame {
 
 <section data-slide-hash="#/4" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">0. Chapter Divider 테스트 (Issue229)</div>
+    <div class="contents-head-left">0. Chapter Divider 테스트</div>
     
   </div>
   <h2 class="title">기본 텍스트 스타일</h2>
@@ -1615,7 +1616,7 @@ html.ratio-fill .agenda-frame {
 
 <section data-slide-hash="#/5" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">0. Chapter Divider 테스트 (Issue229)</div>
+    <div class="contents-head-left">0. Chapter Divider 테스트</div>
     
   </div>
   <h2 class="title">중첩 리스트</h2>
@@ -1649,7 +1650,7 @@ html.ratio-fill .agenda-frame {
 
 <section data-slide-hash="#/6" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">0. Chapter Divider 테스트 (Issue229)</div>
+    <div class="contents-head-left">0. Chapter Divider 테스트</div>
     
   </div>
   <h2 class="title">번호 있는 리스트</h2>
@@ -1690,17 +1691,25 @@ html.ratio-fill .agenda-frame {
     <div class="contents-head-left">2. 코드 및 신택스 하이라이팅</div>
     
   </div>
-  <h2 class="title">JavaScript 코드 예시</h2>
+  <h2 class="title">Swift 코드 예시</h2>
   <div class="contents-body">
 
-<pre class="code-wrapper"><code class="language-javascript hljs">// 현재 창 배치를 캡처하여 저장 (REST API)
-async function captureLayout(name) {
-  const res = await fetch("http://fwarrange-daemon:3016/api/v1/capture", {
-    method: "POST",
-    body: JSON.stringify({ name })
-  });
-  return res.json(); // { app: "fWarrange", status: "ok" }
-}</code></pre></div>
+<pre class="code-wrapper"><code class="language-swift hljs">// setWindows.swift — 스마트 창 매칭 우선순위 점수제
+if cgWindowId == target.id &amp;&amp; target.id != 0 {
+    score = 100
+    matchType = "ID(\(target.id))"
+} else if axTitle == target.window &amp;&amp; !target.window.isEmpty {
+    score = 90
+    matchType = "Title(Exact)"
+} else if !target.window.isEmpty, let regex = try? NSRegularExpression(pattern: target.window, options: .caseInsensitive),
+          regex.firstMatch(in: axTitle, options: [], range: NSRange(location: 0, length: axTitle.utf16.count)) != nil {
+    score = 80
+    matchType = "Regex"
+} else if !target.window.isEmpty &amp;&amp; axTitle.contains(target.window) {
+    score = 70
+    matchType = "Title(Contains)"
+}
+// 이하 Width/Height/Ratio/Area 순으로 60~30점 부여</code></pre></div>
 </section>
 
 <section data-slide-hash="#/9" class="layout-_contents">
@@ -1708,20 +1717,19 @@ async function captureLayout(name) {
     <div class="contents-head-left">2. 코드 및 신택스 하이라이팅</div>
     
   </div>
-  <h2 class="title">Python 코드 예시</h2>
+  <h2 class="title">Bash 코드 예시</h2>
   <div class="contents-body">
 
-<pre class="code-wrapper"><code class="language-python hljs"># 스마트 창 매칭 점수 계산 (PID / 제목 / 크기 유사도)
-def match_score(pid_ok, title_ok, size_ratio):
-    score = 0
-    if pid_ok:
-        score += 50
-    if title_ok:
-        score += 30
-    score += size_ratio * 20
-    return score
+<pre class="code-wrapper"><code class="language-bash hljs"># REST API 상태 확인 (Health Check)
+curl http://&lt;host&gt;:3016/
 
-print(match_score(True, True, 0.9))</code></pre></div>
+# 응답 예시
+# {
+#   "app": "fWarrange",
+#   "port": 3016,
+#   "status": "ok",
+#   "version": "1.08"
+# }</code></pre></div>
 </section>
 
 <section data-slide-hash="#/10" data-heading-level="1" class="layout-_cover">
@@ -1749,12 +1757,15 @@ print(match_score(True, True, 0.9))</code></pre></div>
 
 <div class="media-container mermaid">
 graph TD
-    A[창 재탐색] --> B{PID 일치?}
-    B -- Yes --> E[즉시 복원]
+    A[윈도우 재탐색] --> B{CGWindowID 일치?}
+    B -- Yes --> S1[100점 · ID 매칭]
     B -- No --> C{제목 완전 일치?}
-    C -- Yes --> E
-    C -- No --> D[크기·비율 유사도 점수화]
-    D --> E
+    C -- Yes --> S2[90점 · Title Exact]
+    C -- No --> D{정규식 매칭?}
+    D -- Yes --> S3[80점 · Regex]
+    D -- No --> E{크기·비율 유사?}
+    E -- Yes --> S4[70~30점 · Contains/Size]
+    E -- No --> S5[매칭 실패]
 </div></div>
 </section>
 
@@ -1790,22 +1801,23 @@ sequenceDiagram
 
 <div class="media-container mermaid">
 classDiagram
-    MatchStrategy <|-- PidMatch
-    MatchStrategy <|-- TitleMatch
-    MatchStrategy <|-- SizeSimilarityMatch
-    MatchStrategy : +int score
-    MatchStrategy : +match()
-    class PidMatch{
-        +int pid
-        +compare()
+    MatchRule <|-- IdMatch
+    MatchRule <|-- TitleExactMatch
+    MatchRule <|-- RegexMatch
+    MatchRule <|-- SizeSimilarityMatch
+    MatchRule : +int score
+    MatchRule : +matches()
+    class IdMatch{
+        +100점
     }
-    class TitleMatch{
-        -String pattern
-        -isRegex()
+    class TitleExactMatch{
+        +90점
+    }
+    class RegexMatch{
+        +80점
     }
     class SizeSimilarityMatch{
-        +float ratio
-        +compare()
+        +70~30점
     }
 </div></div>
 </section>
@@ -1834,8 +1846,8 @@ classDiagram
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot">fWarrange 실제 화면 9종 캡처로 이미지 배치 예제를 다양하게 구성</li>
-<li class="bullet-dot">메뉴바 앱, 설정 화면, 다중 모니터, 언어 선택까지 화면별로 다른 캡처 사용</li>
+<li class="bullet-dot">fWarrange는 메뉴바 아이콘 클릭 한 번으로 워크스페이스를 관리합니다.</li>
+<li class="bullet-dot">설정 창에서 일반·API·단축키·복원 옵션을 세부 조정할 수 있습니다.</li>
 </ul></div>
 </section>
 
@@ -2202,7 +2214,7 @@ classDiagram
   
   <div class="cover-corner cover-br">https://finfra.kr</div>
   <div class="cover-header">
-    <h1 class="cover-title">7. m2Slide 기능 소개</h1>
+    <h1 class="cover-title">7. 정리</h1>
     
     
   </div>
@@ -2214,30 +2226,30 @@ classDiagram
 
 <section data-slide-hash="#/35" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">7. m2Slide 기능 소개</div>
+    <div class="contents-head-left">7. 정리</div>
     
   </div>
-  <h2 class="title">네비게이션</h2>
+  <h2 class="title">지원 환경</h2>
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot"><strong>ESC</strong>: 전체 슬라이드 오버뷰</li>
-<li class="bullet-dot"><strong>Space/화살표</strong>: 슬라이드 이동</li>
-<li class="bullet-dot">슬라이드 하단 프로그레스 바 확인</li>
+<li class="bullet-dot">macOS 15.0 이상, Swift 5.10 이상에서 동작합니다.</li>
+<li class="bullet-dot">손쉬운 사용(Accessibility) 권한이 반드시 필요합니다.</li>
+<li class="bullet-dot">paidApp(App Store 배포)과 cliApp(Helper 데몬) 2-앱 구조로 구성됩니다.</li>
 </ul></div>
 </section>
 
 <section data-slide-hash="#/36" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">7. m2Slide 기능 소개</div>
+    <div class="contents-head-left">7. 정리</div>
     
   </div>
-  <h2 class="title">마무리</h2>
+  <h2 class="title">정리</h2>
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot">지금까지 fWarrange 소개 자료로 m2Slide 기능을 살펴봤습니다.</li>
-<li class="bullet-dot">Markdown으로 쉽고 빠르게 프레젠테이션을 작성할 수 있습니다.</li>
+<li class="bullet-dot">fWarrange는 창 위치·크기를 저장하고 필요할 때 그대로 복원하는 macOS 유틸리티입니다.</li>
+<li class="bullet-dot">스마트 창 매칭, REST API, Claude Code Skill·MCP 연동까지 함께 제공합니다.</li>
 </ul></div>
 </section>
 
@@ -2251,6 +2263,27 @@ classDiagram
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script>
+(function(){
+  function render(){
+    if (typeof renderMathInElement !== "function") return;
+    try {
+      renderMathInElement(document.body, {
+        delimiters: [
+          {left:"$$",right:"$$",display:true},
+          {left:"\\(",right:"\\)",display:false},
+          {left:"\\[",right:"\\]",display:true}
+        ],
+        throwOnError:false
+      });
+    } catch(e) { console.error("[katex] render 실패:", e); }
+  }
+  if (window.Reveal && Reveal.on) Reveal.on("ready", render);
+  else document.addEventListener("DOMContentLoaded", render);
+})();
+  </script>
   <script>
     // Allow URL toggle: ?top=1 to enable top-align-mode regardless of config
     try {
@@ -2542,7 +2575,7 @@ classDiagram
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">0. Chapter Divider 테스트 (Issue229)</a>",
+                  "content": "<a href=\"#/3\">0. Chapter Divider 테스트</a>",
                   "children": [
                         {
                               "content": "<a href=\"#/4\">기본 텍스트 스타일</a>",
@@ -2562,11 +2595,11 @@ classDiagram
                   "content": "<a href=\"#/7\">2. 코드 및 신택스 하이라이팅</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/8\">JavaScript 코드 예시</a>",
+                              "content": "<a href=\"#/8\">Swift 코드 예시</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/9\">Python 코드 예시</a>",
+                              "content": "<a href=\"#/9\">Bash 코드 예시</a>",
                               "children": []
                         }
                   ]
@@ -2656,14 +2689,14 @@ classDiagram
                   ]
             },
             {
-                  "content": "<a href=\"#/34\">7. m2Slide 기능 소개</a>",
+                  "content": "<a href=\"#/34\">7. 정리</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/35\">네비게이션</a>",
+                              "content": "<a href=\"#/35\">지원 환경</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/36\">마무리</a>",
+                              "content": "<a href=\"#/36\">정리</a>",
                               "children": []
                         }
                   ]

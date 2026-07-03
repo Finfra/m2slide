@@ -14,12 +14,12 @@ tags: []
 #layout-_cover
 
 # 1. 텍스트 레이아웃
-* 현재 예제는 1개의 md파일로 생성됨. fWarrange 소개 자료를 예시 데이터로 사용함.
+* Finfra의 macOS 유틸리티, fWarrange를 소개합니다.
 ---
 
 #layout-chapter
 
-# 0. Chapter Divider 테스트 (Issue229)
+# 0. Chapter Divider 테스트
 
 * 0.1. fWarrange 소개
 * 0.2. 워크스페이스 저장·복원
@@ -69,37 +69,44 @@ tags: []
 
 #layout-_contents
 
-## JavaScript 코드 예시
+## Swift 코드 예시
 
-```javascript
-// 현재 창 배치를 캡처하여 저장 (REST API)
-async function captureLayout(name) {
-  const res = await fetch("http://fwarrange-daemon:3016/api/v1/capture", {
-    method: "POST",
-    body: JSON.stringify({ name })
-  });
-  return res.json(); // { app: "fWarrange", status: "ok" }
+```swift
+// setWindows.swift — 스마트 창 매칭 우선순위 점수제
+if cgWindowId == target.id && target.id != 0 {
+    score = 100
+    matchType = "ID(\(target.id))"
+} else if axTitle == target.window && !target.window.isEmpty {
+    score = 90
+    matchType = "Title(Exact)"
+} else if !target.window.isEmpty, let regex = try? NSRegularExpression(pattern: target.window, options: .caseInsensitive),
+          regex.firstMatch(in: axTitle, options: [], range: NSRange(location: 0, length: axTitle.utf16.count)) != nil {
+    score = 80
+    matchType = "Regex"
+} else if !target.window.isEmpty && axTitle.contains(target.window) {
+    score = 70
+    matchType = "Title(Contains)"
 }
+// 이하 Width/Height/Ratio/Area 순으로 60~30점 부여
 ```
 
 ---
 
 #layout-_contents
 
-## Python 코드 예시
+## Bash 코드 예시
 
-```python
-# 스마트 창 매칭 점수 계산 (PID / 제목 / 크기 유사도)
-def match_score(pid_ok, title_ok, size_ratio):
-    score = 0
-    if pid_ok:
-        score += 50
-    if title_ok:
-        score += 30
-    score += size_ratio * 20
-    return score
+```bash
+# REST API 상태 확인 (Health Check)
+curl http://<host>:3016/
 
-print(match_score(True, True, 0.9))
+# 응답 예시
+# {
+#   "app": "fWarrange",
+#   "port": 3016,
+#   "status": "ok",
+#   "version": "1.08"
+# }
 ```
 
 ---
@@ -116,12 +123,15 @@ print(match_score(True, True, 0.9))
 
 ```mermaid
 graph TD
-    A[창 재탐색] --> B{PID 일치?}
-    B -- Yes --> E[즉시 복원]
+    A[윈도우 재탐색] --> B{CGWindowID 일치?}
+    B -- Yes --> S1[100점 · ID 매칭]
     B -- No --> C{제목 완전 일치?}
-    C -- Yes --> E
-    C -- No --> D[크기·비율 유사도 점수화]
-    D --> E
+    C -- Yes --> S2[90점 · Title Exact]
+    C -- No --> D{정규식 매칭?}
+    D -- Yes --> S3[80점 · Regex]
+    D -- No --> E{크기·비율 유사?}
+    E -- Yes --> S4[70~30점 · Contains/Size]
+    E -- No --> S5[매칭 실패]
 ```
 
 ---
@@ -151,22 +161,23 @@ sequenceDiagram
 
 ```mermaid
 classDiagram
-    MatchStrategy <|-- PidMatch
-    MatchStrategy <|-- TitleMatch
-    MatchStrategy <|-- SizeSimilarityMatch
-    MatchStrategy : +int score
-    MatchStrategy : +match()
-    class PidMatch{
-        +int pid
-        +compare()
+    MatchRule <|-- IdMatch
+    MatchRule <|-- TitleExactMatch
+    MatchRule <|-- RegexMatch
+    MatchRule <|-- SizeSimilarityMatch
+    MatchRule : +int score
+    MatchRule : +matches()
+    class IdMatch{
+        +100점
     }
-    class TitleMatch{
-        -String pattern
-        -isRegex()
+    class TitleExactMatch{
+        +90점
+    }
+    class RegexMatch{
+        +80점
     }
     class SizeSimilarityMatch{
-        +float ratio
-        +compare()
+        +70~30점
     }
 ```
 
@@ -182,8 +193,8 @@ classDiagram
 
 ## 개요
 
-* fWarrange 실제 화면 9종 캡처로 이미지 배치 예제를 다양하게 구성
-* 메뉴바 앱, 설정 화면, 다중 모니터, 언어 선택까지 화면별로 다른 캡처 사용
+* fWarrange는 메뉴바 아이콘 클릭 한 번으로 워크스페이스를 관리합니다.
+* 설정 창에서 일반·API·단축키·복원 옵션을 세부 조정할 수 있습니다.
 ---
 
 #layout-_cover
@@ -409,23 +420,23 @@ classDiagram
 
 #layout-_cover
 
-# 7. m2Slide 기능 소개
+# 7. 정리
 
 ---
 
 #layout-_contents
 
-## 네비게이션
+## 지원 환경
 
-* **ESC**: 전체 슬라이드 오버뷰
-* **Space/화살표**: 슬라이드 이동
-* 슬라이드 하단 프로그레스 바 확인
+* macOS 15.0 이상, Swift 5.10 이상에서 동작합니다.
+* 손쉬운 사용(Accessibility) 권한이 반드시 필요합니다.
+* paidApp(App Store 배포)과 cliApp(Helper 데몬) 2-앱 구조로 구성됩니다.
 
 ---
 
 #layout-_contents
 
-## 마무리
+## 정리
 
-* 지금까지 fWarrange 소개 자료로 m2Slide 기능을 살펴봤습니다.
-* Markdown으로 쉽고 빠르게 프레젠테이션을 작성할 수 있습니다.
+* fWarrange는 창 위치·크기를 저장하고 필요할 때 그대로 복원하는 macOS 유틸리티입니다.
+* 스마트 창 매칭, REST API, Claude Code Skill·MCP 연동까지 함께 제공합니다.
