@@ -32,7 +32,7 @@
 
 # ✅ 완료
 
-## Issue258. authoring-pipeline.md 단계 10 데이터 접근 표 불일치 (등록: 2026-07-03, 해결: 2026-07-03, commit: TBD) ✅
+## Issue258. authoring-pipeline.md 단계 10 데이터 접근 표 불일치 (등록: 2026-07-03, 해결: 2026-07-03, commit: 9b57808) ✅
 * 목적: `_doc_arch/authoring-pipeline.md` 내부 두 표의 단계 10(md2tts-txt) data 접근 기술 모순 해소 — 접근 허용 표는 `(없음)`, 운영 상태 표는 `data/md2tts-txt/ (글로벌 룰)`.
 * 상세:
     - 실제 `data/md2tts-txt/` 폴더는 존재하나 **빈 폴더**였음 (leftover) — Stage Policy 각주("단계 8·10은 data 정책 없어 cascade 미적용")·`.claude/rules/data-access-rules.md` 모두 `(없음)`과 정합, 운영 상태 표만 이탈
