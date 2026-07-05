@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 260
+* Issue HWM: 261
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -23,6 +23,20 @@
 # 🌱 이슈후보
 
 # 🔥 진행 중
+
+## Issue261. dev-server 개요 페이지 슬라이드 목록 피드백 UI — bytes 이동 + 의견 입력 + policy 체크 전송 (등록: 2026-07-05)
+* 목적: `/p/<P>` 슬라이드 목록을 읽기 전용에서 슬라이드 단위 피드백 수집 채널로 확장 — bytes를 title 셀 우측 하단 배지로 이동하고, 그 자리에 의견 textarea + 행 [전송] + [policy] 체크박스(기본 false), 페이지 하단 일괄 전송 바를 추가. policy=true 항목은 프로젝트 L2 정책 인박스까지 반영.
+* plan: `_doc_work/plan/dev-server-feedback_plan.md`
+* task: `_doc_work/tasks/dev-server-feedback_task.md`
+* 상세:
+    - 설계 SSOT: `_doc_arch/dev-server-feedback.md` (UI·API·저장·policy 흐름)
+    - 신규 `POST /p/<P>/feedback` (`items[]` 단일 스키마, 행 단건·하단 일괄 공용)
+    - 저장: 전 항목 `Projects/<P>/_pipeline/feedback/dev-feedback.jsonl` append, policy=true는 `Projects/<P>/_pipeline/policy/_dev-feedback.yml` `pending:` 추가 적재
+    - 인박스 → 정식 단계 yml 분류·반영 처리기는 범위 밖 (설계 문서 🚧 TODO, 후속 이슈)
+* 구현 명세:
+    - `lib/dev-server/server.py`: `_serve_project_overview` 테이블 재구성 + `_common_styles` 확장 + `do_POST`/`_handle_feedback_post`/`_feedback_script` 신설
+    - `lib/dev-server/test_server.py`: POST 정상·빈 opinion skip·policy 분기·400·413·404 테스트
+    - 검증: 테스트 통과 + curl POST 왕복 + 저장 파일 확인
 
 # 📕 중요
 

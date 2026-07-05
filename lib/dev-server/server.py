@@ -26,6 +26,7 @@ SSOT: lib/m2slide/_doc_arch/dev-server.md
 """
 
 import argparse
+import datetime
 import json
 import os
 import re
@@ -1066,9 +1067,31 @@ class DevHandler(SimpleHTTPRequestHandler):
             'border-radius:4px;background:#fff}'
             'code{background:#f3f3f3;padding:2px 6px;border-radius:3px;font-size:0.9em}'
             'pre{background:#2d2d2d;color:#f8f8f2;padding:12px;border-radius:4px;overflow-x:auto}'
+            # Issue261 — overview feedback UI (bytes badge + opinion cell + bulk bar)
+            '.title-cell{min-width:200px}'
+            '.bytes-badge{display:block;text-align:right;color:#999;font-size:11px;margin-top:4px}'
+            '.feedback-cell{min-width:220px}'
+            '.fb-text{width:100%;box-sizing:border-box;font:inherit;font-size:13px;'
+            'padding:4px 6px;border:1px solid #ccc;border-radius:4px;'
+            'background:#fff;color:inherit;resize:vertical}'
+            '.fb-actions{display:flex;align-items:center;gap:8px;margin-top:4px;font-size:12px}'
+            '.fb-actions .fb-send{cursor:pointer;padding:2px 10px;border:1px solid #aaa;'
+            'border-radius:4px;background:#f0f8fa}'
+            '.fb-actions .fb-send:hover{background:#dceef2}'
+            '.fb-status{color:#0a6;font-size:12px}'
+            '.fb-bulk-bar{position:sticky;bottom:0;margin-top:24px;padding:10px 16px;'
+            'background:#f0f8fa;border:1px solid #cde;border-radius:6px;'
+            'display:flex;align-items:center;gap:12px;font-size:14px}'
+            '.fb-bulk-bar button{cursor:pointer;padding:4px 14px;border:1px solid #aaa;'
+            'border-radius:4px;background:#fff}'
+            '.fb-bulk-bar button:hover{background:#dceef2}'
             '@media (prefers-color-scheme:dark){body{background:#1a1a1a;color:#e0e0e0}'
             '.card{background:#222;border-color:#444}.card .links a{background:#2a3a3e}'
-            'th{background:#2a3a3e}td,th{border-color:#444}code{background:#2d2d2d;color:#e0e0e0}}'
+            'th{background:#2a3a3e}td,th{border-color:#444}code{background:#2d2d2d;color:#e0e0e0}'
+            '.fb-text{background:#222;border-color:#555}'
+            '.fb-actions .fb-send{background:#2a3a3e;border-color:#555}'
+            '.fb-bulk-bar{background:#2a3a3e;border-color:#444}'
+            '.fb-bulk-bar button{background:#222;border-color:#555}}'
             '</style>'
         )
 
@@ -1083,7 +1106,10 @@ class DevHandler(SimpleHTTPRequestHandler):
     def _serve_root(self):
         """GET / — landing page with server info + main navigation."""
         projects = self._list_projects()
-        sample = projects[0] if projects else 'm2Slide_single_mode'
+        if 'm2Slide' in projects:
+            sample = 'm2Slide'
+        else:
+            sample = projects[0] if projects else 'm2Slide_single_mode'
         body = (
             '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
             '<title>m2slide dev-server</title>'
@@ -1100,9 +1126,9 @@ class DevHandler(SimpleHTTPRequestHandler):
             f'<div class="card"><h3><a href="/p/{sample}">🔍 sample 슬라이드 목록</a></h3>'
             f'<div class="meta">{sample} 슬라이드 인덱스</div>'
             f'<div class="links"><a href="/p/{sample}">/p/{sample}</a></div></div>'
-            f'<div class="card"><h3><a href="/p/{sample}/s/c">🎬 sample 진입</a></h3>'
+            f'<div class="card"><h3><a href="/p/{sample}/s/c" target="_blank" rel="noopener">🎬 sample 진입</a></h3>'
             f'<div class="meta">{sample} cover (없으면 agenda·toc·첫슬라이드 fallback)</div>'
-            f'<div class="links"><a href="/p/{sample}/s/c">/p/{sample}/s/c</a></div></div>'
+            f'<div class="links"><a href="/p/{sample}/s/c" target="_blank" rel="noopener">/p/{sample}/s/c</a></div></div>'
             '</div>'
             '<h2>주소 체계 (legacy /Projects/... 차단됨 → 404)</h2>'
             '<table><thead><tr><th>URL</th><th>응답</th></tr></thead><tbody>'
@@ -1222,12 +1248,12 @@ class DevHandler(SimpleHTTPRequestHandler):
             # (fallback chain /n/c → /n/a → /n/t → /n/1/1 propagates _with_query).
             first_link = f'/p/{p}/n/c'
             cards.append(
-                f'<div class="card"><h3><a href="{first_link}">{title_html}</a></h3>'
+                f'<div class="card"><h3><a href="{first_link}" target="_blank" rel="noopener">{title_html}</a></h3>'
                 + meta_line +
                 f'<div class="meta">{build_label} · 진입: <code>{entry}</code></div>'
                 '<div class="links">'
                 f'<a href="/p/{p}">📋 슬라이드 목록</a>'
-                f'<a href="{first_link}">🎬 진입 (cover/agenda/toc/첫슬라이드 fallback)</a>'
+                f'<a href="{first_link}" target="_blank" rel="noopener">🎬 진입 (cover/agenda/toc/첫슬라이드 fallback)</a>'
                 '</div></div>'
             )
         body = (
@@ -1336,26 +1362,36 @@ class DevHandler(SimpleHTTPRequestHandler):
                 text_url = f'{solo_url}?mode=text'
                 # Issue248 follow-up: title link → /n/ path (deck navigation).
                 # Preview cell iframe → /s/ path (solo design view per slide).
+                # Issue261: bytes → title-cell badge; 4th column = feedback input.
                 rows.append(
                     f'<tr><td>{one}</td>'
-                    f'<td><a href="{nav_url}">{title}</a><br>'
-                    f'<small><a href="{solo_url}">solo</a> · '
-                    f'<a href="{text_url}">text</a></small></td>'
+                    f'<td class="title-cell">'
+                    f'<a href="{nav_url}" target="_blank" rel="noopener">{title}</a><br>'
+                    f'<small><a href="{solo_url}" target="_blank" rel="noopener">solo</a> · '
+                    f'<a href="{text_url}" target="_blank" rel="noopener">text</a></small>'
+                    f'<small class="bytes-badge">{e - s} bytes</small></td>'
                     f'<td class="preview-cell">'
                     f'<iframe class="slide-preview" loading="lazy" src="{solo_url}" '
                     f'title="slide {one} preview"></iframe>'
                     f'</td>'
-                    f'<td>{e - s}</td></tr>'
+                    f'<td class="feedback-cell" data-chap="{chap_idx}" data-slide="{one}">'
+                    f'<textarea class="fb-text" rows="2" placeholder="의견..."></textarea>'
+                    f'<div class="fb-actions">'
+                    f'<label class="fb-policy-label">'
+                    f'<input type="checkbox" class="fb-policy"> policy</label>'
+                    f'<button type="button" class="fb-send">전송</button>'
+                    f'<span class="fb-status"></span>'
+                    f'</div></td></tr>'
                 )
             chapter_entry = f'/p/{project}/n/{chap_idx}/1'
             section = (
                 f'<h3>chap {chap_idx} — {stem} '
                 f'<small style="color:#888">({count} slides · '
-                f'<a href="{chapter_entry}">open deck</a>)</small></h3>'
+                f'<a href="{chapter_entry}" target="_blank" rel="noopener">open deck</a>)</small></h3>'
                 '<table><thead><tr><th>n</th>'
                 '<th>title (→ deck nav)</th>'
                 '<th>preview (solo)</th>'
-                '<th>bytes</th></tr></thead>'
+                '<th>의견</th></tr></thead>'
                 f'<tbody>{"".join(rows) or "<tr><td colspan=4>no sections</td></tr>"}</tbody></table>'
             )
             sections_html_blocks.append(section)
@@ -1368,6 +1404,11 @@ class DevHandler(SimpleHTTPRequestHandler):
             + self._common_header(f'📋 {project}') +
             f'<p>{summary}</p>'
             + '\n'.join(sections_html_blocks) +
+            '<div class="fb-bulk-bar">'
+            '<label><input type="checkbox" id="fb-policy-all"> policy 일괄 적용</label>'
+            '<button type="button" id="fb-send-all">전체 전송</button>'
+            '<span id="fb-bulk-status"></span></div>'
+            + self._feedback_script(project) +
             '</body></html>'
         )
         self._write_html(body)
@@ -1494,6 +1535,152 @@ class DevHandler(SimpleHTTPRequestHandler):
         self.send_header('Content-Length', str(len(data)))
         self.end_headers()
         self.wfile.write(data)
+
+    # ---- feedback POST (Issue261 — _doc_arch/dev-server-feedback.md) ----
+
+    _FEEDBACK_POST_RE = re.compile(r'^/p/([^/]+)/feedback/?$')
+    _FEEDBACK_MAX_BODY = 256 * 1024  # 256KB
+
+    def do_POST(self):
+        path_only = self.path.split('?', 1)[0].split('#', 1)[0]
+        m = self._FEEDBACK_POST_RE.match(path_only)
+        if m:
+            return self._handle_feedback_post(m.group(1))
+        self.send_error(404, f'no POST route: {path_only}')
+
+    def _handle_feedback_post(self, project: str):
+        """POST /p/<P>/feedback — append opinions to _pipeline/feedback jsonl;
+        policy=true items additionally go to _pipeline/policy/_dev-feedback.yml
+        pending inbox (classification into stage ymls is a later processor's job).
+        """
+        if '/' in project or os.sep in project or project.startswith('.'):
+            self.send_error(404, f'project not found: {project}')
+            return
+        project_dir = os.path.join(os.getcwd(), 'Projects', project)
+        if not os.path.isdir(project_dir):
+            self.send_error(404, f'project not found: {project}')
+            return
+        try:
+            length = int(self.headers.get('Content-Length', '0'))
+        except ValueError:
+            self.send_error(400, 'invalid Content-Length')
+            return
+        if length <= 0:
+            self.send_error(400, 'empty body')
+            return
+        if length > self._FEEDBACK_MAX_BODY:
+            self.send_error(413, 'body too large (max 256KB)')
+            return
+        raw = self.rfile.read(length)
+        try:
+            payload = json.loads(raw.decode('utf-8'))
+        except (ValueError, UnicodeDecodeError):
+            self.send_error(400, 'invalid JSON body')
+            return
+        items = payload.get('items') if isinstance(payload, dict) else None
+        if not isinstance(items, list) or not items:
+            self.send_error(400, 'items[] required')
+            return
+        ts = datetime.datetime.now().astimezone().isoformat(timespec='seconds')
+        records = []
+        for it in items:
+            if not isinstance(it, dict):
+                continue
+            opinion = str(it.get('opinion') or '').strip()
+            if not opinion:
+                continue  # empty opinion → skip (row not filled)
+            try:
+                chap = int(it.get('chap'))
+                slide = int(it.get('slide'))
+            except (TypeError, ValueError):
+                self.send_error(400, 'chap/slide must be integers')
+                return
+            records.append({
+                'ts': ts, 'chap': chap, 'slide': slide,
+                'title': str(it.get('title') or '').strip(),
+                'opinion': opinion,
+                'policy': bool(it.get('policy', False)),
+            })
+        if not records:
+            self._write_json({'status': 'ok', 'saved': 0, 'policy_saved': 0})
+            return
+        fb_dir = os.path.join(project_dir, '_pipeline', 'feedback')
+        os.makedirs(fb_dir, exist_ok=True)
+        with open(os.path.join(fb_dir, 'dev-feedback.jsonl'), 'a', encoding='utf-8') as fh:
+            for rec in records:
+                fh.write(json.dumps(rec, ensure_ascii=False) + '\n')
+        policy_recs = [r for r in records if r['policy']]
+        if policy_recs:
+            pol_dir = os.path.join(project_dir, '_pipeline', 'policy')
+            os.makedirs(pol_dir, exist_ok=True)
+            pol_path = os.path.join(pol_dir, '_dev-feedback.yml')
+            new_file = not os.path.isfile(pol_path)
+            with open(pol_path, 'a', encoding='utf-8') as fh:
+                if new_file:
+                    fh.write('# dev-server feedback policy inbox — pending 분류 전\n')
+                    fh.write('# SSOT: _doc_arch/dev-server-feedback.md\n')
+                    fh.write('pending:\n')
+                for r in policy_recs:
+                    # JSON string literals are valid YAML scalars (safe quoting)
+                    fh.write(f"  - ts: {r['ts']}\n")
+                    fh.write(f"    chap: {r['chap']}\n")
+                    fh.write(f"    slide: {r['slide']}\n")
+                    fh.write(f"    title: {json.dumps(r['title'], ensure_ascii=False)}\n")
+                    fh.write(f"    opinion: {json.dumps(r['opinion'], ensure_ascii=False)}\n")
+                    fh.write('    stage: null\n')
+        self._write_json({
+            'status': 'ok', 'saved': len(records), 'policy_saved': len(policy_recs)})
+
+    def _feedback_script(self, project: str) -> str:
+        """Inline JS for overview feedback cells + bulk bar (Issue261)."""
+        return (
+            '<script>(function(){'
+            f'var EP="/p/{project}/feedback";'
+            'function itemOf(cell){'
+            'var ta=cell.querySelector(".fb-text");'
+            'var op=(ta.value||"").trim();'
+            'if(!op)return null;'
+            'var row=cell.closest("tr");'
+            'var a=row?row.querySelector("td:nth-child(2) a"):null;'
+            'return{chap:parseInt(cell.dataset.chap,10),'
+            'slide:parseInt(cell.dataset.slide,10),'
+            'title:a?a.textContent.trim():"",opinion:op,'
+            'policy:cell.querySelector(".fb-policy").checked};}'
+            'function post(items,onDone){'
+            'fetch(EP,{method:"POST",'
+            'headers:{"Content-Type":"application/json"},'
+            'body:JSON.stringify({items:items})})'
+            '.then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);'
+            'return r.json();})'
+            '.then(function(j){onDone(null,j);})'
+            '.catch(function(e){onDone(e);});}'
+            'document.querySelectorAll(".feedback-cell .fb-send")'
+            '.forEach(function(btn){'
+            'btn.addEventListener("click",function(){'
+            'var cell=btn.closest(".feedback-cell");'
+            'var ta=cell.querySelector(".fb-text");'
+            'var st=cell.querySelector(".fb-status");'
+            'var it=itemOf(cell);'
+            'if(!it){ta.style.borderColor="#c33";ta.focus();return;}'
+            'ta.style.borderColor="";st.textContent="...";'
+            'post([it],function(err,j){'
+            'st.textContent=err?("\\u2717 "+err.message):'
+            '("\\u2713 \\uc804\\uc1a1\\ub428"+(j.policy_saved?" (policy)":""));});});});'
+            'var allBtn=document.getElementById("fb-send-all");'
+            'if(allBtn)allBtn.addEventListener("click",function(){'
+            'var forceAll=document.getElementById("fb-policy-all").checked;'
+            'var items=[];'
+            'document.querySelectorAll(".feedback-cell").forEach(function(cell){'
+            'var it=itemOf(cell);'
+            'if(it){if(forceAll)it.policy=true;items.push(it);}});'
+            'var st=document.getElementById("fb-bulk-status");'
+            'if(!items.length){st.textContent="\\uc804\\uc1a1\\ud560 \\uc758\\uacac \\uc5c6\\uc74c";return;}'
+            'st.textContent="...";'
+            'post(items,function(err,j){'
+            'st.textContent=err?("\\u2717 "+err.message):'
+            '("\\u2713 "+j.saved+"\\uac74 \\uc800\\uc7a5, policy "+j.policy_saved+"\\uac74");});});'
+            '})();</script>'
+        )
 
     def _write_json(self, obj, status: int = 200):
         data = json.dumps(obj, ensure_ascii=False, indent=2).encode('utf-8')

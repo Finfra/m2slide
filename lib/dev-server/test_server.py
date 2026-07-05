@@ -287,5 +287,122 @@ class NavRouteRegexTest(unittest.TestCase):
         self.assertIsNone(DevHandler._SHORT_NAV_CHAP_RE.match('/p/X/n/1'))
 
 
+class FeedbackPostTest(unittest.TestCase):
+    """Issue261 — POST /p/<P>/feedback 저장·policy 분기·에러 처리."""
+
+    @classmethod
+    def setUpClass(cls):
+        import tempfile
+        cls.tmp = tempfile.mkdtemp(prefix='m2slide-fbtest-')
+        cls.old_cwd = os.getcwd()
+        os.chdir(cls.tmp)
+        os.makedirs(os.path.join('Projects', 'fbProj', 'slide'))
+
+    @classmethod
+    def tearDownClass(cls):
+        import shutil
+        os.chdir(cls.old_cwd)
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def _post(self, project, body_bytes, content_length=None):
+        """Bare handler로 _handle_feedback_post 호출. (status, payload) 반환.
+        send_error 호출 시 payload=None, _write_json 호출 시 dict."""
+        import io
+        h = DevHandler.__new__(DevHandler)
+        result = {'status': None, 'json': None}
+        h.headers = {'Content-Length': str(
+            len(body_bytes) if content_length is None else content_length)}
+        h.rfile = io.BytesIO(body_bytes)
+        h.send_error = lambda code, msg=None: result.update(status=code)
+        h._write_json = lambda obj, status=200: result.update(status=status, json=obj)
+        h._handle_feedback_post(project)
+        return result['status'], result['json']
+
+    def _read_jsonl(self):
+        import json as _json
+        p = os.path.join('Projects', 'fbProj', '_pipeline', 'feedback',
+                         'dev-feedback.jsonl')
+        if not os.path.isfile(p):
+            return []
+        with open(p, encoding='utf-8') as fh:
+            return [_json.loads(ln) for ln in fh if ln.strip()]
+
+    def _policy_yml(self):
+        p = os.path.join('Projects', 'fbProj', '_pipeline', 'policy',
+                         '_dev-feedback.yml')
+        return open(p, encoding='utf-8').read() if os.path.isfile(p) else ''
+
+    def test_normal_post_appends_jsonl(self):
+        import json as _json
+        body = _json.dumps({'items': [
+            {'chap': 1, 'slide': 3, 'title': 'T', 'opinion': '의견1', 'policy': False},
+        ]}).encode('utf-8')
+        before = len(self._read_jsonl())
+        status, payload = self._post('fbProj', body)
+        self.assertEqual(status, 200)
+        self.assertEqual(payload['saved'], 1)
+        self.assertEqual(payload['policy_saved'], 0)
+        recs = self._read_jsonl()
+        self.assertEqual(len(recs), before + 1)
+        self.assertEqual(recs[-1]['opinion'], '의견1')
+        self.assertFalse(recs[-1]['policy'])
+        self.assertIn('ts', recs[-1])
+
+    def test_policy_true_appends_pending_yml(self):
+        import json as _json
+        body = _json.dumps({'items': [
+            {'chap': 2, 'slide': 1, 'opinion': '정책 의견', 'policy': True},
+            {'chap': 2, 'slide': 2, 'opinion': '일반 의견', 'policy': False},
+        ]}).encode('utf-8')
+        status, payload = self._post('fbProj', body)
+        self.assertEqual(status, 200)
+        self.assertEqual(payload['saved'], 2)
+        self.assertEqual(payload['policy_saved'], 1)
+        yml = self._policy_yml()
+        self.assertIn('pending:', yml)
+        self.assertIn('"정책 의견"', yml)
+        self.assertNotIn('"일반 의견"', yml)
+        self.assertIn('stage: null', yml)
+
+    def test_empty_opinion_skipped(self):
+        import json as _json
+        body = _json.dumps({'items': [
+            {'chap': 1, 'slide': 1, 'opinion': '   ', 'policy': True},
+        ]}).encode('utf-8')
+        status, payload = self._post('fbProj', body)
+        self.assertEqual(status, 200)
+        self.assertEqual(payload['saved'], 0)
+        self.assertEqual(payload['policy_saved'], 0)
+
+    def test_invalid_json_400(self):
+        status, _ = self._post('fbProj', b'not-json{')
+        self.assertEqual(status, 400)
+
+    def test_missing_items_400(self):
+        status, _ = self._post('fbProj', b'{"foo": 1}')
+        self.assertEqual(status, 400)
+
+    def test_oversize_body_413(self):
+        status, _ = self._post('fbProj', b'{}',
+                               content_length=DevHandler._FEEDBACK_MAX_BODY + 1)
+        self.assertEqual(status, 413)
+
+    def test_unknown_project_404(self):
+        status, _ = self._post('noSuchProj', b'{"items":[]}')
+        self.assertEqual(status, 404)
+
+    def test_traversal_project_404(self):
+        status, _ = self._post('..', b'{"items":[]}')
+        self.assertEqual(status, 404)
+
+    def test_post_route_regex(self):
+        self.assertIsNotNone(
+            DevHandler._FEEDBACK_POST_RE.match('/p/m2Slide/feedback'))
+        self.assertIsNotNone(
+            DevHandler._FEEDBACK_POST_RE.match('/p/m2Slide/feedback/'))
+        self.assertIsNone(
+            DevHandler._FEEDBACK_POST_RE.match('/p/m2Slide/s/1/1'))
+
+
 if __name__ == '__main__':
     unittest.main()
