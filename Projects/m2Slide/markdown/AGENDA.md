@@ -3,18 +3,16 @@ title: m2Slide 소개
 subtitle: 마크다운 한 벌로 슬라이드·전자책·PDF·PPTX까지
 instructor_name: 남중구 (핀프라)
 instructor_contact: nowage@gmail.com
-description: m2Slide 도구의 핵심 컨셉과 사용법을 한눈에 정리한 소개 자료
+description: "m2Slide를 3분 안에 파악하는 임팩트 요약 소개"
 version: 1.0.0
 date: May 10, 2026
-release_date: 2026-07-02
+release_date: 2026-07-05
 created_at: 2026-05-10
 created_by: nowage
 type: ppt
 tags: [m2slide, intro, markdown, slide]
 ---
 
-## [1. m2Slide란?](./01-m2slide-intro.md)
-## [2. 핵심 기능](./02-core-features.md)
-## [3. 사용법](./03-usage.md)
-## [4. 더 할 수 있는 것](./04-extensibility.md)
-## [5. 마무리](./05-wrap-up.md)
+## [1. m2Slide란?](./01-what.md)
+## [2. 왜 m2Slide인가](./02-why.md)
+## [3. 30초 시작](./03-start.md)

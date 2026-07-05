@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>m2Slide란?</title>
+  <title>왜 m2Slide인가</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"1","slideOffset":0,"totalSlides":20};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"2","slideOffset":3,"totalSlides":10};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1342,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783006115463">
+  <link rel="stylesheet" href="css/custom.css?v=1783227900428">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1557,51 +1557,81 @@ html.ratio-fill .agenda-frame {
 
       <section data-slide-hash="#/1" id="toc-placeholder" class="layout-_toc title-slide">
   <header class="toc-page-header">
-    <h1 class="toc-page-title">m2Slide란?</h1>
+    <h1 class="toc-page-title">왜 m2Slide인가</h1>
   </header>
   <div class="toc-markmap">
     <svg class="toc-mindmap-svg"></svg>
   </div>
       </section>
 
-<section data-slide-hash="#/2" class="layout-_contents_no_title">
-  <div class="contents-body"><ul>
-<li class="bullet-dot">마크다운 → Reveal.js 슬라이드·EPUB·PDF·PPTX 자동 변환 도구</li>
-<li class="bullet-dot">프로젝트별 독립 폴더로 다수의 강연·문서 자료 관리</li>
-</ul></div>
+<section data-slide-hash="#/2" class="layout-_contents">
+  
+  <h2 class="title">도구와 씨름 끝, 콘텐츠에 집중</h2>
+  <div class="contents-body">
+
+<div class="m2-htmlart htmlart-compare" data-htmlart="compare" style="--htmlart-n:2">
+<ul>
+<li class="bullet-dot"><strong>기존 방식</strong> / 도구가 주인공
+<ul>
+<li class="bullet-dash">슬라이드·전자책·PDF 도구 따로따로</li>
+<li class="bullet-dash">바이너리 포맷 — diff·리뷰 불가</li>
+<li class="bullet-dash">디자인 맞추다 시간 소진</li>
+</ul>
+</li>
+<li class="bullet-dot"><strong>m2Slide</strong> / 콘텐츠가 주인공
+<ul>
+<li class="bullet-dash">마크다운 하나로 전부 생성</li>
+<li class="bullet-dash">Git으로 버전 관리·협업</li>
+<li class="bullet-dash">theme 한 줄로 디자인 교체</li>
+</ul>
+</li>
+</ul>
+</div></div>
 </section>
 
 <section data-slide-hash="#/3" class="layout-_contents">
   
-  <h2 class="title">한 줄 요약</h2>
+  <h2 class="title">네 가지 이유</h2>
   <div class="contents-body">
-<ul>
-<li class="bullet-dot"><strong>마크다운 한 벌로 모든 산출물을 만든다.</strong></li>
-<li class="bullet-dot">슬라이드용 별도 도구·바이너리 포맷 학습 부담 제거</li>
-<li class="bullet-dot">강사·작성자는 <strong>콘텐츠</strong>에만 집중하면 됨</li>
-</ul></div>
-</section>
-
-<section data-slide-hash="#/4" class="layout-_contents">
-  
-  <h2 class="title">왜 m2Slide인가</h2>
-  <div class="contents-body">
-<ul>
-<li class="bullet-dot"><strong>단일 SSOT</strong>: <code>.md</code> 한 파일이 슬라이드·전자책·PDF의 원본</li>
-<li class="bullet-dot"><strong>Git 친화적</strong>: 텍스트 기반 → diff·리뷰·협업 용이</li>
-<li class="bullet-dot"><strong>확장 가능</strong>: theme + layout 시스템으로 자유로운 디자인</li>
-<li class="bullet-dot"><strong>순수 Node.js</strong>: 외부 의존성 거의 없음 (Mermaid·PDF 변환만 옵션)</li>
-</ul>
 
 <div class="m2-htmlart htmlart-radial" data-htmlart="radial" style="--htmlart-n:5">
 <ul>
 <li class="bullet-dot">m2Slide</li>
-<li class="bullet-dot">단일 SSOT — .md 한 벌</li>
-<li class="bullet-dot">Git 친화적 — diff·협업</li>
-<li class="bullet-dot">확장 가능 — theme/layout</li>
-<li class="bullet-dot">순수 Node.js — 의존성 최소</li>
+<li class="bullet-dot">단일 SSOT
+<ul>
+<li class="bullet-dash">.md 하나가 원본</li>
+</ul>
+</li>
+<li class="bullet-dot">Git 친화
+<ul>
+<li class="bullet-dash">diff·리뷰·협업</li>
+</ul>
+</li>
+<li class="bullet-dot">확장 자유
+<ul>
+<li class="bullet-dash">theme·layout·컴포넌트</li>
+</ul>
+</li>
+<li class="bullet-dot">즉시 시작
+<ul>
+<li class="bullet-dash">마크다운만 알면 끝</li>
+</ul>
+</li>
 </ul>
 </div></div>
+</section>
+
+<section data-slide-hash="#/4" class="layout-_contents">
+  
+  <h2 class="title">발표가 편해진다</h2>
+  <div class="contents-body">
+
+<ul>
+<li class="bullet-dot"><strong>Markmap 목차</strong> — 클릭 가능한 마인드맵 자동 생성</li>
+<li class="bullet-dot"><strong>계층 네비게이션</strong> — 챕터 간 이동 자동 연결</li>
+<li class="bullet-dot"><strong>단계별 등장</strong> — <code>{.fragment}</code> 한 토큰이면 끝</li>
+<li class="bullet-dot"><strong>차트·수식·mermaid·3D</strong> — 펜스드 블록으로 바로 삽입</li>
+</ul></div>
 </section>
 
     </div>
@@ -3606,11 +3636,15 @@ html.ratio-fill .agenda-frame {
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/2\">한 줄 요약</a>",
+                  "content": "<a href=\"#/1\">도구와 씨름 끝, 콘텐츠에 집중</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">왜 m2Slide인가</a>",
+                  "content": "<a href=\"#/2\">네 가지 이유</a>",
+                  "children": []
+            },
+            {
+                  "content": "<a href=\"#/3\">발표가 편해진다</a>",
                   "children": []
             }
       ]
@@ -3872,13 +3906,13 @@ html.ratio-fill .agenda-frame {
     var M2SLIDE_AGENDA_FWD_URL = 'agenda.html?fwd=1';
     // Issue119: cover layout 이름 (_config.yml cover_layout, 기본 _cover). isCoverSlide() 판정에 사용.
     var M2SLIDE_COVER_LAYOUT = '_cover';
-    var PREV_CHAPTER = '';
-    var NEXT_CHAPTER = '02-core-features.html';
+    var PREV_CHAPTER = '01-what.html';
+    var NEXT_CHAPTER = '03-start.html';
     // Issue136: ⇤/⇥ 단축키 전용 — main/sub 계층 인식 sibling 점프 (NEXT/PREV_CHAPTER는 sequential 파일 순서 그대로)
-    var PREV_SIBLING_CHAPTER = '';
-    var NEXT_SIBLING_CHAPTER = '02-core-features.html';
+    var PREV_SIBLING_CHAPTER = '01-what.html';
+    var NEXT_SIBLING_CHAPTER = '03-start.html';
     // Issue87: ⇟ PgDown(마지막 페이지 직행) — Single mode은 '' (deck last로 자체 계산)
-    var LAST_CHAPTER = '05-wrap-up.html';
+    var LAST_CHAPTER = '03-start.html';
     function isCoverSlide(slide) {
       if (!slide) return false;
       if (!slide.classList || !slide.classList.contains('layout-' + M2SLIDE_COVER_LAYOUT)) return false;
@@ -4328,7 +4362,7 @@ html.ratio-fill .agenda-frame {
       if (event.key === 'ArrowRight' || event.keyCode === 39) {
         var totalSlides = Reveal.getTotalSlides();
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
-        var hasNextChapter = '02-core-features.html' !== '';
+        var hasNextChapter = '03-start.html' !== '';
         if (currentSlideNumber >= totalSlides) {
           // 남은 fragment가 있으면 reveal 기본 fragment 진행에 맡김 —
           // 마지막 슬라이드에서 fragment 도중 안내 메시지·다음 챕터 점프 금지
@@ -4339,7 +4373,7 @@ html.ratio-fill .agenda-frame {
               lastSlideMessage.style.display = 'none';
               lastSlideMessageShown = false;
               // Issue104: 다음 챕터 진입은 forward — ?fwd=1 시그널
-              window.location.href = '02-core-features.html?fwd=1';
+              window.location.href = '03-start.html?fwd=1';
             } else {
               event.preventDefault();
               lastSlideMessage.style.display = 'block';
