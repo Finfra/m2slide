@@ -14,7 +14,7 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"1","slideOffset":0,"totalSlides":20};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"1","slideOffset":0,"totalSlides":10};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1342,7 +1342,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783005378913">
+  <link rel="stylesheet" href="css/custom.css?v=1783227900426">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1564,44 +1564,53 @@ html.ratio-fill .agenda-frame {
   </div>
       </section>
 
-<section data-slide-hash="#/2" class="layout-_contents_no_title">
-  <div class="contents-body"><ul>
-<li class="bullet-dot">마크다운 → Reveal.js 슬라이드·EPUB·PDF·PPTX 자동 변환 도구</li>
-<li class="bullet-dot">프로젝트별 독립 폴더로 다수의 강연·문서 자료 관리</li>
-</ul></div>
+<section data-slide-hash="#/2" class="layout-_contents">
+  
+  <h2 class="title">마크다운 한 벌이면 끝</h2>
+  <div class="contents-body">
+
+<div class="m2-htmlart htmlart-process" data-htmlart="process" style="--htmlart-n:3">
+<ul>
+<li class="bullet-dot">✍️ 마크다운
+<ul>
+<li class="bullet-dash">.md 한 벌 작성</li>
+</ul>
+</li>
+<li class="bullet-dot">⚙️ m2slide.sh
+<ul>
+<li class="bullet-dash">명령 한 줄</li>
+</ul>
+</li>
+<li class="bullet-dot">🎁 4종 산출물
+<ul>
+<li class="bullet-dash">HTML · EPUB</li>
+<li class="bullet-dash">PDF · PPTX</li>
+</ul>
+</li>
+</ul>
+</div></div>
 </section>
 
 <section data-slide-hash="#/3" class="layout-_contents">
   
-  <h2 class="title">한 줄 요약</h2>
+  <h2 class="title">한 번 쓰고, 네 가지로 낸다</h2>
   <div class="contents-body">
+
+<table>
+<thead>
+<tr><th style="text-align:left">산출물</th><th style="text-align:left">옵션</th><th style="text-align:left">용도</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align:left">HTML</td><td style="text-align:left">(기본)</td><td style="text-align:left">Reveal.js 브라우저 발표</td></tr>
+<tr><td style="text-align:left">EPUB</td><td style="text-align:left"><code>--epub</code></td><td style="text-align:left">전자책</td></tr>
+<tr><td style="text-align:left">PDF</td><td style="text-align:left"><code>--pdf</code></td><td style="text-align:left">배포·인쇄</td></tr>
+<tr><td style="text-align:left">PPTX</td><td style="text-align:left"><code>--pptx</code></td><td style="text-align:left">PowerPoint 호환</td></tr>
+</tbody>
+</table>
+
 <ul>
-<li class="bullet-dot"><strong>마크다운 한 벌로 모든 산출물을 만든다.</strong></li>
-<li class="bullet-dot">슬라이드용 별도 도구·바이너리 포맷 학습 부담 제거</li>
-<li class="bullet-dot">강사·작성자는 <strong>콘텐츠</strong>에만 집중하면 됨</li>
+<li class="bullet-dot"><code>.md</code> 하나가 모든 형식의 원본(SSOT)</li>
 </ul></div>
-</section>
-
-<section data-slide-hash="#/4" class="layout-_contents">
-  
-  <h2 class="title">왜 m2Slide인가</h2>
-  <div class="contents-body">
-<ul>
-<li class="bullet-dot"><strong>단일 SSOT</strong>: <code>.md</code> 한 파일이 슬라이드·전자책·PDF의 원본</li>
-<li class="bullet-dot"><strong>Git 친화적</strong>: 텍스트 기반 → diff·리뷰·협업 용이</li>
-<li class="bullet-dot"><strong>확장 가능</strong>: theme + layout 시스템으로 자유로운 디자인</li>
-<li class="bullet-dot"><strong>순수 Node.js</strong>: 외부 의존성 거의 없음 (Mermaid·PDF 변환만 옵션)</li>
-</ul>
-
-<div class="m2-htmlart htmlart-radial" data-htmlart="radial" style="--htmlart-n:5">
-<ul>
-<li class="bullet-dot">m2Slide</li>
-<li class="bullet-dot">단일 SSOT — .md 한 벌</li>
-<li class="bullet-dot">Git 친화적 — diff·협업</li>
-<li class="bullet-dot">확장 가능 — theme/layout</li>
-<li class="bullet-dot">순수 Node.js — 의존성 최소</li>
-</ul>
-</div></div>
 </section>
 
     </div>
@@ -3606,11 +3615,11 @@ html.ratio-fill .agenda-frame {
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/2\">한 줄 요약</a>",
+                  "content": "<a href=\"#/1\">마크다운 한 벌이면 끝</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">왜 m2Slide인가</a>",
+                  "content": "<a href=\"#/2\">한 번 쓰고, 네 가지로 낸다</a>",
                   "children": []
             }
       ]
@@ -3873,12 +3882,12 @@ html.ratio-fill .agenda-frame {
     // Issue119: cover layout 이름 (_config.yml cover_layout, 기본 _cover). isCoverSlide() 판정에 사용.
     var M2SLIDE_COVER_LAYOUT = '_cover';
     var PREV_CHAPTER = '';
-    var NEXT_CHAPTER = '02-core-features.html';
+    var NEXT_CHAPTER = '02-why.html';
     // Issue136: ⇤/⇥ 단축키 전용 — main/sub 계층 인식 sibling 점프 (NEXT/PREV_CHAPTER는 sequential 파일 순서 그대로)
     var PREV_SIBLING_CHAPTER = '';
-    var NEXT_SIBLING_CHAPTER = '02-core-features.html';
+    var NEXT_SIBLING_CHAPTER = '02-why.html';
     // Issue87: ⇟ PgDown(마지막 페이지 직행) — Single mode은 '' (deck last로 자체 계산)
-    var LAST_CHAPTER = '05-wrap-up.html';
+    var LAST_CHAPTER = '03-start.html';
     function isCoverSlide(slide) {
       if (!slide) return false;
       if (!slide.classList || !slide.classList.contains('layout-' + M2SLIDE_COVER_LAYOUT)) return false;
@@ -4328,7 +4337,7 @@ html.ratio-fill .agenda-frame {
       if (event.key === 'ArrowRight' || event.keyCode === 39) {
         var totalSlides = Reveal.getTotalSlides();
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
-        var hasNextChapter = '02-core-features.html' !== '';
+        var hasNextChapter = '02-why.html' !== '';
         if (currentSlideNumber >= totalSlides) {
           // 남은 fragment가 있으면 reveal 기본 fragment 진행에 맡김 —
           // 마지막 슬라이드에서 fragment 도중 안내 메시지·다음 챕터 점프 금지
@@ -4339,7 +4348,7 @@ html.ratio-fill .agenda-frame {
               lastSlideMessage.style.display = 'none';
               lastSlideMessageShown = false;
               // Issue104: 다음 챕터 진입은 forward — ?fwd=1 시그널
-              window.location.href = '02-core-features.html?fwd=1';
+              window.location.href = '02-why.html?fwd=1';
             } else {
               event.preventDefault();
               lastSlideMessage.style.display = 'block';
