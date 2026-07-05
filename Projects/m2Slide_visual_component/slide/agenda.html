@@ -40,8 +40,17 @@
 /* =========================================================================
    1. @import — 외부 폰트 (CDN)
    ========================================================================= */
-@import url('https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css');
 @import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap');
+
+/* Issue260: webfontworld/gmarket CDN 사망(404) → projectnoonnu noonfonts CDN @font-face 교체.
+   font-weight 100 900 범위 선언 — h1/h2의 700·900 요청에도 synthetic bold(faux-bold 뭉개짐) 방지. */
+@font-face {
+  font-family: 'GmarketSansBold';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* =========================================================================
    2. :root — CSS 변수 기본값 (1.b 정책: _config.yml 명시값 전체 흡수)
@@ -1350,7 +1359,7 @@ html.ratio-fill .agenda-frame {
     @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
 </style>
-<link rel="stylesheet" href="css/custom.css?v=1783005429956">
+<link rel="stylesheet" href="css/custom.css?v=1783229067083">
 </head>
 <body class="agenda-page" data-nav-indicator="both">
 <div class="agenda-frame">

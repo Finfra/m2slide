@@ -44,8 +44,17 @@
 /* =========================================================================
    1. @import — 외부 폰트 (CDN)
    ========================================================================= */
-@import url('https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css');
 @import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap');
+
+/* Issue260: webfontworld/gmarket CDN 사망(404) → projectnoonnu noonfonts CDN @font-face 교체.
+   font-weight 100 900 범위 선언 — h1/h2의 700·900 요청에도 synthetic bold(faux-bold 뭉개짐) 방지. */
+@font-face {
+  font-family: 'GmarketSansBold';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* =========================================================================
    2. :root — CSS 변수 기본값 (1.b 정책: _config.yml 명시값 전체 흡수)
@@ -1342,7 +1351,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783050610876">
+  <link rel="stylesheet" href="css/custom.css?v=1783229066842">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -3352,7 +3361,9 @@ classDiagram
         var idxL = Reveal.getIndices();
         // Chapter mode TOC slide 또는 (TOC 없는 chapter의) 첫 슬라이드 #/0 → 이전 챕터 마지막 (없으면 agenda)
         var atChapterDeckStart = (M2SLIDE_MODE === 'chapter' && idxL.h === 0 && idxL.v === 0);
-        if (isTocSlide(cur) || atChapterDeckStart) {
+        // Issue259: TOC가 deck 첫 슬라이드일 때만 cross-chapter 점프.
+        // chapter divider가 TOC 앞(h=0)에 오는 deck에서는 ← 가 deck 내 이전 슬라이드로 가야 함.
+        if ((isTocSlide(cur) && idxL.h === 0 && idxL.v === 0) || atChapterDeckStart) {
           event.preventDefault();
           if (M2SLIDE_MODE === 'chapter' && PREV_CHAPTER) {
             // Issue104: ← 이전 챕터 마지막 진입은 backward — &back=1 시그널 추가
