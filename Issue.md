@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 258
+* Issue HWM: 260
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -31,6 +31,30 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue259. TOC 슬라이드(h>0)에서 ← 키가 이전 챕터로 점프 — deck 내 이전 슬라이드로 가야 함 (등록: 2026-07-05, 해결: 2026-07-05, commit: e72a11c, 4e07c6b, 0ec84cd) ✅
+* 목적: chapter divider(`#layout-chapter`)가 toc-placeholder 앞(h=0)에 오는 deck에서 `#/toc-placeholder`(h=1) ← 키 입력 시 같은 deck의 이전 슬라이드(h=0)로 이동해야 하나, 이전 챕터 마지막(`PREV_CHAPTER?last=1&back=1`)으로 cross-page 점프하는 회귀 수정.
+* 상세:
+    - 재현: `m2Slide_visual_component/02-diagram-math-symbol.html#/toc-placeholder`에서 ← → `01-text-structure.html?last=1&back=1#/11`로 이동 (기대: 02 챕터 h=0 divider 슬라이드)
+    - 원인: `lib/html-builder.js` ← 키 핸들러(Issue70 매트릭스)의 `if (isTocSlide(cur) || atChapterDeckStart)` — `isTocSlide(cur)`가 슬라이드 위치(h index) 무관하게 무조건 cross-chapter 분기. TOC가 deck 첫 슬라이드(h=0)라는 옛 가정 잔존
+    - 2026-07-02 "chapter divider를 toc-placeholder 앞으로 순서 역전" 변경 이후 TOC가 h=1이 되어 가정 붕괴
+    - 구분 판정: reveal.js 라이브러리 문제 아님 — m2slide 자체 keydown 핸들러(프로젝트 코드) 문제
+* 구현 명세:
+    - 조건을 `(isTocSlide(cur) && idxL.h === 0 && idxL.v === 0) || atChapterDeckStart`로 변경 — TOC가 deck 시작일 때만 cross-chapter 점프, 그 외에는 Reveal 기본 ← (deck 내 이전 슬라이드)
+    - 검증: m2Slide_visual_component 빌드 후 `/n/2/2`(toc)에서 ← → 같은 deck h=0 확인, divider 없는 챕터(toc가 h=0)에서 ← → 이전 챕터 마지막 유지 확인
+
+## Issue260. GmarketSans webfont CDN 404 — 제목 폰트 깨짐 (등록: 2026-07-05, 해결: 2026-07-05, commit: 87feeb1, 4e07c6b, 0ec84cd) ✅
+* 목적: `lib/css/base.css`의 `@import url('https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css')`가 404(레포 소실)라 GmarketSansBold 웹폰트가 전혀 로드되지 않는 문제 수정 — 제목(chapter divider·contents title 전체)이 로컬 폰트 유무에 따라 synthetic double-bold(뭉개짐) 또는 generic sans-serif로 렌더됨.
+* 상세:
+    - 재현: 배포본 `m2Slide_visual_component/01·02-*.html` 첫 슬라이드 제목 폰트 이상 (font-weight 700/900 요청 + 실 페이스 부재 → faux-bold)
+    - 확인: `cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css` → HTTP 404, `webfontworld.github.io/gmarket/GmarketSans.css` → 200이나 본문 1바이트 (양쪽 모두 사망)
+    - 사용처: base.css 변수 4곳(`--main-title-font-family` 등) 모두 `GmarketSansBold` 단일 페이스만 사용
+    - 구분 판정: 특정 프로젝트 문제 아님 — base.css 공통 문제라 전 프로젝트 빌드 산출물 영향
+* 구현 명세:
+    - 죽은 `@import`를 가용 CDN(`https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff`, 200 확인) 기반 `@font-face`로 교체
+    - `font-weight: 100 900` 범위 선언으로 synthetic bold 재발 차단 + `font-display: swap`
+    - base.css 수정 가드 준수: 대표 3프로젝트(m2Slide_single_mode·m2Slide_chapter_mode·layoutTest) 빌드 검증 의무
+    - (실행 노트) layoutTest 프로젝트는 아카이브되어 부재 — single_mode·chapter_mode·visual_component 3종으로 빌드·폰트 로드 검증 수행
 
 ## Issue258. authoring-pipeline.md 단계 10 데이터 접근 표 불일치 (등록: 2026-07-03, 해결: 2026-07-03, commit: 9b57808) ✅
 * 목적: `_doc_arch/authoring-pipeline.md` 내부 두 표의 단계 10(md2tts-txt) data 접근 기술 모순 해소 — 접근 허용 표는 `(없음)`, 운영 상태 표는 `data/md2tts-txt/ (글로벌 룰)`.
