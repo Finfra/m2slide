@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 264
+* Issue HWM: 266
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -24,9 +24,35 @@
 
 # 🔥 진행 중
 
+## Issue266. default_lec 텍스트 전용 슬라이드 세로 중앙 정렬 제거 — top 정렬로 통일 (등록: 2026-07-06)
+* 목적: dev-server 피드백("문단 가운데 아니고 위로", AgenticCoding chap1/slide12) 반영 — 텍스트 전용 `_contents`/`_contents_no_title` 슬라이드 본문을 세로 중앙 정렬하는 `justify-content: center` 규칙(theme/default_lec/slide.css)을 제거하여 top 정렬로 통일. 반영 범위 질의 결과 사용자가 "테마 전체 top 정렬" 선택 (프로젝트 옵션 신설·보류 대신).
+* 상세:
+    - 해당 규칙은 "짧은 본문 아래 큰 빈 공간" 문제로 최근 추가된 것 — 제거 시 default_lec 사용 5개 프로젝트(AgenticCoding·GenContentProd·LlmFlow·graphify·m2slide_info) 전체 영향
+    - 재발 방지: 규칙 자리에 top 정렬이 의도된 정책임을 알리는 주석 잔존
+* 구현 명세:
+    - `theme/default_lec/slide.css` 텍스트 전용 세로 중앙 블록 제거 (flex column 기본 = top)
+    - AgenticCoding 재빌드 + slide12 top 정렬 검증, default_lec 타 프로젝트 1종 이상 재빌드 무회귀 확인
+    - 처리 완료 시 피드백 인박스 → done.jsonl 이관 (/feedback-process 절차 5)
+
 # 📕 중요
 
 # 📙 일반
+
+## Issue265. policy 데이터 yml 목적 지향(goal-oriented) 스키마 + confidence 가중치 도입 — 정책 무력화·오변경 예방 (등록: 2026-07-06)
+* 목적: `data/<stage>/*.yml` 정책이 (A) 파일명 정규식 하드코딩으로 조용히 무력화되고(`drop_redundant_page_screenshot`가 `pdf-p\d+`만 검출 → AgenticCoding `sNN_i1.png` bleed 8건 미검출), (B) 일괄 커밋(chore bulk)에 섞여 회귀 원인 격리가 불가하며, (C) 학습 사례 1건이 즉시 전역 enforce로 승격되어 과소/과대 일반화 위험을 안는 구조적 약점을 차단.
+* 분석 문서: http://jm4.local:9876/htm-doc?path=/Users/nowage/_git/__all/videoMaker/lib/m2slide/_doc_work/z_htm/hub_htm_20260706_210035_a_policy-history.htm (git history 사례 A/B/C + 예방책 ①~⑤ 상세)
+* 상세:
+    - 사례 A (목적·수단 불일치): commit `4b38619` 정책의 goal은 "재구성 성공 슬라이드에 통짜 래스터 0건"이나 구현은 특정 파일명 패턴 — 다른 추출 네이밍(sNN_iM)에서 무력화. 2026-07-06 AgenticCoding 튜닝에서 실증
+    - 사례 B (일괄 커밋): `01ad51a`·`80cd65b`·`b580e13` — 정책 yml+코드+산출물 혼합 커밋. theme fallback 회귀 원인 코드가 `01ad51a`에 숨어 있었음 (기존 Issue 기록)
+    - 사례 C (단일 사례 즉시 enforce): 7/3 백업 diff 기준 하루 3룰 추가 전부 사례 1건 근거 + 예외조건(`keep_screenshot_when`)이 자연어라 기계 판정 불가
+* 구현 명세 (분석 문서 ①~⑤ — 대규모 변경이라 등록만, 착수 시 plan 필수):
+    - ① goal-oriented 스키마: 각 룰에 `goal:`(검증 가능 목표) + `goal_check:`(속성 기반 판정 — 면적·종횡비·빈 alt 등) + `detect_hints:`(파일명 정규식은 힌트로 강등)
+    - ② confidence 가중치: `evidence:` 구조화 필드 기반 low(=proposal)/medium(=warn+apply)/high(=enforce) 3단계 적용 강도. promote-to-data.py 연동
+    - ③ 정책 yml 단독 커밋 규율 (bulk commit에 data/*.yml 혼입 금지)
+    - ④ `--lint-data` 확장: enforce 룰이 goal_check 없이 정규식만 가지면 경고 + 산출물 검사(정책 on인데 위반 잔존 시 fail-loud)
+    - ⑤ 학습 사례 골든 픽스처화: rationale 사례 슬라이드 재변환 회귀 테스트
+    - 우선순위: ①+④ (사례 A 직접 차단) → ② (사례 C 구조 개선) → ③⑤
+    - triage: 복잡 (heuristics.yml 스키마 개편 + promote-to-data.py + lint 확장 — 설계 결정이 후속 이슈에 영향)
 
 # 📗 선택
 
