@@ -1,0 +1,8 @@
+# Projects/fPmIntro/_config.yml
+
+# 챕터 진입 TOC 정책
+#   toc_placeholder  : markmap 마인드맵 TOC 슬라이드(#/toc-placeholder) 유지
+#   cards_placeholder: H1 챕터타이틀 → Cards Page 변환 슬라이드. false 시 해당 슬라이드 자체를 deck에서 제거
+# markmap TOC 하나만 남기고 중복되던 빈 Cards Page(#/2) 제거 (2026-07-02)
+toc_placeholder: true
+cards_placeholder: false

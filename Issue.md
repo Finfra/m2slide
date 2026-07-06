@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 268
+* Issue HWM: 269
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -23,6 +23,18 @@
 # 🌱 이슈후보
 
 # 🔥 진행 중
+
+## Issue269. fPmIntro 영문판 프로젝트 생성 (fPmIntro_en) (등록: 2026-07-06)
+* 목적: 기존 한글 fPM 소개 프로젝트 `fPmIntro`(10챕터 발표 자료)의 영문 버전을 `Projects/fPmIntro_en`으로 생성하여 영어권 대상 fPM 소개 지원
+* 상세:
+    - 원본: `Projects/fPmIntro/` (AGENDA + 01/01.1/02/02.1/03/04/05/05.1/05.2/06 챕터, chapter mode, theme default)
+    - markdown 본문·frontmatter·표·htmlart·cards·mermaid·wordart 라벨을 영어로 번역
+    - Info.md 기획 메타 영어 번역
+    - SVG 다이어그램(`fpm-system-map.svg`) 텍스트 라벨 영어화, 이미지 alt 텍스트 영어화
+    - 스크린샷 19장은 실제 한글 fPM UI라 재캡처 불가 → 원본 복사 유지("가급적" 범위 밖). 데모 mp4는 finfra.kr 외부 URL 유지
+* 구현 명세:
+    - `Projects/fPmIntro_en/` 생성 후 `./m2slide.sh fPmIntro_en` 빌드 → slide/*.html 검증
+    - 식별자 메타 보존(identifier-meta-rules 준수)
 
 # 📕 중요
 

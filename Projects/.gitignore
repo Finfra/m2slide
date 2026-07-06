@@ -13,6 +13,7 @@
 # Allow project directories (publishing = o)
 !/BasicKnowledgeForAI_small/
 !/fPmIntro/
+!/fPmIntro_en/
 !/GenContentProd/
 !/LlmAndVibeCoding/
 !/m2Slide/

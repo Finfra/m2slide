@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 660" font-family="'Comic Sans MS','Segoe Print','Bradley Hand',cursive" role="img" aria-label="The fPM system map — six automation layers (hub, dashboard, VSCode integration, cdf, pm-do, sshf) stacked on top of Claude Code, with SCAR as the foundation">
+  <defs>
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="2" seed="7" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="3.2" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5b5563"/>
+    </marker>
+    <style>
+      .box  { fill:#ffffff; stroke:#3a3540; stroke-width:2.4; filter:url(#rough); }
+      .lbl  { font-size:19px; fill:#2a2530; text-anchor:middle; dominant-baseline:middle; }
+      .sub  { font-size:13px; fill:#6b6472; text-anchor:middle; dominant-baseline:middle; }
+      .core { fill:#fff3d6; stroke:#e0a516; stroke-width:3; filter:url(#rough); }
+      .coreL{ font-size:23px; fill:#8a6100; text-anchor:middle; dominant-baseline:middle; font-weight:bold; }
+      .fnd  { fill:#e8f3ee; stroke:#2f9e6f; stroke-width:2.4; filter:url(#rough); }
+      .fndL { font-size:17px; fill:#1c6b48; text-anchor:middle; dominant-baseline:middle; }
+      .con  { stroke:#8a8391; stroke-width:1.8; fill:none; stroke-dasharray:1 0; marker-end:url(#ah); filter:url(#rough); }
+      .pain { font-size:12.5px; fill:#b23b3b; text-anchor:middle; dominant-baseline:middle; }
+      .title{ font-size:24px; fill:#2a2530; text-anchor:middle; font-weight:bold; }
+    </style>
+  </defs>
+
+  <text x="520" y="40" class="title">The fPM Map — one framework weaving six pains</text>
+
+  <!-- Core: Claude Code -->
+  <rect x="410" y="300" width="220" height="80" rx="14" class="core"/>
+  <text x="520" y="332" class="coreL">Claude Code</text>
+  <text x="520" y="360" class="sub">one session · one project · one chat</text>
+
+  <!-- 6 solution layers around core -->
+  <!-- top-left: hub -->
+  <rect x="70" y="150" width="200" height="74" rx="12" class="box"/>
+  <text x="170" y="177" class="lbl">hub render / Q&amp;A</text>
+  <text x="170" y="202" class="sub">..show · ..ask</text>
+  <!-- top-mid: board -->
+  <rect x="420" y="120" width="200" height="74" rx="12" class="box"/>
+  <text x="520" y="147" class="lbl">live dashboard</text>
+  <text x="520" y="172" class="sub">..board · SSE push</text>
+  <!-- top-right: vscode -->
+  <rect x="770" y="150" width="200" height="74" rx="12" class="box"/>
+  <text x="870" y="177" class="lbl">VSCode integration</text>
+  <text x="870" y="202" class="sub">tab · session jump · /fpm-*</text>
+  <!-- bottom-left: cdf -->
+  <rect x="70" y="440" width="200" height="74" rx="12" class="box"/>
+  <text x="170" y="467" class="lbl">cdf family</text>
+  <text x="170" y="492" class="sub">number · name · frecency</text>
+  <!-- bottom-mid: pm-do -->
+  <rect x="420" y="470" width="200" height="74" rx="12" class="box"/>
+  <text x="520" y="497" class="lbl">pm-do · depends</text>
+  <text x="520" y="522" class="sub">cross delegation · auto order</text>
+  <!-- bottom-right: sshf -->
+  <rect x="770" y="440" width="200" height="74" rx="12" class="box"/>
+  <text x="870" y="467" class="lbl">sshf remote</text>
+  <text x="870" y="492" class="sub">connect by number · name</text>
+
+  <!-- connectors core <-> layers -->
+  <path class="con" d="M430,312 C360,270 300,235 270,200"/>
+  <path class="con" d="M520,300 C520,260 520,230 520,196"/>
+  <path class="con" d="M610,312 C680,270 740,235 770,200"/>
+  <path class="con" d="M430,368 C360,410 300,445 270,470"/>
+  <path class="con" d="M520,380 C520,420 520,445 520,468"/>
+  <path class="con" d="M610,368 C680,410 740,445 770,470"/>
+
+  <!-- pain labels on connectors -->
+  <text x="330" y="250" class="pain">results evaporate</text>
+  <text x="565" y="250" class="pain">long tasks go dark</text>
+  <text x="710" y="250" class="pain">window fatigue</text>
+  <text x="330" y="430" class="pain">memorize paths</text>
+  <text x="575" y="432" class="pain">manual deps</text>
+  <text x="710" y="430" class="pain">memorize servers</text>
+
+  <!-- foundation: SCAR -->
+  <rect x="220" y="600" width="600" height="46" rx="10" class="fnd"/>
+  <text x="520" y="623" class="fndL">SCAR 3-tier foundation — Skill · Command · Agent · Rule  (-g / -m / -w)</text>
+  <path class="con" d="M170,514 C170,560 300,585 380,600" />
+  <path class="con" d="M520,544 L520,598" />
+  <path class="con" d="M870,514 C870,560 740,585 660,600" />
+</svg>
