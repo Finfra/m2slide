@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 261
+* Issue HWM: 263
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -31,6 +31,37 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue263. Safari 진입 시 렌더링 오류 가능 경고 배너 (등록: 2026-07-06, 해결: 2026-07-06, commit: 5a37266) ✅
+* 목적: Safari에서 markmap 등 일부 슬라이드 요소가 깨져 보이는 문제(라벨 겹침 등)에 대해, 모든 슬라이드 페이지 진입 시 Safari 감지 → 렌더링 오류 가능 경고를 표시하고 사용자가 확인 후 시작하게 함.
+* 상세:
+    - 재현: Safari에서 `/p/m2Slide/n/1/1#/toc-placeholder` — TOC markmap 라벨이 좌상단에 겹쳐 렌더 (Chrome 정상)
+    - 요구: 슬라이드 시작 전 경고 → [계속 보기] 확인 후 진행
+* 구현 명세:
+    - `lib/html-builder.js`에 `M2_SAFARI_WARNING_HTML` 스니펫 상수 신설, `M2_CROSS_GUARD_HEAD_HTML` 주입 3개소(generateHTML deck·generateCoverHTML·generateAgendaHTML)에 동반 주입
+    - UA 판정: `/safari/i` 매치 + `chrome|chromium|crios|edg|fxios|android` 제외
+    - 세션당 1회만 표시(sessionStorage `m2SafariWarned`) — 챕터 간 이동 시 재경고 없음
+    - 테스트 강제 표시: `?safari-warn=1` 쿼리 (비Safari에서도 배너 노출)
+    - 외부 의존 0 (inline JS/CSS) — file:// 배포 호환
+* 결과 (Walkthrough):
+    - UA 판정 7케이스(Safari mac/iOS 표시, Chrome·Edge·Firefox·CriOS·Android 미표시) 전부 통과
+    - Playwright: 일반 진입 미표시 + `?safari-warn=1` 강제 표시 → [계속 보기] 클릭 → 배너 제거 + sessionStorage 기록 확인
+    - m2Slide·m2Slide_chapter_mode·m2Slide_single_mode 재빌드, deck·agenda·cover 3종 산출물 스니펫 포함 확인, `--lint-deployment` 위반 0건
+
+## Issue262. H1 없는 챕터 파일 TOC markmap 링크 off-by-one — `#/1`이 TOC 자신을 가리킴 (등록: 2026-07-06, 해결: 2026-07-06, commit: ef69ab2) ✅
+* 목적: chapter mode에서 챕터 소스 `.md`에 H1이 없을 때(H2만 존재) toc-placeholder markmap 링크가 전부 -1 시프트되어 첫 항목 클릭 시 TOC 자신(`#/1`)으로 이동하는 버그 수정.
+* 상세:
+    - 재현: `http://jm4.local:9877/p/m2Slide/n/1/1#/toc-placeholder` — tocData 링크 `#/1`·`#/2`, 실제 deck은 toc=`#/1`, 본문=`#/2`·`#/3`
+    - 원인: `lib/html-builder.js generateTOCFromFile`의 `h1SlideRemoved` 보정이 파일에 H1이 실제로 존재하는지 확인하지 않음. H1이 없으면 제거될 H1 슬라이드 자체가 없는데 `slideIndex=0`으로 시작 → 모든 앵커 -1
+    - 대조: H1 있는 `m2Slide_chapter_mode`는 정상 (`#/2`부터 정확)
+* 구현 명세:
+    - `generateTOCFromFile`에서 code fence 밖 `^# ` 존재 여부(`fileHasH1`) 사전 스캔
+    - `hasTocInDeck`일 때 `slideIndex = (h1SlideRemoved && fileHasH1) ? 0 : 1` — H1 부재 시 첫 소스 슬라이드가 deck 슬롯을 그대로 차지하므로 1 시작
+    - 검증: m2Slide(H1 없음) 링크 `#/2`·`#/3` + m2Slide_chapter_mode(H1 있음) 무회귀
+* 결과 (Walkthrough):
+    - 재빌드 후 tocData 링크 `#/2`·`#/3` 정상, Playwright로 TOC 항목 클릭 → `#/2` "마크다운 한 벌이면 끝" 착지 확인
+    - 무회귀: m2Slide_chapter_mode 링크 불변(`#/1`~`#/4`), 영향 범위 스캔 결과 H1 없는 챕터는 m2Slide 3개뿐
+    - 기존 테스트 통과 (integration 2건 실패는 수정 전부터 존재한 head-bar 관련 기존 실패)
 
 ## Issue261. dev-server 개요 페이지 슬라이드 목록 피드백 UI — bytes 이동 + 의견 입력 + policy 체크 전송 (등록: 2026-07-05, 해결: 2026-07-05, commit: 320d2cd) ✅
 * 목적: `/p/<P>` 슬라이드 목록을 읽기 전용에서 슬라이드 단위 피드백 수집 채널로 확장 — bytes를 title 셀 우측 하단 배지로 이동하고, 그 자리에 의견 textarea + 행 [전송] + [policy] 체크박스(기본 false), 페이지 하단 일괄 전송 바를 추가. policy=true 항목은 프로젝트 L2 정책 인박스까지 반영.
