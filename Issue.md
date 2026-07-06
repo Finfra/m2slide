@@ -221,7 +221,7 @@
     - Playwright headless computed style 검증: `m2Slide_visual_component` `.chapter-title`(H1) → `GmarketSansBold, sans-serif`, `.title`(H2) 다수 → `GmarketSansBold`, `.toc-page-title` → `GmarketSansBold, sans-serif`, `m2Slide_chapter_mode` cover 페이지 `.cover-title`(H1) → `GmarketSansBold, sans-serif` — 전 클래스 시스템 폰트 폴백 없음, 회귀 0
     - `custom.css`(theme 빌드 산출물)에는 중복 font-family 없음 확인, SSOT 규칙은 base.css inline `<style>`로만 주입됨(설계대로)
 
-## Issue257. note-writer agent 실장 + authoring-pipeline 단계 재번호(9=note-writer, 10=md2tts-txt, 11=외부) (등록: 2026-07-03, 해결: 2026-07-03, commit: TBD) ✅
+## Issue257. note-writer agent 실장 + authoring-pipeline 단계 재번호(9=note-writer, 10=md2tts-txt, 11=외부) (등록: 2026-07-03, 해결: 2026-07-03, commit: e09bb16) ✅
 * 목적: Issue256에서 "4.5" 자리에 표만 등재하고 미구현으로 남겼던 note-writer agent를 실제 구현하고, 오케스트레이터 흐름에 정식 연동. 사용자 지시: note-writer는 md2tts-txt와 포지션이 같음(슬라이드 완전 구성 끝난 이후 시행) — 4.5가 아니라 단계 8(slide 생성) 다음, md2tts-txt 바로 앞자리(신규 단계 9)로 재번호.
 * depends: Issue256
 * plan: `_doc_work/plan/note-writer-agent_plan.md`
@@ -236,9 +236,9 @@
     - 재번호 반영: SSOT(`_doc_arch/authoring-pipeline.md`, 표+단계별 상세+코드블록+데이터 격리 표), 오케스트레이터(`.claude/agents/authoring-pipeline.md` — 상한 1~10, dispatch 목록에 9 추가, 체크포인트 4·5·7·9), `.claude/commands/m2.md`(resume 표에 "선택 단계" 로직 포함, 상한값), `data-access-rules.md`, `Harness.md`, `noteForHuman.md`, `_doc_arch/speaker-notes-design.md`(4.5안 폐기 기록 보존 + 최종 위치 서술), 2차 영향 7개 문서
     - grep 회귀 검증: 잔존 "4.5"는 모두 의도된 폐기 기록(히스토리 서술)뿐, "단계 9=md2tts-txt" 오참조 0건, 테이블 컬럼 수 불일치 0건, YAML/frontmatter 파싱 정상
     - ppt2m2slide.md의 기존 TODO("PPT speaker notes 변환처 미정")를 note-writer/note.md로 연결하는 후속 힌트도 함께 갱신
-    - 문서 정정: 2026-07-03 이슈-선후행-정리 작업에서 코드/문서 grep 대조로 완료 재확인 후 🔥 진행 중 → ✅ 완료 이동(원 이슈 텍스트 자체는 이미 "결과: 완료"로 자기보고했으나 섹션 이동이 누락되어 있었음). commit 미완료 상태라 commit: TBD.
+    - 문서 정정: 2026-07-03 이슈-선후행-정리 작업에서 코드/문서 grep 대조로 완료 재확인 후 🔥 진행 중 → ✅ 완료 이동(원 이슈 텍스트 자체는 이미 "결과: 완료"로 자기보고했으나 섹션 이동이 누락되어 있었음). 2026-07-06 deploy 세션에서 미커밋 구현분(`.claude/agents/note-writer.md` 등)이 commit e09bb16으로 랜딩 → commit: TBD 확정.
 
-## Issue256. 발표자 노트 `{md파일명}_note.md` 분리 관리 — slide-id 매칭 + 빌드 병합 (등록: 2026-07-03, 해결: 2026-07-03, commit: TBD) ✅
+## Issue256. 발표자 노트 `{md파일명}_note.md` 분리 관리 — slide-id 매칭 + 빌드 병합 (등록: 2026-07-03, 해결: 2026-07-03, commit: e09bb16) ✅
 * 목적: 발표자 노트를 슬라이드 본문 `.md`에 인라인(`Note:`)하지 않고 `{md파일명}_note.md` 별도 파일로 분리 관리. reveal.js speaker view(`s` 키)가 실제로 노트를 표시하는지는 현재 미구현·미검증 상태(reveal.js notes plugin은 로드되어 있으나 파싱·병합 로직 전무) — 기술적 증명 필요.
 * plan: `_doc_work/plan/speaker-notes_plan.md`
 * task: `_doc_work/tasks/speaker-notes_task.md`
@@ -257,7 +257,7 @@
     - 2차: dev-server 접속 → `s` 키 → speaker view 팝업 즉시 포착 → 스크린샷 3장으로 노트 텍스트 실제 렌더 확인. 스크린샷: `_doc_work/capture/issue256-speaker-view-{notes-check-1,notes-check-2,no-id}.png`
     - 상세는 `_doc_work/tasks/speaker-notes_task.md` "검증 결과" 섹션, 설계 문서 갱신은 `_doc_arch/speaker-notes-design.md`
     - note-writer agent(stage 4.5)는 계획대로 범위 밖 유지 — 별도 이슈 필요 시 🌱 이슈후보 등록
-    - 문서 정정: 2026-07-03 이슈-선후행-정리 작업에서 코드(`lib/notes.js`·`lib/slide-parser.js`·`lib/html-builder.js`)·테스트(`node --test` 회귀 통과)·산출물(`Projects/aTest/markdown/20-speaker-notes-test_note.md` 등) 대조로 완료 재확인 후 🔥 진행 중 → ✅ 완료 이동. commit 미완료 상태라 commit: TBD.
+    - 문서 정정: 2026-07-03 이슈-선후행-정리 작업에서 코드(`lib/notes.js`·`lib/slide-parser.js`·`lib/html-builder.js`)·테스트(`node --test` 회귀 통과)·산출물(`Projects/aTest/markdown/20-speaker-notes-test_note.md` 등) 대조로 완료 재확인 후 🔥 진행 중 → ✅ 완료 이동. 2026-07-06 deploy 세션에서 미커밋 구현분(`lib/notes.js`·`lib/slide-parser.js`·`lib/html-builder.js` + `_note.md` glob 제외)이 commit e09bb16으로 랜딩 → commit: TBD 확정.
 
 ## Issue255. 모든 PPT 메타에 github_url·homepage 글로벌 기본값 주입 (등록: 2026-07-02, 해결: 2026-07-03, commit: 01ad51a) ✅
 * 목적: 생성되는 모든 PPT 의 cover 메타에 GitHub 주소(`github.com/Finfra/m2slide`)와 finfra.kr 주소(`https://finfra.kr`)가 항상 포함되도록 글로벌 기본값을 도입. 사용자 요청 — "생성되는 모든 pt 메타데이터에 github·finfra.kr 주소 삽입".
