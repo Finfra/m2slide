@@ -24,18 +24,6 @@
 
 # 🔥 진행 중
 
-## Issue269. fPmIntro 영문판 프로젝트 생성 (fPmIntro_en) (등록: 2026-07-06)
-* 목적: 기존 한글 fPM 소개 프로젝트 `fPmIntro`(10챕터 발표 자료)의 영문 버전을 `Projects/fPmIntro_en`으로 생성하여 영어권 대상 fPM 소개 지원
-* 상세:
-    - 원본: `Projects/fPmIntro/` (AGENDA + 01/01.1/02/02.1/03/04/05/05.1/05.2/06 챕터, chapter mode, theme default)
-    - markdown 본문·frontmatter·표·htmlart·cards·mermaid·wordart 라벨을 영어로 번역
-    - Info.md 기획 메타 영어 번역
-    - SVG 다이어그램(`fpm-system-map.svg`) 텍스트 라벨 영어화, 이미지 alt 텍스트 영어화
-    - 스크린샷 19장은 실제 한글 fPM UI라 재캡처 불가 → 원본 복사 유지("가급적" 범위 밖). 데모 mp4는 finfra.kr 외부 URL 유지
-* 구현 명세:
-    - `Projects/fPmIntro_en/` 생성 후 `./m2slide.sh fPmIntro_en` 빌드 → slide/*.html 검증
-    - 식별자 메타 보존(identifier-meta-rules 준수)
-
 # 📕 중요
 
 # 📙 일반
@@ -59,6 +47,20 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue269. fPmIntro 영문판 프로젝트 생성 (fPmIntro_en) (등록: 2026-07-06, 해결: 2026-07-06, commit: a819b3a) ✅
+* 목적: 기존 한글 fPM 소개 프로젝트 `fPmIntro`(10챕터 발표 자료)의 영문 버전을 `Projects/fPmIntro_en`으로 생성하여 영어권 대상 fPM 소개 지원
+* 상세:
+    - 원본: `Projects/fPmIntro/` (AGENDA + 01/01.1/02/02.1/03/04/05/05.1/05.2/06 챕터, chapter mode, theme default)
+    - markdown 본문·frontmatter·표·htmlart·cards·mermaid·wordart 라벨 영어 번역
+    - Info.md 기획 메타 영어 번역
+* 결과 (Walkthrough):
+    - `Projects/fPmIntro_en/` 생성 (config·VERSION·Info.md·AGENDA + 10챕터) → `./m2slide.sh fPmIntro_en` 빌드 성공 (10챕터 57슬라이드)
+    - SVG 다이어그램(`fpm-system-map.svg`) 텍스트 라벨 영어화(잔여 한글 0), 이미지 alt 텍스트 영어화
+    - 미치환 `{{ }}` 0건, 본문 `<p>/<li>/<td>/<h>` 한글 잔여 0 (잔여 "번호"는 reveal.js 페이지번호 JS/CSS 주석 boilerplate)
+    - 스크린샷 17장은 실제 한글 fPM UI라 재캡처 불가 → 원본 복사 유지("가급적" 범위 밖). 데모 mp4는 finfra.kr 외부 URL 유지(`*.mp4` gitignore)
+    - Projects.md publishing=o 등록 + `Projects/.gitignore` 화이트리스트 추가 (--sync-projects)
+    - 결과 링크: http://127.0.0.1:9877/p/fPmIntro_en/n/c
 
 ## Issue268. m2slide_info 영문판 프로젝트 생성 (m2slide_info_en) (등록: 2026-07-06, 해결: 2026-07-06, commit: 211cc96) ✅
 * 목적: 기존 한글 설명용 프로젝트 `m2slide_info`(5챕터 소개 자료)의 영문 버전을 `Projects/m2slide_info_en`으로 생성하여 영어권 잠재 사용자에게 소개 자료 제공
