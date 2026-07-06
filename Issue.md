@@ -24,7 +24,15 @@
 
 # 🔥 진행 중
 
-## Issue264. dev-server 피드백 수동 처리 커맨드 + 개요 페이지 복붙 커맨드 박스 (등록: 2026-07-06)
+# 📕 중요
+
+# 📙 일반
+
+# 📗 선택
+
+# ✅ 완료
+
+## Issue264. dev-server 피드백 수동 처리 커맨드 + 개요 페이지 복붙 커맨드 박스 (등록: 2026-07-06, 해결: 2026-07-06, commit: b278aea) ✅
 * 목적: Issue261로 적재되는 `_pipeline/feedback/dev-feedback.jsonl` 피드백의 소비 채널 확보 — 세션 자동 생성 대신 **수동 커맨드 방식**(사용자 결정) 채택. `/feedback-process <P>` 커맨드 신설 + 개요 페이지(`/p/<P>`) 상단 summary 우측·하단 bulk bar 우측 2곳에 복붙용 커맨드 박스(📋 복사 버튼 + 미처리 건수) 표시.
 * 상세:
     - 배경: 사용자가 개요 페이지 [전송] 후 Claude Code 세션이 생기지 않는다고 보고 — 조사 결과 저장은 정상, 처리기가 설계 TODO(`_doc_arch/dev-server-feedback.md`)로 미구현이었음
@@ -33,14 +41,10 @@
     - `lib/dev-server/server.py`: `_pending_feedback_count(project)` helper + `_serve_project_overview` 커맨드 박스 2곳 주입 + `_common_styles` `.fb-cmd-*` 스타일 + `_feedback_script` 복사 버튼 핸들러·전송 성공 시 미처리 카운트 갱신
     - `.claude/commands/feedback-process.md`: jsonl 읽기 → dedup → title/chap/slide로 소스 md 슬라이드 특정 → 의견 반영 수정 → 재빌드·검증 → 처리분 `dev-feedback.done.jsonl` 이관(인박스 비움) → 보고
     - `lib/dev-server/test_server.py`: pending count·커맨드 박스 렌더 테스트 추가
-
-# 📕 중요
-
-# 📙 일반
-
-# 📗 선택
-
-# ✅ 완료
+* 결과 (Walkthrough):
+    - 테스트 42건 통과 (신규 3건 포함), dev-server 재시작 후 curl로 커맨드 박스 2곳·미처리 3건 렌더 확인
+    - Playwright: 복사 버튼 클릭 → "✓ 복사됨" 피드백 동작, 캡처 `_doc_work/capture/verify-issue264-cmd-box-{top,bulkbar}.png`
+    - 설계 문서 소비 설계·done.jsonl 규약·설계 결정 추가 (`_doc_arch/dev-server-feedback.md`)
 
 ## Issue263. Safari 진입 시 렌더링 오류 가능 경고 배너 (등록: 2026-07-06, 해결: 2026-07-06, commit: 5a37266) ✅
 * 목적: Safari에서 markmap 등 일부 슬라이드 요소가 깨져 보이는 문제(라벨 겹침 등)에 대해, 모든 슬라이드 페이지 진입 시 Safari 감지 → 렌더링 오류 가능 경고를 표시하고 사용자가 확인 후 시작하게 함.
