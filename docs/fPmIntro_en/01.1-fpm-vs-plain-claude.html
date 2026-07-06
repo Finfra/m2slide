@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>6. fPM 도입하기</title>
+  <title>1.1 Claude Code Alone vs fPM</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -45,7 +45,7 @@
       } catch (e) {}
     })();
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"6","slideOffset":48,"totalSlides":57};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"1.1","slideOffset":8,"totalSlides":57};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1390,7 +1390,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783346381135">
+  <link rel="stylesheet" href="css/custom.css?v=1783346391036">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1605,7 +1605,7 @@ html.ratio-fill .agenda-frame {
 
       <section data-slide-hash="#/1" id="toc-placeholder" class="layout-_toc title-slide">
   <header class="toc-page-header">
-    <h1 class="toc-page-title">6. fPM 도입하기</h1>
+    <h1 class="toc-page-title">1.1 Claude Code Alone vs fPM</h1>
   </header>
   <div class="toc-markmap">
     <svg class="toc-mindmap-svg"></svg>
@@ -1614,36 +1614,31 @@ html.ratio-fill .agenda-frame {
 
 <section data-slide-hash="#/2" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">fPM 도입하기 & 다음 단계</div>
+    <div class="contents-head-left">Pain of Claude Code Alone → How fPM Solves It</div>
     
   </div>
-  <h1 class="title">fPM 도입하기 & 다음 단계</h1>
+  <h1 class="title">Pain of Claude Code Alone → How fPM Solves It</h1>
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot">앞서 본 hub·대시보드·VSCode 연동·cdf·pm-do·sshf를 <strong>내 환경에 얹는 첫 단계</strong>를 정리함</li>
+<li class="bullet-dot">This slide is the deck's <strong>necessity hook</strong> — once you feel "yes, this bothered me too," the rest of the features click naturally</li>
+<li class="bullet-dot">Claude Code is powerful, but designed on the <strong>assumptions</strong> below. The gap between those assumptions and <strong>real work</strong> is the source of the pain</li>
 </ul>
 
-<div class="m2-htmlart htmlart-process" data-htmlart="process" style="--htmlart-n:4">
+<div class="m2-htmlart htmlart-compare" data-htmlart="compare" style="--htmlart-n:2">
 <ul>
-<li class="bullet-dot">설치
+<li class="bullet-dot"><strong>Claude Code alone</strong> / Assumption
 <ul>
-<li class="bullet-dash">원라인 부트스트랩</li>
+<li class="bullet-dash">One session</li>
+<li class="bullet-dash">One project</li>
+<li class="bullet-dash">One chat window</li>
 </ul>
 </li>
-<li class="bullet-dot">유지
+<li class="bullet-dot"><strong>Real work</strong> / Reality
 <ul>
-<li class="bullet-dash">fpm update / upgrade</li>
-</ul>
-</li>
-<li class="bullet-dot">조정
-<ul>
-<li class="bullet-dash">hub Settings</li>
-</ul>
-</li>
-<li class="bullet-dot">실습
-<ul>
-<li class="bullet-dash">오늘 바로 해볼 것</li>
+<li class="bullet-dash">Many projects</li>
+<li class="bullet-dash">Long-running, repeated</li>
+<li class="bullet-dash">Across many windows</li>
 </ul>
 </li>
 </ul>
@@ -1652,205 +1647,81 @@ html.ratio-fill .agenda-frame {
 
 <section data-slide-hash="#/3" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">원라인 설치</div>
+    <div class="contents-head-left">Before → After at a Glance</div>
     
   </div>
-  <h1 class="title">원라인 설치</h1>
+  <h1 class="title">Before → After at a Glance</h1>
   <div class="contents-body">
 
+<table>
+<thead>
+<tr><th style="text-align:left">Situation</th><th style="text-align:left">Claude Code alone</th><th style="text-align:left">With fPM</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align:left">Checking results</td><td style="text-align:left">Scroll / re-search in chat</td><td style="text-align:left">Render as HTML doc, re-open</td></tr>
+<tr><td style="text-align:left">Long tasks</td><td style="text-align:left">Wait until it finishes</td><td style="text-align:left">Live progress on dashboard</td></tr>
+<tr><td style="text-align:left">Project switch</td><td style="text-align:left">Memorize path + <code>cd</code></td><td style="text-align:left"><code>cdf 11</code> instant jump</td></tr>
+<tr><td style="text-align:left">Dependent work</td><td style="text-align:left">Manage order by hand</td><td style="text-align:left">Auto-delegate via <code>depends</code></td></tr>
+<tr><td style="text-align:left">Workspace</td><td style="text-align:left">Juggle 3 windows</td><td style="text-align:left">One VSCode screen</td></tr>
+<tr><td style="text-align:left">Remote server</td><td style="text-align:left">Memorize IP / login</td><td style="text-align:left"><code>sshf gpu1</code> connect by name</td></tr>
+</tbody>
+</table>
+
 <ul>
-<li class="bullet-dot">GitHub 저장소: <strong><code>github.com/Finfra/fpm</code></strong></li>
-</ul>
-
-<pre class="code-wrapper"><code class="language-sh hljs"># 공개 저장소 (raw URL 직접)
-curl -fsSL https://raw.githubusercontent.com/Finfra/fpm/main/sh/bootstrap.sh | sh
-
-# 비공개 저장소 (gh CLI 인증)
-gh api -H "Accept: application/vnd.github.raw" \
-  repos/Finfra/fpm/contents/sh/bootstrap.sh | sh</code></pre>
-
-<ul>
-<li class="bullet-dot">git clone 선행이 필요 없음 — 부트스트랩이 클론·설정·플러그인 설치를 한 번에 처리함</li>
-<li class="bullet-dot">공개는 raw URL 한 줄, 비공개는 <code>gh</code> 인증으로 동일하게 한 줄</li>
+<li class="bullet-dot">The key: fPM <strong>handles the repeated costs of "remember, switch, wait"</strong> for you</li>
 </ul></div>
 </section>
 
 <section data-slide-hash="#/4" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">셀프업데이트 커맨드</div>
+    <div class="contents-head-left">What Fundamentally Changes</div>
     
   </div>
-  <h1 class="title">셀프업데이트 커맨드</h1>
+  <h1 class="title">What Fundamentally Changes</h1>
   <div class="contents-body">
 
-<div class="m2-cards cards">
+<div class="m2-htmlart htmlart-arrow" data-htmlart="arrow" style="--htmlart-n:6">
 <ul>
-<li class="bullet-dot"><strong>fpm update</strong>
+<li class="bullet-dot">Evaporates
 <ul>
-<li class="bullet-dash">git pull + 재설치 + plugin update</li>
+<li class="bullet-dash">Flows away in chat</li>
 </ul>
 </li>
-<li class="bullet-dot"><strong>fpm upgrade</strong>
+<li class="bullet-dot">Persists
 <ul>
-<li class="bullet-dash">최신 태그로 업그레이드</li>
+<li class="bullet-dash">Stays as files/links to re-read and share</li>
 </ul>
 </li>
-<li class="bullet-dot"><strong>fpm version</strong>
+<li class="bullet-dot">Waiting
 <ul>
-<li class="bullet-dash">현재 버전 확인</li>
+<li class="bullet-dash">"When will it finish?"</li>
 </ul>
 </li>
-<li class="bullet-dot"><strong>fpm uninstall</strong>
+<li class="bullet-dot">Observing
 <ul>
-<li class="bullet-dash">제거</li>
+<li class="bullet-dash">Progress in real time</li>
 </ul>
 </li>
-</ul>
-</div>
-
+<li class="bullet-dot">Memorizing
 <ul>
-<li class="bullet-dot">설치 이후의 유지·보수를 셸 커맨드 한 줄로 처리함</li>
-<li class="bullet-dot">롤백이 필요하면 <code>fpm version</code>으로 확인 후 특정 태그로 <code>upgrade</code> 함</li>
-</ul></div>
-</section>
-
-<section data-slide-hash="#/5" class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">hub 설정 — 기본(Basic)</div>
-    
-  </div>
-  <h1 class="title">hub 설정 — 기본(Basic)</h1>
-  <div class="contents-body">
-
-<div class="m2-cols columns">
-<div class="m2-col column" style="flex: 0 0 40%; max-width: 40%">
-<ul>
-<li class="bullet-dot">hub Settings의 <strong>Basic</strong> 탭에서 브라우저·언어 등 기본 동작을 조정함</li>
-<li class="bullet-dot"><strong>default browser</strong> · <strong>browser open</strong>(자동 열기) · <strong>browser tab reuse</strong>(탭 재사용) · <strong>language</strong></li>
-<li class="bullet-dot">권장: 일반 작업은 Chrome, hub·대시보드는 Firefox로 분리하면 탭이 뒤섞이지 않음</li>
-</ul>
-</div>
-<div class="m2-col column" style="flex: 0 0 60%; max-width: 60%">
-<div class="media-container"><img src="./img/screenshots/06-settings-basic.png" alt="hub Settings Basic — default browser·browser open·browser tab reuse·language 설정"></div>
-</div>
-</div></div>
-</section>
-
-<section data-slide-hash="#/6" class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">hub 설정 — 세션·피드(Sessions)</div>
-    
-  </div>
-  <h1 class="title">hub 설정 — 세션·피드(Sessions)</h1>
-  <div class="contents-body">
-
-<div class="m2-cols columns">
-<div class="m2-col column" style="flex: 0 0 40%; max-width: 40%">
-<ul>
-<li class="bullet-dot"><strong>Sessions</strong> 탭에서 세션 보드와 ActivityFeed의 표시량·갱신 주기를 조정함</li>
-<li class="bullet-dot"><strong>live session limit / order</strong> · <strong>card·search limit</strong> · <strong>feed limit / poll interval</strong>(초)</li>
-<li class="bullet-dot">프로젝트가 많으면 limit·feed poll interval을 올려 한 화면에 더 담거나 더 자주 갱신함</li>
-</ul>
-</div>
-<div class="m2-col column" style="flex: 0 0 60%; max-width: 60%">
-<div class="media-container"><img src="./img/screenshots/06-settings-sessions.png" alt="hub Settings Sessions — live session limit·card/search limit·feed limit·poll interval 조정"></div>
-</div>
-</div></div>
-</section>
-
-<section data-slide-hash="#/7" class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">다음 단계 — SCAR 배포 & 연동</div>
-    
-  </div>
-  <h1 class="title">다음 단계 — SCAR 배포 & 연동</h1>
-  <div class="contents-body">
-
-<ul>
-<li class="bullet-dot"><strong>SCAR = Claude Code 플러그인 <code>fpm-core</code></strong> — 마켓플레이스 저장소 <strong><code>github.com/Finfra/f-claude-plugins</code></strong></li>
-</ul>
-
-<pre class="code-wrapper"><code class="language-sh hljs"># Claude Code 마켓플레이스에서 SCAR 번들 설치
-/plugin marketplace add Finfra/f-claude-plugins
-/plugin install fpm-core</code></pre>
-
-<ul>
-<li class="bullet-dot"><strong>SCAR 크로스툴 export</strong>: <code>scar-export</code>로 Cursor(<code>.cursor/rules</code>)·Codex(<code>AGENTS.md</code>)·Gemini(<code>GEMINI.md</code>) 포맷 이식 → 도구 락인 완화</li>
-<li class="bullet-dot"><strong>적용 예시(prj4 social)</strong>: SCAR export 산출물(<code>CLAUDE.md</code>·<code>GEMINI.md</code>·<code>Harness.md</code>)을 실제로 얹어 굴리는 프로젝트</li>
-<li class="bullet-dot"><strong>GitHub 브리지</strong>: <code>gh-sync</code>로 <code>Issue.md</code> ↔ GitHub Issues 옵트인 동기화</li>
-</ul></div>
-</section>
-
-<section data-slide-hash="#/8" class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">첫 실습 — 지금 해보기</div>
-    
-  </div>
-  <h1 class="title">첫 실습 — 지금 해보기</h1>
-  <div class="contents-body">
-
-<div class="m2-htmlart htmlart-step" data-htmlart="step" style="--htmlart-n:5">
-<ul>
-<li class="bullet-dot">설치
-<ul>
-<li class="bullet-dash">원라인 부트스트랩 실행</li>
+<li class="bullet-dash">Learn paths and servers</li>
 </ul>
 </li>
-<li class="bullet-dot">첫 hub 렌더
+<li class="bullet-dot">Pointing
 <ul>
-<li class="bullet-dash">프로젝트 폴더에서 ..show</li>
-</ul>
-</li>
-<li class="bullet-dot">프로젝트 이동
-<ul>
-<li class="bullet-dash">cdf 목록 확인 → 번호 이동</li>
-</ul>
-</li>
-<li class="bullet-dot">장시간 작업
-<ul>
-<li class="bullet-dash">..board로 진행 지켜보기</li>
-</ul>
-</li>
-<li class="bullet-dot">원격 확장
-<ul>
-<li class="bullet-dash">sshf로 서버 접속</li>
+<li class="bullet-dash">One number or name</li>
 </ul>
 </li>
 </ul>
 </div>
 
 <blockquote>
-오늘 본 것 중 하나만 골라 바로 적용해보는 것이 가장 빠른 학습임
-</blockquote></div>
-</section>
+fPM isn't a tool of new features to learn — it's a tool that <strong>removes repeated costs so you focus on Claude Code</strong>
+</blockquote>
 
-<section data-slide-hash="#/9" class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">함께 시작하세요</div>
-    
-  </div>
-  <h1 class="title">함께 시작하세요</h1>
-  <div class="contents-body">
-
-<div class="component-container wordart-block">
-<h1 class="wordart-gradient" style="font-size:3em;margin:0.1em 0;">fPM</h1>
-<p class="wordart-shadow" style="font-size:1.15em;color:#666;margin:0;">연결은 fPm이 하고, 나는 통찰에 집중</p>
-</div>
-
-<div class="m2-cards cards">
 <ul>
-<li class="bullet-dot"><strong>GitHub</strong>
-<ul>
-<li class="bullet-dash">github.com/Finfra/fpm</li>
-</ul>
-</li>
-<li class="bullet-dot"><strong>기술 문의</strong>
-<ul>
-<li class="bullet-dash">finfra@gmail.com</li>
-</ul>
-</li>
-</ul>
-</div></div>
+<li class="bullet-dot">From the next chapter, we prove each row of the table above with a real demo</li>
+</ul></div>
 </section>
 
     </div>
@@ -3906,35 +3777,15 @@ gh api -H "Accept: application/vnd.github.raw" \
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">fPM 도입하기 & 다음 단계</a>",
+                  "content": "<a href=\"#/1\">Pain of Claude Code Alone → How fPM Solves It</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/2\">원라인 설치</a>",
+                  "content": "<a href=\"#/2\">Before → After at a Glance</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">셀프업데이트 커맨드</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/4\">hub 설정 — 기본(Basic)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/5\">hub 설정 — 세션·피드(Sessions)</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/6\">다음 단계 — SCAR 배포 & 연동</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/7\">첫 실습 — 지금 해보기</a>",
-                  "children": []
-            },
-            {
-                  "content": "<a href=\"#/8\">함께 시작하세요</a>",
+                  "content": "<a href=\"#/3\">What Fundamentally Changes</a>",
                   "children": []
             }
       ]
@@ -4196,11 +4047,11 @@ gh api -H "Accept: application/vnd.github.raw" \
     var M2SLIDE_AGENDA_FWD_URL = 'agenda.html?fwd=1';
     // Issue119: cover layout 이름 (_config.yml cover_layout, 기본 _cover). isCoverSlide() 판정에 사용.
     var M2SLIDE_COVER_LAYOUT = '_cover';
-    var PREV_CHAPTER = '05.2-sshf-remote.html';
-    var NEXT_CHAPTER = 'index.html';
+    var PREV_CHAPTER = '01-what-is-fpm.html';
+    var NEXT_CHAPTER = '02-hub-mode.html';
     // Issue136: ⇤/⇥ 단축키 전용 — main/sub 계층 인식 sibling 점프 (NEXT/PREV_CHAPTER는 sequential 파일 순서 그대로)
-    var PREV_SIBLING_CHAPTER = '05-multi-project.html';
-    var NEXT_SIBLING_CHAPTER = '';
+    var PREV_SIBLING_CHAPTER = '01-what-is-fpm.html';
+    var NEXT_SIBLING_CHAPTER = '02-hub-mode.html';
     // Issue87: ⇟ PgDown(마지막 페이지 직행) — Single mode은 '' (deck last로 자체 계산)
     var LAST_CHAPTER = '06-getting-started.html';
     function isCoverSlide(slide) {
@@ -4654,7 +4505,7 @@ gh api -H "Accept: application/vnd.github.raw" \
       if (event.key === 'ArrowRight' || event.keyCode === 39) {
         var totalSlides = Reveal.getTotalSlides();
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
-        var hasNextChapter = 'index.html' !== '';
+        var hasNextChapter = '02-hub-mode.html' !== '';
         if (currentSlideNumber >= totalSlides) {
           // 남은 fragment가 있으면 reveal 기본 fragment 진행에 맡김 —
           // 마지막 슬라이드에서 fragment 도중 안내 메시지·다음 챕터 점프 금지
@@ -4665,7 +4516,7 @@ gh api -H "Accept: application/vnd.github.raw" \
               lastSlideMessage.style.display = 'none';
               lastSlideMessageShown = false;
               // Issue104: 다음 챕터 진입은 forward — ?fwd=1 시그널
-              window.location.href = 'index.html?fwd=1';
+              window.location.href = '02-hub-mode.html?fwd=1';
             } else {
               event.preventDefault();
               lastSlideMessage.style.display = 'block';

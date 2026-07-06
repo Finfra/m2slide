@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>6. fPM 도입하기</title>
+  <title>6. Adopting fPM</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -1390,7 +1390,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783346381135">
+  <link rel="stylesheet" href="css/custom.css?v=1783346391048">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1605,7 +1605,7 @@ html.ratio-fill .agenda-frame {
 
       <section data-slide-hash="#/1" id="toc-placeholder" class="layout-_toc title-slide">
   <header class="toc-page-header">
-    <h1 class="toc-page-title">6. fPM 도입하기</h1>
+    <h1 class="toc-page-title">6. Adopting fPM</h1>
   </header>
   <div class="toc-markmap">
     <svg class="toc-mindmap-svg"></svg>
@@ -1614,36 +1614,36 @@ html.ratio-fill .agenda-frame {
 
 <section data-slide-hash="#/2" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">fPM 도입하기 & 다음 단계</div>
+    <div class="contents-head-left">Adopting fPM & Next Steps</div>
     
   </div>
-  <h1 class="title">fPM 도입하기 & 다음 단계</h1>
+  <h1 class="title">Adopting fPM & Next Steps</h1>
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot">앞서 본 hub·대시보드·VSCode 연동·cdf·pm-do·sshf를 <strong>내 환경에 얹는 첫 단계</strong>를 정리함</li>
+<li class="bullet-dot">Here's the <strong>first step to layer</strong> the hub, dashboard, VSCode integration, cdf, pm-do, and sshf you've seen onto your own setup</li>
 </ul>
 
 <div class="m2-htmlart htmlart-process" data-htmlart="process" style="--htmlart-n:4">
 <ul>
-<li class="bullet-dot">설치
+<li class="bullet-dot">Install
 <ul>
-<li class="bullet-dash">원라인 부트스트랩</li>
+<li class="bullet-dash">One-line bootstrap</li>
 </ul>
 </li>
-<li class="bullet-dot">유지
+<li class="bullet-dot">Maintain
 <ul>
 <li class="bullet-dash">fpm update / upgrade</li>
 </ul>
 </li>
-<li class="bullet-dot">조정
+<li class="bullet-dot">Tune
 <ul>
 <li class="bullet-dash">hub Settings</li>
 </ul>
 </li>
-<li class="bullet-dot">실습
+<li class="bullet-dot">Practice
 <ul>
-<li class="bullet-dash">오늘 바로 해볼 것</li>
+<li class="bullet-dash">What to try today</li>
 </ul>
 </li>
 </ul>
@@ -1652,189 +1652,189 @@ html.ratio-fill .agenda-frame {
 
 <section data-slide-hash="#/3" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">원라인 설치</div>
+    <div class="contents-head-left">One-Line Install</div>
     
   </div>
-  <h1 class="title">원라인 설치</h1>
+  <h1 class="title">One-Line Install</h1>
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot">GitHub 저장소: <strong><code>github.com/Finfra/fpm</code></strong></li>
+<li class="bullet-dot">GitHub repository: <strong><code>github.com/Finfra/fpm</code></strong></li>
 </ul>
 
-<pre class="code-wrapper"><code class="language-sh hljs"># 공개 저장소 (raw URL 직접)
+<pre class="code-wrapper"><code class="language-sh hljs"># Public repo (raw URL directly)
 curl -fsSL https://raw.githubusercontent.com/Finfra/fpm/main/sh/bootstrap.sh | sh
 
-# 비공개 저장소 (gh CLI 인증)
+# Private repo (gh CLI auth)
 gh api -H "Accept: application/vnd.github.raw" \
   repos/Finfra/fpm/contents/sh/bootstrap.sh | sh</code></pre>
 
 <ul>
-<li class="bullet-dot">git clone 선행이 필요 없음 — 부트스트랩이 클론·설정·플러그인 설치를 한 번에 처리함</li>
-<li class="bullet-dot">공개는 raw URL 한 줄, 비공개는 <code>gh</code> 인증으로 동일하게 한 줄</li>
+<li class="bullet-dot">No git clone needed first — the bootstrap handles clone, setup, and plugin install at once</li>
+<li class="bullet-dot">Public is one raw-URL line; private is the same one line via <code>gh</code> auth</li>
 </ul></div>
 </section>
 
 <section data-slide-hash="#/4" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">셀프업데이트 커맨드</div>
+    <div class="contents-head-left">Self-Update Commands</div>
     
   </div>
-  <h1 class="title">셀프업데이트 커맨드</h1>
+  <h1 class="title">Self-Update Commands</h1>
   <div class="contents-body">
 
 <div class="m2-cards cards">
 <ul>
 <li class="bullet-dot"><strong>fpm update</strong>
 <ul>
-<li class="bullet-dash">git pull + 재설치 + plugin update</li>
+<li class="bullet-dash">git pull + reinstall + plugin update</li>
 </ul>
 </li>
 <li class="bullet-dot"><strong>fpm upgrade</strong>
 <ul>
-<li class="bullet-dash">최신 태그로 업그레이드</li>
+<li class="bullet-dash">Upgrade to the latest tag</li>
 </ul>
 </li>
 <li class="bullet-dot"><strong>fpm version</strong>
 <ul>
-<li class="bullet-dash">현재 버전 확인</li>
+<li class="bullet-dash">Check the current version</li>
 </ul>
 </li>
 <li class="bullet-dot"><strong>fpm uninstall</strong>
 <ul>
-<li class="bullet-dash">제거</li>
+<li class="bullet-dash">Remove</li>
 </ul>
 </li>
 </ul>
 </div>
 
 <ul>
-<li class="bullet-dot">설치 이후의 유지·보수를 셸 커맨드 한 줄로 처리함</li>
-<li class="bullet-dot">롤백이 필요하면 <code>fpm version</code>으로 확인 후 특정 태그로 <code>upgrade</code> 함</li>
+<li class="bullet-dot">Handle post-install maintenance with a single shell command</li>
+<li class="bullet-dot">To roll back, check <code>fpm version</code> then <code>upgrade</code> to a specific tag</li>
 </ul></div>
 </section>
 
 <section data-slide-hash="#/5" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">hub 설정 — 기본(Basic)</div>
+    <div class="contents-head-left">hub Settings — Basic</div>
     
   </div>
-  <h1 class="title">hub 설정 — 기본(Basic)</h1>
+  <h1 class="title">hub Settings — Basic</h1>
   <div class="contents-body">
 
 <div class="m2-cols columns">
 <div class="m2-col column" style="flex: 0 0 40%; max-width: 40%">
 <ul>
-<li class="bullet-dot">hub Settings의 <strong>Basic</strong> 탭에서 브라우저·언어 등 기본 동작을 조정함</li>
-<li class="bullet-dot"><strong>default browser</strong> · <strong>browser open</strong>(자동 열기) · <strong>browser tab reuse</strong>(탭 재사용) · <strong>language</strong></li>
-<li class="bullet-dot">권장: 일반 작업은 Chrome, hub·대시보드는 Firefox로 분리하면 탭이 뒤섞이지 않음</li>
+<li class="bullet-dot">In the <strong>Basic</strong> tab of hub Settings, adjust default behavior like browser and language</li>
+<li class="bullet-dot"><strong>default browser</strong> · <strong>browser open</strong> (auto-open) · <strong>browser tab reuse</strong> · <strong>language</strong></li>
+<li class="bullet-dot">Recommended: Chrome for general work, Firefox for hub/dashboard — keeps tabs from mixing</li>
 </ul>
 </div>
 <div class="m2-col column" style="flex: 0 0 60%; max-width: 60%">
-<div class="media-container"><img src="./img/screenshots/06-settings-basic.png" alt="hub Settings Basic — default browser·browser open·browser tab reuse·language 설정"></div>
+<div class="media-container"><img src="./img/screenshots/06-settings-basic.png" alt="hub Settings Basic — default browser, browser open, browser tab reuse, and language settings"></div>
 </div>
 </div></div>
 </section>
 
 <section data-slide-hash="#/6" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">hub 설정 — 세션·피드(Sessions)</div>
+    <div class="contents-head-left">hub Settings — Sessions & Feed</div>
     
   </div>
-  <h1 class="title">hub 설정 — 세션·피드(Sessions)</h1>
+  <h1 class="title">hub Settings — Sessions & Feed</h1>
   <div class="contents-body">
 
 <div class="m2-cols columns">
 <div class="m2-col column" style="flex: 0 0 40%; max-width: 40%">
 <ul>
-<li class="bullet-dot"><strong>Sessions</strong> 탭에서 세션 보드와 ActivityFeed의 표시량·갱신 주기를 조정함</li>
-<li class="bullet-dot"><strong>live session limit / order</strong> · <strong>card·search limit</strong> · <strong>feed limit / poll interval</strong>(초)</li>
-<li class="bullet-dot">프로젝트가 많으면 limit·feed poll interval을 올려 한 화면에 더 담거나 더 자주 갱신함</li>
+<li class="bullet-dot">In the <strong>Sessions</strong> tab, adjust the display volume and refresh cadence of the session board and ActivityFeed</li>
+<li class="bullet-dot"><strong>live session limit / order</strong> · <strong>card·search limit</strong> · <strong>feed limit / poll interval</strong> (seconds)</li>
+<li class="bullet-dot">With many projects, raise the limits and feed poll interval to fit more on one screen or refresh more often</li>
 </ul>
 </div>
 <div class="m2-col column" style="flex: 0 0 60%; max-width: 60%">
-<div class="media-container"><img src="./img/screenshots/06-settings-sessions.png" alt="hub Settings Sessions — live session limit·card/search limit·feed limit·poll interval 조정"></div>
+<div class="media-container"><img src="./img/screenshots/06-settings-sessions.png" alt="hub Settings Sessions — adjust live session limit, card/search limit, feed limit, and poll interval"></div>
 </div>
 </div></div>
 </section>
 
 <section data-slide-hash="#/7" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">다음 단계 — SCAR 배포 & 연동</div>
+    <div class="contents-head-left">Next Steps — SCAR Distribution & Integration</div>
     
   </div>
-  <h1 class="title">다음 단계 — SCAR 배포 & 연동</h1>
+  <h1 class="title">Next Steps — SCAR Distribution & Integration</h1>
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot"><strong>SCAR = Claude Code 플러그인 <code>fpm-core</code></strong> — 마켓플레이스 저장소 <strong><code>github.com/Finfra/f-claude-plugins</code></strong></li>
+<li class="bullet-dot"><strong>SCAR = the Claude Code plugin <code>fpm-core</code></strong> — marketplace repo <strong><code>github.com/Finfra/f-claude-plugins</code></strong></li>
 </ul>
 
-<pre class="code-wrapper"><code class="language-sh hljs"># Claude Code 마켓플레이스에서 SCAR 번들 설치
+<pre class="code-wrapper"><code class="language-sh hljs"># Install the SCAR bundle from the Claude Code marketplace
 /plugin marketplace add Finfra/f-claude-plugins
 /plugin install fpm-core</code></pre>
 
 <ul>
-<li class="bullet-dot"><strong>SCAR 크로스툴 export</strong>: <code>scar-export</code>로 Cursor(<code>.cursor/rules</code>)·Codex(<code>AGENTS.md</code>)·Gemini(<code>GEMINI.md</code>) 포맷 이식 → 도구 락인 완화</li>
-<li class="bullet-dot"><strong>적용 예시(prj4 social)</strong>: SCAR export 산출물(<code>CLAUDE.md</code>·<code>GEMINI.md</code>·<code>Harness.md</code>)을 실제로 얹어 굴리는 프로젝트</li>
-<li class="bullet-dot"><strong>GitHub 브리지</strong>: <code>gh-sync</code>로 <code>Issue.md</code> ↔ GitHub Issues 옵트인 동기화</li>
+<li class="bullet-dot"><strong>SCAR cross-tool export</strong>: <code>scar-export</code> ports to Cursor (<code>.cursor/rules</code>), Codex (<code>AGENTS.md</code>), and Gemini (<code>GEMINI.md</code>) formats → eases tool lock-in</li>
+<li class="bullet-dot"><strong>Applied example (prj4 social)</strong>: a project actually running with SCAR-export artifacts (<code>CLAUDE.md</code>, <code>GEMINI.md</code>, <code>Harness.md</code>) layered on</li>
+<li class="bullet-dot"><strong>GitHub bridge</strong>: <code>gh-sync</code> opt-in sync between <code>Issue.md</code> ↔ GitHub Issues</li>
 </ul></div>
 </section>
 
 <section data-slide-hash="#/8" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">첫 실습 — 지금 해보기</div>
+    <div class="contents-head-left">First Hands-On — Try It Now</div>
     
   </div>
-  <h1 class="title">첫 실습 — 지금 해보기</h1>
+  <h1 class="title">First Hands-On — Try It Now</h1>
   <div class="contents-body">
 
 <div class="m2-htmlart htmlart-step" data-htmlart="step" style="--htmlart-n:5">
 <ul>
-<li class="bullet-dot">설치
+<li class="bullet-dot">Install
 <ul>
-<li class="bullet-dash">원라인 부트스트랩 실행</li>
+<li class="bullet-dash">Run the one-line bootstrap</li>
 </ul>
 </li>
-<li class="bullet-dot">첫 hub 렌더
+<li class="bullet-dot">First hub render
 <ul>
-<li class="bullet-dash">프로젝트 폴더에서 ..show</li>
+<li class="bullet-dash">..show in a project folder</li>
 </ul>
 </li>
-<li class="bullet-dot">프로젝트 이동
+<li class="bullet-dot">Jump projects
 <ul>
-<li class="bullet-dash">cdf 목록 확인 → 번호 이동</li>
+<li class="bullet-dash">Check cdf list → jump by number</li>
 </ul>
 </li>
-<li class="bullet-dot">장시간 작업
+<li class="bullet-dot">Long task
 <ul>
-<li class="bullet-dash">..board로 진행 지켜보기</li>
+<li class="bullet-dash">Watch progress with ..board</li>
 </ul>
 </li>
-<li class="bullet-dot">원격 확장
+<li class="bullet-dot">Remote reach
 <ul>
-<li class="bullet-dash">sshf로 서버 접속</li>
+<li class="bullet-dash">Connect to a server with sshf</li>
 </ul>
 </li>
 </ul>
 </div>
 
 <blockquote>
-오늘 본 것 중 하나만 골라 바로 적용해보는 것이 가장 빠른 학습임
+Picking just one thing you saw today and applying it right away is the fastest way to learn
 </blockquote></div>
 </section>
 
 <section data-slide-hash="#/9" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">함께 시작하세요</div>
+    <div class="contents-head-left">Start Together</div>
     
   </div>
-  <h1 class="title">함께 시작하세요</h1>
+  <h1 class="title">Start Together</h1>
   <div class="contents-body">
 
 <div class="component-container wordart-block">
 <h1 class="wordart-gradient" style="font-size:3em;margin:0.1em 0;">fPM</h1>
-<p class="wordart-shadow" style="font-size:1.15em;color:#666;margin:0;">연결은 fPm이 하고, 나는 통찰에 집중</p>
+<p class="wordart-shadow" style="font-size:1.15em;color:#666;margin:0;">fPm handles the connections; I focus on the insight</p>
 </div>
 
 <div class="m2-cards cards">
@@ -1844,7 +1844,7 @@ gh api -H "Accept: application/vnd.github.raw" \
 <li class="bullet-dash">github.com/Finfra/fpm</li>
 </ul>
 </li>
-<li class="bullet-dot"><strong>기술 문의</strong>
+<li class="bullet-dot"><strong>Technical inquiries</strong>
 <ul>
 <li class="bullet-dash">finfra@gmail.com</li>
 </ul>
@@ -3906,35 +3906,35 @@ gh api -H "Accept: application/vnd.github.raw" \
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">fPM 도입하기 & 다음 단계</a>",
+                  "content": "<a href=\"#/1\">Adopting fPM & Next Steps</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/2\">원라인 설치</a>",
+                  "content": "<a href=\"#/2\">One-Line Install</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/3\">셀프업데이트 커맨드</a>",
+                  "content": "<a href=\"#/3\">Self-Update Commands</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/4\">hub 설정 — 기본(Basic)</a>",
+                  "content": "<a href=\"#/4\">hub Settings — Basic</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/5\">hub 설정 — 세션·피드(Sessions)</a>",
+                  "content": "<a href=\"#/5\">hub Settings — Sessions & Feed</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/6\">다음 단계 — SCAR 배포 & 연동</a>",
+                  "content": "<a href=\"#/6\">Next Steps — SCAR Distribution & Integration</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/7\">첫 실습 — 지금 해보기</a>",
+                  "content": "<a href=\"#/7\">First Hands-On — Try It Now</a>",
                   "children": []
             },
             {
-                  "content": "<a href=\"#/8\">함께 시작하세요</a>",
+                  "content": "<a href=\"#/8\">Start Together</a>",
                   "children": []
             }
       ]
