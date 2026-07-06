@@ -24,16 +24,6 @@
 
 # 🔥 진행 중
 
-## Issue266. default_lec 텍스트 전용 슬라이드 세로 중앙 정렬 제거 — top 정렬로 통일 (등록: 2026-07-06)
-* 목적: dev-server 피드백("문단 가운데 아니고 위로", AgenticCoding chap1/slide12) 반영 — 텍스트 전용 `_contents`/`_contents_no_title` 슬라이드 본문을 세로 중앙 정렬하는 `justify-content: center` 규칙(theme/default_lec/slide.css)을 제거하여 top 정렬로 통일. 반영 범위 질의 결과 사용자가 "테마 전체 top 정렬" 선택 (프로젝트 옵션 신설·보류 대신).
-* 상세:
-    - 해당 규칙은 "짧은 본문 아래 큰 빈 공간" 문제로 최근 추가된 것 — 제거 시 default_lec 사용 5개 프로젝트(AgenticCoding·GenContentProd·LlmFlow·graphify·m2slide_info) 전체 영향
-    - 재발 방지: 규칙 자리에 top 정렬이 의도된 정책임을 알리는 주석 잔존
-* 구현 명세:
-    - `theme/default_lec/slide.css` 텍스트 전용 세로 중앙 블록 제거 (flex column 기본 = top)
-    - AgenticCoding 재빌드 + slide12 top 정렬 검증, default_lec 타 프로젝트 1종 이상 재빌드 무회귀 확인
-    - 처리 완료 시 피드백 인박스 → done.jsonl 이관 (/feedback-process 절차 5)
-
 # 📕 중요
 
 # 📙 일반
@@ -57,6 +47,19 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue266. default_lec 텍스트 전용 슬라이드 세로 중앙 정렬 제거 — top 정렬로 통일 (등록: 2026-07-06, 해결: 2026-07-06, commit: bcd9cad) ✅
+* 목적: dev-server 피드백("문단 가운데 아니고 위로", AgenticCoding chap1/slide12) 반영 — 텍스트 전용 `_contents`/`_contents_no_title` 슬라이드 본문을 세로 중앙 정렬하는 `justify-content: center` 규칙(theme/default_lec/slide.css)을 제거하여 top 정렬로 통일. 반영 범위 질의 결과 사용자가 "테마 전체 top 정렬" 선택 (프로젝트 옵션 신설·보류 대신).
+* 상세:
+    - 해당 규칙은 "짧은 본문 아래 큰 빈 공간" 문제로 최근 추가된 것 — 제거 시 default_lec 사용 5개 프로젝트(AgenticCoding·GenContentProd·LlmFlow·graphify·m2slide_info) 전체 영향
+    - 재발 방지: 규칙 자리에 top 정렬이 의도된 정책임을 알리는 주석 잔존
+* 구현 명세:
+    - `theme/default_lec/slide.css` 텍스트 전용 세로 중앙 블록 제거 (flex column 기본 = top)
+    - AgenticCoding 재빌드 + slide12 top 정렬 검증, default_lec 타 프로젝트 1종 이상 재빌드 무회귀 확인
+* 결과 (Walkthrough):
+    - AgenticCoding·LlmFlow 재빌드 — slide12 본문 제목 직하 top 배치 확인 + LlmFlow 텍스트 슬라이드 정상 렌더 (캡처 `_doc_work/capture/verify-issue266-*.png`)
+    - /feedback-process 절차 5 수행: 피드백 1건 `dev-feedback.done.jsonl` 이관, 인박스 비움 → 개요 페이지 미처리 0건
+    - commit `bcd9cad`에 선행 세션 미커밋 default_lec parity 작업 동반 포함 (동일 파일 혼재 — 메시지에 명시)
 
 ## Issue264. dev-server 피드백 수동 처리 커맨드 + 개요 페이지 복붙 커맨드 박스 (등록: 2026-07-06, 해결: 2026-07-06, commit: b278aea) ✅
 * 목적: Issue261로 적재되는 `_pipeline/feedback/dev-feedback.jsonl` 피드백의 소비 채널 확보 — 세션 자동 생성 대신 **수동 커맨드 방식**(사용자 결정) 채택. `/feedback-process <P>` 커맨드 신설 + 개요 페이지(`/p/<P>`) 상단 summary 우측·하단 bulk bar 우측 2곳에 복붙용 커맨드 박스(📋 복사 버튼 + 미처리 건수) 표시.
