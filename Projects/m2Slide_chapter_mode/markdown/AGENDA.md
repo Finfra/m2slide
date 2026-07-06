@@ -1,13 +1,13 @@
 ---
 title: 다중 챕터 모드 대표
-subtitle: Chapter별로 분리된 여러 파일로 슬라이드 생성.
+subtitle: "테스트 용도 — Chapter별로 분리된 여러 md 파일로 슬라이드 생성 · 레이아웃 디버깅용 가이드 라인 표시 예제"
 instructor_name: 남중구 (핀프라)
 instructor_contact: nowage@gmail.com
 description: 
 date: Nov 20, 2025
 tags: []
 version: 1.1.0
-release_date: 2026-07-02
+release_date: 2026-07-05
 created_at: 2026-05-02
 created_by: nowage
 ---

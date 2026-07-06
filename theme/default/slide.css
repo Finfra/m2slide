@@ -1011,8 +1011,9 @@ body.agenda-page .agenda-frame {
 .agenda-frame .toc-markmap {
   flex: 1 1 0;
   min-height: 0;
-  /* Issue113: 마스코트(고양이)와 시각적으로 분리되도록 markmap 영역만 아래로 이동 */
-  margin-top: calc(var(--frame-h) * 0.03);
+  /* Issue113: 마스코트(고양이)와 시각적으로 분리되도록 markmap 영역만 아래로 이동
+     (0.03 → 0.05: 마스코트 하단이 toc 박스 상단선과 겹치던 문제 완화, 소폭 상향) */
+  margin-top: calc(var(--frame-h) * 0.05);
   border: 2px solid var(--kn-accent);
   border-radius: 8px;
   padding: 12px;
@@ -1392,8 +1393,12 @@ body.agenda-page .agenda-frame {
   line-height: 1.2;
 }
 
-.reveal section.layout-chapter .chapter-body,
-.reveal section.layout-_chapter .chapter-body {
+/* .slides 포함 4-class selector — base.css §5(.reveal section.layout-chapter .chapter-body,
+   3-class)가 custom.css 뒤에 인라인되며 padding 1.5em 0(가로 0)·flex-grow:1(세로 팽창)로
+   덮어쓰던 회귀 차단. specificity 우세로 로드 순서 무관하게 theme 값이 이김. */
+.reveal .slides section.layout-chapter .chapter-body,
+.reveal .slides section.layout-_chapter .chapter-body {
+  flex-grow: 0;
   margin: 4% auto 0;
   max-width: 72%;
   padding: 1.4em 2em;

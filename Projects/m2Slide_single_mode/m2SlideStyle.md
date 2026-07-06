@@ -1,17 +1,18 @@
 ---
 title: 단일 페이지 모드 대표
-subtitle: 한 개의 md파일에서 테스트. 
+subtitle: "테스트 용도 — Single Mode Debug, 한 개의 md 파일로 전체 스타일 회귀 검증"
 instructor_name: 남중구 (핀프라)
 instructor_contact: nowage@gmail.com
 description: 
 version: 1.1.0
 date: Nov 20, 2025
-release_date: 2026-07-02
+release_date: 2026-07-05
 created_at: 2026-05-02
 created_by: nowage
 tags: []
 ---
 
+#id-chapter-divider-test
 #layout-chapter
 
 # 0. Chapter Divider 테스트
@@ -22,10 +23,12 @@ tags: []
 
 ---
 
+#id-text-layout-intro
 # 1. 텍스트 레이아웃
 * 현재 예제는 1개의 md파일로 생성됨. 
 ---
 
+#id-basic-text-style
 ## 기본 텍스트 스타일
 
 * 이것은 기본 리스트 아이템입니다.
@@ -35,6 +38,7 @@ tags: []
 
 ---
 
+#id-nested-list
 ## 중첩 리스트
 
 * 레벨 1
@@ -44,6 +48,7 @@ tags: []
 
 ---
 
+#id-numbered-list
 ## 번호 있는 리스트
 
 1. 첫 번째 항목
@@ -54,10 +59,12 @@ tags: []
 
 ---
 
+#id-code-syntax-highlighting
 # 2. 코드 및 신택스 하이라이팅
 
 ---
 
+#id-js-code-example
 ## JavaScript 코드 예시
 
 ```javascript
@@ -70,6 +77,7 @@ function helloWorld() {
 
 ---
 
+#id-python-code-example
 ## Python 코드 예시
 
 ```python
@@ -84,10 +92,12 @@ print(fibonacci(10))
 
 ---
 
+#id-mermaid-visualization
 # 3. 데이터 시각화 (Mermaid)
 
 ---
 
+#id-mermaid-flowchart
 ## 플로우차트 (Flowchart)
 
 ```mermaid
@@ -100,6 +110,7 @@ graph TD
 
 ---
 
+#id-mermaid-sequence-diagram
 ## 시퀀스 다이어그램 (Sequence Diagram)
 
 ```mermaid
@@ -118,6 +129,7 @@ sequenceDiagram
 
 ---
 
+#id-mermaid-class-diagram
 ## 클래스 다이어그램 (Class Diagram)
 
 ```mermaid
@@ -146,26 +158,31 @@ classDiagram
 
 ---
 
+#id-image-media-intro
 # 4. 이미지 및 미디어
 
 ---
 
+#id-image-media-overview
 ## 개요
 
 * 테스트 용도
 * 중간 노드임.
 ---
 
+#id-image-section
 ## 4.1. 이미지
 
 ---
 
+#id-image-only
 ### 이미지 Only
 
 ![Scenery](./img/scenery.png)
 
 ---
 
+#id-image-basic-placement
 ### 기본 이미지 배치 (Scenery)
 
 ![Scenery](./img/scenery.png)
@@ -174,10 +191,12 @@ classDiagram
 
 ---
 
+#id-list-section
 ## 4.2. 리스트
 
 ---
 
+#id-list-only
 ### 리스트 Only
 
 * 매출이 상승하고 있습니다.
@@ -187,10 +206,12 @@ classDiagram
 
 ---
 
+#id-list-subchapter-test
 ## 4.2.1. 리스트[서브 Chapter 테스트용.]
 
 ---
 
+#id-list-only-subchapter
 ### 리스트 Only[서브 Chapter 테스트용.]
 
 * 매출이 상승하고 있습니다.
@@ -198,6 +219,9 @@ classDiagram
 * 3분기 예측치 달성 무난
 * 이미지가 있을 때 텍스트가 어떻게 배치되는지 확인
 
+---
+
+#id-image-list-chart
 ### 이미지와 리스트 (Chart)
 
 ![Right Image](./img/chart.png)
@@ -209,10 +233,12 @@ classDiagram
 
 ---
 
+#id-div-layout-intro
 # 5. 레이아웃 예제 (DIV 활용)
 
 ---
 
+#id-split-layout-basic
 ## 2분할 레이아웃 - 1단계 
 * 왼쪽 텍스트 영역
   -HTML DIV 태그를 사용하여
@@ -223,6 +249,7 @@ classDiagram
 
 ---
 
+#id-split-layout-image-left
 ## 2분할 레이아웃 - 1단계 [좌이미지]
 
 ![Chart](./img/chart.png)
@@ -234,6 +261,7 @@ classDiagram
 
 ---
 
+#id-split-layout-slidev-slot
 ## 2분할 레이아웃 - 2단계
 * 왼쪽 텍스트 영역
   -HTML DIV 태그를 사용하여
@@ -244,6 +272,7 @@ classDiagram
 
 ---
 
+#id-split-layout-pandoc-columns
 ## 2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div
 
 ::: columns
@@ -260,6 +289,7 @@ classDiagram
 
 ---
 
+#id-three-col-cards-pandoc
 ## 3분할 레이아웃 (카드 형태) - Pandoc 펜스 div
 
 ::: columns
@@ -279,6 +309,7 @@ classDiagram
 
 ---
 
+#id-split-layout-raw-div
 ## 2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev 
 
 <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -297,8 +328,7 @@ classDiagram
 
 ---
 
-
-
+#id-three-col-cards-raw-div
 ## 3분할 레이아웃 (카드 형태) - div
 
 <div style="display: flex; justify-content: space-around;">
@@ -318,10 +348,12 @@ classDiagram
 
 ---
 
+#id-table-image-intro
 # 6. 테이블 및 이미지 혼합
 
 ---
 
+#id-basic-table
 ## 기본 테이블
 
 | 헤더 1    |  헤더 2   |      헤더 3 |
@@ -332,22 +364,25 @@ classDiagram
 
 ---
 
+#id-table-with-images
 ## 이미지가 포함된 테이블
 
 |         아이콘          | 이름       | 설명           |
 | :---------------------: | :--------- | :------------- |
-| ![Icon](./img/icon.png) | **Robot**  | AI Assistant   |
-| ![Icon](./img/icon.png) | **User**   | Human Operator |
-| ![Icon](./img/icon.png) | **System** | Control Unit   |
+| ![Icon](./img/icon.png)        | **Robot** | AI Assistant |
+| ![QR](./img/qr.png)            | **QR**    | Link Marker  |
+| ![Chart](./img/chart_icon.png) | **Chart** | Data Report  |
 
 * 테이블 셀 내부에 마크다운 이미지 문법을 사용하여 아이콘을 넣을 수 있습니다.
 
 ---
 
+#id-feature-intro
 # 7. m2Slide 기능 소개
 
 ---
 
+#id-navigation-keys
 ## 네비게이션
 
 * **ESC**: 전체 슬라이드 오버뷰
@@ -356,8 +391,8 @@ classDiagram
 
 ---
 
+#id-closing
 ## 마무리
 
 * m2Slide를 사용하여 멋진 프레젠테이션을 만드세요.
 * Markdown으로 쉽고 빠르게 작성할 수 있습니다.
-

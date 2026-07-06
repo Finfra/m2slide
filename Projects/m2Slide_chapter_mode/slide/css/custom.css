@@ -1753,8 +1753,12 @@ body.agenda-page .agenda-frame {
   line-height: 1.2;
 }
 
-.reveal section.layout-chapter .chapter-body,
-.reveal section.layout-_chapter .chapter-body {
+/* .slides 포함 4-class selector — base.css §5(.reveal section.layout-chapter .chapter-body,
+   3-class)가 custom.css 뒤에 인라인되며 padding 1.5em 0(가로 0)·flex-grow:1(세로 팽창)로
+   덮어쓰던 회귀 차단. specificity 우세로 로드 순서 무관하게 theme 값이 이김. */
+.reveal .slides section.layout-chapter .chapter-body,
+.reveal .slides section.layout-_chapter .chapter-body {
+  flex-grow: 0;
   margin: 4% auto 0;
   max-width: 72%;
   padding: 1.4em 2em;

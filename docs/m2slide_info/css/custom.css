@@ -550,6 +550,46 @@
   min-height: 0;
 }
 
+/* contents-body flex:1 1 auto 가 definite height 를 받으려면 부모 section 자체가
+   flex column 이어야 함. Issue177 블록은 contents-body 만 flex 로 만들고 section 은
+   display:block 인 채로 남겨두어, 스택형 .media-container(bullet 없이 이미지가 본문
+   아래 단독 배치 — auto-split 미발동 케이스)가 flex-grow 배분 여유공간 0 으로 collapse
+   (height 0, 이미지 소멸)했다. media-enlarge-height 모드만 section.present 를 flex 로
+   강제해 우연히 살아있었고, media-enlarge-width/original/fit 모드에서는 사라졌다.
+   미디어(.media-container / .component-container / .graph-scroll)를 실제로 담은
+   슬라이드에 한정해 section 을 flex column 으로 승격 — 텍스트 전용 _contents 슬라이드의
+   수직 중앙 정렬(reveal center)은 그대로 보존한다. */
+.reveal .slides section.present.layout-_contents,
+.reveal .slides section.present.layout-_contents_no_title {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* 본문 문단 좌측 정렬 (강의 테마 가독성) — reveal 기본 text-align:center 상속으로
+   여러 줄짜리 pseudo-bullet 문단(데모·체크포인트·휴식 슬라이드 등 ppt2m2slide 변환 결과가
+   `-`/`*` 리스트가 아니라 plain 문단인 경우)이 화면 중앙에 뭉쳐 읽기 어렵던 문제.
+   리스트(ul/ol)는 base.css 에서 이미 text-align:left. 문단도 동일 정렬로 통일한다.
+   미디어 캡션이 아니라 본문 문단만 대상(.contents-body 직속 > p). */
+.reveal section.layout-_contents > .contents-body > p,
+.reveal section.layout-_contents_no_title > .contents-body > p,
+.reveal section.layout-contents-full > .contents-body > p {
+  text-align: left;
+}
+
+/* 본문 문단 간격 확보 — 기본 line-height 가 font-size 와 동일(40px==40px)하고 margin 0 이라
+   여러 줄 문단이 서로 다닥 붙어 원본 PPT 대비 답답했다. 줄내 간격(line-height)과
+   문단 간 여백(margin)을 키워 가독성·여백감을 원본에 근접시킨다. */
+.reveal section.layout-_contents > .contents-body > p,
+.reveal section.layout-_contents_no_title > .contents-body > p,
+.reveal section.layout-contents-full > .contents-body > p {
+  line-height: 1.5;
+  margin-block: 0.45em;
+}
+
+/* 텍스트 전용 _contents 본문은 top 정렬이 확정 정책 (2026-07-06 사용자 결정 — 테마 전체 적용).
+   과거 여기 있던 justify-content: center(짧은 본문 세로 중앙) 규칙은 되살리지 말 것 —
+   "본문 아래 빈 공간"보다 제목 직하 top 배치가 우선한다. flex column 기본값이 곧 top. */
+
 /* Issue177 (default §3 백포팅): _contents/_contents_no_title 본문·헤더 투명 배경
    우상단 puffer 마스코트가 본문 뒤로 보이도록 명시적 transparent 적용 */
 .reveal section.layout-_contents > .contents-body,
@@ -1090,6 +1130,25 @@
   width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
+  position: relative;
+}
+
+/* standalone agenda-frame(div.layout-_agenda)는 .reveal section 이 아니므로 §2 콘텐츠
+   슬라이드 상단 바(section[class*=layout-]::before)에 매치되지 않는다. default 테마
+   .layout-_agenda::before 패턴을 그대로 포팅해 상단 노랑 브러시 바를 복구한다.
+   left/right 24px = base.css §12 .agenda-frame .layout-_agenda padding(24px)과 정렬. */
+.layout-_agenda::before {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 12px;
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* toc-markmap이 남은 세로 공간을 채우도록 flex-grow 적용 (theContents 패턴).

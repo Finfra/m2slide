@@ -14,6 +14,37 @@
       }
     } catch (e) {}
   </script>
+  <script>
+    // Issue263: Safari 감지 → 렌더링 오류 가능 경고 오버레이
+    (function () {
+      try {
+        var ua = navigator.userAgent;
+        var isSafari = /safari/i.test(ua) && !/chrome|chromium|crios|edg|fxios|android/i.test(ua);
+        var forced = location.search.indexOf('safari-warn=1') !== -1;
+        if (!isSafari && !forced) return;
+        if (!forced && window.sessionStorage && sessionStorage.getItem('m2SafariWarned')) return;
+        function show() {
+          if (document.getElementById('m2-safari-warning')) return;
+          var ov = document.createElement('div');
+          ov.id = 'm2-safari-warning';
+          ov.setAttribute('style', 'position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);font-family:-apple-system,BlinkMacSystemFont,\'Apple SD Gothic Neo\',sans-serif;');
+          var box = document.createElement('div');
+          box.setAttribute('style', 'max-width:480px;margin:1rem;padding:1.6rem 1.8rem;background:#fff;color:#222;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.35);line-height:1.6;');
+          box.innerHTML = '<div style="font-size:1.05rem;font-weight:700;margin-bottom:0.6rem;">⚠️ Safari 브라우저 감지</div>'
+            + '<div style="font-size:0.92rem;">Safari에서는 일부 슬라이드 요소(목차 마인드맵 등)가 정상적으로 렌더링되지 않을 수 있습니다. 정확한 표시가 필요하면 Chrome 계열 브라우저 사용을 권장합니다.</div>'
+            + '<div style="text-align:right;margin-top:1.2rem;"><button id="m2-safari-warning-ok" style="padding:0.45rem 1.2rem;border:none;border-radius:8px;background:#2d7a5f;color:#fff;font-size:0.92rem;cursor:pointer;">계속 보기</button></div>';
+          ov.appendChild(box);
+          document.body.appendChild(ov);
+          document.getElementById('m2-safari-warning-ok').addEventListener('click', function () {
+            try { sessionStorage.setItem('m2SafariWarned', '1'); } catch (e) {}
+            if (ov.parentNode) ov.parentNode.removeChild(ov);
+          });
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', show);
+        else show();
+      } catch (e) {}
+    })();
+  </script>
   <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"11","slideOffset":103,"totalSlides":117};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
@@ -44,8 +75,17 @@
 /* =========================================================================
    1. @import — 외부 폰트 (CDN)
    ========================================================================= */
-@import url('https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css');
 @import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap');
+
+/* Issue260: webfontworld/gmarket CDN 사망(404) → projectnoonnu noonfonts CDN @font-face 교체.
+   font-weight 100 900 범위 선언 — h1/h2의 700·900 요청에도 synthetic bold(faux-bold 뭉개짐) 방지. */
+@font-face {
+  font-family: 'GmarketSansBold';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* =========================================================================
    2. :root — CSS 변수 기본값 (1.b 정책: _config.yml 명시값 전체 흡수)
@@ -266,6 +306,14 @@ body {
 .reveal,
 .reveal .slides {
   overflow: visible !important;
+}
+/* .reveal 를 visible 로 열면 reveal.js 가 부모 클리핑에 의존하던 배경 레이어
+   (.reveal .backgrounds)까지 함께 un-clip 되어, 세로 스택 슬라이드의
+   .slide-background(높이 = 슬라이드높이 × 스택수, ex 11520px)가 문서 밖으로
+   삐져나와 /n/ deck 모드에서 페이지 전체 세로 스크롤을 유발한다.
+   fade 트랜지션은 .slides 안에서 일어나므로 배경 레이어만 다시 클리핑해도 무영향. */
+.reveal .backgrounds {
+  overflow: hidden !important;
 }
 
 /* Issue215: ESC overview 모드에서 우리 CSS의 size·overflow 강제를 모두 해제.
@@ -1342,7 +1390,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783005429705">
+  <link rel="stylesheet" href="css/custom.css?v=1783349030788">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -2781,7 +2829,9 @@ html.ratio-fill .agenda-frame {
         var idxL = Reveal.getIndices();
         // Chapter mode TOC slide 또는 (TOC 없는 chapter의) 첫 슬라이드 #/0 → 이전 챕터 마지막 (없으면 agenda)
         var atChapterDeckStart = (M2SLIDE_MODE === 'chapter' && idxL.h === 0 && idxL.v === 0);
-        if (isTocSlide(cur) || atChapterDeckStart) {
+        // Issue259: TOC가 deck 첫 슬라이드일 때만 cross-chapter 점프.
+        // chapter divider가 TOC 앞(h=0)에 오는 deck에서는 ← 가 deck 내 이전 슬라이드로 가야 함.
+        if ((isTocSlide(cur) && idxL.h === 0 && idxL.v === 0) || atChapterDeckStart) {
           event.preventDefault();
           if (M2SLIDE_MODE === 'chapter' && PREV_CHAPTER) {
             // Issue104: ← 이전 챕터 마지막 진입은 backward — &back=1 시그널 추가

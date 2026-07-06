@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>m2Slide Single mode Example : fWarrange 소개</title>
+  <title>단일 페이지 모드 대표</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -13,6 +13,37 @@
         document.documentElement.classList.add('m2-cross-loading');
       }
     } catch (e) {}
+  </script>
+  <script>
+    // Issue263: Safari 감지 → 렌더링 오류 가능 경고 오버레이
+    (function () {
+      try {
+        var ua = navigator.userAgent;
+        var isSafari = /safari/i.test(ua) && !/chrome|chromium|crios|edg|fxios|android/i.test(ua);
+        var forced = location.search.indexOf('safari-warn=1') !== -1;
+        if (!isSafari && !forced) return;
+        if (!forced && window.sessionStorage && sessionStorage.getItem('m2SafariWarned')) return;
+        function show() {
+          if (document.getElementById('m2-safari-warning')) return;
+          var ov = document.createElement('div');
+          ov.id = 'm2-safari-warning';
+          ov.setAttribute('style', 'position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);font-family:-apple-system,BlinkMacSystemFont,\'Apple SD Gothic Neo\',sans-serif;');
+          var box = document.createElement('div');
+          box.setAttribute('style', 'max-width:480px;margin:1rem;padding:1.6rem 1.8rem;background:#fff;color:#222;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.35);line-height:1.6;');
+          box.innerHTML = '<div style="font-size:1.05rem;font-weight:700;margin-bottom:0.6rem;">⚠️ Safari 브라우저 감지</div>'
+            + '<div style="font-size:0.92rem;">Safari에서는 일부 슬라이드 요소(목차 마인드맵 등)가 정상적으로 렌더링되지 않을 수 있습니다. 정확한 표시가 필요하면 Chrome 계열 브라우저 사용을 권장합니다.</div>'
+            + '<div style="text-align:right;margin-top:1.2rem;"><button id="m2-safari-warning-ok" style="padding:0.45rem 1.2rem;border:none;border-radius:8px;background:#2d7a5f;color:#fff;font-size:0.92rem;cursor:pointer;">계속 보기</button></div>';
+          ov.appendChild(box);
+          document.body.appendChild(ov);
+          document.getElementById('m2-safari-warning-ok').addEventListener('click', function () {
+            try { sessionStorage.setItem('m2SafariWarned', '1'); } catch (e) {}
+            if (ov.parentNode) ov.parentNode.removeChild(ov);
+          });
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', show);
+        else show();
+      } catch (e) {}
+    })();
   </script>
   <script>window.M2_CHAPTER_META=null;/*M2_CHAPTER_META_PLACEHOLDER*/</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
@@ -275,6 +306,14 @@ body {
 .reveal,
 .reveal .slides {
   overflow: visible !important;
+}
+/* .reveal 를 visible 로 열면 reveal.js 가 부모 클리핑에 의존하던 배경 레이어
+   (.reveal .backgrounds)까지 함께 un-clip 되어, 세로 스택 슬라이드의
+   .slide-background(높이 = 슬라이드높이 × 스택수, ex 11520px)가 문서 밖으로
+   삐져나와 /n/ deck 모드에서 페이지 전체 세로 스크롤을 유발한다.
+   fade 트랜지션은 .slides 안에서 일어나므로 배경 레이어만 다시 클리핑해도 무영향. */
+.reveal .backgrounds {
+  overflow: hidden !important;
 }
 
 /* Issue215: ESC overview 모드에서 우리 CSS의 size·overflow 강제를 모두 해제.
@@ -1351,7 +1390,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783229066842">
+  <link rel="stylesheet" href="css/custom.css?v=1783344666022">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1518,7 +1557,6 @@ html.ratio-fill .agenda-frame {
     @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
   </style>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
 </head>
 <body class="top-align-mode  media-enlarge-fit" data-nav-indicator="both" style="
   --global-font-family: Pretendard, sans-serif;
@@ -1570,12 +1608,22 @@ html.ratio-fill .agenda-frame {
   
   <div class="cover-corner cover-br">https://finfra.kr</div>
   <div class="cover-header">
-    <h1 class="cover-title">m2Slide Single mode Example : fWarrange 소개</h1>
-    
+    <h1 class="cover-title">단일 페이지 모드 대표</h1>
+    <div class="cover-subtitle">테스트 용도 — Single Mode Debug, 한 개의 md 파일로 전체 스타일 회귀 검증</div>
     
   </div>
 
-  
+  <div class="cover-body">
+    <div class="cover-instructor">
+      <span class="cover-instructor-name">남중구 (핀프라)</span>
+      <span class="cover-instructor-contact">nowage@gmail.com</span>
+    </div>
+
+    <div class="cover-meta">
+      
+      <span class="cover-version">0.9</span>
+    </div>
+  </div>
 
   
 </section>
@@ -1586,26 +1634,41 @@ html.ratio-fill .agenda-frame {
   <div class="cover-corner cover-br">https://finfra.kr</div>
   <div class="cover-header">
     <h1 class="cover-title">1. 텍스트 레이아웃</h1>
-    
+    <div class="cover-subtitle">테스트 용도 — Single Mode Debug, 한 개의 md 파일로 전체 스타일 회귀 검증</div>
     
   </div>
 
-  
+  <div class="cover-body">
+    <div class="cover-instructor">
+      <span class="cover-instructor-name">남중구 (핀프라)</span>
+      <span class="cover-instructor-contact">nowage@gmail.com</span>
+    </div>
+
+    <div class="cover-meta">
+      
+      <span class="cover-version">0.9</span>
+    </div>
+  </div>
 
   
-</section>
+  <aside class="notes">
+<p>이 프로젝트가 하나의 md 파일만으로 구성된 단일 페이지 모드 예시임을 설명한다. 여러 챕터로 나누지 않고도 텍스트 스타일 데모가 가능하다는 점을 강조하며 다음 슬라이드로 넘어간다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/3" data-heading-level="1" class="layout-chapter">
   <div class="chapter-header">
     <h1 class="chapter-title">0. Chapter Divider 테스트</h1>
   </div>
   <div class="chapter-body"><ul>
-<li class="bullet-dot">0.1. fWarrange 소개</li>
-<li class="bullet-dot">0.2. 워크스페이스 저장·복원</li>
-<li class="bullet-dot">0.3. REST API·AI 에이전트 연동</li>
+<li class="bullet-dot">0.1. sub-section A</li>
+<li class="bullet-dot">0.2. sub-section B</li>
+<li class="bullet-dot">0.3. sub-section C</li>
 </ul></div>
-</section>
-
+  <aside class="notes">
+<p>이 데크는 m2slide 스타일·레이아웃 기능을 순서대로 시연하는 목적임을 먼저 밝힌다. Chapter Divider 레이아웃이 큰 섹션 전환 시 어떻게 보이는지 확인하고, 화면의 서브섹션 세 개는 다음에 이어질 내용의 예고임을 짚어준다. 청중에게 "이후 슬라이드에서 각 항목이 실제로 어떻게 구현되는지 하나씩 보자"는 식으로 기대감을 준다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/4" class="layout-_contents">
   <div class="contents-head-bar">
@@ -1616,12 +1679,15 @@ html.ratio-fill .agenda-frame {
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot">fWarrange는 macOS 활성 윈도우의 위치와 크기를 저장하고 복원하는 도구입니다.</li>
-<li class="bullet-dot"><strong>스마트 창 매칭</strong> 알고리즘과 *메뉴바 기반 GUI*를 함께 제공합니다.</li>
-<li class="bullet-dot">REST API 서버는 기본 포트 3016에서 상태를 확인할 수 있습니다.</li>
-<li class="bullet-dot">> 창이 닫혔다 다시 열려도 PID·제목·크기 유사도를 기준으로 정확히 복원됩니다.</li>
+<li class="bullet-dot">이것은 기본 리스트 아이템입니다.</li>
+<li class="bullet-dot"><strong>굵은 글씨</strong>와 *이탤릭체*를 지원합니다.</li>
+<li class="bullet-dot"><code>인라인 코드</code>도 사용할 수 있습니다.</li>
+<li class="bullet-dot">> 인용문(Blockquote) 스타일입니다.</li>
 </ul></div>
-</section>
+  <aside class="notes">
+<p>굵게·기울임·인라인 코드·인용문 네 가지 기본 텍스트 서식이 마크다운 문법 그대로 어떻게 렌더되는지 보여준다. 발표 슬라이드에서 강조가 필요한 부분에 이 서식들을 조합해서 쓰면 된다는 팁을 준다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/5" class="layout-_contents">
   <div class="contents-head-bar">
@@ -1632,16 +1698,16 @@ html.ratio-fill .agenda-frame {
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot">fWarrange 앱 구조
+<li class="bullet-dot">레벨 1
 <ul>
 <ul>
-<li class="bullet-dash">paidApp (GUI)
+<li class="bullet-dash">레벨 2
 <ul>
 <ul>
-<li class="bullet-dash">SwiftUI 메뉴바 앱
+<li class="bullet-dash">레벨 3
 <ul>
 <ul>
-<li class="bullet-dot">App Store 배포용 Sandbox 호환</li>
+<li class="bullet-dot">레벨 4</li>
 </ul>
 </li>
 </ul>
@@ -1655,7 +1721,10 @@ html.ratio-fill .agenda-frame {
 </ul>
 </li>
 </ul></div>
-</section>
+  <aside class="notes">
+<p>들여쓰기만으로 4단계까지 리스트 계층을 표현할 수 있음을 확인한다. 청중에게 실제 문서에서는 2~3단계를 넘어가면 오히려 읽기 어려워진다는 점도 함께 짚어 과도한 중첩을 피하도록 안내한다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/6" class="layout-_contents">
   <div class="contents-head-bar">
@@ -1666,19 +1735,22 @@ html.ratio-fill .agenda-frame {
   <div class="contents-body">
 
 <ol>
-<li>다운로드 및 설치</li>
-<li>접근성 권한 설정</li>
-<li>레이아웃 저장과 복원
+<li>첫 번째 항목</li>
+<li>두 번째 항목</li>
+<li>세 번째 항목
 <ol>
 <ol>
-<li>현재 창 배치를 워크스페이스로 저장</li>
-<li>저장된 워크스페이스를 단축키로 즉시 복원</li>
+<li>중첩된 항목 1</li>
+<li>중첩된 항목 2</li>
 </ol>
 </li>
 </ol>
 </li>
 </ol></div>
-</section>
+  <aside class="notes">
+<p>번호 리스트와 중첩된 번호 항목이 함께 쓰이는 사례를 보여준다. 절차나 단계를 설명할 때는 순서 리스트가 불릿 리스트보다 더 명확하다는 점을 언급한다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/7" data-heading-level="1" class="layout-_cover">
   <div class="cover-corner cover-tl">github.com/Finfra/m2slide</div>
@@ -1686,60 +1758,65 @@ html.ratio-fill .agenda-frame {
   <div class="cover-corner cover-br">https://finfra.kr</div>
   <div class="cover-header">
     <h1 class="cover-title">2. 코드 및 신택스 하이라이팅</h1>
-    
+    <div class="cover-subtitle">테스트 용도 — Single Mode Debug, 한 개의 md 파일로 전체 스타일 회귀 검증</div>
     
   </div>
 
-  
+  <div class="cover-body">
+    <div class="cover-instructor">
+      <span class="cover-instructor-name">남중구 (핀프라)</span>
+      <span class="cover-instructor-contact">nowage@gmail.com</span>
+    </div>
+
+    <div class="cover-meta">
+      
+      <span class="cover-version">0.9</span>
+    </div>
+  </div>
 
   
-</section>
+  <aside class="notes">
+<p>두 번째 섹션은 코드 블록과 신택스 하이라이팅을 다룬다. 다음 두 슬라이드에서 JavaScript와 Python 예시를 각각 확인할 것임을 안내한다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/8" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">2. 코드 및 신택스 하이라이팅</div>
     
   </div>
-  <h2 class="title">Swift 코드 예시</h2>
+  <h2 class="title">JavaScript 코드 예시</h2>
   <div class="contents-body">
 
-<pre class="code-wrapper"><code class="language-swift hljs">// setWindows.swift — 스마트 창 매칭 우선순위 점수제
-if cgWindowId == target.id &amp;&amp; target.id != 0 {
-    score = 100
-    matchType = "ID(\(target.id))"
-} else if axTitle == target.window &amp;&amp; !target.window.isEmpty {
-    score = 90
-    matchType = "Title(Exact)"
-} else if !target.window.isEmpty, let regex = try? NSRegularExpression(pattern: target.window, options: .caseInsensitive),
-          regex.firstMatch(in: axTitle, options: [], range: NSRange(location: 0, length: axTitle.utf16.count)) != nil {
-    score = 80
-    matchType = "Regex"
-} else if !target.window.isEmpty &amp;&amp; axTitle.contains(target.window) {
-    score = 70
-    matchType = "Title(Contains)"
-}
-// 이하 Width/Height/Ratio/Area 순으로 60~30점 부여</code></pre></div>
-</section>
+<pre class="code-wrapper"><code class="language-javascript hljs">function helloWorld() {
+  console.log("Hello, m2Slide!");
+  const number = 42;
+  return number * 2;
+}</code></pre></div>
+  <aside class="notes">
+<p>함수 정의부터 콘솔 로그, 리턴 값까지 포함한 코드가 하이라이팅된 상태로 표시된다. 코드 블록에 언어를 명시하면 자동으로 강조 색상이 적용된다는 점을 짚는다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/9" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">2. 코드 및 신택스 하이라이팅</div>
     
   </div>
-  <h2 class="title">Bash 코드 예시</h2>
+  <h2 class="title">Python 코드 예시</h2>
   <div class="contents-body">
 
-<pre class="code-wrapper"><code class="language-bash hljs"># REST API 상태 확인 (Health Check)
-curl http://&lt;host&gt;:3016/
+<pre class="code-wrapper"><code class="language-python hljs">def fibonacci(n):
+    if n &lt;= 1:
+        return n
+    else:
+        return fibonacci(n-1) + fibonacci(n-2)
 
-# 응답 예시
-# {
-#   "app": "fWarrange",
-#   "port": 3016,
-#   "status": "ok",
-#   "version": "1.08"
-# }</code></pre></div>
-</section>
+print(fibonacci(10))</code></pre></div>
+  <aside class="notes">
+<p>재귀 함수(피보나치) 예시로 다른 언어의 하이라이팅을 비교해서 보여준다. 언어가 다르면 키워드 강조 색상도 자동으로 달라진다는 점을 확인시켜준다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/10" data-heading-level="1" class="layout-_cover">
   <div class="cover-corner cover-tl">github.com/Finfra/m2slide</div>
@@ -1747,14 +1824,27 @@ curl http://&lt;host&gt;:3016/
   <div class="cover-corner cover-br">https://finfra.kr</div>
   <div class="cover-header">
     <h1 class="cover-title">3. 데이터 시각화 (Mermaid)</h1>
-    
+    <div class="cover-subtitle">테스트 용도 — Single Mode Debug, 한 개의 md 파일로 전체 스타일 회귀 검증</div>
     
   </div>
 
-  
+  <div class="cover-body">
+    <div class="cover-instructor">
+      <span class="cover-instructor-name">남중구 (핀프라)</span>
+      <span class="cover-instructor-contact">nowage@gmail.com</span>
+    </div>
+
+    <div class="cover-meta">
+      
+      <span class="cover-version">0.9</span>
+    </div>
+  </div>
 
   
-</section>
+  <aside class="notes">
+<p>세 번째 섹션은 Mermaid 기반 다이어그램을 다룬다. 플로우차트·시퀀스·클래스 다이어그램 세 가지가 순서대로 이어진다는 것을 예고한다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/11" class="layout-_contents">
   <div class="contents-head-bar">
@@ -1766,17 +1856,15 @@ curl http://&lt;host&gt;:3016/
 
 <div class="media-container mermaid">
 graph TD
-    A[윈도우 재탐색] --> B{CGWindowID 일치?}
-    B -- Yes --> S1[100점 · ID 매칭]
-    B -- No --> C{제목 완전 일치?}
-    C -- Yes --> S2[90점 · Title Exact]
-    C -- No --> D{정규식 매칭?}
-    D -- Yes --> S3[80점 · Regex]
-    D -- No --> E{크기·비율 유사?}
-    E -- Yes --> S4[70~30점 · Contains/Size]
-    E -- No --> S5[매칭 실패]
+    A[Start] --> B{Is it working?}
+    B -- Yes --> C[Great!]
+    B -- No --> D[Debug]
+    D --> B
 </div></div>
-</section>
+  <aside class="notes">
+<p>조건 분기와 반복 구간이 있는 간단한 플로우차트를 시연한다. 코드로 다이어그램을 작성하면 별도 이미지 파일 없이도 흐름도를 쉽게 유지·수정할 수 있다는 점을 강조한다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/12" class="layout-_contents">
   <div class="contents-head-bar">
@@ -1788,17 +1876,21 @@ graph TD
 
 <div class="media-container mermaid">
 sequenceDiagram
-    participant User
-    participant MenuBar as fWarrange paidApp
-    participant CliApp as cliApp REST API
-    User->>MenuBar: 현재 배치 저장 클릭
-    MenuBar->>CliApp: POST /api/v1/capture
-    CliApp-->>MenuBar: 레이아웃 저장 완료
-    User->>MenuBar: 단축키로 복원 요청
-    MenuBar->>CliApp: POST /api/v1/layouts/{name}/restore
-    CliApp-->>User: 창 위치·크기 복원
+    participant Alice
+    participant Bob
+    Alice->>John: Hello John, how are you?
+    loop Healthcheck
+        John->>John: Fight against hypochondria
+    end
+    Note right of John: Rational thoughts <br/>prevail!
+    John-->>Alice: Great!
+    John->>Bob: How about you?
+    Bob-->>John: Jolly good!
 </div></div>
-</section>
+  <aside class="notes">
+<p>참여자 간 메시지 흐름과 반복 구간(loop)을 포함한 시퀀스 다이어그램을 보여준다. API 호출 순서나 협업 흐름을 설명할 때 유용하다는 점을 언급한다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/13" class="layout-_contents">
   <div class="contents-head-bar">
@@ -1810,26 +1902,31 @@ sequenceDiagram
 
 <div class="media-container mermaid">
 classDiagram
-    MatchRule <|-- IdMatch
-    MatchRule <|-- TitleExactMatch
-    MatchRule <|-- RegexMatch
-    MatchRule <|-- SizeSimilarityMatch
-    MatchRule : +int score
-    MatchRule : +matches()
-    class IdMatch{
-        +100점
+    Animal <|-- Duck
+    Animal <|-- Fish
+    Animal <|-- Zebra
+    Animal : +int age
+    Animal : +String gender
+    Animal : +isMammal()
+    Animal : +mate()
+    class Duck{
+        +String beakColor
+        +swim()
+        +quack()
     }
-    class TitleExactMatch{
-        +90점
+    class Fish{
+        -int sizeInFeet
+        -canEat()
     }
-    class RegexMatch{
-        +80점
-    }
-    class SizeSimilarityMatch{
-        +70~30점
+    class Zebra{
+        +bool is_wild
+        +run()
     }
 </div></div>
-</section>
+  <aside class="notes">
+<p>상속 관계와 멤버 속성·메서드를 포함한 클래스 다이어그램 예시다. 소프트웨어 설계 문서를 발표 자료에 그대로 옮길 수 있다는 실용성을 강조하며 다음 섹션(이미지)으로 넘어간다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/14" data-heading-level="1" class="layout-_cover">
   <div class="cover-corner cover-tl">github.com/Finfra/m2slide</div>
@@ -1837,14 +1934,27 @@ classDiagram
   <div class="cover-corner cover-br">https://finfra.kr</div>
   <div class="cover-header">
     <h1 class="cover-title">4. 이미지 및 미디어</h1>
-    
+    <div class="cover-subtitle">테스트 용도 — Single Mode Debug, 한 개의 md 파일로 전체 스타일 회귀 검증</div>
     
   </div>
 
-  
+  <div class="cover-body">
+    <div class="cover-instructor">
+      <span class="cover-instructor-name">남중구 (핀프라)</span>
+      <span class="cover-instructor-contact">nowage@gmail.com</span>
+    </div>
+
+    <div class="cover-meta">
+      
+      <span class="cover-version">0.9</span>
+    </div>
+  </div>
 
   
-</section>
+  <aside class="notes">
+<p>네 번째 섹션은 이미지와 미디어 배치를 다룬다. 이미지 단독 배치부터 텍스트와 결합된 배치까지 순서대로 보여줄 예정임을 안내한다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/15" class="layout-_contents">
   <div class="contents-head-bar">
@@ -1855,10 +1965,13 @@ classDiagram
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot">fWarrange는 메뉴바 아이콘 클릭 한 번으로 워크스페이스를 관리합니다.</li>
-<li class="bullet-dot">설정 창에서 일반·API·단축키·복원 옵션을 세부 조정할 수 있습니다.</li>
+<li class="bullet-dot">테스트 용도</li>
+<li class="bullet-dot">중간 노드임.</li>
 </ul></div>
-</section>
+  <aside class="notes">
+<p>이 슬라이드는 하위 챕터 이동 확인용 중간 연결 지점으로, 실제 발표 분량보다는 구조 테스트 목적임을 짚어준다. 청중에게는 "다음은 이미지 관련 하위 섹션"이라고 짧게 안내하고 넘어간다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/16" class="layout-_cover">
   <div class="cover-corner cover-tl">github.com/Finfra/m2slide</div>
@@ -1866,43 +1979,61 @@ classDiagram
   <div class="cover-corner cover-br">https://finfra.kr</div>
   <div class="cover-header">
     <h1 class="cover-title">4.1. 이미지</h1>
-    
+    <div class="cover-subtitle">테스트 용도 — Single Mode Debug, 한 개의 md 파일로 전체 스타일 회귀 검증</div>
     
   </div>
 
-  
+  <div class="cover-body">
+    <div class="cover-instructor">
+      <span class="cover-instructor-name">남중구 (핀프라)</span>
+      <span class="cover-instructor-contact">nowage@gmail.com</span>
+    </div>
+
+    <div class="cover-meta">
+      
+      <span class="cover-version">0.9</span>
+    </div>
+  </div>
 
   
-</section>
+  <aside class="notes">
+<p>이미지 관련 예시들의 상위 구분 슬라이드다. 이어지는 두 슬라이드에서 이미지 단독 배치와 텍스트 동반 배치를 각각 확인할 것이라고 안내한다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/17" class="layout-_blank">
   <div class="blank-header">
     <h1 class="blank-title">이미지 Only</h1>
   </div>
-  <div class="blank-body"><div class="media-container"><img src="./img/scenery.png" alt="fWarrange 메뉴바 실행 화면"></div></div>
-</section>
-
+  <div class="blank-body"><div class="media-container"><img src="./img/scenery.png" alt="Scenery"></div></div>
+  <aside class="notes">
+<p>제목 없이 이미지 하나만 배치했을 때 자동으로 풀스크린 레이아웃이 적용되는 사례다. 별도 설정 없이도 이미지 단독 슬라이드는 자동으로 감지된다는 점을 짚는다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/18" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">4. 이미지 및 미디어</div>
     <div class="contents-head-right">4.1. 이미지</div>
   </div>
-  <h3 class="title">기본 이미지 배치 (일반 설정 화면)</h3>
+  <h3 class="title">기본 이미지 배치 (Scenery)</h3>
   <div class="contents-body">
 
 <div class="m2-cols">
 <div class="m2-col">
-<div class="media-container"><img src="./img/chart.png" alt="fWarrange 일반 설정 화면"></div>
+<div class="media-container"><img src="./img/scenery.png" alt="Scenery"></div>
 </div>
 <div class="m2-col">
 
 <ul>
-<li class="bullet-dot">설정(Settings) 창의 첫 화면으로, 여기서 API·단축키·복원 옵션 탭으로 이동합니다.</li>
+<li class="bullet-dot">이미지 아래 텍스트</li>
 </ul>
 </div>
 </div></div>
-</section>
+  <aside class="notes">
+<p>이미지 아래에 짧은 설명 텍스트가 붙는 기본 배치를 보여준다. 이미지 하나와 캡션 성격의 텍스트를 함께 쓸 때 사용하는 가장 단순한 형태임을 언급한다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/19" class="layout-_cover">
   <div class="cover-corner cover-tl">github.com/Finfra/m2slide</div>
@@ -1910,14 +2041,27 @@ classDiagram
   <div class="cover-corner cover-br">https://finfra.kr</div>
   <div class="cover-header">
     <h1 class="cover-title">4.2. 리스트</h1>
-    
+    <div class="cover-subtitle">테스트 용도 — Single Mode Debug, 한 개의 md 파일로 전체 스타일 회귀 검증</div>
     
   </div>
 
-  
+  <div class="cover-body">
+    <div class="cover-instructor">
+      <span class="cover-instructor-name">남중구 (핀프라)</span>
+      <span class="cover-instructor-contact">nowage@gmail.com</span>
+    </div>
+
+    <div class="cover-meta">
+      
+      <span class="cover-version">0.9</span>
+    </div>
+  </div>
 
   
-</section>
+  <aside class="notes">
+<p>리스트 관련 예시들의 상위 구분 슬라이드다. 리스트 단독 배치와 이미지+리스트 결합 배치를 이어서 비교해 볼 것이라고 안내한다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/20" class="layout-_contents">
   <div class="contents-head-bar">
@@ -1928,12 +2072,15 @@ classDiagram
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot">스마트 창 매칭 정확도가 지속적으로 개선되고 있습니다.</li>
-<li class="bullet-dot">레이아웃 일괄 정리 기능으로 선택·마지막·기본 3개만 남기고 삭제</li>
-<li class="bullet-dot">다국어 번역 커버리지 79~89% 진행 중</li>
+<li class="bullet-dot">매출이 상승하고 있습니다.</li>
+<li class="bullet-dot">1분기 대비 2분기 20% 성장</li>
+<li class="bullet-dot">3분기 예측치 달성 무난</li>
 <li class="bullet-dot">이미지가 있을 때 텍스트가 어떻게 배치되는지 확인</li>
 </ul></div>
-</section>
+  <aside class="notes">
+<p>매출 관련 수치를 리스트로만 정리한 슬라이드다. 청중에게 수치를 나열할 때는 리스트만으로도 충분히 전달력이 있다는 점을 짚고, 다음 슬라이드에서 이미지가 추가된 버전과 비교해보자고 유도한다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/21" class="layout-_cover">
   <div class="cover-corner cover-tl">github.com/Finfra/m2slide</div>
@@ -1941,14 +2088,27 @@ classDiagram
   <div class="cover-corner cover-br">https://finfra.kr</div>
   <div class="cover-header">
     <h1 class="cover-title">4.2.1. 리스트[서브 Chapter 테스트용.]</h1>
-    
+    <div class="cover-subtitle">테스트 용도 — Single Mode Debug, 한 개의 md 파일로 전체 스타일 회귀 검증</div>
     
   </div>
 
-  
+  <div class="cover-body">
+    <div class="cover-instructor">
+      <span class="cover-instructor-name">남중구 (핀프라)</span>
+      <span class="cover-instructor-contact">nowage@gmail.com</span>
+    </div>
+
+    <div class="cover-meta">
+      
+      <span class="cover-version">0.9</span>
+    </div>
+  </div>
 
   
-</section>
+  <aside class="notes">
+<p>하위 챕터(서브 챕터) 네비게이션이 실제로 잘 연결되는지 확인하기 위한 테스트용 구분 슬라이드다. 발표 시에는 건너뛰어도 무방하다는 점을 알아둔다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/22" class="layout-_contents">
   <div class="contents-head-bar">
@@ -1958,47 +2118,73 @@ classDiagram
   <h3 class="title">리스트 Only[서브 Chapter 테스트용.]</h3>
   <div class="contents-body">
 
+<ul>
+<li class="bullet-dot">매출이 상승하고 있습니다.</li>
+<li class="bullet-dot">1분기 대비 2분기 20% 성장</li>
+<li class="bullet-dot">3분기 예측치 달성 무난</li>
+<li class="bullet-dot">이미지가 있을 때 텍스트가 어떻게 배치되는지 확인</li>
+</ul></div>
+  <aside class="notes">
+<p>서브 챕터 아래에서 리스트 전용 슬라이드가 어떻게 보이는지 확인하는 단계다. 같은 수치 데이터를 다음 슬라이드에서 차트 이미지와 함께 다시 보여줄 예정이니 이 화면의 배치를 기억해두라고 안내한다.</p>
+  </aside>
+      </section>
+
+<section data-slide-hash="#/23" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">4. 이미지 및 미디어</div>
+    <div class="contents-head-right">4.2. 리스트 > 4.2.1. 리스트[서브 Chapter 테스트용.]</div>
+  </div>
+  <h3 class="title">이미지와 리스트 (Chart)</h3>
+  <div class="contents-body">
+
 <div class="m2-cols">
 <div class="m2-col">
-<ul>
-<li class="bullet-dot">스마트 창 매칭 정확도가 지속적으로 개선되고 있습니다.</li>
-<li class="bullet-dot">레이아웃 일괄 정리 기능으로 선택·마지막·기본 3개만 남기고 삭제</li>
-<li class="bullet-dot">다국어 번역 커버리지 79~89% 진행 중</li>
-<li class="bullet-dot">이미지가 있을 때 텍스트가 어떻게 배치되는지 확인</li>
-</ul>
-
-<h3 class="title">이미지와 리스트 (API 설정)</h3>
-
-
-<ul>
-<li class="bullet-dot">설정 → API 탭에서 REST API 서버 활성화 토글을 켭니다.</li>
-<li class="bullet-dot">기본 포트는 3016이며 필요 시 변경할 수 있습니다.</li>
-<li class="bullet-dot"><code>curl http://&lt;host&gt;:3016/</code>로 서버 상태(Health Check)를 확인합니다.</li>
-<li class="bullet-dot">이미지가 있을 때 텍스트가 어떻게 배치되는지 확인</li>
-</ul>
+<div class="media-container"><img src="./img/chart.png" alt="Right Image"></div>
 </div>
 <div class="m2-col">
-<div class="media-container"><img src="./img/settings_api.png" alt="API 설정 화면"></div>
+
+<ul>
+<li class="bullet-dot">매출이 상승하고 있습니다.</li>
+<li class="bullet-dot">1분기 대비 2분기 20% 성장</li>
+<li class="bullet-dot">3분기 예측치 달성 무난</li>
+<li class="bullet-dot">이미지가 있을 때 텍스트가 어떻게 배치되는지 확인</li>
+</ul>
 </div>
 </div></div>
-</section>
+  <aside class="notes">
+<p>직전 슬라이드와 같은 리스트에 차트 이미지를 추가한 버전이다. 같은 데이터라도 이미지가 곁들여지면 정보 전달 방식이 어떻게 달라지는지 두 슬라이드를 오가며 직접 비교해보라고 권한다.</p>
+  </aside>
+      </section>
 
-<section data-slide-hash="#/23" data-heading-level="1" class="layout-_cover">
+<section data-slide-hash="#/24" data-heading-level="1" class="layout-_cover">
   <div class="cover-corner cover-tl">github.com/Finfra/m2slide</div>
   
   <div class="cover-corner cover-br">https://finfra.kr</div>
   <div class="cover-header">
     <h1 class="cover-title">5. 레이아웃 예제 (DIV 활용)</h1>
-    
+    <div class="cover-subtitle">테스트 용도 — Single Mode Debug, 한 개의 md 파일로 전체 스타일 회귀 검증</div>
     
   </div>
 
-  
+  <div class="cover-body">
+    <div class="cover-instructor">
+      <span class="cover-instructor-name">남중구 (핀프라)</span>
+      <span class="cover-instructor-contact">nowage@gmail.com</span>
+    </div>
+
+    <div class="cover-meta">
+      
+      <span class="cover-version">0.9</span>
+    </div>
+  </div>
 
   
-</section>
+  <aside class="notes">
+<p>다섯 번째 섹션은 DIV 기반 레이아웃 구성 방법을 다룬다. 이후 슬라이드에서 서로 다른 네 가지 문법(순서 배치·Slidev 슬롯·Pandoc 컬럼·raw HTML)으로 2분할·3분할을 구현한 예시를 순서대로 비교할 것이라고 안내한다.</p>
+  </aside>
+      </section>
 
-<section data-slide-hash="#/24" class="layout-_contents">
+<section data-slide-hash="#/25" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
     <div class="contents-head-right">2분할 레이아웃 - 1단계</div>
@@ -2008,17 +2194,20 @@ classDiagram
 <div class="m2-cols">
 <div class="m2-col">
 <ul>
-<li class="bullet-dot">메뉴바 아이콘을 클릭하면 저장된 워크스페이스 목록이 나타납니다.<br>-앱 이름·창 위치·크기가 세트로 저장됩니다.<br>-다중 모니터 환경에서는 각 창이 있던 모니터 정보도 함께 기록됩니다.</li>
+<li class="bullet-dot">왼쪽 텍스트 영역<br>-HTML DIV 태그를 사용하여<br>-원하는 레이아웃을 직접 구성할 수 있습니다.<br>-flexbox 스타일을 활용하세요.</li>
 </ul>
 
 </div>
 <div class="m2-col">
-<div class="media-container"><img src="./img/main_apps_visible.png" alt="워크스페이스 목록 (다중 모니터)"></div>
+<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
 </div>
 </div></div>
-</section>
+  <aside class="notes">
+<p>텍스트를 먼저 쓰고 그 아래에 이미지를 배치하면 자동으로 좌우 2분할이 적용되는 휴리스틱을 보여준다. 소스에 별도 문법 없이도 텍스트+이미지 조합만으로 분할이 이루어진다는 점이 핵심이다.</p>
+  </aside>
+      </section>
 
-<section data-slide-hash="#/25" class="layout-_contents">
+<section data-slide-hash="#/26" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
     <div class="contents-head-right">2분할 레이아웃 - 1단계 [좌이미지]</div>
@@ -2028,18 +2217,21 @@ classDiagram
 
 <div class="m2-cols">
 <div class="m2-col">
-<div class="media-container"><img src="./img/settings_advanced.png" alt="고급 설정 화면"></div>
+<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
 </div>
 <div class="m2-col">
 
 <ul>
-<li class="bullet-dot">cliApp은 Sandbox 미적용 데몬으로 Accessibility API와 REST 서버를 제공합니다.<br>-paidApp과 별도 프로세스로 동작합니다.<br>-고급 설정에서 로그 레벨과 데몬 연동 옵션을 조정합니다.</li>
+<li class="bullet-dot">왼쪽 텍스트 영역<br>-HTML DIV 태그를 사용하여<br>-원하는 레이아웃을 직접 구성할 수 있습니다.<br>-flexbox 스타일을 활용하세요.</li>
 </ul>
 </div>
 </div></div>
-</section>
+  <aside class="notes">
+<p>이번에는 이미지를 먼저 쓰고 텍스트를 나중에 배치해, 자동 분할이 소스 순서를 그대로 따라간다는 점을 확인한다. 좌우 어느 쪽에 무엇을 둘지는 작성 순서만으로 제어할 수 있음을 짚는다.</p>
+  </aside>
+      </section>
 
-<section data-slide-hash="#/26" class="layout-_contents">
+<section data-slide-hash="#/27" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
     <div class="contents-head-right">2분할 레이아웃 - 2단계</div>
@@ -2049,16 +2241,19 @@ classDiagram
 <div class="m2-cols">
 <div class="m2-col">
 <ul>
-<li class="bullet-dot">스마트 창 매칭은 여러 기준으로 점수를 매깁니다.<br>-PID 일치<br>-제목 완벽 일치 또는 정규표현식 매칭<br>-창 크기·비율 유사도</li>
+<li class="bullet-dot">왼쪽 텍스트 영역<br>-HTML DIV 태그를 사용하여<br>-원하는 레이아웃을 직접 구성할 수 있습니다.<br>-flexbox 스타일을 활용하세요.</li>
 </ul>
 </div>
 <div class="m2-col">
-<div class="media-container"><img src="./img/app_selected.png" alt="워크스페이스에서 앱 선택 상태"></div>
+<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
 </div>
 </div></div>
-</section>
+  <aside class="notes">
+<p><code>::right::</code> 슬롯 문법으로 2분할을 명시적으로 지정하는 방법을 보여준다. 자동 감지 대신 확실하게 우측 컬럼을 지정하고 싶을 때 쓰는 문법이라고 안내한다.</p>
+  </aside>
+      </section>
 
-<section data-slide-hash="#/27" class="layout-_contents">
+<section data-slide-hash="#/28" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
     <div class="contents-head-right">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div</div>
@@ -2069,22 +2264,25 @@ classDiagram
 <div class="m2-cols columns">
 <div class="m2-col column" style="flex: 0 0 48%; max-width: 48%">
 <ul>
-<li class="bullet-dot">레이아웃 복원이 정확하지 않다면 접근성 권한부터 확인합니다.
+<li class="bullet-dot">왼쪽 텍스트 영역
 <ul>
-<li class="bullet-dash">시스템 설정 → 개인정보 보호 및 보안 → 접근성</li>
-<li class="bullet-dash">fWarrange 토글을 켜야 창 위치·크기를 정확히 읽고 씁니다.</li>
-<li class="bullet-dash">권한이 없으면 복원 시 위치가 어긋나는 경우가 많습니다.</li>
+<li class="bullet-dash">HTML DIV 태그를 사용하여</li>
+<li class="bullet-dash">원하는 레이아웃을 직접 구성할 수 있습니다.</li>
+<li class="bullet-dash">flexbox 스타일을 활용하세요.</li>
 </ul>
 </li>
 </ul>
 </div>
 <div class="m2-col column" style="flex: 0 0 48%; max-width: 48%">
-<div class="media-container"><img src="./img/settings_restore.png" alt="복원 옵션 설정 화면"></div>
+<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
 </div>
 </div></div>
-</section>
+  <aside class="notes">
+<p>Pandoc 표준 컬럼 펜스 문법으로 폭 비율을 직접 지정하는 방법을 시연한다. 컬럼 폭을 세밀하게 제어해야 할 때는 이 문법이 가장 명시적이라는 점을 강조한다.</p>
+  </aside>
+      </section>
 
-<section data-slide-hash="#/28" class="layout-_contents">
+<section data-slide-hash="#/29" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
     <div class="contents-head-right">3분할 레이아웃 (카드 형태) - Pandoc 펜스 div</div>
@@ -2094,25 +2292,29 @@ classDiagram
 
 <div class="m2-cols columns">
 <div class="m2-col column card">
-<div class="media-container"><img src="./img/lang_dropdown.png" alt="언어 선택 드롭다운"></div>
+<div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
 </div>
 <div class="m2-col column card">
 <ul>
-<li class="bullet-dot">Claude Code Skill과 MCP 서버로 자연어 명령이 가능합니다.
+<li class="bullet-dot">왼쪽 텍스트 영역
 <ul>
-<li class="bullet-dash"><code>/fwarrange capture</code>, <code>/fwarrange restore</code> 등 슬래시 커맨드 제공</li>
-<li class="bullet-dash">REST API 서버가 켜져 있어야 동작합니다.</li>
+<li class="bullet-dash">HTML DIV 태그를 사용하여</li>
+<li class="bullet-dash">원하는 레이아웃을 직접 구성할 수 있습니다.</li>
+<li class="bullet-dash">flexbox 스타일을 활용하세요.</li>
 </ul>
 </li>
 </ul>
 </div>
 <div class="m2-col column card">
-<div class="media-container"><img src="./img/scenery.png" alt="fWarrange 메뉴바 실행 화면"></div>
+<div class="media-container"><img src="./img/scenery.png" alt="Chart"></div>
 </div>
 </div></div>
-</section>
+  <aside class="notes">
+<p>같은 Pandoc 컬럼 문법에 카드 클래스를 더해 3분할 카드 레이아웃을 구성하는 예시다. 이미지와 텍스트를 섞어 카드 형태로 병렬 비교하고 싶을 때 활용할 수 있다는 점을 짚는다.</p>
+  </aside>
+      </section>
 
-<section data-slide-hash="#/29" class="layout-_contents">
+<section data-slide-hash="#/30" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
     <div class="contents-head-right">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev</div>
@@ -2122,20 +2324,23 @@ classDiagram
 
 <div style="display: flex; align-items: center; justify-content: space-between;">
   <div style="width: 48%;">
-<p>    <h3>키보드 단축키</h3></p>
+<p>    <h3>왼쪽 텍스트 영역</h3></p>
 <p>    <ul></p>
-<p>      <li>워크스페이스별로 원하는 키 조합을 직접 지정할 수 있습니다.</li></p>
-<p>      <li>글로벌 단축키는 데몬 기반으로 앱이 백그라운드여도 동작합니다.</li></p>
-<p>      <li>Settings → Shortcuts 탭에서 즉시 저장됩니다.</li></p>
+<p>      <li>HTML DIV 태그를 사용하여</li></p>
+<p>      <li>원하는 레이아웃을 직접 구성할 수 있습니다.</li></p>
+<p>      <li>flexbox 스타일을 활용하세요.</li></p>
 <p>    </ul></p>
   </div>
   <div style="width: 48%;">
-<p>    <img src="./img/settings_shortcuts.png" alt="단축키 설정 화면" style="width: 100%; border-radius: 10px;"></p>
+<p>    <img src="./img/chart.png" alt="Chart" style="width: 100%; border-radius: 10px;"></p>
   </div>
 </div></div>
-</section>
+  <aside class="notes">
+<p>raw HTML div와 인라인 스타일로 직접 2분할을 구성하는 방법이다. 마크다운 문법으로 표현이 안 되는 세밀한 배치가 필요할 때 최후 수단으로 raw HTML을 쓸 수 있다는 점을 안내한다.</p>
+  </aside>
+      </section>
 
-<section data-slide-hash="#/30" class="layout-_contents">
+<section data-slide-hash="#/31" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">5. 레이아웃 예제 (DIV 활용)</div>
     <div class="contents-head-right">3분할 레이아웃 (카드 형태) - div</div>
@@ -2145,36 +2350,52 @@ classDiagram
 
 <div style="display: flex; justify-content: space-around;">
   <div style="width: 30%; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
-<p>    <h4>paidApp</h4></p>
-<p>    <p>App Store 배포용 GUI. 메뉴바에서 레이아웃 저장·복원.</p></p>
+<p>    <h4>Card 1</h4></p>
+<p>    <p>첫 번째 카드의 내용입니다.</p></p>
   </div>
   <div style="width: 30%; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
-<p>    <h4>cliApp</h4></p>
-<p>    <p>Sandbox 미적용 데몬. Accessibility API와 REST 서버 제공.</p></p>
+<p>    <h4>Card 2</h4></p>
+<p>    <p>두 번째 카드의 내용입니다.</p></p>
   </div>
   <div style="width: 30%; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
-<p>    <h4>REST API</h4></p>
-<p>    <p>포트 3016. 터미널·스크립트·AI 에이전트가 원격 제어.</p></p>
+<p>    <h4>Card 3</h4></p>
+<p>    <p>세 번째 카드의 내용입니다.</p></p>
   </div>
 </div></div>
-</section>
+  <aside class="notes">
+<p>raw HTML로 세 개의 카드형 박스를 직접 구성한 예시로, 이번 섹션의 마지막 비교 대상이다. 지금까지 살펴본 네 가지 방식 중 상황에 맞는 것을 선택하면 된다고 정리해준다.</p>
+  </aside>
+      </section>
 
-<section data-slide-hash="#/31" data-heading-level="1" class="layout-_cover">
+<section data-slide-hash="#/32" data-heading-level="1" class="layout-_cover">
   <div class="cover-corner cover-tl">github.com/Finfra/m2slide</div>
   
   <div class="cover-corner cover-br">https://finfra.kr</div>
   <div class="cover-header">
     <h1 class="cover-title">6. 테이블 및 이미지 혼합</h1>
-    
+    <div class="cover-subtitle">테스트 용도 — Single Mode Debug, 한 개의 md 파일로 전체 스타일 회귀 검증</div>
     
   </div>
 
-  
+  <div class="cover-body">
+    <div class="cover-instructor">
+      <span class="cover-instructor-name">남중구 (핀프라)</span>
+      <span class="cover-instructor-contact">nowage@gmail.com</span>
+    </div>
+
+    <div class="cover-meta">
+      
+      <span class="cover-version">0.9</span>
+    </div>
+  </div>
 
   
-</section>
+  <aside class="notes">
+<p>여섯 번째 섹션은 표와 이미지를 함께 다루는 기능을 소개한다. 기본 표와, 셀 안에 이미지가 들어간 표를 차례로 보여줄 것임을 안내한다.</p>
+  </aside>
+      </section>
 
-<section data-slide-hash="#/32" class="layout-_contents">
+<section data-slide-hash="#/33" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">6. 테이블 및 이미지 혼합</div>
     
@@ -2184,17 +2405,20 @@ classDiagram
 
 <table>
 <thead>
-<tr><th style="text-align:left">항목</th><th style="text-align:center">paidApp</th><th style="text-align:right">cliApp</th></tr>
+<tr><th style="text-align:left">헤더 1</th><th style="text-align:center">헤더 2</th><th style="text-align:right">헤더 3</th></tr>
 </thead>
 <tbody>
-<tr><td style="text-align:left">배포 방식</td><td style="text-align:center">App Store</td><td style="text-align:right">Helper 데몬</td></tr>
-<tr><td style="text-align:left">Sandbox</td><td style="text-align:center">적용</td><td style="text-align:right">미적용</td></tr>
-<tr><td style="text-align:left">역할</td><td style="text-align:center">GUI 관리</td><td style="text-align:right">창 제어 실행</td></tr>
+<tr><td style="text-align:left">왼쪽 정렬</td><td style="text-align:center">중앙 정렬</td><td style="text-align:right">오른쪽 정렬</td></tr>
+<tr><td style="text-align:left">데이터 1</td><td style="text-align:center">데이터 2</td><td style="text-align:right">데이터 3</td></tr>
+<tr><td style="text-align:left">내용 A</td><td style="text-align:center">내용 B</td><td style="text-align:right">내용 C</td></tr>
 </tbody>
 </table></div>
-</section>
+  <aside class="notes">
+<p>좌·중앙·우 정렬이 각각 다른 기본 표 문법을 보여준다. 표 정렬 마크다운 기호가 그대로 반영된다는 점을 확인시켜준다.</p>
+  </aside>
+      </section>
 
-<section data-slide-hash="#/33" class="layout-_contents">
+<section data-slide-hash="#/34" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">6. 테이블 및 이미지 혼합</div>
     
@@ -2207,60 +2431,82 @@ classDiagram
 <tr><th style="text-align:center">아이콘</th><th style="text-align:left">이름</th><th style="text-align:left">설명</th></tr>
 </thead>
 <tbody>
-<tr><td style="text-align:center"><img src="./img/icon.png" alt="Icon"></td><td style="text-align:left"><strong>paidApp</strong></td><td style="text-align:left">메뉴바 GUI 앱</td></tr>
-<tr><td style="text-align:center"><img src="./img/icon.png" alt="Icon"></td><td style="text-align:left"><strong>cliApp</strong></td><td style="text-align:left">REST API 데몬</td></tr>
-<tr><td style="text-align:center"><img src="./img/icon.png" alt="Icon"></td><td style="text-align:left"><strong>워크스페이스</strong></td><td style="text-align:left">저장된 레이아웃 YAML</td></tr>
+<tr><td style="text-align:center"><img src="./img/icon.png" alt="Icon"></td><td style="text-align:left"><strong>Robot</strong></td><td style="text-align:left">AI Assistant</td></tr>
+<tr><td style="text-align:center"><img src="./img/qr.png" alt="QR"></td><td style="text-align:left"><strong>QR</strong></td><td style="text-align:left">Link Marker</td></tr>
+<tr><td style="text-align:center"><img src="./img/chart_icon.png" alt="Chart"></td><td style="text-align:left"><strong>Chart</strong></td><td style="text-align:left">Data Report</td></tr>
 </tbody>
 </table>
 
 <ul>
 <li class="bullet-dot">테이블 셀 내부에 마크다운 이미지 문법을 사용하여 아이콘을 넣을 수 있습니다.</li>
 </ul></div>
-</section>
+  <aside class="notes">
+<p>표 셀 안에 마크다운 이미지 문법을 그대로 넣어 아이콘을 표시하는 사례다. 역할과 설명을 아이콘과 함께 표로 정리하고 싶을 때 유용한 패턴이라는 점을 짚는다.</p>
+  </aside>
+      </section>
 
-<section data-slide-hash="#/34" data-heading-level="1" class="layout-_cover">
+<section data-slide-hash="#/35" data-heading-level="1" class="layout-_cover">
   <div class="cover-corner cover-tl">github.com/Finfra/m2slide</div>
   
   <div class="cover-corner cover-br">https://finfra.kr</div>
   <div class="cover-header">
-    <h1 class="cover-title">7. 정리</h1>
+    <h1 class="cover-title">7. m2Slide 기능 소개</h1>
+    <div class="cover-subtitle">테스트 용도 — Single Mode Debug, 한 개의 md 파일로 전체 스타일 회귀 검증</div>
     
-    
+  </div>
+
+  <div class="cover-body">
+    <div class="cover-instructor">
+      <span class="cover-instructor-name">남중구 (핀프라)</span>
+      <span class="cover-instructor-contact">nowage@gmail.com</span>
+    </div>
+
+    <div class="cover-meta">
+      
+      <span class="cover-version">0.9</span>
+    </div>
   </div>
 
   
-
-  
-</section>
-
-<section data-slide-hash="#/35" class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">7. 정리</div>
-    
-  </div>
-  <h2 class="title">지원 환경</h2>
-  <div class="contents-body">
-
-<ul>
-<li class="bullet-dot">macOS 15.0 이상, Swift 5.10 이상에서 동작합니다.</li>
-<li class="bullet-dot">손쉬운 사용(Accessibility) 권한이 반드시 필요합니다.</li>
-<li class="bullet-dot">paidApp(App Store 배포)과 cliApp(Helper 데몬) 2-앱 구조로 구성됩니다.</li>
-</ul></div>
-</section>
+  <aside class="notes">
+<p>마지막 섹션은 m2slide 자체의 조작 기능을 안내한다. 다음 슬라이드에서 네비게이션 단축키를 확인하고 발표를 마무리할 것이라고 예고한다.</p>
+  </aside>
+      </section>
 
 <section data-slide-hash="#/36" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">7. 정리</div>
+    <div class="contents-head-left">7. m2Slide 기능 소개</div>
     
   </div>
-  <h2 class="title">정리</h2>
+  <h2 class="title">네비게이션</h2>
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot">fWarrange는 창 위치·크기를 저장하고 필요할 때 그대로 복원하는 macOS 유틸리티입니다.</li>
-<li class="bullet-dot">스마트 창 매칭, REST API, Claude Code Skill·MCP 연동까지 함께 제공합니다.</li>
+<li class="bullet-dot"><strong>ESC</strong>: 전체 슬라이드 오버뷰</li>
+<li class="bullet-dot"><strong>Space/화살표</strong>: 슬라이드 이동</li>
+<li class="bullet-dot">슬라이드 하단 프로그레스 바 확인</li>
 </ul></div>
-</section>
+  <aside class="notes">
+<p>단축키를 나열하기보다 화면에서 직접 눌러 보이며 설명하는 편이 훨씬 효과적이라는 진행 팁을 준다. 발표 중 실수로 오버뷰 화면에 들어갔을 때 당황하지 말고 빠져나오는 방법도 함께 알려준다.</p>
+  </aside>
+      </section>
+
+<section data-slide-hash="#/37" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. m2Slide 기능 소개</div>
+    
+  </div>
+  <h2 class="title">마무리</h2>
+  <div class="contents-body">
+
+<ul>
+<li class="bullet-dot">m2Slide를 사용하여 멋진 프레젠테이션을 만드세요.</li>
+<li class="bullet-dot">Markdown으로 쉽고 빠르게 작성할 수 있습니다.</li>
+</ul></div>
+  <aside class="notes">
+<p>지금까지 살펴본 텍스트·코드·다이어그램·이미지·레이아웃·표 기능을 마크다운만으로 손쉽게 구성할 수 있었다는 점을 정리한다. 청중 질문을 받거나 다음 세션으로 넘어가는 멘트로 마무리한다.</p>
+  </aside>
+      </section>
 
     </div>
   </div>
@@ -2272,27 +2518,6 @@ classDiagram
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
-  <script>
-(function(){
-  function render(){
-    if (typeof renderMathInElement !== "function") return;
-    try {
-      renderMathInElement(document.body, {
-        delimiters: [
-          {left:"$$",right:"$$",display:true},
-          {left:"\\(",right:"\\)",display:false},
-          {left:"\\[",right:"\\]",display:true}
-        ],
-        throwOnError:false
-      });
-    } catch(e) { console.error("[katex] render 실패:", e); }
-  }
-  if (window.Reveal && Reveal.on) Reveal.on("ready", render);
-  else document.addEventListener("DOMContentLoaded", render);
-})();
-  </script>
   <script>
     // Allow URL toggle: ?top=1 to enable top-align-mode regardless of config
     try {
@@ -2604,11 +2829,11 @@ classDiagram
                   "content": "<a href=\"#/7\">2. 코드 및 신택스 하이라이팅</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/8\">Swift 코드 예시</a>",
+                              "content": "<a href=\"#/8\">JavaScript 코드 예시</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/9\">Bash 코드 예시</a>",
+                              "content": "<a href=\"#/9\">Python 코드 예시</a>",
                               "children": []
                         }
                   ]
@@ -2652,60 +2877,60 @@ classDiagram
                   ]
             },
             {
-                  "content": "<a href=\"#/23\">5. 레이아웃 예제 (DIV 활용)</a>",
+                  "content": "<a href=\"#/24\">5. 레이아웃 예제 (DIV 활용)</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/24\">2분할 레이아웃 - 1단계 </a>",
+                              "content": "<a href=\"#/25\">2분할 레이아웃 - 1단계 </a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/25\">2분할 레이아웃 - 1단계 [좌이미지]</a>",
+                              "content": "<a href=\"#/26\">2분할 레이아웃 - 1단계 [좌이미지]</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/26\">2분할 레이아웃 - 2단계</a>",
+                              "content": "<a href=\"#/27\">2분할 레이아웃 - 2단계</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/27\">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div</a>",
+                              "content": "<a href=\"#/28\">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/28\">3분할 레이아웃 (카드 형태) - Pandoc 펜스 div</a>",
+                              "content": "<a href=\"#/29\">3분할 레이아웃 (카드 형태) - Pandoc 펜스 div</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/29\">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev </a>",
+                              "content": "<a href=\"#/30\">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev </a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/30\">3분할 레이아웃 (카드 형태) - div</a>",
+                              "content": "<a href=\"#/31\">3분할 레이아웃 (카드 형태) - div</a>",
                               "children": []
                         }
                   ]
             },
             {
-                  "content": "<a href=\"#/31\">6. 테이블 및 이미지 혼합</a>",
+                  "content": "<a href=\"#/32\">6. 테이블 및 이미지 혼합</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/32\">기본 테이블</a>",
+                              "content": "<a href=\"#/33\">기본 테이블</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/33\">이미지가 포함된 테이블</a>",
+                              "content": "<a href=\"#/34\">이미지가 포함된 테이블</a>",
                               "children": []
                         }
                   ]
             },
             {
-                  "content": "<a href=\"#/34\">7. 정리</a>",
+                  "content": "<a href=\"#/35\">7. m2Slide 기능 소개</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/35\">지원 환경</a>",
+                              "content": "<a href=\"#/36\">네비게이션</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/36\">정리</a>",
+                              "content": "<a href=\"#/37\">마무리</a>",
                               "children": []
                         }
                   ]

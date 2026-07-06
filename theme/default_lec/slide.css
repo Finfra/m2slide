@@ -769,6 +769,25 @@
   width: 100%;
   min-height: 100vh;
   box-sizing: border-box;
+  position: relative;
+}
+
+/* standalone agenda-frame(div.layout-_agenda)는 .reveal section 이 아니므로 §2 콘텐츠
+   슬라이드 상단 바(section[class*=layout-]::before)에 매치되지 않는다. default 테마
+   .layout-_agenda::before 패턴을 그대로 포팅해 상단 노랑 브러시 바를 복구한다.
+   left/right 24px = base.css §12 .agenda-frame .layout-_agenda padding(24px)과 정렬. */
+.layout-_agenda::before {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 12px;
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* toc-markmap이 남은 세로 공간을 채우도록 flex-grow 적용 (theContents 패턴).

@@ -255,6 +255,14 @@ body {
 .reveal .slides {
   overflow: visible !important;
 }
+/* .reveal 를 visible 로 열면 reveal.js 가 부모 클리핑에 의존하던 배경 레이어
+   (.reveal .backgrounds)까지 함께 un-clip 되어, 세로 스택 슬라이드의
+   .slide-background(높이 = 슬라이드높이 × 스택수, ex 11520px)가 문서 밖으로
+   삐져나와 /n/ deck 모드에서 페이지 전체 세로 스크롤을 유발한다.
+   fade 트랜지션은 .slides 안에서 일어나므로 배경 레이어만 다시 클리핑해도 무영향. */
+.reveal .backgrounds {
+  overflow: hidden !important;
+}
 
 /* Issue215: ESC overview 모드에서 우리 CSS의 size·overflow 강제를 모두 해제.
    - Issue109 visible 강제 + Issue63 height:100% + theme min-height:100% 결합으로

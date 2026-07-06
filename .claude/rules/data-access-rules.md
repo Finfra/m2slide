@@ -40,7 +40,8 @@ date: 2026-05-26
 | 6    | `layout-selector`   | `data/layout-selector/`   |                                            |
 | 7    | `slot-designer`     | `data/slot-designer/`     |                                            |
 | 8    | `m2slide.sh`        | (없음 — 빌드 스크립트)    | data/ 접근 없음                            |
-| 9    | `md2tts-txt`        | (없음)                    | 글로벌 tts-pronunciation-rules.md만 허용   |
+| 9    | `note-writer`       | `data/note-writer/`       | Issue257                                   |
+| 10   | `md2tts-txt`        | (없음)                    | 글로벌 tts-pronunciation-rules.md만 허용   |
 | rev  | `ppt2m2slide`       | `data/ppt2m2slide/`       | 역변환 파이프라인 전용                     |
 
 ## 공유 허용 파일 (data/ 루트 직속, 전 단계 허용)
@@ -74,7 +75,7 @@ Read("data/component-libraries.yml")
 # 예외
 
 * **프로젝트 policy override**: `Projects/<N>/_pipeline/policy/<단계>.yml` — 해당 단계 SCAR만 읽음. 다른 단계의 override 파일은 읽지 않음.
-* **단계 9 (`md2tts-txt`)**: 글로벌 `~/.claude/rules/tts-pronunciation-rules.md` 읽기 허용 — m2slide data/ 외부 글로벌 룰이므로 예외. 단, `data/<other_stage>/` 접근은 금지.
+* **단계 10 (`md2tts-txt`)**: 글로벌 `~/.claude/rules/tts-pronunciation-rules.md` 읽기 허용 — m2slide data/ 외부 글로벌 룰이므로 예외. 단, `data/<other_stage>/` 접근은 금지.
 * **orchestrator (`authoring-pipeline` agent)**: 각 단계 위임·결과 검증용으로 state.yml·history.md만 읽음. `data/<stage>/` 직접 읽기 금지 (각 단계 SCAR에 위임).
 
 # 실행 가드 (SCAR 본문 작성 시)
@@ -114,6 +115,7 @@ slide-tuner Step 10(promote-to-data.py `--action merge`) 또는 사용자가 직
 * `data/agenda-designer/patterns.yml` (목차 패턴)
 * `data/info-filler/questions.yml` (인터뷰 질문)
 * `data/refs-collector/channels.yml` (refs 채널)
+* `data/note-writer/patterns.yml` (발표자 노트 톤·slug·길이 정책)
 
 ## 자동 backup (promote-to-data.py 경유)
 

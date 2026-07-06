@@ -1,25 +1,27 @@
 ---
 title: 단일 페이지 모드 대표
-subtitle: 한 개의 md파일에서 테스트. 
+subtitle: "테스트 용도 — Single Mode Debug, 한 개의 md 파일로 전체 스타일 회귀 검증"
 instructor_name: 남중구 (핀프라)
 instructor_contact: nowage@gmail.com
 description: 
 version: 1.1.0
 date: Nov 20, 2025
-release_date: 2026-05-24
+release_date: 2026-07-05
 created_at: 2026-05-02
 created_by: nowage
 tags: []
 ---
+#id-text-layout-intro
 #layout-_cover
 
 # 1. 텍스트 레이아웃
 * 현재 예제는 1개의 md파일로 생성됨. 
 ---
 
+#id-chapter-divider-test
 #layout-chapter
 
-# 0. Chapter Divider 테스트 (Issue229)
+# 0. Chapter Divider 테스트
 
 * 0.1. sub-section A
 * 0.2. sub-section B
@@ -27,6 +29,7 @@ tags: []
 
 ---
 
+#id-basic-text-style
 #layout-_contents
 
 ## 기본 텍스트 스타일
@@ -38,6 +41,7 @@ tags: []
 
 ---
 
+#id-nested-list
 #layout-_contents
 
 ## 중첩 리스트
@@ -49,6 +53,7 @@ tags: []
 
 ---
 
+#id-numbered-list
 #layout-_contents
 
 ## 번호 있는 리스트
@@ -61,12 +66,14 @@ tags: []
 
 ---
 
+#id-code-syntax-highlighting
 #layout-_cover
 
 # 2. 코드 및 신택스 하이라이팅
 
 ---
 
+#id-js-code-example
 #layout-_contents
 
 ## JavaScript 코드 예시
@@ -81,6 +88,7 @@ function helloWorld() {
 
 ---
 
+#id-python-code-example
 #layout-_contents
 
 ## Python 코드 예시
@@ -97,12 +105,14 @@ print(fibonacci(10))
 
 ---
 
+#id-mermaid-visualization
 #layout-_cover
 
 # 3. 데이터 시각화 (Mermaid)
 
 ---
 
+#id-mermaid-flowchart
 #layout-_contents
 
 ## 플로우차트 (Flowchart)
@@ -117,6 +127,7 @@ graph TD
 
 ---
 
+#id-mermaid-sequence-diagram
 #layout-_contents
 
 ## 시퀀스 다이어그램 (Sequence Diagram)
@@ -137,6 +148,7 @@ sequenceDiagram
 
 ---
 
+#id-mermaid-class-diagram
 #layout-_contents
 
 ## 클래스 다이어그램 (Class Diagram)
@@ -167,12 +179,14 @@ classDiagram
 
 ---
 
+#id-image-media-intro
 #layout-_cover
 
 # 4. 이미지 및 미디어
 
 ---
 
+#id-image-media-overview
 #layout-_contents
 
 ## 개요
@@ -181,12 +195,14 @@ classDiagram
 * 중간 노드임.
 ---
 
+#id-image-section
 #layout-_cover
 
 ## 4.1. 이미지
 
 ---
 
+#id-image-only
 #layout-_blank
 
 ### 이미지 Only
@@ -195,6 +211,7 @@ classDiagram
 
 ---
 
+#id-image-basic-placement
 #layout-_contents
 
 ### 기본 이미지 배치 (Scenery)
@@ -205,12 +222,14 @@ classDiagram
 
 ---
 
+#id-list-section
 #layout-_cover
 
 ## 4.2. 리스트
 
 ---
 
+#id-list-only
 #layout-_contents
 
 ### 리스트 Only
@@ -222,12 +241,14 @@ classDiagram
 
 ---
 
+#id-list-subchapter-test
 #layout-_cover
 
 ## 4.2.1. 리스트[서브 Chapter 테스트용.]
 
 ---
 
+#id-list-only-subchapter
 #layout-_contents
 
 ### 리스트 Only[서브 Chapter 테스트용.]
@@ -236,6 +257,11 @@ classDiagram
 * 1분기 대비 2분기 20% 성장
 * 3분기 예측치 달성 무난
 * 이미지가 있을 때 텍스트가 어떻게 배치되는지 확인
+
+---
+
+#id-image-list-chart
+#layout-_contents
 
 ### 이미지와 리스트 (Chart)
 
@@ -248,12 +274,14 @@ classDiagram
 
 ---
 
+#id-div-layout-intro
 #layout-_cover
 
 # 5. 레이아웃 예제 (DIV 활용)
 
 ---
 
+#id-split-layout-basic
 #layout-_contents
 
 ## 2분할 레이아웃 - 1단계 
@@ -266,6 +294,7 @@ classDiagram
 
 ---
 
+#id-split-layout-image-left
 #layout-_contents
 
 ## 2분할 레이아웃 - 1단계 [좌이미지]
@@ -279,6 +308,7 @@ classDiagram
 
 ---
 
+#id-split-layout-slidev-slot
 #layout-_contents
 
 ## 2분할 레이아웃 - 2단계
@@ -291,6 +321,7 @@ classDiagram
 
 ---
 
+#id-split-layout-pandoc-columns
 #layout-_contents
 
 ## 2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div
@@ -309,6 +340,7 @@ classDiagram
 
 ---
 
+#id-three-col-cards-pandoc
 #layout-_contents
 
 ## 3분할 레이아웃 (카드 형태) - Pandoc 펜스 div
@@ -330,6 +362,7 @@ classDiagram
 
 ---
 
+#id-split-layout-raw-div
 #layout-_contents
 
 ## 2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev 
@@ -350,8 +383,7 @@ classDiagram
 
 ---
 
-
-
+#id-three-col-cards-raw-div
 #layout-_contents
 
 ## 3분할 레이아웃 (카드 형태) - div
@@ -373,12 +405,14 @@ classDiagram
 
 ---
 
+#id-table-image-intro
 #layout-_cover
 
 # 6. 테이블 및 이미지 혼합
 
 ---
 
+#id-basic-table
 #layout-_contents
 
 ## 기본 테이블
@@ -391,26 +425,29 @@ classDiagram
 
 ---
 
+#id-table-with-images
 #layout-_contents
 
 ## 이미지가 포함된 테이블
 
 |         아이콘          | 이름       | 설명           |
 | :---------------------: | :--------- | :------------- |
-| ![Icon](./img/icon.png) | **Robot**  | AI Assistant   |
-| ![Icon](./img/icon.png) | **User**   | Human Operator |
-| ![Icon](./img/icon.png) | **System** | Control Unit   |
+| ![Icon](./img/icon.png)        | **Robot** | AI Assistant |
+| ![QR](./img/qr.png)            | **QR**    | Link Marker  |
+| ![Chart](./img/chart_icon.png) | **Chart** | Data Report  |
 
 * 테이블 셀 내부에 마크다운 이미지 문법을 사용하여 아이콘을 넣을 수 있습니다.
 
 ---
 
+#id-feature-intro
 #layout-_cover
 
 # 7. m2Slide 기능 소개
 
 ---
 
+#id-navigation-keys
 #layout-_contents
 
 ## 네비게이션
@@ -421,10 +458,10 @@ classDiagram
 
 ---
 
+#id-closing
 #layout-_contents
 
 ## 마무리
 
 * m2Slide를 사용하여 멋진 프레젠테이션을 만드세요.
 * Markdown으로 쉽고 빠르게 작성할 수 있습니다.
-

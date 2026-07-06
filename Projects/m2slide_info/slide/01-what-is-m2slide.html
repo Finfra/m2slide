@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>정체성 · 포지셔닝 · 기존 도구 대비 장점</title>
+  <title>정체성 한 줄 정의</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -14,7 +14,38 @@
       }
     } catch (e) {}
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"1","slideOffset":0,"totalSlides":65};</script>
+  <script>
+    // Issue263: Safari 감지 → 렌더링 오류 가능 경고 오버레이
+    (function () {
+      try {
+        var ua = navigator.userAgent;
+        var isSafari = /safari/i.test(ua) && !/chrome|chromium|crios|edg|fxios|android/i.test(ua);
+        var forced = location.search.indexOf('safari-warn=1') !== -1;
+        if (!isSafari && !forced) return;
+        if (!forced && window.sessionStorage && sessionStorage.getItem('m2SafariWarned')) return;
+        function show() {
+          if (document.getElementById('m2-safari-warning')) return;
+          var ov = document.createElement('div');
+          ov.id = 'm2-safari-warning';
+          ov.setAttribute('style', 'position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);font-family:-apple-system,BlinkMacSystemFont,\'Apple SD Gothic Neo\',sans-serif;');
+          var box = document.createElement('div');
+          box.setAttribute('style', 'max-width:480px;margin:1rem;padding:1.6rem 1.8rem;background:#fff;color:#222;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.35);line-height:1.6;');
+          box.innerHTML = '<div style="font-size:1.05rem;font-weight:700;margin-bottom:0.6rem;">⚠️ Safari 브라우저 감지</div>'
+            + '<div style="font-size:0.92rem;">Safari에서는 일부 슬라이드 요소(목차 마인드맵 등)가 정상적으로 렌더링되지 않을 수 있습니다. 정확한 표시가 필요하면 Chrome 계열 브라우저 사용을 권장합니다.</div>'
+            + '<div style="text-align:right;margin-top:1.2rem;"><button id="m2-safari-warning-ok" style="padding:0.45rem 1.2rem;border:none;border-radius:8px;background:#2d7a5f;color:#fff;font-size:0.92rem;cursor:pointer;">계속 보기</button></div>';
+          ov.appendChild(box);
+          document.body.appendChild(ov);
+          document.getElementById('m2-safari-warning-ok').addEventListener('click', function () {
+            try { sessionStorage.setItem('m2SafariWarned', '1'); } catch (e) {}
+            if (ov.parentNode) ov.parentNode.removeChild(ov);
+          });
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', show);
+        else show();
+      } catch (e) {}
+    })();
+  </script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"1","slideOffset":0,"totalSlides":37};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -44,8 +75,17 @@
 /* =========================================================================
    1. @import — 외부 폰트 (CDN)
    ========================================================================= */
-@import url('https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css');
 @import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap');
+
+/* Issue260: webfontworld/gmarket CDN 사망(404) → projectnoonnu noonfonts CDN @font-face 교체.
+   font-weight 100 900 범위 선언 — h1/h2의 700·900 요청에도 synthetic bold(faux-bold 뭉개짐) 방지. */
+@font-face {
+  font-family: 'GmarketSansBold';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* =========================================================================
    2. :root — CSS 변수 기본값 (1.b 정책: _config.yml 명시값 전체 흡수)
@@ -266,6 +306,14 @@ body {
 .reveal,
 .reveal .slides {
   overflow: visible !important;
+}
+/* .reveal 를 visible 로 열면 reveal.js 가 부모 클리핑에 의존하던 배경 레이어
+   (.reveal .backgrounds)까지 함께 un-clip 되어, 세로 스택 슬라이드의
+   .slide-background(높이 = 슬라이드높이 × 스택수, ex 11520px)가 문서 밖으로
+   삐져나와 /n/ deck 모드에서 페이지 전체 세로 스크롤을 유발한다.
+   fade 트랜지션은 .slides 안에서 일어나므로 배경 레이어만 다시 클리핑해도 무영향. */
+.reveal .backgrounds {
+  overflow: hidden !important;
 }
 
 /* Issue215: ESC overview 모드에서 우리 CSS의 size·overflow 강제를 모두 해제.
@@ -1342,7 +1390,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783043841365">
+  <link rel="stylesheet" href="css/custom.css?v=1783348962335">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1558,7 +1606,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/1" data-heading-level="1" class="layout-chapter">
   <div class="chapter-part"><p>Chapter 1.</p></div>
   <div class="chapter-header">
-    <h1 class="chapter-title">정체성 · 포지셔닝 · 기존 도구 대비 장점</h1>
+    <h1 class="chapter-title">정체성 한 줄 정의</h1>
     
   </div>
   
@@ -1575,13 +1623,12 @@ html.ratio-fill .agenda-frame {
   <header class="toc-page-header">
     <h1 class="toc-page-title">m2slide란?</h1>
   </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="6">
+  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="5">
 <li class="chapter-card"><a href="#/3">m2slide 한 줄 정의</a></li>
-<li class="chapter-card"><a href="#/4">기존 도구의 한계</a></li>
-<li class="chapter-card"><a href="#/5">m2slide 핵심 가치</a></li>
-<li class="chapter-card"><a href="#/6">두 가지 프로젝트 모드</a></li>
-<li class="chapter-card"><a href="#/7">아키텍처 한눈에 보기</a></li>
-<li class="chapter-card"><a href="#/8">이 자료에서 다루는 내용</a></li>
+<li class="chapter-card"><a href="#/4">어떤 문제의식에서 출발했나</a></li>
+<li class="chapter-card"><a href="#/5">이 자료가 다루는 세 가지 질문</a></li>
+<li class="chapter-card"><a href="#/6">실제로 이렇게 씁니다</a></li>
+<li class="chapter-card"><a href="#/7">직접 확인할 수 있음</a></li>
 </ul></div>
 </section>
 
@@ -1596,8 +1643,8 @@ html.ratio-fill .agenda-frame {
 
 <ul>
 <li class="bullet-dot"><strong>마크다운(.md)으로 작성 → 한 줄 빌드 → Reveal.js HTML 슬라이드</strong> 변환 도구</li>
-<li class="bullet-dot">HTML·CSS·JS를 직접 만지지 않고 슬라이드를 저작</li>
-<li class="bullet-dot">한 번 작성한 소스로 <strong>HTML 프레젠테이션 + EPUB 전자책</strong> 동시 생성</li>
+<li class="bullet-dot">같은 소스 한 벌로 <strong>발표용 HTML + 읽기용 EPUB</strong>까지 함께 나옴</li>
+<li class="bullet-dot">HTML·CSS·JS를 직접 만지지 않고 슬라이드를 저작함</li>
 </ul>
 
 <div class="media-container mermaid">
@@ -1613,20 +1660,34 @@ graph LR
     <div class="contents-head-left">01. m2slide란?</div>
     
   </div>
-  <h2 class="title">기존 도구의 한계</h2>
+  <h2 class="title">어떤 문제의식에서 출발했나</h2>
   <div class="contents-body">
 
-<table>
-<thead>
-<tr><th style="text-align:left">항목</th><th style="text-align:left">PowerPoint</th><th style="text-align:left">순수 Reveal.js</th><th style="text-align:left">m2slide</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align:left">작성 방식</td><td style="text-align:left">GUI 드래그</td><td style="text-align:left">HTML 직접 작성</td><td style="text-align:left">마크다운</td></tr>
-<tr><td style="text-align:left">버전 관리</td><td style="text-align:left">어려움(바이너리)</td><td style="text-align:left">가능(HTML)</td><td style="text-align:left">쉬움(텍스트 diff)</td></tr>
-<tr><td style="text-align:left">테마 변경</td><td style="text-align:left">수동 재배치</td><td style="text-align:left">CSS 직접 수정</td><td style="text-align:left"><code>_config.yml</code> 1줄</td></tr>
-<tr><td style="text-align:left">재사용</td><td style="text-align:left">복사·붙여넣기</td><td style="text-align:left">파일 수작업</td><td style="text-align:left"><code>AGENDA.md</code> 인라인 링크</td></tr>
-</tbody>
-</table></div>
+<ul>
+<li class="bullet-dot">발표 자료는 자주 고쳐 쓰는데, <strong>PPT는 고칠 때마다 손이 많이 감</strong></li>
+<li class="bullet-dot">순수 Reveal.js는 텍스트 기반이라 좋지만, <strong>HTML을 직접 편집해야 함</strong></li>
+<li class="bullet-dot">둘 사이의 빈틈 — "마크다운처럼 쉽게 쓰면서, Reveal.js처럼 웹 네이티브인 도구"가 필요했음</li>
+</ul>
+
+<div class="m2-cards cards">
+<ul>
+<li class="bullet-dot"><strong>저작은 마크다운</strong>
+<ul>
+<li class="bullet-dash">글쓰기에만 집중</li>
+</ul>
+</li>
+<li class="bullet-dot"><strong>외관은 설정 1줄</strong>
+<ul>
+<li class="bullet-dash"><code>_config.yml</code>의 theme·layout</li>
+</ul>
+</li>
+<li class="bullet-dot"><strong>산출물은 다중 포맷</strong>
+<ul>
+<li class="bullet-dash">HTML·EPUB·PDF·PPTX</li>
+</ul>
+</li>
+</ul>
+</div></div>
 </section>
 
 <section data-slide-hash="#/5" class="layout-_contents">
@@ -1634,22 +1695,18 @@ graph LR
     <div class="contents-head-left">01. m2slide란?</div>
     
   </div>
-  <h2 class="title">m2slide 핵심 가치</h2>
+  <h2 class="title">이 자료가 다루는 세 가지 질문</h2>
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot">콘텐츠와 디자인 분리 — 작성자는 글쓰기에만 집중</li>
-<li class="bullet-dot">텍스트 기반이라 <strong>git diff·코드 리뷰</strong>가 자연스럽게 동작</li>
-<li class="bullet-dot">추가 설치 없이 차트·수식·3D 등 컴포넌트 내장</li>
+<li class="bullet-dot fragment"><strong>왜</strong> m2slide 같은 도구가 필요한가</li>
+<li class="bullet-dot fragment"><strong>어디에</strong> 쓰면 특히 좋은가</li>
+<li class="bullet-dot fragment">m2slide만의 <strong>강점</strong>은 무엇인가</li>
 </ul>
 
-<div class="m2-cards cards rows">
 <ul>
-<li class="bullet-dot"><strong>저작은 마크다운</strong></li>
-<li class="bullet-dot"><strong>외관은 설정 1줄</strong></li>
-<li class="bullet-dot"><strong>산출물은 다중 포맷</strong></li>
-</ul>
-</div></div>
+<li class="bullet-dot">마크다운 문법·설정 키 하나하나는 다루지 않음 — README·저장소 문서 참고</li>
+</ul></div>
 </section>
 
 <section data-slide-hash="#/6" class="layout-_contents">
@@ -1657,21 +1714,21 @@ graph LR
     <div class="contents-head-left">01. m2slide란?</div>
     
   </div>
-  <h2 class="title">두 가지 프로젝트 모드</h2>
+  <h2 class="title">실제로 이렇게 씁니다</h2>
   <div class="contents-body">
 
-<table>
-<thead>
-<tr><th style="text-align:left">모드</th><th style="text-align:left">구성</th><th style="text-align:left">산출 HTML</th></tr>
-</thead>
-<tbody>
-<tr><td style="text-align:left"><strong>Single Mode</strong></td><td style="text-align:left"><code>AGENDA.md</code> 없이 단일 <code>.md</code></td><td style="text-align:left"><code>index.html</code> 한 deck</td></tr>
-<tr><td style="text-align:left"><strong>Chapter Mode</strong></td><td style="text-align:left"><code>AGENDA.md</code> + 챕터별 <code>.md</code></td><td style="text-align:left">챕터마다 별도 deck</td></tr>
-</tbody>
-</table>
+<ul>
+<li class="bullet-dot">설치도 사용도 몇 줄이면 끝남 — 이게 저작 부담을 줄이는 실질적인 이유</li>
+</ul>
+
+<pre class="code-wrapper"><code class="language-bash hljs"># 1) 저장소 클론
+git clone https://github.com/Finfra/m2slide.git
+
+# 2) 프로젝트 폴더의 마크다운을 한 줄로 빌드
+./m2slide.sh MyProject</code></pre>
 
 <ul>
-<li class="bullet-dot">본 자료는 <strong>Chapter Mode</strong>를 기준으로 설명함 (Single Mode는 축소형)</li>
+<li class="bullet-dot">빌드 결과는 바로 브라우저에서 열리는 HTML 슬라이드 — 서버·배포 설정 없이 <code>file://</code>로 확인 가능</li>
 </ul></div>
 </section>
 
@@ -1680,38 +1737,27 @@ graph LR
     <div class="contents-head-left">01. m2slide란?</div>
     
   </div>
-  <h2 class="title">아키텍처 한눈에 보기</h2>
-  <div class="contents-body">
-
-<div class="media-container mermaid">
-graph TD
-  P["9단계 저작 파이프라인"] --> M2["m2slide.sh 빌드"]
-  M2 --> Cover["Cover Page (index.html)"]
-  M2 --> Agenda["Agenda Page (agenda.html)"]
-  M2 --> TOC["Chapter TOC Cards"]
-</div>
-
-<ul>
-<li class="bullet-dot">기획부터 대본까지 <strong>9단계 파이프라인</strong>으로 자동화 (챕터 07에서 상세)</li>
-<li class="bullet-dot">두 모드 공통 <strong>3-Page Model</strong>: Cover · Agenda · TOC</li>
-</ul></div>
-</section>
-
-<section data-slide-hash="#/8" class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">01. m2slide란?</div>
-    
-  </div>
-  <h2 class="title">이 자료에서 다루는 내용</h2>
+  <h2 class="title">직접 확인할 수 있음</h2>
   <div class="contents-body">
 
 <ul>
-<li class="bullet-dot fragment">m2slide의 정체성과 기존 도구 대비 이점</li>
-<li class="bullet-dot fragment">Chapter Mode 프로젝트 구조와 시작 방법</li>
-<li class="bullet-dot fragment">theme / layout 시스템으로 외관 조정</li>
-<li class="bullet-dot fragment">내장 컴포넌트를 펜스드 블록으로 작성하는 방법</li>
-<li class="bullet-dot fragment">EPUB·dev-server·authoring-pipeline 활용</li>
-</ul></div>
+<li class="bullet-dot">아래 두 링크에서 실제로 돌아가는 m2slide를 바로 볼 수 있음</li>
+</ul>
+
+<div class="m2-cards cards">
+<ul>
+<li class="bullet-dot"><strong>GitHub</strong>
+<ul>
+<li class="bullet-dash"><a href="https://github.com/Finfra/m2slide">github.com/Finfra/m2slide</a> — 소스 전체 공개</li>
+</ul>
+</li>
+<li class="bullet-dot"><strong>온라인 데모</strong>
+<ul>
+<li class="bullet-dash"><a href="https://finfra.github.io/m2slide">finfra.github.io/m2slide</a> — 실제 프로젝트 슬라이드를 브라우저에서 그대로 열람</li>
+</ul>
+</li>
+</ul>
+</div></div>
 </section>
 
     </div>
@@ -2014,7 +2060,7 @@ graph TD
                   "content": "<a href=\"#/1\">01. m2slide란?</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/1\">정체성 · 포지셔닝 · 기존 도구 대비 장점</a>",
+                              "content": "<a href=\"#/1\">정체성 한 줄 정의</a>",
                               "children": []
                         },
                         {
@@ -2022,23 +2068,19 @@ graph TD
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/3\">기존 도구의 한계</a>",
+                              "content": "<a href=\"#/3\">어떤 문제의식에서 출발했나</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/4\">m2slide 핵심 가치</a>",
+                              "content": "<a href=\"#/4\">이 자료가 다루는 세 가지 질문</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/5\">두 가지 프로젝트 모드</a>",
+                              "content": "<a href=\"#/5\">실제로 이렇게 씁니다</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/6\">아키텍처 한눈에 보기</a>",
-                              "children": []
-                        },
-                        {
-                              "content": "<a href=\"#/7\">이 자료에서 다루는 내용</a>",
+                              "content": "<a href=\"#/6\">직접 확인할 수 있음</a>",
                               "children": []
                         }
                   ]
@@ -2303,12 +2345,12 @@ graph TD
     // Issue119: cover layout 이름 (_config.yml cover_layout, 기본 _cover). isCoverSlide() 판정에 사용.
     var M2SLIDE_COVER_LAYOUT = '_cover';
     var PREV_CHAPTER = '';
-    var NEXT_CHAPTER = '02-quickstart.html';
+    var NEXT_CHAPTER = '02-why-m2slide.html';
     // Issue136: ⇤/⇥ 단축키 전용 — main/sub 계층 인식 sibling 점프 (NEXT/PREV_CHAPTER는 sequential 파일 순서 그대로)
     var PREV_SIBLING_CHAPTER = '';
-    var NEXT_SIBLING_CHAPTER = '02-quickstart.html';
+    var NEXT_SIBLING_CHAPTER = '02-why-m2slide.html';
     // Issue87: ⇟ PgDown(마지막 페이지 직행) — Single mode은 '' (deck last로 자체 계산)
-    var LAST_CHAPTER = '08-wrap-up.html';
+    var LAST_CHAPTER = '05-wrap-up.html';
     function isCoverSlide(slide) {
       if (!slide) return false;
       if (!slide.classList || !slide.classList.contains('layout-' + M2SLIDE_COVER_LAYOUT)) return false;
@@ -2694,7 +2736,9 @@ graph TD
         var idxL = Reveal.getIndices();
         // Chapter mode TOC slide 또는 (TOC 없는 chapter의) 첫 슬라이드 #/0 → 이전 챕터 마지막 (없으면 agenda)
         var atChapterDeckStart = (M2SLIDE_MODE === 'chapter' && idxL.h === 0 && idxL.v === 0);
-        if (isTocSlide(cur) || atChapterDeckStart) {
+        // Issue259: TOC가 deck 첫 슬라이드일 때만 cross-chapter 점프.
+        // chapter divider가 TOC 앞(h=0)에 오는 deck에서는 ← 가 deck 내 이전 슬라이드로 가야 함.
+        if ((isTocSlide(cur) && idxL.h === 0 && idxL.v === 0) || atChapterDeckStart) {
           event.preventDefault();
           if (M2SLIDE_MODE === 'chapter' && PREV_CHAPTER) {
             // Issue104: ← 이전 챕터 마지막 진입은 backward — &back=1 시그널 추가
@@ -2758,7 +2802,7 @@ graph TD
       if (event.key === 'ArrowRight' || event.keyCode === 39) {
         var totalSlides = Reveal.getTotalSlides();
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
-        var hasNextChapter = '02-quickstart.html' !== '';
+        var hasNextChapter = '02-why-m2slide.html' !== '';
         if (currentSlideNumber >= totalSlides) {
           // 남은 fragment가 있으면 reveal 기본 fragment 진행에 맡김 —
           // 마지막 슬라이드에서 fragment 도중 안내 메시지·다음 챕터 점프 금지
@@ -2769,7 +2813,7 @@ graph TD
               lastSlideMessage.style.display = 'none';
               lastSlideMessageShown = false;
               // Issue104: 다음 챕터 진입은 forward — ?fwd=1 시그널
-              window.location.href = '02-quickstart.html?fwd=1';
+              window.location.href = '02-why-m2slide.html?fwd=1';
             } else {
               event.preventDefault();
               lastSlideMessage.style.display = 'block';

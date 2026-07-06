@@ -14,7 +14,7 @@ m2slide 잠재 사용자 — 개발자·기술 발표자·교육자. 마크다�
 
 # 분량
 
-챕터 8개 (읽기 기준 약 30분)
+챕터 5개 (읽기 기준 약 15분)
 
 # 스타일
 
@@ -22,11 +22,11 @@ m2slide 잠재 사용자 — 개발자·기술 발표자·교육자. 마크다�
 
 # 학습 목표
 
-* m2slide가 무엇인지, 기존 PPT·Reveal.js 직접 작성 대비 어떤 이점이 있는지 이해
-* chapter mode(AGENDA.md + 챕터별 HTML) 기반 프로젝트 구조를 파악하고 직접 시작할 수 있음
-* theme / layout 시스템으로 슬라이드 외관을 코드 없이 조정하는 방법을 익힘
-* 내장 컴포넌트(chart.js·d3·react·p5·model3d·cards·htmlArt)를 마크다운 펜스드 블록으로 작성하는 방법을 알게 됨
-* EPUB 동시 생성, dev-server 실시간 미리보기, authoring-pipeline 워크플로우를 이해
+* m2slide가 무엇인지 한 줄로 설명할 수 있음
+* PPT·순수 Reveal.js 대비 m2slide가 **왜** 필요한지 이해
+* 강의·발표·사내 문서·PPT 이관 등 **어디에** 쓰면 좋은지 판단할 수 있음
+* 내장 컴포넌트·멀티포맷 산출·file:// 배포·PPT 양방향 변환·AI 저작 파이프라인 등 m2slide의 **강점**을 파악
+* 사용법(설치·빌드 명령·마크다운 문법)은 본 자료 범위 밖 — README·저작 파이프라인 문서로 안내
 
 # 참고자료 후보
 
@@ -70,22 +70,21 @@ output_tts_txt: false이므로 적용 안 함.
 
 # 챕터 구성
 
-chapter mode 기준.
+chapter mode 기준. how-to(문법·설정 키 전수)는 배제하고 why/where/strengths 중심 + 실체 증빙용 최소 설치·데모 링크만 포함.
 
 ```
 00. Cover (자동 주입)
-01. m2slide란? — 소개·포지셔닝·기존 도구 대비 장점
-02. 빠른 시작 — 설치·프로젝트 생성·첫 빌드
-03. 마크다운 작성 규칙 — 슬라이드 구분자·헤더 컨벤션·AGENDA.md
-04. theme / layout 시스템 — _config.yml 설정·layout override·cover
-05. 내장 컴포넌트 — chart/d3/react/p5/model3d/cards/htmlArt (실제 렌더 예시)
-06. EPUB & 산출물 — HTML + EPUB + PDF/PPTX 동시 생성·배포
-07. authoring-pipeline — 단계 1~9 워크플로우·dev-server
-08. 마무리 — 핵심 요약·링크
+01. m2slide란? — 정체성 한 줄 정의, 세 가지 질문, 설치 예시 2줄 + GitHub·온라인 데모 링크
+02. 왜 필요한가 — PPT·순수 Reveal.js의 한계, m2slide가 메우는 빈틈
+03. 어디에 쓰면 좋은가 — 강의·발표·사내 문서·PPT 이관 등 활용 시나리오
+04. m2slide의 강점 — 내장 컴포넌트·멀티포맷 산출·file:// 배포·PPT 양방향 변환·AI 저작 파이프라인
+05. 마무리 — 핵심 요약·다음 걸음·상세 소개(m2Slide 브로셔) 링크
 ```
 
 # 특이 사항
 
 1. **컨셉 이력**: 초기 기획은 시연 중심 쇼케이스(촬영 영상 + 스크린샷)였으나, m2slide 도구 자체 소개(설명용)로 컨셉 변경. 촬영 시나리오·video 임베드·스크린샷 placeholder는 전부 제거함.
-2. **Dogfooding**: 컴포넌트 챕터(05)는 외부 이미지 대신 chart·d3·react·p5·cards·htmlArt 블록을 실제로 렌더하여 기능 자체가 예시가 되도록 구성.
-3. **신규 작성**: 기존 `Projects/m2Slide`(브로셔용) 챕터를 복사하지 않고 별도 작성. 브로셔용(m2Slide)과 설명용(m2slide_info)의 역할 분리 유지.
+2. **2차 컨셉 변경 (2026-07-03)**: 8챕터 how-to 구성(빠른 시작·마크다운 규칙·theme/layout·EPUB 산출·authoring-pipeline 상세)을 폐기하고, 처음 접하는 사람을 위한 5챕터 why/where/strengths 소개 자료로 재구성. 사용법은 README·저작 파이프라인 문서로 위임.
+3. **Dogfooding 최소 유지**: 04챕터(강점)에 chart.js 예시 1건만 남겨 "내장 컴포넌트가 실제로 작동함"을 보여주되, 컴포넌트 전수 카탈로그는 다루지 않음.
+4. **신규 작성**: 기존 `Projects/m2Slide`(브로셔용) 챕터를 복사하지 않고 별도 작성. 브로셔용(m2Slide)과 설명용(m2slide_info)의 역할 분리 유지.
+5. **이미지 삽입 보류 (2026-07-03)**: `_doc_work/capture/z_old/` 회귀 캡처 4장(카드 카탈로그·피라미드 인포그래픽·353슬라이드 강의 TOC·실제 기술 강의 슬라이드)을 후보로 제시했으나 사용자가 전부 거절. 대신 "쉽고 편함"을 보여주는 설치·빌드 2줄 예시 + GitHub·온라인 데모(finfra.github.io/m2slide) 링크(01챕터)와, 마무리(05챕터)에 상세 소개(`finfra.github.io/m2slide/m2Slide/index.html`) 링크를 추가하는 방향으로 대체함. 이미지 삽입은 이후 별도 요청 시 재검토.

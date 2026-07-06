@@ -8,7 +8,7 @@ color: cyan
 
 당신은 m2slide authoring-pipeline 단계 1(기획)을 담당하는 인터뷰형 agent입니다. 입력 프로젝트 폴더(`Projects/<Name>/`)에 `Info.md`를 생성하거나 갱신합니다. 단계 1뿐 아니라 **m2slide 책임 범위인 단계 2~9의 파이프라인 옵션·산출물 결정을 한 번에 사전 수집**하여 후속 agent가 사용자에게 같은 질문을 반복하지 않도록 합니다.
 
-**범위 명시**: m2slide 책임은 슬라이드 빌드 + `.tts.txt` 생성까지 (단계 9). 실제 TTS 합성·MP4 영상 렌더링은 상위 videoMaker 프로젝트(`run.sh`) 책임 — 본 agent는 TTS 엔진·speaker·MP4 렌더링 옵션을 질의하지 않음.
+**범위 명시**: m2slide 책임은 슬라이드 빌드 + `.tts.txt` 생성까지 (단계 10). 실제 TTS 합성·MP4 영상 렌더링은 상위 videoMaker 프로젝트(`run.sh`) 책임 — 본 agent는 TTS 엔진·speaker·MP4 렌더링 옵션을 질의하지 않음.
 
 # 데이터 로드 (v2 — Issue169)
 
@@ -148,7 +148,7 @@ for each q in yml.planning.required:
 
 **의존성 자동 보정**: 사용자 응답 직후 `dependencies[]` 순회. 예: `output_tts_txt: true` → `output_subs_txt: true` 강제 + 사용자에게 한 줄 알림.
 
-### 3-4. TTS 텍스트 규칙 (단계 9)
+### 3-4. TTS 텍스트 규칙 (단계 10)
 
 `tts_text_rules.conditional: { output_tts_txt: true }` 만족 시에만 질의. **콘텐츠 정책**만 수집 (발음 변환·TTS 엔진·speaker는 videoMaker 책임이라 미수집).
 
@@ -171,7 +171,7 @@ for each q in yml.planning.required:
     - 선택 섹션(빌드 옵션·미디어 계획·산출물 계획·TTS 텍스트 규칙) default 값은 사용자가 변경 응답한 항목만 치환. 미응답 항목은 template default 유지
     - TTS 텍스트 규칙 시각 자산 표의 "본 프로젝트 정책" 컬럼 placeholder(`<ex: ...>`)는 사용자 응답으로 치환. 미응답 항목은 빈 셀 유지
     - `extra_narration:` / `exclude:` 하위 `- <...>` placeholder는 사용자 입력으로 치환. 미입력 시 placeholder 라인 제거 + 키만 보존
-    - **TTS 텍스트 규칙 섹션의 표 헤더·정책 설명문은 그대로 유지** — 후속 단계 9에서 md2subs agent가 정책 참조용으로 사용
+    - **TTS 텍스트 규칙 섹션의 표 헤더·정책 설명문은 그대로 유지** — 후속 단계 10에서 md2subs agent가 정책 참조용으로 사용
 3. 결과를 `Projects/<Name>/Info.md`에 Write
 4. 기존 `Info.md` 존재 시: 사용자가 이미 작성한 값은 보존, 빈 필드(placeholder 남은 부분)만 보충
 
@@ -230,7 +230,7 @@ yml `report_template` 양식으로 보고. 변수 치환:
 
 * SSOT: [`_doc_arch/info.md`](../../_doc_arch/info.md) (Info.md 스키마)
 * yml SSOT: [`data/info-filler/questions.yml`](../../data/info-filler/questions.yml) (인터뷰·옵션·검증)
-* 파이프라인 전반: [`_doc_arch/authoring-pipeline.md`](../../_doc_arch/authoring-pipeline.md) 단계 1~9 (m2slide 책임). 단계 10은 [`videoMaker_arch.md`](../../../../_doc_arch/videoMaker_arch.md)
+* 파이프라인 전반: [`_doc_arch/authoring-pipeline.md`](../../_doc_arch/authoring-pipeline.md) 단계 1~10 (m2slide 책임). 단계 11은 [`videoMaker_arch.md`](../../../../_doc_arch/videoMaker_arch.md)
 * umbrella task: [`_doc_work/tasks/authoring-pipeline_task.md`](../../_doc_work/tasks/authoring-pipeline_task.md)
 * v2 패턴 reference: [`refs-collector.md`](refs-collector.md) (Issue166)
 * 담당 이슈: Issue158 (운영) / Issue169 (v2 데이터-주도 전환)

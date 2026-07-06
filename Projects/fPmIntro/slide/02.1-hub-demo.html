@@ -14,6 +14,37 @@
       }
     } catch (e) {}
   </script>
+  <script>
+    // Issue263: Safari 감지 → 렌더링 오류 가능 경고 오버레이
+    (function () {
+      try {
+        var ua = navigator.userAgent;
+        var isSafari = /safari/i.test(ua) && !/chrome|chromium|crios|edg|fxios|android/i.test(ua);
+        var forced = location.search.indexOf('safari-warn=1') !== -1;
+        if (!isSafari && !forced) return;
+        if (!forced && window.sessionStorage && sessionStorage.getItem('m2SafariWarned')) return;
+        function show() {
+          if (document.getElementById('m2-safari-warning')) return;
+          var ov = document.createElement('div');
+          ov.id = 'm2-safari-warning';
+          ov.setAttribute('style', 'position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.55);font-family:-apple-system,BlinkMacSystemFont,\'Apple SD Gothic Neo\',sans-serif;');
+          var box = document.createElement('div');
+          box.setAttribute('style', 'max-width:480px;margin:1rem;padding:1.6rem 1.8rem;background:#fff;color:#222;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.35);line-height:1.6;');
+          box.innerHTML = '<div style="font-size:1.05rem;font-weight:700;margin-bottom:0.6rem;">⚠️ Safari 브라우저 감지</div>'
+            + '<div style="font-size:0.92rem;">Safari에서는 일부 슬라이드 요소(목차 마인드맵 등)가 정상적으로 렌더링되지 않을 수 있습니다. 정확한 표시가 필요하면 Chrome 계열 브라우저 사용을 권장합니다.</div>'
+            + '<div style="text-align:right;margin-top:1.2rem;"><button id="m2-safari-warning-ok" style="padding:0.45rem 1.2rem;border:none;border-radius:8px;background:#2d7a5f;color:#fff;font-size:0.92rem;cursor:pointer;">계속 보기</button></div>';
+          ov.appendChild(box);
+          document.body.appendChild(ov);
+          document.getElementById('m2-safari-warning-ok').addEventListener('click', function () {
+            try { sessionStorage.setItem('m2SafariWarned', '1'); } catch (e) {}
+            if (ov.parentNode) ov.parentNode.removeChild(ov);
+          });
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', show);
+        else show();
+      } catch (e) {}
+    })();
+  </script>
   <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"2.1","slideOffset":18,"totalSlides":57};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
@@ -44,8 +75,17 @@
 /* =========================================================================
    1. @import — 외부 폰트 (CDN)
    ========================================================================= */
-@import url('https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css');
 @import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap');
+
+/* Issue260: webfontworld/gmarket CDN 사망(404) → projectnoonnu noonfonts CDN @font-face 교체.
+   font-weight 100 900 범위 선언 — h1/h2의 700·900 요청에도 synthetic bold(faux-bold 뭉개짐) 방지. */
+@font-face {
+  font-family: 'GmarketSansBold';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
 /* =========================================================================
    2. :root — CSS 변수 기본값 (1.b 정책: _config.yml 명시값 전체 흡수)
@@ -266,6 +306,14 @@ body {
 .reveal,
 .reveal .slides {
   overflow: visible !important;
+}
+/* .reveal 를 visible 로 열면 reveal.js 가 부모 클리핑에 의존하던 배경 레이어
+   (.reveal .backgrounds)까지 함께 un-clip 되어, 세로 스택 슬라이드의
+   .slide-background(높이 = 슬라이드높이 × 스택수, ex 11520px)가 문서 밖으로
+   삐져나와 /n/ deck 모드에서 페이지 전체 세로 스크롤을 유발한다.
+   fade 트랜지션은 .slides 안에서 일어나므로 배경 레이어만 다시 클리핑해도 무영향. */
+.reveal .backgrounds {
+  overflow: hidden !important;
 }
 
 /* Issue215: ESC overview 모드에서 우리 CSS의 size·overflow 강제를 모두 해제.
@@ -1342,7 +1390,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783007385340">
+  <link rel="stylesheet" href="css/custom.css?v=1783349009456">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1698,8 +1746,50 @@ graph LR
     return roots;
   }
 
+  // ── 폰트 크기 산정 헬퍼 ─────────────────────────────────────────────────
+  // 글리프 폭 추정 — CJK(한글·한자·가나·전각)·이모지 ≈ 1.0em, 그 외 ≈ 0.58em.
+  //   기존 일괄 0.58em 가정은 한글 토큰 폭을 과소평가(cap 과대)하고 영문 토큰과
+  //   비대칭을 만들어 같은 체인 안에서 박스별 글자 크기가 들쭉날쭉해졌다.
+  function charEm(ch){
+    var cp=ch.codePointAt(0);
+    if(cp>=0x1100&&(cp<=0x115F||(cp>=0x2E80&&cp<=0xA4CF)||(cp>=0xAC00&&cp<=0xD7A3)
+      ||(cp>=0xF900&&cp<=0xFAFF)||(cp>=0xFE30&&cp<=0xFE4F)||(cp>=0xFF00&&cp<=0xFF60)
+      ||cp>=0x1F000))return 1;
+    return 0.58;
+  }
+  // 가장 넓은 토큰의 em 폭 (줄바꿈 불가 단위 기준 — width cap 산정용)
+  function longestTokenEm(s){
+    if(!s)return 0.58;
+    var toks=String(s).split(/[\s·•\-_/|]+/).filter(Boolean);
+    var m=0.58;
+    toks.forEach(function(t){
+      var w=0;
+      Array.from(t).forEach(function(ch){w+=charEm(ch);});
+      if(w>m)m=w;
+    });
+    return m;
+  }
+  // 단일 박스 title 폰트 크기 (nodeBox 내부 공식과 동일 — SSOT)
+  function titleFsFor(title, w, h){
+    var innerW=Math.max(w-32, 40);                // padding 12*2 + safety 8
+    var widthCap=Math.floor(innerW/longestTokenEm(title));
+    var fs=Math.min(Math.round(h*0.30), Math.round(w*0.21), 44, widthCap);
+    return fs<10?10:fs;
+  }
+  // 같은 크기 형제 박스 체인의 균일 title 폰트 — 개별 계산값의 최솟값.
+  //   박스마다 따로 fit 하면 짧은 라벨만 커져 일관성이 깨진다 (m2Slide 회귀).
+  function uniformTitleFs(list, w, h){
+    var fs=Infinity;
+    list.forEach(function(it){
+      var t=(typeof it==='string')?it:(it&&it.title);
+      if(t)fs=Math.min(fs, titleFsFor(t, w, h));
+    });
+    return isFinite(fs)?fs:null;
+  }
+
   // 노드 박스 foreignObject 헬퍼 — 제목 + 선택적 부제 행.
-  function nodeBox(parent, x, y, w, h, title, subs, accentBg, subFsOverride){
+  //   titleFsOverride: 블록 단위 균일 폰트 강제 (uniformTitleFs 결과 전달).
+  function nodeBox(parent, x, y, w, h, title, subs, accentBg, subFsOverride, titleFsOverride){
     var fo=parent.append('foreignObject')
       .attr('x',x).attr('y',y).attr('width',w).attr('height',h);
     var bg=accentBg?'var(--htmlart-accent,#2b8a9d)':'var(--htmlart-surface,#f4f4f5)';
@@ -1714,26 +1804,18 @@ graph LR
     //   노드 박스를 키워도 viewBox 가 함께 커져 화면 글자 크기는 불변 →
     //   폰트/노드 비율 자체를 키워야 함(h 의 30%, 단 폭 제약·상한 적용).
     // Issue217: 가장 긴 토큰(영문 단일 단어 등)이 박스 폭을 초과하여 clip 되는
-    //   회귀 방지 — title/subs 양쪽에 token 길이 기반 width cap + overflow-wrap fallback.
-    function longestTokenLen(s){
-      if(!s) return 1;
-      var toks=String(s).split(/[\s·•\-_/|]+/).filter(Boolean);
-      var m=1; for(var i=0;i<toks.length;i++){ if(toks[i].length>m) m=toks[i].length; }
-      return m;
-    }
+    //   회귀 방지 — title/subs 양쪽에 token 폭 기반 width cap + overflow-wrap fallback.
+    //   토큰 폭은 longestTokenEm(CJK 글리프 인지)으로 추정.
     var innerW=Math.max(w-32, 40);                // padding 12*2 + safety 8
-    var titleTokLen=longestTokenLen(title);
-    var titleWidthCap=Math.floor(innerW/(titleTokLen*0.58));  // 0.58em ≈ 영문 sans avg glyph
-    var titleFs=Math.min(Math.round(h*0.30), Math.round(w*0.21), 44, titleWidthCap);
-    if(titleFs<10) titleFs=10;
+    var titleFs=titleFsOverride||titleFsFor(title, w, h);
     // Issue201: title 없는 박스(pyramid 상세 패널)는 subs 가 본문이므로 크게.
     // Issue205: subFsOverride 전달 시 그 값을 강제 (pyramid 상세를 밴드 라벨보다 작게).
     var subFs=subFsOverride||Math.max(Math.round(titleFs*(title?0.66:0.92)), 12);
     // subs도 동일 width cap 적용 (긴 단일 단어 보호)
     if(subs && subs.length){
-      var subTokLen=1;
-      for(var si=0; si<subs.length; si++){ var L=longestTokenLen(subs[si]); if(L>subTokLen) subTokLen=L; }
-      var subWidthCap=Math.floor(innerW/(subTokLen*0.58));
+      var subTokEm=0.58;
+      for(var si=0; si<subs.length; si++){ var L=longestTokenEm(subs[si]); if(L>subTokEm) subTokEm=L; }
+      var subWidthCap=Math.floor(innerW/subTokEm);
       if(subFs>subWidthCap) subFs=Math.max(subWidthCap, 10);
     }
     if(title){
@@ -1797,11 +1879,12 @@ graph LR
         +'fill:var(--htmlart-accent,#2b8a9d);opacity:.38')
       .text('↻');
 
+    var tFs=uniformTitleFs(items, nodeW, nodeH);
     var gNodes=svg.append('g');
     d3.range(N).forEach(function(i){
       var pos=d3.pointRadial(i*step, Rr);
       nodeBox(gNodes, cx+pos[0]-nodeW/2, cy+pos[1]-nodeH/2, nodeW, nodeH,
-        items[i].title, items[i].subs, false);
+        items[i].title, items[i].subs, false, null, tFs);
     });
   }
 
@@ -1957,10 +2040,11 @@ graph LR
         .attr('style','fill:var(--htmlart-arrow,rgba(0,0,0,.45))');
     });
 
-    // 순차 단계 박스
+    // 순차 단계 박스 — title 폰트는 체인 전체 균일 (박스별 개별 fit 금지)
+    var tFs=uniformTitleFs(items, boxW, boxH);
     var gBoxes=svg.append('g');
     d3.range(N).forEach(function(i){
-      nodeBox(gBoxes, i*(boxW+arrowGap), padY, boxW, boxH, items[i].title, items[i].subs, false);
+      nodeBox(gBoxes, i*(boxW+arrowGap), padY, boxW, boxH, items[i].title, items[i].subs, false, null, tFs);
     });
   }
 
@@ -2159,6 +2243,7 @@ graph LR
     svg.append('polygon')
       .attr('points',(W-padX)+','+axisY+' '+(W-padX-26)+','+(axisY-15)+' '+(W-padX-26)+','+(axisY+15))
       .attr('style','fill:var(--htmlart-accent,#2b8a9d)');
+    var tFs=uniformTitleFs(items, nodeW, nodeH);
     d3.range(N).forEach(function(i){
       var mx=padX+nodeW/2+i*segW, up=(i%2===0);
       var boxY=up?padY:(padY+nodeH+axisGap);
@@ -2167,7 +2252,7 @@ graph LR
         .attr('style','stroke:var(--htmlart-box-border,rgba(0,0,0,.3));stroke-width:3');
       svg.append('circle').attr('cx',mx).attr('cy',axisY).attr('r',16)
         .attr('style','fill:var(--htmlart-accent,#2b8a9d);stroke:#fff;stroke-width:4');
-      nodeBox(svg, mx-nodeW/2, boxY, nodeW, nodeH, items[i].title, items[i].subs, false);
+      nodeBox(svg, mx-nodeW/2, boxY, nodeW, nodeH, items[i].title, items[i].subs, false, null, tFs);
     });
   }
 
@@ -2213,9 +2298,10 @@ graph LR
       .attr('style','stroke:var(--htmlart-accent,#2b8a9d);stroke-width:4');
     svg.append('line').attr('x1',pad-10).attr('y1',mid).attr('x2',W-pad+10).attr('y2',mid)
       .attr('style','stroke:var(--htmlart-accent,#2b8a9d);stroke-width:4');
+    var tFs=uniformTitleFs(q, cell, cell);
     [[pad,pad],[pad+cell+gap,pad],[pad,pad+cell+gap],[pad+cell+gap,pad+cell+gap]]
       .forEach(function(p,i){
-        nodeBox(svg, p[0], p[1], cell, cell, q[i].title, q[i].subs, false);
+        nodeBox(svg, p[0], p[1], cell, cell, q[i].title, q[i].subs, false, null, tFs);
       });
   }
 
@@ -2307,11 +2393,12 @@ graph LR
         .attr('x2',cx+pos[0]).attr('y2',cy+pos[1])
         .attr('style','stroke:var(--htmlart-box-border,rgba(0,0,0,.3));stroke-width:4');
     });
+    var tFs=uniformTitleFs(spokes, nodeW, nodeH);
     var gN=svg.append('g');
     d3.range(M).forEach(function(i){
       var pos=d3.pointRadial(i*step,Rr);
       nodeBox(gN, cx+pos[0]-nodeW/2, cy+pos[1]-nodeH/2, nodeW, nodeH,
-        spokes[i].title, spokes[i].subs, false);
+        spokes[i].title, spokes[i].subs, false, null, tFs);
     });
     nodeBox(svg, cx-cW/2, cy-cH/2, cW, cH, center.title, center.subs, true);
   }
@@ -2360,8 +2447,9 @@ graph LR
       gC.append('path').attr('d','M'+x1+' '+y1+'L'+x2+' '+y1+'L'+x2+' '+y2)
         .attr('style','fill:none;stroke:var(--htmlart-box-border,rgba(0,0,0,.3));stroke-width:4');
     });
+    var tFs=uniformTitleFs(items, boxW, boxH);
     d3.range(N).forEach(function(i){
-      nodeBox(svg, bx(i), by(i), boxW, boxH, items[i].title, items[i].subs, i===N-1);
+      nodeBox(svg, bx(i), by(i), boxW, boxH, items[i].title, items[i].subs, i===N-1, null, tFs);
     });
   }
 
@@ -2396,10 +2484,11 @@ graph LR
         .attr('style','stroke:var(--htmlart-accent,#2b8a9d);stroke-width:13;stroke-linecap:round')
         .attr('marker-end','url(#ha-arr-head)');
     });
+    var tFs=uniformTitleFs(srcs, nodeW, nodeH);
     d3.range(M).forEach(function(i){
       var pos=d3.pointRadial(i*step,Rr);
       nodeBox(svg, cx+pos[0]-nodeW/2, cy+pos[1]-nodeH/2, nodeW, nodeH,
-        srcs[i].title, srcs[i].subs, false);
+        srcs[i].title, srcs[i].subs, false, null, tFs);
     });
     nodeBox(svg, cx-cW/2, cy-cH/2, cW, cH, center.title, center.subs, true);
   }
@@ -2433,9 +2522,10 @@ graph LR
     var badge=92, gap=24, cardW=640, cardH=134, padX=22, padY=22, rowGap=18;
     var W=padX*2+badge+gap+cardW, H=padY*2+N*cardH+(N-1)*rowGap;
     var svg=mkSvg(el,W,H,'ha-numbered-svg');
+    var tFs=uniformTitleFs(items, cardW, cardH);
     d3.range(N).forEach(function(i){
       var y=padY+i*(cardH+rowGap), cy=y+cardH/2;
-      nodeBox(svg, padX+badge+gap, y, cardW, cardH, items[i].title, items[i].subs, false);
+      nodeBox(svg, padX+badge+gap, y, cardW, cardH, items[i].title, items[i].subs, false, null, tFs);
       svg.append('circle').attr('cx',padX+badge/2).attr('cy',cy).attr('r',badge/2)
         .attr('style','fill:var(--htmlart-accent,#2b8a9d);stroke:#fff;stroke-width:3');
       svg.append('text').attr('x',padX+badge/2).attr('y',cy+badge*0.19)
@@ -2485,16 +2575,19 @@ graph LR
     var H=padY*2+rowH.reduce(function(a,b){return a+b;},0)+(groups.length-1)*grpGap;
     var W=padX*2+labelW+brZone+memberW;
     var svg=mkSvg(el,W,H,'ha-bracket-svg');
+    var labelFs=uniformTitleFs(groups, labelW, memberH);
+    var allMembers=groups.reduce(function(a,g){return a.concat(g.subs);},[]);
+    var memberFs=uniformTitleFs(allMembers, memberW-8, memberH);
     var y=padY;
     groups.forEach(function(g,gi){
       var grpH=rowH[gi];
-      nodeBox(svg, padX, y+grpH/2-memberH/2, labelW, memberH, g.title, [], true);
+      nodeBox(svg, padX, y+grpH/2-memberH/2, labelW, memberH, g.title, [], true, null, labelFs);
       if(g.subs.length){
         svg.append('path').attr('d',bracePath(padX+labelW+6,padX+labelW+brZone,y+4,y+grpH-4))
           .attr('style','fill:none;stroke:var(--htmlart-accent,#2b8a9d);stroke-width:5');
         var mx=padX+labelW+brZone+8;
         g.subs.forEach(function(m,mi){
-          nodeBox(svg, mx, y+mi*(memberH+memGap), memberW-8, memberH, m, [], false);
+          nodeBox(svg, mx, y+mi*(memberH+memGap), memberW-8, memberH, m, [], false, null, memberFs);
         });
       }
       y+=grpH+grpGap;
@@ -2510,9 +2603,10 @@ graph LR
     var accentW=24, blockW=740, blockH=124, gap=16, padX=22, padY=22;
     var W=padX*2+blockW, H=padY*2+N*blockH+(N-1)*gap;
     var svg=mkSvg(el,W,H,'ha-block-svg');
+    var tFs=uniformTitleFs(items, blockW, blockH);
     d3.range(N).forEach(function(i){
       var y=padY+i*(blockH+gap);
-      nodeBox(svg, padX, y, blockW, blockH, items[i].title, items[i].subs, false);
+      nodeBox(svg, padX, y, blockW, blockH, items[i].title, items[i].subs, false, null, tFs);
       svg.append('rect').attr('x',padX+2).attr('y',y+2)
         .attr('width',accentW).attr('height',blockH-4).attr('rx',5)
         .attr('style','fill:var(--htmlart-accent,#2b8a9d)');
@@ -2533,6 +2627,8 @@ graph LR
     var H=padY*2+rowH.reduce(function(a,b){return a+b;},0)+(groups.length-1)*grpGap;
     var W=padX*2+panelW;
     var svg=mkSvg(el,W,H,'ha-tab-svg');
+    var allItems=groups.reduce(function(a,g){return a.concat(g.subs);},[]);
+    var itemFs=uniformTitleFs(allItems, panelW-panelPad*2, itemH);
     var y=padY;
     groups.forEach(function(g,gi){
       var grpH=rowH[gi];
@@ -2553,7 +2649,7 @@ graph LR
         .text(g.title);
       g.subs.forEach(function(it,ii){
         nodeBox(svg, padX+panelPad, panelY+panelPad+ii*(itemH+itemGap),
-          panelW-panelPad*2, itemH, it, [], false);
+          panelW-panelPad*2, itemH, it, [], false, null, itemFs);
       });
       y+=grpH+grpGap;
     });
@@ -2802,7 +2898,10 @@ graph LR
         .attr('style','fill:var(--htmlart-arrow,rgba(0,0,0,.45))');
     }
 
-    // 슬롯 렌더
+    // 슬롯 렌더 — 표준 박스 title 폰트는 체인 균일
+    var boxFs=uniformTitleFs(
+      slots.filter(function(s){return !s.isPerson;}).map(function(s){return s.item;}),
+      boxW, boxH);
     var gSlots=svg.append('g');
     slots.forEach(function(s, idx){
       var x = slotX[idx];
@@ -2841,7 +2940,7 @@ graph LR
             + (subText?'<div style="font-weight:400;font-size:13px;opacity:.78;margin-top:3px">'+esc(subText)+'</div>':''));
       } else {
         // 표준 박스 (process 박스와 동일)
-        nodeBox(gSlots, x, padY, boxW, boxH, s.item.title, s.item.subs, false);
+        nodeBox(gSlots, x, padY, boxW, boxH, s.item.title, s.item.subs, false, null, boxFs);
       }
     });
   }
@@ -4309,7 +4408,9 @@ graph LR
         var idxL = Reveal.getIndices();
         // Chapter mode TOC slide 또는 (TOC 없는 chapter의) 첫 슬라이드 #/0 → 이전 챕터 마지막 (없으면 agenda)
         var atChapterDeckStart = (M2SLIDE_MODE === 'chapter' && idxL.h === 0 && idxL.v === 0);
-        if (isTocSlide(cur) || atChapterDeckStart) {
+        // Issue259: TOC가 deck 첫 슬라이드일 때만 cross-chapter 점프.
+        // chapter divider가 TOC 앞(h=0)에 오는 deck에서는 ← 가 deck 내 이전 슬라이드로 가야 함.
+        if ((isTocSlide(cur) && idxL.h === 0 && idxL.v === 0) || atChapterDeckStart) {
           event.preventDefault();
           if (M2SLIDE_MODE === 'chapter' && PREV_CHAPTER) {
             // Issue104: ← 이전 챕터 마지막 진입은 backward — &back=1 시그널 추가
