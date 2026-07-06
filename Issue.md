@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 263
+* Issue HWM: 264
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -23,6 +23,16 @@
 # 🌱 이슈후보
 
 # 🔥 진행 중
+
+## Issue264. dev-server 피드백 수동 처리 커맨드 + 개요 페이지 복붙 커맨드 박스 (등록: 2026-07-06)
+* 목적: Issue261로 적재되는 `_pipeline/feedback/dev-feedback.jsonl` 피드백의 소비 채널 확보 — 세션 자동 생성 대신 **수동 커맨드 방식**(사용자 결정) 채택. `/feedback-process <P>` 커맨드 신설 + 개요 페이지(`/p/<P>`) 상단 summary 우측·하단 bulk bar 우측 2곳에 복붙용 커맨드 박스(📋 복사 버튼 + 미처리 건수) 표시.
+* 상세:
+    - 배경: 사용자가 개요 페이지 [전송] 후 Claude Code 세션이 생기지 않는다고 보고 — 조사 결과 저장은 정상, 처리기가 설계 TODO(`_doc_arch/dev-server-feedback.md`)로 미구현이었음
+    - 처리 방식 3택 질의 결과 "3번 커맨드 방식" 선택 + "표시한 부분(상단 summary 옆·하단 bulk bar 옆)에 복붙할 커맨드" 요구
+* 구현 명세:
+    - `lib/dev-server/server.py`: `_pending_feedback_count(project)` helper + `_serve_project_overview` 커맨드 박스 2곳 주입 + `_common_styles` `.fb-cmd-*` 스타일 + `_feedback_script` 복사 버튼 핸들러·전송 성공 시 미처리 카운트 갱신
+    - `.claude/commands/feedback-process.md`: jsonl 읽기 → dedup → title/chap/slide로 소스 md 슬라이드 특정 → 의견 반영 수정 → 재빌드·검증 → 처리분 `dev-feedback.done.jsonl` 이관(인박스 비움) → 보고
+    - `lib/dev-server/test_server.py`: pending count·커맨드 박스 렌더 테스트 추가
 
 # 📕 중요
 

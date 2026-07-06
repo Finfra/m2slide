@@ -1085,13 +1085,27 @@ class DevHandler(SimpleHTTPRequestHandler):
             '.fb-bulk-bar button{cursor:pointer;padding:4px 14px;border:1px solid #aaa;'
             'border-radius:4px;background:#fff}'
             '.fb-bulk-bar button:hover{background:#dceef2}'
+            # Issue264 — copy-paste command box (top summary + bulk bar)
+            '.fb-cmd-box{display:inline-flex;align-items:center;gap:8px;'
+            'margin-left:16px;padding:4px 10px;border:1px solid #cde;'
+            'border-radius:6px;background:#f0f8fa;font-size:13px}'
+            '.fb-cmd-box code{background:#fff;border:1px solid #ddd;'
+            'padding:2px 8px;border-radius:4px;font-size:12px;white-space:nowrap}'
+            '.fb-cmd-copy{cursor:pointer;padding:2px 8px;border:1px solid #aaa;'
+            'border-radius:4px;background:#fff;font-size:12px}'
+            '.fb-cmd-copy:hover{background:#dceef2}'
+            '.fb-pending{color:#c60;font-size:12px;white-space:nowrap}'
+            '.fb-pending b{font-size:13px}'
             '@media (prefers-color-scheme:dark){body{background:#1a1a1a;color:#e0e0e0}'
             '.card{background:#222;border-color:#444}.card .links a{background:#2a3a3e}'
             'th{background:#2a3a3e}td,th{border-color:#444}code{background:#2d2d2d;color:#e0e0e0}'
             '.fb-text{background:#222;border-color:#555}'
             '.fb-actions .fb-send{background:#2a3a3e;border-color:#555}'
             '.fb-bulk-bar{background:#2a3a3e;border-color:#444}'
-            '.fb-bulk-bar button{background:#222;border-color:#555}}'
+            '.fb-bulk-bar button{background:#222;border-color:#555}'
+            '.fb-cmd-box{background:#2a3a3e;border-color:#444}'
+            '.fb-cmd-box code{background:#222;border-color:#555}'
+            '.fb-cmd-copy{background:#222;border-color:#555}}'
             '</style>'
         )
 
@@ -1396,18 +1410,32 @@ class DevHandler(SimpleHTTPRequestHandler):
             )
             sections_html_blocks.append(section)
         summary = f'<b>{total_slides}</b> slides · {mode_label}'
+        # Issue264 — copy-paste command box (manual feedback processor entry).
+        # Shown twice: next to top summary + inside bottom bulk bar.
+        pending = self._pending_feedback_count(project)
+        cmd_box = (
+            '<span class="fb-cmd-box">'
+            f'<code class="fb-cmd">/feedback-process {project}</code>'
+            '<button type="button" class="fb-cmd-copy" '
+            'title="커맨드 복사 — m2slide 폴더의 Claude Code 세션에 붙여넣기">'
+            '📋 복사</button>'
+            '<span class="fb-pending">미처리 <b class="fb-pending-n">'
+            f'{pending}</b>건</span>'
+            '</span>'
+        )
         body = (
             '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
             f'<title>m2slide — {project}</title>'
             + self._common_styles() +
             '</head><body>'
             + self._common_header(f'📋 {project}') +
-            f'<p>{summary}</p>'
+            f'<p>{summary}{cmd_box}</p>'
             + '\n'.join(sections_html_blocks) +
             '<div class="fb-bulk-bar">'
             '<label><input type="checkbox" id="fb-policy-all"> policy 일괄 적용</label>'
             '<button type="button" id="fb-send-all">전체 전송</button>'
-            '<span id="fb-bulk-status"></span></div>'
+            '<span id="fb-bulk-status"></span>'
+            + cmd_box + '</div>'
             + self._feedback_script(project) +
             '</body></html>'
         )
@@ -1548,6 +1576,20 @@ class DevHandler(SimpleHTTPRequestHandler):
             return self._handle_feedback_post(m.group(1))
         self.send_error(404, f'no POST route: {path_only}')
 
+    def _pending_feedback_count(self, project: str) -> int:
+        """Issue264 — count unprocessed feedback lines in dev-feedback.jsonl.
+        /feedback-process moves handled lines to dev-feedback.done.jsonl, so
+        the inbox line count == pending count. 0 if file missing/unreadable.
+        """
+        path = os.path.join(
+            os.getcwd(), 'Projects', project,
+            '_pipeline', 'feedback', 'dev-feedback.jsonl')
+        try:
+            with open(path, 'r', encoding='utf-8') as fh:
+                return sum(1 for line in fh if line.strip())
+        except OSError:
+            return 0
+
     def _handle_feedback_post(self, project: str):
         """POST /p/<P>/feedback — append opinions to _pipeline/feedback jsonl;
         policy=true items additionally go to _pipeline/policy/_dev-feedback.yml
@@ -1664,6 +1706,7 @@ class DevHandler(SimpleHTTPRequestHandler):
             'if(!it){ta.style.borderColor="#c33";ta.focus();return;}'
             'ta.style.borderColor="";st.textContent="...";'
             'post([it],function(err,j){'
+            'if(!err)bump(j.saved);'
             'st.textContent=err?("\\u2717 "+err.message):'
             '("\\u2713 \\uc804\\uc1a1\\ub428"+(j.policy_saved?" (policy)":""));});});});'
             'var allBtn=document.getElementById("fb-send-all");'
@@ -1677,8 +1720,27 @@ class DevHandler(SimpleHTTPRequestHandler):
             'if(!items.length){st.textContent="\\uc804\\uc1a1\\ud560 \\uc758\\uacac \\uc5c6\\uc74c";return;}'
             'st.textContent="...";'
             'post(items,function(err,j){'
+            'if(!err)bump(j.saved);'
             'st.textContent=err?("\\u2717 "+err.message):'
             '("\\u2713 "+j.saved+"\\uac74 \\uc800\\uc7a5, policy "+j.policy_saved+"\\uac74");});});'
+            # Issue264 — command copy buttons + pending counter live bump
+            'function bump(n){document.querySelectorAll(".fb-pending-n")'
+            '.forEach(function(el){el.textContent='
+            'String(parseInt(el.textContent,10)+n);});}'
+            'window.__fbBump=bump;'
+            'document.querySelectorAll(".fb-cmd-copy").forEach(function(btn){'
+            'btn.addEventListener("click",function(){'
+            'var code=btn.parentNode.querySelector(".fb-cmd");'
+            'var txt=code?code.textContent:"";'
+            'function done(){var o=btn.textContent;btn.textContent="\\u2713 \\ubcf5\\uc0ac\\ub428";'
+            'setTimeout(function(){btn.textContent=o;},1200);}'
+            'function fb(){var ta=document.createElement("textarea");'
+            'ta.value=txt;ta.style.position="fixed";ta.style.opacity="0";'
+            'document.body.appendChild(ta);ta.focus();ta.select();'
+            'try{document.execCommand("copy");done();}catch(e){window.prompt("\\ubcf5\\uc0ac",txt);}'
+            'document.body.removeChild(ta);}'
+            'if(navigator.clipboard&&window.isSecureContext){'
+            'navigator.clipboard.writeText(txt).then(done).catch(fb);}else{fb();}});});'
             '})();</script>'
         )
 

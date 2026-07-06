@@ -404,5 +404,45 @@ class FeedbackPostTest(unittest.TestCase):
             DevHandler._FEEDBACK_POST_RE.match('/p/m2Slide/s/1/1'))
 
 
+class PendingFeedbackCountTest(unittest.TestCase):
+    """Issue264 — _pending_feedback_count (개요 커맨드 박스 미처리 건수)."""
+
+    @classmethod
+    def setUpClass(cls):
+        import tempfile
+        cls.tmp = tempfile.mkdtemp(prefix='m2slide-fbcnt-')
+        cls.old_cwd = os.getcwd()
+        os.chdir(cls.tmp)
+        os.makedirs(os.path.join('Projects', 'cntProj', '_pipeline', 'feedback'))
+
+    @classmethod
+    def tearDownClass(cls):
+        import shutil
+        os.chdir(cls.old_cwd)
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def _handler(self):
+        return DevHandler.__new__(DevHandler)
+
+    def _jsonl_path(self):
+        return os.path.join('Projects', 'cntProj', '_pipeline', 'feedback',
+                            'dev-feedback.jsonl')
+
+    def test_missing_file_zero(self):
+        self.assertEqual(self._handler()._pending_feedback_count('noProj'), 0)
+
+    def test_counts_nonempty_lines(self):
+        with open(self._jsonl_path(), 'w', encoding='utf-8') as fh:
+            fh.write('{"a":1}\n\n{"b":2}\n')
+        self.assertEqual(
+            self._handler()._pending_feedback_count('cntProj'), 2)
+
+    def test_empty_file_zero(self):
+        with open(self._jsonl_path(), 'w', encoding='utf-8') as fh:
+            fh.write('')
+        self.assertEqual(
+            self._handler()._pending_feedback_count('cntProj'), 0)
+
+
 if __name__ == '__main__':
     unittest.main()
