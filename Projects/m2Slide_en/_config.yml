@@ -1,0 +1,20 @@
+theme: default                      # theme/{name}/slide.css + layouts/
+theme_default_layout: contents      # default slide layout (wraps body slides as layout-_contents)
+cover_enabled: true                 # auto-inject cover slide at first position
+cards_placeholder: true             # convert H1 chapter titles into a Cards Page (autoToc cards)
+top_align: false                    # override reveal.js centering with 'top-align-mode' when true
+markmap_depth: 2                    # Markmap initial expand depth
+chapter_markmap_depth: 3            # per-chapter page Markmap expand depth
+head_left: d1
+head_right: now
+title_contents_gap: 30              # gap between title and contents (% of title height)
+auto_layout_detect: true            # auto-detect layout per slide
+guide_line: false                   # show layout debug guide lines
+slide_ratio: "3:2"                  # 3:2 or 16:9
+slide_outer_padding: 10px           # symmetric padding between slide and viewport
+nav_indicator: both                 # both (default), diamond, page
+deploy_formats: [epub]              # formats built/deployed alongside on /deploy-docs
+
+style:
+  theContents:
+    media_container_enlarge: fit      # image/SVG sizing (original/width/height/fit)

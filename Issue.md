@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 266
+* Issue HWM: 268
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -23,6 +23,30 @@
 # 🌱 이슈후보
 
 # 🔥 진행 중
+
+## Issue267. m2Slide 영문판 프로젝트 생성 (m2Slide_en) (등록: 2026-07-06)
+* 목적: 기존 한글 브로셔용 프로젝트 `m2Slide`(3챕터 임팩트 요약)의 영문 버전을 `Projects/m2Slide_en`으로 생성하여 영어권 대상 배포 지원
+* 상세:
+    - 원본: `Projects/m2Slide/` (AGENDA + 01-what/02-why/03-start, chapter mode, theme default)
+    - markdown 본문·frontmatter(title/subtitle/description)·표·mermaid·htmlart 라벨을 영어로 번역
+    - 이미지: 원본 img/ 폴더 비어있음 → mermaid/chart 등 코드블록 내 텍스트 라벨만 영어화
+    - `_config.yml`·`VERSION` 복사 (렌더링 설정은 동일 유지)
+* 구현 명세:
+    - `Projects/m2Slide_en/{_config.yml, VERSION, img/, markdown/{AGENDA.md,01-what.md,02-why.md,03-start.md}}` 생성
+    - `./m2slide.sh m2Slide_en` 빌드 → slide/*.html 산출 검증
+    - instructor_name 등 식별자 메타는 원본 값 보존(자동 채움·역변환 금지, identifier-meta-rules 준수)
+
+## Issue268. m2slide_info 영문판 프로젝트 생성 (m2slide_info_en) (등록: 2026-07-06)
+* 목적: 기존 한글 설명용 프로젝트 `m2slide_info`(5챕터 소개 자료)의 영문 버전을 `Projects/m2slide_info_en`으로 생성하여 영어권 잠재 사용자에게 소개 자료 제공
+* 상세:
+    - 원본: `Projects/m2slide_info/` (AGENDA + 01~05 챕터, chapter mode, theme default_lec)
+    - markdown 본문·frontmatter·표·cards·mermaid·chart·wordart 라벨을 영어로 번역
+    - Info.md 기획 메타도 영어 번역하여 함께 생성
+    - 이미지: 원본 img/screenshots 비어있음 → 코드블록(mermaid graph label, chart.js labels/dataset label) 텍스트만 영어화
+* 구현 명세:
+    - `Projects/m2slide_info_en/{_config.yml, VERSION, Info.md, img/, markdown/{AGENDA.md,01~05.md}}` 생성
+    - `./m2slide.sh m2slide_info_en` 빌드 → slide/*.html 산출 검증
+    - 식별자 메타 보존(identifier-meta-rules 준수)
 
 # 📕 중요
 
