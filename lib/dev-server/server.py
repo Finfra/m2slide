@@ -1266,7 +1266,7 @@ class DevHandler(SimpleHTTPRequestHandler):
                 + meta_line +
                 f'<div class="meta">{build_label} · 진입: <code>{entry}</code></div>'
                 '<div class="links">'
-                f'<a href="/p/{p}">📋 슬라이드 목록</a>'
+                f'<a href="/p/{p}" target="_blank" rel="noopener">📋 슬라이드 목록</a>'
                 f'<a href="{first_link}" target="_blank" rel="noopener">🎬 진입 (cover/agenda/toc/첫슬라이드 fallback)</a>'
                 '</div></div>'
             )
