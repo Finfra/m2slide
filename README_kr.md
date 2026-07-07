@@ -1,10 +1,16 @@
 # m2slide - 마크다운 프레젠테이션 & 전자책 생성 도구
 
+> 🌏 **English**: [README.md](./README.md) · **한국어**: 이 문서
+
 마크다운 파일을 **Reveal.js 프레젠테이션**과 **EPUB 전자책**으로 자동 변환하는 도구입니다.
 프로젝트별 독립 폴더 구조로 여러 강연 자료와 전자책을 체계적으로 관리할 수 있습니다.
 
 **🌐 온라인 데모**: https://finfra.github.io/m2slide/
 > 실제 생성된 프레젠테이션을 웹브라우저에서 바로 확인할 수 있습니다.
+
+**📊 m2slide 소개 데크**:
+- [m2Slide란? (설명용)](https://finfra.github.io/m2slide/m2slide_info/)
+- [m2Slide 소개](https://finfra.github.io/m2slide/m2Slide/)
 
 **📋 공개 프로젝트 목록**: [Projects_org.md](./Projects_org.md)
 > 이 저장소에 포함된 예제 프로젝트 목록. `./m2slide.sh --sync-projects` 로 자동 생성되므로 직접 편집하지 마세요.
