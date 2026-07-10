@@ -35,6 +35,12 @@ nav_indicator: both           # both (default) = 마름모(↑/↓) + ←/→ + 
                               # diamond = 마름모 + ←/→만 (페이지번호 숨김)
                               # page = 페이지번호만 (마름모 + ←/→ 모두 숨김)
 
+# nav_color: auto             # 우측 하단 네비게이터(마름모 화살표 + 페이지번호) 색
+                              #   auto (default) = 테마 자동(--kn-page-num-color) / light = 밝은색 / dark = 어두운색 / <css-color>
+# htmlart_line_color: auto    # Issue274: htmlArt(SmartArt) 연결선·화살표·박스 테두리(지시 도형) 색
+                              #   auto (default) = 테마 자동(--m2-line, 미설정 시 하드코딩) / light = 밝은 선(다크 배경용)
+                              #   / dark = 어두운 선(라이트 배경용) / <css-color> (예: "#ffcc00", "rgba(255,255,255,0.7)")
+
 # 슬라이드 전환·배경 트랜지션 전역 기본값 (reveal.js Reveal.initialize에 그대로 전달)
 #   - default_transition            : 일반 페이지
 #   - default_background_transition : 첫페이지나 마지막 페이지
