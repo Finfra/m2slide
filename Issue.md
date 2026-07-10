@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 273
+* Issue HWM: 274
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -70,6 +70,20 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue274. htmlArt 선/지시 도형 색 config(_config.yml) + 테마 변수화 (nav_color 패턴) (등록: 2026-07-10, 해결: 2026-07-10, commit: 3b7dd06) ✅
+* depends: Issue272 (관련 — 본 이슈가 htmlArt 선/화살표 대비 부분을 config·테마 변수로 구현)
+* 목적: 다크 테마에서 htmlArt(d3 SVG SmartArt)의 연결선·화살표·박스 테두리가 기본 검정(rgba(0,0,0,...))으로 하드코딩되어 어두운 배경에 묻힘. `nav_color:` 처럼 (1) 테마 `:root` 속성으로 기본색을 정의하고 (2) `_config.yml` 에서 override 가능하게 하여 배경색에 맞춰 선/지시 도형 색을 지정 가능하게 함.
+* 구현 명세:
+    - 테마 속성: theme `:root` 에 `--m2-line`(htmlArt 선/지시 도형 기본색) 신설. 라이트 테마(default·default_lec)는 **미설정**(하드코딩 fallback 유지 → 회귀 0), 다크 테마는 밝은 선색 지정(stellar_dark 는 `.gitignore /theme/*` 로컬 테마라 참조 구현만).
+    - config: `_config.yml htmlart_line_color:` 키 신설 (`auto|light|dark|<css-color>`, nav_color 미러, CSS injection 방지 검증). `cfg.htmlartLineColor` → body 인라인 `--m2-htmlart-line` 주입(최우선).
+    - 배선: `theme/_shared/components.css` `--htmlart-arrow`·`--htmlart-box-border` = `var(--m2-htmlart-line, var(--m2-line, <기존 하드코딩>))` — override > 테마 > fallback 3단. d3 렌더(`htmlart_dispatch.client.js`)는 이미 해당 변수 소비 → CSS 배선만으로 반영.
+* 검증:
+    - node config.test.js 5/5 통과 + htmlart_line_color 파서 6종(auto/light/dark/hex/rgba/injection-reject) 유닛 검증.
+    - StellarEvolution(stellar_dark) custom.css: `--m2-line: rgba(233,234,242,0.55)` → 밝은 선 해상도. 라이트 데크(m2Slide_single_mode) custom.css: `--m2-line` 미정의 → 기존 rgba fallback(회귀 0).
+    - `htmlart_line_color: "#ff3366"` e2e: body 인라인 `--m2-htmlart-line:#ff3366` 주입 확인 후 revert. `--lint-deployment` 통과.
+    - 기존 integration.test.js 2건 fail 은 head-bar outline 이슈로 본 변경과 무관(clean HEAD 에서도 동일 fail).
+* 자동 결정(/dev): 번호 충돌(273 = StellarEvolution 기완료) 발견 → HWM 273→274, 본 이슈 Issue274 로 재부여. commit 015c07b 는 Issue273 메시지로 랜딩 후 amend 로 Issue274 정정.
 
 ## Issue273. StellarEvolution 고퀄화 + stellar_dark 다크 테마 + agenda_card_mode (등록: 2026-07-10, 해결: 2026-07-10, commit: fe8acdc) ✅
 * 목적: StellarEvolution 강연 데크를 장표 수 불변(16장)으로 시각 고퀄화(htmlArt·p5 3D·시뮬레이터)하고, 검은 배경 리소스와 어울리는 다크 테마 + 카드형 목차를 지원.
