@@ -31,3 +31,5 @@ style:
 
 # Operational meta
 mode_hint: chapter
+
+asset_mode: cdn   # Issue270 — 발행(GitHub Pages) 데크는 웹 서빙, CDN 유지 (vendor 미커밋)

@@ -475,7 +475,7 @@ agent는 가이드만 보고하고 yml 편집은 **사용자 또는 후속 turn�
 | dev-server | `m2slide.sh --serve` | port 9877 |
 | HWM state | `_doc_work/tuner/<project>/hwm.yml` | 모드 디스패치 + 진행 위치 |
 | Mode B hook | `~/.claude/hooks/htm-ask-intercept.sh` | 글로벌 |
-| form JS template | `~/.claude/hooks/htm-form-template.js` | 글로벌 SSOT |
+| form JS template | `~/.claude/hooks/fpm-ask-form-template.js` | 글로벌(hub 생태계). standalone 무관 optional (Issue270) |
 | htm-server | `~/_git/___pm/services/htm-server/server.py` | port 9876 |
 
 # v2+ 후속 (현재 미구현)

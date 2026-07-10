@@ -13,3 +13,4 @@ toc_card_mode: true
 auto_layout_detect: true
 font_size_auto: true
 guide_line: false
+asset_mode: cdn   # Issue270 — 발행(GitHub Pages) 데크는 웹 서빙, CDN 유지 (vendor 미커밋)

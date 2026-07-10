@@ -81,10 +81,11 @@ color: magenta
 ## Step 1 — pptx2md 스킬 호출 (raw 추출)
 
 * **stale `_out/` 재사용 금지** (진단 — claude-htm-1748328000 2026-05-27): `<pptx>_out/`·`<pptx 디렉토리>/<basename>_out/` 등 동명 사전 변환 결과가 존재해도 **항상 무시하고 원본 `.pptx`에서 재추출**. 이전 변환 시점의 pptx2md 버전이 미디어 일부(EMF/WMF/TIFF)를 스킵했을 가능성 + 카탈로그 변동분 미반영 위험. `--reuse-out` 플래그 명시 시만 재사용 허용 (현재 미구현 — 기본은 재추출 강제)
-* `~/.claude/skills/pptx2md/scripts/pptx2md-run.sh <pptx 경로> -o Projects/<Name>/_pipeline/pptx2md-out -n <Name>` 실행
+* **runner 스크립트 (로컬 vendor 우선, Issue270)**: `.claude/vendor/pptx2md-run.sh` 를 우선 사용. 미존재 시에만 글로벌 `~/.claude/skills/pptx2md/scripts/pptx2md-run.sh` fallback. standalone clone self-contained 을 위해 로컬 vendor 사본이 SSOT.
+    - 실행: `.claude/vendor/pptx2md-run.sh <pptx 경로> -o Projects/<Name>/_pipeline/pptx2md-out -n <Name>`
 * 출력: raw markdown + `img/*.png` 이미지 추출
 * 검증: 명령 종료 코드 0, `_pipeline/pptx2md-out/<Name>.md` 존재
-* 실패 처리: pptx2md 미설치 시 `uv tool install pptx2md` 안내 후 중단
+* 실패 처리: `pptx2md` pip 도구 미설치 시 `uv tool install pptx2md` (또는 `pip install pptx2md`) 안내 후 중단. (pip 도구는 런타임 prerequisite — vendor 대상 아님)
 
 ## Step 1.5 — 원본 PPTX 미디어 직접 추출 (raw zip unzip)
 

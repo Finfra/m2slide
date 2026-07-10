@@ -6,3 +6,5 @@ markmap_depth: 2
 toc_card_mode: true              # render TOC as cards (avoids markmap title-gap variant)
 head_left: d1
 head_right: now
+
+asset_mode: cdn   # Issue270 — 발행(GitHub Pages) 데크는 웹 서빙, CDN 유지 (vendor 미커밋)

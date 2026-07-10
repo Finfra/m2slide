@@ -905,11 +905,29 @@ class DevHandler(SimpleHTTPRequestHandler):
         re.IGNORECASE,
     )
 
+    # Issue270 — <script src="rel"> 외부 스크립트 태그의 src 를 rewrite.
+    # _rewrite_relative_assets 의 script-block skip 이 <script src="./vendor/x">
+    # opening 태그까지 통째로 건너뛰어 vendor 자산이 404 나던 문제 해결.
+    # [^>]*? 로 opening 태그 내부(첫 '>' 이전)의 src 만 매칭 → JS body 미접촉.
+    _SCRIPT_SRC_RE = re.compile(
+        r"""(<script\b[^>]*?\bsrc\s*=\s*)(['"])(?!/|https?:|file:|data:|#|\s*\2)([^'"]+?)(\2)""",
+        re.IGNORECASE,
+    )
+
+    # Issue270 — inline <style> 내 CSS url() / @import url() 상대 참조 rewrite.
+    # @font-face src url('./vendor/...'), @import url('./vendor/fonts/x.css') 등이
+    # proxy base(/p/<P>/n|s/...) 기준으로 404 나던 문제 해결. 절대/외부/data: 제외.
+    _CSS_URL_RE = re.compile(
+        r"""(url\(\s*)(['"]?)(?!/|https?:|file:|data:|#)([^)'"]+?)(\2\s*\))""",
+        re.IGNORECASE,
+    )
+
     def _rewrite_relative_assets(self, content: str, project: str) -> str:
         """Rewrite relative href/src attrs to absolute /p/<P>/s/<rel>.
         Skip *.html (handled by _rewrite_nav_strings) and absolute/external URLs.
         Skip <script>...</script> blocks — JS regex literals like /href="([^"]+)"/
-        would otherwise be corrupted (Issue241).
+        would otherwise be corrupted (Issue241). 단, <script src="rel"> opening 태그의
+        src 는 별도 pass 로 rewrite (Issue270 — vendor 자산 상대참조 지원).
         """
         prefix = f'/p/{project}/s/'
 
@@ -919,7 +937,13 @@ class DevHandler(SimpleHTTPRequestHandler):
             stripped = val.split('?', 1)[0].split('#', 1)[0]
             if stripped.lower().endswith('.html'):
                 return m.group(0)
+            # Issue270 — leading './' 제거 (없으면 /p/<P>/s/./vendor/... 로 깨짐)
+            if val.startswith('./'):
+                val = val[2:]
             return f'{attr}{q1}{prefix}{val}{q2}'
+
+        # Issue270 — <script src="rel"> opening 태그 src 먼저 rewrite (split skip 대상이므로).
+        content = self._SCRIPT_SRC_RE.sub(repl, content)
 
         # Split by <script>...</script>; rewrite only outside script blocks.
         # re.split with a capture group returns alternating non-match/match/...
@@ -928,7 +952,20 @@ class DevHandler(SimpleHTTPRequestHandler):
                          flags=re.IGNORECASE | re.DOTALL)
         for i in range(0, len(parts), 2):
             parts[i] = self._REL_ASSET_RE.sub(repl, parts[i])
-        return ''.join(parts)
+        content = ''.join(parts)
+
+        # Issue270 — inline <style> 블록 내 CSS url()/@import 상대 참조 rewrite.
+        def css_repl(m):
+            pre, q, val, post = m.group(1), m.group(2), m.group(3), m.group(4)
+            if val.startswith('./'):
+                val = val[2:]
+            return f'{pre}{q}{prefix}{val}{post}'
+
+        style_parts = re.split(r'(<style\b[^>]*>.*?</style\s*>)', content,
+                               flags=re.IGNORECASE | re.DOTALL)
+        for i in range(1, len(style_parts), 2):  # 홀수 index = <style> 블록
+            style_parts[i] = self._CSS_URL_RE.sub(css_repl, style_parts[i])
+        return ''.join(style_parts)
 
     def _stem_to_short_path(self, project: str, stem: str) -> str:
         # Issue248 follow-up: cross-page navigation rewrites target /n/ form

@@ -1,1 +1,3 @@
 toc_card_mode: true   # 챕터 TOC(toc-placeholder)를 markmap 대신 H2 서브섹션 카드 그리드로 렌더
+
+asset_mode: cdn   # Issue270 — 발행(GitHub Pages) 데크는 웹 서빙, CDN 유지 (vendor 미커밋)

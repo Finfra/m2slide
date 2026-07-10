@@ -128,7 +128,7 @@ slides:
 
 1. 모드·HWM 결정 (init/batch/end/all) → 슬라이드 범위 산출
 2. side-by-side review 카드 배열 작성 — 각 카드는 m2slide 캡처(좌) + PDF 캡처(우) + "정상" 체크박스 + 자유 텍스트 영역
-3. ___pm htm-server `/answer` endpoint POST 코드 주입 (기존 `htm-form-template.js` 패턴)
+3. ___pm htm-server `/answer` endpoint POST 코드 주입 (기존 `fpm-ask-form-template.js` 패턴 — hub 생태계 optional)
 4. `open -a Firefox` 호출
 
 `--no-form` 시 본 단계 skip. pairing.yml만 산출 → 호출 agent가 자체 렌더 또는 결과 텍스트 사용.
@@ -199,5 +199,5 @@ slide-tuner Step 6(피드백 회수)·Step 7(재빌드·재캡처)은 그대로 
 
 * slide-tuner agent: [`../../agents/slide-tuner.md`](../../agents/slide-tuner.md) Step 4~5를 본 스킬로 위임
 * ppt2m2slide agent: [`../../agents/ppt2m2slide.md`](../../agents/ppt2m2slide.md) round-trip 검증 옵션
-* htm form template: `~/.claude/hooks/htm-form-template.js` (form 작성 시 참조)
+* htm form template: `~/.claude/hooks/fpm-ask-form-template.js` (form 작성 시 참조 — hub 생태계 제공. m2slide standalone 무관 optional. Issue270)
 * apply-verify-rules: [`../../rules/apply-verify-rules.md`](../../rules/apply-verify-rules.md) §4.5 헤드리스 검증

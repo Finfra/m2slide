@@ -6,3 +6,5 @@
 # markmap TOC 하나만 남기고 중복되던 빈 Cards Page(#/2) 제거 (2026-07-02)
 toc_placeholder: true
 cards_placeholder: false
+
+asset_mode: cdn   # Issue270 — 발행(GitHub Pages) 데크는 웹 서빙, CDN 유지 (vendor 미커밋)
