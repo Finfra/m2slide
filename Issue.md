@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 270
+* Issue HWM: 273
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -28,6 +28,28 @@
 
 # 📙 일반
 
+## Issue271. layout 배경 하드코딩(#ffffff !important)이 다크 테마를 덮음 — 배경 테마 변수화 (등록: 2026-07-10)
+* 목적: 신규 다크 테마(stellar_dark)에서 cover 슬라이드와 standalone agenda.html 배경이 흰색으로 남아 밝은 텍스트가 안 보이는 회귀 발견. 근본 원인은 theme/default(및 theme/default_lec)가 layout 배경색을 하드코딩한 것.
+* 상세:
+    - `theme/default/slide.css` §4.1 `.reveal section.layout-_cover { background-color: #ffffff !important; }` — cover가 theme `.reveal` 배경을 `!important`로 덮음. default_lec도 동일 패턴(`theme/default_lec/slide.css` 287행 부근 `background-color:#ffffff !important`).
+    - `lib/css/base.css` §12 standalone agenda.html: `body.agenda-page`·`.agenda-frame` `background:#ffffff` 하드코딩 → 다크 테마 agenda 배경 흰색.
+    - 임시 조치: `theme/stellar_dark/slide.css`에서 cover `background-color:transparent !important` + agenda-frame 다크 override로 우회 (프로젝트 한정 해결). 다른 다크 테마 제작 시 매번 반복해야 하는 부담.
+* 구현 명세:
+    - cover/contents/chapter 등 layout 배경을 하드코딩 `#ffffff` 대신 `var(--m2-bg, #ffffff)` 또는 `transparent`(테마 `.reveal` 노출)로 변경하여 테마가 배경을 결정하게 함.
+    - `base.css` agenda letterbox/frame도 `var(--m2-bg)` 기반으로 전환.
+    - default/default_lec 회귀 0 보증(밝은 테마 기본값 유지) 확인 후 적용. base.css 수정은 CLAUDE.md "base.css 수정 가드" 절차(사용자 컨펌 + 대표 프로젝트 3종 빌드 검증) 준수.
+    - 참고 구현: `theme/stellar_dark/slide.css` §6 (우회 override).
+
+## Issue272. htmlArt 컴포넌트 다크(black) 테마 대비 미흡 — 팔레트·테마 변수 반응 (등록: 2026-07-10)
+* 목적: htmlArt(d3 SVG SmartArt)가 밝은 배경 전제로 색/텍스트가 고정되어 다크 테마에서 대비·가독성이 떨어짐. 다크 배경에서도 노드 배경·연결선·라벨이 읽히도록 개선 필요.
+* 상세:
+    - stellar_dark 등 다크 테마 적용 시 htmlArt 노드/텍스트가 배경과 충분히 분리되지 않음(예상 — 시각 확인 필요).
+    - htmlArt 색은 `--m2-accent-*` 팔레트에 일부 반응하나 노드 배경·텍스트·연결선이 라이트 전제 고정색일 가능성.
+* 구현 명세:
+    - htmlArt 렌더러(d3)·`theme/_shared/components.css`의 htmlArt 색상을 `--m2-text`·`--m2-surface`·`--m2-bg`·`--m2-accent-*` 변수 기반으로 전환하여 테마 배경에 반응하게 함.
+    - 다크/라이트 양쪽 대표 슬라이드로 대비 검증.
+    - 본 이슈는 **등록만** — 구현은 별도 세션.
+
 ## Issue265. policy 데이터 yml 목적 지향(goal-oriented) 스키마 + confidence 가중치 도입 — 정책 무력화·오변경 예방 (등록: 2026-07-06)
 * branch따서 작업할 것. 
 * 목적: `data/<stage>/*.yml` 정책이 (A) 파일명 정규식 하드코딩으로 조용히 무력화되고(`drop_redundant_page_screenshot`가 `pdf-p\d+`만 검출 → AgenticCoding `sNN_i1.png` bleed 8건 미검출), (B) 일괄 커밋(chore bulk)에 섞여 회귀 원인 격리가 불가하며, (C) 학습 사례 1건이 즉시 전역 enforce로 승격되어 과소/과대 일반화 위험을 안는 구조적 약점을 차단.
@@ -48,6 +70,20 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue273. StellarEvolution 고퀄화 + stellar_dark 다크 테마 + agenda_card_mode (등록: 2026-07-10, 해결: 2026-07-10, commit: fe8acdc) ✅
+* 목적: StellarEvolution 강연 데크를 장표 수 불변(16장)으로 시각 고퀄화(htmlArt·p5 3D·시뮬레이터)하고, 검은 배경 리소스와 어울리는 다크 테마 + 카드형 목차를 지원.
+* 상세:
+    - 데크: mermaid 6블록 → htmlArt(process·hierarchy·cycle) 교체, p5 WEBGL 3D 2종(회전 항성·태양↔적색거성), p5 시뮬레이터 3종(핵융합·대화형 HR도·초신성), NASA·Kurzgesagt refs 사실 반영
+    - 신규 테마 `theme/stellar_dark/` — default `@import` 상속 + 다크 override(배경 그라디언트·표·코드·인용·카드 목차)
+    - `agenda_card_mode` 옵션 — agenda.html(/n/a)을 markmap 대신 카드 그리드로 렌더 (기본 off, 회귀 0)
+* 구현 명세:
+    - `lib/config.js`: `agendaCardMode` 기본값 + `agenda_card_mode:` 파서 (+동시 작업분 `nav_color` 파서 함께 랜딩 — 다크 테마 nav 화살표 가시성)
+    - `lib/html-builder.js`: `generateAgendaHTML` 카드 렌더 분기 (tocData → `.chapter-card` 링크) + `--m2-nav-color` 체인
+    - `theme/stellar_dark/slide.css`(gitignore — 커스텀 테마 정책): 다크 팔레트·cover 투명화(§6)·세로 여백 §6b(htmlart `flex:0 1 auto`+`max-height:48vh`, contents-body center)·blockquote padding
+    - 검증: puppeteer(시스템 Chrome)로 deck 뷰(/n/) computed style 실측(padding 52/60px, htmlart 427px≤512 cap, blockquote 70px) + 스크린샷. `--lint-deployment` 통과
+    - 로컬 전용(gitignore): `Projects/StellarEvolution/`(publishing=x), `Projects.md`, `theme/stellar_dark/`
+    - 후속 이슈 파생: Issue271(layout 배경 하드코딩 테마 변수화), Issue272(htmlArt 다크 대비)
 
 ## Issue270. SCAR·런타임 자산 self-contained 배치 + 중첩 하위 프로젝트 상위 호출 해결 (등록: 2026-07-09, 해결: 2026-07-10, commit: 9ba6278) ✅
 * 목적: 결정사항("배포 위해 SCAR는 프로젝트 폴더 배치") 실현 + 부작용(중첩 하위 프로젝트 상위 호출 불가)·오프라인 자산 self-containment 해결. 타 PC clone 후 오프라인 즉시 작동.
