@@ -1,15 +1,15 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 269
+* Issue HWM: 270
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
     
 # 🤔 결정사항
-*  _meta.yml파일 사용 안함 : AGENDA.md나 {프로젝트명}.md파일의 yaml front matter에 추가하기로 함. 
-*  현재 프로젝트가 contents 생성에 치중함에 따라 m2slide모듈은 분리되어야하나 지금은 생성되는 컨텐츠와 slide생성이 밀접하고 scar부분에 한정되어 있어서 한동안 함께 진행 후 분리하고 push예정.
-
+* _meta.yml파일 사용 안함 : AGENDA.md나 {프로젝트명}.md파일의 yaml front matter에 추가하기로 함. 
+* 현재 프로젝트가 contents 생성에 치중함에 따라 m2slide모듈은 분리되어야하나 지금은 생성되는 컨텐츠와 slide생성이 밀접하고 scar부분에 한정되어 있어서 한동안 함께 진행 후 분리하고 push예정.
+* 배포를 위해 가급적 scar는 프로젝트 폴더에 배치함. 
 ## img 폴더 이중 복사 유지 (소스 `img/` + 빌드 `slide/img/`)
 * 결정: 현행 `fs.cpSync` 방식 유지
 * 이유: `slide/` 폴더를 통째로 삭제 후 재생성하는 빌드 패턴이 잦음
@@ -29,6 +29,7 @@
 # 📙 일반
 
 ## Issue265. policy 데이터 yml 목적 지향(goal-oriented) 스키마 + confidence 가중치 도입 — 정책 무력화·오변경 예방 (등록: 2026-07-06)
+* branch따서 작업할 것. 
 * 목적: `data/<stage>/*.yml` 정책이 (A) 파일명 정규식 하드코딩으로 조용히 무력화되고(`drop_redundant_page_screenshot`가 `pdf-p\d+`만 검출 → AgenticCoding `sNN_i1.png` bleed 8건 미검출), (B) 일괄 커밋(chore bulk)에 섞여 회귀 원인 격리가 불가하며, (C) 학습 사례 1건이 즉시 전역 enforce로 승격되어 과소/과대 일반화 위험을 안는 구조적 약점을 차단.
 * 분석 문서: http://jm4.local:9876/htm-doc?path=/Users/nowage/_git/__all/videoMaker/lib/m2slide/_doc_work/z_htm/hub_htm_20260706_210035_a_policy-history.htm (git history 사례 A/B/C + 예방책 ①~⑤ 상세)
 * 상세:
@@ -47,6 +48,16 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue270. SCAR·런타임 자산 self-contained 배치 + 중첩 하위 프로젝트 상위 호출 해결 (등록: 2026-07-09, 해결: 2026-07-10, commit: 9ba6278) ✅
+* 목적: 결정사항("배포 위해 SCAR는 프로젝트 폴더 배치") 실현 + 부작용(중첩 하위 프로젝트 상위 호출 불가)·오프라인 자산 self-containment 해결. 타 PC clone 후 오프라인 즉시 작동.
+* report: `_doc_work/report/scar-selfcontained_issue270_report.md` / 설계: `_doc_arch/scar-portability.md`
+* 결과 (A+B 방식, 4 Phase 완료):
+    - **상위 호출**: m2slide 로컬 `.claude/`=SSOT + 상위 `videoMaker/.claude/commands/m2s.md` 위임 bridge(commit ae6620e, 별도 repo). 복제 없음. standalone은 bridge 불요.
+    - **오프라인 vendor**: `lib/asset-manifest.js` + `lib/vendor/fetch-vendor.js`(21M, .ttf prune) + `lib/vendor-rewrite.js` 빌드 후처리 CDN→`./vendor` 치환. 잔여 CDN 0, 실렌더 콘솔 에러 0.
+    - **발행 데크 예외**: GitHub Pages 발행 13개 `_config.yml asset_mode: cdn`(웹 서빙·용량). vendor=로컬 오프라인 전용.
+    - **SCAR hard-dep**: `pptx2md-run.sh`→`.claude/vendor/`, form-template 참조 stale 교정.
+    - **dev-server proxy**: `server.py` vendor rewrite 지원. 42 테스트 OK, 유닛 167 pass/2 fail(사전결함, 신규 0).
 
 ## Issue269. fPmIntro 영문판 프로젝트 생성 (fPmIntro_en) (등록: 2026-07-06, 해결: 2026-07-06, commit: a819b3a) ✅
 * 목적: 기존 한글 fPM 소개 프로젝트 `fPmIntro`(10챕터 발표 자료)의 영문 버전을 `Projects/fPmIntro_en`으로 생성하여 영어권 대상 fPM 소개 지원
