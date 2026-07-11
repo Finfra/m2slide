@@ -28,18 +28,6 @@
 
 # 📙 일반
 
-## Issue271. layout 배경 하드코딩(#ffffff !important)이 다크 테마를 덮음 — 배경 테마 변수화 (등록: 2026-07-10)
-* 목적: 신규 다크 테마(stellar_dark)에서 cover 슬라이드와 standalone agenda.html 배경이 흰색으로 남아 밝은 텍스트가 안 보이는 회귀 발견. 근본 원인은 theme/default(및 theme/default_lec)가 layout 배경색을 하드코딩한 것.
-* 상세:
-    - `theme/default/slide.css` §4.1 `.reveal section.layout-_cover { background-color: #ffffff !important; }` — cover가 theme `.reveal` 배경을 `!important`로 덮음. default_lec도 동일 패턴(`theme/default_lec/slide.css` 287행 부근 `background-color:#ffffff !important`).
-    - `lib/css/base.css` §12 standalone agenda.html: `body.agenda-page`·`.agenda-frame` `background:#ffffff` 하드코딩 → 다크 테마 agenda 배경 흰색.
-    - 임시 조치: `theme/stellar_dark/slide.css`에서 cover `background-color:transparent !important` + agenda-frame 다크 override로 우회 (프로젝트 한정 해결). 다른 다크 테마 제작 시 매번 반복해야 하는 부담.
-* 구현 명세:
-    - cover/contents/chapter 등 layout 배경을 하드코딩 `#ffffff` 대신 `var(--m2-bg, #ffffff)` 또는 `transparent`(테마 `.reveal` 노출)로 변경하여 테마가 배경을 결정하게 함.
-    - `base.css` agenda letterbox/frame도 `var(--m2-bg)` 기반으로 전환.
-    - default/default_lec 회귀 0 보증(밝은 테마 기본값 유지) 확인 후 적용. base.css 수정은 CLAUDE.md "base.css 수정 가드" 절차(사용자 컨펌 + 대표 프로젝트 3종 빌드 검증) 준수.
-    - 참고 구현: `theme/stellar_dark/slide.css` §6 (우회 override).
-
 ## Issue272. htmlArt 컴포넌트 다크(black) 테마 대비 미흡 — 팔레트·테마 변수 반응 (등록: 2026-07-10)
 * 목적: htmlArt(d3 SVG SmartArt)가 밝은 배경 전제로 색/텍스트가 고정되어 다크 테마에서 대비·가독성이 떨어짐. 다크 배경에서도 노드 배경·연결선·라벨이 읽히도록 개선 필요.
 * 상세:
@@ -50,6 +38,8 @@
     - 다크/라이트 양쪽 대표 슬라이드로 대비 검증.
     - 본 이슈는 **등록만** — 구현은 별도 세션.
 
+
+# 📗 선택
 ## Issue265. policy 데이터 yml 목적 지향(goal-oriented) 스키마 + confidence 가중치 도입 — 정책 무력화·오변경 예방 (등록: 2026-07-06)
 * branch따서 작업할 것. 
 * 목적: `data/<stage>/*.yml` 정책이 (A) 파일명 정규식 하드코딩으로 조용히 무력화되고(`drop_redundant_page_screenshot`가 `pdf-p\d+`만 검출 → AgenticCoding `sNN_i1.png` bleed 8건 미검출), (B) 일괄 커밋(chore bulk)에 섞여 회귀 원인 격리가 불가하며, (C) 학습 사례 1건이 즉시 전역 enforce로 승격되어 과소/과대 일반화 위험을 안는 구조적 약점을 차단.
@@ -67,9 +57,22 @@
     - 우선순위: ①+④ (사례 A 직접 차단) → ② (사례 C 구조 개선) → ③⑤
     - triage: 복잡 (heuristics.yml 스키마 개편 + promote-to-data.py + lint 확장 — 설계 결정이 후속 이슈에 영향)
 
-# 📗 선택
-
 # ✅ 완료
+
+## Issue271. layout 배경 하드코딩(#ffffff !important)이 다크 테마를 덮음 — 배경 테마 변수화 (등록: 2026-07-10, 해결: 2026-07-11, commit: cee8334) ✅
+* 목적: 신규 다크 테마(stellar_dark)에서 cover 슬라이드와 standalone agenda.html 배경이 흰색으로 남아 밝은 텍스트가 안 보이는 회귀 발견. 근본 원인은 theme/default(및 theme/default_lec)가 layout 배경색을 하드코딩한 것.
+* 상세:
+    - `theme/default/slide.css` §4.1 `.reveal section.layout-_cover { background-color: #ffffff !important; }` — cover가 theme `.reveal` 배경을 `!important`로 덮음. default_lec도 동일 패턴.
+    - `lib/css/base.css` §12 standalone agenda.html: `body.agenda-page`·`.agenda-frame` `background:#ffffff` 하드코딩 → 다크 테마 agenda 배경 흰색.
+* 구현 (commit cee8334):
+    - theme/default/slide.css:368 + theme/default_lec/slide.css:287 cover: `#ffffff !important` → `var(--m2-bg, #ffffff) !important`.
+    - lib/css/base.css:1261(body.agenda-page)·1275(.agenda-frame): `#ffffff` → `var(--m2-bg, #ffffff)`.
+    - base.css :root `--m2-bg: #ffffff` 정의라 default·default_lec·팔레트 미지정 테마는 흰색 유지(회귀 0). 다크 테마는 `:root --m2-bg` override 만으로 cover·agenda 자동 반응.
+* 검증 (base.css 가드 준수):
+    - 대표 빌드 3종(m2Slide_single_mode·m2Slide_chapter_mode·aTest, 모두 default theme) 컴파일된 cover bg = `var(--m2-bg,#ffffff)`, `--m2-bg=#ffffff` → 흰색 유지 확인.
+    - StellarEvolution(stellar_dark): cover는 §6 workaround `transparent !important`가 var 규칙 뒤(cascade 후순위)라 그라디언트 유지. agenda.html은 custom.css `:root --m2-bg:#0c0e16`(base inline 뒤 link 로드 = 후순위 승) → 다크 반응 cascade 확인.
+    - stellar_dark의 agenda-frame 우회 override는 이제 잉여(base.css var 로 자동 해결). 제거는 후속 정리 대상.
+* 후속: Issue272(htmlArt 다크 대비)는 별도 이슈로 유지.
 
 ## Issue276. 설정 GUI 테마 콤보박스에 사용 가능한 테마 목록 미표시 (등록: 2026-07-11, 해결: 2026-07-11, commit: a2cb13b) ✅
 * 목적: dev-server 설정 GUI(테마·레이아웃 탭)에서 테마 콤보박스 ▾ 클릭 시 현재 테마 1개만 표시되고 다른 테마(default·default_lec·stellar_dark)가 보이지 않음. 테마 전환 불가.
