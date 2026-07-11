@@ -813,6 +813,24 @@
   display: block;
 }
 
+/* agenda_card_mode: 카드 그리드(.toc-cards)도 markmap 박스와 동일한 accent 테두리 프레임.
+   카드 모드 컨테이너는 .layout-_cards.layout-_toc — .toc-markmap 셀렉터에 매치되지 않아
+   테두리가 소실되던 회귀 보정 (default 테마 parity). */
+.agenda-frame .layout-_cards {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.agenda-frame .toc-cards {
+  flex: 1 1 0;
+  min-height: 0;
+  border: 2px solid var(--kn-accent);
+  border-radius: 8px;
+  padding: 12px;
+  overflow: auto;
+  background: #ffffff;
+}
+
 /* Issue113: agenda-frame은 transform: scale을 받지 않는 standalone 컨테이너.
    base.css §12의 min() 공식을 CSS 변수(--frame-h)로 재현해 frame 실제 높이 기준 폰트 부여.
    (container-type: size는 markmap SVG 사이징을 깨뜨리므로 미사용) */

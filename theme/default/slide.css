@@ -1028,6 +1028,25 @@ body.agenda-page .agenda-frame {
   display: block;
 }
 
+/* agenda_card_mode: 카드 그리드(.toc-cards)도 markmap 박스와 동일한 accent 테두리 프레임.
+   카드 모드 컨테이너는 .layout-_cards.layout-_toc — .toc-markmap 셀렉터에 매치되지 않아
+   테두리가 소실되던 회귀 보정. */
+.agenda-frame .layout-_cards {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.agenda-frame .toc-cards {
+  flex: 1 1 0;
+  min-height: 0;
+  margin-top: calc(var(--frame-h) * 0.05);
+  border: 2px solid var(--kn-accent);
+  border-radius: 8px;
+  padding: 12px;
+  overflow: auto;
+  background: transparent;
+}
+
 /* =========================================================================
    8. Guide Line — 테마 슬롯별 색상 (디버깅 시각화)
    - base.css §8: section(red) / h1·h2·h3(green) / .theContents(blue)

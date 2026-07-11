@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 277
+* Issue HWM: 278
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -23,6 +23,15 @@
 # 🌱 이슈후보
 
 # 🔥 진행 중
+
+## Issue278. agenda 카드 모드 노란 테두리 소실 + default_dark 비카드 agenda 헤더 불투명 (등록: 2026-07-11)
+* 목적: standalone agenda.html의 두 시각 회귀 해결 — (a) `agenda_card_mode: true` 시 markmap 박스의 노란 테두리(`--kn-accent`) 프레임이 사라짐, (b) default_dark 테마 비카드 agenda에서 `.toc-page-header` 다크 gradient(`!important`)가 우측 마스코트(finfraCat, z-index 0)를 가려 뒤 이미지가 안 보임
+* 상세:
+    - 테두리는 `theme/default/slide.css` `.agenda-frame .toc-markmap`에만 정의 — 카드 모드 컨테이너(`.toc-cards`)에는 매치되는 프레임 스타일 없음 (default_lec 동일)
+    - `theme/default_dark/slide.css` §5의 `.toc-page-header` gradient가 agenda 페이지에서 헤더 뒤 요소를 덮음
+* 구현 명세:
+    - `theme/default/slide.css` + `theme/default_lec/slide.css`: `.agenda-frame .layout-_cards`(flex column) + `.agenda-frame .toc-cards`(테두리·라운드·flex) 추가 — `.toc-markmap` 프레임과 parity
+    - `theme/default_dark/slide.css`: gradient 셀렉터를 `.reveal .toc-page-header`(in-deck)로 한정, `.agenda-page .toc-page-header`는 `transparent !important`
 
 # 📕 중요
 

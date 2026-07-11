@@ -81,10 +81,14 @@
 /* =========================================================================
    5. 목차(agenda·toc) — 다크 카드
    ========================================================================= */
-.reveal .toc-page-header,
-.toc-page-header,
-.agenda-page .toc-page-header {
+.reveal .toc-page-header {
   background: linear-gradient(135deg, #1b2338 0%, #10141f 100%) !important;
+  color: var(--kn-text) !important;
+}
+/* standalone agenda.html 헤더는 투명 — 불투명 gradient 가 우측 마스코트(::after, z-index 0)를
+   가려 뒤 이미지가 안 보이던 문제 보정. in-deck toc 슬라이드(.reveal)만 gradient 유지. */
+.agenda-page .toc-page-header {
+  background: transparent !important;
   color: var(--kn-text) !important;
 }
 .toc-page-title { color: var(--kn-text) !important; }
