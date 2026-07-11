@@ -365,7 +365,8 @@
 /* 4.1 cover: puffer1 좌상단 + subtitle 박스 우하단 */
 .reveal section.layout-_cover,
 .guide-line-mode .reveal .slides section.layout-_cover {
-  background-color: #ffffff !important;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응. 미정의 테마는 #ffffff fallback (회귀 0) */
+  background-color: var(--m2-bg, #ffffff) !important;
   background-image: url('../theme-img/finfraPuffer1.png');
   background-repeat: no-repeat;
   background-position: 6% 14%;

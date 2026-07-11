@@ -1258,7 +1258,8 @@ body.agenda-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (standalone agenda letterbox). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   font-family: var(--global-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif);
 }
@@ -1272,7 +1273,8 @@ body.agenda-page {
     calc(100vh - 2 * var(--slide-outer-padding, 0px)),
     calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
   );
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (ratio frame). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   position: relative;
 }
