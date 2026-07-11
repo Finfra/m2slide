@@ -444,5 +444,132 @@ class PendingFeedbackCountTest(unittest.TestCase):
             self._handler()._pending_feedback_count('cntProj'), 0)
 
 
+class NestedConfigWriterTest(unittest.TestCase):
+    """Issue275 — generic n-level (2-space) nested _config.yml line writer."""
+
+    SAMPLE = (
+        "theme: default\n"
+        "markmap_depth: 2\n"
+        "animation:\n"
+        "  default_transition: convex\n"
+        "  default_transition_speed: default\n"
+        "style:\n"
+        "  theContents:\n"
+        "    font_size_auto: true\n"
+        "    font_size_max_ratio: 0.66\n"
+        "nav_indicator: both\n"
+    )
+
+    def _run(self, src, dotted, value):
+        h = DevHandler.__new__(DevHandler)
+        lines = src.splitlines(keepends=True)
+        return ''.join(h._apply_nested(lines, dotted.split('.'), value))
+
+    def test_replace_2level(self):
+        out = self._run(self.SAMPLE, 'animation.default_transition', 'fade')
+        self.assertIn('  default_transition: fade\n', out)
+        self.assertIn('  default_transition_speed: default\n', out)
+
+    def test_replace_3level(self):
+        out = self._run(self.SAMPLE, 'style.theContents.font_size_max_ratio', '0.5')
+        self.assertIn('    font_size_max_ratio: 0.5\n', out)
+        self.assertIn('  theContents:\n', out)
+
+    def test_add_leaf_into_block(self):
+        out = self._run(self.SAMPLE, 'style.theContents.font_size_min', '18px')
+        self.assertIn('    font_size_min: 18px\n', out)
+        self.assertLess(out.index('font_size_min'), out.index('nav_indicator'))
+
+    def test_remove_leaf(self):
+        out = self._run(self.SAMPLE, 'animation.default_transition_speed', None)
+        self.assertNotIn('default_transition_speed', out)
+        self.assertIn('animation:\n', out)
+
+    def test_create_block_from_scratch(self):
+        out = self._run("theme: default\n", 'animation.default_transition', 'zoom')
+        self.assertIn('animation:\n', out)
+        self.assertIn('  default_transition: zoom\n', out)
+
+    def test_create_3level_from_scratch(self):
+        out = self._run("theme: default\n", 'style.theContents.font_size_auto', 'false')
+        self.assertIn('style:\n', out)
+        self.assertIn('  theContents:\n', out)
+        self.assertIn('    font_size_auto: false\n', out)
+
+    def test_scalar_quoting(self):
+        h = DevHandler.__new__(DevHandler)
+        self.assertEqual(h._cfg_render('#fff'), '"#fff"')
+        self.assertEqual(h._cfg_render('3:2'), '"3:2"')
+        self.assertEqual(h._cfg_render('default'), 'default')
+
+
+class OpenConfigTest(unittest.TestCase):
+    """Issue275 — POST /p/<P>/open-config 라우트·핸들러(파일 touch + VSCode open)."""
+
+    @classmethod
+    def setUpClass(cls):
+        import tempfile
+        cls.tmp = tempfile.mkdtemp(prefix='m2slide-opencfg-')
+        cls.old_cwd = os.getcwd()
+        os.chdir(cls.tmp)
+        os.makedirs(os.path.join('Projects', 'ocProj', 'slide'))
+
+    @classmethod
+    def tearDownClass(cls):
+        import shutil
+        os.chdir(cls.old_cwd)
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def _call(self, project):
+        """Bare handler로 _handle_open_config 호출 (Popen mock).
+        (status, json, spawned_args) 반환 — send_error 시 json=None."""
+        import server as _srv
+        h = DevHandler.__new__(DevHandler)
+        result = {'status': None, 'json': None}
+        h.send_error = lambda code, msg=None: result.update(status=code)
+        h._write_json = lambda obj, status=200: result.update(status=status, json=obj)
+        spawned = {'args': None}
+        orig = _srv.subprocess.Popen
+        _srv.subprocess.Popen = lambda args, **kw: spawned.update(args=args)
+        try:
+            h._handle_open_config(project)
+        finally:
+            _srv.subprocess.Popen = orig
+        return result['status'], result['json'], spawned['args']
+
+    def test_open_route_regex(self):
+        self.assertIsNotNone(DevHandler._OPEN_CONFIG_RE.match('/p/m2Slide/open-config'))
+        self.assertIsNotNone(DevHandler._OPEN_CONFIG_RE.match('/p/m2Slide/open-config/'))
+        self.assertIsNone(DevHandler._OPEN_CONFIG_RE.match('/p/m2Slide/config'))
+
+    def test_unknown_project_404(self):
+        status, payload, spawned = self._call('noSuchProj')
+        self.assertEqual(status, 404)
+        self.assertIsNone(spawned)
+
+    def test_open_creates_missing_config_and_spawns(self):
+        cfg = os.path.join('Projects', 'ocProj', '_config.yml')
+        if os.path.isfile(cfg):
+            os.remove(cfg)
+        status, payload, spawned = self._call('ocProj')
+        self.assertEqual(status, 200)
+        self.assertEqual(payload['status'], 'opened')
+        self.assertTrue(payload['created'])
+        self.assertTrue(os.path.isfile(cfg))  # touched when missing
+        self.assertIsNotNone(spawned)
+        self.assertIn('open', spawned)
+        self.assertEqual(spawned[-1],
+                         os.path.join(os.getcwd(), 'Projects', 'ocProj', '_config.yml'))
+
+    def test_open_existing_config_not_created(self):
+        cfg = os.path.join('Projects', 'ocProj', '_config.yml')
+        with open(cfg, 'w', encoding='utf-8') as fh:
+            fh.write('theme: default\n')
+        status, payload, spawned = self._call('ocProj')
+        self.assertEqual(status, 200)
+        self.assertFalse(payload['created'])
+        self.assertIsNotNone(spawned)
+
+
 if __name__ == '__main__':
     unittest.main()

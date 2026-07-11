@@ -30,6 +30,7 @@ import datetime
 import json
 import os
 import re
+import subprocess
 import sys
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs, unquote
@@ -235,6 +236,10 @@ class DevHandler(SimpleHTTPRequestHandler):
     _SHORT_NAV_C_RE = re.compile(r'^/p/([^/]+)/n/c/?$')
     _SHORT_NAV_A_RE = re.compile(r'^/p/([^/]+)/n/a/?$')
     _SHORT_NAV_T_RE = re.compile(r'^/p/([^/]+)/n/t/?$')
+    # Config editor (config GUI, Issue275): GET returns current values, POST writes _config.yml
+    _CONFIG_RE = re.compile(r'^/p/([^/]+)/config/?$')
+    # Open settings file (Issue275): POST opens Projects/<P>/_config.yml in VSCode
+    _OPEN_CONFIG_RE = re.compile(r'^/p/([^/]+)/open-config/?$')
 
     def do_GET(self):
         # Direct slide form: /<build path>/X.html/<n>  → plain text section
@@ -246,6 +251,10 @@ class DevHandler(SimpleHTTPRequestHandler):
         # Project list
         if path_only in ('/p', '/p/'):
             return self._serve_project_list()
+        # Config editor JSON (config GUI, Issue275): GET /p/<P>/config
+        m = self._CONFIG_RE.match(path_only)
+        if m:
+            return self._serve_config_get(m.group(1))
         # Short form: /p/<project>/s/<chap>/<slide>  (both 1-base index, chapter mode unified)
         m = self._SHORT_SLIDE_CHAP_RE.match(path_only)
         if m:
@@ -1086,7 +1095,13 @@ class DevHandler(SimpleHTTPRequestHandler):
             'a{color:hsl(191,60%,40%);text-decoration:none}'
             'a:hover{text-decoration:underline}'
             '.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin:16px 0}'
-            '.card{background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}'
+            '.proj-section{margin:28px 0}'
+            '.section-header{margin:24px 0 8px}'
+            '.section-header .section-title{border-bottom:2px solid hsl(191,60%,45%);'
+            'padding-bottom:4px;margin:0;font-size:18px}'
+            '.section-header .section-count{color:#999;font-size:14px;font-weight:normal}'
+            '.section-header .section-desc{color:#666;font-size:13px;margin:4px 0 0}'
+            '.card{position:relative;background:#fff;border:1px solid #ddd;border-radius:6px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}'
             '.card h3{margin:0 0 8px;font-size:16px}.card h3 a{color:inherit;text-decoration:none;font-weight:bold}.card h3 a:hover{text-decoration:underline}'
             '.card .meta{color:#666;font-size:13px;margin:4px 0}'
             '.card .links{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px}'
@@ -1133,6 +1148,83 @@ class DevHandler(SimpleHTTPRequestHandler):
             '.fb-cmd-copy:hover{background:#dceef2}'
             '.fb-pending{color:#c60;font-size:12px;white-space:nowrap}'
             '.fb-pending b{font-size:13px}'
+            # config GUI (Issue275) — per-project _config.yml editor (gear button + modal)
+            '.cfg-gear{position:absolute;top:8px;right:8px;border:1px solid #ddd;'
+            'background:#fff;border-radius:6px;cursor:pointer;font-size:14px;'
+            'line-height:1;padding:3px 7px;opacity:0.75}'
+            '.cfg-gear:hover{opacity:1;background:#f0f8fa;border-color:hsl(191,60%,55%)}'
+            '.cfg-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);'
+            'display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}'
+            '.cfg-overlay[hidden]{display:none}'
+            '.cfg-modal{background:#fff;color:#1a1a1a;border-radius:10px;max-width:620px;'
+            'width:100%;max-height:85vh;display:flex;flex-direction:column;'
+            'box-shadow:0 8px 40px rgba(0,0,0,0.3)}'
+            '.cfg-modal-head{display:flex;justify-content:space-between;align-items:center;'
+            'padding:14px 18px;border-bottom:1px solid #eee;font-size:16px}'
+            '.cfg-modal-head .cfg-head-right{display:flex;align-items:center;gap:10px}'
+            '.cfg-lang{display:inline-flex;border:1px solid #ccc;border-radius:6px;overflow:hidden}'
+            '.cfg-lang-btn{border:none;background:#fff;color:#555;padding:2px 9px;cursor:pointer;'
+            'font-size:12px;font-weight:600}'
+            '.cfg-lang-btn.active{background:hsl(191,60%,45%);color:#fff}'
+            '.cfg-tabs{display:flex;flex-wrap:wrap;gap:2px;padding:0 12px;border-bottom:1px solid #eee}'
+            '.cfg-tab{border:none;background:none;padding:8px 10px;cursor:pointer;font-size:13px;'
+            'color:#666;border-bottom:2px solid transparent;margin-bottom:-1px}'
+            '.cfg-tab:hover{color:#1a1a1a}'
+            '.cfg-tab.active{color:hsl(191,55%,33%);border-bottom-color:hsl(191,60%,45%);font-weight:600}'
+            '.cfg-panel.hidden{display:none}'
+            '.cfg-panel{display:flex;flex-direction:column;gap:9px}'
+            '.cfg-lab .cfg-set{font-size:11px;white-space:nowrap;margin-left:3px;opacity:0.8}'
+            '.cfg-combo{position:relative;flex:1 1 auto;min-width:0;display:flex}'
+            '.cfg-row input.cfg-combo-input{flex:1 1 auto;min-width:0;padding:5px 8px;'
+            'border:1px solid #ccc;border-right:none;border-radius:5px 0 0 5px;'
+            'font:inherit;background:#fff;color:#1a1a1a}'
+            '.cfg-combo-toggle{border:1px solid #ccc;background:#eef4f5;'
+            'border-radius:0 5px 5px 0;cursor:pointer;padding:0 9px;font-size:12px;'
+            'color:#456;display:flex;align-items:center}'
+            '.cfg-combo-toggle:hover{background:#dceef2}'
+            '.cfg-combo-list{position:absolute;top:calc(100% + 2px);left:0;right:0;margin:0;'
+            'padding:3px;list-style:none;background:#fff;border:1px solid #b9c6ca;'
+            'border-radius:6px;box-shadow:0 6px 20px rgba(0,0,0,0.16);max-height:190px;'
+            'overflow-y:auto;z-index:30}'
+            '.cfg-combo-list.hidden{display:none}'
+            '.cfg-combo-list li{padding:5px 9px;border-radius:4px;cursor:pointer;font-size:13px}'
+            '.cfg-combo-list li:hover{background:#eaf4f7}'
+            '.cfg-combo-list li.cur{font-weight:600;color:hsl(191,55%,33%)}'
+            '.cfg-combo-list li.cur::after{content:" ✓";color:hsl(191,55%,40%)}'
+            '.cfg-multi{flex:1 1 auto;min-width:0;display:flex;flex-wrap:wrap;gap:12px;align-items:center}'
+            '.cfg-multi-item{display:inline-flex;align-items:center;gap:4px;font-size:13px;cursor:pointer}'
+            '.cfg-x{border:none;background:none;font-size:18px;cursor:pointer;color:#888}'
+            '.cfg-x:hover{color:#c33}'
+            '.cfg-body{padding:14px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}'
+            # center-axis two-column: label right-aligned to center gap, control left-aligned from center; uniform row height
+            '.cfg-row{display:flex;justify-content:flex-start;align-items:center;gap:14px;'
+            'font-size:14px;min-height:34px}'
+            '.cfg-row>.cfg-lab{flex:0 0 44%;color:#555;display:flex;justify-content:flex-end;'
+            'align-items:center;gap:3px;text-align:right;line-height:1.25}'
+            '.cfg-row input[type=text],.cfg-row input[type=number],.cfg-row select{'
+            'flex:1 1 auto;width:auto;min-width:0;padding:5px 8px;'
+            'border:1px solid #ccc;border-radius:5px;font:inherit;background:#fff;color:#1a1a1a}'
+            '.cfg-bool{cursor:pointer}'
+            '.cfg-bool>.cfg-lab{color:#1a1a1a}'
+            '.cfg-switch{position:relative;display:inline-block;width:30px;height:16px;flex:0 0 auto}'
+            '.cfg-switch input{opacity:0;width:0;height:0;position:absolute;margin:0}'
+            '.cfg-slider{position:absolute;inset:0;background:#c8ccd0;border-radius:16px;'
+            'transition:background .15s}'
+            '.cfg-slider::before{content:"";position:absolute;height:12px;width:12px;left:2px;top:2px;'
+            'background:#fff;border-radius:50%;transition:transform .15s;box-shadow:0 1px 2px rgba(0,0,0,0.35)}'
+            '.cfg-switch input:checked + .cfg-slider{background:hsl(191,60%,45%)}'
+            '.cfg-switch input:checked + .cfg-slider::before{transform:translateX(14px)}'
+            '.cfg-switch input:focus-visible + .cfg-slider{outline:2px solid hsl(191,60%,55%);outline-offset:2px}'
+            '.cfg-foot{display:flex;justify-content:space-between;align-items:center;gap:12px;'
+            'padding:12px 18px;border-top:1px solid #eee}'
+            '.cfg-status{font-size:13px;color:#0a6;flex:1 1 auto;min-width:0}'
+            '.cfg-save{cursor:pointer;padding:7px 16px;border:1px solid hsl(191,60%,35%);'
+            'background:hsl(191,60%,45%);color:#fff;border-radius:6px;font-weight:600}'
+            '.cfg-save:hover{background:hsl(191,60%,38%)}'
+            '.cfg-save:disabled{opacity:0.6;cursor:wait}'
+            '.cfg-openfile{cursor:pointer;padding:7px 12px;border:1px solid #ccc;'
+            'background:#f2f4f6;color:#1a1a1a;border-radius:6px;font-size:13px;white-space:nowrap;flex:0 0 auto}'
+            '.cfg-openfile:hover{background:#e6e9ec}'
             '@media (prefers-color-scheme:dark){body{background:#1a1a1a;color:#e0e0e0}'
             '.card{background:#222;border-color:#444}.card .links a{background:#2a3a3e}'
             'th{background:#2a3a3e}td,th{border-color:#444}code{background:#2d2d2d;color:#e0e0e0}'
@@ -1142,7 +1234,23 @@ class DevHandler(SimpleHTTPRequestHandler):
             '.fb-bulk-bar button{background:#222;border-color:#555}'
             '.fb-cmd-box{background:#2a3a3e;border-color:#444}'
             '.fb-cmd-box code{background:#222;border-color:#555}'
-            '.fb-cmd-copy{background:#222;border-color:#555}}'
+            '.fb-cmd-copy{background:#222;border-color:#555}'
+            '.cfg-gear{background:#222;border-color:#444}'
+            '.cfg-modal{background:#222;color:#e0e0e0}'
+            '.cfg-modal-head,.cfg-foot{border-color:#444}'
+            '.cfg-openfile{background:#2a2a2d;color:#e0e0e0;border-color:#555}'
+            '.cfg-openfile:hover{background:#33383b}'
+            '.cfg-row>span{color:#aaa}.cfg-bool>span{color:#e0e0e0}'
+            '.cfg-slider{background:#555}'
+            '.cfg-row input,.cfg-row select{background:#2a2a2a;color:#e0e0e0;border-color:#555}'
+            '.cfg-lang{border-color:#555}.cfg-lang-btn{background:#2a2a2d;color:#aaa}'
+            '.cfg-tabs{border-color:#444}.cfg-tab:hover{color:#e0e0e0}'
+            '.cfg-lab .cfg-set{opacity:0.85}'
+            '.cfg-row input.cfg-combo-input{background:#2a2a2a;color:#e0e0e0;border-color:#555}'
+            '.cfg-combo-toggle{background:#333;border-color:#555;color:#bbb}'
+            '.cfg-combo-toggle:hover{background:#3a4145}'
+            '.cfg-combo-list{background:#222;border-color:#555}'
+            '.cfg-combo-list li:hover{background:#33383b}}'
             '</style>'
         )
 
@@ -1235,10 +1343,25 @@ class DevHandler(SimpleHTTPRequestHandler):
             i += 1
         return rows
 
-    _CATEGORY_EMOJI = {
-        'pr': '📢', 'info': 'ℹ️', 'lec': '🎓', 'm2': '🧩', 'test': '🧪',
-    }
+    # Ordered category sections mirroring docs/index.html classification
+    # (key, emoji, section title, section description). Empty buckets skipped.
+    _CATEGORY_SECTIONS = [
+        ('m2',    '🧩', 'm2Slide',   '마크다운 → 프레젠테이션 도구: 소개·기능·예제'),
+        ('lec',   '🎓', '강연 자료', 'AI·LLM 강의용 프레젠테이션'),
+        ('pr',    '📢', '프레임워크', 'Claude Code 다중 프로젝트 자동화'),
+        ('info',  'ℹ️', '소개',      '도구·개념 소개 자료'),
+        ('test',  '🧪', '테스트',    '개발·검증용 프로젝트'),
+        ('other', '📁', '그 외',     '미분류 프로젝트'),
+    ]
+    _CATEGORY_EMOJI = {k: e for k, e, _t, _d in _CATEGORY_SECTIONS if k != 'other'}
     _PUBLISH_AFFIRM_RE = re.compile(r'^(o|y|yes|true|1|✓|v|ok)$', re.IGNORECASE)
+
+    @classmethod
+    def _category_key(cls, raw: str) -> str:
+        """Normalize a Projects.md category cell to a known section key ('other' fallback)."""
+        k = (raw or '').strip().lower()
+        known = {key for key, *_ in cls._CATEGORY_SECTIONS}
+        return k if k in known else 'other'
 
     @classmethod
     def _manual_check_badge(cls, v: str) -> str:
@@ -1259,12 +1382,15 @@ class DevHandler(SimpleHTTPRequestHandler):
         """GET /p/ — project directory listing."""
         projects = self._list_projects()
         meta_by_name = {r['name']: r for r in self._read_projects_md_active_rows()}
-        cards = []
+        # Bucket cards by category so /p/ mirrors docs/index.html classification.
+        buckets = {key: [] for key, *_ in self._CATEGORY_SECTIONS}
         for p in projects:
             files = self._list_slide_files(p)
             entry = 'index.html' if 'index.html' in files else (files[0] if files else None)
             meta = meta_by_name.get(p)
-            cat_emoji = self._CATEGORY_EMOJI.get((meta['category'] if meta else '').strip().lower(), '📁')
+            cat_key = self._category_key(meta['category'] if meta else '')
+            cards = buckets[cat_key]
+            cat_emoji = self._CATEGORY_EMOJI.get(cat_key, '📁')
             title_html = f'{cat_emoji} {self._esc_html(p)}'
             meta_line = ''
             if meta:
@@ -1280,9 +1406,13 @@ class DevHandler(SimpleHTTPRequestHandler):
                 meta_line = f'<div class="meta">{" · ".join(bits)}</div>'
                 if meta['work']:
                     meta_line += f'<div class="meta">📌 {self._esc_html(meta["work"])}</div>'
+            gear = (f'<button type="button" class="cfg-gear" '
+                    f'data-project="{self._esc_html(p)}" title="설정">⚙️</button>')
             if not entry:
                 cards.append(
-                    f'<div class="card"><h3>{title_html}</h3>'
+                    f'<div class="card" data-project="{self._esc_html(p)}">'
+                    + gear +
+                    f'<h3>{title_html}</h3>'
                     + meta_line +
                     '<div class="meta">⚠️ 빌드 산출물 없음 (slide/ 비어있음)</div>'
                     f'<div class="links"><a href="/p/{p}">목록 보기</a></div></div>'
@@ -1299,13 +1429,29 @@ class DevHandler(SimpleHTTPRequestHandler):
             # (fallback chain /n/c → /n/a → /n/t → /n/1/1 propagates _with_query).
             first_link = f'/p/{p}/n/c'
             cards.append(
-                f'<div class="card"><h3><a href="{first_link}" target="_blank" rel="noopener">{title_html}</a></h3>'
+                f'<div class="card" data-project="{self._esc_html(p)}">'
+                + gear +
+                f'<h3><a href="{first_link}" target="_blank" rel="noopener">{title_html}</a></h3>'
                 + meta_line +
                 f'<div class="meta">{build_label} · 진입: <code>{entry}</code></div>'
                 '<div class="links">'
                 f'<a href="/p/{p}" target="_blank" rel="noopener">📋 슬라이드 목록</a>'
                 f'<a href="{first_link}" target="_blank" rel="noopener">🎬 진입 (cover/agenda/toc/첫슬라이드 fallback)</a>'
                 '</div></div>'
+            )
+        sections_html = []
+        for key, emoji, title, desc in self._CATEGORY_SECTIONS:
+            bucket = buckets.get(key)
+            if not bucket:
+                continue
+            sections_html.append(
+                f'<section class="proj-section" id="section-{key}">'
+                '<div class="section-header">'
+                f'<h2 class="section-title">{emoji} {self._esc_html(title)} '
+                f'<span class="section-count">({len(bucket)})</span></h2>'
+                f'<p class="section-desc">{self._esc_html(desc)}</p></div>'
+                '<div class="grid">' + '\n'.join(bucket) + '</div>'
+                '</section>'
             )
         body = (
             '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
@@ -1315,8 +1461,10 @@ class DevHandler(SimpleHTTPRequestHandler):
             + self._common_header('📂 프로젝트 목록', show_projects_link=False) +
             f'<p>총 <b>{len(projects)}</b>개 프로젝트. '
             '(🏷️버전 · 📝설명 · ✅/🚧/⬜/➖ Manual Check · 🌐공개/🔒비공개 — '
-            f'<code>Projects.md</code> 반영, 읽기 전용)</p>'
-            '<div class="grid">' + '\n'.join(cards) + '</div>'
+            f'<code>Projects.md</code> 반영). 각 카드 <b>⚙️</b> → <code>_config.yml</code> 렌더 옵션 편집 + 재빌드.</p>'
+            + ''.join(sections_html)
+            + self._config_modal_html()
+            + self._config_modal_script() +
             '</body></html>'
         )
         self._write_html(body)
@@ -1545,6 +1693,637 @@ class DevHandler(SimpleHTTPRequestHandler):
             pass
         return out
 
+    # ---- config editor GUI (Issue275) — full _config.yml render options ----
+    # Whitelist of editable render options surfaced by the /p/ ⚙️ modal. Mirrors
+    # _config.org.yml. Each field: key(dotted for nested)·tab(1-5)·type·label(ko)·
+    # en·default + type params. Only these keys are writable via POST /p/<P>/config.
+    _TRANSITIONS = ['none', 'fade', 'slide', 'convex', 'concave', 'zoom']
+    _CSS_LEN_PAT = r'^(0|[0-9]+(\.[0-9]+)?(px|em|rem|vh|vw|vmin|vmax|%))$'
+    _CONFIG_SCHEMA = [
+        # Tab 1 — Theme & Layout
+        {'key': 'theme', 'tab': 1, 'type': 'combo', 'label': '테마', 'en': 'Theme', 'default': 'default', 'pattern': r'^[a-z][a-z0-9_-]*$'},
+        {'key': 'palette', 'tab': 1, 'type': 'combo', 'label': '팔레트', 'en': 'Palette', 'default': 'default', 'pattern': r'^[a-z][a-z0-9_-]*$', 'options': ['default', 'warm', 'cool', 'mono', 'office_rainbow']},
+        {'key': 'theme_default_layout', 'tab': 1, 'type': 'text', 'label': '기본 레이아웃', 'en': 'Default layout', 'default': 'contents', 'pattern': r'^_?[a-z][a-z0-9-]*$'},
+        {'key': 'cover_enabled', 'tab': 1, 'type': 'bool', 'label': '커버 슬라이드', 'en': 'Cover slide', 'default': 'false'},
+        {'key': 'cover_layout', 'tab': 1, 'type': 'text', 'label': '커버 레이아웃', 'en': 'Cover layout', 'default': '_cover', 'pattern': r'^_?[a-z][a-z0-9-]*$'},
+        {'key': 'auto_layout_detect', 'tab': 1, 'type': 'bool', 'label': '자동 레이아웃 감지', 'en': 'Auto layout detect', 'default': 'true'},
+        {'key': 'top_align', 'tab': 1, 'type': 'bool', 'label': '상단 정렬', 'en': 'Top align', 'default': 'false'},
+        {'key': 'guide_line', 'tab': 1, 'type': 'bool', 'label': '가이드 라인(디버그)', 'en': 'Guide line (debug)', 'default': 'false'},
+        {'key': 'use_open_props', 'tab': 1, 'type': 'bool', 'label': 'Open Props 로드', 'en': 'Load Open Props', 'default': 'false'},
+        {'key': 'title_contents_gap', 'tab': 1, 'type': 'int', 'label': '제목↔본문 갭(%)', 'en': 'Title-content gap (%)', 'default': '30', 'min': 0, 'max': 100},
+        {'key': 'card_columns', 'tab': 1, 'type': 'int', 'label': '카드 열 수', 'en': 'Card columns', 'default': 'auto', 'min': 1, 'max': 12},
+        # Tab 2 — TOC & Structure
+        {'key': 'toc_placeholder', 'tab': 2, 'type': 'bool', 'label': '첫 슬라이드 TOC', 'en': 'First-slide TOC', 'default': 'true'},
+        {'key': 'cards_placeholder', 'tab': 2, 'type': 'bool', 'label': 'H1 카드 페이지', 'en': 'H1 cards page', 'default': 'true'},
+        {'key': 'agenda_enabled', 'tab': 2, 'type': 'bool', 'label': 'agenda 페이지', 'en': 'Agenda page', 'default': 'true'},
+        {'key': 'agenda_card_mode', 'tab': 2, 'type': 'bool', 'label': 'agenda 카드 렌더', 'en': 'Agenda card mode', 'default': 'false'},
+        {'key': 'toc_card_mode', 'tab': 2, 'type': 'bool', 'label': 'TOC 카드 렌더', 'en': 'TOC card mode', 'default': 'false'},
+        {'key': 'agenda_title', 'tab': 2, 'type': 'text', 'label': 'agenda 제목', 'en': 'Agenda title', 'default': 'Agenda'},
+        {'key': 'markmap_depth', 'tab': 2, 'type': 'int', 'label': 'markmap 깊이', 'en': 'Markmap depth', 'default': '2', 'min': 0, 'max': 9},
+        {'key': 'chapter_markmap_depth', 'tab': 2, 'type': 'int', 'label': '챕터 markmap 깊이', 'en': 'Chapter markmap depth', 'default': '3', 'min': 0, 'max': 9},
+        {'key': 'head_left', 'tab': 2, 'type': 'text', 'label': 'head 좌측', 'en': 'Head left', 'default': 'd1', 'pattern': r'^(d[0-9]{1,2}|now|none)$'},
+        {'key': 'head_right', 'tab': 2, 'type': 'text', 'label': 'head 우측', 'en': 'Head right', 'default': 'now', 'pattern': r'^(d[0-9]{1,2}|now|none)$'},
+        {'key': 'head_breadcum', 'tab': 2, 'type': 'bool', 'label': 'breadcrumb', 'en': 'Breadcrumb', 'default': 'true'},
+        # Tab 3 — Navigation
+        {'key': 'nav_indicator', 'tab': 3, 'type': 'enum', 'label': '네비게이터', 'en': 'Nav indicator', 'default': 'both', 'options': ['both', 'diamond', 'page']},
+        {'key': 'nav_color', 'tab': 3, 'type': 'color', 'label': '네비 색', 'en': 'Nav color', 'default': 'auto'},
+        {'key': 'page_number_mode', 'tab': 3, 'type': 'enum', 'label': '페이지 번호 모드', 'en': 'Page number mode', 'default': 'global', 'options': ['global', 'local']},
+        {'key': 'breadcrumb', 'tab': 3, 'type': 'bool', 'label': 'breadcrumb 접두', 'en': 'Breadcrumb prefix', 'default': 'true'},
+        # Tab 4 — Color & Animation
+        {'key': 'htmlart_line_color', 'tab': 4, 'type': 'color', 'label': 'htmlArt 선 색', 'en': 'htmlArt line color', 'default': 'auto'},
+        {'key': 'animation.default_transition', 'tab': 4, 'type': 'enum', 'label': '전환 효과', 'en': 'Transition', 'default': 'slide', 'options': _TRANSITIONS},
+        {'key': 'animation.default_transition_speed', 'tab': 4, 'type': 'enum', 'label': '전환 속도', 'en': 'Transition speed', 'default': 'default', 'options': ['default', 'fast', 'slow']},
+        {'key': 'animation.default_background_transition', 'tab': 4, 'type': 'enum', 'label': '배경 전환', 'en': 'Background transition', 'default': 'slide', 'options': _TRANSITIONS},
+        {'key': 'video_default', 'tab': 4, 'type': 'text', 'label': '비디오 기본', 'en': 'Video default', 'default': 'controls', 'pattern': r'^[a-z][a-z-]*$'},
+        {'key': 'background', 'tab': 4, 'type': 'text', 'label': '전역 배경', 'en': 'Global background', 'default': 'none'},
+        # Tab 5 — Size & Font
+        {'key': 'slide_ratio', 'tab': 5, 'type': 'enum', 'label': '슬라이드 비율', 'en': 'Slide ratio', 'default': '16:9', 'options': ['16:9', '3:2', 'fill']},
+        {'key': 'slide_outer_padding', 'tab': 5, 'type': 'text', 'label': '외부 패딩', 'en': 'Outer padding', 'default': '0', 'pattern': _CSS_LEN_PAT},
+        {'key': 'slide_inner_padding', 'tab': 5, 'type': 'text', 'label': '내부 패딩', 'en': 'Inner padding', 'default': '0', 'pattern': _CSS_LEN_PAT},
+        {'key': 'style.theContents.font_size_auto', 'tab': 5, 'type': 'bool', 'label': '본문 폰트 자동', 'en': 'Auto font size', 'default': 'true'},
+        {'key': 'style.theContents.font_size_min', 'tab': 5, 'type': 'text', 'label': '최소 폰트', 'en': 'Min font size', 'default': '20px', 'pattern': _CSS_LEN_PAT},
+        {'key': 'style.theContents.font_size_max_ratio', 'tab': 5, 'type': 'float', 'label': '본문 최대 비율', 'en': 'Max font ratio', 'default': '0.66', 'min': 0.0, 'max': 1.0},
+        {'key': 'style.theContents.media_container_enlarge', 'tab': 5, 'type': 'enum', 'label': '미디어 확대', 'en': 'Media enlarge', 'default': 'fit', 'options': ['original', 'width', 'height', 'fit']},
+        # Tab 6 — Build & Deploy
+        {'key': 'asset_mode', 'tab': 6, 'type': 'enum', 'label': '자산 배치', 'en': 'Asset mode', 'default': 'vendor', 'options': ['vendor', 'cdn']},
+        {'key': 'deploy_formats', 'tab': 6, 'type': 'multi', 'label': '배포 형식', 'en': 'Deploy formats', 'default': '[]', 'options': ['epub', 'pdf', 'pptx']},
+        {'key': 'kroki_server', 'tab': 6, 'type': 'text', 'label': 'Kroki 서버', 'en': 'Kroki server', 'default': 'https://kroki.io', 'pattern': r'^https?://[^\s;{}<>"]+$'},
+    ]
+    _CONFIG_I18N = {
+        'ko': {
+            'tabs': ['테마·레이아웃', '목차·구조', '네비게이션', '색·애니메이션', '크기·폰트', '빌드·배포'],
+            'title': '설정', 'save': '저장 + 재빌드', 'saving': '저장·재빌드 중... (수 초)',
+            'unset': '미설정', 'nochange': '변경 없음', 'loading': '로딩...', 'load_fail': '로딩 실패',
+            'saved_ok': '저장·재빌드 완료', 'saved_norebuild': '저장됨 · 재빌드 실패', 'send_fail': '전송 실패',
+            'userset': '기본값에서 변경됨',
+            'open_file': '📄 설정 파일 열기', 'opening': '여는 중...', 'opened': '설정 파일 열기 완료 (VSCode)', 'open_fail': '열기 실패',
+        },
+        'en': {
+            'tabs': ['Theme & Layout', 'TOC & Structure', 'Navigation', 'Color & Animation', 'Size & Font', 'Build & Deploy'],
+            'title': 'Settings', 'save': 'Save + Rebuild', 'saving': 'Saving & rebuilding... (a few sec)',
+            'unset': 'unset', 'nochange': 'No change', 'loading': 'Loading...', 'load_fail': 'Load failed',
+            'saved_ok': 'Saved & rebuilt', 'saved_norebuild': 'Saved · rebuild failed', 'send_fail': 'Send failed',
+            'userset': 'Changed from default',
+            'open_file': '📄 Open settings file', 'opening': 'Opening...', 'opened': 'Opened in VSCode', 'open_fail': 'Open failed',
+        },
+    }
+    _CONFIG_MAX_BODY = 64 * 1024
+    _NAV_COLOR_RE = re.compile(
+        r'^(auto|light|dark|#[0-9a-fA-F]{3,8}|rgba?\([^;{}<>]+\)|hsla?\([^;{}<>]+\)|[a-zA-Z]+)$')
+
+    def _config_path(self, project: str) -> str:
+        return os.path.join(os.getcwd(), 'Projects', project, '_config.yml')
+
+    def _list_themes(self):
+        """Theme names under theme/ (excluding _ prefixed like _shared)."""
+        root = os.path.join(os.getcwd(), 'theme')
+        out = []
+        if os.path.isdir(root):
+            for n in sorted(os.listdir(root)):
+                if not n.startswith('_') and os.path.isdir(os.path.join(root, n)):
+                    out.append(n)
+        return out
+
+    @staticmethod
+    def _cfg_indent(line: str) -> int:
+        s = line.rstrip('\n')
+        return len(s) - len(s.lstrip(' '))
+
+    @staticmethod
+    def _cfg_key(line: str):
+        s = line.strip()
+        if not s or s.startswith('#') or ':' not in s:
+            return None
+        return s.split(':', 1)[0].strip()
+
+    def _config_flat_values(self, project: str) -> dict:
+        """Read _config.yml into a flat dict with dotted keys for nested blocks
+        (animation.*, style.theContents.*). Preserves a leading '#' in scalar
+        values (hex color); strips a trailing ' #comment' and surrounding quotes."""
+        path = self._config_path(project)
+        vals = {}
+        if not os.path.isfile(path):
+            return vals
+        stack = []  # (indent, key) of open parent blocks
+        try:
+            with open(path, 'r', encoding='utf-8') as fh:
+                for line in fh:
+                    raw = line.rstrip('\n')
+                    if not raw.strip() or raw.lstrip().startswith('#') or ':' not in raw:
+                        continue
+                    indent = self._cfg_indent(raw)
+                    k, _, v = raw.partition(':')
+                    k = k.strip()
+                    while stack and stack[-1][0] >= indent:
+                        stack.pop()
+                    vc = re.sub(r'\s+#.*$', '', v).strip()
+                    if len(vc) >= 2 and vc[0] == vc[-1] and vc[0] in '"\'':
+                        vc = vc[1:-1]
+                    if vc == '':
+                        stack.append((indent, k))   # parent block
+                    else:
+                        dotted = '.'.join([s[1] for s in stack] + [k])
+                        vals[dotted] = vc
+        except OSError:
+            pass
+        return vals
+
+    def _config_current(self, project: str) -> dict:
+        """Schema-key current values. Absent key → '' (all types). Present bool →
+        'true'/'false'. Client uses '' to show the unset badge + default placeholder."""
+        raw = self._config_flat_values(project)
+        out = {}
+        for f in self._CONFIG_SCHEMA:
+            v = raw.get(f['key'])
+            if v is None:
+                out[f['key']] = ''
+            elif f['type'] == 'bool':
+                out[f['key']] = 'true' if str(v).strip().lower() in ('true', 'yes', '1') else 'false'
+            else:
+                out[f['key']] = v
+        return out
+
+    def _validate_config_value(self, field: dict, value):
+        """Return (ok, normalized_str_or_None, err). normalized None → remove key."""
+        t = field['type']
+        if t == 'bool':
+            b = str(value).strip().lower() in ('true', 'yes', '1', 'on')
+            return True, ('true' if b else 'false'), None
+        s = ('' if value is None else str(value)).strip()
+        if s == '':
+            return True, None, None   # empty → remove line (revert to default)
+        if any(c in s for c in '\n\r"<>{};'):
+            return False, None, f'{field["key"]}: 금지 문자 포함'
+        if t == 'int':
+            try:
+                n = int(s)
+            except ValueError:
+                return False, None, f'{field["key"]}: 정수 필요'
+            lo, hi = field.get('min', 0), field.get('max', 999)
+            if n < lo or n > hi:
+                return False, None, f'{field["key"]}: 범위 {lo}~{hi}'
+            return True, str(n), None
+        if t == 'float':
+            try:
+                n = float(s)
+            except ValueError:
+                return False, None, f'{field["key"]}: 실수 필요'
+            lo, hi = field.get('min', 0.0), field.get('max', 1.0)
+            if n < lo or n > hi:
+                return False, None, f'{field["key"]}: 범위 {lo}~{hi}'
+            return True, s, None
+        if t == 'enum':
+            if s not in field['options']:
+                return False, None, f'{field["key"]}: 허용값 {"|".join(field["options"])}'
+            return True, s, None
+        if t == 'multi':
+            inner = s[1:-1] if s.startswith('[') and s.endswith(']') else s
+            items = [x.strip() for x in inner.split(',') if x.strip()]
+            for it in items:
+                if it not in field['options']:
+                    return False, None, f'{field["key"]}: 허용값 {"|".join(field["options"])}'
+            return True, '[' + ', '.join(items) + ']', None
+        if t == 'color':
+            if not self._NAV_COLOR_RE.match(s):
+                return False, None, f'{field["key"]}: auto|light|dark|<css-color>'
+            return True, s, None
+        # combo / text
+        pat = field.get('pattern')
+        if pat and not re.match(pat, s):
+            return False, None, f'{field["key"]}: 형식 위반'
+        return True, s, None
+
+    @staticmethod
+    def _cfg_render(v: str) -> str:
+        """Scalar rendering — quote values with '#' (hex) or ':' (ratio) to match
+        the _config.yml quoting convention (e.g. "#ffcc00", "3:2")."""
+        return f'"{v}"' if ('#' in v or ':' in v) else v
+
+    def _cfg_block_end(self, lines, start, hi, indent):
+        """First index in [start, hi) whose real line has indent <= `indent`;
+        trailing blanks/comments are excluded from the block."""
+        last_real = start
+        i = start
+        while i < hi:
+            k = self._cfg_key(lines[i])
+            if k is not None:
+                if self._cfg_indent(lines[i]) <= indent:
+                    break
+                last_real = i + 1
+            i += 1
+        return last_real
+
+    def _apply_top_level(self, lines, updates):
+        seen = set()
+        out = []
+        for line in lines:
+            stripped = line.rstrip('\n')
+            if stripped and stripped[0] not in ' \t#' and ':' in stripped:
+                k = stripped.partition(':')[0].strip()
+                if k in updates:
+                    seen.add(k)
+                    val = updates[k]
+                    if val is None:
+                        continue
+                    out.append(f'{k}: {self._cfg_render(val)}\n')
+                    continue
+            out.append(line if line.endswith('\n') else line + '\n')
+        for k, v in updates.items():
+            if k in seen or v is None:
+                continue
+            out.append(f'{k}: {self._cfg_render(v)}\n')
+        return out
+
+    def _apply_nested(self, lines, parts, value):
+        """Generic n-level (2-space indent) nested set/remove. value None → remove
+        leaf (parent block preserved). Creates missing ancestor blocks/leaf."""
+        depth = len(parts)
+        lo, hi = 0, len(lines)
+        for level, seg in enumerate(parts):
+            want = level * 2
+            found = None
+            i = lo
+            while i < hi:
+                k = self._cfg_key(lines[i])
+                if k is not None and self._cfg_indent(lines[i]) < want and level > 0:
+                    break
+                if k == seg and self._cfg_indent(lines[i]) == want:
+                    found = i
+                    break
+                i += 1
+            if level == depth - 1:
+                if found is not None:
+                    if value is None:
+                        del lines[found]
+                    else:
+                        lines[found] = ' ' * want + f'{seg}: {self._cfg_render(value)}\n'
+                elif value is not None:
+                    ins = self._cfg_block_end(lines, lo, hi, want)
+                    lines.insert(ins, ' ' * want + f'{seg}: {self._cfg_render(value)}\n')
+                return lines
+            if found is not None:
+                lo = found + 1
+                hi = self._cfg_block_end(lines, lo, hi, want)
+            else:
+                if value is None:
+                    return lines
+                ins = self._cfg_block_end(lines, lo, hi, want)
+                lines.insert(ins, ' ' * want + f'{seg}:\n')
+                lo = ins + 1
+                hi = ins + 1
+        return lines
+
+    def _write_config_keys(self, project: str, updates: dict) -> None:
+        """Write whitelisted keys to _config.yml. Top-level via line replace/append,
+        dotted keys via the nested writer. Comments/order preserved; '#'/':' values
+        quoted. None removes the key (reverts to global default)."""
+        path = self._config_path(project)
+        lines = []
+        if os.path.isfile(path):
+            with open(path, 'r', encoding='utf-8') as fh:
+                lines = fh.readlines()
+        top = {k: v for k, v in updates.items() if '.' not in k}
+        nested = {k: v for k, v in updates.items() if '.' in k}
+        lines = self._apply_top_level(lines, top)
+        for dk, v in nested.items():
+            lines = self._apply_nested(lines, dk.split('.'), v)
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, 'w', encoding='utf-8') as fh:
+            fh.writelines(lines)
+
+    def _rebuild_project(self, project: str):
+        """Run ./m2slide.sh <project> --no-serve. Returns (ok, returncode, log_tail)."""
+        build_sh = os.path.join(os.getcwd(), 'm2slide.sh')
+        if not os.path.isfile(build_sh):
+            return False, -1, 'm2slide.sh not found'
+        try:
+            p = subprocess.run(
+                [build_sh, project, '--no-serve'],
+                cwd=os.getcwd(), capture_output=True, text=True, timeout=300)
+        except subprocess.TimeoutExpired:
+            return False, -1, 'build timeout (300s)'
+        except OSError as e:
+            return False, -1, f'build spawn 실패: {e}'
+        out = (p.stdout or '') + (p.stderr or '')
+        return (p.returncode == 0), p.returncode, out[-1500:]
+
+    def _config_schema_out(self):
+        """Schema with dynamic theme options injected (combo datalist source)."""
+        themes = self._list_themes()
+        out = []
+        for f in self._CONFIG_SCHEMA:
+            g = dict(f)
+            if f['key'] == 'theme':
+                g['options'] = themes or ['default']
+            out.append(g)
+        return out
+
+    def _serve_config_get(self, project: str):
+        """GET /p/<P>/config — schema (tabs·i18n labels), current values, defaults,
+        themes, i18n bundle. Client renders tabs + language switch without re-fetch."""
+        if project not in self._list_projects():
+            self.send_error(404, f'project not found: {project}')
+            return
+        self._write_json({
+            'project': project,
+            'schema': self._config_schema_out(),
+            'values': self._config_current(project),
+            'defaults': {f['key']: f.get('default', '') for f in self._CONFIG_SCHEMA},
+            'themes': self._list_themes(),
+            'i18n': self._CONFIG_I18N,
+            'tabCount': 6,
+        })
+
+    def _handle_config_post(self, project: str):
+        """POST /p/<P>/config — validate + write whitelisted keys (incl. nested) to
+        _config.yml, then rebuild. Body: {"values": {key: val, ...}}."""
+        if project not in self._list_projects():
+            self.send_error(404, f'project not found: {project}')
+            return
+        try:
+            length = int(self.headers.get('Content-Length', '0'))
+        except ValueError:
+            self.send_error(400, 'invalid Content-Length')
+            return
+        if length <= 0:
+            self.send_error(400, 'empty body')
+            return
+        if length > self._CONFIG_MAX_BODY:
+            self.send_error(413, 'body too large')
+            return
+        try:
+            payload = json.loads(self.rfile.read(length).decode('utf-8'))
+        except (ValueError, UnicodeDecodeError):
+            self.send_error(400, 'invalid JSON')
+            return
+        values = payload.get('values') if isinstance(payload, dict) else None
+        if not isinstance(values, dict) or not values:
+            self.send_error(400, 'values{} required')
+            return
+        field_by_key = {f['key']: f for f in self._CONFIG_SCHEMA}
+        updates = {}
+        errors = []
+        for k, v in values.items():
+            f = field_by_key.get(k)
+            if not f:
+                errors.append(f'{k}: 미허용 키')
+                continue
+            ok, norm, err = self._validate_config_value(f, v)
+            if not ok:
+                errors.append(err)
+                continue
+            updates[k] = norm
+        if errors:
+            self._write_json({'status': 'error', 'errors': errors}, status=400)
+            return
+        if not updates:
+            self._write_json({'status': 'ok', 'saved': 0, 'rebuilt': False})
+            return
+        try:
+            self._write_config_keys(project, updates)
+        except OSError as e:
+            self._write_json({'status': 'error', 'errors': [f'write 실패: {e}']}, status=500)
+            return
+        rebuilt, rc, log_tail = self._rebuild_project(project)
+        self._write_json({
+            'status': 'ok', 'saved': len(updates),
+            'keys': sorted(updates.keys()),
+            'rebuilt': rebuilt, 'returncode': rc, 'log': log_tail,
+        })
+
+    def _handle_open_config(self, project: str):
+        """POST /p/<P>/open-config — open Projects/<P>/_config.yml in VSCode
+        (parity with prj1 hub 'Open settings file'). Touches the file first when
+        missing, matching Save which creates _config.yml on first write. The
+        project is whitelisted via _list_projects() and the path is fixed under
+        Projects/<P>/, so no arbitrary path is opened. Server binds 127.0.0.1
+        only, so no extra IP allowlist is needed."""
+        if project not in self._list_projects():
+            self.send_error(404, f'project not found: {project}')
+            return
+        path = self._config_path(project)
+        existed = os.path.isfile(path)
+        if not existed:
+            try:
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+                with open(path, 'a', encoding='utf-8'):
+                    pass
+            except OSError as e:
+                self._write_json({'status': 'error', 'error': f'create 실패: {e}'}, status=500)
+                return
+        try:
+            subprocess.Popen(['open', '-a', 'Visual Studio Code', path],
+                             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except OSError as e:
+            self._write_json({'status': 'error', 'error': f'spawn 실패: {e}'}, status=500)
+            return
+        self._write_json({'status': 'opened', 'path': path, 'created': not existed})
+
+    def _config_modal_html(self) -> str:
+        """Static hidden modal: header(title + KO/EN switch + close), tab bar,
+        panels container, footer(open file + status + save)."""
+        return (
+            '<div id="cfg-overlay" class="cfg-overlay" hidden>'
+            '<div class="cfg-modal" role="dialog" aria-modal="true">'
+            '<div class="cfg-modal-head"><b id="cfg-title">설정</b>'
+            '<span class="cfg-head-right">'
+            '<span class="cfg-lang">'
+            '<button type="button" class="cfg-lang-btn active" data-lang="ko">KO</button>'
+            '<button type="button" class="cfg-lang-btn" data-lang="en">EN</button></span>'
+            '<button type="button" class="cfg-x" id="cfg-close" title="닫기">✕</button>'
+            '</span></div>'
+            '<div class="cfg-tabs" id="cfg-tabs"></div>'
+            '<form id="cfg-form" class="cfg-body"></form>'
+            '<div class="cfg-foot">'
+            '<button type="button" id="cfg-openfile" class="cfg-openfile" '
+            'title="_config.yml 을 VSCode 로 열기">📄 설정 파일 열기</button>'
+            '<span id="cfg-status" class="cfg-status"></span>'
+            '<button type="button" id="cfg-save" class="cfg-save">저장 + 재빌드</button></div>'
+            '</div></div>'
+        )
+
+    def _config_modal_script(self) -> str:
+        """Inline JS: gear → GET → build tabs/fields → badges → lang switch → POST diff."""
+        js = r'''
+var overlay=document.getElementById('cfg-overlay');
+var tabsEl=document.getElementById('cfg-tabs');
+var form=document.getElementById('cfg-form');
+var titleEl=document.getElementById('cfg-title');
+var statusEl=document.getElementById('cfg-status');
+var saveBtn=document.getElementById('cfg-save');
+var openBtn=document.getElementById('cfg-openfile');
+var DATA=null, initial={}, lang='ko', activeTab=1;
+try{lang=localStorage.getItem('m2cfgLang')||'ko';}catch(e){}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+function idOf(k){return 'cfg-f-'+k.replace(/\./g,'-');}
+function L(f){return lang==='en'?f.en:f.label;}
+function T(k){return (DATA.i18n[lang]||{})[k]||k;}
+function badgeHtml(){return '<span class="cfg-set" title="'+esc(T('userset'))+'">✏️</span>';}
+function normList(v){return parseList(v).slice().sort().join(',');}
+// pencil ✏️ shows only when the value differs from its schema default
+function diffsDefault(f,v,def){
+  if(f.type==='bool')return v!==def;
+  if(v==='')return false;
+  if(f.type==='multi')return normList(v)!==normList(def);
+  return v!==def;
+}
+function ctrl(f){
+  var id=idOf(f.key), val=(DATA.values[f.key]!=null?DATA.values[f.key]:''), def=DATA.defaults[f.key]||'';
+  var cur=(f.type==='bool')?(val!==''?val:def):val;
+  var badge=diffsDefault(f,cur,def)?badgeHtml():'';
+  var lab='<span class="cfg-lab"><span class="cfg-lname" data-ko="'+esc(f.label)+'" data-en="'+esc(f.en)+'">'+esc(L(f))+'</span>'+badge+'</span>';
+  var ctl;
+  if(f.type==='bool'){
+    var on=(val!==''?val==='true':def==='true');
+    var sw='<span class="cfg-switch"><input type="checkbox" id="'+id+'"'+(on?' checked':'')+' role="switch"><span class="cfg-slider"></span></span>';
+    return '<label class="cfg-row cfg-bool" data-key="'+esc(f.key)+'">'+lab+sw+'</label>';
+  }
+  if(f.type==='int'||f.type==='float'){
+    var step=f.type==='float'?' step="0.01"':'';
+    ctl='<input type="number" id="'+id+'"'+(f.min!=null?' min="'+f.min+'"':'')+(f.max!=null?' max="'+f.max+'"':'')+step+' value="'+esc(val)+'" placeholder="'+esc(def)+'">';
+  }else if(f.type==='enum'){
+    var opts=(f.options||[]).map(function(o){return '<option'+(o===val?' selected':'')+'>'+esc(o)+'</option>';}).join('');
+    ctl='<select id="'+id+'"><option value=""'+(val===''?' selected':'')+'>('+esc(def)+')</option>'+opts+'</select>';
+  }else if(f.type==='combo'){
+    var lis=(f.options||[]).map(function(o){return '<li data-val="'+esc(o)+'"'+(o===val?' class="cur"':'')+'>'+esc(o)+'</li>';}).join('');
+    ctl='<div class="cfg-combo" data-combo="1">'
+      +'<input type="text" id="'+id+'" class="cfg-combo-input" value="'+esc(val)+'" placeholder="'+esc(def)+'" autocomplete="off" role="combobox" aria-expanded="false">'
+      +'<button type="button" class="cfg-combo-toggle" tabindex="-1" aria-label="목록">▾</button>'
+      +'<ul class="cfg-combo-list hidden">'+lis+'</ul></div>';
+  }else if(f.type==='multi'){
+    var mcur=parseList(val);
+    var boxes=(f.options||[]).map(function(o){var on=mcur.indexOf(o)>=0;return '<label class="cfg-multi-item"><input type="checkbox" data-mopt="'+esc(o)+'"'+(on?' checked':'')+'>'+esc(o)+'</label>';}).join('');
+    ctl='<div class="cfg-multi" id="'+id+'">'+boxes+'</div>';
+  }else{
+    ctl='<input type="text" id="'+id+'" value="'+esc(val)+'" placeholder="'+esc(def)+'">';
+  }
+  return '<div class="cfg-row" data-key="'+esc(f.key)+'">'+lab+ctl+'</div>';
+}
+function buildTabs(){
+  tabsEl.innerHTML=DATA.i18n.ko.tabs.map(function(_,i){
+    var n=i+1;
+    return '<button type="button" class="cfg-tab'+(n===activeTab?' active':'')+'" data-tab="'+n+'">'
+      +'<span data-ko="'+esc(DATA.i18n.ko.tabs[i])+'" data-en="'+esc(DATA.i18n.en.tabs[i])+'">'+esc(DATA.i18n[lang].tabs[i])+'</span></button>';
+  }).join('');
+}
+function buildPanels(){
+  var html='';
+  for(var t=1;t<=DATA.tabCount;t++){
+    html+='<div class="cfg-panel'+(t===activeTab?'':' hidden')+'" data-panel="'+t+'">';
+    html+=DATA.schema.filter(function(f){return f.tab===t;}).map(ctrl).join('');
+    html+='</div>';
+  }
+  form.innerHTML=html;
+  form.querySelectorAll('.cfg-row [id^=cfg-f-]').forEach(function(el){
+    el.addEventListener('input',onFieldInput);
+    el.addEventListener('change',onFieldInput);
+  });
+  form.querySelectorAll('.cfg-combo').forEach(wireCombo);
+}
+function closeAllCombos(){document.querySelectorAll('.cfg-combo-list').forEach(function(l){l.classList.add('hidden');var c=l.closest('.cfg-combo');if(c){var i=c.querySelector('.cfg-combo-input');if(i)i.setAttribute('aria-expanded','false');}});}
+function wireCombo(combo){
+  var inp=combo.querySelector('.cfg-combo-input');
+  var list=combo.querySelector('.cfg-combo-list');
+  var toggle=combo.querySelector('.cfg-combo-toggle');
+  function filter(){var v=inp.value.trim().toLowerCase();list.querySelectorAll('li').forEach(function(li){li.style.display=(!v||li.dataset.val.toLowerCase().indexOf(v)>=0)?'':'none';});}
+  function open(){closeAllCombos();filter();list.classList.remove('hidden');inp.setAttribute('aria-expanded','true');}
+  function shut(){list.classList.add('hidden');inp.setAttribute('aria-expanded','false');}
+  toggle.addEventListener('click',function(e){e.stopPropagation();if(list.classList.contains('hidden'))open();else shut();});
+  inp.addEventListener('focus',open);
+  inp.addEventListener('input',filter);
+  list.addEventListener('mousedown',function(e){e.preventDefault();});
+  list.addEventListener('click',function(e){var li=e.target.closest('li');if(!li)return;inp.value=li.dataset.val;list.querySelectorAll('li.cur').forEach(function(x){x.classList.remove('cur');});li.classList.add('cur');shut();inp.dispatchEvent(new Event('input',{bubbles:true}));});
+}
+function fixBodyHeight(){
+  var panels=form.querySelectorAll('.cfg-panel'), prev=[];
+  panels.forEach(function(p,i){prev[i]=p.classList.contains('hidden');p.classList.remove('hidden');});
+  var mx=0; panels.forEach(function(p){if(p.offsetHeight>mx)mx=p.offsetHeight;});
+  panels.forEach(function(p,i){if(prev[i])p.classList.add('hidden');});
+  if(mx>0)form.style.minHeight=mx+'px';
+}
+function onFieldInput(e){
+  var row=e.target.closest('.cfg-row'); if(!row)return;
+  var key=row.dataset.key, f=fieldOf(key); if(!f)return;
+  var v=readField(f), def=DATA.defaults[key]||'';
+  var badge=row.querySelector('.cfg-set');
+  var should=diffsDefault(f,v,def);
+  if(should&&!badge){
+    var lab=row.querySelector('.cfg-lab');
+    if(lab)lab.insertAdjacentHTML('beforeend',badgeHtml());
+  }else if(!should&&badge){badge.remove();}
+}
+function fieldOf(key){return DATA.schema.filter(function(f){return f.key===key;})[0];}
+function parseList(v){v=(v||'').trim();if(v.charAt(0)==='[')v=v.slice(1);if(v.charAt(v.length-1)===']')v=v.slice(0,-1);return v.split(',').map(function(x){return x.trim();}).filter(Boolean);}
+function readField(f){var el=document.getElementById(idOf(f.key));if(!el)return '';if(f.type==='bool')return el.checked?'true':'false';if(f.type==='multi'){var sel=[];el.querySelectorAll('input[type=checkbox]:checked').forEach(function(c){sel.push(c.dataset.mopt);});return '['+sel.join(', ')+']';}return (el.value||'').trim();}
+function applyLang(l){
+  lang=l; try{localStorage.setItem('m2cfgLang',l);}catch(e){}
+  document.querySelectorAll('.cfg-lang-btn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===l);});
+  document.querySelectorAll('#cfg-overlay [data-ko]').forEach(function(el){
+    var t=el.getAttribute('data-'+l); if(t!=null)el.textContent=t;
+  });
+  titleEl.textContent=(overlay.dataset.project||'')+' — '+T('title');
+  saveBtn.textContent=T('save');
+  openBtn.textContent=T('open_file');
+  fixBodyHeight();
+}
+function showTab(n){
+  activeTab=n;
+  tabsEl.querySelectorAll('.cfg-tab').forEach(function(b){b.classList.toggle('active',+b.dataset.tab===n);});
+  form.querySelectorAll('.cfg-panel').forEach(function(p){p.classList.toggle('hidden',+p.dataset.panel!==n);});
+}
+function openModal(project){
+  overlay.dataset.project=project; statusEl.textContent=''; activeTab=1;
+  tabsEl.innerHTML=''; form.innerHTML=''; overlay.hidden=false;
+  titleEl.textContent=project+' — 설정';
+  fetch('/p/'+encodeURIComponent(project)+'/config').then(function(r){return r.json();}).then(function(j){
+    DATA=j; initial={};
+    DATA.schema.forEach(function(f){var v=DATA.values[f.key]!=null?DATA.values[f.key]:'';
+      if(f.type==='bool')initial[f.key]=(v!==''?v:(DATA.defaults[f.key]||'false'));
+      else if(f.type==='multi')initial[f.key]='['+parseList(v).join(', ')+']';
+      else initial[f.key]=v;});
+    buildTabs(); buildPanels(); applyLang(lang); showTab(1);
+    tabsEl.querySelectorAll('.cfg-tab').forEach(function(b){b.addEventListener('click',function(){showTab(+b.dataset.tab);});});
+  }).catch(function(e){statusEl.style.color='#c33';statusEl.textContent=T('load_fail')+': '+e.message;});
+}
+function closeModal(){overlay.hidden=true;}
+function save(){
+  var project=overlay.dataset.project, values={};
+  DATA.schema.forEach(function(f){var v=readField(f);if(v!==initial[f.key])values[f.key]=v;});
+  if(Object.keys(values).length===0){statusEl.style.color='';statusEl.textContent=T('nochange');return;}
+  statusEl.style.color='';statusEl.textContent=T('saving');saveBtn.disabled=true;
+  fetch('/p/'+encodeURIComponent(project)+'/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({values:values})})
+    .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})
+    .then(function(res){saveBtn.disabled=false;var j=res.j;
+      if(!res.ok||j.status==='error'){statusEl.style.color='#c33';statusEl.textContent='✗ '+((j.errors||[]).join('; ')||j.status||'error');return;}
+      statusEl.style.color=j.rebuilt?'#0a6':'#c60';
+      statusEl.textContent=(j.rebuilt?'✓ '+T('saved_ok'):'⚠ '+T('saved_norebuild')+' (rc '+j.returncode+')')+' ['+(j.keys||[]).join(', ')+']';
+      DATA.schema.forEach(function(f){initial[f.key]=readField(f);});
+    }).catch(function(e){saveBtn.disabled=false;statusEl.style.color='#c33';statusEl.textContent='✗ '+T('send_fail')+': '+e.message;});
+}
+document.addEventListener('click',function(e){
+  var g=e.target.closest?e.target.closest('.cfg-gear'):null;
+  if(g){e.preventDefault();openModal(g.dataset.project);return;}
+  var lb=e.target.closest?e.target.closest('.cfg-lang-btn'):null;
+  if(lb){applyLang(lb.dataset.lang);return;}
+  if(!e.target.closest||!e.target.closest('.cfg-combo'))closeAllCombos();
+  if(e.target===overlay)closeModal();
+});
+document.getElementById('cfg-close').addEventListener('click',closeModal);
+saveBtn.addEventListener('click',save);
+openBtn.addEventListener('click',function(){
+  var project=overlay.dataset.project; if(!project)return;
+  statusEl.style.color='';statusEl.textContent=T('opening');openBtn.disabled=true;
+  fetch('/p/'+encodeURIComponent(project)+'/open-config',{method:'POST'})
+    .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};});})
+    .then(function(res){openBtn.disabled=false;var j=res.j;
+      if(!res.ok||j.status!=='opened'){statusEl.style.color='#c33';statusEl.textContent='✗ '+((j&&j.error)||T('open_fail'));return;}
+      statusEl.style.color='#0a6';statusEl.textContent='✓ '+T('opened');})
+    .catch(function(e){openBtn.disabled=false;statusEl.style.color='#c33';statusEl.textContent='✗ '+T('send_fail')+': '+e.message;});
+});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!overlay.hidden)closeModal();});
+'''
+        return '<script>(function(){' + js + '})();</script>'
+
     def _is_chapter_mode(self, project: str) -> bool:
         files = self._list_slide_files(project)
         deck_files = [f for f in files if f != 'agenda.html']
@@ -1611,6 +2390,12 @@ class DevHandler(SimpleHTTPRequestHandler):
         m = self._FEEDBACK_POST_RE.match(path_only)
         if m:
             return self._handle_feedback_post(m.group(1))
+        m = self._CONFIG_RE.match(path_only)
+        if m:
+            return self._handle_config_post(m.group(1))
+        m = self._OPEN_CONFIG_RE.match(path_only)
+        if m:
+            return self._handle_open_config(m.group(1))
         self.send_error(404, f'no POST route: {path_only}')
 
     def _pending_feedback_count(self, project: str) -> int:
