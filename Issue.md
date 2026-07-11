@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 276
+* Issue HWM: 277
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -24,20 +24,19 @@
 
 # 🔥 진행 중
 
+## Issue277. 테마 stellar_dark → default_dark rename + StellarEvolution 참조 수정 (등록: 2026-07-11)
+* 목적: 우주 다크 테마를 특정 프로젝트 종속 명칭(stellar) 대신 범용 명칭(default_dark)으로 정착 — default 상속 다크 variant 표준 테마로 재사용 가능하게 함
+* 상세:
+    - `theme/stellar_dark/` → `theme/default_dark/` 폴더 rename (untracked 상태 — plain mv)
+    - 참조 갱신: `Projects/StellarEvolution/_config.yml` `theme:`, `.gitignore` 추적 화이트리스트(`!/theme/stellar_dark/`)·주석, `theme/stellar_dark/slide.css` 헤더 주석
+    - 빌드 산출물: `Projects/StellarEvolution/slide/css/custom.css` 재빌드 반영, `docs/StellarEvolution/css/custom.css` 동기화
+* 구현 명세:
+    - rename-reference-rules 5단계 (사전 grep → mv → 참조 갱신 → 사후 grep 0건 → 단일 commit)
+    - 검증: `./m2slide.sh StellarEvolution` 빌드 로그 `Theme applied: default_dark` 확인
+
 # 📕 중요
 
 # 📙 일반
-
-## Issue272. htmlArt 컴포넌트 다크(black) 테마 대비 미흡 — 팔레트·테마 변수 반응 (등록: 2026-07-10)
-* 목적: htmlArt(d3 SVG SmartArt)가 밝은 배경 전제로 색/텍스트가 고정되어 다크 테마에서 대비·가독성이 떨어짐. 다크 배경에서도 노드 배경·연결선·라벨이 읽히도록 개선 필요.
-* 상세:
-    - stellar_dark 등 다크 테마 적용 시 htmlArt 노드/텍스트가 배경과 충분히 분리되지 않음(예상 — 시각 확인 필요).
-    - htmlArt 색은 `--m2-accent-*` 팔레트에 일부 반응하나 노드 배경·텍스트·연결선이 라이트 전제 고정색일 가능성.
-* 구현 명세:
-    - htmlArt 렌더러(d3)·`theme/_shared/components.css`의 htmlArt 색상을 `--m2-text`·`--m2-surface`·`--m2-bg`·`--m2-accent-*` 변수 기반으로 전환하여 테마 배경에 반응하게 함.
-    - 다크/라이트 양쪽 대표 슬라이드로 대비 검증.
-    - 본 이슈는 **등록만** — 구현은 별도 세션.
-
 
 # 📗 선택
 ## Issue265. policy 데이터 yml 목적 지향(goal-oriented) 스키마 + confidence 가중치 도입 — 정책 무력화·오변경 예방 (등록: 2026-07-06)
@@ -58,6 +57,15 @@
     - triage: 복잡 (heuristics.yml 스키마 개편 + promote-to-data.py + lint 확장 — 설계 결정이 후속 이슈에 영향)
 
 # ✅ 완료
+
+## Issue272. htmlArt 컴포넌트 다크(black) 테마 대비 미흡 — 시각검증상 Issue274로 실질 해결 (등록: 2026-07-10, 해결: 2026-07-11, commit: 35c5870) ✅
+* 목적: htmlArt(d3 SVG SmartArt)가 밝은 배경 전제로 색/텍스트가 고정되어 다크 테마에서 대비·가독성이 떨어진다는 우려(등록 시 "예상 — 시각 확인 필요")를 검증·해소.
+* 결론: **시각 확인 결과 다크 대비 문제 없음** — Issue274(선/테두리/화살표 → `--m2-line` 변수화) + 기존 `--m2-surface`/`--m2-text` 반응으로 이미 다크 테마 자동 호환. 추가 하드코딩 색 없음.
+* 검증 (StellarEvolution + stellar_dark, Chrome headless 다크 캡처 4종):
+    - process(적색거성→…), hierarchy(질량 갈림길), cycle(항성 핵합성) 모두 노드=dark surface(`--m2-surface #161a26`) + gold 테두리 + 흰 제목(`--m2-text`) + 회색 부제, 라인=밝은 회색(`--m2-line`)으로 대비 양호.
+    - 캡처: `_doc_work/capture/issue272-dark-s{9,11,14}*.png`
+* 조치: 유일한 비반응 하드코딩이던 `--htmlart-box-bg: rgba(0,0,0,.045)`는 grep 결과 lib/·theme/ 어디서도 참조 안 되는 **dead var** → `theme/_shared/components.css`에서 제거.
+* 회귀: 라이트(aTest/default) htmlArt process 정상(`_doc_work/capture/issue272-light-aTest-c9s2.png`) + 다크 재캡처 동일 — 회귀 0.
 
 ## Issue271. layout 배경 하드코딩(#ffffff !important)이 다크 테마를 덮음 — 배경 테마 변수화 (등록: 2026-07-10, 해결: 2026-07-11, commit: cee8334) ✅
 * 목적: 신규 다크 테마(stellar_dark)에서 cover 슬라이드와 standalone agenda.html 배경이 흰색으로 남아 밝은 텍스트가 안 보이는 회귀 발견. 근본 원인은 theme/default(및 theme/default_lec)가 layout 배경색을 하드코딩한 것.
