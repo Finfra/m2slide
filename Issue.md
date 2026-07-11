@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 275
+* Issue HWM: 276
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -70,6 +70,16 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue276. 설정 GUI 테마 콤보박스에 사용 가능한 테마 목록 미표시 (등록: 2026-07-11, 해결: 2026-07-11, commit: a2cb13b) ✅
+* 목적: dev-server 설정 GUI(테마·레이아웃 탭)에서 테마 콤보박스 ▾ 클릭 시 현재 테마 1개만 표시되고 다른 테마(default·default_lec·stellar_dark)가 보이지 않음. 테마 전환 불가.
+* 상세:
+    - 서버측 `_list_themes()`·`_config_schema_out()`는 정상 (테마 3개 모두 options 주입, `/p/<P>/config` 응답에 `themes: [default, default_lec, stellar_dark]` 확인).
+    - 근본 원인: 클라이언트 `wireCombo` 의 `open()` 이 `filter()` 호출 (`lib/dev-server/server.py:2228-2229`). 입력칸에 현재 테마 전체값이 들어있어 그 문자열을 포함하는 li 만 남기고 나머지를 `display:none` 처리 → 콤보 펼침 시 현재 테마만 노출.
+    - palette 콤보도 동일 `wireCombo` 사용 — 같은 증상.
+* 구현 명세:
+    - `showAll()` 신설 — `open()`(▾ 토글·focus 진입) 시 전체 li 표시, `filter()` 는 사용자 타이핑(`input` 이벤트)에서만 적용.
+    - 검증: dev-server 재시작 후 `/p/` 서빙 JS 에 `open(){closeAllCombos();showAll();...}` 반영 확인. `/p/StellarEvolution/config` 응답에 테마 3개 options 주입 확인.
 
 ## Issue275. dev-server 프로젝트 목록(/p/) 카드별 _config.yml 설정 GUI + Open settings file (등록: 2026-07-10, 해결: 2026-07-11, commit: 1f18955) ✅
 * 목적: dev-server 프로젝트 목록 페이지(`/p/`)가 `Projects.md` 메타를 읽기 전용으로만 표시하여, 프로젝트별 렌더 옵션(`_config.yml`)을 바꾸려면 매번 파일을 손으로 편집해야 했음. 각 카드에서 바로 편집 가능한 GUI를 추가하여 반복 편집 부담을 제거.
