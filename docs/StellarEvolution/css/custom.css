@@ -1,0 +1,1995 @@
+/* theme: default_dark — 다크 테마 (구 stellar_dark)
+ * default 테마를 상속(@import)한 뒤 배경·텍스트·표·코드·인용·목차만 다크로 override.
+ * p5 WEBGL 3D·시뮬레이터 등 검은 배경 리소스와 슬라이드 배경을 일치시켜 이질감 제거.
+ * 레이아웃 골격(base.css)·컴포넌트(components.css)는 default 상속으로 그대로 사용.
+ * layouts/ 는 별도 두지 않음 → theme/default/layouts 자동 fallback.
+ */
+
+/* >>> @import ../default/slide.css (Issue191 인라인 전개) */
+/* theme: default — 테마 고유 스타일만 (Issue64 슬림화 1422→403)
+ * 공통 골격(레이아웃·컴포넌트·반응형·:root 변수 기본값)은 lib/css/base.css가 inline <style>로 주입.
+ * 본 파일은 색상·배경 이미지·테마별 시각 언어만 정의.
+ *
+ * CSS 우선순위: CDN(1-3) → base.css inline(4) → 본 파일(5) → <body style>(6)
+ * 설계 SSOT (원칙·정책·금지·테마 정책): _doc_design/css.md
+ *
+ * 본 파일 목차:
+ *   §1  Keynote Nowage 색상 변수 (:root --kn-*) + .reveal background/color 명시
+ *   §2  layout-* 상/하단 노랑 가로선(::before/::after) + slide-number 스타일
+ *   §3  제목 노랑 밑줄 (h1::after background-image: hr.png) — 모든 layout
+ *   §4  마스코트 배경 (finfra*.png) — cover/contents/chapter-toc/chapter/exercise/exercise-small/closing/blank
+ *   §5  _toc Layout (그라디언트 헤더, 다운로드 버튼, markmap SVG)
+ *   §6  _cover 확장 (subtitle, body, instructor, qr-image, qr-url)
+ *   §7  _agenda Layout (그라디언트 배경)
+ *
+ * 공통 컴포넌트(component 슬롯·cards·htmlArt)는 theme/_shared/components.css — 아래 @import (Issue191)
+ */
+
+/* >>> @import ../_shared/components.css (Issue191 인라인 전개) */
+/* theme/_shared/components.css — theme 공통 컴포넌트 CSS SSOT (Issue191)
+   ─────────────────────────────────────────────────────────────────────────
+   theme 무관 구조 컴포넌트 스타일의 단일 출처. theme/default·default_lec 등
+   각 theme slide.css 가 `@import "../_shared/components.css";` 로 참조한다.
+
+   ⚠️ 빌드 동작: generate-slides.js 가 slide.css 를 slide/css/custom.css 로
+   복사할 때 @import 를 재귀 인라인 전개한다 — 산출물은 단일 파일(현행 유지).
+   순수 런타임 @import 아님 (partial 미복사로 404 되므로).
+
+   포함 블록 (이전: default/slide.css·default_lec/slide.css 양쪽 중복):
+     1. component 슬롯 (chart/map/d3) + WordArt + component 렌더 에러
+     2. 카드 컴포넌트 (`::: cards`)
+     3. htmlArt 구조 도해 (process/pyramid/hierarchy/cycle)
+
+   색상은 theme :root 변수(--kn-accent·--kn-text 등)를 상속하므로 theme 별
+   외형 차이는 유지된다. 구조·레이아웃만 공통화.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* Issue183: component 슬롯 (chart/map/d3) — diagram 슬롯(.media-container)과 분리.
+   media-container 의 blanket svg/img 룰은 viewBox/replaced 콘텐츠를 가정하므로
+   viewBox 없는 raw SVG(d3)·타일 img(map) 를 깨뜨림. component 슬롯은 영역만 제공하고
+   사이징은 각 컴포넌트(디스패처 훅)가 책임진다. */
+.reveal section[class*="layout-"] .contents-body > .component-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.reveal section[class*="layout-"] .component-container > svg {
+  flex: 1 1 0;
+  width: 100% !important;
+  min-height: 0;
+}
+
+/* Issue184: WordArt — ```wordart fenced block (HTML artifact).
+   순수 CSS 장식 텍스트 효과. .wordart-block 슬롯 영역 안에서 자유 HTML 작성. */
+.reveal .wordart-block {
+  justify-content: center;
+  align-items: center;
+  gap: 0.4em;
+  text-align: center;
+}
+.reveal .wordart-block > * { margin: 0.1em 0; }
+.reveal .wordart-gradient {
+  background: linear-gradient(92deg, #2b8fb3, #6a3fb5 55%, #c0392b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  font-weight: 800;
+}
+.reveal .wordart-outline {
+  color: transparent;
+  -webkit-text-stroke: 2px #2b8fb3;
+  font-weight: 800;
+}
+.reveal .wordart-shadow {
+  color: #2b8fb3;
+  text-shadow: 3px 4px 6px rgba(0, 0, 0, 0.35);
+  font-weight: 800;
+}
+.reveal .wordart-3d {
+  color: #f0f0f0;
+  font-weight: 800;
+  text-shadow: 1px 1px 0 #b0b0b0, 2px 2px 0 #9a9a9a, 3px 3px 0 #848484,
+    4px 4px 0 #6e6e6e, 5px 6px 8px rgba(0, 0, 0, 0.4);
+}
+.reveal .wordart-glow {
+  color: #fff;
+  font-weight: 800;
+  text-shadow: 0 0 6px #2bd4ff, 0 0 14px #2bd4ff, 0 0 26px #1f9fd4;
+}
+
+/* component 렌더 실패 표시 (react_dispatch·d3_dispatch 공용) */
+.reveal .component-error {
+  color: #c0392b;
+  font-size: 0.7em;
+  padding: 0.6em 1em;
+  border: 1px dashed #c0392b;
+  border-radius: 6px;
+  background: rgba(192, 57, 43, 0.06);
+}
+
+
+/* =========================================================================
+   카드 컴포넌트 — `::: cards` fenced div: 내부 리스트를 카드 그리드로 배치.
+   인포그래픽보다 단순한 "균질 항목 N개 병렬 제시"용 (slide-components.md Core 계열).
+   ========================================================================= */
+.reveal section[class*="layout-"] .m2-cards {
+  /* Issue224 보강: cards 컨테이너 자체에 0.92em — font_size_auto의 .theContents 축소와 합산되어
+     카드 다수(7행 이상) 슬라이드의 잘림을 추가로 완화 */
+  font-size: 0.92em;
+}
+.reveal section[class*="layout-"] .m2-cards > ul,
+.reveal section[class*="layout-"] .m2-cards > ol {
+  display: grid;
+  /* --m2-card-columns: _config.yml card_columns 키로 주입 (기본 auto-fit). 프로젝트 한정 카드 폭 제어
+     Issue223: minmax/gap/padding을 em 기반으로 전환 → font_size_auto가 contents 폰트를 줄이면
+     카드 박스도 비례 축소되어 카드 다수 슬라이드의 overflow clip 자동 완화
+     Issue224 보강: minmax 8em → 6.5em — 더 narrow 카드 → 같은 폭에 더 많은 열 → 행 수 감소 */
+  grid-template-columns: repeat(var(--m2-card-columns, auto-fit), minmax(6.5em, 1fr));
+  gap: 0.35em;
+  list-style: none;
+  padding: 0;
+  margin: 0.2em 0;
+}
+/* 카드 박스 — 제목 밴드가 카드 폭을 꽉 채우도록 padding 0 + overflow hidden */
+.reveal section[class*="layout-"] .m2-cards > ul > li,
+.reveal section[class*="layout-"] .m2-cards > ol > li {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--m2-card-body-bg, rgba(0, 0, 0, 0.04));
+  border: 1px solid var(--m2-card-border, rgba(0, 0, 0, 0.12));
+  border-radius: 0.5em;
+  overflow: hidden;
+  box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.12);
+  line-height: 1.5;
+}
+/* 카드 제목 밴드 — 테마 컬러 변수. 제목은 `**볼드**`로 작성 */
+.reveal section[class*="layout-"] .m2-cards > ul > li > strong,
+.reveal section[class*="layout-"] .m2-cards > ol > li > strong {
+  display: block;
+  margin: 0;
+  padding: 0.25em 0.6em;
+  background: var(--m2-card-title-bg, var(--kn-accent));
+  color: var(--m2-card-title-fg, var(--kn-text));
+  text-align: center;
+  font-size: 1em;
+  line-height: 1.3;
+}
+/* 카드 본문 — 제목 아래 중첩 리스트 */
+.reveal section[class*="layout-"] .m2-cards li ul,
+.reveal section[class*="layout-"] .m2-cards li ol {
+  display: block;
+  list-style: none;
+  margin: 0;
+  padding: 0.3em 0.55em;
+}
+.reveal section[class*="layout-"] .m2-cards li ul ul,
+.reveal section[class*="layout-"] .m2-cards li ul ol {
+  padding: 0.1em 0 0.1em 1.4em;
+}
+.reveal section[class*="layout-"] .m2-cards li ul li {
+  list-style: none;
+  margin: 0.15em 0;
+}
+/* 카드 li 자체 마커 제거 (base.css §10 ● override) */
+.reveal section[class*="layout-"] .m2-cards > ul > li::before,
+.reveal section[class*="layout-"] .m2-cards > ol > li::before {
+  content: none;
+}
+/* 본문 bullet 규칙: 1단계 다항목 → · / 1단계 단일 항목 → 마커 없음 / 2단계 → - */
+.reveal section[class*="layout-"] .m2-cards > ul > li > ul > li::before {
+  content: "·";
+}
+.reveal section[class*="layout-"] .m2-cards > ul > li > ul > li:only-child::before {
+  content: none;
+}
+.reveal section[class*="layout-"] .m2-cards > ul > li > ul > li:only-child {
+  padding-left: 0;
+}
+.reveal section[class*="layout-"] .m2-cards > ul > li > ul > li > ul > li::before {
+  content: "-";
+}
+/* Issue203: 전부 title-only 카드 블록(파서가 .rows 주입) → 1열 가로 행 레이아웃.
+   좁은 grid 열에서 긴 텍스트가 어색하게 줄바꿈되던 문제 해소. */
+.reveal section[class*="layout-"] .m2-cards.rows > ul,
+.reveal section[class*="layout-"] .m2-cards.rows > ol {
+  grid-template-columns: 1fr;
+}
+/* Issue203: title-only 카드(본문 중첩 리스트 없음) → 빈 회색 body 박스 제거.
+   제목 밴드(strong)가 카드 전체를 차지. :has() 미지원 리더는 기존 grid 박스 유지(graceful degradation). */
+.reveal section[class*="layout-"] .m2-cards > ul > li:not(:has(> ul)):not(:has(> ol)),
+.reveal section[class*="layout-"] .m2-cards > ol > li:not(:has(> ul)):not(:has(> ol)) {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  overflow: visible;
+}
+.reveal section[class*="layout-"] .m2-cards > ul > li:not(:has(> ul)):not(:has(> ol)) > strong,
+.reveal section[class*="layout-"] .m2-cards > ol > li:not(:has(> ul)):not(:has(> ol)) > strong {
+  border-radius: 0.5em;
+  box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.12);
+}
+
+/* =========================================================================
+   htmlArt 구조 도해 — `::: htmlart <type>` fenced div (Issue188)
+   process · cycle · hierarchy · pyramid 4타입 전부 d3 SVG 렌더(Issue193).
+   본 섹션은 `.m2-htmlart` 공통 컨테이너(CSS 변수·component-error)만 보유 —
+   타입별 시각은 lib/component-hooks/htmlart_dispatch.js 의 d3 렌더가 담당.
+   설계 SSOT: _doc_arch/htmlArt.md
+   ========================================================================= */
+.reveal .m2-htmlart {
+  /* Issue210: m2 팔레트 시스템 우선 참조 + 기존 --kn-* fallback 보장 */
+  --htmlart-accent: var(--m2-accent-1, var(--kn-accent, #2b8a9d));
+  --htmlart-accent-2: var(--m2-accent-2, #4ABDAC);
+  --htmlart-accent-3: var(--m2-accent-3, #FC4A1A);
+  --htmlart-accent-4: var(--m2-accent-4, #7B68EE);
+  --htmlart-accent-5: var(--m2-accent-5, #2ECC71);
+  --htmlart-accent-6: var(--m2-accent-6, #E74C3C);
+  --htmlart-fg: var(--m2-text, var(--kn-text, #ffffff));
+  --htmlart-surface: var(--m2-surface, #f4f4f5);            /* 노드 박스 불투명 배경 — d3 연결선이 박스 뒤로 가려지게 (Issue195) */
+  /* Issue274: 선/화살표/테두리 색 = config override(--m2-htmlart-line) > 테마 기본(--m2-line) > 하드코딩 fallback.
+     라이트 테마(default·default_lec)는 --m2-line 미설정 → 기존 rgba 유지(회귀 0). 다크 테마는 --m2-line 로 밝은 선색 지정. */
+  --htmlart-box-border: var(--m2-htmlart-line, var(--m2-line, rgba(0, 0, 0, 0.16)));
+  --htmlart-arrow: var(--m2-htmlart-line, var(--m2-line, rgba(0, 0, 0, 0.5)));
+  font-size: 0.92em;
+  /* Issue197/198: .contents-body(flex column)의 bullet 다음 잔여 세로 공간을 도해가 채움
+     — .media-container·.component-container 와 동일한 콘텐츠 컨테이너 fill 계약.
+     margin 금지 — flex item margin 은 잔여공간을 별도 잠식해 도해를 축소시킴(Issue198 P1).
+     비-flex 부모에선 무시(inline style fallback). */
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+/* Issue210: 블록 단위 palette override — `::: htmlart pie {.palette-X}` → data-palette=X.
+   theme catalog SSOT(data/palettes/catalog.yml)와 hex 동기. 신규 팔레트 추가 시 본 selector 도 함께 추가. */
+.reveal .m2-htmlart[data-palette="warm"] {
+  --m2-accent-1: #E74C3C;
+  --m2-accent-2: #F39C12;
+  --m2-accent-3: #D35400;
+  --m2-accent-4: #C0392B;
+  --m2-accent-5: #F1C40F;
+  --m2-accent-6: #E67E22;
+}
+.reveal .m2-htmlart[data-palette="cool"] {
+  --m2-accent-1: #3498DB;
+  --m2-accent-2: #1ABC9C;
+  --m2-accent-3: #9B59B6;
+  --m2-accent-4: #2980B9;
+  --m2-accent-5: #16A085;
+  --m2-accent-6: #34495E;
+}
+.reveal .m2-htmlart[data-palette="mono"] {
+  --m2-accent-1: #2C3E50;
+  --m2-accent-2: #7F8C8D;
+  --m2-accent-3: #34495E;
+  --m2-accent-4: #95A5A6;
+  --m2-accent-5: #566573;
+  --m2-accent-6: #1C2833;
+}
+/* Issue198: htmlArt 가 columns 슬롯(`::: {.column}`) 안에 있을 때 —
+   base.css `.m2-cols{align-items:center}` 가 컬럼 높이를 콘텐츠 기준으로
+   붕괴시켜 `.m2-col`(flex column) 안 `.m2-htmlart`(flex:1 1 0, basis 0)가
+   0 높이가 됨. htmlArt 있는 columns 만 stretch 로 전환해 컬럼이 본문
+   높이를 받게 함 (base.css 미수정 — components.css override). */
+.reveal .m2-cols:has(.m2-htmlart),
+.reveal .columns:has(.m2-htmlart) {
+  align-items: stretch;
+}
+.reveal .m2-htmlart ul,
+.reveal .m2-htmlart ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+/* base.css `●` 마커 무력화 (hierarchy 는 자체 ::before 로 재정의) */
+.reveal section[class*="layout-"] .m2-htmlart ul > li::before,
+.reveal section[class*="layout-"] .m2-htmlart ol > li::before {
+  content: none;
+}
+.reveal .m2-htmlart.component-error {
+  color: #c0392b;
+  font-size: 0.85em;
+}
+
+/* ── htmlArt 타입 CSS (process·cycle·hierarchy·pyramid) ───────────────────
+   4타입 전부 렌더 백엔드 d3 SVG 로 이관 완료 (Issue193). 런타임 훅
+   lib/component-hooks/htmlart_dispatch.js 가 data-htmlart div 내부 <ul> 을
+   파싱하여 d3 로 SVG 도해를 생성·교체한다. 타입별 CSS 셀렉터는 불필요 —
+   위 .m2-htmlart 공통 블록(CSS 변수·component-error)만 잔존하며 SVG 요소가
+   --htmlart-accent 등 변수를 상속한다.
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* ── htmlArt compare (Issue208) — 좌우 동등 비교 ─────────────────────────
+   SVG 불필요한 예외 타입. dispatch 가 순수 HTML grid 로 렌더.
+   좌·우 동등 병렬 대비 (balance 와 달리 무게·기울기 없음).
+   ── CSS 변수 (theme override 가능) ──
+     --htmlart-compare-sub          : 상단 작은 부제 색
+     --htmlart-compare-head-left    : 좌측 헤드라인 색
+     --htmlart-compare-head-right   : 우측 헤드라인 색
+     --htmlart-compare-divider      : 중앙 구분선 색
+   ───────────────────────────────────────────────────────────────────────── */
+.reveal .htmlart-compare {
+  --htmlart-compare-sub: #e67e22;
+  --htmlart-compare-head-left: #c0392b;
+  --htmlart-compare-head-right: #c0392b;
+  --htmlart-compare-divider: rgba(0, 0, 0, 0.18);
+}
+.reveal .htmlart-compare-grid {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 0;
+  width: 100%;
+  height: 100%;
+  align-items: stretch;
+}
+.reveal .htmlart-compare-col {
+  display: flex;
+  flex-direction: column;
+  padding: 0.4em 1.6em;
+  min-width: 0;            /* 긴 텍스트 grid overflow 방지 */
+}
+.reveal .htmlart-compare-sub {
+  color: var(--htmlart-compare-sub);
+  font-size: 0.78em;
+  font-weight: 600;
+  margin-bottom: 0.1em;
+  letter-spacing: 0.01em;
+  word-break: keep-all;
+}
+.reveal .htmlart-compare-head {
+  font-size: 1.85em;
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 0.6em;
+  word-break: keep-all;
+}
+.reveal .htmlart-compare-head[data-side="left"]  { color: var(--htmlart-compare-head-left); }
+.reveal .htmlart-compare-head[data-side="right"] { color: var(--htmlart-compare-head-right); }
+.reveal .htmlart-compare-divider {
+  width: 2px;
+  background: var(--htmlart-compare-divider);
+  margin: 0.4em 0;
+}
+.reveal .htmlart-compare-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.95em;
+  line-height: 1.55;
+}
+.reveal section[class*="layout-"] .htmlart-compare-list > li {
+  position: relative;
+  padding: 0.15em 0 0.15em 0.85em;
+  word-break: keep-all;
+}
+.reveal section[class*="layout-"] .htmlart-compare-list > li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: currentColor;
+  opacity: 0.55;
+}
+
+/* ── htmlArt explain (Issue211) ─────────────────────────────────────────
+   중앙 명제 + 사방 풀이 phrase + elbow line. radial 변형 (박스 X).
+   d3 SVG 가 foreignObject 안에 div 텍스트 + path 라인을 그린다.
+   CSS 변수:
+     --htmlart-explain-center-fg  : 중앙 명제 색 (기본 accent)
+     --htmlart-explain-leaf-fg    : 풀이 phrase 색 (기본 fg)
+     --htmlart-explain-line       : 연결 라인 색 (기본 accent)
+   ──────────────────────────────────────────────────────────────────────── */
+.reveal .htmlart-explain {
+  --htmlart-explain-center-fg: var(--htmlart-accent);
+  --htmlart-explain-leaf-fg: var(--m2-text, var(--kn-text, inherit));
+  --htmlart-explain-line: var(--htmlart-accent);
+}
+
+/* <<< @import ../_shared/components.css */
+
+/* =========================================================================
+   1. Keynote Nowage 색상 변수 (테마 브랜딩)
+   ========================================================================= */
+:root {
+  /* Issue238: --kn-accent는 theme 고정 식별색(노랑). palette --m2-accent-1 alias 제거.
+     컴포넌트(cards/htmlArt)는 --m2-accent-1~6 직접 참조로 palette 교체에 반응함.
+     theme 구조색(border, toc, agenda markmap 테두리 등)은 --kn-accent 고정 노랑 유지. */
+  --kn-accent: #F5C518;                             /* keynote 노랑 — theme 고정 식별색 */
+  --kn-accent-soft: #FFE15A;     /* 보조 노랑 */
+  --kn-text: #111111;
+  --kn-page-num-color: #777777;
+  /* 카드 컴포넌트(`::: cards`) 색상 — palette에 반응하도록 --m2-accent-1 직접 참조 */
+  --m2-card-title-bg: var(--m2-accent-1, #F5C518);  /* 제목 밴드: palette accent */
+  --m2-card-title-fg: var(--m2-text, #111111);       /* 제목 글자: palette text */
+  --m2-card-body-bg: rgba(0, 0, 0, 0.04);   /* 본문: 슬라이드 배경 위 옅은 틴트 */
+  --m2-card-border: rgba(0, 0, 0, 0.12);    /* 테두리: 옅은 중립색 */
+}
+
+/* 슬라이드 본문 색상 — 흰 배경, 검정 텍스트 (sky.css 의존 제거 후 명시) */
+.reveal {
+  background: #ffffff;
+  color: var(--kn-text);
+}
+
+.reveal .slides {
+  color: var(--kn-text);
+}
+
+/* 한글 어절 중간 줄바꿈 방지 — 슬라이드 전역
+   - word-break는 상속 속성 → 제목·본문·노드 등 슬라이드 안 모든 텍스트에 전파
+   - CJK 기본값(normal)은 글자 사이 어디서나 줄바꿈 허용 → "변환본" 어절 중간 끊김
+   - code 블록은 code-wrapper 규칙(더 높은 specificity)이 break-word로 override
+   - overflow-wrap: break-word는 끊을 수 없는 초장문 토큰(URL 등) 오버플로 안전망 */
+.reveal .slides section {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* =========================================================================
+   2. layout-* 상/하단 노랑 가로선 + 페이지 번호
+   - 공통 padding은 base.css §10 (28px 56px 56px 56px)
+   ========================================================================= */
+.reveal section[class*="layout-"]::before,
+.reveal section[class*="layout-"]::after {
+  content: "";
+  position: absolute;
+  left: 56px;
+  right: 56px;
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 100;            /* layout 자식 요소(flex item) 위로 — 하단 가로선이 본문 영역에 가려지지 않도록 */
+}
+
+.reveal section[class*="layout-"]::before { top: 12px; }
+.reveal section[class*="layout-"]::after  { bottom: 12px; }
+
+/* 모든 layout-* section min-height: 100% 강제 — 상하 inner gap 대칭 보장
+   기존: .layout-_cover만 min-height 적용 → contents/blank/toc는 contents 크기로 짧아져
+   ::after가 viewport 아래에 가까이 붙고 ::before는 letterbox + padding으로 멀어 비대칭 발생 */
+.reveal section[class*="layout-"] {
+  min-height: 100% !important;
+}
+
+/* 페이지 번호·controls·progress: outer padding 바깥(viewport edge)에 위치
+   - body { padding: var(--slide-outer-padding) } 으로 .reveal이 outer padding 안쪽에 있음
+   - position: fixed 로 viewport 기준 위치 → body padding 영역(letterbox) 표시 */
+.reveal .slide-number {
+  position: fixed !important;
+  background: transparent !important;
+  color: var(--kn-page-num-color) !important;
+  font-size: 14px;
+  font-weight: 600;
+  bottom: 0 !important;
+  right: 24px !important;
+  z-index: 200 !important;
+}
+
+.reveal .controls {
+  position: fixed !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  z-index: 200 !important;
+}
+
+.reveal .progress {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 100 !important;
+}
+
+/* _cover/_agenda 슬라이드: 페이지번호·controls·progress 모두 숨김
+   사용자 결정: 표지에서는 네비게이션·번호·진행바 노출 안 함 */
+.reveal:has(.slides > section.present.layout-_cover) .slide-number,
+.reveal:has(.slides > section.present.layout-_cover) .controls,
+.reveal:has(.slides > section.present.layout-_cover) .progress {
+  display: none !important;
+}
+
+/* =========================================================================
+   3. 제목 — 두꺼운 sketch 느낌 + 노랑 밑줄 (hr.png)
+   ========================================================================= */
+.reveal section[class*="layout-"] h1,
+.reveal section[class*="layout-"] .cover-title,
+.reveal section[class*="layout-"] .contents-title,
+.reveal section[class*="layout-"] .chapter-title,
+.reveal section[class*="layout-"] .chapter-toc-title,
+.reveal section[class*="layout-"] .exercise-title,
+.reveal section[class*="layout-"] .blank-title,
+.reveal section[class*="layout-"] .closing-title,
+.reveal section[class*="layout-"] .toc-title {
+  /* 폰트(font-family)는 base.css §title SSOT(Issue250)에서 --main-title-font-family로 일괄 적용 */
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  color: var(--kn-text);
+  position: relative;
+  display: inline-block;
+  padding-bottom: 0.15em;
+  margin: 0 auto;
+}
+
+.reveal section[class*="layout-"] h1::after,
+.reveal section[class*="layout-"] .cover-title::after,
+.reveal section[class*="layout-"] .contents-title::after,
+.reveal section[class*="layout-"] .chapter-title::after,
+.reveal section[class*="layout-"] .chapter-toc-title::after,
+.reveal section[class*="layout-"] .exercise-title::after,
+.reveal section[class*="layout-"] .blank-title::after,
+.reveal section[class*="layout-"] .closing-title::after,
+.reveal section[class*="layout-"] .toc-title::after,
+.reveal section[class*="layout-"] > .title::after,
+.reveal section[class*="layout-"] .contents-body > .title::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+/* Issue131: _contents 레이아웃 제목을 본문 .title(소제목)과 동일 크기로 위계 균형.
+   base.css의 .reveal section.layout-_contents .contents-title { font-size: 2.8em } override.
+   --title-font-size(1.5em) 변수 사용으로 SSOT 일관성 확보. */
+.reveal section.layout-_contents .contents-title {
+  font-size: var(--title-font-size, 1.5em);
+}
+
+/* 본문 H2.title도 §3 제목 처리 — theme_default_layout: contents 환경에서
+   본문 H2가 contents-body 내부에 .title로 배치될 때 hr.png 밑줄(가운데 바) 적용
+   Issue90: margin-bottom 명시하지 않음 — base.css의 .reveal .title rule
+   (margin-bottom: calc(var(--title-contents-gap-pct) * 0.01em))이 적용되어
+   title_contents_gap 변수가 정상 작동하도록 함.
+   Issue90: H2가 contents-body 밖(section 직속 자식)으로 이동되는 경우도 동일 스타일 적용 */
+.reveal section[class*="layout-"] > .title,
+.reveal section[class*="layout-"] .contents-body > .title {
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  color: var(--kn-text);
+  position: relative;
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  padding-bottom: 0.3em;
+  margin-top: 0.3em;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* contents 레이아웃 한정: 제목 밑줄 폭을 상단 가로선(::before)과 동일하게 맞춤
+   다른 레이아웃(_blank, _cover 등)은 글자 폭 fit-content 유지.
+   Issue90: H2가 contents-body 밖(section 직속 자식)으로 이동된 경우도 동일 적용. */
+.reveal section.layout-_contents > .title,
+.reveal section.layout-_contents .contents-body > .title {
+  width: 100%;
+  text-align: center;
+  margin-left: 0;
+  margin-right: 0;
+  padding-left: 0;
+  padding-right: 0;
+  box-sizing: border-box;
+}
+
+/* Issue90: 위/아래 가로선을 .title 박스 외부에 부착하여 .title 폭과 자동 정렬.
+   layout-_contents에서 section::before 숨김 + .title::before/::after로 hr.png를 박스 외부 배치.
+   - ::before: .title 박스 위쪽 외부 (top: -12px)
+   - ::after:  .title 박스 아래쪽 외부 (bottom: -12px)
+   둘 다 동일 박스 기준이라 좌우 끝이 정확히 정렬됨. */
+/* Issue90 / Issue116: layout-_contents는 generator(`lib/html-builder.js`)에서 모든
+   H2~H6 `.title`을 section 직속 자식으로 끌어올리므로 항상 `> .title::before`가
+   상단 가로선을 그림 → section::before는 일괄 숨김 (Issue116 회귀는 generator
+   정규식 `<h[2-6]` 확장으로 구조적으로 해결됨). */
+.reveal section.layout-_contents::before {
+  display: none !important;
+}
+
+.reveal section.layout-_contents > .title::before {
+  content: "";
+  position: absolute;
+  top: -12px;  /* 박스 외부 위 (hr 10px + 2px 여유) */
+  left: 0;
+  right: 0;  /* 위쪽 가로선은 슬라이드 하단 가로선과 동일 폭(.title 박스 가득 = section content-box 폭) */
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+/* .title underline(::after) — Issue143: puffer가 title 밴드 내부로 이동했으므로 right:0 풀폭 복원 */
+.reveal section.layout-_contents > .title::after {
+  top: auto;
+  bottom: -12px;  /* 박스 외부 아래 (hr 10px + 2px 여유) */
+  left: 0;
+  right: 0;
+}
+
+/* contents 레이아웃 H2 제목 위치 — 제목 텍스트 vertical center를 우상단
+   puffer(8%, top:28px) 중심(y≈87px)에 정렬 + 위/아래 갭 대칭.
+   - 위 갭 = padding-top - 22px (슬라이드 ::before 가로선이 12+10=22px에서 끝)
+   - 아래 갭 = padding-bottom - 10px (.title::after underline height 10px이 padding-bottom 영역 점유)
+   - 대칭 위해 padding-bottom = padding-top - 12px 유지
+   - padding-top 1em(50px), padding-bottom 0.76em(38px) → 위·아래 갭 모두 ≈28px */
+.reveal section.layout-_contents > .contents-body:has(> .title:first-child) {
+  padding-top: 0;
+}
+.reveal section.layout-_contents .contents-body > .title:first-child {
+  margin-top: 0;
+  padding-top: 1em;
+  padding-bottom: 0.76em;
+}
+
+/* Issue143: puffer가 title 밴드 내부로 이동, underline 풀폭 가능 (right:0 base 유지) */
+
+/* Issue90: .title의 margin-bottom(title_contents_gap)이 다음 sibling의 기본 margin-top과
+   margin collapse로 사라지는 문제 해결 — collapse 방지를 위해 .title 직후 sibling의
+   margin-top을 0으로 강제. .title margin-bottom 값(title_contents_gap)이 단독 적용됨. */
+.reveal section.layout-_contents .contents-body > .title:first-child + * {
+  margin-top: 0 !important;
+}
+
+/* 빈 contents-title 영역 숨김 — m2slide가 H2 슬라이드 빌드 시 contents-title을
+   비워두고 H2를 contents-body 내부 .title로 배치. 빈 contents-title의 ::after
+   hr.png가 두꺼운 막대로 표시되는 것을 방지 (가운데 바는 §2 슬라이드 상하단만 유지) */
+.reveal section.layout-_contents .contents-title:empty,
+.reveal section.layout-_contents_no_title .contents-title:empty {
+  display: none !important;
+}
+.reveal section.layout-_contents .contents-header:has(> .contents-title:empty),
+.reveal section.layout-_contents_no_title .contents-header:has(> .contents-title:empty) {
+  display: none !important;
+}
+
+/* 기존 contents-divider 등은 hr.png로 대체되었으므로 숨김.
+   단 htmlart 컴포넌트의 시각적 divider(htmlart-compare-divider 등)는 제외 —
+   grid 트랙을 차지하는 in-flow 요소라 숨기면 좌우 컬럼 배치가 무너짐. */
+.reveal section[class*="layout-"] [class$="-divider"]:not([class*="htmlart-"]) {
+  display: none !important;
+}
+
+/* Mermaid SVG가 슬라이드 영역을 초과하여 잘리는 문제 해결
+   - mermaid가 SVG에 inline width/height를 설정하므로 max-* 와 auto로 강제 fit
+   - .contents-body를 flex column으로 만들고 .media-container에 flex-grow 1으로
+     남은 영역 가득 차게 하여 SVG의 max-height: 100% 기준 영역 확보
+   - alias: layout-contents(underscore 없음) + layout-_contents 양쪽 매칭 (Issue141 정책 동일) */
+.reveal section.layout-_contents > .contents-body,
+.reveal section.layout-contents > .contents-body,
+.reveal section.layout-_contents_no_title > .contents-body,
+.reveal section.layout-contents_no_title > .contents-body,
+.reveal section.layout-contents-full > .contents-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* _contents/_contents_no_title 본문·헤더 투명 배경
+   우상단 puffer 마스코트가 본문 뒤로 보이도록 명시적 transparent 적용
+   (agenda .toc-mindmap-svg transparent 정책과 일관) */
+.reveal section.layout-_contents > .contents-body,
+.reveal section.layout-_contents > .contents-header,
+.reveal section.layout-contents > .contents-body,
+.reveal section.layout-contents > .contents-header,
+.reveal section.layout-_contents_no_title > .contents-body,
+.reveal section.layout-_contents_no_title > .contents-header,
+.reveal section.layout-contents_no_title > .contents-body,
+.reveal section.layout-contents_no_title > .contents-header {
+  background: transparent !important;
+}
+/* Issue98: pre/pre code 의 transparent 강제 제거 — github.css `.hljs` 배경(#f6f8fa) 살림 */
+
+/* Issue101: 코드 박스 자체 스타일 — CDN github.css 의존 제거.
+   github.css는 토큰 색상(.hljs-keyword 등)만 담당, 박스(배경·패딩·radius·폰트)는 자체 정의.
+   CDN 장애·다크 테마·hljs 버전 변경에도 박스 시각 보장. */
+.reveal section[class*="layout-"] .code-wrapper {
+  background: var(--code-bg, #f6f8fa);
+  padding: 0.8em 1em;
+  border-radius: 6px;
+  border: 1px solid var(--code-border, #e1e4e8);
+  font-family: var(--code-font-family, 'SF Mono', Monaco, Menlo, Consolas, 'Courier New', monospace);
+  font-size: 0.85em;
+  line-height: 1.45;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  overflow: auto;
+}
+.reveal section[class*="layout-"] .code-wrapper code {
+  background: transparent;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  /* 긴 줄 자동 줄바꿈 — 가로 스크롤 대신 wrap. 줄바꿈 문자는 보존(pre-wrap). */
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.reveal section[class*="layout-"] .contents-body > .media-container {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.reveal section[class*="layout-"] .mermaid svg,
+.reveal section[class*="layout-"] .media-container svg,
+.reveal section[class*="layout-"] .media-container video,
+.reveal section[class*="layout-"] .media-container img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain;
+}
+
+/* =========================================================================
+   4. 마스코트 배경 — finfra* 이미지 (theme/{name}/img/ → slide/theme-img/)
+   ========================================================================= */
+
+/* 4.1 cover: puffer1 좌상단 + subtitle 박스 우하단 */
+.reveal section.layout-_cover,
+.guide-line-mode .reveal .slides section.layout-_cover {
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응. 미정의 테마는 #ffffff fallback (회귀 0) */
+  background-color: var(--m2-bg, #ffffff) !important;
+  background-image: url('../theme-img/finfraPuffer1.png');
+  background-repeat: no-repeat;
+  background-position: 6% 14%;
+  background-size: 18% auto;
+  /* Issue63: 100vh → 100% (parent .slides 기준 = ratio 모드 1080px 논리 높이 / fill 모드 viewport).
+     vh 기반은 transform scale 비율 fit과 충돌. */
+  min-height: 100% !important;
+}
+
+.reveal section.layout-_cover .cover-header {
+  text-align: center;
+  padding: 22% 0 6% 0;
+}
+
+.reveal section.layout-_cover .cover-title {
+  font-size: clamp(2.5em, 8vw, 6em);
+}
+
+/* Issue80 §2.1: cover-meta 박스 스타일 제거 — version·lecture_date를 우상단 absolute로 (§6에서 position·박스 제거 정의) */
+
+/* 4.2 contents: puffer2s 우상단 (작게)
+   Issue143: 섹션 절대 위치(96% 28px) 제거 → title 밴드(첫번째↔두번째 hr 사이) 내부로 이동.
+   기존 절대 위치는 Issue141 contents-head-bar(head_right) 텍스트와 중첩됨.
+   title 자체에 background를 두면 ::before(top hr)·::after(bottom hr) 사이에 자연 배치되고,
+   head-bar(font-size 0.5em, padding 8px)와도 분리됨.
+   _contents_no_title은 title 부재 → puffer 미표시(후속 결정시 별도 처리).
+   주의: html-builder가 H2~H6 `.title`을 section 직속 자식으로 끌어올리므로
+   selector는 `.contents-body > .title`이 아니라 `> .title` (section 직속)로 작성해야 함. */
+.reveal section.layout-_contents > .title,
+.reveal section.layout-contents > .title,
+.reveal section.layout-contents-full > .title {
+  background-image: url('../theme-img/finfraPuffer2s.png');
+  background-repeat: no-repeat;
+  background-position: right 4% center;
+  background-size: auto 119%;  /* Issue143 후속: 90% → 108% (20%) → 119% (+10%) */
+}
+
+.reveal section.layout-_contents .contents-header,
+.reveal section.layout-contents .contents-header,
+.reveal section.layout-contents-full .contents-header {
+  padding: 1.2em 0 0.6em 0;
+  text-align: center;
+}
+
+/* Issue80 §2.5: _contents_no_title — 헤더 영역 없음, 본문이 위까지 차지 */
+.reveal section.layout-_contents_no_title > .contents-body,
+.reveal section.layout-contents_no_title > .contents-body {
+  padding-top: 0;
+  margin-top: 0;
+}
+
+/* 4.3 chapter-toc: puffer1 좌상단 + TOC 박스 우하단 */
+.reveal section.layout-chapter-toc {
+  background-image: url('../theme-img/finfraPuffer2.png');
+  background-repeat: no-repeat;
+  background-position: 6% 10%;
+  background-size: 16% auto;
+}
+
+.reveal section.layout-chapter-toc .chapter-toc-header {
+  padding: 18% 0 4% 0;
+  text-align: left;
+  align-items: flex-start;
+  margin-left: 8%;
+}
+
+.reveal section.layout-chapter-toc .chapter-toc-body {
+  align-self: flex-end;
+  border: 2px solid var(--kn-accent);
+  padding: 1em 1.4em;
+  margin: 0 4% 4% 0;
+  background: #fff;
+  max-width: 55%;
+}
+
+/* 4.4 chapter: Issue229에서 §Issue229 블록(파일 끝)으로 이전 — default 미니멀 톤.
+   default_lec과 달리 background-image 없음(theme-img/ 폴더 부재). */
+
+/* 4.5 exercise: butterfly 좌측 + cat 우하단 */
+.reveal section.layout-exercise {
+  background-image:
+    url('../theme-img/finfraButterfly.png'),
+    url('../theme-img/finfraCat.png');
+  background-repeat: no-repeat, no-repeat;
+  background-position: 4% 60%, 96% 92%;
+  background-size: 14% auto, 16% auto;
+}
+
+.reveal section.layout-exercise .exercise-body {
+  padding-left: 18%;
+  padding-right: 4%;
+}
+
+/* 4.6 exercise-small: butterfly 크게 좌측 + cat 우하단 (말풍선) */
+.reveal section.layout-exercise-small {
+  background-image:
+    url('../theme-img/finfraButterfly.png'),
+    url('../theme-img/finfraCat.png');
+  background-repeat: no-repeat, no-repeat;
+  background-position: 6% 50%, 92% 90%;
+  background-size: 22% auto, 18% auto;
+}
+
+.reveal section.layout-exercise-small .exercise-body {
+  padding-left: 30%;
+  padding-right: 4%;
+}
+
+/* 4.7 closing: puffer1 중앙 큼 + cat 우하단
+   Issue72: !important 제거 — base.css와 동일 specificity. theme 후순위 로드로 자연 우선 */
+.reveal section.layout-closing {
+  background-image:
+    url('../theme-img/finfraPuffer1.png'),
+    url('../theme-img/finfraCat.png');
+  background-repeat: no-repeat, no-repeat;
+  background-position: 30% 55%, 88% 85%;
+  background-size: 32% auto, 18% auto;
+  justify-content: flex-start;
+  align-items: stretch;
+  text-align: center;
+}
+
+.reveal section.layout-closing .closing-header {
+  padding: 4% 0 2% 0;
+}
+
+.reveal section.layout-closing .closing-title {
+  font-size: 3.6em;
+}
+
+.reveal section.layout-closing .closing-body {
+  align-self: center;
+  margin-top: auto;
+  margin-bottom: 6%;
+  font-size: 1.4em;
+}
+
+/* 4.8 blank: 장식 완전 제거 (Issue80 §2.6 — 풀스크린 콘텐츠 전용)
+   - 상하단 노랑 가로선 제거 (§2 공통 ::before/::after 무효화)
+   - 제목(blank-header) 숨김
+   - blank-body 상단 패딩 0
+   - 페이지 번호 숨김 (현재 슬라이드가 _blank일 때만) */
+.reveal section.layout-_blank::before,
+.reveal section.layout-_blank::after {
+  content: none !important;
+  background: none !important;
+}
+.reveal section.layout-_blank .blank-header {
+  display: none !important;
+}
+.reveal section.layout-_blank > .blank-body {
+  padding: 0 !important;
+}
+.reveal:has(.slides > section.present.layout-_blank) .slide-number {
+  display: none !important;
+}
+
+/* =========================================================================
+   5. _toc Layout (Issue55) — chapter deck TOC slide + standalone agenda.html
+   ========================================================================= */
+.toc-page-header {
+  background: none;
+  padding: 22px 28px;
+  margin: 0 0 16px 0;
+  /* 제목 h1::after 가 hr.png 노란 밑줄을 제공하므로 header border-bottom 중복 제거 */
+}
+.toc-page-title {
+  font-family: var(--main-title-font-family, 'GmarketSansBold', sans-serif);
+  margin: 0;
+  font-size: 1.8em;
+  font-weight: 700;
+  text-align: left;
+  display: inline-block;
+  letter-spacing: -0.02em;
+}
+
+/* 제목 슬라이드(_toc title-slide): 제목 밑줄(h1::after, hr.png)을 상단 가로선(§2 ::before,
+   left:56 right:56)과 동일한 full-width 로 맞춤. 사용자 결정(2026-06-30 hub 폼).
+   - title-slide 는 flex column + align-items:center → 자식이 content 폭으로 shrink
+     → h1::after(left:0 right:0)가 제목 텍스트 폭에 머묾.
+   - toc-page-header 를 stretch + 좌우 padding 제거하고 h1 을 full 폭 block 으로 펴서
+     ::after 가 section padding(56px) 기준 가로 가득 → 상단선과 길이 일치. */
+.reveal section.layout-_toc.title-slide > .toc-page-header {
+  align-self: stretch;       /* flex 자식을 section content box(=좌우 56px inset) 폭으로 채움 */
+  padding-left: 0;           /* header 자체 좌우 패딩 제거 → h1 이 section content edge(56px)까지 */
+  padding-right: 0;
+}
+.reveal section.layout-_toc.title-slide .toc-page-title {
+  display: block;            /* block → header content box 가득 → ::after(left:0 right:0)가 상단선과 동일 폭 */
+  text-align: center;
+}
+/* Issue: agenda 페이지 다운로드 버튼 위치를 우하단으로 이동
+   (헤더 안 우측 정렬 시 마스코트와 시각적 충돌 — Issue80 §2.2 회피 마진으로도 부족)
+   .layout-_agenda는 position: relative이므로 그 기준으로 absolute 잡힘 */
+.toc-page-downloads {
+  position: absolute;
+  bottom: calc(var(--frame-h, 100vh) * 0.03 + 5px);
+  right: calc(var(--frame-w, 100vw) * 0.03);
+  z-index: 5;
+}
+.toc-download-btn {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 8px 16px;
+  background: rgba(27, 94, 32, 0.08);
+  color: #1b5e20;
+  text-decoration: none;
+  border: 1px solid #2e7d32;
+  border-radius: 4px;
+  font-size: 0.7em;
+  font-weight: 600;
+  font-family: 'Nanum Gothic Coding', monospace;
+  letter-spacing: 0.02em;
+  transition: background 0.2s, color 0.2s;
+}
+.toc-download-btn:hover {
+  background: #1b5e20;
+  color: #ffffff;
+}
+.toc-markmap {
+  width: 100%;
+  margin: 0;
+  padding: 0 12px;
+  overflow: hidden;
+}
+.toc-mindmap-svg {
+  width: 100%;
+  max-width: 100%;
+  display: block;
+  min-height: 380px;
+}
+/* Issue: 일반 (non-agenda) layout-_toc에서 toc-markmap이 남은 세로 공간을 채우지 못해
+   markmap이 좁게 렌더되는 문제 해결 — agenda-frame 패턴(§7)을 layout-_toc에도 적용.
+   .layout-_toc section은 reveal.js 기본 display:block 이므로 자식 flex가 동작하지 않음.
+   base.css §3의 media-enlarge-height/-fit 모드가 활성일 때만 .present에 flex 부여되므로
+   non-media-enlarge 프로젝트(media_container_enlarge: width 등)에서는 toc-markmap이
+   자연 높이(SVG 37px)로 압축돼 markmap 본문이 보이지 않는 회귀가 발생함.
+   해결: .layout-_toc.present 한정으로 flex 강제(reveal inline display:block override 필요해서
+   !important 사용). .present scope는 base.css §3의 cross-page 잔상 방지 정책과 정합.
+   - layout-_toc.present: flex column + height 100% → 자식 flex context 확보
+   - toc-markmap: flex:1 1 0으로 남은 vertical 공간을 점유
+   - toc-mindmap-svg: height:100%로 toc-markmap 전체를 채우고 markmap autoFit이 충분히 확장되게 함
+   .toc-body가 비어있지 않은 placeholder 슬라이드는 §6.5 :has() 규칙으로 toc-markmap이 display:none이라 영향 없음. */
+.reveal section.layout-_toc.present {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+}
+.reveal section.layout-_toc > .toc-markmap {
+  flex: 1 1 0;
+  min-height: 0;
+}
+.reveal section.layout-_toc > .toc-markmap > .toc-mindmap-svg {
+  height: 100%;
+  min-height: 0;
+}
+/* markmap fold/expand 인디케이터 원 크기 30% 축소 (기본 r=6 → 4.2) */
+.toc-markmap circle,
+.toc-mindmap-svg circle {
+  r: 4.2;
+}
+/* markmap 링크 밑줄 제거 (foreignObject 내 <a> 기본 브라우저 스타일 차단) */
+.toc-markmap a,
+.toc-mindmap-svg a,
+.toc-mindmap-svg foreignObject a,
+.markmap-foreign a {
+  text-decoration: none;
+}
+.toc-markmap a:hover,
+.toc-mindmap-svg a:hover,
+.toc-mindmap-svg foreignObject a:hover,
+.markmap-foreign a:hover {
+  text-decoration: none;
+}
+
+/* chapter-card 내부 bullet 제거 — base.css §10 layout-* ul > li::before 의 ● override */
+.reveal section[class*="layout-"] ul.chapter-list--cards > li.chapter-card::before {
+  content: none;
+}
+
+/* Issue80 §2.3: _toc 우상단 puffer2s 마스코트 (좌상단 puffer1 → 우상단 puffer2s, 본문 layout 일관성)
+   background-position-y: 40px(절대값) — 상단 가로선과 분리 */
+.reveal section.layout-_toc {
+  background-image: url('../theme-img/finfraPuffer2s.png');
+  background-repeat: no-repeat;
+  background-position: 96% 28px;
+  background-size: 9% auto;
+}
+
+/* =========================================================================
+   6. _cover Layout 확장 — Issue55: nowage 커버 확장 요소 (subtitle, body, QR)
+   ========================================================================= */
+/* Issue80 §2.1: 흰 배경 cover로 변경 — subtitle·body 텍스트는 모두 검정(--kn-text) */
+.reveal section.layout-_cover .cover-subtitle {
+  font-size: 1em;
+  color: var(--kn-text);
+  margin-top: 0.3em;
+  font-weight: 300;
+}
+.reveal section.layout-_cover .cover-part-subtitle {
+  font-size: 0.75em;
+  color: var(--kn-text);
+  opacity: 0.75;
+  margin-top: 0.2em;
+  letter-spacing: 0.05em;
+}
+/* Issue80 §2.1 + 후속: cover-body — 제목 아래 우측 정렬, instructor만 표시 (meta는 absolute 우상단)
+   - 작성자·연락처를 노란 박스(box.png) 안에 우측 정렬로 배치 */
+.reveal section.layout-_cover .cover-body {
+  margin-top: 0;
+  padding: 0.6em 5% 0 0;
+  font-size: 0.85em;
+  display: block;
+  text-align: right;
+  color: var(--kn-text);
+}
+.reveal section.layout-_cover .cover-instructor {
+  display: inline-block;
+  color: var(--kn-text);
+  background: none;
+  padding: 0.5em 1.4em;
+  line-height: 1.2;
+  text-align: right;
+  min-width: 18em;
+  /* Issue130: instructor(author+contact) 영역 노란 사각형 테두리 강조 */
+  border: 2px solid #FFD700;
+  border-radius: 6px;
+}
+.reveal section.layout-_cover .cover-instructor-name {
+  font-weight: 600;
+  color: var(--kn-text);
+}
+.reveal section.layout-_cover .cover-instructor-contact {
+  margin-left: 0.5em;
+  color: var(--kn-text);
+  opacity: 1;
+  font-size: 0.9em;
+}
+/* Issue80 §2.1: cover-meta — 우상단 absolute, 박스 없이 작게
+   - top 1px: 노랑 가로선(section top:12px + height:10px = 22px 끝) *위쪽* 흰 strip(0~12px)에 배치.
+     기존 top:24px 는 version 박스(약 10px)가 가로선(12~22px)과 완전히 겹쳐 라인이 version 을 덮었음 → 라인 위로 이동.
+   - line-height 1: 텍스트 baseline 이 가로선 위로 침범하지 않도록 박스 높이 최소화
+   - right 5%: 가로선(right: 4%) 안쪽 1% 들여쓰기 — 픽셀 단위(56px) 사용 시 가로선 우측 끝보다 바깥으로 나가는 문제 회피 */
+.reveal section.layout-_cover .cover-meta {
+  position: absolute;
+  top: 0;
+  right: 5%;
+  align-self: auto;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  max-width: none;
+  font-size: 0.4em;   /* 0.55em→0.4em: 라인 위 흰 strip(12px)에 박스가 완전히 들어가도록 축소 (라인 침범 방지) */
+  line-height: 1;
+  display: flex;
+  gap: 0.6em;
+  color: var(--kn-text);
+  z-index: 1;
+}
+.reveal section.layout-_cover .cover-lecture-date,
+.reveal section.layout-_cover .cover-version {
+  opacity: 0.85;
+  color: var(--kn-text);
+  font-size: 1em;
+  margin: 0;
+}
+.reveal section.layout-_cover .cover-qr {
+  text-align: right;
+  padding-top: 0.4em;
+}
+.reveal section.layout-_cover .cover-qr-image {
+  max-width: 70px;
+  max-height: 70px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 2px;
+  background: #fff;
+}
+.reveal section.layout-_cover .cover-qr-url {
+  font-size: 0.6em;
+  opacity: 0.7;
+  margin-top: 0.2em;
+}
+/* Issue67: layout.js의 빈 wrapper strip 후 잔존 가능성 보호 — 미정의 메타로 비워진 컨테이너 숨김 */
+.reveal section.layout-_cover .cover-qr:empty,
+.reveal section.layout-_cover .cover-meta:empty,
+.reveal section.layout-_cover .cover-body:empty {
+  display: none;
+}
+
+/* 표지 코너 메타 — version(좌상)·github(우상)·homepage(우하). 미정의 시 빈 → strip */
+.reveal section.layout-_cover .cover-corner {
+  position: absolute;
+  font-size: 0.31em;
+  line-height: 1;
+  font-weight: 700;
+  opacity: 0.9;
+  color: var(--kn-text);
+  z-index: 3;
+}
+/* 위 코너: 상단 노랑 선(::before top:12px) 바깥(edge~선 사이 띠)에 배치 */
+.reveal section.layout-_cover .cover-tl { top: 1px; left: 5%; }
+.reveal section.layout-_cover .cover-tr { top: 1px; right: 5%; text-align: right; }
+/* 아래 코너: 하단 노랑 선(::after bottom:12px) 바깥에 배치 */
+.reveal section.layout-_cover .cover-br { bottom: 1px; right: 5%; text-align: right; }
+.reveal section.layout-_cover .cover-corner:empty { display: none; }
+
+/* =========================================================================
+   6.5 _toc Layout — toc-body 카드화
+   - base.css §공통 [class*="layout-"] > [class$="-body"] 의 flex-grow:1 override
+   - 컨텐츠는 자연 높이 카드로 표시 (max-height 미지정 → 콘텐츠 크기로 자연 fit)
+   - 빈 .toc-body 는 숨김 처리 (TOC 슬라이드에 본문이 없는 경우 잔존 카드 방지)
+   ========================================================================= */
+.reveal section.layout-_toc > .toc-body {
+  /* 카드 자체는 항상 콘텐츠 크기로 (flex stretching·height 강제 차단) */
+  flex: 0 0 auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: visible !important;
+  align-self: center;
+  /* 카드 스타일 */
+  width: fit-content;
+  max-width: 80%;
+  margin: 1em auto;
+  padding: 1em 1.5em;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 12px;
+  /* 컨텐츠 영역이므로 테두리·그림자 불필요 (사용자 결정) */
+}
+
+.reveal section.layout-_toc > .toc-body:empty {
+  display: none;
+}
+
+/* base.css의 li.bullet-dot/li.bullet-dash 가 list-style-type:disc/-style 을
+   부여해 layout-* §10의 ::before "●/─" 와 이중 마커 충돌을 일으킴.
+   layout-* 내부에서는 ::before 마커만 사용하도록 list-style 제거. */
+.reveal section[class*="layout-"] li.bullet-dot,
+.reveal section[class*="layout-"] li.bullet-dash {
+  list-style: none;
+}
+
+/* 순서있는 목록(ol) 번호 복원.
+   base.css §10(`.layout-* ol { list-style:none }`)이 ol 네이티브 번호를 제거하는데
+   ::before 마커는 ul 에만 정의돼 있어 layout 내부 ol 이 번호를 완전히 잃음.
+   CSS counter 로 "N. " 마커를 재부여. (base.css 는 수정 가드 대상이라 theme 에서 교정) */
+.reveal section[class*="layout-"] ol {
+  counter-reset: m2ol;
+}
+.reveal section[class*="layout-"] ol > li {
+  counter-increment: m2ol;
+}
+.reveal section[class*="layout-"] ol > li::before {
+  content: counter(m2ol) ". ";
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: currentColor;
+  font-variant-numeric: tabular-nums;
+}
+
+/* opt-in 녹색 강조 — 전역 strong(빨강 accent-5)과 별개로, 슬라이드 로컬에서
+   `<span class="emph-green">…</span>` 로 녹색 라벨/강조를 쓰고 싶을 때. */
+.reveal .slides section .emph-green {
+  color: #1a7f37;
+  font-weight: 700;
+}
+
+/* opt-in 데모 패널 — 소스↔렌더 대비 위젯. 컬럼을 통일된 카드로 만들고
+   상단 녹색 헤더밴드(`.panel-head`)에 라벨을 넣어 라벨이 박스와 분리돼 보이는
+   문제를 해소. `::: {.column ... .demo-panel}` + 첫 줄 `<div class="panel-head">라벨</div>`. */
+.reveal section[class*="layout-"] .demo-panel {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.015);
+  padding: 0;
+}
+.reveal section[class*="layout-"] .demo-panel .panel-head {
+  background: #1a7f37;
+  color: #fff;
+  font-weight: 700;
+  text-align: center;
+  padding: 0.35em 0.6em;
+  font-size: 0.95em;
+}
+.reveal section[class*="layout-"] .demo-panel > *:not(.panel-head) {
+  margin: 0.55em 0.9em;
+}
+.reveal section[class*="layout-"] .demo-panel pre {
+  margin: 0.55em 0.9em;
+  box-shadow: none;
+}
+@media (prefers-color-scheme: dark) {
+  .reveal section[class*="layout-"] .demo-panel {
+    border-color: rgba(255, 255, 255, 0.28);
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+/* 챕터 카드 그림자 강조 — base.css 기본 box-shadow rgba(0,0,0,0.08) 가
+   흰 카드+흰 배경 환경에서 거의 보이지 않음. theme 시각 강화. */
+.reveal section.layout-_toc .chapter-list--cards .chapter-card {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.reveal section.layout-_toc .chapter-list--cards .chapter-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+/* Issue224 보강: autoToc cards(`.chapter-list--cards`) px 고정값 em override.
+   base.css L561-573의 min-width 240px / max-width 360px / padding 16px 20px가
+   카드 다수(28+ 슬라이드) 케이스에서 font_size_auto 비례 축소 불가 → 잘림.
+   theme override로 em 기반 전환 + 폰트 자동 축소 시 카드도 비례 축소. */
+.reveal section.layout-_toc .chapter-list--cards {
+  font-size: 0.9em;
+  gap: 0.7em;
+}
+.reveal section.layout-_toc .chapter-list--cards .chapter-card {
+  min-width: 9em;
+  max-width: 15em;
+  padding: 0.5em 0.7em;
+  border-radius: 0.4em;
+  flex: 0 1 calc((100% - 0.7em * 3) / 4);
+}
+.reveal section.layout-_toc .chapter-list--cards .chapter-card a {
+  font-size: 0.92em;
+  line-height: 1.3;
+}
+
+/* 본문(.toc-body)이 비어있지 않은 placeholder _toc 슬라이드는
+   비어있는 markmap 자리(SVG 380px min-height)가 카드를 아래로 밀어냄.
+   본문 카드가 있을 때는 markmap 영역을 숨겨 카드 위주 레이아웃 유지. */
+.reveal section.layout-_toc:has(> .toc-body:not(:empty)) > .toc-markmap {
+  display: none;
+}
+
+/* Issue (균일성): markmap JS(initTocMarkmapIfNeeded)는 #toc-placeholder 한 곳만 렌더하므로
+   autoToc로 자동 생성된 다른 layout-_toc 슬라이드(H1 anchor 등)에는 빈 SVG가 남아 큰 빈 박스만 보임.
+   해당 슬라이드는 .toc-cards만 노출되도록 빈 markmap 영역 숨김. */
+.reveal section.layout-_toc:not(#toc-placeholder) > .toc-markmap {
+  display: none;
+}
+
+/* =========================================================================
+   7. _agenda Layout — Issue55: Agenda Page (standalone agenda.html)
+   - Issue80 §2.2: 상단 가로선(::before) + 우상단 마스코트
+     standalone wrapper(.layout-_agenda div)는 §2 공통 selector(section[class*=layout-])에
+     매치되지 않으므로 div.layout-_agenda::before/::after 별도 정의
+   - Issue113: puffer2s → finfraCat (50% 흐리게, ::after pseudo로 opacity 분리),
+     제목줄을 노랑 가로선 아래로 내려 겹침 제거,
+     agenda-frame 폰트 크기를 viewport 비례로 변경 (다른 reveal 슬라이드와 동일 스케일감)
+   ========================================================================= */
+.layout-_agenda {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100vh;
+  box-sizing: border-box;
+  position: relative;
+}
+
+/* Issue113: 우측 마스코트는 ::after pseudo로 분리해 50% opacity 적용
+   (요소 자체에 opacity를 주면 자식 콘텐츠도 흐려짐).
+   크기·위치 모두 --frame-h/--frame-w(아래 정의) 비례 → reveal.js content 슬라이드와
+   동일하게 "letterbox된 frame 크기"를 기준으로 스케일. */
+.layout-_agenda::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--frame-h) * 0.03);
+  right: calc(var(--frame-w) * 0.02);
+  width: calc(var(--frame-w) * 0.126);
+  height: calc(var(--frame-h) * 0.198);
+  background-image: url('../theme-img/finfraCat.png');
+  background-repeat: no-repeat;
+  background-position: right top;
+  background-size: contain;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+  transform: translateY(-13.5%);
+}
+
+/* Issue113: agenda 제목을 상단 노랑 가로선 아래로 내려 겹침 제거. */
+.layout-_agenda .toc-page-header {
+  padding: calc(var(--frame-h) * 0.03) 28px calc(var(--frame-h) * 0.01) 28px;
+  margin: 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Issue80 §2.2: standalone agenda 상단 노랑 가로선
+   left/right 24px: base.css §12 .agenda-frame .layout-_agenda padding(24px)과 일치시켜
+   콘텐츠 박스(.toc-markmap) 폭과 동일하게 정렬 */
+.layout-_agenda::before {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 12px;
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Issue80 §2.2 코드 제거: .toc-page-downloads가 헤더 밖으로 분리되어 우하단 absolute로 이동했으므로
+   마스코트(우상단)와 더 이상 시각적 충돌 없음. margin-right 회피 마진 불필요. */
+
+/* Issue113: agenda-frame은 reveal.js content 슬라이드와 달리 transform: scale을 받지 않는
+   standalone 컨테이너. content 슬라이드처럼 "frame 실제 크기" 기준으로 스케일하기 위해
+   base.css §12의 min() 공식을 그대로 CSS 변수로 재현(--frame-h, --frame-w).
+   font-size 및 마스코트·헤더 padding이 모두 이 변수에 비례하므로 viewport letterbox 변화와
+   무관하게 frame 비율 그대로 유지됨. (container-type: size는 markmap SVG 사이징을 깨뜨리므로 미사용) */
+body.agenda-page {
+  --frame-w: min(
+    calc(100vw - 2 * var(--slide-outer-padding, 0px)),
+    calc((100vh - 2 * var(--slide-outer-padding, 0px)) * var(--slide-ratio))
+  );
+  --frame-h: min(
+    calc(100vh - 2 * var(--slide-outer-padding, 0px)),
+    calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
+  );
+}
+html.ratio-fill body.agenda-page {
+  --frame-w: calc(100vw - 2 * var(--slide-outer-padding, 0px));
+  --frame-h: calc(100vh - 2 * var(--slide-outer-padding, 0px));
+}
+body.agenda-page .agenda-frame {
+  font-size: calc(var(--frame-h) * 0.022);
+}
+
+/* toc-markmap이 남은 세로 공간을 채우도록 flex-grow 적용 (theContents 패턴).
+   base.css §12의 .agenda-frame .toc-mindmap-svg { height: calc(100% - 200px) } override.
+   테두리·라운드 추가로 영역 시각 강조. */
+.agenda-frame .layout-_agenda {
+  min-height: 0;
+}
+.agenda-frame .toc-markmap {
+  flex: 1 1 0;
+  min-height: 0;
+  /* Issue113: 마스코트(고양이)와 시각적으로 분리되도록 markmap 영역만 아래로 이동
+     (0.03 → 0.05: 마스코트 하단이 toc 박스 상단선과 겹치던 문제 완화, 소폭 상향) */
+  margin-top: calc(var(--frame-h) * 0.05);
+  border: 2px solid var(--kn-accent);
+  border-radius: 8px;
+  padding: 12px;
+  overflow: hidden;
+  background: transparent;
+}
+.agenda-frame .toc-mindmap-svg {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  display: block;
+}
+
+/* agenda_card_mode: 카드 그리드(.toc-cards)도 markmap 박스와 동일한 accent 테두리 프레임.
+   카드 모드 컨테이너는 .layout-_cards.layout-_toc — .toc-markmap 셀렉터에 매치되지 않아
+   테두리가 소실되던 회귀 보정. */
+.agenda-frame .layout-_cards {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.agenda-frame .toc-cards {
+  flex: 1 1 0;
+  min-height: 0;
+  margin-top: calc(var(--frame-h) * 0.05);
+  border: 2px solid var(--kn-accent);
+  border-radius: 8px;
+  padding: 12px;
+  /* overflow: auto → hidden (markmap .toc-markmap 과 동일). auto(스크롤 컨테이너) + 분수 margin-top
+     오프셋이 deviceScaleFactor 2 에서 top border paint 를 누락시키는 Chrome 렌더 버그 회피.
+     카드는 프레임 대비 항상 여유가 커 스크롤 불필요 → hidden 안전. */
+  overflow: hidden;
+  background: transparent;
+}
+
+/* 카드 모드 agenda(.layout-_cards) 마스코트 — markmap agenda(.layout-_agenda::after)와 동일한
+   고양이(finfraCat)를 우상단에 배치. 카드 wrapper 는 .layout-_agenda 가 아니라 ::after 마스코트가
+   없었음(사용자 지적). toc-cards(z-index:1, 투명 bg) 뒤(z-index:0)에 깔려 카드 위로 겹치지 않고
+   상단 여백에 노출. --frame-h/--frame-w 비례로 markmap 마스코트와 동일 스케일·위치. */
+.agenda-frame .layout-_cards { position: relative; }
+.agenda-frame .toc-cards { position: relative; z-index: 1; }
+.agenda-frame .layout-_cards::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--frame-h) * 0.03);
+  right: calc(var(--frame-w) * 0.02);
+  width: calc(var(--frame-w) * 0.126);
+  height: calc(var(--frame-h) * 0.198);
+  background-image: url('../theme-img/finfraCat.png');
+  background-repeat: no-repeat;
+  background-position: right top;
+  background-size: contain;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+  transform: translateY(-13.5%);
+}
+/* 카드 모드 제목 위 노랑 가로선(hr.png) — markmap agenda(.layout-_agenda::before)와 동일.
+   카드 wrapper 는 .layout-_agenda 가 아니라 상단 라인이 없었음(사용자 지적 "제목위 라인"). */
+.agenda-frame .layout-_cards::before {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 12px;
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* =========================================================================
+   8. Guide Line — 테마 슬롯별 색상 (디버깅 시각화)
+   - base.css §8: section(red) / h1·h2·h3(green) / .theContents(blue)
+   - 본 섹션: theme이 정의한 _cover/_toc/_agenda 슬롯에 슬롯별 색 추가
+   - 색상 충돌 회피: 빨/초/파 외 cyan, magenta, orange, purple, teal, brown 사용
+   ========================================================================= */
+
+/* 8.1 _cover 슬롯 */
+.guide-line-mode .reveal section.layout-_cover .cover-header {
+  border: 2px dashed rgba(255, 165, 0, 0.7) !important;        /* orange */
+  background-color: rgba(255, 165, 0, 0.06) !important;
+}
+.guide-line-mode .reveal section.layout-_cover .cover-subtitle {
+  border: 2px dashed rgba(0, 200, 200, 0.7) !important;        /* cyan */
+  background-color: rgba(0, 200, 200, 0.06) !important;
+}
+.guide-line-mode .reveal section.layout-_cover .cover-part-subtitle {
+  border: 2px dashed rgba(150, 75, 0, 0.7) !important;         /* brown */
+  background-color: rgba(150, 75, 0, 0.06) !important;
+}
+.guide-line-mode .reveal section.layout-_cover .cover-body {
+  border: 2px dashed rgba(128, 0, 128, 0.7) !important;        /* purple */
+  background-color: rgba(128, 0, 128, 0.06) !important;
+}
+.guide-line-mode .reveal section.layout-_cover .cover-instructor {
+  border: 2px dashed rgba(0, 128, 128, 0.7) !important;        /* teal */
+  background-color: rgba(0, 128, 128, 0.06) !important;
+}
+.guide-line-mode .reveal section.layout-_cover .cover-meta {
+  border: 2px dashed rgba(255, 0, 255, 0.7) !important;        /* magenta */
+  background-color: rgba(255, 0, 255, 0.06) !important;
+  /* Issue80 후속: cover-meta는 §6에서 absolute로 정의되었으므로 라벨용 positioned ancestor 강제(아래 §8.4)에서 absolute 유지하도록 본 selector에서 명시 override */
+  position: absolute !important;
+}
+.guide-line-mode .reveal section.layout-_cover .cover-qr {
+  border: 2px dashed rgba(218, 165, 32, 0.8) !important;       /* goldenrod */
+  background-color: rgba(218, 165, 32, 0.08) !important;
+}
+
+/* 8.2 _toc 슬롯 */
+.guide-line-mode .reveal section.layout-_toc .toc-page-header {
+  border: 2px dashed rgba(255, 165, 0, 0.7) !important;        /* orange */
+  background-color: rgba(255, 165, 0, 0.06) !important;
+}
+.guide-line-mode .reveal section.layout-_toc .toc-markmap {
+  border: 2px dashed rgba(128, 0, 128, 0.7) !important;        /* purple */
+  background-color: rgba(128, 0, 128, 0.06) !important;
+}
+.guide-line-mode .reveal section.layout-_toc .toc-body {
+  border: 2px dashed rgba(0, 200, 200, 0.7) !important;        /* cyan */
+  background-color: rgba(0, 200, 200, 0.06) !important;
+}
+.guide-line-mode .reveal section.layout-_toc .toc-cards {
+  border: 2px dashed rgba(255, 0, 255, 0.7) !important;        /* magenta */
+  background-color: rgba(255, 0, 255, 0.06) !important;
+}
+
+/* 8.3 _agenda 슬롯 — agenda.html은 standalone(.reveal 없음). .reveal 비종속 셀렉터 사용 */
+.guide-line-mode .layout-_agenda {
+  border: 2px dashed rgba(255, 0, 255, 0.5) !important;        /* magenta (외곽) */
+  background-color: rgba(255, 0, 255, 0.03) !important;
+}
+.guide-line-mode .layout-_agenda .toc-page-header {
+  border: 2px dashed rgba(255, 165, 0, 0.7) !important;        /* orange */
+  background-color: rgba(255, 165, 0, 0.06) !important;
+}
+.guide-line-mode .layout-_agenda .toc-page-title {
+  border: 2px dashed rgba(0, 200, 0, 0.7) !important;          /* green (h1 슬롯) */
+  background-color: rgba(0, 200, 0, 0.06) !important;
+}
+.guide-line-mode .layout-_agenda .toc-page-downloads {
+  border: 2px dashed rgba(0, 128, 128, 0.7) !important;        /* teal */
+  background-color: rgba(0, 128, 128, 0.06) !important;
+}
+.guide-line-mode .layout-_agenda .toc-markmap {
+  border: 2px dashed rgba(128, 0, 128, 0.7) !important;        /* purple */
+  background-color: rgba(128, 0, 128, 0.06) !important;
+}
+.guide-line-mode .layout-_agenda .toc-mindmap-svg {
+  outline: 2px dashed rgba(218, 165, 32, 0.6) !important;      /* goldenrod (svg 영역) */
+}
+
+/* 8.4 슬롯 라벨 — 우측 하단 안쪽에 클래스명 표시 (::before, position: absolute)
+   - ::before 사용 이유: ::after는 §3 h1::after / cover-title::after에서 hr.png 사용 중 → 충돌 회피
+   - position: relative 강제 — absolute 자식 ::before 기준점 확보
+   - SVG는 pseudo-element 미지원 → 라벨 생략 (outline만) */
+.guide-line-mode .reveal section.layout-_cover .cover-header,
+.guide-line-mode .reveal section.layout-_cover .cover-subtitle,
+.guide-line-mode .reveal section.layout-_cover .cover-part-subtitle,
+.guide-line-mode .reveal section.layout-_cover .cover-body,
+.guide-line-mode .reveal section.layout-_cover .cover-instructor,
+/* Issue80 후속: cover-meta는 §6에서 absolute(우상단). 본 list에 포함하면 relative 강제로 absolute가 깨져 guide_line 모드에서 version 위치 사라짐 → 제외. ::before 라벨은 absolute 컨테이너 기준으로도 정상 동작 */
+.guide-line-mode .reveal section.layout-_cover .cover-qr,
+.guide-line-mode .reveal section.layout-_toc .toc-page-header,
+.guide-line-mode .reveal section.layout-_toc .toc-markmap,
+.guide-line-mode .reveal section.layout-_toc .toc-body,
+.guide-line-mode .reveal section.layout-_toc .toc-cards,
+.guide-line-mode .layout-_agenda,
+.guide-line-mode .layout-_agenda .toc-page-header,
+.guide-line-mode .layout-_agenda .toc-page-title,
+.guide-line-mode .layout-_agenda .toc-page-downloads,
+.guide-line-mode .layout-_agenda .toc-markmap {
+  position: relative !important;
+}
+
+/* 라벨 공통 스타일 */
+.guide-line-mode .reveal section.layout-_cover .cover-header::before,
+.guide-line-mode .reveal section.layout-_cover .cover-subtitle::before,
+.guide-line-mode .reveal section.layout-_cover .cover-part-subtitle::before,
+.guide-line-mode .reveal section.layout-_cover .cover-body::before,
+.guide-line-mode .reveal section.layout-_cover .cover-instructor::before,
+.guide-line-mode .reveal section.layout-_cover .cover-meta::before,
+.guide-line-mode .reveal section.layout-_cover .cover-qr::before,
+.guide-line-mode .reveal section.layout-_toc .toc-page-header::before,
+.guide-line-mode .reveal section.layout-_toc .toc-markmap::before,
+.guide-line-mode .reveal section.layout-_toc .toc-body::before,
+.guide-line-mode .reveal section.layout-_toc .toc-cards::before,
+.guide-line-mode .layout-_agenda::before,
+.guide-line-mode .layout-_agenda .toc-page-header::before,
+.guide-line-mode .layout-_agenda .toc-page-title::before,
+.guide-line-mode .layout-_agenda .toc-page-downloads::before,
+.guide-line-mode .layout-_agenda .toc-markmap::before {
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: 14px;
+  font-family: 'Nanum Gothic Coding', 'Menlo', monospace;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  pointer-events: none;
+  z-index: 9999;
+  line-height: 1.3;
+}
+
+/* 슬롯별 라벨 텍스트 + 색상 (해당 슬롯 dashed 색과 통일) */
+.guide-line-mode .reveal section.layout-_cover .cover-header::before { content: "cover-header"; color: rgba(200, 130, 0, 1); }
+.guide-line-mode .reveal section.layout-_cover .cover-subtitle::before { content: "cover-subtitle"; color: rgba(0, 160, 160, 1); }
+.guide-line-mode .reveal section.layout-_cover .cover-part-subtitle::before { content: "cover-part-subtitle"; color: rgba(120, 60, 0, 1); }
+.guide-line-mode .reveal section.layout-_cover .cover-body::before { content: "cover-body"; color: rgba(128, 0, 128, 1); }
+.guide-line-mode .reveal section.layout-_cover .cover-instructor::before { content: "cover-instructor"; color: rgba(0, 110, 110, 1); }
+.guide-line-mode .reveal section.layout-_cover .cover-meta::before { content: "cover-meta"; color: rgba(200, 0, 200, 1); }
+.guide-line-mode .reveal section.layout-_cover .cover-qr::before { content: "cover-qr"; color: rgba(180, 130, 20, 1); }
+
+.guide-line-mode .reveal section.layout-_toc .toc-page-header::before { content: "toc-page-header"; color: rgba(200, 130, 0, 1); }
+.guide-line-mode .reveal section.layout-_toc .toc-markmap::before { content: "toc-markmap"; color: rgba(128, 0, 128, 1); }
+.guide-line-mode .reveal section.layout-_toc .toc-body::before { content: "toc-body"; color: rgba(0, 160, 160, 1); }
+.guide-line-mode .reveal section.layout-_toc .toc-cards::before { content: "toc-cards"; color: rgba(200, 0, 200, 1); }
+
+.guide-line-mode .layout-_agenda::before { content: "layout-_agenda"; color: rgba(200, 0, 200, 1); }
+.guide-line-mode .layout-_agenda .toc-page-header::before { content: "toc-page-header"; color: rgba(200, 130, 0, 1); }
+.guide-line-mode .layout-_agenda .toc-page-title::before { content: "toc-page-title"; color: rgba(0, 160, 0, 1); }
+.guide-line-mode .layout-_agenda .toc-page-downloads::before { content: "toc-page-downloads"; color: rgba(0, 110, 110, 1); }
+.guide-line-mode .layout-_agenda .toc-markmap::before { content: "toc-markmap"; color: rgba(128, 0, 128, 1); }
+
+/* 8.5 Generic Slot Labels — 모든 layout-* 슬롯 + plain section .title/.theContents 자동 라벨링
+   - attr(class)로 슬롯 클래스명을 그대로 라벨로 표시
+   - :where()로 specificity 0 부여 → 위 8.1~8.4 specific 규칙(0,4,1)이 자연 우선 적용
+   - 따라서 cover/_toc/_agenda는 기존 색·라벨 유지, 그 외 layout-*(contents/blank/chapter/...)는
+     본 fallback 규칙으로 자동 라벨링 */
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-header"],
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-title"],
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-divider"],
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-body"],
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-row"],
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-left"],
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-right"],
+:where(.guide-line-mode .reveal section[class*="layout-"]) pre.code-wrapper,
+:where(.guide-line-mode .reveal .slides section) > .theContents,
+:where(.guide-line-mode .reveal .slides section) > .title {
+  position: relative !important;
+  border: 2px dashed rgba(140, 90, 200, 0.55) !important;
+  background-color: rgba(140, 90, 200, 0.04) !important;
+}
+
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-header"]::before,
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-title"]::before,
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-divider"]::before,
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-body"]::before,
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-row"]::before,
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-left"]::before,
+:where(.guide-line-mode .reveal section[class*="layout-"]) [class*="-right"]::before,
+:where(.guide-line-mode .reveal section[class*="layout-"]) pre.code-wrapper::before,
+:where(.guide-line-mode .reveal .slides section) > .theContents::before,
+:where(.guide-line-mode .reveal .slides section) > .title::before {
+  content: attr(class);
+  position: absolute;
+  bottom: 4px;
+  right: 6px;
+  font-size: 14px;
+  font-family: 'Nanum Gothic Coding', 'Menlo', monospace;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid currentColor;
+  color: rgba(140, 90, 200, 1);
+  pointer-events: none;
+  z-index: 9999;
+  line-height: 1.3;
+}
+
+/* 8.6 §2 가로선(::before/::after) → 가이드 모드에서 라벨 박스로 변환
+   - hr.png/높이 점유 해제 후 §8.5와 동일한 흰 배경·보라 테두리 라벨 박스로 통일
+   - layout-_contents의 §3 override(`.title::before` hr.png)는 §8.7에서 처리 */
+.guide-line-mode .reveal section[class*="layout-"]::before,
+.guide-line-mode .reveal section[class*="layout-"]::after {
+  content: attr(class) !important;
+  background-image: none !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  left: auto !important;
+  right: 8px !important;
+  height: auto !important;
+  width: auto !important;
+  border: 1px solid rgba(140, 90, 200, 1);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-family: 'Nanum Gothic Coding', 'Menlo', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(140, 90, 200, 1);
+  line-height: 1.3;
+  z-index: 9999;
+}
+
+/* 8.7 §3 override: layout-_contents의 .title::before(hr.png 노란 밑줄)를
+   가이드 모드에서 라벨 박스로 변환. specificity (0,3,2)로 §8.5(:where 0,1,1) 이김 */
+.guide-line-mode .reveal section.layout-_contents > .title::before,
+.guide-line-mode .reveal section.layout-_contents .contents-body > .title::before {
+  content: attr(class) !important;
+  background-image: none !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  top: auto !important;
+  bottom: 4px !important;
+  left: auto !important;
+  right: 6px !important;
+  height: auto !important;
+  width: auto !important;
+  border: 1px solid rgba(140, 90, 200, 1) !important;
+  border-radius: 4px !important;
+  padding: 2px 8px !important;
+  font-family: 'Nanum Gothic Coding', 'Menlo', monospace !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  color: rgba(140, 90, 200, 1) !important;
+  line-height: 1.3 !important;
+  z-index: 9999 !important;
+}
+
+/* =========================================================================
+   Issue141. Contents Head Bar — _contents layout 상단 좌/우 시스템 슬롯
+   - {{head_left}}, {{head_right}}: outline d{N} 단일 또는 now breadcrumb
+   - 정렬: head_left=left, head_right=right
+   - breadcrumb 길어질 수 있으므로 줄바꿈 허용 + 작은 폰트
+   - 양쪽 모두 빈 시 _stripEmptyWrappers + CSS :empty/:has() 3중 방어
+   - 영속 설계 SSOT: _doc_design/head.md
+   ========================================================================= */
+.reveal section.layout-_contents > .contents-head-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 28px 0 28px;
+  margin: 0;
+  font-size: 0.5em;
+  color: rgba(0, 0, 0, 0.6);
+  font-family: var(--global-font-family, sans-serif);
+  min-height: 0;
+  line-height: 1.3;
+}
+.reveal section.layout-_contents > .contents-head-bar > .contents-head-left {
+  text-align: left;
+  flex: 1 1 50%;
+  font-weight: 600;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.reveal section.layout-_contents > .contents-head-bar > .contents-head-right {
+  text-align: right;
+  flex: 1 1 50%;
+  opacity: 0.75;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+/* 빈 슬롯 안전망 */
+.reveal section.layout-_contents > .contents-head-bar:empty {
+  display: none;
+}
+.reveal section.layout-_contents > .contents-head-bar:has(> .contents-head-left:empty):has(> .contents-head-right:empty) {
+  display: none;
+}
+
+/* Issue141: contents-head-bar guide-line 라벨 */
+.guide-line-mode .reveal section.layout-_contents > .contents-head-bar {
+  outline: 2px dashed rgba(0, 130, 200, 0.7);
+  outline-offset: -2px;
+  position: relative;
+}
+.guide-line-mode .reveal section.layout-_contents > .contents-head-bar::before {
+  content: "contents-head-bar";
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 10px;
+  color: rgba(0, 130, 200, 1);
+  background: rgba(255, 255, 255, 0.85);
+  padding: 1px 4px;
+  z-index: 10;
+}
+.guide-line-mode .reveal section.layout-_contents > .contents-head-bar > .contents-head-left,
+.guide-line-mode .reveal section.layout-_contents > .contents-head-bar > .contents-head-right {
+  outline: 1px dotted rgba(180, 80, 0, 0.7);
+}
+
+/* React artifact 내부 ul/li 는 m2slide bullet 시스템(base.css §10) 적용 제외.
+   사용자가 React 코드 안 작성한 <ul>/<ol> 은 native list-style 사용. */
+.reveal section[class*="layout-"] .component-container[data-component="react"] ul > li::before,
+.reveal section[class*="layout-"] .component-container[data-component="react"] ul ul > li::before,
+.reveal section[class*="layout-"] .component-container[data-component="react"] ul ul ul > li::before,
+.reveal section[class*="layout-"] .component-container[data-component="react"] ol > li::before {
+  content: none !important;
+}
+.reveal section[class*="layout-"] .component-container[data-component="react"] ul > li,
+.reveal section[class*="layout-"] .component-container[data-component="react"] ul ul > li,
+.reveal section[class*="layout-"] .component-container[data-component="react"] ol > li {
+  padding-left: 0;
+  position: static;
+}
+
+
+/* =========================================================================
+   Issue229: layout-chapter — chapter divider page (메인 챕터 + sub-section 목록)
+   default 미니멀 톤 — 배경 이미지 없이 typography·divider 위주.
+   default_lec과 슬롯 구조 동일(chapter-header + chapter-title + chapter-divider + chapter-body).
+   ========================================================================= */
+.reveal section.layout-chapter,
+.reveal section.layout-_chapter {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  padding: 6% 8%;
+}
+
+.reveal section.layout-chapter .chapter-header,
+.reveal section.layout-_chapter .chapter-header {
+  text-align: center;
+  margin-bottom: 4%;
+  position: relative;
+}
+
+/* 정책(단일 밑줄): chapter divider 제목 밑줄은 §3 .chapter-title::after(hr.png 브러시) 단일.
+   직선 .chapter-header::after 를 추가하면 브러시와 이중선이 되어 sketch 톤이 깨짐(버그).
+   chapter-header 에 별도 직선 divider 를 다시 넣지 말 것. */
+
+.reveal section.layout-chapter .chapter-title,
+.reveal section.layout-_chapter .chapter-title {
+  font-size: 2.6em;
+  font-weight: 700;
+  color: var(--m2-text, #111);
+  margin: 0 0 0.4em 0;
+  line-height: 1.2;
+}
+
+/* .slides 포함 4-class selector — base.css §5(.reveal section.layout-chapter .chapter-body,
+   3-class)가 custom.css 뒤에 인라인되며 padding 1.5em 0(가로 0)·flex-grow:1(세로 팽창)로
+   덮어쓰던 회귀 차단. specificity 우세로 로드 순서 무관하게 theme 값이 이김. */
+.reveal .slides section.layout-chapter .chapter-body,
+.reveal .slides section.layout-_chapter .chapter-body {
+  flex-grow: 0;
+  margin: 4% auto 0;
+  max-width: 72%;
+  padding: 1.4em 2em;
+  border: 2px solid var(--m2-accent-1, #F5C518);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.6);
+  font-size: 1.1em;
+  line-height: 1.7;
+}
+
+.reveal section.layout-chapter .chapter-body ul,
+.reveal section.layout-_chapter .chapter-body ul,
+.reveal section.layout-chapter .chapter-body ol,
+.reveal section.layout-_chapter .chapter-body ol {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.reveal section.layout-chapter .chapter-body p,
+.reveal section.layout-_chapter .chapter-body p {
+  margin: 0.4em 0;
+}
+
+/* Issue234 — m2-source 기본 스타일은 lib/css/base.css 로 이관 */
+
+/* Issue234 — strong 강조에 accent color (PPT 빨강 강조 텍스트 호환)
+ * 사용자가 명시 색 override 시 inline style 우선 (cascade 자연 처리). */
+.reveal .contents-body strong,
+.reveal .slides section strong {
+  color: var(--m2-accent-5, #C82506);
+  font-weight: 700;
+}
+
+/* <<< @import ../default/slide.css */
+
+/* =========================================================================
+   1. 다크 팔레트 변수 override (:root)
+   ========================================================================= */
+:root {
+  --kn-text: #e9eaf2;
+  --kn-page-num-color: #8b93a7;
+  /* 컴포넌트(cards·htmlArt)가 참조하는 표면·텍스트·본문색을 다크로 */
+  --m2-bg: #0c0e16;
+  --m2-surface: #161a26;
+  --m2-text: #e9eaf2;
+  --m2-card-body-bg: rgba(255, 255, 255, 0.06);
+  --m2-card-border: rgba(255, 255, 255, 0.16);
+  /* Issue274: htmlArt 연결선·화살표·박스 테두리(지시 도형) 기본색 — 다크 배경용 밝은 선.
+     _config.yml htmlart_line_color: 로 프로젝트 단위 override 가능(--m2-htmlart-line 우선). */
+  --m2-line: rgba(233, 234, 242, 0.55);
+  /* 코드 블록 배경 다크 */
+  --code-bg: #161a26;
+}
+
+/* =========================================================================
+   2. 슬라이드 배경·본문 텍스트 (우주 그라디언트)
+   ========================================================================= */
+.reveal {
+  background: radial-gradient(ellipse at 50% 30%, #141a2c 0%, #0c0e16 70%, #07080e 100%);
+  color: var(--kn-text);
+}
+.reveal .slides,
+.reveal .slides section,
+.reveal .slides section h1,
+.reveal .slides section h2,
+.reveal .slides section h3,
+.reveal .slides section h4,
+.reveal .slides section p,
+.reveal .slides section li {
+  color: var(--kn-text);
+}
+.reveal .slides section strong { color: #ffe38a; }
+
+/* =========================================================================
+   3. 표 — 다크 대비 (base.css 의 rgba(0,0,0,*) → 밝은색으로 교체)
+   ========================================================================= */
+.reveal table th,
+.reveal table td {
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.reveal table thead th {
+  background-color: rgba(255, 255, 255, 0.10);
+  border-bottom-color: rgba(255, 255, 255, 0.30);
+}
+.reveal table tbody tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+/* =========================================================================
+   4. 코드·인용 — 다크 표면
+   ========================================================================= */
+.reveal pre,
+.reveal pre code,
+.reveal code {
+  background: var(--code-bg) !important;
+  color: #e9eaf2;
+}
+.reveal code { color: #a9e2ff; }
+.reveal blockquote {
+  background: rgba(127, 209, 255, 0.18) !important;
+  border-left: 4px solid #7fd1ff;
+  color: #eef4fb;
+  /* 텍스트 상하로 배경이 늘어나도록 내부 여백 — 기존 padding 0 으로 배경이 글자에 딱 붙었음 */
+  padding: 0.55em 1.2em;
+}
+
+/* =========================================================================
+   5. 목차(agenda·toc) — 다크 카드
+   ========================================================================= */
+.reveal .toc-page-header {
+  background: linear-gradient(135deg, #1b2338 0%, #10141f 100%) !important;
+  color: var(--kn-text) !important;
+}
+/* standalone agenda.html 헤더는 투명 — 불투명 gradient 가 우측 마스코트(::after, z-index 0)를
+   가려 뒤 이미지가 안 보이던 문제 보정. in-deck toc 슬라이드(.reveal)만 gradient 유지. */
+.agenda-page .toc-page-header {
+  background: transparent !important;
+  color: var(--kn-text) !important;
+}
+.toc-page-title { color: var(--kn-text) !important; }
+/* standalone agenda(non-.reveal)에서 base.css `.chapter-list--cards .chapter-card`(0,2,0)의
+   라이트 배경·inherit 링크색이 bare `.chapter-card`(0,1,0)를 이김 → 동급 이상 셀렉터 병기 */
+.reveal .chapter-card,
+.chapter-card,
+.chapter-list--cards .chapter-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(127, 209, 255, 0.28);
+}
+.reveal .chapter-card a,
+.chapter-card a,
+.chapter-list--cards .chapter-card a { color: #dfe6f2; }
+.reveal .chapter-card:hover,
+.chapter-card:hover,
+.chapter-list--cards .chapter-card:hover {
+  background: rgba(127, 209, 255, 0.14);
+  border-color: #7fd1ff;
+}
+.chapter-list--cards .chapter-card:hover a { color: #f2f7fd; }
+
+/* =========================================================================
+   6. 불투명 레이아웃 배경 → 투명/다크 (테마 배경 노출)
+   - default 의 layout-_cover 는 `background-color:#ffffff !important` 하드코딩이라
+     테마 .reveal 그라디언트를 덮음 → transparent !important 로 상쇄 (마스코트 이미지 유지)
+   - standalone agenda.html letterbox·frame 은 base.css §12 에서 #fff 하드코딩 → 다크로
+   ========================================================================= */
+.reveal section.layout-_cover,
+.guide-line-mode .reveal .slides section.layout-_cover {
+  background-color: transparent !important;
+}
+
+/* cover subtitle·QR 박스: 흰 박스 → 다크 반투명 */
+.reveal section.layout-_cover .cover-subtitle-box,
+.reveal section.layout-_cover .cover-qr-image {
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* agenda-page 문서 배경도 다크 (standalone 페이지 letterbox + ratio frame) */
+body.agenda-page,
+.agenda-frame,
+html.ratio-fill .agenda-frame {
+  background: #0c0e16 !important;
+}
