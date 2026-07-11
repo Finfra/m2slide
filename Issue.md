@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 279
+* Issue HWM: 280
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -29,26 +29,24 @@
 # 📙 일반
 
 # 📗 선택
-## Issue265. policy 데이터 yml 목적 지향(goal-oriented) 스키마 + confidence 가중치 도입 — 정책 무력화·오변경 예방 (등록: 2026-07-06)
-* branch따서 작업할 것. 
-* 목적: `data/<stage>/*.yml` 정책이 (A) 파일명 정규식 하드코딩으로 조용히 무력화되고(`drop_redundant_page_screenshot`가 `pdf-p\d+`만 검출 → AgenticCoding `sNN_i1.png` bleed 8건 미검출), (B) 일괄 커밋(chore bulk)에 섞여 회귀 원인 격리가 불가하며, (C) 학습 사례 1건이 즉시 전역 enforce로 승격되어 과소/과대 일반화 위험을 안는 구조적 약점을 차단.
-* plan: `_doc_work/plan/policy-goal-schema_plan.md`
-* task: `_doc_work/tasks/policy-goal-schema_task.md`
-* 분석 문서: http://jm4.local:9876/htm-doc?path=/Users/nowage/_git/__all/videoMaker/lib/m2slide/_doc_work/z_htm/hub_htm_20260706_210035_a_policy-history.htm (git history 사례 A/B/C + 예방책 ①~⑤ 상세)
-* 상세:
-    - 사례 A (목적·수단 불일치): commit `4b38619` 정책의 goal은 "재구성 성공 슬라이드에 통짜 래스터 0건"이나 구현은 특정 파일명 패턴 — 다른 추출 네이밍(sNN_iM)에서 무력화. 2026-07-06 AgenticCoding 튜닝에서 실증
-    - 사례 B (일괄 커밋): `01ad51a`·`80cd65b`·`b580e13` — 정책 yml+코드+산출물 혼합 커밋. theme fallback 회귀 원인 코드가 `01ad51a`에 숨어 있었음 (기존 Issue 기록)
-    - 사례 C (단일 사례 즉시 enforce): 7/3 백업 diff 기준 하루 3룰 추가 전부 사례 1건 근거 + 예외조건(`keep_screenshot_when`)이 자연어라 기계 판정 불가
-* 구현 명세 (분석 문서 ①~⑤ — 대규모 변경이라 등록만, 착수 시 plan 필수):
-    - ① goal-oriented 스키마: 각 룰에 `goal:`(검증 가능 목표) + `goal_check:`(속성 기반 판정 — 면적·종횡비·빈 alt 등) + `detect_hints:`(파일명 정규식은 힌트로 강등)
-    - ② confidence 가중치: `evidence:` 구조화 필드 기반 low(=proposal)/medium(=warn+apply)/high(=enforce) 3단계 적용 강도. promote-to-data.py 연동
-    - ③ 정책 yml 단독 커밋 규율 (bulk commit에 data/*.yml 혼입 금지)
-    - ④ `--lint-data` 확장: enforce 룰이 goal_check 없이 정규식만 가지면 경고 + 산출물 검사(정책 on인데 위반 잔존 시 fail-loud)
-    - ⑤ 학습 사례 골든 픽스처화: rationale 사례 슬라이드 재변환 회귀 테스트
-    - 우선순위: ①+④ (사례 A 직접 차단) → ② (사례 C 구조 개선) → ③⑤
-    - triage: 복잡 (heuristics.yml 스키마 개편 + promote-to-data.py + lint 확장 — 설계 결정이 후속 이슈에 영향)
-
 # ✅ 완료
+
+## Issue280. agenda 카드 모드 상단 장식(고양이 마스코트·제목 위 라인) 부재 + 상단 테두리 paint 소실 + 로딩 blank (등록: 2026-07-12, 해결: 2026-07-12, commit: 526cfce) ✅
+* 목적: agenda 카드 모드(`agenda_card_mode: true`)가 markmap 모드 대비 상단 장식(제목 위 노랑 hr 가로선, 우상단 고양이 마스코트)이 없고, 노랑 카드 박스의 상단 테두리 한 줄이 레티나(2x)에서 사라지며, 카드 모드 진입 시 2초간 화면이 blank 였던 문제를 종합 해결. Issue278(카드 테두리 accent 복구·헤더 투명화) 후속 정합.
+* 상세:
+    - **상단 장식 부재**: markmap agenda는 `.layout-_agenda::before`(hr 가로선)·`::after`(고양이)로 상단을 꾸미나, 카드 모드 wrapper는 `.layout-_cards.layout-_toc`라 두 selector에 매치되지 않아 장식이 전무.
+    - **상단 테두리 paint 소실**: `.toc-cards { overflow: auto }`(스크롤 컨테이너) + `margin-top: calc(var(--frame-h)*0.05)`(분수 60.63px) + deviceScaleFactor 2 조합에서 Chrome이 top border 2px 를 그리지 않음. geometry 실측상 `border-top: 2px solid` 계산은 존재(정상 위치 top=297, frame[89~1302] 안)하나 화면 미표시. markmap analog `.toc-markmap`은 `overflow: hidden`이라 무증상 — 이것이 결정적 단서.
+    - **로딩 blank**: 카드 모드는 markmap svg 부재로 `if(!svg) return`이 로딩 가드 해제(`m2ReleaseCrossGuard`) 앞에서 빠져나가, 2초 fallback 타이머까지 `visibility:hidden` 유지.
+* 구현 (commit 526cfce):
+    - `theme/default/slide.css` `.agenda-frame .toc-cards`: `overflow: auto` → `hidden` (markmap analog 통일, 카드는 프레임 대비 여유 커 스크롤 불필요 → 안전).
+    - `theme/default/slide.css` `.agenda-frame .layout-_cards::after`: markmap과 동일 고양이(finfraCat) 우상단 배치(`--frame-h/--frame-w` 비례). `toc-cards { z-index:1 }`로 마스코트(z-index:0) 위에 카드 박스를 두어 겹침 방지.
+    - `theme/default/slide.css` `.agenda-frame .layout-_cards::before`: markmap과 동일 제목 위 노랑 hr.png 가로선(top:12px, 좌우 24px inset).
+    - `lib/html-builder.js` agenda 초기화 스크립트: `if(!svg){ requestAnimationFrame(m2ReleaseCrossGuard); return; }`로 카드 모드에서 가드 즉시 해제 → 2초 blank 제거. markmap 모드는 svg 존재로 분기 미진입(회귀 0).
+* 검증:
+    - StellarEvolution(default_dark) 카드·markmap 양 모드 재빌드 후 시스템 Chrome(`channel:'chrome'`) headless 2x 캡처 — 제목선·고양이·투명 제목·상단 테두리 모두 정상 표시.
+    - paint 버그는 playwright geometry 실측(`.toc-cards` border-top 값·위치) + `overflow:hidden` 임시 전환 A/B 로 원인 확정.
+    - markmap 모드 회귀 0(`.layout-_agenda` selector 미변경, svg 분기 미진입).
+* 참고: Playwright MCP는 chrome-for-testing 미인식으로 실패 → 설치된 시스템 Chrome을 playwright `channel:'chrome'`으로 구동하여 geometry 측정·캡처.
 
 ## Issue279. default_dark standalone agenda 카드 평상시 라이트·hover 시 다크+어두운 텍스트로 가독성 붕괴 (등록: 2026-07-11, 해결: 2026-07-11, commit: b90f029) ✅
 * 목적: darkmode(default_dark) standalone agenda 페이지 카드가 평상시 라이트 그레이로 렌더되고, hover 시에만 다크 배경 + 어두운 텍스트가 되어 글자가 안 보이는 문제 해결
@@ -2292,6 +2290,27 @@
     - 대표 프로젝트 4개 모두 재빌드: LlmAndVibeCoding, m2SlideStyle1_single, m2SlideStyle2_chapter, layoutTest
 
 # ⏸️ 보류
+
+## Issue265. policy 데이터 yml 목적 지향(goal-oriented) 스키마 + confidence 가중치 도입 — 정책 무력화·오변경 예방 (등록: 2026-07-06, 보류: 2026-07-11)
+* branch따서 작업할 것. 
+* 보류 사유: 대규모 변경(triage 복잡) — 착수 시점 조정. plan/task 작성 완료 상태로 보류.
+* 재개 예정: 2026-07-15 (수) — prj5 aoa-mq 리마인드 등록
+* 목적: `data/<stage>/*.yml` 정책이 (A) 파일명 정규식 하드코딩으로 조용히 무력화되고(`drop_redundant_page_screenshot`가 `pdf-p\d+`만 검출 → AgenticCoding `sNN_i1.png` bleed 8건 미검출), (B) 일괄 커밋(chore bulk)에 섞여 회귀 원인 격리가 불가하며, (C) 학습 사례 1건이 즉시 전역 enforce로 승격되어 과소/과대 일반화 위험을 안는 구조적 약점을 차단.
+* plan: `_doc_work/plan/policy-goal-schema_plan.md`
+* task: `_doc_work/tasks/policy-goal-schema_task.md`
+* 분석 문서: http://jm4.local:9876/htm-doc?path=/Users/nowage/_git/__all/videoMaker/lib/m2slide/_doc_work/z_htm/hub_htm_20260706_210035_a_policy-history.htm (git history 사례 A/B/C + 예방책 ①~⑤ 상세)
+* 상세:
+    - 사례 A (목적·수단 불일치): commit `4b38619` 정책의 goal은 "재구성 성공 슬라이드에 통짜 래스터 0건"이나 구현은 특정 파일명 패턴 — 다른 추출 네이밍(sNN_iM)에서 무력화. 2026-07-06 AgenticCoding 튜닝에서 실증
+    - 사례 B (일괄 커밋): `01ad51a`·`80cd65b`·`b580e13` — 정책 yml+코드+산출물 혼합 커밋. theme fallback 회귀 원인 코드가 `01ad51a`에 숨어 있었음 (기존 Issue 기록)
+    - 사례 C (단일 사례 즉시 enforce): 7/3 백업 diff 기준 하루 3룰 추가 전부 사례 1건 근거 + 예외조건(`keep_screenshot_when`)이 자연어라 기계 판정 불가
+* 구현 명세 (분석 문서 ①~⑤ — 대규모 변경이라 등록만, 착수 시 plan 필수):
+    - ① goal-oriented 스키마: 각 룰에 `goal:`(검증 가능 목표) + `goal_check:`(속성 기반 판정 — 면적·종횡비·빈 alt 등) + `detect_hints:`(파일명 정규식은 힌트로 강등)
+    - ② confidence 가중치: `evidence:` 구조화 필드 기반 low(=proposal)/medium(=warn+apply)/high(=enforce) 3단계 적용 강도. promote-to-data.py 연동
+    - ③ 정책 yml 단독 커밋 규율 (bulk commit에 data/*.yml 혼입 금지)
+    - ④ `--lint-data` 확장: enforce 룰이 goal_check 없이 정규식만 가지면 경고 + 산출물 검사(정책 on인데 위반 잔존 시 fail-loud)
+    - ⑤ 학습 사례 골든 픽스처화: rationale 사례 슬라이드 재변환 회귀 테스트
+    - 우선순위: ①+④ (사례 A 직접 차단) → ② (사례 C 구조 개선) → ③⑤
+    - triage: 복잡 (heuristics.yml 스키마 개편 + promote-to-data.py + lint 확장 — 설계 결정이 후속 이슈에 영향)
 
 ## Issue145. Fragment 단계별 등장 + 색 강조 동시 적용 syntax 부재 (등록: 2026-05-10, 보류: 2026-05-10)
 * 목적: 한 요소에 두 개의 fragment-index를 거는 reveal.js 표준 패턴(등장 → 다음 단계에서 색 강조)을 m2slide 마크다운으로 자연스럽게 표현할 수 있게 함. 현재 인라인 attribute `{.fragment .highlight-red}`는 단일 class 세트만 li/p에 주입하므로 등장과 색 강조를 분리 적용할 수 없음.
