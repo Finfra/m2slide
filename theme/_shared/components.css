@@ -201,7 +201,6 @@
   --htmlart-accent-5: var(--m2-accent-5, #2ECC71);
   --htmlart-accent-6: var(--m2-accent-6, #E74C3C);
   --htmlart-fg: var(--m2-text, var(--kn-text, #ffffff));
-  --htmlart-box-bg: rgba(0, 0, 0, 0.045);
   --htmlart-surface: var(--m2-surface, #f4f4f5);            /* 노드 박스 불투명 배경 — d3 연결선이 박스 뒤로 가려지게 (Issue195) */
   /* Issue274: 선/화살표/테두리 색 = config override(--m2-htmlart-line) > 테마 기본(--m2-line) > 하드코딩 fallback.
      라이트 테마(default·default_lec)는 --m2-line 미설정 → 기존 rgba 유지(회귀 0). 다크 테마는 --m2-line 로 밝은 선색 지정. */
