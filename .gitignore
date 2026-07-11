@@ -4,6 +4,7 @@ CLAUDE.md
 Issue.md
 _doc_work
 _doc_arch
+_doc_base
 CLAUDE.md
 Harness.md
 Issue.md
@@ -114,11 +115,12 @@ Temporary Items
 .apdisk
 # config.yml
 
-# theme: default·default_lec·_shared만 추적, 그 외 사용자 커스텀은 추적 제외
+# theme: default·default_lec·_shared·stellar_dark만 추적, 그 외 사용자 커스텀은 추적 제외
 /theme/*
 !/theme/default/
 !/theme/default_lec/
 !/theme/_shared/
+!/theme/stellar_dark/
 
 # data: .gitkeep + SSOT 템플릿만 추적, 그 외 사용자 데이터는 추적 제외
 /data/*
