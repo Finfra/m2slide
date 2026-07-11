@@ -24,15 +24,6 @@
 
 # 🔥 진행 중
 
-## Issue278. agenda 카드 모드 노란 테두리 소실 + default_dark 비카드 agenda 헤더 불투명 (등록: 2026-07-11)
-* 목적: standalone agenda.html의 두 시각 회귀 해결 — (a) `agenda_card_mode: true` 시 markmap 박스의 노란 테두리(`--kn-accent`) 프레임이 사라짐, (b) default_dark 테마 비카드 agenda에서 `.toc-page-header` 다크 gradient(`!important`)가 우측 마스코트(finfraCat, z-index 0)를 가려 뒤 이미지가 안 보임
-* 상세:
-    - 테두리는 `theme/default/slide.css` `.agenda-frame .toc-markmap`에만 정의 — 카드 모드 컨테이너(`.toc-cards`)에는 매치되는 프레임 스타일 없음 (default_lec 동일)
-    - `theme/default_dark/slide.css` §5의 `.toc-page-header` gradient가 agenda 페이지에서 헤더 뒤 요소를 덮음
-* 구현 명세:
-    - `theme/default/slide.css` + `theme/default_lec/slide.css`: `.agenda-frame .layout-_cards`(flex column) + `.agenda-frame .toc-cards`(테두리·라운드·flex) 추가 — `.toc-markmap` 프레임과 parity
-    - `theme/default_dark/slide.css`: gradient 셀렉터를 `.reveal .toc-page-header`(in-deck)로 한정, `.agenda-page .toc-page-header`는 `transparent !important`
-
 # 📕 중요
 
 # 📙 일반
@@ -58,6 +49,16 @@
     - triage: 복잡 (heuristics.yml 스키마 개편 + promote-to-data.py + lint 확장 — 설계 결정이 후속 이슈에 영향)
 
 # ✅ 완료
+
+## Issue278. agenda 카드 모드 노란 테두리 소실 + default_dark 비카드 agenda 헤더 불투명 (등록: 2026-07-11, 해결: 2026-07-11, commit: 3192afd) ✅
+* 목적: standalone agenda.html의 두 시각 회귀 해결 — (a) `agenda_card_mode: true` 시 markmap 박스의 노란 테두리(`--kn-accent`) 프레임이 사라짐, (b) default_dark 테마 비카드 agenda에서 `.toc-page-header` 다크 gradient(`!important`)가 우측 마스코트(finfraCat, z-index 0)를 가려 뒤 이미지가 안 보임
+* 상세:
+    - 테두리는 `theme/default/slide.css` `.agenda-frame .toc-markmap`에만 정의 — 카드 모드 컨테이너(`.toc-cards`)에는 매치되는 프레임 스타일 없음 (default_lec 동일)
+    - `theme/default_dark/slide.css` §5의 `.toc-page-header` gradient가 agenda 페이지에서 헤더 뒤 요소를 덮음
+* 구현 명세 (적용 완료):
+    - `theme/default/slide.css` + `theme/default_lec/slide.css`: `.agenda-frame .layout-_cards`(flex column) + `.agenda-frame .toc-cards`(테두리·라운드·flex) 추가 — `.toc-markmap` 프레임과 parity
+    - `theme/default_dark/slide.css`: gradient 셀렉터를 `.reveal .toc-page-header`(in-deck)로 한정, `.agenda-page .toc-page-header`는 `transparent !important`
+* 검증: StellarEvolution 빌드 + headless 캡처 — 카드 모드(`_doc_work/capture/issue278-agenda-card.png`) 테두리 복구, 비카드 모드(`issue278-agenda-markmap.png`) 헤더 투명·마스코트 노출. `--lint-deployment` 통과
 
 ## Issue277. 테마 stellar_dark → default_dark rename + StellarEvolution 참조 수정 (등록: 2026-07-11, 해결: 2026-07-11, commit: c7852be) ✅
 * 목적: 우주 다크 테마를 특정 프로젝트 종속 명칭(stellar) 대신 범용 명칭(default_dark)으로 정착 — default 상속 다크 variant 표준 테마로 재사용 가능하게 함
