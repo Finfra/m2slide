@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 274
+* Issue HWM: 275
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -70,6 +70,30 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue275. dev-server 프로젝트 목록(/p/) 카드별 _config.yml 설정 GUI + Open settings file (등록: 2026-07-10, 해결: 2026-07-11, commit: 1f18955) ✅
+* 목적: dev-server 프로젝트 목록 페이지(`/p/`)가 `Projects.md` 메타를 읽기 전용으로만 표시하여, 프로젝트별 렌더 옵션(`_config.yml`)을 바꾸려면 매번 파일을 손으로 편집해야 했음. 각 카드에서 바로 편집 가능한 GUI를 추가하여 반복 편집 부담을 제거.
+* plan: `_doc_work/plan/config-gui_plan.md`
+* task: `_doc_work/tasks/config-gui_task.md`
+* arch: `_doc_arch/config-gui.md`
+* 확장 (2026-07-10 추가): 초판 13키 단일폼 → `_config.org.yml` 전체 옵션(약 30개)으로 확장.
+    - theme 콤보박스(`theme/` 디렉토리 동적 스캔 + 자유입력).
+    - 미설정 시 기본값 placeholder + 라벨 우측 ⚪ 미설정 배지.
+    - 5탭 그룹: ①테마·레이아웃 ②목차·구조 ③네비게이션 ④색·애니메이션 ⑤크기·폰트 (사용자 결정 폼 미회수 → 권장값 진행).
+    - 다국어(i18n) ko/en, GUI 전체(탭·라벨·버튼·상태·검증) — 클라이언트 즉시 전환.
+    - 중첩 키 편집: `animation.*`(2단계)·`style.theContents.*`(3단계) dotted-path + 제네릭 nested writer.
+    - 설계 SSOT: `_doc_arch/config-gui.md`. 미해결: style 3단계 nested 유닛 검증, en 완역(FIXME).
+* 확장 (2026-07-11 추가): 모달 footer에 "📄 Open settings file" 버튼 — 카드별 `_config.yml`을 VSCode로 직접 여는 엔드포인트. prj1 hub Settings의 동명 기능 대응. GUI 폼으로 못 다루는 저수준 키(slide_css·style 3단계 등)를 파일에서 직접 편집하는 탈출구.
+    - `POST /p/<P>/open-config` — `open -a "Visual Studio Code" Projects/<P>/_config.yml`. 파일 없으면 touch 후 open (Save가 파일 생성하는 동작과 일관). 프로젝트는 `_list_projects()` 화이트리스트 검증, 경로 고정(Projects/<P>/_config.yml) — 임의 경로 open 불가. 서버 127.0.0.1 bind.
+    - footer 좌측 버튼 + i18n(ko/en) + 상태 토스트. server.py 단일 파일 변경 + test_server.py 유닛 4건 추가.
+* 구현 명세:
+    - `GET /p/<P>/config` — 현재 편집 가능 값 + 스키마 JSON 반환.
+    - `POST /p/<P>/config` — `{"values":{...변경분...}}` 화이트리스트 검증 후 `_config.yml` 라인 편집 + `./m2slide.sh <P> --no-serve` 재빌드.
+    - `POST /p/<P>/open-config` — `_config.yml` VSCode open (신규, Open settings file 버튼).
+    - 화이트리스트 키: theme·palette·theme_default_layout·cover_enabled·agenda_enabled·toc_placeholder·agenda_card_mode·toc_card_mode·nav_indicator·nav_color·markmap_depth·chapter_markmap_depth·card_columns.
+    - `_write_config_keys` — 주석·순서 보존 라인 편집, `#` 포함 값(hex color)은 자동 인용. 값 검증 타입별(bool·int 범위·enum·css color·slug 패턴) + 금지문자 차단.
+    - 프런트: 카드 `position:relative` + `.cfg-gear` ⚙️, 공용 모달 `#cfg-overlay` + 스키마 기반 폼 JS(변경분 diff POST), ESC/배경 클릭 닫기, 라이트·다크 대응.
+    - 검증: py_compile OK, 유닛 53/53(config GUI + 신규 open-config 4건), 서버 재시작 후 curl — unknown project 404(no spawn)·valid 200(opened·VSCode spawn)·GET config 200·버튼/i18n/script 서빙 확인. 모달 시각 스크린샷은 Playwright chrome 미설치로 skip.
 
 ## Issue274. htmlArt 선/지시 도형 색 config(_config.yml) + 테마 변수화 (nav_color 패턴) (등록: 2026-07-10, 해결: 2026-07-10, commit: 3b7dd06) ✅
 * depends: Issue272 (관련 — 본 이슈가 htmlArt 선/화살표 대비 부분을 config·테마 변수로 구현)
