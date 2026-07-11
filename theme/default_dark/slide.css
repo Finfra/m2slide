@@ -92,18 +92,24 @@
   color: var(--kn-text) !important;
 }
 .toc-page-title { color: var(--kn-text) !important; }
+/* standalone agenda(non-.reveal)에서 base.css `.chapter-list--cards .chapter-card`(0,2,0)의
+   라이트 배경·inherit 링크색이 bare `.chapter-card`(0,1,0)를 이김 → 동급 이상 셀렉터 병기 */
 .reveal .chapter-card,
-.chapter-card {
+.chapter-card,
+.chapter-list--cards .chapter-card {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(127, 209, 255, 0.28);
 }
 .reveal .chapter-card a,
-.chapter-card a { color: #dfe6f2; }
+.chapter-card a,
+.chapter-list--cards .chapter-card a { color: #dfe6f2; }
 .reveal .chapter-card:hover,
-.chapter-card:hover {
+.chapter-card:hover,
+.chapter-list--cards .chapter-card:hover {
   background: rgba(127, 209, 255, 0.14);
   border-color: #7fd1ff;
 }
+.chapter-list--cards .chapter-card:hover a { color: #f2f7fd; }
 
 /* =========================================================================
    6. 불투명 레이아웃 배경 → 투명/다크 (테마 배경 노출)
