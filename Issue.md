@@ -24,16 +24,6 @@
 
 # 🔥 진행 중
 
-## Issue277. 테마 stellar_dark → default_dark rename + StellarEvolution 참조 수정 (등록: 2026-07-11)
-* 목적: 우주 다크 테마를 특정 프로젝트 종속 명칭(stellar) 대신 범용 명칭(default_dark)으로 정착 — default 상속 다크 variant 표준 테마로 재사용 가능하게 함
-* 상세:
-    - `theme/stellar_dark/` → `theme/default_dark/` 폴더 rename (untracked 상태 — plain mv)
-    - 참조 갱신: `Projects/StellarEvolution/_config.yml` `theme:`, `.gitignore` 추적 화이트리스트(`!/theme/stellar_dark/`)·주석, `theme/stellar_dark/slide.css` 헤더 주석
-    - 빌드 산출물: `Projects/StellarEvolution/slide/css/custom.css` 재빌드 반영, `docs/StellarEvolution/css/custom.css` 동기화
-* 구현 명세:
-    - rename-reference-rules 5단계 (사전 grep → mv → 참조 갱신 → 사후 grep 0건 → 단일 commit)
-    - 검증: `./m2slide.sh StellarEvolution` 빌드 로그 `Theme applied: default_dark` 확인
-
 # 📕 중요
 
 # 📙 일반
@@ -42,6 +32,8 @@
 ## Issue265. policy 데이터 yml 목적 지향(goal-oriented) 스키마 + confidence 가중치 도입 — 정책 무력화·오변경 예방 (등록: 2026-07-06)
 * branch따서 작업할 것. 
 * 목적: `data/<stage>/*.yml` 정책이 (A) 파일명 정규식 하드코딩으로 조용히 무력화되고(`drop_redundant_page_screenshot`가 `pdf-p\d+`만 검출 → AgenticCoding `sNN_i1.png` bleed 8건 미검출), (B) 일괄 커밋(chore bulk)에 섞여 회귀 원인 격리가 불가하며, (C) 학습 사례 1건이 즉시 전역 enforce로 승격되어 과소/과대 일반화 위험을 안는 구조적 약점을 차단.
+* plan: `_doc_work/plan/policy-goal-schema_plan.md`
+* task: `_doc_work/tasks/policy-goal-schema_task.md`
 * 분석 문서: http://jm4.local:9876/htm-doc?path=/Users/nowage/_git/__all/videoMaker/lib/m2slide/_doc_work/z_htm/hub_htm_20260706_210035_a_policy-history.htm (git history 사례 A/B/C + 예방책 ①~⑤ 상세)
 * 상세:
     - 사례 A (목적·수단 불일치): commit `4b38619` 정책의 goal은 "재구성 성공 슬라이드에 통짜 래스터 0건"이나 구현은 특정 파일명 패턴 — 다른 추출 네이밍(sNN_iM)에서 무력화. 2026-07-06 AgenticCoding 튜닝에서 실증
@@ -57,6 +49,17 @@
     - triage: 복잡 (heuristics.yml 스키마 개편 + promote-to-data.py + lint 확장 — 설계 결정이 후속 이슈에 영향)
 
 # ✅ 완료
+
+## Issue277. 테마 stellar_dark → default_dark rename + StellarEvolution 참조 수정 (등록: 2026-07-11, 해결: 2026-07-11, commit: c7852be) ✅
+* 목적: 우주 다크 테마를 특정 프로젝트 종속 명칭(stellar) 대신 범용 명칭(default_dark)으로 정착 — default 상속 다크 variant 표준 테마로 재사용 가능하게 함
+* 상세:
+    - `theme/stellar_dark/` → `theme/default_dark/` 폴더 rename (untracked 상태 — plain mv, 디스크 대문자 `Theme` → 소문자 `theme` 정규화 포함)
+    - 참조 갱신: `Projects/StellarEvolution/_config.yml` `theme:`, `.gitignore` 추적 화이트리스트(`!/theme/default_dark/`)·주석, `theme/default_dark/slide.css` 헤더 주석
+    - 빌드 산출물: `Projects/StellarEvolution/slide/css/custom.css` 재빌드 반영, `docs/StellarEvolution/` rsync 동기화 (stale 구빌드 → Issue271 포함 최신 빌드)
+* 구현 명세 (Walkthrough):
+    - rename-reference-rules 5단계 준수: 사전 grep(3개 파일) → mv → 참조 갱신 → 사후 grep 잔존 0건(주석 "(구 stellar_dark)" 의도적 유지 제외) → 단일 commit
+    - 검증: `./m2slide.sh StellarEvolution` 빌드 로그 `✅ Theme applied: default_dark` + `--lint-deployment` 통과 + dev-server `/p/StellarEvolution/s/1/1` 정상 서빙
+    - 참고: `Projects/StellarEvolution/`·`docs/StellarEvolution/` 은 gitignore/미추적 — theme 폴더 + .gitignore 만 커밋. docs 발행(추적)은 `/deploy-docs` 별도 결정 (vendor 21M 정책 검토 필요)
 
 ## Issue272. htmlArt 컴포넌트 다크(black) 테마 대비 미흡 — 시각검증상 Issue274로 실질 해결 (등록: 2026-07-10, 해결: 2026-07-11, commit: 35c5870) ✅
 * 목적: htmlArt(d3 SVG SmartArt)가 밝은 배경 전제로 색/텍스트가 고정되어 다크 테마에서 대비·가독성이 떨어진다는 우려(등록 시 "예상 — 시각 확인 필요")를 검증·해소.
