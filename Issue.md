@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 278
+* Issue HWM: 279
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -49,6 +49,16 @@
     - triage: 복잡 (heuristics.yml 스키마 개편 + promote-to-data.py + lint 확장 — 설계 결정이 후속 이슈에 영향)
 
 # ✅ 완료
+
+## Issue279. default_dark standalone agenda 카드 평상시 라이트·hover 시 다크+어두운 텍스트로 가독성 붕괴 (등록: 2026-07-11, 해결: 2026-07-11, commit: b90f029) ✅
+* 목적: darkmode(default_dark) standalone agenda 페이지 카드가 평상시 라이트 그레이로 렌더되고, hover 시에만 다크 배경 + 어두운 텍스트가 되어 글자가 안 보이는 문제 해결
+* 상세:
+    - 재현: `/p/StellarEvolution/n/a` — 카드 평상시 라이트 그레이(다크 테마와 불일치), hover 카드는 어두운 남색 + 어두운 글자(판독 불가)
+    - 원인: base.css `.chapter-list--cards .chapter-card`(0,2,0)의 라이트 배경 `rgba(255,255,255,0.6)` 이 default_dark의 bare `.chapter-card`(0,1,0)를 specificity 로 이김 → 평상시 라이트 유지. hover 시엔 default_dark `.chapter-card:hover`(0,2,0)가 동률+후순위로 승리해 다크 배경이 되지만, 링크 색은 base `.chapter-list--cards .chapter-card a { color: inherit }`(0,2,1)가 이겨 다크 글자 유지 → 판독 불가
+    - in-deck toc 는 `.reveal .chapter-card`(0,2,0) 셀렉터가 있어 정상 — standalone agenda(non-.reveal)만 회귀
+* 구현 명세:
+    - theme/default_dark/slide.css §5 카드 셀렉터에 `.chapter-list--cards .chapter-card`(+ `a`, `:hover`, `:hover a`) 고특이도 변형 병기 — 평상시부터 다크 카드 + 라이트 텍스트(#dfe6f2, hover #f2f7fd)로 통일
+    - 검증: StellarEvolution 재빌드 → custom.css 반영 확인 + `--lint-deployment` 통과. Playwright headless는 브라우저 미설치(CDN DNS 차단)로 불가 — cascade 분석 + Chrome 시각 채널로 대체
 
 ## Issue278. agenda 카드 모드 노란 테두리 소실 + default_dark 비카드 agenda 헤더 불투명 (등록: 2026-07-11, 해결: 2026-07-11, commit: 3192afd) ✅
 * 목적: standalone agenda.html의 두 시각 회귀 해결 — (a) `agenda_card_mode: true` 시 markmap 박스의 노란 테두리(`--kn-accent`) 프레임이 사라짐, (b) default_dark 테마 비카드 agenda에서 `.toc-page-header` 다크 gradient(`!important`)가 우측 마스코트(finfraCat, z-index 0)를 가려 뒤 이미지가 안 보임
