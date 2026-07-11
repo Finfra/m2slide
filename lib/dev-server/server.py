@@ -1196,11 +1196,11 @@ class DevHandler(SimpleHTTPRequestHandler):
             '.cfg-x{border:none;background:none;font-size:18px;cursor:pointer;color:#888}'
             '.cfg-x:hover{color:#c33}'
             '.cfg-body{padding:14px 18px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}'
-            # center-axis two-column: label right-aligned to center gap, control left-aligned from center; uniform row height
+            # two-column: label left-aligned in fixed-width gutter, control left-aligned; uniform row height
             '.cfg-row{display:flex;justify-content:flex-start;align-items:center;gap:14px;'
             'font-size:14px;min-height:34px}'
-            '.cfg-row>.cfg-lab{flex:0 0 44%;color:#555;display:flex;justify-content:flex-end;'
-            'align-items:center;gap:3px;text-align:right;line-height:1.25}'
+            '.cfg-row>.cfg-lab{flex:0 0 44%;color:#555;display:flex;justify-content:flex-start;'
+            'align-items:center;gap:3px;text-align:left;line-height:1.25}'
             '.cfg-row input[type=text],.cfg-row input[type=number],.cfg-row select{'
             'flex:1 1 auto;width:auto;min-width:0;padding:5px 8px;'
             'border:1px solid #ccc;border-radius:5px;font:inherit;background:#fff;color:#1a1a1a}'
@@ -2226,7 +2226,8 @@ function wireCombo(combo){
   var list=combo.querySelector('.cfg-combo-list');
   var toggle=combo.querySelector('.cfg-combo-toggle');
   function filter(){var v=inp.value.trim().toLowerCase();list.querySelectorAll('li').forEach(function(li){li.style.display=(!v||li.dataset.val.toLowerCase().indexOf(v)>=0)?'':'none';});}
-  function open(){closeAllCombos();filter();list.classList.remove('hidden');inp.setAttribute('aria-expanded','true');}
+  function showAll(){list.querySelectorAll('li').forEach(function(li){li.style.display='';});}
+  function open(){closeAllCombos();showAll();list.classList.remove('hidden');inp.setAttribute('aria-expanded','true');}
   function shut(){list.classList.add('hidden');inp.setAttribute('aria-expanded','false');}
   toggle.addEventListener('click',function(e){e.stopPropagation();if(list.classList.contains('hidden'))open();else shut();});
   inp.addEventListener('focus',open);
