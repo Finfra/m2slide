@@ -28,21 +28,22 @@
 
 # 📙 일반
 
-## Issue285. columns 명시 width 합 100% + .m2-cols gap:4% → 우측 넘침·짤림 (등록: 2026-07-12)
+# 📗 선택
+
+# ✅ 완료
+
+## Issue285. columns 명시 width 합 100% + .m2-cols gap:4% → 우측 넘침·짤림 (등록: 2026-07-12, 해결: 2026-07-12, commit: 57ff687) ✅
 * 목적: `::: {.column width="50%"}` 2개(합 100%) 또는 3개(33/33/34) 사용 시, `.m2-cols`의 `gap:4%`가 폭에 더해져 총 104%(2col)/108%(3col) → 마지막 컬럼이 슬라이드 우측으로 넘쳐 텍스트가 잘림.
 * 상세:
     - `lib/css/base.css:645` `.m2-cols { gap: 4%; justify-content: space-between; }`
     - 인라인 `flex: 0 0 N%; max-width: N%`(빌더가 width 속성으로 주입)가 `.m2-col{flex:1}` 을 override → 폭 고정 → gap 만큼 총합 초과
     - `md-m2slide-rules`·Pandoc 예시는 width 합 100% 를 안내(`width="50%"` ×2)하지만 gap 미반영이라 그대로 쓰면 넘침
-* 구현 명세 (택1):
-    - (a·권장) 빌더가 width 지정 시 gap 을 자동 차감: 각 폭에 `(100 - gap*(n-1))/Σwidth` 스케일 적용 후 주입
-    - (b) `.m2-col` 을 `box-sizing:border-box` + `width:calc(N% - gap보정)` 로 렌더
-    - (c·최소) `md-m2slide-rules` 에 "width 합은 gap 고려 ≤96%(2col)/≤92%(3col), 또는 등분은 width 생략(flex:1)" 경고 추가
-* 회피(현재): width 생략 시 `flex:1` 로 gap 반영 등분 → 넘침 없음 (본 세션 RamyeonCooking 3원칙 적용)
-
-# 📗 선택
-
-# ✅ 완료
+* 구현 결과 (commit 57ff687 — 명세 (a) 채택):
+    - `lib/markdown.js` `preprocessPandocDiv`: columns 그룹 open 시 `scanColumnWidths()` 로 direct-child column 사전 스캔 → 모든 child 가 % width 이고 `Σwidth > 100 - 4*(n-1)` 일 때만 factor `(100-gap*(n-1))/Σwidth` 비율 유지 축소 주입 (50/50→48/48, 33/33/34→30.36/30.36/31.28)
+    - 축소만 수행 (factor<1) — gap-aware 48/48 등 여유 합·혼합(width 일부 생략)·px 지정 그룹은 무변경. 중첩 columns 는 그룹별 독립 스케일
+    - `COLS_GAP_PCT=4` 상수는 `base.css .m2-cols gap:4%` 와 동기 (CSS 변경 시 함께 갱신 주석)
+    - 테스트 8건 추가 (`lib/__tests__/markdown.test.js`, 총 63 pass) + `md-m2slide-rules.md` §4 자동 축소 정책 문서화
+    - 검증: aTest 빌드 → `03-text.html` `flex: 0 0 48%` ×2, headless Chrome geometry 실측 우측 경계 1134/1280 (넘침 0) + 캡처 `_doc_work/capture/verify-issue285-columns.png`. 대표 프로젝트(single/chapter) 회귀 빌드 OK, `--lint-deployment` 통과
 
 ## Issue284. 슬라이드 세로 밸런싱 — 텍스트 slide 상단 몰림 + 컴포넌트↔텍스트 간격 부족 (등록: 2026-07-12, 해결: 2026-07-12, commit: c8f912c, 8bf294f, 83a8d3b) ✅
 * 목적: 텍스트 비중 슬라이드가 상단으로 몰려 하단이 비고(`.contents-body` flex-start), htmlArt/cards 컴포넌트와 인접 설명 텍스트가 붙어 답답함. 전체 세로 밸런싱을 정책으로 정리.
