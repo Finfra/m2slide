@@ -34,6 +34,8 @@
 
 ## Issue281. dev-server /pd/ — Projects_deck 덱 목록 페이지 (등록: 2026-07-12, 해결: 2026-07-12, commit: e31da3c) ✅
 * 목적: `Projects_deck/decks/<category>/<deck>` 공유 덱 저장소를 dev-server 에서 열람 가능하게 함 (최소 코드)
+* plan: `_doc_work/plan/pd-deck-list_plan.md`
+* task: `_doc_work/tasks/pd-deck-list_task.md`
 * 상세:
     - `GET /pd/` — 카테고리별 섹션 + 덱 카드 목록. `slide/index.html` 존재 시 static 경로(`/Projects_deck/.../slide/index.html`) 직링크, 없으면 "빌드 산출물 없음" 표시
     - `Projects_deck/decks/` 폴더 존재 시에만 공통 헤더(home·/p/ 등)에 `🃏 decks` 링크 노출
