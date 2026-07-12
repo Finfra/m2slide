@@ -52,6 +52,10 @@ tools:
     output_path: img/
     output_format: [html, png]
 
+  # 이미지 출처(::: source) 표시 정책 — 각 백엔드 source_attribution 필드로 판정:
+  #   * none     = 자체 산출물(AI 생성·SVG 저작·placeholder) → 슬라이드 ::: source 표시 불요
+  #   * required = 외부 수집물(CC 스톡 등) → 출처·credits 의무 (라이선스 준수)
+  # 즉 생성/저작한 이미지는 출처 불요, 남의 것을 가져온 이미지만 출처 필수.
   # Issue287 — 이미지 생성 백엔드 (설계 SSOT: _doc_arch/media-creater-image-backend.md)
   - id: svg_direct
     type: vector_illustration
@@ -67,6 +71,7 @@ tools:
     output_path: img/
     output_format: svg
     style_source: info_field_map     # image_style → design_mood → default 재사용 (§4)
+    source_attribution: none         # 자체 저작(SVG) 산출물 → 슬라이드 출처(::: source) 표시 불요
     constraints:
       - "viewBox 필수 (반응형 스케일)"
       - "외부 참조(href·image·@import) 금지 — file:// 단일 파일 배포 규약 (file-deployment-rules)"
@@ -86,6 +91,7 @@ tools:
     invocation: 'python3 .claude/skills/free-image/fetch.py --query "<영어 검색어>" --out Projects/<Name>/img --license cc0,by --prefix <slide_id>'
     output_path: img/
     output_format: jpg
+    source_attribution: required     # 외부 CC 수집물 → 출처 표시 의무 (아래 credits)
     credits: "CREDITS.md 자동 기록 — CC-BY 포함 시 덱 마지막 credits 슬라이드 의무 (SKILL.md 절차)"
     retry: "rc 3 시 검색어 변경 1회 재시도 → 재실패 시 image_fallback_chain 강등"
 
@@ -98,17 +104,25 @@ tools:
       - "생성 이미지"
       - "리얼리즘"
       - "컨셉 아트"
-    invocation: '/Volumes/jM4_2T/Applications/mflux/bin/mflux-run mflux-generate --model schnell --prompt "<영어 프롬프트>" --steps 4 --width 1024 --height 1024 --seed <seed> --output Projects/<Name>/img/<slide_id>.png'
+    # Issue289 — 큐 경유 (직접 mflux 실행 절대 금지. prj55 잡 큐가 동시 1잡 직렬화 — 메모리 보호)
+    invocation: |
+      id=$(/Volumes/jM4_2T/Applications/mflux/bin/mflux-enqueue --project <Name> \
+        --prompt "<영어 프롬프트>" --model schnell --steps 4 --width 1024 --height 1024 \
+        --seed <seed> --output <repo절대경로>/Projects/<Name>/img/<slide_id>.png) || 강등
+      # 폴링: 30s 간격, 잡당 타임아웃 5분
+      /Volumes/jM4_2T/Applications/mflux/bin/mflux-queue-status "$id"
+      # exit 0=done(output 실존 확인 후 사용) / 2=pending / 3=running / 4=failed(reason 확인·강등) / 5=미발견
     input_spec: _doc_work/media/{slide_id}.md   # 기존 생성 명세(spec_template §4) 소비 — 양식 무변경
     output_path: img/
     output_format: png
-    perf: "1024×1024 4-step ≈ 76초/장 (jm4 M4 Pro 64GB, bf16 peak 36GB — 실측 2026-07-13)"
+    source_attribution: none         # AI 자체 생성(mflux) 산출물 → 슬라이드 출처(::: source) 표시 불요
+    perf: "1024×1024 4-step ≈ 76초/장 (jm4 M4 Pro 64GB, bf16 peak 36GB — 실측 2026-07-13). 대기열 있으면 + 선행 잡 시간"
     guard:
-      - "⚠️ 실행 전 필수: `pgrep -f mflux-generate` 로 점유 확인 — 점유 중이면 실행 절대 금지, image_fallback_chain 강등 (동시 생성 = 메모리 피크 36GB×N → 머신 다운 위험. 2026-07-13 실사고)"
-      - "외장 볼륨(/Volumes/jM4_2T) 마운트 필수 — mflux-run wrapper가 미마운트 시 fail-loud (rc 1)"
-      - "장당 ~76초 + peak 36GB — 3장 초과 배치는 백그라운드 실행 권고 (파이프라인 블로킹·메모리 경합 방지)"
-    queue_transition: "🚧 임시 직접 실행 — prj55(DeviceManagement) 잡 큐 도입 시 invocation을 큐 등록(enqueue) 방식으로 교체 예정. 규약: _doc_arch/media-creater-image-backend.md '로컬 생성 큐 경유 규약'"
-    note: "prompt는 명세의 스타일·색상 톤·핵심 요소를 영어 한 문장으로 합성. 재현성 필요 시 --seed 고정. CLI 규약 SSOT: /Volumes/jM4_2T/Applications/mflux/README.md"
+      - "⚠️ 직접 `mflux-generate`/`mflux-run` 실행 절대 금지 — 반드시 mflux-enqueue 경유 (동시 생성 = 메모리 피크 36GB×N → 머신 다운 위험. 2026-07-13 실사고 → prj55 잡 큐로 직렬화)"
+      - "큐 미가용(볼륨 미마운트 → enqueue 비0 종료) 시 즉시 image_fallback_chain 강등 — fail-loud, 조용한 진행 금지"
+      - "--output 은 절대경로 필수 + 디렉토리 사전 존재. 폴링 타임아웃(5분) 시 강등 + 사유 기록"
+      - "다건 생성: 큐가 직렬화하므로 배치 제한 불요 — 단 5장↑ 등록 시 체크포인트에 예상 소요(장당 ~76초 × N + 대기열) 명시"
+    note: "prompt는 명세의 스타일·색상 톤·핵심 요소를 영어 한 문장으로 합성. 재현성 필요 시 --seed 고정. 큐 규약 SSOT: /Volumes/jM4_2T/Applications/mflux/README.md '잡 큐 경유 규약' (prj55 Issue4)"
 
   - id: image_placeholder
     type: photo
@@ -306,8 +320,8 @@ selection_policy:
 image_fallback_chain:
   order: [free_image, local_image_gen, svg_direct, image_placeholder]
   note: |
-    free_image 실패(재시도 1회 포함) → local_image_gen (설치 완료·활성 — 단 /Volumes/jM4_2T
-    미마운트 시 wrapper fail-loud → skip) → svg_direct (개념 도해로 대체) → image_placeholder (명세만).
+    free_image 실패(재시도 1회 포함) → local_image_gen (큐 경유 — enqueue 비0 종료·폴링
+    타임아웃·failed 시 skip) → svg_direct (개념 도해로 대체) → image_placeholder (명세만).
     각 강등은 checkpoint 보고에 사유 1줄 명시 — 조용한 placeholder 방치 금지.
 
 # ============================================================================
