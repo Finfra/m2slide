@@ -21,23 +21,8 @@
 * 진행: Issue149로 reveal.js 표준 `<!-- .element: class="..." -->` 주석 syntax 지원 추가 완료 (Pandoc `{.fragment}`와 병존)
 
 # 🌱 이슈후보
-
+1. _doc_arch/media-creater-image-backend.md에 공개 이미지 받아서 프롬프트에 맞게 mflux로 수정하는 기능 필요. 
 # 🔥 진행 중
-
-## Issue287. media-creater 이미지 생성 백엔드 확장 — svg_direct·free_image·local_image_gen (등록: 2026-07-12)
-* 목적: Claude가 래스터 이미지를 생성하지 못해 media-creater(파이프라인 단계 5)가 placeholder·생성 명세만 남기고 실제 이미지를 산출하지 못하는 공백 해소 — 생성 명세를 소비할 실행 백엔드 3종을 tools.yml에 반영
-* plan: `_doc_work/plan/media-creater-image-backend_plan.md`
-* task: `_doc_work/tasks/media-creater-image-backend_task.md`
-* depends: prj55#Issue3
-* 상세:
-    - P1 `svg_direct` 신설 — Claude가 SVG 마크업 직접 저작 (벡터 일러스트·아이콘·개념 그림). viewBox 필수·외부 참조 금지 (file:// 배포 규약)
-    - P2 `free_image` 라우팅 연결 — 기존 `.claude/skills/free-image/`(Openverse CC)를 사진류 1차 라우팅으로 승격. photo_screenshot 룰 교체 + 강등 체인(free_image→local_image_gen→svg_direct→image_placeholder)
-    - P3 `local_image_gen` 연동 — mflux 로컬 생성. **prj55#Issue3(jm4 설치·테스트) 완료 대기** (P3만 블로킹, P1·P2 즉시)
-    - P4 검증 — `--lint-data` + 테스트 프로젝트 실산출 (placeholder 잔존 0 목표)
-* 구현 명세:
-    - 설계 SSOT: `_doc_arch/media-creater-image-backend.md` (라우팅 결정 트리·강등 체인·tools.yml 반영 규약)
-    - tools.yml 수정 전 `./lib/tuner/backup-data-yml.sh` 백업 의무 (data-access-rules)
-    - media-creater SCAR 본문 무변경 — 데이터-주도 패턴 유지 (도구 추가는 tools.yml만)
 
 # 📕 중요
 
@@ -46,6 +31,19 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue287. media-creater 이미지 생성 백엔드 확장 — svg_direct·free_image·local_image_gen (등록: 2026-07-12, 해결: 2026-07-13, commit: 87b7cf7, d9ae44b, d0bfa24) ✅
+* 목적: Claude가 래스터 이미지를 생성하지 못해 media-creater(파이프라인 단계 5)가 placeholder·생성 명세만 남기고 실제 이미지를 산출하지 못하는 공백 해소 — 생성 명세를 소비할 실행 백엔드 3종을 tools.yml에 반영
+* plan: `_doc_work/plan/media-creater-image-backend_plan.md`
+* task: `_doc_work/tasks/media-creater-image-backend_task.md`
+* depends: prj55#Issue3
+* 구현 결과 (Walkthrough):
+    - P1 `svg_direct` 신설 (d9ae44b) — Claude SVG 직접 저작, viewBox 필수·외부 참조 금지(file:// 배포 규약)·시스템 폰트. `vector_illustration` 패턴 룰 추가
+    - P2 `free_image` 라우팅 (d9ae44b) — free-image 스킬(Openverse CC) 사진류 1차 승격, `image_placeholder` 최종 fallback 강등. `image_fallback_chain` 신설 + checkpoint/report 강등 사유 필드
+    - P3 `local_image_gen` 연동 (d0bfa24) — prj55 설치 산출(mflux-run wrapper·schnell 4-step·실측 76초/장·peak 36GB) 반영, `custom_illustration` 룰 신설. 볼륨 미마운트 시 wrapper fail-loud
+    - P4 검증 — `--lint-data` rc 0. 테스트 프로젝트(Projects/MediaBackendTest)로 media-creater agent 실행: 라우팅 3/3 정확, free_image 실산출(CC-BY jpg + CREDITS.md + 출처 슬라이드 자동), svg_direct 실산출 2건, local 은 mflux 머신 점유(prj55 동시 생성) 감지 → 강등 체인 실검증. 빌드 후 `<img>` 3/3 렌더·참조 파일 4/4 실존·이미지 placeholder 잔존 0. 캡처 `_doc_work/capture/verify-issue287-{mountain,svg}.png`
+    - 잔여(비차단, 설계 문서 미해결 항목 이관): local 직접 생성 1건 운영 검증, LoRA 스타일 프리셋 ↔ `info_field_map.style` 매핑 (prj55 튜닝 확정 후)
+    - 설계 SSOT: `_doc_arch/media-creater-image-backend.md`. SCAR 본문 무변경(데이터-주도) — tools.yml 만으로 3개 백엔드 반영, agent 가 즉시 인식함을 실검증
 
 ## Issue286. m2unity 출력 백엔드 계약 3종 정의 — IR 스키마·`--unity` dispatch·골든 덱 (등록: 2026-07-12, 해결: 2026-07-13, commit: 3deaf8b) ✅
 * 목적: kr.finfra.m2unity(md→Unity 렌더 백엔드)가 m2slide 를 계약 SSOT(마스터)로 추종하도록 계약 3종을 m2slide 측 정본으로 정의. 비차단 이슈 — 정의가 산출물, 실동 exporter 는 후속.
