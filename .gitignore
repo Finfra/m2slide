@@ -145,6 +145,8 @@ Temporary Items
 !/data/layout-selector/**
 !/data/md-builder/
 !/data/md-builder/**
+!/data/m2unity/
+!/data/m2unity/**
 
 # Backup files
 *.bak

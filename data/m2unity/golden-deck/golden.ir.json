@@ -1,0 +1,121 @@
+{
+  "irVersion": "1.0",
+  "deck": {
+    "meta": {
+      "title": "Golden Deck",
+      "subtitle": "m2unity 계약 회귀 fixture",
+      "author": "남중구 (핀프라)",
+      "version": "1.0",
+      "lectureDate": "2026-07-13",
+      "theme": "default",
+      "mode": "single"
+    },
+    "chapters": [
+      {
+        "id": "golden",
+        "title": "Golden Deck",
+        "slides": [
+          {
+            "index": 0,
+            "title": "개요",
+            "directives": {
+              "layout": null,
+              "transition": null,
+              "transitionSpeed": null,
+              "backgroundColor": null,
+              "backgroundTransition": null,
+              "backgroundImage": null,
+              "backgroundSize": null,
+              "autoAnimate": false,
+              "autoslide": null,
+              "noteId": null
+            },
+            "elements": [
+              { "type": "heading", "level": 2, "text": "개요" },
+              {
+                "type": "list",
+                "ordered": false,
+                "items": [
+                  { "text": "m2slide 와 m2unity 가 동일 IR 을 도출하는지 검증하는 고정 덱", "level": 0 },
+                  { "text": "요소 타입: 텍스트·표·코드·이미지", "level": 0 }
+                ]
+              }
+            ],
+            "notes": null
+          },
+          {
+            "index": 1,
+            "title": "비교 표",
+            "directives": {
+              "layout": null,
+              "transition": null,
+              "transitionSpeed": null,
+              "backgroundColor": null,
+              "backgroundTransition": null,
+              "backgroundImage": null,
+              "backgroundSize": null,
+              "autoAnimate": false,
+              "autoslide": null,
+              "noteId": null
+            },
+            "elements": [
+              { "type": "heading", "level": 2, "text": "비교 표" },
+              {
+                "type": "table",
+                "headers": ["항목", "m2slide", "m2unity"],
+                "align": ["left", "left", "left"],
+                "rows": [
+                  ["입력", "md", "md/IR"],
+                  ["출력", "HTML", "Unity"]
+                ]
+              }
+            ],
+            "notes": null
+          },
+          {
+            "index": 2,
+            "title": "코드 예시",
+            "directives": {
+              "layout": null,
+              "transition": null,
+              "transitionSpeed": null,
+              "backgroundColor": null,
+              "backgroundTransition": null,
+              "backgroundImage": null,
+              "backgroundSize": null,
+              "autoAnimate": false,
+              "autoslide": null,
+              "noteId": null
+            },
+            "elements": [
+              { "type": "heading", "level": 2, "text": "코드 예시" },
+              { "type": "code", "lang": "python", "content": "def hello():\n    return \"world\"" }
+            ],
+            "notes": null
+          },
+          {
+            "index": 3,
+            "title": "이미지",
+            "directives": {
+              "layout": null,
+              "transition": null,
+              "transitionSpeed": null,
+              "backgroundColor": "#1a1a2e",
+              "backgroundTransition": null,
+              "backgroundImage": null,
+              "backgroundSize": null,
+              "autoAnimate": false,
+              "autoslide": null,
+              "noteId": null
+            },
+            "elements": [
+              { "type": "heading", "level": 2, "text": "이미지" },
+              { "type": "image", "src": "./img/diagram.png", "alt": "다이어그램" }
+            ],
+            "notes": "마지막 슬라이드 발표자 노트."
+          }
+        ]
+      }
+    ]
+  }
+}
