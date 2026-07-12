@@ -299,6 +299,10 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  /* Issue284: 컴포넌트(htmlArt/cards/media)↔인접 텍스트 세로 간격 확보 (밸런싱).
+     margin 대신 gap 사용 — flex item margin 은 잔여공간 잠식(Issue198)이라 금지되므로
+     컨테이너 gap 으로 균일 간격만 부여(정렬·flex-grow 계약 불변). */
+  gap: 0.5em;
 }
 
 /* _contents/_contents_no_title 본문·헤더 투명 배경
