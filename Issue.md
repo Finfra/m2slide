@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 280
+* Issue HWM: 281
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -24,11 +24,21 @@
 
 # 🔥 진행 중
 
+## Issue281. dev-server /pd/ — Projects_deck 덱 목록 페이지 (등록: 2026-07-12)
+* 목적: `Projects_deck/decks/<category>/<deck>` 공유 덱 저장소를 dev-server 에서 열람 가능하게 함 (최소 코드)
+* 상세:
+    - `GET /pd/` — 카테고리별 섹션 + 덱 카드 목록. `slide/index.html` 존재 시 static 경로(`/Projects_deck/.../slide/index.html`) 직링크, 없으면 "빌드 산출물 없음" 표시
+    - `Projects_deck/decks/` 폴더 존재 시에만 공통 헤더(home·/p/ 등)에 `🃏 decks` 링크 노출
+    - `Projects_deck` 경로는 legacy `/Projects/` 차단 regex 에 안 걸림 → `super().do_GET()` static 서빙 그대로 활용 (proxy 기계 불요)
+* 구현 명세:
+    - `lib/dev-server/server.py`: `do_GET` 라우트 2줄 + `_serve_deck_list()` + `_common_header` 조건 링크 1줄
+
 # 📕 중요
 
 # 📙 일반
 
 # 📗 선택
+
 # ✅ 완료
 
 ## Issue280. agenda 카드 모드 상단 장식(고양이 마스코트·제목 위 라인) 부재 + 상단 테두리 paint 소실 + 로딩 blank (등록: 2026-07-12, 해결: 2026-07-12, commit: 526cfce) ✅

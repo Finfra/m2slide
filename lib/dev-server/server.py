@@ -251,6 +251,9 @@ class DevHandler(SimpleHTTPRequestHandler):
         # Project list
         if path_only in ('/p', '/p/'):
             return self._serve_project_list()
+        # Deck list (Projects_deck/decks, Issue281): /pd/
+        if path_only in ('/pd', '/pd/'):
+            return self._serve_deck_list()
         # Config editor JSON (config GUI, Issue275): GET /p/<P>/config
         m = self._CONFIG_RE.match(path_only)
         if m:
@@ -1260,6 +1263,8 @@ class DevHandler(SimpleHTTPRequestHandler):
             links.append('<a href="/p/">📂 projects</a>')
         else:
             links.append('<a href="https://finfra.github.io/m2slide/" target="_blank">🌐 finfra.github.io/m2slide</a>')
+        if os.path.isdir(os.path.join(os.getcwd(), 'Projects_deck', 'decks')):
+            links.append('<a href="/pd/">🃏 decks</a>')
         return f'<header><h1>{title}</h1><div>' + ' · '.join(links) + '</div></header>'
 
     def _serve_root(self):
@@ -1377,6 +1382,61 @@ class DevHandler(SimpleHTTPRequestHandler):
     @classmethod
     def _publishing_badge(cls, v: str) -> str:
         return '🌐 공개' if cls._PUBLISH_AFFIRM_RE.match((v or '').strip()) else '🔒 비공개'
+
+    def _serve_deck_list(self):
+        """GET /pd/ — Projects_deck/decks/<category>/<deck> listing (Issue281).
+
+        Deck builds are file://-portable static artifacts; entry links go straight
+        to the static path (super().do_GET) — no /p/ proxy machinery involved.
+        """
+        decks_root = os.path.join(os.getcwd(), 'Projects_deck', 'decks')
+        if not os.path.isdir(decks_root):
+            self.send_error(404, 'Projects_deck/decks not found')
+            return
+        sections_html = []
+        total = 0
+        for cat in sorted(os.listdir(decks_root)):
+            cat_dir = os.path.join(decks_root, cat)
+            if cat.startswith(('.', '_')) or not os.path.isdir(cat_dir):
+                continue
+            cards = []
+            for name in sorted(os.listdir(cat_dir)):
+                deck_dir = os.path.join(cat_dir, name)
+                if name.startswith(('.', '_')) or not os.path.isdir(deck_dir):
+                    continue
+                total += 1
+                title = self._esc_html(name)
+                entry = os.path.join(deck_dir, 'slide', 'index.html')
+                if os.path.isfile(entry):
+                    href = f'/Projects_deck/decks/{cat}/{name}/slide/index.html'
+                    cards.append(
+                        f'<div class="card"><h3><a href="{href}" target="_blank" rel="noopener">🃏 {title}</a></h3>'
+                        f'<div class="links"><a href="{href}" target="_blank" rel="noopener">🎬 진입</a></div></div>'
+                    )
+                else:
+                    cards.append(
+                        f'<div class="card"><h3>🃏 {title}</h3>'
+                        '<div class="meta">⚠️ 빌드 산출물 없음 (slide/index.html 부재)</div></div>'
+                    )
+            if cards:
+                sections_html.append(
+                    f'<section class="proj-section"><div class="section-header">'
+                    f'<h2 class="section-title">📁 {self._esc_html(cat)} '
+                    f'<span class="section-count">({len(cards)})</span></h2></div>'
+                    '<div class="grid">' + '\n'.join(cards) + '</div></section>'
+                )
+        body = (
+            '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
+            '<title>m2slide — decks</title>'
+            + self._common_styles() +
+            '</head><body>'
+            + self._common_header('🃏 덱 목록 (Projects_deck)') +
+            f'<p>총 <b>{total}</b>개 덱 — <code>Projects_deck/decks/&lt;category&gt;/&lt;deck&gt;</code> '
+            '(빌드 산출물 static 직접 서빙).</p>'
+            + ''.join(sections_html) +
+            '</body></html>'
+        )
+        self._write_html(body)
 
     def _serve_project_list(self):
         """GET /p/ — project directory listing."""
