@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 281
+* Issue HWM: 285
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -28,9 +28,64 @@
 
 # 📙 일반
 
+## Issue285. columns 명시 width 합 100% + .m2-cols gap:4% → 우측 넘침·짤림 (등록: 2026-07-12)
+* 목적: `::: {.column width="50%"}` 2개(합 100%) 또는 3개(33/33/34) 사용 시, `.m2-cols`의 `gap:4%`가 폭에 더해져 총 104%(2col)/108%(3col) → 마지막 컬럼이 슬라이드 우측으로 넘쳐 텍스트가 잘림.
+* 상세:
+    - `lib/css/base.css:645` `.m2-cols { gap: 4%; justify-content: space-between; }`
+    - 인라인 `flex: 0 0 N%; max-width: N%`(빌더가 width 속성으로 주입)가 `.m2-col{flex:1}` 을 override → 폭 고정 → gap 만큼 총합 초과
+    - `md-m2slide-rules`·Pandoc 예시는 width 합 100% 를 안내(`width="50%"` ×2)하지만 gap 미반영이라 그대로 쓰면 넘침
+* 구현 명세 (택1):
+    - (a·권장) 빌더가 width 지정 시 gap 을 자동 차감: 각 폭에 `(100 - gap*(n-1))/Σwidth` 스케일 적용 후 주입
+    - (b) `.m2-col` 을 `box-sizing:border-box` + `width:calc(N% - gap보정)` 로 렌더
+    - (c·최소) `md-m2slide-rules` 에 "width 합은 gap 고려 ≤96%(2col)/≤92%(3col), 또는 등분은 width 생략(flex:1)" 경고 추가
+* 회피(현재): width 생략 시 `flex:1` 로 gap 반영 등분 → 넘침 없음 (본 세션 RamyeonCooking 3원칙 적용)
+
 # 📗 선택
 
 # ✅ 완료
+
+## Issue284. 슬라이드 세로 밸런싱 — 텍스트 slide 상단 몰림 + 컴포넌트↔텍스트 간격 부족 (등록: 2026-07-12, 해결: 2026-07-12, commit: c8f912c, 8bf294f, 83a8d3b) ✅
+* 목적: 텍스트 비중 슬라이드가 상단으로 몰려 하단이 비고(`.contents-body` flex-start), htmlArt/cards 컴포넌트와 인접 설명 텍스트가 붙어 답답함. 전체 세로 밸런싱을 정책으로 정리.
+* 상세:
+    - `.contents-body` 는 `flex-direction:column` 인데 `justify-content` 미설정 → 기본 `flex-start`(상단 정렬). media-container(flex-grow:1)가 있는 슬라이드만 채워지고, 텍스트-only 슬라이드는 상단 몰림
+    - **카드 제목 밴드 높이 불균일**: `.m2-cards li > strong` 가 `display:block` 이라 1줄/2줄 제목이 섞이면 노란 밴드 높이가 제각각(시각적 어긋남). → `theme/_shared/components.css` 에서 flex 중앙정렬 + `min-height:3.2em`(2줄 기준, border-box)로 균일화(본 세션 적용, 전 theme 공유)
+    - **컴포넌트↔후행 텍스트 간격**: 컴포넌트(htmlArt/cards/media) 바로 뒤 텍스트가 붙어 보임. `.contents-body` gap(0.5em) 위에 `.component-container/.m2-cards/.m2-htmlart + *` 에 `margin-top:0.9em` 추가(총 ~1.4em). 컴포넌트 자체 margin 은 Issue198 금지라 "다음 형제"에만 부여(본 세션 적용)
+    - **제약1**: `justify-content:center`(세로 중앙정렬)는 CSS 가드 금지 항목 — 제목 소실 위험 (CLAUDE.md "CSS 수정 시 주의사항"). 전역 적용 불가
+    - **제약2**: `.m2-htmlart` 직접 margin 은 Issue198(flex item margin 이 잔여공간 잠식→도해 축소)로 금지
+    - 1차 조치(본 세션): `theme/default/slide.css` `.contents-body` 에 `gap:0.5em` 추가 — 컴포넌트↔텍스트 균일 간격만 부여(정렬·flex-grow 계약 불변, 대표 3프로젝트 회귀 없음 확인). 단 default theme 한정
+* 구현 명세:
+    - gap 정책을 `default_lec`·`default_dark`·`theme/_shared` 파리티로 확대 검토 (구조 규칙은 `_shared` 우선)
+    - 세로 중앙 분산은 전역 금지 → **opt-in**(예: `.balance-center` 클래스 또는 `_config.yml` 옵션)으로 신중 도입 + 대표 프로젝트(single/chapter/layoutTest) 회귀 테스트 의무
+    - `data/md-builder/styles.yml` 에 "컴포넌트+텍스트 공존 슬라이드 밸런싱" 저작 가이드 추가
+* 구현 결과 (commit c8f912c 1차 gap, 8bf294f 카드 밴드·간격, 83a8d3b 완결):
+    - `default_lec` `.contents-body` gap 0.5em parity (default_dark 는 default @import 상속)
+    - `contents_balance` 옵션 신설 (top 기본 | center) — `--m2-contents-justify` CSS 변수 opt-in, config-sync 4곳(config.js·_config.org.yml·server.py 스키마·config-gui.md) 동기화
+    - `data/md-builder/styles.yml` `vertical_balance_policy` 저작 가이드 (+_backup)
+    - 검증: StellarEvolution `contents_balance: center` 적용 headless 캡처 — 상단 몰림 해소·간격 균일 (`_doc_work/capture/verify-issue284-balance.png`), 대표 프로젝트(single/chapter) 회귀 빌드 OK
+
+## Issue283. htmlArt timeline 노드 라벨이 길거나 4개 이상이면 박스 overflow·겹침·클리핑 (등록: 2026-07-12, 해결: 2026-07-12, commit: 83a8d3b) ✅
+* 목적: `::: htmlart timeline` 에 4노드 + 각 노드에 2행 긴 설명(예: "0초 — 면 투입, 타이머 시작")을 주면 위/아래 교차 박스가 축과 겹치고 마지막 노드가 슬라이드 밖으로 잘림.
+* 상세:
+    - `renderTimeline` (htmlart_dispatch.client.js) 박스 크기·간격이 라벨 길이·노드 수에 적응하지 않음
+    - 짧은 라벨(예: "0초 · 면 투입")로 줄이면 회피되나 근본 대응 아님
+* 구현 명세:
+    - 노드 수·라벨 길이에 따라 박스 폭·세로 오프셋·폰트 축소 또는 자동 줄바꿈/말줄임 적용
+    - 검증: 4~6노드 + 장문 라벨에서 박스 겹침·슬라이드 밖 클리핑 없음
+* 구현 결과 (commit 83a8d3b):
+    - `renderTimeline` 적응형 크기: 라벨 최대 폭(em, `textEm` 신설) 기반 nodeW 212~300 확장, wrap 줄 수 추정으로 nodeH 112~240 산정(폰트는 기준 높이 고정 산정 → 순환 회피), 5노드+ segW 압축(위/아래 교대 배치라 가로 겹침 없음)
+    - 검증: StellarEvolution "태양의 일생 타임라인" 5노드 + 2행 장문 subs headless 캡처 — 박스 내 텍스트 완전 수용, 축 겹침·클리핑 없음 (`_doc_work/capture/verify-issue283-timeline.png`)
+
+## Issue282. markmap 목차·agenda가 heading의 Font Awesome 마커(:fa-*:)를 변환 안 함 — 원문 노출 (등록: 2026-07-12, 해결: 2026-07-12, commit: 83a8d3b) ✅
+* 목적: `## :fa-basket-shopping: 준비물` 처럼 슬라이드 제목에 `:fa-*:` 아이콘 마커를 쓰면 슬라이드 본문에는 아이콘으로 뜨지만, markmap 목차·agenda.html에는 `:fa-basket-shopping:` 원문이 그대로 노출됨.
+* 상세:
+    - 아이콘 변환은 `lib/markdown.js:962` (`:fa-x:` → `<i class="fa-solid fa-x">`) 한 곳뿐 — 슬라이드 본문 HTML 변환 단계
+    - markmap 목차 노드 라벨은 `lib/html-builder.js` `generateTOCFromFile` `:291`(H2)·`:283`(H1)에서 `## ` 뒤 원문 문자열을 그대로 `<a>` 라벨로 사용 → fa 변환 미적용
+* 구현 명세:
+    - `generateTOCFromFile`에서 title 문자열을 markmap 라벨로 쓰기 전 `:fa-([a-z][a-z0-9-]*):` 마커를 제거(권장) 또는 `<i>`로 변환. H1(:283)·H2(:291) 양쪽 적용
+    - 검증: `## :fa-fire: 제목` → agenda.html 노드에 아이콘 또는 순수 텍스트만, `:fa-` 원문 미노출
+* 구현 결과 (commit 83a8d3b):
+    - `lib/html-builder.js` `stripIconMarkers()` 신설 — `generateTOCFromFile` H1·H2 라벨에서 `:fa-*:` 제거 (TOC/agenda 페이지 FA CSS 미주입 가능성 → `<i>` 변환 대신 제거 채택)
+    - 검증: StellarEvolution `## :fa-clock: 태양의 일생 타임라인` → index.html markmap·agenda.html 라벨 순수 텍스트, 본문 heading 은 아이콘 렌더
 
 ## Issue281. dev-server /pd/ — Projects_deck 덱 목록 페이지 (등록: 2026-07-12, 해결: 2026-07-12, commit: e31da3c) ✅
 * 목적: `Projects_deck/decks/<category>/<deck>` 공유 덱 저장소를 dev-server 에서 열람 가능하게 함 (최소 코드)
