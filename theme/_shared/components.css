@@ -27,6 +27,14 @@
   min-height: 0;
   overflow: hidden;
 }
+/* Issue284: 컴포넌트 블록(htmlArt/cards/media) 바로 뒤 텍스트는 간격을 더 벌려
+   붙어 보이지 않게 함. contents-body gap(0.5em) 위에 추가 상단 마진(총 ~1.4em).
+   컴포넌트 자체엔 margin 금지(Issue198)이므로 "다음 형제"에만 부여. */
+.reveal section[class*="layout-"] .contents-body > .component-container + *,
+.reveal section[class*="layout-"] .contents-body > .m2-cards + *,
+.reveal section[class*="layout-"] .contents-body > .m2-htmlart + * {
+  margin-top: 0.9em;
+}
 .reveal section[class*="layout-"] .component-container > svg {
   flex: 1 1 0;
   width: 100% !important;
@@ -121,7 +129,13 @@
 /* 카드 제목 밴드 — 테마 컬러 변수. 제목은 `**볼드**`로 작성 */
 .reveal section[class*="layout-"] .m2-cards > ul > li > strong,
 .reveal section[class*="layout-"] .m2-cards > ol > li > strong {
-  display: block;
+  /* Issue284: 제목 밴드 높이 균일화 — 1줄/2줄 제목이 섞여도 같은 높이.
+     flex 중앙정렬 + min-height(2줄 기준, border-box). 3줄 이상은 min-height 초과로 자연 확장. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.2em;
+  box-sizing: border-box;
   margin: 0;
   padding: 0.25em 0.6em;
   background: var(--m2-card-title-bg, var(--kn-accent));
