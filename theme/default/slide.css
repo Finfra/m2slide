@@ -303,6 +303,10 @@
      margin 대신 gap 사용 — flex item margin 은 잔여공간 잠식(Issue198)이라 금지되므로
      컨테이너 gap 으로 균일 간격만 부여(정렬·flex-grow 계약 불변). */
   gap: 0.5em;
+  /* Issue284 opt-in: _config.yml contents_balance: center → --m2-contents-justify 주입.
+     기본(미설정)은 flex-start = 기존 동작과 동일 (justify-content 전역 강제는
+     제목 소실 가드 위험이라 CSS 변수 opt-in 으로만 노출). */
+  justify-content: var(--m2-contents-justify, flex-start);
 }
 
 /* _contents/_contents_no_title 본문·헤더 투명 배경
