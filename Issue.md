@@ -24,15 +24,6 @@
 
 # 🔥 진행 중
 
-## Issue281. dev-server /pd/ — Projects_deck 덱 목록 페이지 (등록: 2026-07-12)
-* 목적: `Projects_deck/decks/<category>/<deck>` 공유 덱 저장소를 dev-server 에서 열람 가능하게 함 (최소 코드)
-* 상세:
-    - `GET /pd/` — 카테고리별 섹션 + 덱 카드 목록. `slide/index.html` 존재 시 static 경로(`/Projects_deck/.../slide/index.html`) 직링크, 없으면 "빌드 산출물 없음" 표시
-    - `Projects_deck/decks/` 폴더 존재 시에만 공통 헤더(home·/p/ 등)에 `🃏 decks` 링크 노출
-    - `Projects_deck` 경로는 legacy `/Projects/` 차단 regex 에 안 걸림 → `super().do_GET()` static 서빙 그대로 활용 (proxy 기계 불요)
-* 구현 명세:
-    - `lib/dev-server/server.py`: `do_GET` 라우트 2줄 + `_serve_deck_list()` + `_common_header` 조건 링크 1줄
-
 # 📕 중요
 
 # 📙 일반
@@ -40,6 +31,16 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue281. dev-server /pd/ — Projects_deck 덱 목록 페이지 (등록: 2026-07-12, 해결: 2026-07-12, commit: e31da3c) ✅
+* 목적: `Projects_deck/decks/<category>/<deck>` 공유 덱 저장소를 dev-server 에서 열람 가능하게 함 (최소 코드)
+* 상세:
+    - `GET /pd/` — 카테고리별 섹션 + 덱 카드 목록. `slide/index.html` 존재 시 static 경로(`/Projects_deck/.../slide/index.html`) 직링크, 없으면 "빌드 산출물 없음" 표시
+    - `Projects_deck/decks/` 폴더 존재 시에만 공통 헤더(home·/p/ 등)에 `🃏 decks` 링크 노출
+    - `Projects_deck` 경로는 legacy `/Projects/` 차단 regex 에 안 걸림 → `super().do_GET()` static 서빙 그대로 활용 (proxy 기계 불요)
+* 구현 명세:
+    - `lib/dev-server/server.py`: `do_GET` 라우트 2줄 + `_serve_deck_list()` + `_common_header` 조건 링크 1줄
+    - 검증: `curl /pd/` → 총 1개 덱(misc/RamyeonCooking) 렌더, deck static index.html·css 200, `/`·`/p/` 헤더에 `🃏 decks` 링크 노출
 
 ## Issue280. agenda 카드 모드 상단 장식(고양이 마스코트·제목 위 라인) 부재 + 상단 테두리 paint 소실 + 로딩 blank (등록: 2026-07-12, 해결: 2026-07-12, commit: 526cfce) ✅
 * 목적: agenda 카드 모드(`agenda_card_mode: true`)가 markmap 모드 대비 상단 장식(제목 위 노랑 hr 가로선, 우상단 고양이 마스코트)이 없고, 노랑 카드 박스의 상단 테두리 한 줄이 레티나(2x)에서 사라지며, 카드 모드 진입 시 2초간 화면이 blank 였던 문제를 종합 해결. Issue278(카드 테두리 accent 복구·헤더 투명화) 후속 정합.
