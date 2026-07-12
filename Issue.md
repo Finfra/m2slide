@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 287
+* Issue HWM: 288
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -28,9 +28,18 @@
 
 # 📙 일반
 
-# 📗 선택
-
 # ✅ 완료
+
+## Issue288. RamyeonCooking 덱에 mflux T5 라면 이미지 추가 (등록: 2026-07-13, 해결: 2026-07-13, commit: 8d874c0 [deck repo]) ✅
+* 목적: prj55(DeviceManagement) mflux 확장 테스트에서 한국 재현 1위로 선정된 T5 이미지(Z-Image-Turbo, 양은냄비·꼬불면·쇠젓가락)를 RamyeonCooking 덱 리소스로 편입
+* depends: prj55#Issue3 (완료 — 2026-07-13)
+* 구현 결과 (Walkthrough):
+    - 소스 `_doc_base/mflux/tests/05_zimage-turbo_korean.png`(1024×1024) → `Projects_deck/decks/misc/RamyeonCooking/img/ramyeon_pot_zimage.png` 복사
+    - `RamyeonCooking.md` "완성된 한 그릇 🍜" 슬라이드 신설(완성 슬라이드 뒤, `![](./img/ramyeon_pot_zimage.png)` + `::: source` AI 생성 표기), `release_date` 2026-07-13 갱신
+    - `img/CREDITS.md` 에 AI 생성(mflux Z-Image-Turbo, seed 25, 저작권 프리 로컬 생성물) 출처 행 추가
+    - 빌드 검증: `./m2slide.sh Projects_deck/decks/misc/RamyeonCooking` rc 0 → `slide/img/ramyeon_pot_zimage.png` 자동 복사(img 이중 복사 결정사항), `index.html` `<img>` ref 존재·"완성된 한 그릇" 슬라이드 렌더·placeholder 0. Chrome `#/10` 시각 확인
+    - 커밋 경계: deck 자산은 독립 repo(github.com/finfra/m2slide-deck, `Projects_deck/` 본체 미추적)에 커밋(`8d874c0`), m2slide 본체엔 Issue.md 만
+    - 잔여: seed 변경 추가 변형은 prj55 mflux 환경(`/Volumes/jM4_2T/Applications/mflux/bin/mflux-run`)에서 on-demand
 
 ## Issue287. media-creater 이미지 생성 백엔드 확장 — svg_direct·free_image·local_image_gen (등록: 2026-07-12, 해결: 2026-07-13, commit: 87b7cf7, d9ae44b, d0bfa24) ✅
 * 목적: Claude가 래스터 이미지를 생성하지 못해 media-creater(파이프라인 단계 5)가 placeholder·생성 명세만 남기고 실제 이미지를 산출하지 못하는 공백 해소 — 생성 명세를 소비할 실행 백엔드 3종을 tools.yml에 반영
