@@ -294,6 +294,7 @@ md-slide-rules의 `::: columns` 표준 외에 m2slide는 임의 슬롯명 지원
 
 * m2slide CSS 클래스: `.m2-cols`, `.m2-col` (또는 Pandoc 표준 `.columns`, `.column`)
 * `width="N%"` → flex/max-width inline style
+* **width 합 자동 축소**: 그룹 내 모든 column 이 % width 를 명시하고 합이 `gap 4%` 포함 100% 를 초과하면(ex: 50%+50%) 빌더가 비율 유지 축소(48%/48%)하여 우측 넘침을 방지함. 혼합(width 일부 생략)·px 지정 그룹은 무변경
 * 상하 분할: `::: rows` / `::: {.row height="N%"}`
 * 카드 스타일: `.card` 클래스 추가 (컬럼 내부 단일 박스 — 카드 컴포넌트 `::: cards`와 별개)
 
