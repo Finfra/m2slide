@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 288
+* Issue HWM: 289
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -24,9 +24,24 @@
 1. _doc_arch/media-creater-image-backend.md에 공개 이미지 받아서 프롬프트에 맞게 mflux로 수정하는 기능 필요. 
 # 🔥 진행 중
 
+## Issue289. local_image_gen 큐 경유 전환 — 직접 실행 폐지, mflux-enqueue+폴링 (등록: 2026-07-13)
+* 목적: 동시 생성 메모리 사고(2026-07-13) 대응으로 prj55 가 가동한 잡 큐(Issue4, 파일 큐 + 단일 worker)에 맞춰 m2slide `local_image_gen`을 직접 mflux 실행 → 큐 등록·폴링 방식으로 교체 (P5 — Issue287 후속)
+* plan: `_doc_work/plan/media-creater-image-backend_plan.md`
+* task: `_doc_work/tasks/media-creater-image-backend_task.md`
+* depends: prj55#Issue4
+* 상세:
+    - tools.yml `local_image_gen` invocation 교체: `mflux-enqueue --project --prompt --output(절대경로)` → `mflux-queue-status <id>` 폴링(30s, 타임아웃 5분/잡, 종료코드 0/2/3/4/5)
+    - pgrep 임시 가드 제거 → "큐 미가용(enqueue 비0 종료) 시 즉시 강등" 가드로 대체, `queue_transition` 필드 해소
+    - 큐 경유 실왕복 1건 검증 (MediaBackendTest 라면 콘셉트 — Issue287 P4에서 강등됐던 슬라이드를 실생성 PNG로 교체)
+* 구현 명세:
+    - 소비자 계약 SSOT: `/Volumes/jM4_2T/Applications/mflux/README.md` "잡 큐 경유 규약" + `_doc_arch/media-creater-image-backend.md` FIXME 해소
+    - tools.yml 수정 전 backup 의무 + `--lint-data` 통과
+
 # 📕 중요
 
 # 📙 일반
+
+# 📗 선택
 
 # ✅ 완료
 
