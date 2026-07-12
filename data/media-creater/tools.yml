@@ -104,8 +104,10 @@ tools:
     output_format: png
     perf: "1024×1024 4-step ≈ 76초/장 (jm4 M4 Pro 64GB, bf16 peak 36GB — 실측 2026-07-13)"
     guard:
+      - "⚠️ 실행 전 필수: `pgrep -f mflux-generate` 로 점유 확인 — 점유 중이면 실행 절대 금지, image_fallback_chain 강등 (동시 생성 = 메모리 피크 36GB×N → 머신 다운 위험. 2026-07-13 실사고)"
       - "외장 볼륨(/Volumes/jM4_2T) 마운트 필수 — mflux-run wrapper가 미마운트 시 fail-loud (rc 1)"
       - "장당 ~76초 + peak 36GB — 3장 초과 배치는 백그라운드 실행 권고 (파이프라인 블로킹·메모리 경합 방지)"
+    queue_transition: "🚧 임시 직접 실행 — prj55(DeviceManagement) 잡 큐 도입 시 invocation을 큐 등록(enqueue) 방식으로 교체 예정. 규약: _doc_arch/media-creater-image-backend.md '로컬 생성 큐 경유 규약'"
     note: "prompt는 명세의 스타일·색상 톤·핵심 요소를 영어 한 문장으로 합성. 재현성 필요 시 --seed 고정. CLI 규약 SSOT: /Volumes/jM4_2T/Applications/mflux/README.md"
 
   - id: image_placeholder
