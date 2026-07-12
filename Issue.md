@@ -21,7 +21,7 @@
 * 진행: Issue149로 reveal.js 표준 `<!-- .element: class="..." -->` 주석 syntax 지원 추가 완료 (Pandoc `{.fragment}`와 병존)
 
 # 🌱 이슈후보
-1. _doc_arch/media-creater-image-backend.md에 공개 이미지 받아서 프롬프트에 맞게 mflux로 수정하는 기능 필요. 
+1. _doc_arch/media-creater-image-backend.md에 공개 이미지 받아서 프롬프트에 맞게 mflux로 수정하는 기능 필요. — 2026-07-13 검증: 큐 v1.1 img2img(--image-path·--image-strength) 지원 완료(prj55#Issue5). 단 **schnell img2img 는 정밀 편집(색만·글자만) 불가**(strength 0.3↑ 복제·0.1 재해석 실측) → edit 전용 모델(Qwen-Image-Edit ~수십 GB) 설치가 선행 조건. 글로벌 스킬화는 prj3#Issue219(jm4-mflux) 등록됨
 # 🔥 진행 중
 
 # 📕 중요
