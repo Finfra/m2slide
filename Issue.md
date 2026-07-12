@@ -43,20 +43,19 @@
 
 # 📙 일반
 
-## Issue286: m2unity(Unity 출력 백엔드) 계약 3종 정의 — IR 스키마·`--unity` dispatch·골든 덱 회귀 (등록: 2026-07-12)
-* 목적: unity_base 의 kr.finfra.m2unity(markdown→Unity 씬 렌더 라이브러리)가 m2slide 를 계약 SSOT(마스터)로 추종하도록, 계약 3종을 m2slide 측 정본으로 정의. m2unity 는 이 계약을 소비하는 백엔드.
-* 상세:
-    - ① 덱 IR(JSON) 스키마 정본 초안 — m2slide 가 한 덱 소스에서 export 가능한 중간표현. m2unity 가 md 직접 파싱 대신 IR 소비 시 파서 중복 원천 제거. 필드: 덱 메타·슬라이드 배열·요소(텍스트/표/코드/이미지) 타입
-    - ② `m2slide.sh --unity` dispatch 인터페이스 — m2unity.sh 를 프로세스 호출로 위임하는 출력 포맷 규약(코드 병합 아님). 인자 매핑(`--deck` 등)·산출물 경로 규약
-    - ③ 골든 덱 fixture 양쪽 회귀 절차 — 공용 테스트 덱 1개로 m2slide·m2unity 파서가 동일 IR 도출하는지 CI 검증. m2unity 측 fixture: `unity_base/Projects/kr.finfra.m2unity/Projects/GoldenDeck/`
-* 구현 명세:
-    - 요청 출처: unity_base Issue7 (kr.finfra.m2unity 구현) — 설계 SSOT `unity_base/_doc_arch/m2unity-design.md` "거버넌스·공통 모듈 전략"
-    - 비차단: m2unity v1 은 md 직접 파싱으로 선행 진행. IR 소비 전환은 본 이슈 ① 확정 후. 즉시 착수 불요
-    - 거버넌스: 계약 정본 = m2slide(본 repo), m2unity = 추종. 형식 변경은 항상 m2slide 발(發) 단방향
-
 # 📗 선택
 
 # ✅ 완료
+
+## Issue286. m2unity 출력 백엔드 계약 3종 정의 — IR 스키마·`--unity` dispatch·골든 덱 (등록: 2026-07-12, 해결: 2026-07-13, commit: 3deaf8b) ✅
+* 목적: kr.finfra.m2unity(md→Unity 렌더 백엔드)가 m2slide 를 계약 SSOT(마스터)로 추종하도록 계약 3종을 m2slide 측 정본으로 정의. 비차단 이슈 — 정의가 산출물, 실동 exporter 는 후속.
+* 구현 결과 (commit 3deaf8b):
+    - ① 덱 IR(JSON) 스키마 — `data/m2unity/deck-ir.schema.json` (draft-07). md→HTML 직행 파이프라인엔 AST 부재 → 신규 계약. 필드 실 정보 접지: `deck.meta`(loadProjectMeta) / `chapters` / `slides`(splitSlides `\n---\n`) / `directives`(extractDirectives 10필드 1:1) / `elements`(heading·text·list·table·code·image 닫힌집합 + `component` escape)
+    - ② `--unity` dispatch — `m2slide.sh --export-ir`/`--unity` CLI stub(exit 2 + 계약 안내). 프로세스 위임(코드 병합 아님). 실동 exporter 는 계약 ① 확정 후 별도 이슈
+    - ③ 골든 덱 회귀 — `data/m2unity/golden-deck/{golden.md, golden.ir.json(동결)}`. golden.ir.json ⊨ schema(핵심규칙 PASS) + `directives` = 실제 `extractDirectives(golden.md)` 실측 일치(slide3 `backgroundColor:"#1a1a2e"`, 나머지 null/false)
+    - 거버넌스: 계약 마스터 = m2slide, m2unity = 추종. 변경은 m2slide 발 단방향. `.gitignore` 에 `data/m2unity/` whitelist(cross-repo fixture 추적). 설계 SSOT `_doc_arch/m2unity-contract.md` 는 _doc_arch 정책상 local-only
+    - 검증: `bash -n` OK, `--lint-data` 통과, 대표 빌드 `m2Slide_single_mode` 회귀 0
+    - 요청 출처: unity_base Issue7 — 설계 SSOT `unity_base/_doc_arch/m2unity-design.md`
 
 ## Issue285. columns 명시 width 합 100% + .m2-cols gap:4% → 우측 넘침·짤림 (등록: 2026-07-12, 해결: 2026-07-12, commit: 57ff687) ✅
 * 목적: `::: {.column width="50%"}` 2개(합 100%) 또는 3개(33/33/34) 사용 시, `.m2-cols`의 `gap:4%`가 폭에 더해져 총 104%(2col)/108%(3col) → 마지막 컬럼이 슬라이드 우측으로 넘쳐 텍스트가 잘림.
