@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 285
+* Issue HWM: 287
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -24,9 +24,35 @@
 
 # 🔥 진행 중
 
+## Issue287. media-creater 이미지 생성 백엔드 확장 — svg_direct·free_image·local_image_gen (등록: 2026-07-12)
+* 목적: Claude가 래스터 이미지를 생성하지 못해 media-creater(파이프라인 단계 5)가 placeholder·생성 명세만 남기고 실제 이미지를 산출하지 못하는 공백 해소 — 생성 명세를 소비할 실행 백엔드 3종을 tools.yml에 반영
+* plan: `_doc_work/plan/media-creater-image-backend_plan.md`
+* task: `_doc_work/tasks/media-creater-image-backend_task.md`
+* depends: prj55#Issue3
+* 상세:
+    - P1 `svg_direct` 신설 — Claude가 SVG 마크업 직접 저작 (벡터 일러스트·아이콘·개념 그림). viewBox 필수·외부 참조 금지 (file:// 배포 규약)
+    - P2 `free_image` 라우팅 연결 — 기존 `.claude/skills/free-image/`(Openverse CC)를 사진류 1차 라우팅으로 승격. photo_screenshot 룰 교체 + 강등 체인(free_image→local_image_gen→svg_direct→image_placeholder)
+    - P3 `local_image_gen` 연동 — mflux 로컬 생성. **prj55#Issue3(jm4 설치·테스트) 완료 대기** (P3만 블로킹, P1·P2 즉시)
+    - P4 검증 — `--lint-data` + 테스트 프로젝트 실산출 (placeholder 잔존 0 목표)
+* 구현 명세:
+    - 설계 SSOT: `_doc_arch/media-creater-image-backend.md` (라우팅 결정 트리·강등 체인·tools.yml 반영 규약)
+    - tools.yml 수정 전 `./lib/tuner/backup-data-yml.sh` 백업 의무 (data-access-rules)
+    - media-creater SCAR 본문 무변경 — 데이터-주도 패턴 유지 (도구 추가는 tools.yml만)
+
 # 📕 중요
 
 # 📙 일반
+
+## Issue286: m2unity(Unity 출력 백엔드) 계약 3종 정의 — IR 스키마·`--unity` dispatch·골든 덱 회귀 (등록: 2026-07-12)
+* 목적: unity_base 의 kr.finfra.m2unity(markdown→Unity 씬 렌더 라이브러리)가 m2slide 를 계약 SSOT(마스터)로 추종하도록, 계약 3종을 m2slide 측 정본으로 정의. m2unity 는 이 계약을 소비하는 백엔드.
+* 상세:
+    - ① 덱 IR(JSON) 스키마 정본 초안 — m2slide 가 한 덱 소스에서 export 가능한 중간표현. m2unity 가 md 직접 파싱 대신 IR 소비 시 파서 중복 원천 제거. 필드: 덱 메타·슬라이드 배열·요소(텍스트/표/코드/이미지) 타입
+    - ② `m2slide.sh --unity` dispatch 인터페이스 — m2unity.sh 를 프로세스 호출로 위임하는 출력 포맷 규약(코드 병합 아님). 인자 매핑(`--deck` 등)·산출물 경로 규약
+    - ③ 골든 덱 fixture 양쪽 회귀 절차 — 공용 테스트 덱 1개로 m2slide·m2unity 파서가 동일 IR 도출하는지 CI 검증. m2unity 측 fixture: `unity_base/Projects/kr.finfra.m2unity/Projects/GoldenDeck/`
+* 구현 명세:
+    - 요청 출처: unity_base Issue7 (kr.finfra.m2unity 구현) — 설계 SSOT `unity_base/_doc_arch/m2unity-design.md` "거버넌스·공통 모듈 전략"
+    - 비차단: m2unity v1 은 md 직접 파싱으로 선행 진행. IR 소비 전환은 본 이슈 ① 확정 후. 즉시 착수 불요
+    - 거버넌스: 계약 정본 = m2slide(본 repo), m2unity = 추종. 형식 변경은 항상 m2slide 발(發) 단방향
 
 # 📗 선택
 
