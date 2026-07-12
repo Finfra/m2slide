@@ -1177,7 +1177,7 @@ class DevHandler(SimpleHTTPRequestHandler):
             '.cfg-panel.hidden{display:none}'
             '.cfg-panel{display:flex;flex-direction:column;gap:9px}'
             '.cfg-lab .cfg-set{font-size:11px;white-space:nowrap;margin-left:3px;opacity:0.8}'
-            '.cfg-combo{position:relative;flex:1 1 auto;min-width:0;display:flex}'
+            '.cfg-combo{position:relative;flex:0 1 auto;width:210px;max-width:100%;min-width:0;display:flex}'
             '.cfg-row input.cfg-combo-input{flex:1 1 auto;min-width:0;padding:5px 8px;'
             'border:1px solid #ccc;border-right:none;border-radius:5px 0 0 5px;'
             'font:inherit;background:#fff;color:#1a1a1a}'
@@ -1205,7 +1205,7 @@ class DevHandler(SimpleHTTPRequestHandler):
             '.cfg-row>.cfg-lab{flex:0 0 44%;color:#555;display:flex;justify-content:flex-start;'
             'align-items:center;gap:3px;text-align:left;line-height:1.25}'
             '.cfg-row input[type=text],.cfg-row input[type=number],.cfg-row select{'
-            'flex:1 1 auto;width:auto;min-width:0;padding:5px 8px;'
+            'flex:0 1 auto;width:210px;max-width:100%;min-width:0;padding:5px 8px;'
             'border:1px solid #ccc;border-radius:5px;font:inherit;background:#fff;color:#1a1a1a}'
             '.cfg-bool{cursor:pointer}'
             '.cfg-bool>.cfg-lab{color:#1a1a1a}'
@@ -1228,6 +1228,18 @@ class DevHandler(SimpleHTTPRequestHandler):
             '.cfg-openfile{cursor:pointer;padding:7px 12px;border:1px solid #ccc;'
             'background:#f2f4f6;color:#1a1a1a;border-radius:6px;font-size:13px;white-space:nowrap;flex:0 0 auto}'
             '.cfg-openfile:hover{background:#e6e9ec}'
+            '.cfg-help{flex:0 0 auto;width:16px;height:16px;padding:0;margin:0;'
+            'border:1px solid #bbb;border-radius:50%;background:#f2f6f7;color:#666;'
+            'font-size:11px;line-height:1;cursor:help;display:inline-flex;align-items:center;justify-content:center}'
+            '.cfg-help:hover,.cfg-help:focus-visible{background:hsl(191,60%,45%);color:#fff;border-color:hsl(191,60%,45%);outline:none}'
+            '.cfg-tip{position:fixed;z-index:10000;max-width:280px;background:#1a1a1a;color:#f5f5f5;'
+            'padding:8px 11px;border-radius:7px;font-size:12.5px;line-height:1.5;'
+            'box-shadow:0 4px 18px rgba(0,0,0,0.32);pointer-events:none}'
+            '.cfg-tip::after{content:"";position:absolute;left:12px;width:0;height:0;'
+            'border-left:6px solid transparent;border-right:6px solid transparent}'
+            '.cfg-tip.below::after{top:-6px;border-bottom:6px solid #1a1a1a}'
+            '.cfg-tip.above::after{bottom:-6px;border-top:6px solid #1a1a1a}'
+            '.cfg-tip[hidden]{display:none}'
             '@media (prefers-color-scheme:dark){body{background:#1a1a1a;color:#e0e0e0}'
             '.card{background:#222;border-color:#444}.card .links a{background:#2a3a3e}'
             'th{background:#2a3a3e}td,th{border-color:#444}code{background:#2d2d2d;color:#e0e0e0}'
@@ -1249,6 +1261,9 @@ class DevHandler(SimpleHTTPRequestHandler):
             '.cfg-lang{border-color:#555}.cfg-lang-btn{background:#2a2a2d;color:#aaa}'
             '.cfg-tabs{border-color:#444}.cfg-tab:hover{color:#e0e0e0}'
             '.cfg-lab .cfg-set{opacity:0.85}'
+            '.cfg-help{background:#2a2a2d;border-color:#555;color:#bbb}'
+            '.cfg-tip{background:#000;color:#f0f0f0;box-shadow:0 4px 18px rgba(0,0,0,0.6)}'
+            '.cfg-tip.below::after{border-bottom-color:#000}.cfg-tip.above::after{border-top-color:#000}'
             '.cfg-row input.cfg-combo-input{background:#2a2a2a;color:#e0e0e0;border-color:#555}'
             '.cfg-combo-toggle{background:#333;border-color:#555;color:#bbb}'
             '.cfg-combo-toggle:hover{background:#3a4145}'
@@ -1257,14 +1272,17 @@ class DevHandler(SimpleHTTPRequestHandler):
             '</style>'
         )
 
-    def _common_header(self, title: str, show_projects_link: bool = True):
+    def _common_header(self, title: str, show_projects_link: bool = True, deck_context: bool = False):
         links = ['<a href="/">🏠 home</a>']
         if show_projects_link:
             links.append('<a href="/p/">📂 projects</a>')
         else:
             links.append('<a href="https://finfra.github.io/m2slide/" target="_blank">🌐 finfra.github.io/m2slide</a>')
-        if os.path.isdir(os.path.join(os.getcwd(), 'Projects_deck', 'decks')):
-            links.append('<a href="/pd/">🃏 decks</a>')
+        if deck_context:
+            # /pd/ 자체에서는 self-link 대신 dev-server 홈으로 돌아가는 토글
+            links.append('<a href="/">🛠️ Dev</a>')
+        elif os.path.isdir(os.path.join(os.getcwd(), 'Projects_deck', 'decks')):
+            links.append('<a href="/pd/">🎴 decks</a>')
         return f'<header><h1>{title}</h1><div>' + ' · '.join(links) + '</div></header>'
 
     def _serve_root(self):
@@ -1410,12 +1428,12 @@ class DevHandler(SimpleHTTPRequestHandler):
                 if os.path.isfile(entry):
                     href = f'/Projects_deck/decks/{cat}/{name}/slide/index.html'
                     cards.append(
-                        f'<div class="card"><h3><a href="{href}" target="_blank" rel="noopener">🃏 {title}</a></h3>'
+                        f'<div class="card"><h3><a href="{href}" target="_blank" rel="noopener">🎴 {title}</a></h3>'
                         f'<div class="links"><a href="{href}" target="_blank" rel="noopener">🎬 진입</a></div></div>'
                     )
                 else:
                     cards.append(
-                        f'<div class="card"><h3>🃏 {title}</h3>'
+                        f'<div class="card"><h3>🎴 {title}</h3>'
                         '<div class="meta">⚠️ 빌드 산출물 없음 (slide/index.html 부재)</div></div>'
                     )
             if cards:
@@ -1430,7 +1448,7 @@ class DevHandler(SimpleHTTPRequestHandler):
             '<title>m2slide — decks</title>'
             + self._common_styles() +
             '</head><body>'
-            + self._common_header('🃏 덱 목록 (Projects_deck)') +
+            + self._common_header('🎴 덱 목록 (Projects_deck)', deck_context=True) +
             f'<p>총 <b>{total}</b>개 덱 — <code>Projects_deck/decks/&lt;category&gt;/&lt;deck&gt;</code> '
             '(빌드 산출물 static 직접 서빙).</p>'
             + ''.join(sections_html) +
@@ -1761,53 +1779,53 @@ class DevHandler(SimpleHTTPRequestHandler):
     _CSS_LEN_PAT = r'^(0|[0-9]+(\.[0-9]+)?(px|em|rem|vh|vw|vmin|vmax|%))$'
     _CONFIG_SCHEMA = [
         # Tab 1 — Theme & Layout
-        {'key': 'theme', 'tab': 1, 'type': 'combo', 'label': '테마', 'en': 'Theme', 'default': 'default', 'pattern': r'^[a-z][a-z0-9_-]*$'},
-        {'key': 'palette', 'tab': 1, 'type': 'combo', 'label': '팔레트', 'en': 'Palette', 'default': 'default', 'pattern': r'^[a-z][a-z0-9_-]*$', 'options': ['default', 'warm', 'cool', 'mono', 'office_rainbow']},
-        {'key': 'theme_default_layout', 'tab': 1, 'type': 'text', 'label': '기본 레이아웃', 'en': 'Default layout', 'default': 'contents', 'pattern': r'^_?[a-z][a-z0-9-]*$'},
-        {'key': 'cover_enabled', 'tab': 1, 'type': 'bool', 'label': '커버 슬라이드', 'en': 'Cover slide', 'default': 'false'},
-        {'key': 'cover_layout', 'tab': 1, 'type': 'text', 'label': '커버 레이아웃', 'en': 'Cover layout', 'default': '_cover', 'pattern': r'^_?[a-z][a-z0-9-]*$'},
-        {'key': 'auto_layout_detect', 'tab': 1, 'type': 'bool', 'label': '자동 레이아웃 감지', 'en': 'Auto layout detect', 'default': 'true'},
-        {'key': 'top_align', 'tab': 1, 'type': 'bool', 'label': '상단 정렬', 'en': 'Top align', 'default': 'false'},
-        {'key': 'guide_line', 'tab': 1, 'type': 'bool', 'label': '가이드 라인(디버그)', 'en': 'Guide line (debug)', 'default': 'false'},
-        {'key': 'use_open_props', 'tab': 1, 'type': 'bool', 'label': 'Open Props 로드', 'en': 'Load Open Props', 'default': 'false'},
-        {'key': 'title_contents_gap', 'tab': 1, 'type': 'int', 'label': '제목↔본문 갭(%)', 'en': 'Title-content gap (%)', 'default': '30', 'min': 0, 'max': 100},
-        {'key': 'card_columns', 'tab': 1, 'type': 'int', 'label': '카드 열 수', 'en': 'Card columns', 'default': 'auto', 'min': 1, 'max': 12},
+        {'key': 'theme', 'tab': 1, 'type': 'combo', 'label': '테마', 'en': 'Theme', 'default': 'default', 'pattern': r'^[a-z][a-z0-9_-]*$', 'help': '슬라이드 테마. theme/{name}/ 디렉터리 이름.', 'help_en': 'Slide theme; the name of a theme/{name}/ directory.'},
+        {'key': 'palette', 'tab': 1, 'type': 'combo', 'label': '팔레트', 'en': 'Palette', 'default': 'default', 'pattern': r'^[a-z][a-z0-9_-]*$', 'options': ['default', 'warm', 'cool', 'mono', 'office_rainbow'], 'help': '테마 색상 variant. default·warm·cool·mono·office_rainbow.', 'help_en': 'Color palette variant of the theme.'},
+        {'key': 'theme_default_layout', 'tab': 1, 'type': 'text', 'label': '기본 레이아웃', 'en': 'Default layout', 'default': 'contents', 'pattern': r'^_?[a-z][a-z0-9-]*$', 'help': '슬라이드 기본 레이아웃. 개별 슬라이드는 #layout-* 로 override.', 'help_en': 'Default slide layout; override per slide with #layout-*.'},
+        {'key': 'cover_enabled', 'tab': 1, 'type': 'bool', 'label': '커버 슬라이드', 'en': 'Cover slide', 'default': 'false', 'help': '첫 슬라이드에 표지(cover)를 자동 삽입.', 'help_en': 'Auto-insert a cover slide at the front.'},
+        {'key': 'cover_layout', 'tab': 1, 'type': 'text', 'label': '커버 레이아웃', 'en': 'Cover layout', 'default': '_cover', 'pattern': r'^_?[a-z][a-z0-9-]*$', 'help': '표지에 사용할 레이아웃 이름 (기본 _cover).', 'help_en': 'Layout used for the cover slide (default _cover).'},
+        {'key': 'auto_layout_detect', 'tab': 1, 'type': 'bool', 'label': '자동 레이아웃 감지', 'en': 'Auto layout detect', 'default': 'true', 'help': '이미지 1장·빈 제목 등 패턴을 감지해 레이아웃 자동 선택.', 'help_en': 'Auto-pick a layout from patterns (single image, empty title, etc.).'},
+        {'key': 'top_align', 'tab': 1, 'type': 'bool', 'label': '상단 정렬', 'en': 'Top align', 'default': 'false', 'help': '슬라이드 콘텐츠를 상단 정렬 (기본은 세로 중앙).', 'help_en': 'Align content to the top instead of vertical center.'},
+        {'key': 'guide_line', 'tab': 1, 'type': 'bool', 'label': '가이드 라인(디버그)', 'en': 'Guide line (debug)', 'default': 'false', 'help': '레이아웃 디버그용 가이드 선 표시.', 'help_en': 'Show layout debug guide lines.'},
+        {'key': 'use_open_props', 'tab': 1, 'type': 'bool', 'label': 'Open Props 로드', 'en': 'Load Open Props', 'default': 'false', 'help': 'Open Props CSS 변수 라이브러리 로드.', 'help_en': 'Load the Open Props CSS variables library.'},
+        {'key': 'title_contents_gap', 'tab': 1, 'type': 'int', 'label': '제목↔본문 갭(%)', 'en': 'Title-content gap (%)', 'default': '30', 'min': 0, 'max': 100, 'help': '제목과 본문 사이 간격 (제목 높이의 %).', 'help_en': 'Gap between title and content (% of title height).'},
+        {'key': 'card_columns', 'tab': 1, 'type': 'int', 'label': '카드 열 수', 'en': 'Card columns', 'default': 'auto', 'min': 1, 'max': 12, 'help': '::: cards 그리드 열 수. auto = 콘텐츠 폭 자동.', 'help_en': 'Column count for ::: cards grids; auto = fit to content.'},
         # Tab 2 — TOC & Structure
-        {'key': 'toc_placeholder', 'tab': 2, 'type': 'bool', 'label': '첫 슬라이드 TOC', 'en': 'First-slide TOC', 'default': 'true'},
-        {'key': 'cards_placeholder', 'tab': 2, 'type': 'bool', 'label': 'H1 카드 페이지', 'en': 'H1 cards page', 'default': 'true'},
-        {'key': 'agenda_enabled', 'tab': 2, 'type': 'bool', 'label': 'agenda 페이지', 'en': 'Agenda page', 'default': 'true'},
-        {'key': 'agenda_card_mode', 'tab': 2, 'type': 'bool', 'label': 'agenda 카드 렌더', 'en': 'Agenda card mode', 'default': 'false'},
-        {'key': 'toc_card_mode', 'tab': 2, 'type': 'bool', 'label': 'TOC 카드 렌더', 'en': 'TOC card mode', 'default': 'false'},
-        {'key': 'agenda_title', 'tab': 2, 'type': 'text', 'label': 'agenda 제목', 'en': 'Agenda title', 'default': 'Agenda'},
-        {'key': 'markmap_depth', 'tab': 2, 'type': 'int', 'label': 'markmap 깊이', 'en': 'Markmap depth', 'default': '2', 'min': 0, 'max': 9},
-        {'key': 'chapter_markmap_depth', 'tab': 2, 'type': 'int', 'label': '챕터 markmap 깊이', 'en': 'Chapter markmap depth', 'default': '3', 'min': 0, 'max': 9},
-        {'key': 'head_left', 'tab': 2, 'type': 'text', 'label': 'head 좌측', 'en': 'Head left', 'default': 'd1', 'pattern': r'^(d[0-9]{1,2}|now|none)$'},
-        {'key': 'head_right', 'tab': 2, 'type': 'text', 'label': 'head 우측', 'en': 'Head right', 'default': 'now', 'pattern': r'^(d[0-9]{1,2}|now|none)$'},
-        {'key': 'head_breadcum', 'tab': 2, 'type': 'bool', 'label': 'breadcrumb', 'en': 'Breadcrumb', 'default': 'true'},
+        {'key': 'toc_placeholder', 'tab': 2, 'type': 'bool', 'label': '첫 슬라이드 TOC', 'en': 'First-slide TOC', 'default': 'true', 'help': '첫 슬라이드에 목차(markmap) 자동 생성.', 'help_en': 'Auto-generate a TOC (markmap) on the first slide.'},
+        {'key': 'cards_placeholder', 'tab': 2, 'type': 'bool', 'label': 'H1 카드 페이지', 'en': 'H1 cards page', 'default': 'true', 'help': 'H1 챕터마다 카드형 섹션 페이지 생성.', 'help_en': 'Generate a card-style section page per H1 chapter.'},
+        {'key': 'agenda_enabled', 'tab': 2, 'type': 'bool', 'label': 'agenda 페이지', 'en': 'Agenda page', 'default': 'true', 'help': 'agenda(개요) 페이지 생성.', 'help_en': 'Generate an agenda page.'},
+        {'key': 'agenda_card_mode', 'tab': 2, 'type': 'bool', 'label': 'agenda 카드 렌더', 'en': 'Agenda card mode', 'default': 'false', 'help': 'agenda 를 카드 그리드로 렌더.', 'help_en': 'Render the agenda as a card grid.'},
+        {'key': 'toc_card_mode', 'tab': 2, 'type': 'bool', 'label': 'TOC 카드 렌더', 'en': 'TOC card mode', 'default': 'false', 'help': '목차를 카드 그리드로 렌더.', 'help_en': 'Render the TOC as a card grid.'},
+        {'key': 'agenda_title', 'tab': 2, 'type': 'text', 'label': 'agenda 제목', 'en': 'Agenda title', 'default': 'Agenda', 'help': 'agenda 페이지 제목 문구.', 'help_en': 'Title text of the agenda page.'},
+        {'key': 'markmap_depth', 'tab': 2, 'type': 'int', 'label': 'markmap 깊이', 'en': 'Markmap depth', 'default': '2', 'min': 0, 'max': 9, 'help': '목차 마인드맵 초기 펼침 깊이.', 'help_en': 'Initial expand depth of the TOC mindmap.'},
+        {'key': 'chapter_markmap_depth', 'tab': 2, 'type': 'int', 'label': '챕터 markmap 깊이', 'en': 'Chapter markmap depth', 'default': '3', 'min': 0, 'max': 9, 'help': '챕터별 페이지 마인드맵 펼침 깊이.', 'help_en': 'Expand depth of per-chapter page mindmaps.'},
+        {'key': 'head_left', 'tab': 2, 'type': 'text', 'label': 'head 좌측', 'en': 'Head left', 'default': 'd1', 'pattern': r'^(d[0-9]{1,2}|now|none)$', 'help': '헤더 좌측 표시. dN=outline depth, now=현재 위치, none=숨김.', 'help_en': 'Header left slot: dN=outline depth, now=current position, none=hide.'},
+        {'key': 'head_right', 'tab': 2, 'type': 'text', 'label': 'head 우측', 'en': 'Head right', 'default': 'now', 'pattern': r'^(d[0-9]{1,2}|now|none)$', 'help': '헤더 우측 표시 (좌측과 동일 옵션).', 'help_en': 'Header right slot (same options as left).'},
+        {'key': 'head_breadcum', 'tab': 2, 'type': 'bool', 'label': 'breadcrumb', 'en': 'Breadcrumb', 'default': 'true', 'help': 'now 슬롯의 breadcrumb(경로) 표시 master 토글.', 'help_en': 'Master toggle for breadcrumb display in the now slot.'},
         # Tab 3 — Navigation
-        {'key': 'nav_indicator', 'tab': 3, 'type': 'enum', 'label': '네비게이터', 'en': 'Nav indicator', 'default': 'both', 'options': ['both', 'diamond', 'page']},
-        {'key': 'nav_color', 'tab': 3, 'type': 'color', 'label': '네비 색', 'en': 'Nav color', 'default': 'auto'},
-        {'key': 'page_number_mode', 'tab': 3, 'type': 'enum', 'label': '페이지 번호 모드', 'en': 'Page number mode', 'default': 'global', 'options': ['global', 'local']},
-        {'key': 'breadcrumb', 'tab': 3, 'type': 'bool', 'label': 'breadcrumb 접두', 'en': 'Breadcrumb prefix', 'default': 'true'},
+        {'key': 'nav_indicator', 'tab': 3, 'type': 'enum', 'label': '네비게이터', 'en': 'Nav indicator', 'default': 'both', 'options': ['both', 'diamond', 'page'], 'help': '네비게이터 표시 형태. both·diamond·page.', 'help_en': 'Navigator indicator style: both, diamond, or page.'},
+        {'key': 'nav_color', 'tab': 3, 'type': 'color', 'label': '네비 색', 'en': 'Nav color', 'default': 'auto', 'help': '네비게이터 색. auto|light|dark|CSS 색.', 'help_en': 'Navigator color: auto | light | dark | any CSS color.'},
+        {'key': 'page_number_mode', 'tab': 3, 'type': 'enum', 'label': '페이지 번호 모드', 'en': 'Page number mode', 'default': 'global', 'options': ['global', 'local'], 'help': '페이지 번호. global=전체 통번, local=챕터별.', 'help_en': 'Page numbering: global (whole deck) or local (per chapter).'},
+        {'key': 'breadcrumb', 'tab': 3, 'type': 'bool', 'label': 'breadcrumb 접두', 'en': 'Breadcrumb prefix', 'default': 'true', 'help': '페이지 번호 앞 챕터 breadcrumb 접두 표시.', 'help_en': 'Show a chapter breadcrumb prefix before the page number.'},
         # Tab 4 — Color & Animation
-        {'key': 'htmlart_line_color', 'tab': 4, 'type': 'color', 'label': 'htmlArt 선 색', 'en': 'htmlArt line color', 'default': 'auto'},
-        {'key': 'animation.default_transition', 'tab': 4, 'type': 'enum', 'label': '전환 효과', 'en': 'Transition', 'default': 'slide', 'options': _TRANSITIONS},
-        {'key': 'animation.default_transition_speed', 'tab': 4, 'type': 'enum', 'label': '전환 속도', 'en': 'Transition speed', 'default': 'default', 'options': ['default', 'fast', 'slow']},
-        {'key': 'animation.default_background_transition', 'tab': 4, 'type': 'enum', 'label': '배경 전환', 'en': 'Background transition', 'default': 'slide', 'options': _TRANSITIONS},
-        {'key': 'video_default', 'tab': 4, 'type': 'text', 'label': '비디오 기본', 'en': 'Video default', 'default': 'controls', 'pattern': r'^[a-z][a-z-]*$'},
-        {'key': 'background', 'tab': 4, 'type': 'text', 'label': '전역 배경', 'en': 'Global background', 'default': 'none'},
+        {'key': 'htmlart_line_color', 'tab': 4, 'type': 'color', 'label': 'htmlArt 선 색', 'en': 'htmlArt line color', 'default': 'auto', 'help': 'htmlArt 도형 선 색. auto|light|dark|CSS 색.', 'help_en': 'htmlArt shape line color: auto | light | dark | CSS color.'},
+        {'key': 'animation.default_transition', 'tab': 4, 'type': 'enum', 'label': '전환 효과', 'en': 'Transition', 'default': 'slide', 'options': _TRANSITIONS, 'help': '슬라이드 전환 효과 기본값.', 'help_en': 'Default slide transition effect.'},
+        {'key': 'animation.default_transition_speed', 'tab': 4, 'type': 'enum', 'label': '전환 속도', 'en': 'Transition speed', 'default': 'default', 'options': ['default', 'fast', 'slow'], 'help': '전환 속도. default·fast·slow.', 'help_en': 'Transition speed: default, fast, or slow.'},
+        {'key': 'animation.default_background_transition', 'tab': 4, 'type': 'enum', 'label': '배경 전환', 'en': 'Background transition', 'default': 'slide', 'options': _TRANSITIONS, 'help': '배경 전환 효과 기본값.', 'help_en': 'Default background transition effect.'},
+        {'key': 'video_default', 'tab': 4, 'type': 'text', 'label': '비디오 기본', 'en': 'Video default', 'default': 'controls', 'pattern': r'^[a-z][a-z-]*$', 'help': '비디오 기본 속성 (controls 등).', 'help_en': 'Default video element attributes (e.g. controls).'},
+        {'key': 'background', 'tab': 4, 'type': 'text', 'label': '전역 배경', 'en': 'Global background', 'default': 'none', 'help': '전역 슬라이드 배경 (CSS 색/이미지, none=없음).', 'help_en': 'Global slide background (CSS color/image; none = off).'},
         # Tab 5 — Size & Font
-        {'key': 'slide_ratio', 'tab': 5, 'type': 'enum', 'label': '슬라이드 비율', 'en': 'Slide ratio', 'default': '16:9', 'options': ['16:9', '3:2', 'fill']},
-        {'key': 'slide_outer_padding', 'tab': 5, 'type': 'text', 'label': '외부 패딩', 'en': 'Outer padding', 'default': '0', 'pattern': _CSS_LEN_PAT},
-        {'key': 'slide_inner_padding', 'tab': 5, 'type': 'text', 'label': '내부 패딩', 'en': 'Inner padding', 'default': '0', 'pattern': _CSS_LEN_PAT},
-        {'key': 'style.theContents.font_size_auto', 'tab': 5, 'type': 'bool', 'label': '본문 폰트 자동', 'en': 'Auto font size', 'default': 'true'},
-        {'key': 'style.theContents.font_size_min', 'tab': 5, 'type': 'text', 'label': '최소 폰트', 'en': 'Min font size', 'default': '20px', 'pattern': _CSS_LEN_PAT},
-        {'key': 'style.theContents.font_size_max_ratio', 'tab': 5, 'type': 'float', 'label': '본문 최대 비율', 'en': 'Max font ratio', 'default': '0.66', 'min': 0.0, 'max': 1.0},
-        {'key': 'style.theContents.media_container_enlarge', 'tab': 5, 'type': 'enum', 'label': '미디어 확대', 'en': 'Media enlarge', 'default': 'fit', 'options': ['original', 'width', 'height', 'fit']},
+        {'key': 'slide_ratio', 'tab': 5, 'type': 'enum', 'label': '슬라이드 비율', 'en': 'Slide ratio', 'default': '16:9', 'options': ['16:9', '3:2', 'fill'], 'help': '슬라이드 종횡비. 16:9·3:2·fill(창 채움).', 'help_en': 'Slide aspect ratio: 16:9, 3:2, or fill.'},
+        {'key': 'slide_outer_padding', 'tab': 5, 'type': 'text', 'label': '외부 패딩', 'en': 'Outer padding', 'default': '0', 'pattern': _CSS_LEN_PAT, 'help': '슬라이드 바깥 여백 (CSS 길이).', 'help_en': 'Outer padding around the slide (CSS length).'},
+        {'key': 'slide_inner_padding', 'tab': 5, 'type': 'text', 'label': '내부 패딩', 'en': 'Inner padding', 'default': '0', 'pattern': _CSS_LEN_PAT, 'help': '슬라이드 안쪽 여백 (CSS 길이).', 'help_en': 'Inner padding inside the slide (CSS length).'},
+        {'key': 'style.theContents.font_size_auto', 'tab': 5, 'type': 'bool', 'label': '본문 폰트 자동', 'en': 'Auto font size', 'default': 'true', 'help': '본문 폰트 크기 자동 조정.', 'help_en': 'Auto-fit the body font size to content.'},
+        {'key': 'style.theContents.font_size_min', 'tab': 5, 'type': 'text', 'label': '최소 폰트', 'en': 'Min font size', 'default': '20px', 'pattern': _CSS_LEN_PAT, 'help': '본문 자동 조정 시 최소 폰트 크기.', 'help_en': 'Minimum font size when auto-fitting.'},
+        {'key': 'style.theContents.font_size_max_ratio', 'tab': 5, 'type': 'float', 'label': '본문 최대 비율', 'en': 'Max font ratio', 'default': '0.66', 'min': 0.0, 'max': 1.0, 'help': '본문 최대 폰트 비율 (슬라이드 높이 대비, 0~1).', 'help_en': 'Max body font ratio relative to slide height (0-1).'},
+        {'key': 'style.theContents.media_container_enlarge', 'tab': 5, 'type': 'enum', 'label': '미디어 확대', 'en': 'Media enlarge', 'default': 'fit', 'options': ['original', 'width', 'height', 'fit'], 'help': '미디어(이미지·영상) 확대 방식. original·width·height·fit.', 'help_en': 'Media enlarge mode: original, width, height, or fit.'},
         # Tab 6 — Build & Deploy
-        {'key': 'asset_mode', 'tab': 6, 'type': 'enum', 'label': '자산 배치', 'en': 'Asset mode', 'default': 'vendor', 'options': ['vendor', 'cdn']},
-        {'key': 'deploy_formats', 'tab': 6, 'type': 'multi', 'label': '배포 형식', 'en': 'Deploy formats', 'default': '[]', 'options': ['epub', 'pdf', 'pptx']},
-        {'key': 'kroki_server', 'tab': 6, 'type': 'text', 'label': 'Kroki 서버', 'en': 'Kroki server', 'default': 'https://kroki.io', 'pattern': r'^https?://[^\s;{}<>"]+$'},
+        {'key': 'asset_mode', 'tab': 6, 'type': 'enum', 'label': '자산 배치', 'en': 'Asset mode', 'default': 'vendor', 'options': ['vendor', 'cdn'], 'help': '런타임 자산 배치. vendor=로컬 번들(오프라인), cdn=CDN.', 'help_en': 'Runtime asset mode: vendor (local, offline) or cdn.'},
+        {'key': 'deploy_formats', 'tab': 6, 'type': 'multi', 'label': '배포 형식', 'en': 'Deploy formats', 'default': '[]', 'options': ['epub', 'pdf', 'pptx'], 'help': '추가 배포 산출물. epub·pdf·pptx 다중 선택.', 'help_en': 'Extra deploy outputs: epub, pdf, pptx (multi-select).'},
+        {'key': 'kroki_server', 'tab': 6, 'type': 'text', 'label': 'Kroki 서버', 'en': 'Kroki server', 'default': 'https://kroki.io', 'pattern': r'^https?://[^\s;{}<>"]+$', 'help': 'Kroki 다이어그램 렌더 서버 URL.', 'help_en': 'Kroki diagram render server URL.'},
     ]
     _CONFIG_I18N = {
         'ko': {
@@ -2199,7 +2217,7 @@ class DevHandler(SimpleHTTPRequestHandler):
             'title="_config.yml 을 VSCode 로 열기">📄 설정 파일 열기</button>'
             '<span id="cfg-status" class="cfg-status"></span>'
             '<button type="button" id="cfg-save" class="cfg-save">저장 + 재빌드</button></div>'
-            '</div></div>'
+            '</div><div id="cfg-tip" class="cfg-tip" hidden></div></div>'
         )
 
     def _config_modal_script(self) -> str:
@@ -2212,6 +2230,7 @@ var titleEl=document.getElementById('cfg-title');
 var statusEl=document.getElementById('cfg-status');
 var saveBtn=document.getElementById('cfg-save');
 var openBtn=document.getElementById('cfg-openfile');
+var tipEl=document.getElementById('cfg-tip');
 var DATA=null, initial={}, lang='ko', activeTab=1;
 try{lang=localStorage.getItem('m2cfgLang')||'ko';}catch(e){}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
@@ -2231,12 +2250,13 @@ function ctrl(f){
   var id=idOf(f.key), val=(DATA.values[f.key]!=null?DATA.values[f.key]:''), def=DATA.defaults[f.key]||'';
   var cur=(f.type==='bool')?(val!==''?val:def):val;
   var badge=diffsDefault(f,cur,def)?badgeHtml():'';
+  var help=f.help?'<button type="button" class="cfg-help" tabindex="0" aria-label="?" data-hko="'+esc(f.help)+'" data-hen="'+esc(f.help_en||f.help)+'">?</button>':'';
   var lab='<span class="cfg-lab"><span class="cfg-lname" data-ko="'+esc(f.label)+'" data-en="'+esc(f.en)+'">'+esc(L(f))+'</span>'+badge+'</span>';
   var ctl;
   if(f.type==='bool'){
     var on=(val!==''?val==='true':def==='true');
     var sw='<span class="cfg-switch"><input type="checkbox" id="'+id+'"'+(on?' checked':'')+' role="switch"><span class="cfg-slider"></span></span>';
-    return '<label class="cfg-row cfg-bool" data-key="'+esc(f.key)+'">'+lab+sw+'</label>';
+    return '<label class="cfg-row cfg-bool" data-key="'+esc(f.key)+'">'+lab+sw+help+'</label>';
   }
   if(f.type==='int'||f.type==='float'){
     var step=f.type==='float'?' step="0.01"':'';
@@ -2257,7 +2277,7 @@ function ctrl(f){
   }else{
     ctl='<input type="text" id="'+id+'" value="'+esc(val)+'" placeholder="'+esc(def)+'">';
   }
-  return '<div class="cfg-row" data-key="'+esc(f.key)+'">'+lab+ctl+'</div>';
+  return '<div class="cfg-row" data-key="'+esc(f.key)+'">'+lab+ctl+help+'</div>';
 }
 function buildTabs(){
   tabsEl.innerHTML=DATA.i18n.ko.tabs.map(function(_,i){
@@ -2317,7 +2337,7 @@ function fieldOf(key){return DATA.schema.filter(function(f){return f.key===key;}
 function parseList(v){v=(v||'').trim();if(v.charAt(0)==='[')v=v.slice(1);if(v.charAt(v.length-1)===']')v=v.slice(0,-1);return v.split(',').map(function(x){return x.trim();}).filter(Boolean);}
 function readField(f){var el=document.getElementById(idOf(f.key));if(!el)return '';if(f.type==='bool')return el.checked?'true':'false';if(f.type==='multi'){var sel=[];el.querySelectorAll('input[type=checkbox]:checked').forEach(function(c){sel.push(c.dataset.mopt);});return '['+sel.join(', ')+']';}return (el.value||'').trim();}
 function applyLang(l){
-  lang=l; try{localStorage.setItem('m2cfgLang',l);}catch(e){}
+  lang=l; try{localStorage.setItem('m2cfgLang',l);}catch(e){} if(typeof hideTip==='function')hideTip();
   document.querySelectorAll('.cfg-lang-btn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===l);});
   document.querySelectorAll('#cfg-overlay [data-ko]').forEach(function(el){
     var t=el.getAttribute('data-'+l); if(t!=null)el.textContent=t;
@@ -2346,7 +2366,7 @@ function openModal(project){
     tabsEl.querySelectorAll('.cfg-tab').forEach(function(b){b.addEventListener('click',function(){showTab(+b.dataset.tab);});});
   }).catch(function(e){statusEl.style.color='#c33';statusEl.textContent=T('load_fail')+': '+e.message;});
 }
-function closeModal(){overlay.hidden=true;}
+function closeModal(){hideTip();overlay.hidden=true;}
 function save(){
   var project=overlay.dataset.project, values={};
   DATA.schema.forEach(function(f){var v=readField(f);if(v!==initial[f.key])values[f.key]=v;});
@@ -2361,7 +2381,26 @@ function save(){
       DATA.schema.forEach(function(f){initial[f.key]=readField(f);});
     }).catch(function(e){saveBtn.disabled=false;statusEl.style.color='#c33';statusEl.textContent='✗ '+T('send_fail')+': '+e.message;});
 }
+function hideTip(){if(tipEl)tipEl.hidden=true;}
+// balloon tooltip on hover/focus; positioned just below (or above if no room) the ? button
+function showTip(btn){
+  if(!tipEl)return;
+  tipEl.textContent=(lang==='en'?(btn.dataset.hen||btn.dataset.hko):btn.dataset.hko)||'';
+  tipEl.hidden=false;
+  var r=btn.getBoundingClientRect(), w=tipEl.offsetWidth, h=tipEl.offsetHeight;
+  var left=r.left-4; if(left+w>window.innerWidth-10)left=window.innerWidth-10-w; if(left<8)left=8;
+  var below=(r.bottom+8+h<=window.innerHeight-6);
+  var top=below?(r.bottom+8):(r.top-8-h); if(top<8)top=8;
+  tipEl.classList.toggle('below',below); tipEl.classList.toggle('above',!below);
+  tipEl.style.left=left+'px'; tipEl.style.top=top+'px';
+}
+document.addEventListener('mouseover',function(e){var h=e.target.closest?e.target.closest('.cfg-help'):null;if(h)showTip(h);});
+document.addEventListener('mouseout',function(e){var h=e.target.closest?e.target.closest('.cfg-help'):null;if(h)hideTip();});
+document.addEventListener('focusin',function(e){var h=e.target.closest?e.target.closest('.cfg-help'):null;if(h)showTip(h);});
+document.addEventListener('focusout',function(e){var h=e.target.closest?e.target.closest('.cfg-help'):null;if(h)hideTip();});
 document.addEventListener('click',function(e){
+  var hp=e.target.closest?e.target.closest('.cfg-help'):null;
+  if(hp){e.preventDefault();e.stopPropagation();return;}
   var g=e.target.closest?e.target.closest('.cfg-gear'):null;
   if(g){e.preventDefault();openModal(g.dataset.project);return;}
   var lb=e.target.closest?e.target.closest('.cfg-lang-btn'):null;
