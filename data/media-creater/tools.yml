@@ -52,6 +52,43 @@ tools:
     output_path: img/
     output_format: [html, png]
 
+  # Issue287 — 이미지 생성 백엔드 (설계 SSOT: _doc_arch/media-creater-image-backend.md)
+  - id: svg_direct
+    type: vector_illustration
+    handler: claude_svg_authoring    # agent(Claude)가 SVG 마크업 직접 저작 → img/ 저장
+    triggers:
+      - "일러스트"
+      - "아이콘"
+      - "개념 그림"
+      - "배경 장식"
+      - "벡터"
+      - "illustration"
+      - "icon"
+    output_path: img/
+    output_format: svg
+    style_source: info_field_map     # image_style → design_mood → default 재사용 (§4)
+    constraints:
+      - "viewBox 필수 (반응형 스케일)"
+      - "외부 참조(href·image·@import) 금지 — file:// 단일 파일 배포 규약 (file-deployment-rules)"
+      - "텍스트는 시스템 폰트 계열 지정 (웹폰트 참조 금지)"
+    note: "사진 리얼리즘 불필요한 벡터 표현 전담. 사진류는 free_image가 1차."
+
+  - id: free_image
+    type: photo
+    handler: free-image              # .claude/skills/free-image (Openverse CC 검색·다운로드)
+    triggers:
+      - "사진"
+      - "실사"
+      - "인물"
+      - "풍경"
+      - "실물"
+      - "photo"
+    invocation: 'python3 .claude/skills/free-image/fetch.py --query "<영어 검색어>" --out Projects/<Name>/img --license cc0,by --prefix <slide_id>'
+    output_path: img/
+    output_format: jpg
+    credits: "CREDITS.md 자동 기록 — CC-BY 포함 시 덱 마지막 credits 슬라이드 의무 (SKILL.md 절차)"
+    retry: "rc 3 시 검색어 변경 1회 재시도 → 재실패 시 image_fallback_chain 강등"
+
   - id: image_placeholder
     type: photo
     handler: placeholder_png
@@ -63,6 +100,7 @@ tools:
     output_format: png
     delegate_skill: gemini-image-describer
     spec_dir: _doc_work/media/      # 외부 생성 위임 명세 위치
+    note: "Issue287 이후 최종 fallback으로 강등 — 사진류 1차는 free_image (image_fallback_chain 참조)"
 
   - id: gemini_describe
     type: image_caption
@@ -188,7 +226,14 @@ content_pattern_rules:
   - id: photo_screenshot
     label: 사진·실사·UI 스크린샷
     body_patterns: ["사진", "스크린샷", "이미지", "photo", "screenshot"]
-    recommended_tool: image_placeholder
+    recommended_tool: free_image
+    note: "Issue287 — 1차 free_image (CC 스톡 검색, 생성보다 검색 우선). 실패 시 image_fallback_chain 강등, image_placeholder는 최종 fallback"
+
+  - id: vector_illustration
+    label: 벡터 일러스트·아이콘·개념 그림 (사진 리얼리즘 불필요)
+    body_patterns: ["일러스트", "아이콘", "개념 그림", "배경 장식", "벡터", "illustration", "icon"]
+    recommended_tool: svg_direct
+    note: "Issue287 — photo 신호가 먼저 흡수한 뒤 평가. 미매칭 시 react_artifact fallback 유지"
 
   - id: decorative_text
     label: 장식 텍스트·타이틀 강조 (Cards 초과)
@@ -229,6 +274,14 @@ selection_policy:
     mermaid·chart·map 룰이 명시적 다이어그램/데이터 신호를 먼저 흡수하고,
     excalidraw(mermaid 초과)·html_artifact(Cards 초과)·d3(그래프) 가 그다음,
     어느 것도 아니면 react_artifact 가 기본값으로 적용된다.
+
+# 이미지 계열 실패 강등 체인 (Issue287 — fail-loud. 설계 SSOT: _doc_arch/media-creater-image-backend.md)
+image_fallback_chain:
+  order: [free_image, local_image_gen, svg_direct, image_placeholder]
+  note: |
+    free_image 실패(재시도 1회 포함) → local_image_gen (🚧 미설치 시 skip — prj55 설치·테스트
+    완료 후 tools 등재 예정) → svg_direct (개념 도해로 대체) → image_placeholder (명세만).
+    각 강등은 checkpoint 보고에 사유 1줄 명시 — 조용한 placeholder 방치 금지.
 
 # ============================================================================
 # 3. 처리 정책
@@ -313,6 +366,7 @@ stock_sources:
   - id: openverse
     url: https://openverse.org
     license: CC
+    skill: .claude/skills/free-image   # Issue287 — 수동 참고에서 자동 라우팅 승격 (free_image 도구)
 
 # ============================================================================
 # 7. 사용자 검토 체크포인트
@@ -322,6 +376,9 @@ checkpoint:
     media-creater 산출 검토:
     - mermaid 인라인 삽입: {mermaid_count}건
     - excalidraw 생성 대기: {excalidraw_count}건
+    - SVG 직접 저작: {svg_count}건
+    - free-image 사진: {photo_count}건 (CREDITS.md 갱신 {credits_status})
+    - 이미지 강등 발생: {fallback_count}건 — 사유: {fallback_reasons}
     - 이미지 생성 명세: {image_spec_count}건 (생성 도구 위임 대기)
     - 산출 위치: {paths}
 
@@ -340,7 +397,9 @@ report_template: |
   * 시각화 후보 식별: {candidate_count}
       - mermaid 인라인: {mermaid_count}
       - excalidraw: {excalidraw_count}
-      - 이미지 placeholder: {image_count}
+      - svg 직접 저작: {svg_count}
+      - free-image 사진: {photo_count}
+      - 이미지 placeholder(최종 fallback): {image_count}
       - design-html: {html_count}
   * 외부 위임 명세 생성: {spec_count}건 ({spec_dir})
   * 검증: mermaid syntax {mermaid_status} / placeholder {placeholder_status}
