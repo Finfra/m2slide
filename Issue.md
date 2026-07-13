@@ -1,6 +1,8 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 290
+* Issue HWM: 291
+* Checkpoints:
+    - bf2efa7 (2026-07-13) 작업 트리 스냅샷
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -28,6 +30,15 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue291. dev-server overview 장표 hover 확대 + Tab 고정 + 힌트 (등록: 2026-07-13, 해결: 2026-07-13, commit: 456d6cb) ✅
+* 목적: 개요 페이지(`/p/<P>`) 슬라이드 미리보기가 480×270 축소본이라 내용 확인이 어려움. 의견 작성 시 장표를 크게 보면서 바로 입력할 수 있게 hover 확대 + Tab 포커스 이동 제공
+* 카테고리: Build (dev-server)
+* 구현 명세 (Walkthrough):
+    - `lib/dev-server/server.py` `_common_styles` — `.preview-cell.zoomed` 오버레이 CSS(`transform-origin:top right`, `position:absolute;right:0` → 좌·하 성장으로 4번째 열 의견 입력란 미침범), `.zoom-hint` 힌트 배지 CSS
+    - `_serve_project_overview` 행 생성 — preview 셀에 `<span class="zoom-hint">⇥ Tab → 의견 작성</span>` 추가
+    - `_feedback_script` — hover 상태 머신 JS: `mouseenter`→확대(셀 위치 기반 fit-scale `min(0.6, (셀우측−12)/1920)`, 하한 0.3), `mouseleave`→복원(단 pin 시 유지), `Tab`(확대 중)→pin+같은 행 `.fb-text` 포커스, textarea `blur`→복원. `.zoomed:not(.pinned)` 조건으로 힌트 배지 표시
+    - 검증: puppeteer 자동 테스트 — hover/Tab/blur 상태 전이 6단계 통과, 창 너비 1300/1500/1900 전부 왼쪽 넘침 없음(x≥11px)·의견란 미침범, 힌트 hover 시 표시·pin 시 숨김 확인
 
 ## Issue290. dev-server `/pd/` 덱에 `/p/` proxy 전 기능 부여 — 단일 root resolver 통합 (등록: 2026-07-13, 해결: 2026-07-13, commit: 5bd3efb) ✅
 * 목적: `/pd/`(덱 목록)이 static `index.html` 직링크만 제공 → `/p/` 의 슬라이드 목록·deck nav(`/n/`)·solo view(`/s/`)·text 추출·config GUI 를 전혀 못 씀. 있는 코드 최소 수정으로 덱도 동일 proxy 진입 → 전 기능 획득
