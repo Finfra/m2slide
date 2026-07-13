@@ -19,6 +19,7 @@
 * 로우·값 단위 개별 애니메이션 지원(VideoMaker 영상 플레이용). Issue149 완료 — reveal.js `<!-- .element: class="..." -->` + Pandoc `{.fragment}` 병존.
 
 # 🌱 이슈후보
+1. 라이선스 표기 자동 삽입 — 빌드 시 첫 장·마지막 장에 "Powered by finfra.kr, Made by m2slide" 표기 자동 주입 (LICENSE.md 이중 라이선스 정책 근거, 2026-07-13 신설). 현재 빌드 산출물에 표기 미구현 → generate-slides.js/html-builder.js 삽입 + 유료 라이선스용 제거 옵션(`_config.yml` 키 등) 설계 필요
 1. _doc_arch/media-creater-image-backend.md에 공개 이미지 받아서 프롬프트에 맞게 mflux로 수정하는 기능 필요. — 2026-07-13 검증: 큐 v1.1 img2img(--image-path·--image-strength) 지원 완료(prj55#Issue5). 단 **schnell img2img 는 정밀 편집(색만·글자만) 불가**(strength 0.3↑ 복제·0.1 재해석 실측) → edit 전용 모델(Qwen-Image-Edit ~수십 GB) 설치가 선행 조건. 글로벌 스킬화는 prj3#Issue219(jm4-mflux) 등록됨
 
 # 🔥 진행 중
