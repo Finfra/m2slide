@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 289
+* Issue HWM: 290
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
     - **v0.7.0 (2026-05-06)** — release: `/deploy-docs` 신규 커맨드 + `_config.yml: deploy_formats` 옵션 (EPUB/PDF/PPTX 자동 빌드·배포 + 메인 인덱스 카드 다운로드 배지) + agenda 다운로드 버튼 위치 변경(우상단 헤더 → `.layout-_agenda` 우하단 absolute, 마스코트 충돌 회피). v0.6.x 시리즈(Issue71-126 + Issue127-128) 누적 z_old 아카이브.
@@ -10,18 +10,15 @@
 * _meta.yml파일 사용 안함 : AGENDA.md나 {프로젝트명}.md파일의 yaml front matter에 추가하기로 함. 
 * 현재 프로젝트가 contents 생성에 치중함에 따라 m2slide모듈은 분리되어야하나 지금은 생성되는 컨텐츠와 slide생성이 밀접하고 scar부분에 한정되어 있어서 한동안 함께 진행 후 분리하고 push예정.
 * 배포를 위해 가급적 scar는 프로젝트 폴더에 배치함. 
-## img 폴더 이중 복사 유지 (소스 `img/` + 빌드 `slide/img/`)
-* 결정: 현행 `fs.cpSync` 방식 유지
-* 이유: `slide/` 폴더를 통째로 삭제 후 재생성하는 빌드 패턴이 잦음
-* 영상등 기타 리소스 파일도 마찬가지. 
+## img 폴더 이중 복사 유지
+* 소스 `img/` + 빌드 `slide/img/` 이중 복사(`fs.cpSync`) 유지 — `slide/` 통째 재생성 빌드 패턴 대응. 영상 등 기타 리소스 동일.
 
 ## 개별 에니메이션 지원
-* 결정: 로우나 값 단위의 개별 에니메이션 기능 지원
-* 이유: VideoMaker Project에서 영상 플레이시 필요.
-* 진행: Issue149로 reveal.js 표준 `<!-- .element: class="..." -->` 주석 syntax 지원 추가 완료 (Pandoc `{.fragment}`와 병존)
+* 로우·값 단위 개별 애니메이션 지원(VideoMaker 영상 플레이용). Issue149 완료 — reveal.js `<!-- .element: class="..." -->` + Pandoc `{.fragment}` 병존.
 
 # 🌱 이슈후보
 1. _doc_arch/media-creater-image-backend.md에 공개 이미지 받아서 프롬프트에 맞게 mflux로 수정하는 기능 필요. — 2026-07-13 검증: 큐 v1.1 img2img(--image-path·--image-strength) 지원 완료(prj55#Issue5). 단 **schnell img2img 는 정밀 편집(색만·글자만) 불가**(strength 0.3↑ 복제·0.1 재해석 실측) → edit 전용 모델(Qwen-Image-Edit ~수십 GB) 설치가 선행 조건. 글로벌 스킬화는 prj3#Issue219(jm4-mflux) 등록됨
+
 # 🔥 진행 중
 
 # 📕 중요
@@ -31,6 +28,23 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue290. dev-server `/pd/` 덱에 `/p/` proxy 전 기능 부여 — 단일 root resolver 통합 (등록: 2026-07-13, 해결: 2026-07-13, commit: 5bd3efb) ✅
+* 목적: `/pd/`(덱 목록)이 static `index.html` 직링크만 제공 → `/p/` 의 슬라이드 목록·deck nav(`/n/`)·solo view(`/s/`)·text 추출·config GUI 를 전혀 못 씀. 있는 코드 최소 수정으로 덱도 동일 proxy 진입 → 전 기능 획득
+* plan: `_doc_work/plan/pd-p-unify_plan.md`
+* task: `_doc_work/tasks/pd-p-unify_task.md`
+* report: `_doc_work/report/pd-p-unify_issue290_report.md`
+* depends: Issue281
+* 구현 명세 (Walkthrough):
+    - 원인: `/p/<X>/...` proxy 가 `os.path.join(getcwd(), 'Projects', project)` 를 12곳 하드코딩 → 2단계 깊이 덱(`Projects_deck/decks/<cat>/<deck>/`) 도달 불가. Issue281 이 이 때문에 proxy 우회(static 직링크)로 최소 구현
+    - `_project_root(project)` 신설: `Projects/<P>` 우선 → 없으면 `Projects_deck/decks/*/<P>` category 순회 first-match (다중 동명 → stderr 경고), 둘 다 부재 → 비존재 `Projects/<P>` 반환(하류 isdir 가드 parity). 하드코딩 12곳 치환
+    - `_PATH_PROJECT_RE` 확장: optional prefix `(?:Projects/|Projects_deck/decks/[^/]+/)` → group(1)=project(덱 basename)·group(2)=stem 양쪽 동일 추출 (rewrite crux — 미확장 시 덱 자산·nav rewrite 깨짐). `_short_file_rel` 도 `_project_root` 기반 cwd-상대 경로화
+    - config 존재 가드 3곳(`_serve_config_get`·`_handle_config_post`·open-config): `project not in _list_projects()` → `isdir(_project_root(project))` (초기 검증서 config 만 404 로 드러난 지점)
+    - `_serve_deck_list` 카드 href: static `index.html` → `/p/<deck>/n/c` + `/p/<deck>` 슬라이드 목록
+    - 검증: 신규 덱 RamyeonCooking `/p/.../{n/c, ,/s/1/1, ?mode=text, /config}` 전건 200 · 기존 AgenticCoding 회귀 0(동일 5종 200) · `/pd/` 카드 링크 `/p/<deck>/n/c` 확인 · `test_server.py` PathProjectResolveTest 6종 추가 = 59 tests OK · py_compile 통과
+    - 엣지: 동명 충돌 → `Projects/` 우선 / 다중 category 동명 덱 → first-match+경고 / 덱 config 쓰기 = 독립 deck repo 커밋(Issue288 준수)
+    - 후속(별도 이슈): `--lint-deployment` 덱 확장 / category-qualified 토큰(`/p/<cat>__<deck>`)
+* 설계 SSOT: `_doc_arch/dev-server.md` "`/p/` vs `/pd/` — 리스트 채널 비대칭 + 통합 (Issue290 구현)" 절
 
 ## Issue289. local_image_gen 큐 경유 전환 — 직접 실행 폐지, mflux-enqueue+폴링 (등록: 2026-07-13, 해결: 2026-07-13, commit: 427fb61, 5344e09) ✅
 * 목적: 동시 생성 메모리 사고(2026-07-13) 대응 — prj55 잡 큐(Issue4)에 맞춰 `local_image_gen`을 직접 mflux 실행 → 큐 등록·폴링으로 교체 (P5, Issue287 후속)
