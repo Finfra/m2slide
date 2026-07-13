@@ -91,8 +91,12 @@ def extract_section_title(section_html: str) -> str:
     return re.sub(r'\s+', ' ', text).strip()
 
 
+# Issue290 — accept both Projects/<P>/slide/<X>.html and deck path
+# Projects_deck/decks/<cat>/<deck>/slide/<X>.html. Optional non-capturing prefix
+# keeps group(1)=project(or deck basename), group(2)=stem intact for both.
 _PATH_PROJECT_RE = re.compile(
-    r'^Projects/([^/]+)/slide/(.+)\.html$', re.IGNORECASE)
+    r'^(?:Projects/|Projects_deck/decks/[^/]+/)([^/]+)/slide/(.+)\.html$',
+    re.IGNORECASE)
 
 
 def to_short_url(file_path: str, n=None, mode: str = '') -> str:
@@ -405,11 +409,38 @@ class DevHandler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _project_root(self, project: str) -> str:
+        """Resolve <project> token to its abs source dir (Issue290).
+
+        Projects/<project> first; else Projects_deck/decks/*/<project>
+        (deck token = deck basename). Falls back to the (non-existent)
+        Projects/<project> path when neither exists, so downstream
+        isdir/isfile guards behave as today for the not-found case.
+        """
+        direct = os.path.join(os.getcwd(), 'Projects', project)
+        if os.path.isdir(direct):
+            return direct
+        decks_root = os.path.join(os.getcwd(), 'Projects_deck', 'decks')
+        if os.path.isdir(decks_root):
+            matches = [
+                os.path.join(decks_root, cat, project)
+                for cat in sorted(os.listdir(decks_root))
+                if os.path.isdir(os.path.join(decks_root, cat, project))
+            ]
+            if matches:
+                if len(matches) > 1:
+                    sys.stderr.write(
+                        f"[dev-server] ambiguous deck token '{project}': "
+                        f"{len(matches)} matches under Projects_deck/decks/*/, "
+                        f"using {os.path.relpath(matches[0], os.getcwd())}\n")
+                return matches[0]
+        return direct
+
     def _short_file_rel(self, project: str, chapter):
-        """Build relative path for /p/<project>[/<chapter>] form."""
-        base = f'Projects/{project}/slide'
+        """Build cwd-relative path for /p/<project>[/<chapter>] form (deck-aware, Issue290)."""
         stem = chapter if chapter else 'index'
-        return f'{base}/{stem}.html'
+        full = os.path.join(self._project_root(project), 'slide', f'{stem}.html')
+        return os.path.relpath(full, os.getcwd())
 
     def _resolve_chapter_index(self, project: str, chap_idx: int):
         """Map 1-base chapter index to a .html file stem.
@@ -421,7 +452,7 @@ class DevHandler(SimpleHTTPRequestHandler):
               chap_idx=N → N-th file in sorted order, excluding agenda.html and index.html
         Returns chapter stem (without .html) or None.
         """
-        slide_dir = os.path.join(os.getcwd(), 'Projects', project, 'slide')
+        slide_dir = os.path.join(self._project_root(project), 'slide')
         if not os.path.isdir(slide_dir):
             return None
         files = sorted(
@@ -455,7 +486,7 @@ class DevHandler(SimpleHTTPRequestHandler):
 
     def _stem_to_chapter_index(self, project: str, stem: str):
         """Inverse of _resolve_chapter_index. Returns 1-base chap index or None."""
-        slide_dir = os.path.join(os.getcwd(), 'Projects', project, 'slide')
+        slide_dir = os.path.join(self._project_root(project), 'slide')
         if not os.path.isdir(slide_dir):
             return None
         files = sorted(
@@ -726,7 +757,7 @@ class DevHandler(SimpleHTTPRequestHandler):
         — the single-mode analog of the chapter-mode bug fixed in Issue239.
         Fall back to the agenda chain only if index.html is genuinely absent.
         """
-        index_abs = os.path.join(os.getcwd(), 'Projects', project,
+        index_abs = os.path.join(self._project_root(project),
                                  'slide', 'index.html')
         if not os.path.isfile(index_abs):
             return self._redirect_302(self._with_query(f'/p/{project}/n/a'))
@@ -737,7 +768,9 @@ class DevHandler(SimpleHTTPRequestHandler):
         """/p/<P>/n/a — agenda (deck). Fallback: not active → 302 /n/t."""
         if not self._agenda_active(project):
             return self._redirect_302(self._with_query(f'/p/{project}/n/t'))
-        file_rel = f'Projects/{project}/slide/agenda.html'
+        file_rel = os.path.relpath(
+            os.path.join(self._project_root(project), 'slide', 'agenda.html'),
+            os.getcwd())
         return self._proxy_build_artifact(file_rel)
 
     def _serve_nav_t(self, project: str):
@@ -1072,7 +1105,7 @@ class DevHandler(SimpleHTTPRequestHandler):
 
     def _list_slide_files(self, project: str):
         """List .html files in Projects/<project>/slide/ (excluding hidden)."""
-        slide_dir = os.path.join(os.getcwd(), 'Projects', project, 'slide')
+        slide_dir = os.path.join(self._project_root(project), 'slide')
         if not os.path.isdir(slide_dir):
             return []
         out = []
@@ -1426,10 +1459,16 @@ class DevHandler(SimpleHTTPRequestHandler):
                 title = self._esc_html(name)
                 entry = os.path.join(deck_dir, 'slide', 'index.html')
                 if os.path.isfile(entry):
-                    href = f'/Projects_deck/decks/{cat}/{name}/slide/index.html'
+                    # Issue290 — decks now enter via /p/ proxy (deck token = basename),
+                    # gaining slide list, deck nav, solo view, text, config GUI.
+                    nav = f'/p/{name}/n/c'
+                    overview = f'/p/{name}'
                     cards.append(
-                        f'<div class="card"><h3><a href="{href}" target="_blank" rel="noopener">🎴 {title}</a></h3>'
-                        f'<div class="links"><a href="{href}" target="_blank" rel="noopener">🎬 진입</a></div></div>'
+                        f'<div class="card"><h3><a href="{nav}" target="_blank" rel="noopener">🎴 {title}</a></h3>'
+                        '<div class="links">'
+                        f'<a href="{overview}" target="_blank" rel="noopener">📋 슬라이드 목록</a>'
+                        f'<a href="{nav}" target="_blank" rel="noopener">🎬 진입 (cover/agenda/toc/첫슬라이드 fallback)</a>'
+                        '</div></div>'
                     )
                 else:
                     cards.append(
@@ -1571,7 +1610,7 @@ class DevHandler(SimpleHTTPRequestHandler):
         if safe.startswith('..'):
             self.send_error(403, 'forbidden: path traversal')
             return
-        slide_root = os.path.join(os.getcwd(), 'Projects', project, 'slide')
+        slide_root = os.path.join(self._project_root(project), 'slide')
         full = os.path.join(slide_root, safe)
         if not full.startswith(slide_root + os.sep):
             self.send_error(403, 'forbidden: path escapes slide dir')
@@ -1596,7 +1635,7 @@ class DevHandler(SimpleHTTPRequestHandler):
         """GET /p/<project> — slide list (all .html files + sections)."""
         files = self._list_slide_files(project)
         if not files:
-            project_dir = os.path.join(os.getcwd(), 'Projects', project)
+            project_dir = self._project_root(project)
             if not os.path.isdir(project_dir):
                 self.send_error(404, f'project not found: {project}')
                 return
@@ -1612,7 +1651,7 @@ class DevHandler(SimpleHTTPRequestHandler):
         sections_html_blocks = []
         for f in files:
             stem = f[:-len('.html')]
-            full = os.path.join(os.getcwd(), 'Projects', project, 'slide', f)
+            full = os.path.join(self._project_root(project), 'slide', f)
             try:
                 with open(full, 'r', encoding='utf-8') as fh:
                     html = fh.read()
@@ -1753,7 +1792,7 @@ class DevHandler(SimpleHTTPRequestHandler):
         Sufficient for cover_enabled / toc_placeholder lookups. Returns {}
         if missing or unparseable.
         """
-        cfg_path = os.path.join(os.getcwd(), 'Projects', project, '_config.yml')
+        cfg_path = os.path.join(self._project_root(project), '_config.yml')
         if not os.path.isfile(cfg_path):
             return {}
         out = {}
@@ -1851,7 +1890,7 @@ class DevHandler(SimpleHTTPRequestHandler):
         r'^(auto|light|dark|#[0-9a-fA-F]{3,8}|rgba?\([^;{}<>]+\)|hsla?\([^;{}<>]+\)|[a-zA-Z]+)$')
 
     def _config_path(self, project: str) -> str:
-        return os.path.join(os.getcwd(), 'Projects', project, '_config.yml')
+        return os.path.join(self._project_root(project), '_config.yml')
 
     def _list_themes(self):
         """Theme names under theme/ (excluding _ prefixed like _shared)."""
@@ -2100,7 +2139,7 @@ class DevHandler(SimpleHTTPRequestHandler):
     def _serve_config_get(self, project: str):
         """GET /p/<P>/config — schema (tabs·i18n labels), current values, defaults,
         themes, i18n bundle. Client renders tabs + language switch without re-fetch."""
-        if project not in self._list_projects():
+        if not os.path.isdir(self._project_root(project)):  # deck-aware (Issue290)
             self.send_error(404, f'project not found: {project}')
             return
         self._write_json({
@@ -2116,7 +2155,7 @@ class DevHandler(SimpleHTTPRequestHandler):
     def _handle_config_post(self, project: str):
         """POST /p/<P>/config — validate + write whitelisted keys (incl. nested) to
         _config.yml, then rebuild. Body: {"values": {key: val, ...}}."""
-        if project not in self._list_projects():
+        if not os.path.isdir(self._project_root(project)):  # deck-aware (Issue290)
             self.send_error(404, f'project not found: {project}')
             return
         try:
@@ -2177,7 +2216,7 @@ class DevHandler(SimpleHTTPRequestHandler):
         project is whitelisted via _list_projects() and the path is fixed under
         Projects/<P>/, so no arbitrary path is opened. Server binds 127.0.0.1
         only, so no extra IP allowlist is needed."""
-        if project not in self._list_projects():
+        if not os.path.isdir(self._project_root(project)):  # deck-aware (Issue290)
             self.send_error(404, f'project not found: {project}')
             return
         path = self._config_path(project)
@@ -2441,7 +2480,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!overlay.hi
         return cfg.get('cover_enabled', '').lower() == 'true'
 
     def _agenda_active(self, project: str) -> bool:
-        agenda = os.path.join(os.getcwd(), 'Projects', project, 'slide', 'agenda.html')
+        agenda = os.path.join(self._project_root(project), 'slide', 'agenda.html')
         return os.path.isfile(agenda)
 
     def _toc_active(self, project: str) -> bool:
@@ -2505,7 +2544,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!overlay.hi
         the inbox line count == pending count. 0 if file missing/unreadable.
         """
         path = os.path.join(
-            os.getcwd(), 'Projects', project,
+            self._project_root(project),
             '_pipeline', 'feedback', 'dev-feedback.jsonl')
         try:
             with open(path, 'r', encoding='utf-8') as fh:
@@ -2521,7 +2560,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!overlay.hi
         if '/' in project or os.sep in project or project.startswith('.'):
             self.send_error(404, f'project not found: {project}')
             return
-        project_dir = os.path.join(os.getcwd(), 'Projects', project)
+        project_dir = self._project_root(project)
         if not os.path.isdir(project_dir):
             self.send_error(404, f'project not found: {project}')
             return
