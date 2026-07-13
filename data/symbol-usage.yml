@@ -22,6 +22,7 @@ principles:
   - "공식 강의체 데크는 슬라이드당 2~3개 이하 권장"
   - "같은 의미는 데크 전체에서 동일 심벌로 통일 (예: 완료는 항상 check-circle)"
   - "situation에 매칭되는 심벌이 없으면 심벌을 넣지 않음 (억지 삽입 금지)"
+  - "불릿 대체 선두 마커로 텍스트 앞에 놓을 때는 글자와 공간 확보 — 카드 제목(flex)은 components.css gap 이 자동 처리, 리스트는 마크다운 공백 유지. 정책: md-m2slide-rules.md '마커 간격'"
 
 # 상황별 권장 심벌 — 에이전트는 situation 의미 매칭 후 primary 우선, 필요 시 alts에서 선택
 usages:

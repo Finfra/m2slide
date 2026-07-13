@@ -19,6 +19,7 @@ principles:
   - "공식 강의체 데크는 절제 (슬라이드당 1~2개), 캐주얼 튜토리얼은 허용 폭 넓음"
   - "제목·핵심 포인트·상태 표시 위주. 본문 문장 중간 남발 금지"
   - "situation에 매칭되는 이모지가 없으면 넣지 않음 (억지 삽입 금지)"
+  - "불릿 대체 선두 마커로 텍스트 앞에 놓을 때는 이모지 뒤에 공백 1칸을 유지해 글자와 공간 확보 (예: '🥚 계란'). 정책: md-m2slide-rules.md '마커 간격'"
   - "같은 의미는 데크 전체에서 동일 이모지로 통일"
 
 # 상황별 권장 이모지 — 에이전트는 situation 의미 매칭 후 primary 우선, 필요 시 alts에서 선택
@@ -77,6 +78,20 @@ usages:
   - situation: 학습·교육
     primary: "📚"
     alts: ["🎓", "✏️"]
+  - situation: 시연·라이브 데모
+    primary: "🖥️"
+    alts: []
+  - situation: 실습·직접 따라 하기
+    primary: "🙋"
+    alts: []
+
+# 고정 마커 치환 — 소스 텍스트의 괄호 마커를 아래 형태로 통일 렌더 (Projects 실사용 관행 기반, 2026-07-12)
+# 소비처(md-builder·agenda-designer 등)는 슬라이드 제목·불릿에서 마커 발견 시 output 형태로 변환
+marker_conversions:
+  - marker: "(시연)"
+    output: "🖥️ 시연"
+  - marker: "(실습)"
+    output: "🙋 실습"
 
 # 톤별 사용 가이드 — data/md-builder/styles.yml 의 styles[].tone 와 연동
 tone_guide:

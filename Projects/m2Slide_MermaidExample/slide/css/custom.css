@@ -223,8 +223,10 @@
   --htmlart-fg: var(--m2-text, var(--kn-text, #ffffff));
   --htmlart-box-bg: rgba(0, 0, 0, 0.045);
   --htmlart-surface: var(--m2-surface, #f4f4f5);            /* 노드 박스 불투명 배경 — d3 연결선이 박스 뒤로 가려지게 (Issue195) */
-  --htmlart-box-border: rgba(0, 0, 0, 0.16);
-  --htmlart-arrow: rgba(0, 0, 0, 0.5);
+  /* Issue274: 선/화살표/테두리 색 = config override(--m2-htmlart-line) > 테마 기본(--m2-line) > 하드코딩 fallback.
+     라이트 테마(default·default_lec)는 --m2-line 미설정 → 기존 rgba 유지(회귀 0). 다크 테마는 --m2-line 로 밝은 선색 지정. */
+  --htmlart-box-border: var(--m2-htmlart-line, var(--m2-line, rgba(0, 0, 0, 0.16)));
+  --htmlart-arrow: var(--m2-htmlart-line, var(--m2-line, rgba(0, 0, 0, 0.5)));
   font-size: 0.92em;
   /* Issue197/198: .contents-body(flex column)의 bullet 다음 잔여 세로 공간을 도해가 채움
      — .media-container·.component-container 와 동일한 콘텐츠 컨테이너 fill 계약.

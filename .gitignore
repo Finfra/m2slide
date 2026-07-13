@@ -183,3 +183,7 @@ Projects/*/refs/
 !/Projects/m2Slide_MermaidExample/slide/*.epub
 !/docs/m2Slide/m2Slide.epub
 !/docs/m2Slide_MermaidExample/*.epub
+
+# Projects_deck/ 는 독립 git repo (github.com/finfra/m2slide-deck) — embedded repo 회피.
+# m2slide 본체는 이 폴더를 추적하지 않음. 설계: _doc_arch/deck-repo.md
+Projects_deck/
