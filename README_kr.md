@@ -520,4 +520,7 @@ current_project: LlmAndVibeCoding
 
 ## 라이선스
 
-MIT License
+이중 라이선스 — 전문은 [LICENSE.md](./LICENSE.md) 참조.
+
+* **무료 (CC BY 4.0)**: m2slide로 생성한 프레젠테이션은 **첫 장과 마지막 장**에 표기 문구 **"Powered by finfra.kr, Made by m2slide"** 를 유지해야 합니다.
+* **유료 (상업 라이선스)**: 해당 표기를 제거한 프레젠테이션을 생성·배포하려면 유료 상업 라이선스가 필요합니다. 문의: <finfra@gmail.com> / <https://finfra.kr>
