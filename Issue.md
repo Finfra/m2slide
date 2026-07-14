@@ -24,22 +24,6 @@
 
 # 🔥 진행 중
 
-## Issue292. 라이선스 표기 자동 삽입 — 첫 장·마지막 장 고정 뱃지 + 대비 규칙 (등록: 2026-07-14)
-* 목적: LICENSE.md 이중 라이선스 정책("모든 산출물의 첫 장·마지막 장에 'Powered by finfra.kr, Made by m2slide' 표기 유지 의무", CC BY 4.0 근거)을 실제 빌드 산출물에 강제 반영. 현재는 문서(LICENSE.md)에만 명시되어 있고 빌드 코드에는 미구현 — 사용자 확인(2026-07-14 hub 폼 질의) 결과 "룰(rule)로 고정" = 빌드 시 자동 삽입·누락 시 자동 보정하는 강제 정책으로 구현하기로 확정. 위치는 자유(테마별 디자인 재량)이나 존재·최소 크기·대비는 규칙으로 강제.
-* plan: `_doc_work/plan/license-attribution_plan.md`
-* task: `_doc_work/tasks/license-attribution_task.md`
-* 상세:
-    - 대상: 현재 생성된 모든 프로젝트(`Projects/*`, z_done 제외)에 소급 적용 — 각 프로젝트 재빌드로 첫 장·마지막 장에 뱃지 반영
-    - 사용자 확정 사양 (2026-07-14 채팅 확인):
-        1. 위치는 자유 — 강제 고정 위치(bar)나 전용 슬라이드(credit roll) 아님. 테마별로 자연스러운 위치 선택
-        2. 빠지면(없으면) 자동으로 추가하는 빌드 규칙 — 매 빌드마다 첫 슬라이드·마지막 슬라이드 검증 + 누락 시 주입
-        3. 특정 크기 이하로 줄어들지 않는 최소 크기 제약 (참조용 텍스트 크기 이상)
-        4. 기본 크기는 디자인을 해치지 않는 범위에서 결정 (최종 디자인은 사용자 컨펌)
-        5. 배경색·글자색 구분(대비) 규칙 — 사용자 초안(채도 diff ≥50%, 명도 diff ≥50%, 색상差 ≥10°, 회색 예외)은 "더 표준적인 방법 있으면 적용" 승인 받음 → WCAG 2.1 contrast ratio(≥4.5:1, relative luminance 공식) 표준 채택 예정 (설계 문서에서 최종 확정)
-        6. `license_attribution: false`로 제거 시 "위법(라이선스 위반) 소지" 경고를 빌드 로그에 출력 가능하게 (하드 차단 아닌 경고 — 로컬 오픈소스 툴 특성상 기술적 강제는 불가, 경고로 인지시킴)
-    - 여러 프로젝트(테마별: default·default_lec·default_dark 등)에서 디자인 검토 필수 — 전체 소급 적용 전 대표 샘플로 사용자 시각 컨펌 선행
-    - nPTiR 전체 사이클 명시 트리거(triage 무관 plan→task→issue→구현→사용자 컨펌→report)
-
 # 📕 중요
 
 # 📙 일반
@@ -47,6 +31,27 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue292. 라이선스 표기 자동 삽입 — 첫 장·마지막 장 뱃지 + 대비 규칙 (등록: 2026-07-14, 해결: 2026-07-14, commit: 659f9f1) ✅
+* 목적: LICENSE.md 이중 라이선스 정책("모든 산출물의 첫 장·마지막 장에 'Powered by finfra.kr, Made by m2slide' 표기 유지 의무", CC BY 4.0 근거)을 실제 빌드 산출물에 강제 반영.
+* plan: `_doc_work/plan/license-attribution_plan.md`
+* task: `_doc_work/tasks/license-attribution_task.md`
+* 설계: `_doc_arch/license-attribution.md`
+* 최종 확정 사양 (2026-07-14 사용자 시각 컨펌 2회):
+    1. 위치: 하단 중앙 (`left:50%; transform:translateX(-50%);`) — 초안(우하단)에서 사용자 피드백으로 변경
+    2. 자동 보정: 빌드마다 첫/마지막 top-level section(agenda.html 등 standalone 페이지 포함)에 자동 삽입, 삽입 후 자체 검증(`console.error` fail-loud)
+    3. 크기: 하한 `--m2-license-fs-min: 0.55em` / 기본 `--m2-license-fs: 0.65em`, `max()`로 축소 무력화
+    4. 색상: 전용 변수 `--m2-license-fg`(진한회색 — light `#5a5a5a` / dark `#9fa1b2`) — 순수 `--kn-text` 재사용안에서 "너무 진하지 않게" 피드백으로 분리. `--kn-accent` 저알파 `text-shadow`로 은은한 노랑 그림자 추가
+    5. 대비: WCAG 2.1 contrast ratio(≥4.5:1) 채택 — 사용자 초안(채도/명도/색상差 규칙)보다 표준적인 방법으로 대체 승인받음. `--lint-license` subcommand 신설, 전 테마(default/default_lec/default_dark) 6.7~6.9:1로 통과
+    6. `license_attribution: false` 시 빌드 로그에 위법 소지 경고 (하드 차단 아닌 warn)
+* 구현 명세:
+    - `lib/config.js`: `licenseAttribution` 파싱 + false 시 경고 로그
+    - `lib/generate-slides.js`: 첫/마지막 section 판정(chapter/single 분기) + `injectLicenseBadge`/`verifyLicenseBadge` (reveal 덱 + standalone 페이지 양쪽 대응)
+    - `theme/_shared/components.css`: `.m2-license-badge` 스타일, `theme/default_dark/slide.css`: `--m2-license-fg` override
+    - `lib/lint-license.js` + `m2slide.sh --lint-license`: 테마별 WCAG 대비 자동 검증
+    - `_config.org.yml`·`lib/dev-server/server.py`·`_doc_arch/config-gui.md`: `license_attribution` 키 4곳 동기화
+    - 19개 활성 프로젝트(`Projects/*`, `_*`/`z_*` 제외) 전체 재빌드 — `--lint-deployment`·`--lint-license` 통과 확인
+* 검증: 대표 샘플(default/default_lec/default_dark × single/chapter) iframe 실시간 검토 페이지로 사용자 2회 시각 컨펌(위치·크기·색 조정 1회 반영 후 최종 승인) → 전체 소급 적용
 
 # ⏸️ 보류
 
