@@ -1,0 +1,192 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://finfra.kr/m2slide/deck-ir.schema.json",
+  "title": "m2slide Deck IR",
+  "description": "m2slide 가 한 덱 소스에서 export 하는 중간표현(IR). m2unity 등 대체 출력 백엔드가 md 재파싱 없이 소비하는 계약 SSOT. 정본: _doc_arch/m2unity-contract.md.",
+  "type": "object",
+  "required": ["irVersion", "deck"],
+  "additionalProperties": false,
+  "properties": {
+    "irVersion": {
+      "type": "string",
+      "description": "IR 계약 버전 (semver major.minor). 골든 대조 시 반드시 일치.",
+      "pattern": "^[0-9]+\\.[0-9]+$"
+    },
+    "generator": {
+      "type": "string",
+      "description": "생성기 식별 (ex: m2slide@0.7.0). 메타 필드 — 골든 대조 전 정규화로 제거."
+    },
+    "exportedAt": {
+      "type": "string",
+      "description": "export 타임스탬프(ISO8601). 메타 필드 — 골든 대조 전 정규화로 제거."
+    },
+    "deck": {
+      "type": "object",
+      "required": ["meta", "chapters"],
+      "additionalProperties": false,
+      "properties": {
+        "meta": { "$ref": "#/definitions/deckMeta" },
+        "chapters": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/definitions/chapter" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "deckMeta": {
+      "type": "object",
+      "required": ["title", "mode"],
+      "additionalProperties": true,
+      "description": "덱 수준 메타. loadProjectMeta(config.js) + 슬라이드 소스 frontmatter 에서 취합. 나열 외 운영 필드(instructor_contact, part_subtitle, version_badge 등)는 additionalProperties 로 허용.",
+      "properties": {
+        "title": { "type": "string" },
+        "subtitle": { "type": ["string", "null"] },
+        "author": { "type": ["string", "null"], "description": "instructor_name 매핑" },
+        "version": { "type": ["string", "null"] },
+        "lectureDate": { "type": ["string", "null"] },
+        "theme": { "type": "string", "description": "config 해석 후 실제 적용 theme (frontmatter theme 아님)" },
+        "mode": { "type": "string", "enum": ["single", "chapter"] }
+      }
+    },
+    "chapter": {
+      "type": "object",
+      "required": ["id", "title", "slides"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "description": "소스 파일 stem (chapter mode) 또는 단일 파일 stem (single mode)" },
+        "title": { "type": "string" },
+        "slides": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/slide" }
+        }
+      }
+    },
+    "slide": {
+      "type": "object",
+      "required": ["index", "directives", "elements"],
+      "additionalProperties": false,
+      "properties": {
+        "index": { "type": "integer", "minimum": 0, "description": "챕터 내 0-base 순서 (소스 `\\n---\\n` split 순)" },
+        "title": { "type": ["string", "null"], "description": "편의 필드 — elements 의 첫 heading 텍스트 파생. 없으면 null" },
+        "directives": { "$ref": "#/definitions/directives" },
+        "elements": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/element" }
+        },
+        "notes": { "type": ["string", "null"], "description": "reveal.js `Note:` 발표자 노트. 없으면 null" }
+      }
+    },
+    "directives": {
+      "type": "object",
+      "description": "slide-parser.js extractDirectives() 출력과 1:1. 필드 추가·삭제는 slide-parser 와 동기.",
+      "required": [
+        "layout", "transition", "transitionSpeed", "backgroundColor",
+        "backgroundTransition", "backgroundImage", "backgroundSize",
+        "autoAnimate", "autoslide", "noteId"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "layout": { "type": ["string", "null"] },
+        "transition": { "type": ["string", "null"] },
+        "transitionSpeed": { "type": ["string", "null"] },
+        "backgroundColor": { "type": ["string", "null"], "description": "hex 는 # 접두 정규화 후 값" },
+        "backgroundTransition": { "type": ["string", "null"] },
+        "backgroundImage": { "type": ["string", "null"] },
+        "backgroundSize": { "type": ["string", "null"] },
+        "autoAnimate": { "type": "boolean" },
+        "autoslide": { "type": ["integer", "null"] },
+        "noteId": { "type": ["string", "null"] }
+      }
+    },
+    "element": {
+      "type": "object",
+      "required": ["type"],
+      "description": "슬라이드 본문 블록. 닫힌 집합(heading/text/list/table/code/image) + component escape hatch.",
+      "oneOf": [
+        {
+          "properties": {
+            "type": { "const": "heading" },
+            "level": { "type": "integer", "minimum": 1, "maximum": 6 },
+            "text": { "type": "string" }
+          },
+          "required": ["type", "level", "text"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "text" },
+            "text": { "type": "string" }
+          },
+          "required": ["type", "text"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "list" },
+            "ordered": { "type": "boolean" },
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["text", "level"],
+                "additionalProperties": false,
+                "properties": {
+                  "text": { "type": "string" },
+                  "level": { "type": "integer", "minimum": 0 }
+                }
+              }
+            }
+          },
+          "required": ["type", "ordered", "items"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "table" },
+            "headers": { "type": "array", "items": { "type": "string" } },
+            "align": {
+              "type": "array",
+              "items": { "type": "string", "enum": ["left", "center", "right"] }
+            },
+            "rows": {
+              "type": "array",
+              "items": { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          "required": ["type", "headers", "rows"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "code" },
+            "lang": { "type": ["string", "null"] },
+            "content": { "type": "string" }
+          },
+          "required": ["type", "content"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "image" },
+            "src": { "type": "string" },
+            "alt": { "type": ["string", "null"] }
+          },
+          "required": ["type", "src"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "component" },
+            "kind": { "type": "string", "description": "chart|map|d3|react|p5|model3d|wordart|mermaid|ditaa|text-wireframe|htmlart|cards|columns 등" },
+            "raw": { "type": "string", "description": "원본 fenced/fenced-div 본문 — 세분 파싱 전까지 pass-through" },
+            "attrs": { "type": "object", "additionalProperties": true }
+          },
+          "required": ["type", "kind", "raw"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

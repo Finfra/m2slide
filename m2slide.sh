@@ -30,6 +30,8 @@ Options:
   --epub            EPUB 파일도 함께 생성
   --pdf             PDF 파일도 함께 생성 (decktape 사용)
   --pptx            PowerPoint 파일도 함께 생성 (pandoc 사용)
+  --export-ir       덱 IR(JSON) export (m2unity 계약, stub — _doc_arch/m2unity-contract.md)
+  --unity           IR export 후 m2unity 백엔드로 위임 (stub)
   -h, --help        이 도움말 출력 후 종료
 
 Project detection priority:
@@ -76,6 +78,24 @@ if [ "$1" = "--serve" ]; then
     "")       echo "Usage: $(basename "$0") --serve {start|stop|status|restart}" >&2; exit 1 ;;
     *)        echo "❌ Error: Unknown --serve subcommand: $2" >&2; exit 1 ;;
   esac
+fi
+
+# Subcommand: --export-ir / --unity (Issue286 — m2unity 출력 백엔드 계약)
+# 계약 정본: _doc_arch/m2unity-contract.md. 현재 인터페이스 정의 + stub 단계.
+# exporter 실동 구현은 element-level 구조화 파서를 요하므로 계약 ① 확정 후 별도 이슈.
+if [ "$1" = "--export-ir" ] || [ "$1" = "--unity" ]; then
+  cat >&2 <<EOF
+⚠️  $1 은 인터페이스 정의(stub) 단계입니다 (Issue286).
+
+계약 정본:  _doc_arch/m2unity-contract.md
+IR 스키마:  data/m2unity/deck-ir.schema.json
+골든 덱:    data/m2unity/golden-deck/golden.md + golden.ir.json
+
+실동 exporter 구현은 계약 ① 확정 후 별도 이슈로 진행합니다.
+  --export-ir [project]        → Projects/<Name>/res/<Name>.ir.json (예정)
+  --unity [project] [-- args]  → IR export 후 m2unity.sh --deck <ir> 위임 (예정)
+EOF
+  exit 2
 fi
 
 # Subcommand: --lint-data (Issue247 Phase D-3)
@@ -220,6 +240,13 @@ if [ "$1" = "--lint-deployment" ]; then
   fi
   echo "✅ No deployment violations"
   exit 0
+fi
+
+# Subcommand: --lint-license (Issue292)
+# Verify --kn-text vs .reveal background WCAG contrast per theme (license badge reuses --kn-text).
+if [ "$1" = "--lint-license" ]; then
+  node "$SCRIPT_DIR/lib/lint-license.js"
+  exit $?
 fi
 
 # Parse options

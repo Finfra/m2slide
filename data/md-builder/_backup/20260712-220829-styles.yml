@@ -1,0 +1,641 @@
+# md-builder v2 SSOT — 본문 작성 스타일·슬라이드 유형별 패턴·콘텐츠 제한·검증 게이트·체크포인트.
+# 사용자가 본 파일을 수정하면 SCAR 본문 변경 없이 즉시 반영됨 (skill이 호출 시점에 매번 Read).
+# Issue171 (Issue169 info-filler 패턴 적용).
+---
+version: 2
+
+# ============================================================================
+# 1. 분야별·청중별 본문 스타일 (tone → 본문 어조·구조)
+# ============================================================================
+styles:
+  - id: formal_lecture
+    label: 공식 강의체
+    tone: 강의
+    person: 3인칭
+    rules:
+      - "~함, ~임 (줄임체)"
+      - "전문 용어 영어 표기 유지"
+      - "예시는 'ex)' 사용"
+      - "강조는 **bold**, 인용은 > blockquote"
+    forbidden:
+      - "여러분"
+      - "오늘"
+      - "Let's"
+
+  - id: casual_tutorial
+    label: 캐주얼 튜토리얼
+    tone: 튜토리얼
+    person: 2인칭 허용
+    rules:
+      - "~해보세요, ~하면 됩니다"
+      - "실습 결과 스크린샷 권장"
+      - "코드 블록 언어 지정 필수"
+    encouraged:
+      - "단계별 번호"
+      - "체크포인트 질문"
+
+  - id: keynote_punchy
+    label: 키노트 강조체
+    tone: 내레이션
+    person: 3인칭
+    rules:
+      - "한 슬라이드 = 한 메시지"
+      - "헤드라인 6어 이내"
+      - "본문 3 bullet 이하"
+    forbidden:
+      - "장황한 설명"
+      - "여러 단락"
+
+  - id: conversational
+    label: 대화형
+    tone: 대화
+    person: 1·2인칭 혼용
+    rules:
+      - "질문→답변 구조"
+      - "구어체 일부 허용"
+      - "예시 다수 (사례 위주)"
+
+# tone → style 자동 매핑 (Info.md tone과 매칭)
+style_selection_rules:
+  - if: "tone == 강의"
+    use: formal_lecture
+  - if: "tone == 튜토리얼"
+    use: casual_tutorial
+  - if: "tone == 내레이션"
+    use: keynote_punchy
+  - if: "tone == 대화"
+    use: conversational
+  - default: formal_lecture
+
+# ============================================================================
+# 2. 슬라이드 유형별 본문 패턴
+# ============================================================================
+slide_patterns:
+  - id: intro_greeting
+    label: 도입·인사
+    triggers: [도입, 인사, 오프닝, opening, intro]
+    body_template: |
+      ## {slide_title}
+
+      * {welcome_message}
+      * **학습 목표**
+          - {goal_1}
+          - {goal_2}
+          - {goal_3}
+
+  - id: concept_explain
+    label: 개념 설명
+    triggers: [개념, 정의, concept, definition]
+    body_template: |
+      ## {slide_title}
+
+      * **정의**: {definition}
+      * **비유**: {analogy}
+      * **예시**: {example}
+
+  - id: comparison_table
+    label: 비교·대조
+    triggers: [비교, 대조, 차이, comparison, vs]
+    body_template: |
+      ## {slide_title}
+
+      | 항목 | A | B |
+      | :--- | :--- | :--- |
+      | {row_1_label} | {a_1} | {b_1} |
+      | {row_2_label} | {a_2} | {b_2} |
+
+  - id: process_flow
+    label: 프로세스·흐름
+    triggers: [흐름, 단계, 순서, flow, process, pipeline]
+    body_template: |
+      ## {slide_title}
+
+      ```mermaid
+      graph LR
+        A[{step_1}] --> B[{step_2}] --> C[{step_3}]
+      ```
+
+      * {note_1}
+      * {note_2}
+
+  - id: code_command
+    label: 코드·명령
+    triggers: [코드, 명령, command, code, example]
+    body_template: |
+      ## {slide_title}
+
+      ```{language}
+      {code_content}
+      ```
+
+      * **출력**: {output}
+
+  - id: result_screenshot
+    label: 산출물·결과
+    triggers: [결과, 산출물, 스크린샷, result, output]
+    body_template: |
+      ## {slide_title}
+
+      ![{alt_text}](./img/{screenshot}.png)
+
+      * {observation_1}
+      * {observation_2}
+
+  - id: summary_next
+    label: 정리·다음 단계
+    # 제목은 톤 무관 중립 고정 "핵심 요약" — 강의 편향 어휘("오늘 학습한 내용" 등) 생성 차단.
+    # triggers 에서도 강의 특화 어휘(학습한 내용) 제거, 복습/recap 은 범용 요약어라 유지.
+    triggers: [정리, 요약, 핵심, 다음, summary, conclusion, next, 복습, recap, review]
+    body_template: |
+      ## 핵심 요약
+
+      * **요약**
+          - {summary_1}
+          - {summary_2}
+          - {summary_3}
+      * **다음 단계**: {next_action}
+    layout_hint: summary   # Issue179: 학습 정리·요약 전용 layout (default_lec)
+
+  # Issue177: 강의 특화 패턴 — default_lec 번호 layouts 매핑 (chapter, exercise-small)
+  - id: chapter_intro
+    label: 챕터 진입 (학습 목표)
+    triggers: [챕터, Chapter, 학습 목표, 진입, 시작]
+    body_template: |
+      ## {chapter_title}
+
+      * **학습 목표**
+          - {goal_1}
+          - {goal_2}
+          - {goal_3}
+      * **선수 지식**: {prerequisites}
+    layout_hint: chapter
+
+  - id: exercise_check
+    label: 짧은 체크·Quiz
+    triggers: [체크, Check, Quiz, 퀴즈, 확인]
+    body_template: |
+      ## {check_title}
+
+      * {question_or_check}
+
+      > {hint_or_answer}
+    layout_hint: exercise-small
+
+  - id: qna_closing
+    label: Q&A·마무리
+    triggers: [qna, "q&a", 질의응답, 질문]
+    body_template: |
+      ## Q&A
+
+      * 질문 환영
+      * **연락처**: {instructor_contact}
+      * **자료**: {qr_url}
+
+  - id: exercise_closing
+    label: 실습 마무리
+    triggers: [실습, 연습, exercise, practice]
+    body_template: |
+      ## 실습
+
+      * **과제**: {exercise_task}
+      * **참고**: {exercise_hint}
+      * **제출**: {submission_method}
+
+  - id: wrap_narration
+    label: 내레이션 마무리
+    triggers: [마무리, 끝, closing, wrap]
+    body_template: |
+      ## 마무리
+
+      * {closing_message_1}
+      * {closing_message_2}
+
+# ============================================================================
+# 3. Info.md tone별 마지막 슬라이드 자동 추가 정책
+# ============================================================================
+# md-builder는 본문 채움이 원칙이나, tone별로 명시된 closing 슬라이드는
+# 마지막 H2 슬라이드 뒤에 append 허용 (header_preservation 예외 — closing_append 항목).
+# 사용자가 마지막 슬라이드를 직접 작성했으면(키워드 매칭 시) 중복 추가 안 함.
+closing_slide_policy:
+  enabled: true
+  detection:
+    skip_if_last_h2_matches_triggers: true   # 마지막 H2 제목이 closing pattern triggers 매칭 시 skip
+  tone_mapping:
+    - tone: 강의
+      append_pattern: qna_closing
+    - tone: 발표
+      append_pattern: qna_closing
+    - tone: 대화
+      append_pattern: qna_closing
+    - tone: 튜토리얼
+      append_pattern: exercise_closing
+    - tone: 내레이션
+      append_pattern: wrap_narration
+    - tone: 기타
+      append_pattern: null   # 추가 안 함
+  chapter_mode_target: last_chapter_only   # chapter mode 시 마지막 챕터에만 append
+  single_mode_target: end_of_file
+  variables_source:
+    instructor_contact: "frontmatter.instructor_contact || Info.md.instructor_contact"
+    qr_url: "frontmatter.qr_url || ''"
+    exercise_task: "Info.md.goals[-1] || ''"
+    exercise_hint: "''"
+    submission_method: "''"
+    closing_message_1: "Info.md.goals[0] || ''"
+    closing_message_2: "Info.md.goals[-1] || ''"
+
+# ============================================================================
+# 4. 콘텐츠 양 제한 (슬라이드 한 장당)
+# ============================================================================
+content_limits:
+  bullets_max: 7
+  bullets_min: 1
+  bullet_depth_max: 2
+  code_lines_max: 20
+  table_cols_max: 5
+  table_rows_max: 7
+  paragraph_sentences_max: 3
+  images_per_slide: 2
+
+# ============================================================================
+# 3-A. 슬라이드 노출 텍스트 위생 — 내부 추적 표기 금지
+# ============================================================================
+# 청중에게 보이는 텍스트(제목·본문·표)에 내부 이슈 추적 표기를 남기지 않는다.
+# 학습 사례 (2026-07-05, m2Slide_single_mode): 챕터 제목 "0. Chapter Divider 테스트 (Issue229)"
+# — 이슈 번호가 슬라이드에 그대로 노출되어 사용자 제거 요청. 이슈 추적은 Issue.md·git에 위임.
+slide_text_hygiene_policy:
+  forbidden_visible_patterns:
+    - regex: '\(?\bIssue[ _]?\d+(_\d+)?\)?'
+      reason: "내부 이슈 번호 — 슬라이드 노출 금지 (Issue.md·git이 추적 담당)"
+    - regex: '\bTODO\b|\bFIXME\b'
+      reason: "작업 마커 — 산출 슬라이드에 잔존 금지"
+  scope: "제목(H1~H6)·본문 bullet·표 셀 등 렌더 노출 텍스트. 코드블록 예제 내부는 예외"
+  apply_when: "md 생성·수정 시 상시. 발견 시 표기 제거 후 진행"
+
+# ============================================================================
+# 4-A. 마크다운 문법 교육 슬라이드 — 인라인 syntax literal preservation
+# ============================================================================
+# "Markdown 문법", "MDX 문법", "LaTeX syntax" 등 마크다운/마크업 문법 자체를
+# 교육 목적으로 표시하는 슬라이드는 syntax 가 렌더되어 사라지지 않도록
+# 반드시 백틱(`...`) 으로 wrap. 학습자가 raw syntax 를 봐야 함.
+inline_syntax_preservation:
+  trigger_titles:
+    - "*Markdown 문법*"
+    - "*Markdown syntax*"
+    - "*Markdown Example*"
+    - "*MDX 문법*"
+    - "*문법 - *"
+    - "*syntax*"
+    - "*Pandoc*"
+  patterns_to_wrap:
+    - regex: '\[[^\]]+\]\([^)]+\)'         # [name](url) inline link
+      wrap: '`...`'
+      reason: "auto-render → 링크 아이콘만 보이고 syntax 사라짐"
+    - regex: '!\[[^\]]*\]\([^)]+\)'         # ![alt](url) image
+      wrap: '`...`'
+      reason: "auto-render → 이미지로 변환 — syntax 학습 불가능"
+    - regex: '!\[[^\]]*\]\[[^\]]*\]'        # ![alt][ref] image ref
+      wrap: '`...`'
+      reason: "auto-render → 빈 이미지 또는 깨진 ref"
+    - regex: '<https?://[^>\s]+>'           # <http://...> autolink
+      wrap: '`...`'
+      reason: "브라우저가 unknown tag 로 인식 → 내용 숨김"
+    - regex: '<[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}>'
+      wrap: '`...`'
+      reason: "email autolink — 동일 사유"
+  scope: bullet_text + paragraph + table_cell  # 코드블록·source 영역 내부는 변환 금지
+  exception_marker: "<!-- raw-syntax-ok -->"   # 이 코멘트 직후 1줄은 wrap skip
+  rationale: |
+    학습 사례 (BasicKnowledgeForAI_small):
+      - 링크 슬라이드 `[name](URL)`, `[Google](http://google.com)` → 백틱 wrap 필요
+      - 이미지 슬라이드 `![이미지명][URL]`, `![logo](http://finfra.com/f/f.png)` → 백틱 wrap 필요
+      - 자동링크 `<http://example.com/>` → 백틱 wrap 필요 (markdown_syntax_cleanup 와 중복 안전망)
+
+# ============================================================================
+# 4-B. 작은 예시 이미지 (아이콘/로고) → raw <img> + max-width 인라인 style
+# ============================================================================
+small_inline_image_policy:
+  trigger:
+    role: example_logo
+    preceded_by_markers: ["ex)", "example:", "예)", "예시:"]
+    original_width_emu_max: 2000000     # ~2.1 inch 미만 = 작은 아이콘/로고
+  output_template: |
+    <img src="{img_path}" alt="{alt}" style="max-width:200px;display:block;margin:1em auto">
+  rationale: |
+    m2slide 기본 markdown img 는 부모 max-width 까지 늘어남. PPT 원본 비율이
+    작은 예시 아이콘이 슬라이드 전체 폭으로 늘어나면 어색. raw <img> + 인라인
+    style 로 시각 비율 보존.
+    학습 사례: BasicKnowledgeForAI_small 이미지 슬라이드 finfra 로고.
+
+media_enlarge_default_policy:
+  description: |
+    프로젝트 _config.yml에 `style.theContents.media_container_enlarge` 미지정 시
+    base.css 가 `original` 모드 적용 → 이미지가 자연 크기 max + container 100% 캡.
+    column 안 이미지는 column 좁은 폭에 비해 너무 작게 보임.
+  default_recommendation: width    # column 폭 100% + height auto — 가장 안정적
+  options:
+    original: "자연 크기 유지 (단, container 100% 캡) — 다중 이미지 슬라이드 과소"
+    width:    "width 100% + height auto — 비율 보존, column 폭 활용 (권장 default)"
+    height:   "section height 100% + flex column — 단일 큰 이미지 슬라이드 좋음, multi-col에서 bullet 가림 위험"
+    fit:      "object-fit:contain — 영역 채움 최대치, multi-col bullet 가림 위험"
+  apply_to: "_config.yml: style.theContents.media_container_enlarge"
+  rationale: |
+    'width' 가 column 내 multi-image 슬라이드에 가장 안정 — 비율 보존 + bullet 안 가림.
+    'fit'/'height' 는 단일 큰 이미지에 좋지만 column 안에서는 over-expand로 bullet 손실.
+    학습 사례: BasicKnowledgeForAI_small 순서없는목록 슬라이드 (s09_i1 portrait):
+      - fit:   image 너무 커져 bullet 텍스트가 영역 밖으로 밀려남
+      - width: column 폭 100% + 비율 보존, bullet 위 안정 표시
+
+tall_portrait_image_in_column_policy:
+  trigger:
+    image_aspect: "height > width * 1.3"  # 세로형 (portrait)
+    in_pandoc_column: true                 # ::: {.column} 안
+    sibling_bullet_above: true             # 같은 column 안에 bullet이 위에 있음
+  output_template: |
+    <img src="{img_path}" alt="{alt}"
+         style="max-width:100%;max-height:80vh;height:auto;display:block;margin:0.2em auto">
+  rationale: |
+    column 안 세로형 이미지가 기본 max-width:100% 로 렌더되면 column 폭에 맞춰
+    높이가 증가 → slide 영역 초과로 위 bullet text overflow.
+    raw <img> + max-width:100% + max-height:80vh + height:auto 조합으로:
+      - column 폭 최대한 활용 (width 100%)
+      - height는 width 비율로 자동 계산 (auto)
+      - 단, 80vh 초과 시 height 캡 (bullet text 안 가림)
+    너무 작게 캡하면(60vh 등) 이미지 손바닥만 해져서 가독성 낮음 — 80vh 권장.
+    학습 사례: BasicKnowledgeForAI_small 순서없는목록 슬라이드 (s09_i1 596x910 portrait).
+  safe_alternatives:
+    - "max-height 70vh~85vh (슬라이드 layout·header 높이에 따라 조정)"
+    - "max-width:300px 등 절대값 (이미지 작아져도 OK인 경우 — 비권장)"
+
+# ============================================================================
+# 4-C. 긴 단순 리스트 (>=12 short items) → multi-column 분할
+# ============================================================================
+long_list_multi_column_policy:
+  trigger:
+    item_count_min: 12
+    avg_words_per_item_max: 2
+    item_type: bullet_or_short_paragraph
+  column_count_by_total:
+    "12-18": 2
+    "19-35": 3
+    "36-": 4
+  output_template: |
+    ::: columns
+    ::: {.column width="{100/N}%"}
+    * {items_1}
+    :::
+    ::: {.column width="{100/N}%"}
+    * {items_2}
+    :::
+    ... (N 컬럼)
+    :::
+  rationale: |
+    명령어 리스트·키워드 리스트 등 짧은 단어 N개를 단일 컬럼 세로 나열하면
+    스크롤 발생 + 시각 밀도 낮음. PowerPoint multi-column 텍스트박스 패턴 대응.
+    학습 사례: BasicKnowledgeForAI_small 명령어 리스트 슬라이드 (30 items → 3-col).
+
+# ============================================================================
+# 4-C-2. 대비형 2 라벨 그룹 → 2단 columns (예/한계, 장점/단점 등)
+# ============================================================================
+dual_group_column_policy:
+  description: |
+    한 슬라이드에 서로 대비되는 라벨 그룹 2개가 각각 bullet 목록을 가지면
+    세로 스택 대신 Pandoc `::: columns` 2단으로 저작. 좌우 대비가 시각적으로
+    즉시 읽히고 세로 스크롤/여백 낭비를 막음.
+    학습 사례(2026-07-02): LlmFlow 01-concepts "② API — 예 / 한계" 슬라이드가
+    예 2개 + 한계 3개를 세로 스택 → 2단(좌 예 / 우 한계)으로 재구조화.
+  trigger:
+    # 아래 중 하나라도 해당하면 2단 후보
+    title_slash_pattern: true          # 제목이 "A / B" 형태 (예 / 한계, 장점 / 단점, 전 / 후)
+    dual_labeled_bullet_groups: true   # 본문에 라벨 2개(예:/한계:, 장점/단점 등) 각각 bullet 그룹 보유
+    label_pairs:                       # 대표 대비 라벨쌍 (완전 목록 아님 — 대비 의미면 확장)
+      - [예, 한계]
+      - [장점, 단점]
+      - [정의, 예]
+      - [전, 후]
+      - [before, after]
+      - [Pros, Cons]
+  constraints:
+    max_items_per_group: 6             # 그룹당 6개 초과면 2단이 좁아 가독성 저하 → 슬라이드 분할 고려
+    balance_hint: true                 # 좌우 항목 수 크게 불균형(3배 이상)이면 단일 스택도 허용
+  output_template: |
+    ## {slide_title}
+
+    ::: columns
+    ::: {.column width="50%"}
+    ### {label_a}
+
+    * {a_items}
+    :::
+    ::: {.column width="50%"}
+    ### {label_b}
+
+    * {b_items}
+    :::
+    :::
+  rationale: |
+    comparison_table(행/열 표) 패턴은 정형 항목별 비교에 적합하나, 각 측이
+    자유 bullet 목록이면 표보다 2단 컬럼이 자연스러움. 비교·대조 triggers
+    (비교/대조/vs)에 안 걸리는 "예/한계"류 슬래시 제목·대비 라벨 케이스를 커버.
+
+# ============================================================================
+# 4-D. 마크다운 syntax 본문 → 코드블록 wrap (literal 표시 보장)
+# ============================================================================
+backtick_marker_conflict_policy:
+  description: |
+    bullet line 내부 backtick에 markdown bullet marker (`*`/`-`/`+`) 가 단독 토큰으로
+    들어가면 m2slide parser가 `*` 를 nested bullet 시작으로 오해석하여 li 비워짐.
+    학습 사례: `* \`*\` \`-\` \`+\` 등을 사용` → `<li class="bullet-dot">` 빈 텍스트.
+  forbidden_inline_patterns:
+    - regex: '`\s*[\*\-\+]\s*`'
+      reason: "단일 marker 백틱 (`* `, `- `, `+ `) — bullet parser 충돌"
+  safe_alternatives:
+    - "단일 백틱 그룹: `* - +` (전체 marker 묶음)"
+    - "한국어 표현: 별표·하이픈·플러스"
+    - "HTML entities: &ast;, &hyphen;, &plus;"
+    - "백슬래시 escape: \\*, \\-, \\+"
+  apply_when: "slide.title 이 '문법'·'syntax' 포함 + bullet text 에 marker 설명"
+
+raw_markdown_syntax_block_policy:
+  trigger_slide_title_patterns: ["*문법*", "*syntax*"]
+  trigger_body_patterns:
+    - regex: '^\|[^|]+\|[^|]+\|'    # pipe table header
+      requires_separator_row: true
+    - regex: '^#{1,6}\s'             # H1-H6 markdown header syntax
+    - regex: '^>\s'                  # blockquote syntax
+    - regex: '^\d+\.\s'              # numbered list syntax
+    - regex: '^[*-]\s'               # bullet list syntax (단, slide 본문 bullet과 구분 필요)
+  output_template: |
+    ```
+    {body_text}
+    ```
+  scope_exception: "이미 코드블록 안 / fenced div 'source' / frontmatter"
+  rationale: |
+    마크다운 문법 자체를 가르치는 슬라이드 본문에 pipe table·헤더 syntax 등이
+    raw text 로 있으면 markdown parser 가 자동 렌더 → syntax 사라짐.
+    코드블록 wrap 으로 literal 보존.
+    학습 사례: BasicKnowledgeForAI_small html삽입 슬라이드 pipe table source.
+
+# ============================================================================
+# 5. md 규칙 준수 (3-tier — 글로벌 + 슬라이드 공통 + m2slide 특화)
+# ============================================================================
+md_rules_compliance:
+  - source: "~/.claude/rules/md-rules.md"
+    apply: [frontmatter, bullet, table]
+  - source: "~/.claude/rules/md-slide-rules.md"
+    apply: [slide_separator, h2_slide_title, code_block_language]
+  - source: ".claude/rules/md-m2slide-rules.md"
+    apply: [layout_meta_skip, slot_div, agenda_inline_link]
+  - source: ".claude/rules/release-date-rules.md"
+    apply: [release_date_auto_update]
+
+# ============================================================================
+# 6. 사용자 검토 체크포인트 (chapter mode 챕터별 / single mode 전체 1회)
+# ============================================================================
+checkpoint:
+  chapter_mode:
+    per_chapter: true
+    template: |
+      챕터 {n} ({chapter_path}) 본문 작성 완료. 검토 요청.
+
+      승인 → 다음 챕터
+      수정 요청 → 사용자 피드백 반영 후 재작성
+      중단 → 작업 보류 (다음 호출 시 재개)
+  single_mode:
+    once_after_all: true
+    template: |
+      전체 슬라이드 본문 작성 완료. 검토 요청.
+
+      승인 → 단계 5 media-creater로 진행
+      수정 요청 → 피드백 반영 후 재작성
+  skip_flag: "--no-checkpoint"
+  on_reject:
+    action: ask_user_feedback
+    max_iterations: 3
+
+# ============================================================================
+# 7. 빌드 검증 게이트 (lint + build)
+# ============================================================================
+validation_rules:
+  build_lint:
+    command: "./run.sh --lint-layouts"
+    on_failure:
+      retry_count: 1
+      auto_fix: true
+      escalate_to_user_after: 2
+  build_compile:
+    command: "./m2slide.sh {project_name}"
+    on_failure:
+      retry_count: 0
+      escalate_to_user: true
+    # 자기 검증용 빌드 표식 (사용자 혼동 방지)
+    # build_compile은 최종 산출물이 아니라 md-builder 자기 검증용 빌드. 사용자가
+    # slide/*.html을 열었을 때 최종본으로 오인하지 않도록 첫 슬라이드에 표식 주입.
+    verification_marker:
+      enabled: true
+      placement: first_slide          # 첫 파일의 첫 슬라이드 (single·chapter 모두 첫 .md)
+      mechanism: temp_frontmatter     # 소스 .md frontmatter에 임시 플래그 주입 → 빌드 → 제거
+      flag_key: build_verification    # frontmatter `build_verification: true`
+      banner_text: "🔧 검증용 빌드 — md-builder self-verification (최종본 아님)"
+      banner_slot: subtitle           # cover/contents의 subtitle 영역에 append (기존 subtitle 보존)
+      steps:
+        - "빌드 직전: 첫 .md frontmatter에 `build_verification: true` 임시 주입 + 첫 슬라이드 본문 최상단에 banner_text 1줄 prepend"
+        - "build_compile.command 실행 → slide/*.html 생성 (첫 슬라이드에 표식 노출)"
+        - "content_checks 통과 + 사용자 검토 승인 확인"
+        - "표식 제거: frontmatter `build_verification` 키 삭제 + banner_text 줄 삭제 → 최종 빌드 1회 재실행"
+      removal_condition: "content_checks 전부 통과 AND 사용자 승인(checkpoint) 완료"
+      skip_if: "--no-checkpoint 지정 시에도 표식은 주입하되, 자동 승인 직후 제거 단계 즉시 수행"
+  content_checks:
+    - id: all_h2_slides_have_body
+      desc: "모든 H2 슬라이드에 본문 1줄 이상"
+    - id: frontmatter_release_date_today
+      desc: "frontmatter release_date가 오늘 날짜"
+    - id: slide_separator_consistency
+      desc: "슬라이드 사이 '---' 단독 줄 일관성"
+    - id: code_block_language_specified
+      desc: "모든 코드블록 언어 지정"
+    - id: image_alt_text_required
+      desc: "모든 이미지 alt 텍스트 존재"
+    - id: bullet_count_within_limit
+      desc: "한 슬라이드 bullets_max 이하"
+
+# ============================================================================
+# 8. 헤더 보존 정책 (agenda-designer 산출물 비파괴)
+# ============================================================================
+header_preservation:
+  preserve: [h1, h2]   # 단계 3에서 작성된 헤더 유지
+  modify_allowed: [body, h3_and_below]
+  scope: "본문(슬라이드 콘텐츠) + H3 이하 서브 헤더만 수정"
+  reject_if_h1_h2_changed: true
+  exceptions:
+    - id: closing_append
+      desc: "closing_slide_policy 정책에 따른 마지막 closing 슬라이드 H2 append 허용"
+      reference: closing_slide_policy
+
+# ============================================================================
+# 9. layout 메타 미주입 정책 (단계 6 layout-selector 책임)
+# ============================================================================
+layout_meta_policy:
+  inject_layout_directive: false  # #layout-* 메타는 본 skill 책임 아님
+  reason: "단계 6 layout-selector가 layout 메타 주입을 담당"
+
+# ============================================================================
+# 9.5. 구성요소 저작 문법 (Issue181 — 시각화 라이브러리)
+# ============================================================================
+# 인라인급 구성요소(수식·심벌)를 본문에 직접 작성할 때의 가이드.
+# fenced급(차트 등)은 단계 5 media-creater 책임 — 본 skill 미관여.
+# 설계 SSOT: _doc_arch/component-libraries.md
+component_syntax:
+  math:
+    block: "$$\\int_0^1 x\\,dx$$"
+    inline: "\\(E = mc^2\\)"
+    guide: "수식은 LaTeX. 블록 $$…$$ + 인라인 \\(…\\) 만 사용. 단일 $ 금지 (통화·셸 변수 충돌)."
+  icon:
+    inline: ":fa-rocket:  :fa-check-circle:"
+    guide: "Font Awesome 심벌. :fa-{이름}: → <i class=fa-solid fa-{이름}>. 강조·목록 마커 보조용."
+  cards:
+    block: "::: cards\n* **제목**\n  - 본문\n:::"
+    guide: "균질 항목 N개를 박스로 병렬 제시. 본문 없는 title-only 카드(`* **제목**`만)만 모인 블록은 빌드 시 가로 행으로 자동 렌더 → 한 줄 강조 문장 묶음(핵심 요약 등)에 카드 사용 OK."
+    line_break_alignment:
+      # 카드 여러 장을 나란히 놓을 때 제목 밴드 높이·본문 줄바꿈이 카드마다 달라
+      # 정렬이 어긋나 보이는 문제를 markdown 단계에서 `<br>` 로 명시 제어 (2026-07-02 GenContentProd 튜닝).
+      title_uniform_height:
+        rule: "제목이 `영문 (한글)` 형태면 괄호 앞에 `<br>` 삽입해 2줄 강제 → 모든 카드 제목 밴드 높이 균일"
+        example: "`* **Form (형식)**` → `* **Form<br>(형식)**`"
+        apply_when: "한 블록 내 제목 길이가 제각각이라 일부만 자동 wrap 되어 밴드 높이가 불균일할 때"
+      body_wrap:
+        rule: "본문이 좁은 카드 열에서 어색하게 wrap 되면 의미 단위(절·괄호 예시 앞)에 `<br>` 삽입해 줄바꿈 위치 통일"
+        example: "`- 응답받고자 하는 정보의 형태를 지정함<br>(예: 목록, 요약).`"
+      note: "`<br>` 은 카드 title(`<strong>`)·body 양쪽에서 실제 태그로 렌더됨(escape 안 됨). 과용 금지 — 정렬 목적에 한정."
+
+# ============================================================================
+# 9.6. PPT 변환 본문 보존 정책 (Issue233 — ppt2m2slide 학습)
+# ============================================================================
+# ppt2m2slide 가 PPT → markdown 변환할 때 md-builder 가 본문을 추가 가공하지 않도록 정의.
+# md-builder 는 신규 콘텐츠 생성 책임. ppt2m2slide 산출물은 *PPT 원본을 단순 옮긴 것*이므로
+# md-builder의 스타일 변환 (formal_lecture rules 등)을 적용하면 PPT 원본 어조가 손실됨.
+ppt_source_handling:
+  detect_origin: "Projects/<Name>/_pipeline/ppt-meta.yml 존재 여부로 PPT 변환 프로젝트 식별"
+  bypass_style_rules: true
+  reason: "PPT 원본의 어조·구조는 사용자가 의도한 결과물. md-builder 자동 변환 금지"
+  exceptions:
+    - "사용자가 명시적으로 '튜토리얼 톤으로 다시 작성' 등 재가공 요청 시 적용"
+# PPT 원본 강조 색상 (Issue233 — ppt2m2slide preservation.text_emphasis 와 짝)
+# md-builder가 markdown 본문 가공 시 PPT에서 추출된 색상 metadata를 보존.
+ppt_text_emphasis_handling:
+  enabled: false                        # ppt2m2slide preservation.text_emphasis.enabled 와 동조
+  inline_syntax: span_style             # `<span style="color:#XXXXXX">텍스트</span>`
+  fallback_bold: true                   # 색상 보존 미구현 시 **bold** 로 강조만 유지
+
+# ============================================================================
+# 10. 종료 보고 양식
+# ============================================================================
+report_template: |
+  ## md-builder 완료
+  * mode: {mode}
+  * 챕터/슬라이드 수: {chapter_count} / {slide_count}
+  * 적용 스타일: {style_id} ({style_label})
+  * 본문 작성 슬라이드: {filled_count}
+  * 빌드 검증: lint {lint_status} / build {build_status}
+  * 사용자 검토: {checkpoint_status}
+  * 다음 단계: 단계 5 media-creater (--no-checkpoint 미지정 시 사용자 승인 대기)

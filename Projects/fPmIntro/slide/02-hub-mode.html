@@ -1310,7 +1310,8 @@ body.agenda-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (standalone agenda letterbox). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   font-family: var(--global-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif);
 }
@@ -1324,7 +1325,8 @@ body.agenda-page {
     calc(100vh - 2 * var(--slide-outer-padding, 0px)),
     calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
   );
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (ratio frame). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   position: relative;
 }
@@ -1390,7 +1392,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783349009455">
+  <link rel="stylesheet" href="css/custom.css?v=1784042298392">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1474,6 +1476,15 @@ html.ratio-fill .agenda-frame {
     .reveal .controls .navigate-down.m2-enabled:hover {
       opacity: 0.7;
     }
+    /* 마름모(↑/↓) + 좌우(←/→) 화살표 색 — 페이지번호와 동일 체인.
+       nav_color(--m2-nav-color) > 테마 --kn-page-num-color(다크 자동 대응) > 폴백.
+       reveal 기본 arrow 색을 덮어써 다크 테마에서 화살표가 안 보이는 문제 해결 */
+    .reveal .controls .navigate-up,
+    .reveal .controls .navigate-down,
+    .reveal .controls .navigate-left,
+    .reveal .controls .navigate-right {
+      color: var(--m2-nav-color, var(--kn-page-num-color, rgba(0, 0, 0, 0.6))) !important;
+    }
     /* 페이지 번호 — 마름모 정중앙 */
     /* theme/default/slide.css:80 에서 .reveal .controls를 position: fixed + bottom:0 right:0 으로 viewport 기준 강제 */
     /* → .controls 안의 화살표 button 좌표가 viewport 우측 하단 기준이 됨. 페이지번호도 같은 기준 위해 fixed */
@@ -1485,7 +1496,8 @@ html.ratio-fill .agenda-frame {
       width: 60px !important;
       height: 14px !important;
       background: transparent !important;
-      color: rgba(0, 0, 0, 0.6) !important;
+      /* 색: nav_color(--m2-nav-color) 명시 > 테마 --kn-page-num-color(다크 테마 자동 대응) > 하드코딩 폴백 */
+      color: var(--m2-nav-color, var(--kn-page-num-color, rgba(0, 0, 0, 0.6))) !important;
       padding: 0 !important;
       font-size: 13px !important;
       text-align: center;
@@ -1594,6 +1606,7 @@ html.ratio-fill .agenda-frame {
   --slide-outer-padding: 0px;
   --slide-inner-padding: 0px;
   --m2-card-columns: auto-fit;
+  --m2-contents-justify: flex-start;
 ">
   <!-- Issue107: nav-up-btn 제거 — Reveal 기본 .controls .navigate-up/.navigate-down에 동작 위임 -->
   <!-- Issue55 Phase 7: #toc-container 오버레이 제거 — 마크맵은 _toc.html layout 내부 SVG 또는 agenda.html에서 렌더 -->
@@ -1615,7 +1628,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/2" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">hub 모드 — HTML 렌더 & Q&A 폼</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">hub 모드 — HTML 렌더 & Q&A 폼</h1>
   <div class="contents-body">
@@ -1650,13 +1663,13 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/3" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">..show — 응답을 HTML 문서로</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">..show — 응답을 HTML 문서로</h1>
   <div class="contents-body">
 
 <div class="m2-cols columns">
-<div class="m2-col column" style="flex: 0 0 40%; max-width: 40%">
+<div class="m2-col column" style="flex: 0 0 38.4%; max-width: 38.4%">
 <ul>
 <li class="bullet-dot">프롬프트에 <code>..show</code>를 붙이면 응답이 <strong>완전한 HTML 문서</strong>로 렌더됨</li>
 <li class="bullet-dot">표·코드블록·mermaid가 그대로 보기 좋게 표현됨</li>
@@ -1664,7 +1677,7 @@ html.ratio-fill .agenda-frame {
 <li class="bullet-dot">"바탕화면 폴더 내용은? ..show" → Simple Browser 패널에 렌더</li>
 </ul>
 </div>
-<div class="m2-col column" style="flex: 0 0 60%; max-width: 60%">
+<div class="m2-col column" style="flex: 0 0 57.6%; max-width: 57.6%">
 <div class="media-container"><img src="./img/screenshots/02-show-demo.png" alt="바탕화면 폴더 내용 질문에 ..show → Simple Browser 패널에 표·폴더 목록 HTML 렌더"></div>
 </div>
 </div></div>
@@ -1673,20 +1686,20 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/4" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">hub 개요 — 프로젝트·세션·문서 한눈에</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">hub 개요 — 프로젝트·세션·문서 한눈에</h1>
   <div class="contents-body">
 
 <div class="m2-cols columns">
-<div class="m2-col column" style="flex: 0 0 40%; max-width: 40%">
+<div class="m2-col column" style="flex: 0 0 38.4%; max-width: 38.4%">
 <ul>
 <li class="bullet-dot">hub 화면(<code>jm4.local:9876/hub-shell</code>)에서 프로젝트별 <strong>활성 세션</strong>·<strong>ActivityFeed</strong>·<strong>생성 문서</strong>를 모아 봄</li>
 <li class="bullet-dot">상단 요약은 <code>11 live session · 200 hub doc</code>처럼 현재 상태를 한 줄로 보여줌</li>
 <li class="bullet-dot">우측 ActivityFeed는 세션 완료·커밋 이벤트를 실시간으로 흘려줌</li>
 </ul>
 </div>
-<div class="m2-col column" style="flex: 0 0 60%; max-width: 60%">
+<div class="m2-col column" style="flex: 0 0 57.6%; max-width: 57.6%">
 <div class="media-container"><img src="./img/screenshots/02-hub-overview.png" alt="hub 개요 — 프로젝트별 세션 카드 그리드 + 우측 ActivityFeed 실시간 이벤트"></div>
 </div>
 </div></div>
@@ -1695,13 +1708,13 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/5" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Active sessions — 어느 프로젝트가 무슨 작업 중인지</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">Active sessions — 어느 프로젝트가 무슨 작업 중인지</h1>
   <div class="contents-body">
 
 <div class="m2-cols columns">
-<div class="m2-col column" style="flex: 0 0 40%; max-width: 40%">
+<div class="m2-col column" style="flex: 0 0 38.4%; max-width: 38.4%">
 <ul>
 <li class="bullet-dot">세션 그리드는 프로젝트 카드마다 <strong>지금 돌고 있는 세션 제목</strong>을 나열함</li>
 <li class="bullet-dot"><code>___pm(4)</code>·<code>fBoard(2)</code>·<code>m2slide(2)</code>처럼 프로젝트별 동시 세션 수가 뱃지로 보임</li>
@@ -1712,7 +1725,7 @@ html.ratio-fill .agenda-frame {
 Before → After: "채팅으로 흩어지던 진행 상황"이 "프로젝트별 세션 보드"로 모임
 </blockquote>
 </div>
-<div class="m2-col column" style="flex: 0 0 60%; max-width: 60%">
+<div class="m2-col column" style="flex: 0 0 57.6%; max-width: 57.6%">
 <div class="media-container"><img src="./img/screenshots/02-hub-sessions.png" alt="Active sessions 그리드 — 프로젝트별 세션 카드에 진행 중 작업 제목 표시"></div>
 </div>
 </div></div>
@@ -1721,7 +1734,7 @@ Before → After: "채팅으로 흩어지던 진행 상황"이 "프로젝트별 
 <section data-slide-hash="#/6" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">모바일·원격에서도 열람</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">모바일·원격에서도 열람</h1>
   <div class="contents-body">
@@ -1819,6 +1832,12 @@ Before → After: "채팅으로 흩어지던 진행 상황"이 "프로젝트별 
       ||(cp>=0xF900&&cp<=0xFAFF)||(cp>=0xFE30&&cp<=0xFE4F)||(cp>=0xFF00&&cp<=0xFF60)
       ||cp>=0x1F000))return 1;
     return 0.58;
+  }
+  // 문자열 전체 em 폭 (wrap 줄 수 추정용 — Issue283 timeline 적응형 박스)
+  function textEm(s){
+    var w=0;
+    Array.from(String(s||'')).forEach(function(ch){w+=charEm(ch);});
+    return w;
   }
   // 가장 넓은 토큰의 em 폭 (줄바꿈 불가 단위 기준 — width cap 산정용)
   function longestTokenEm(s){
@@ -2297,7 +2316,37 @@ Before → After: "채팅으로 흩어지던 진행 상황"이 "프로젝트별 
     var items=collectItems(ul);
     if(items.length<2){ errBox(el,'htmlArt timeline: 노드 2개 이상 필요'); return; }
     var N=items.length;
-    var nodeW=212, nodeH=112, segW=Math.max(nodeW+44,252), axisGap=72, padX=32, padY=26;
+    // Issue283: 노드 수·라벨 길이 적응형 크기.
+    //   고정 nodeW/nodeH(212×112)는 장문 subs(2행+)를 수용 못해 박스 내부 클리핑이
+    //   축과 겹쳐 보이는 증상 + 4~6노드에서 viewBox 과폭으로 노드가 과축소되던 회귀.
+    //   ① 라벨 최대 폭(em) 기반 박스 폭 확장(212~300)
+    //   ② 폰트는 기준 높이(112)로 고정 산정 후, wrap 줄 수 추정으로 박스 높이 산정(112~240)
+    //   ③ 5노드+ 는 위/아래 교대 배치라 반대편 박스와 가로 겹침이 없어 segW 압축 허용
+    var maxEm=0;
+    items.forEach(function(it){
+      maxEm=Math.max(maxEm, textEm(it.title));
+      it.subs.forEach(function(s){ maxEm=Math.max(maxEm, textEm(s)); });
+    });
+    var nodeW=Math.min(300, Math.max(212, Math.round(140+maxEm*7)));
+    var baseH=112;
+    var tFs=uniformTitleFs(items, nodeW, baseH);
+    var subFs=Math.max(Math.round(tFs*0.66), 12);
+    var innerW=nodeW-32;   // nodeBox padding 12*2 + safety 8
+    function estLines(s, fs){ return Math.max(1, Math.ceil((textEm(s)*fs)/innerW)); }
+    var needH=baseH;
+    items.forEach(function(it){
+      var h=16+estLines(it.title,tFs)*tFs*1.25;
+      if(it.subs.length){
+        var sl=0;
+        it.subs.forEach(function(s){ sl+=estLines(s,subFs); });
+        h+=3+sl*subFs*1.35;
+      }
+      if(h>needH)needH=h;
+    });
+    var nodeH=Math.min(Math.ceil(needH), 240);
+    var segW=N>=5 ? Math.max(Math.round(nodeW*0.7), Math.round(nodeW/2)+60)
+                  : Math.max(nodeW+44,252);
+    var axisGap=72, padX=32, padY=26;
     var W=padX*2+nodeW+(N-1)*segW, H=padY*2+nodeH*2+axisGap;
     var axisY=padY+nodeH+axisGap/2;
     var svg=mkSvg(el,W,H,'ha-timeline-svg');
@@ -2306,7 +2355,6 @@ Before → After: "채팅으로 흩어지던 진행 상황"이 "프로젝트별 
     svg.append('polygon')
       .attr('points',(W-padX)+','+axisY+' '+(W-padX-26)+','+(axisY-15)+' '+(W-padX-26)+','+(axisY+15))
       .attr('style','fill:var(--htmlart-accent,#2b8a9d)');
-    var tFs=uniformTitleFs(items, nodeW, nodeH);
     d3.range(N).forEach(function(i){
       var mx=padX+nodeW/2+i*segW, up=(i%2===0);
       var boxY=up?padY:(padY+nodeH+axisGap);

@@ -294,6 +294,7 @@ md-slide-rules의 `::: columns` 표준 외에 m2slide는 임의 슬롯명 지원
 
 * m2slide CSS 클래스: `.m2-cols`, `.m2-col` (또는 Pandoc 표준 `.columns`, `.column`)
 * `width="N%"` → flex/max-width inline style
+* **width 합 자동 축소**: 그룹 내 모든 column 이 % width 를 명시하고 합이 `gap 4%` 포함 100% 를 초과하면(ex: 50%+50%) 빌더가 비율 유지 축소(48%/48%)하여 우측 넘침을 방지함. 혼합(width 일부 생략)·px 지정 그룹은 무변경
 * 상하 분할: `::: rows` / `::: {.row height="N%"}`
 * 카드 스타일: `.card` 클래스 추가 (컬럼 내부 단일 박스 — 카드 컴포넌트 `::: cards`와 별개)
 
@@ -332,6 +333,19 @@ md-slide-rules의 `::: columns` 표준 외에 m2slide는 임의 슬롯명 지원
 * 작성 시 본문은 m2slide 표준대로 `-`로 적되(레벨2+ = `-`), **출력 마커는 CSS가 위 규칙으로 자동 결정** (단일 항목 `:only-child` → 마커 제거)
 * 변환: `<div class="m2-cards cards">` → 카드 그리드 `<ul>` → 카드 `<li>`(제목 `<strong>` + 본문 `<ul>`)
 * **본문 깊이는 1단계 권장**: 카드는 균질 항목을 단순 제시하는 용도 — 본문을 2단계 이상 깊게 중첩하지 말 것. 깊은 계층이 필요하면 카드가 아니라 일반 리스트·인포그래픽을 사용. (2단계 `-` 규칙은 불가피한 경우의 최소 fallback)
+
+### 마커 간격 (심벌·이모지 — 정책)
+
+카드 제목(또는 리스트 항목)에서 **불릿을 대신하는 선두 마커**로 심벌(`:fa-*:`)이나 이모지를 텍스트 앞에 놓을 때는 **글자와 시각적 공간(gap)이 있어야** 함. 마커 glyph 가 글자에 붙으면 가독성이 떨어짐.
+
+| 마커 종류 | 작성 | 공간 확보 방법 |
+| :--- | :--- | :--- |
+| 심벌 `:fa-egg:` → `<i>` | `**:fa-egg: 계란**` | 제목 밴드가 `display:flex` 라 `<i>`·텍스트가 별개 flex item 이 되며 사이 공백이 제거됨 → theme `_shared/components.css` 의 카드 제목 밴드 `gap: 0.4em` 가 자동 간격 부여 (작성자 무개입) |
+| 이모지 `🥚` (유니코드) | `**🥚 계란**` (공백 1칸) | 이모지는 텍스트 노드 내부 문자 → flex 가 공백 제거 안 함. **작성 시 이모지 뒤 공백 1칸**을 반드시 유지 |
+
+* **원리**: flex 컨테이너는 인접 flex item 사이의 whitespace-only 텍스트 노드를 제거함. `<i>`(심벌)는 별개 element → 별개 item → 공백 소실 → CSS `gap` 로 보정. 이모지는 텍스트의 일부 → 단일 item → 공백 보존 → 작성자가 공백만 유지하면 됨.
+* **적용 범위**: `::: cards` 제목 밴드가 1차 대상(flex). 일반 리스트 항목(`* :fa-x: 텍스트`)은 flex 아님 → 마크다운 공백 그대로 렌더되므로 추가 조치 불필요.
+* 렌더 SSOT: [`theme/_shared/components.css`](../../theme/_shared/components.css) 카드 제목 밴드 `gap`. 심벌·이모지 카탈로그: [`data/symbol-usage.yml`](../../data/symbol-usage.yml) · [`data/emoji-usage.yml`](../../data/emoji-usage.yml) `principles`.
 
 ### 가로 행(rows) 자동 레이아웃
 

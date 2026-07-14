@@ -52,6 +52,78 @@ tools:
     output_path: img/
     output_format: [html, png]
 
+  # 이미지 출처(::: source) 표시 정책 — 각 백엔드 source_attribution 필드로 판정:
+  #   * none     = 자체 산출물(AI 생성·SVG 저작·placeholder) → 슬라이드 ::: source 표시 불요
+  #   * required = 외부 수집물(CC 스톡 등) → 출처·credits 의무 (라이선스 준수)
+  # 즉 생성/저작한 이미지는 출처 불요, 남의 것을 가져온 이미지만 출처 필수.
+  # Issue287 — 이미지 생성 백엔드 (설계 SSOT: _doc_arch/media-creater-image-backend.md)
+  - id: svg_direct
+    type: vector_illustration
+    handler: claude_svg_authoring    # agent(Claude)가 SVG 마크업 직접 저작 → img/ 저장
+    triggers:
+      - "일러스트"
+      - "아이콘"
+      - "개념 그림"
+      - "배경 장식"
+      - "벡터"
+      - "illustration"
+      - "icon"
+    output_path: img/
+    output_format: svg
+    style_source: info_field_map     # image_style → design_mood → default 재사용 (§4)
+    source_attribution: none         # 자체 저작(SVG) 산출물 → 슬라이드 출처(::: source) 표시 불요
+    constraints:
+      - "viewBox 필수 (반응형 스케일)"
+      - "외부 참조(href·image·@import) 금지 — file:// 단일 파일 배포 규약 (file-deployment-rules)"
+      - "텍스트는 시스템 폰트 계열 지정 (웹폰트 참조 금지)"
+    note: "사진 리얼리즘 불필요한 벡터 표현 전담. 사진류는 free_image가 1차."
+
+  - id: free_image
+    type: photo
+    handler: free-image              # .claude/skills/free-image (Openverse CC 검색·다운로드)
+    triggers:
+      - "사진"
+      - "실사"
+      - "인물"
+      - "풍경"
+      - "실물"
+      - "photo"
+    invocation: 'python3 .claude/skills/free-image/fetch.py --query "<영어 검색어>" --out Projects/<Name>/img --license cc0,by --prefix <slide_id>'
+    output_path: img/
+    output_format: jpg
+    source_attribution: required     # 외부 CC 수집물 → 출처 표시 의무 (아래 credits)
+    credits: "CREDITS.md 자동 기록 — CC-BY 포함 시 덱 마지막 credits 슬라이드 의무 (SKILL.md 절차)"
+    retry: "rc 3 시 검색어 변경 1회 재시도 → 재실패 시 image_fallback_chain 강등"
+
+  - id: local_image_gen
+    type: photo_illustration
+    handler: mflux                   # jm4 로컬 생성 (prj55 DeviceManagement 설치 자산, FLUX.1-schnell)
+    triggers:
+      - "커스텀 일러스트"
+      - "AI 이미지"
+      - "생성 이미지"
+      - "리얼리즘"
+      - "컨셉 아트"
+    # Issue289 — 큐 경유 (직접 mflux 실행 절대 금지. prj55 잡 큐가 동시 1잡 직렬화 — 메모리 보호)
+    invocation: |
+      id=$(/Volumes/jM4_2T/Applications/mflux/bin/mflux-enqueue --project <Name> \
+        --prompt "<영어 프롬프트>" --model schnell --steps 4 --width 1024 --height 1024 \
+        --seed <seed> --output <repo절대경로>/Projects/<Name>/img/<slide_id>.png) || 강등
+      # 폴링: 30s 간격, 잡당 타임아웃 5분
+      /Volumes/jM4_2T/Applications/mflux/bin/mflux-queue-status "$id"
+      # exit 0=done(output 실존 확인 후 사용) / 2=pending / 3=running / 4=failed(reason 확인·강등) / 5=미발견
+    input_spec: _doc_work/media/{slide_id}.md   # 기존 생성 명세(spec_template §4) 소비 — 양식 무변경
+    output_path: img/
+    output_format: png
+    source_attribution: none         # AI 자체 생성(mflux) 산출물 → 슬라이드 출처(::: source) 표시 불요
+    perf: "1024×1024 4-step ≈ 76초/장 (jm4 M4 Pro 64GB, bf16 peak 36GB — 실측 2026-07-13). 대기열 있으면 + 선행 잡 시간"
+    guard:
+      - "⚠️ 직접 `mflux-generate`/`mflux-run` 실행 절대 금지 — 반드시 mflux-enqueue 경유 (동시 생성 = 메모리 피크 36GB×N → 머신 다운 위험. 2026-07-13 실사고 → prj55 잡 큐로 직렬화)"
+      - "큐 미가용(볼륨 미마운트 → enqueue 비0 종료) 시 즉시 image_fallback_chain 강등 — fail-loud, 조용한 진행 금지"
+      - "--output 은 절대경로 필수 + 디렉토리 사전 존재. 폴링 타임아웃(5분) 시 강등 + 사유 기록"
+      - "다건 생성: 큐가 직렬화하므로 배치 제한 불요 — 단 5장↑ 등록 시 체크포인트에 예상 소요(장당 ~76초 × N + 대기열) 명시"
+    note: "prompt는 명세의 스타일·색상 톤·핵심 요소를 영어 한 문장으로 합성. 재현성 필요 시 --seed 고정. 큐 규약 SSOT: /Volumes/jM4_2T/Applications/mflux/README.md '잡 큐 경유 규약' (prj55 Issue4)"
+
   - id: image_placeholder
     type: photo
     handler: placeholder_png
@@ -63,6 +135,7 @@ tools:
     output_format: png
     delegate_skill: gemini-image-describer
     spec_dir: _doc_work/media/      # 외부 생성 위임 명세 위치
+    note: "Issue287 이후 최종 fallback으로 강등 — 사진류 1차는 free_image (image_fallback_chain 참조)"
 
   - id: gemini_describe
     type: image_caption
@@ -188,7 +261,20 @@ content_pattern_rules:
   - id: photo_screenshot
     label: 사진·실사·UI 스크린샷
     body_patterns: ["사진", "스크린샷", "이미지", "photo", "screenshot"]
-    recommended_tool: image_placeholder
+    recommended_tool: free_image
+    note: "Issue287 — 1차 free_image (CC 스톡 검색, 생성보다 검색 우선). 실패 시 image_fallback_chain 강등, image_placeholder는 최종 fallback"
+
+  - id: vector_illustration
+    label: 벡터 일러스트·아이콘·개념 그림 (사진 리얼리즘 불필요)
+    body_patterns: ["일러스트", "아이콘", "개념 그림", "배경 장식", "벡터", "illustration", "icon"]
+    recommended_tool: svg_direct
+    note: "Issue287 — photo 신호가 먼저 흡수한 뒤 평가. 미매칭 시 react_artifact fallback 유지"
+
+  - id: custom_illustration
+    label: 커스텀 일러스트·AI 생성 이미지 (사진 리얼리즘 필요)
+    body_patterns: ["커스텀 일러스트", "AI 이미지", "생성 이미지", "리얼리즘", "컨셉 아트"]
+    recommended_tool: local_image_gen
+    note: "Issue287 P3 — 로컬 mflux 생성. 볼륨 미마운트 시 image_fallback_chain 강등"
 
   - id: decorative_text
     label: 장식 텍스트·타이틀 강조 (Cards 초과)
@@ -229,6 +315,14 @@ selection_policy:
     mermaid·chart·map 룰이 명시적 다이어그램/데이터 신호를 먼저 흡수하고,
     excalidraw(mermaid 초과)·html_artifact(Cards 초과)·d3(그래프) 가 그다음,
     어느 것도 아니면 react_artifact 가 기본값으로 적용된다.
+
+# 이미지 계열 실패 강등 체인 (Issue287 — fail-loud. 설계 SSOT: _doc_arch/media-creater-image-backend.md)
+image_fallback_chain:
+  order: [free_image, local_image_gen, svg_direct, image_placeholder]
+  note: |
+    free_image 실패(재시도 1회 포함) → local_image_gen (큐 경유 — enqueue 비0 종료·폴링
+    타임아웃·failed 시 skip) → svg_direct (개념 도해로 대체) → image_placeholder (명세만).
+    각 강등은 checkpoint 보고에 사유 1줄 명시 — 조용한 placeholder 방치 금지.
 
 # ============================================================================
 # 3. 처리 정책
@@ -313,6 +407,7 @@ stock_sources:
   - id: openverse
     url: https://openverse.org
     license: CC
+    skill: .claude/skills/free-image   # Issue287 — 수동 참고에서 자동 라우팅 승격 (free_image 도구)
 
 # ============================================================================
 # 7. 사용자 검토 체크포인트
@@ -322,6 +417,9 @@ checkpoint:
     media-creater 산출 검토:
     - mermaid 인라인 삽입: {mermaid_count}건
     - excalidraw 생성 대기: {excalidraw_count}건
+    - SVG 직접 저작: {svg_count}건
+    - free-image 사진: {photo_count}건 (CREDITS.md 갱신 {credits_status})
+    - 이미지 강등 발생: {fallback_count}건 — 사유: {fallback_reasons}
     - 이미지 생성 명세: {image_spec_count}건 (생성 도구 위임 대기)
     - 산출 위치: {paths}
 
@@ -340,7 +438,9 @@ report_template: |
   * 시각화 후보 식별: {candidate_count}
       - mermaid 인라인: {mermaid_count}
       - excalidraw: {excalidraw_count}
-      - 이미지 placeholder: {image_count}
+      - svg 직접 저작: {svg_count}
+      - free-image 사진: {photo_count}
+      - 이미지 placeholder(최종 fallback): {image_count}
       - design-html: {html_count}
   * 외부 위임 명세 생성: {spec_count}건 ({spec_dir})
   * 검증: mermaid syntax {mermaid_status} / placeholder {placeholder_status}

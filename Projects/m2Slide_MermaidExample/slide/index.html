@@ -1310,7 +1310,8 @@ body.agenda-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (standalone agenda letterbox). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   font-family: var(--global-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif);
 }
@@ -1324,7 +1325,8 @@ body.agenda-page {
     calc(100vh - 2 * var(--slide-outer-padding, 0px)),
     calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
   );
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (ratio frame). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   position: relative;
 }
@@ -1390,7 +1392,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783348999457">
+  <link rel="stylesheet" href="css/custom.css?v=1784042299748">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1474,6 +1476,15 @@ html.ratio-fill .agenda-frame {
     .reveal .controls .navigate-down.m2-enabled:hover {
       opacity: 0.7;
     }
+    /* 마름모(↑/↓) + 좌우(←/→) 화살표 색 — 페이지번호와 동일 체인.
+       nav_color(--m2-nav-color) > 테마 --kn-page-num-color(다크 자동 대응) > 폴백.
+       reveal 기본 arrow 색을 덮어써 다크 테마에서 화살표가 안 보이는 문제 해결 */
+    .reveal .controls .navigate-up,
+    .reveal .controls .navigate-down,
+    .reveal .controls .navigate-left,
+    .reveal .controls .navigate-right {
+      color: var(--m2-nav-color, var(--kn-page-num-color, rgba(0, 0, 0, 0.6))) !important;
+    }
     /* 페이지 번호 — 마름모 정중앙 */
     /* theme/default/slide.css:80 에서 .reveal .controls를 position: fixed + bottom:0 right:0 으로 viewport 기준 강제 */
     /* → .controls 안의 화살표 button 좌표가 viewport 우측 하단 기준이 됨. 페이지번호도 같은 기준 위해 fixed */
@@ -1485,7 +1496,8 @@ html.ratio-fill .agenda-frame {
       width: 60px !important;
       height: 14px !important;
       background: transparent !important;
-      color: rgba(0, 0, 0, 0.6) !important;
+      /* 색: nav_color(--m2-nav-color) 명시 > 테마 --kn-page-num-color(다크 테마 자동 대응) > 하드코딩 폴백 */
+      color: var(--m2-nav-color, var(--kn-page-num-color, rgba(0, 0, 0, 0.6))) !important;
       padding: 0 !important;
       font-size: 13px !important;
       text-align: center;
@@ -1594,6 +1606,7 @@ html.ratio-fill .agenda-frame {
   --slide-outer-padding: 10px;
   --slide-inner-padding: 0px;
   --m2-card-columns: auto-fit;
+  --m2-contents-justify: flex-start;
 ">
   <!-- Issue107: nav-up-btn 제거 — Reveal 기본 .controls .navigate-up/.navigate-down에 동작 위임 -->
   <!-- Issue55 Phase 7: #toc-container 오버레이 제거 — 마크맵은 _toc.html layout 내부 SVG 또는 agenda.html에서 렌더 -->
@@ -1603,7 +1616,7 @@ html.ratio-fill .agenda-frame {
   <div class="reveal ratio-3-2">
     <div class="slides">
 
-<section data-slide-hash="#/1" class="layout-_cover">
+<section data-slide-hash="#/1" class="layout-_cover"><div class="m2-license-badge" data-m2-license="true">Powered by finfra.kr, Made by m2slide</div>
   <div class="cover-corner cover-tl">github.com/Finfra/m2slide</div>
   
   <div class="cover-corner cover-br">https://finfra.kr</div>
@@ -1677,7 +1690,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/3" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Paragraph and Diagram</h2>
   <div class="contents-body">
@@ -1697,7 +1710,7 @@ graph TD;
 <section data-slide-hash="#/4" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Flowchart</h2>
   <div class="contents-body">
@@ -1715,7 +1728,7 @@ flowchart TD
 <section data-slide-hash="#/5" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Class</h2>
   <div class="contents-body">
@@ -1748,7 +1761,7 @@ classDiagram
 <section data-slide-hash="#/6" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Sequence</h2>
   <div class="contents-body">
@@ -1765,7 +1778,7 @@ sequenceDiagram
 <section data-slide-hash="#/7" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Entity Relationship</h2>
   <div class="contents-body">
@@ -1800,7 +1813,7 @@ erDiagram
 <section data-slide-hash="#/8" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">State</h2>
   <div class="contents-body">
@@ -1819,7 +1832,7 @@ stateDiagram-v2
 <section data-slide-hash="#/9" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Mindmap</h2>
   <div class="contents-body">
@@ -1848,7 +1861,7 @@ mindmap
 <section data-slide-hash="#/10" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Architecture</h2>
   <div class="contents-body">
@@ -1870,7 +1883,7 @@ architecture-beta
 <section data-slide-hash="#/11" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Block</h2>
   <div class="contents-body">
@@ -1896,7 +1909,7 @@ columns 1
 <section data-slide-hash="#/12" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">C4</h2>
   <div class="contents-body">
@@ -1941,7 +1954,7 @@ C4Context
 <section data-slide-hash="#/13" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Gantt</h2>
   <div class="contents-body">
@@ -1962,7 +1975,7 @@ gantt
 <section data-slide-hash="#/14" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Git</h2>
   <div class="contents-body">
@@ -1989,7 +2002,7 @@ gitGraph
 <section data-slide-hash="#/15" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Kanban</h2>
   <div class="contents-body">
@@ -2021,7 +2034,7 @@ kanban
 <section data-slide-hash="#/16" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Packet</h2>
   <div class="contents-body">
@@ -2052,7 +2065,7 @@ packet
 <section data-slide-hash="#/17" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Pie</h2>
   <div class="contents-body">
@@ -2068,7 +2081,7 @@ pie title Pets adopted by volunteers
 <section data-slide-hash="#/18" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Quadrant</h2>
   <div class="contents-body">
@@ -2094,7 +2107,7 @@ quadrantChart
 <section data-slide-hash="#/19" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Radar</h2>
   <div class="contents-body">
@@ -2116,7 +2129,7 @@ radar-beta
 <section data-slide-hash="#/20" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Requirement</h2>
   <div class="contents-body">
@@ -2142,7 +2155,7 @@ requirementDiagram
 <section data-slide-hash="#/21" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Sankey</h2>
   <div class="contents-body">
@@ -2225,7 +2238,7 @@ Wind,Electricity grid,289.366
 <section data-slide-hash="#/22" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">StateDiagram </h2>
   <div class="contents-body">
@@ -2241,7 +2254,7 @@ stateDiagram
 <section data-slide-hash="#/23" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Timeline</h2>
   <div class="contents-body">
@@ -2262,7 +2275,7 @@ timeline
 <section data-slide-hash="#/24" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Timeline (계속)</h2>
   <div class="contents-body">
@@ -2280,7 +2293,7 @@ timeline-beta
 <section data-slide-hash="#/25" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Treemap</h2>
   <div class="contents-body">
@@ -2299,7 +2312,7 @@ treemap-beta
 <section data-slide-hash="#/26" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">User Journey</h2>
   <div class="contents-body">
@@ -2320,7 +2333,7 @@ journey
 <section data-slide-hash="#/27" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">XY</h2>
   <div class="contents-body">
@@ -2338,7 +2351,7 @@ xychart-beta
 <section data-slide-hash="#/28" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">blockdiag</h2>
   <div class="contents-body">
@@ -2351,7 +2364,7 @@ xychart-beta
 <section data-slide-hash="#/29" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">seqdiag</h2>
   <div class="contents-body">
@@ -2364,7 +2377,7 @@ xychart-beta
 <section data-slide-hash="#/30" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">actdiag</h2>
   <div class="contents-body">
@@ -2377,7 +2390,7 @@ xychart-beta
 <section data-slide-hash="#/31" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">nwdiag</h2>
   <div class="contents-body">
@@ -2390,7 +2403,7 @@ xychart-beta
 <section data-slide-hash="#/32" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Mermaid Samples</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title"><code>ditaa</code> (ASCII → 그림 변환)</h2>
   <div class="contents-body">
@@ -2403,7 +2416,7 @@ xychart-beta
 <section data-slide-hash="#/33" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Graphviz (DOT)</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">Graphviz (DOT)</h1>
   <div class="contents-body">
@@ -2434,7 +2447,7 @@ xychart-beta
 <section data-slide-hash="#/35" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Vega</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Vega-lite</h2>
   <div class="contents-body">
@@ -2446,7 +2459,7 @@ xychart-beta
 <section data-slide-hash="#/36" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Vega</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Vega</h2>
   <div class="contents-body">
@@ -2479,7 +2492,7 @@ xychart-beta
 <section data-slide-hash="#/38" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">PlantUML</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Class Diagram</h2>
   <div class="contents-body">
@@ -2491,7 +2504,7 @@ xychart-beta
 <section data-slide-hash="#/39" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">PlantUML</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Component Diagram</h2>
   <div class="contents-body">
@@ -2504,7 +2517,7 @@ xychart-beta
 <section data-slide-hash="#/40" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">PlantUML</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Activity Diagram</h2>
   <div class="contents-body">
@@ -2527,7 +2540,7 @@ xychart-beta
 <section data-slide-hash="#/41" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">PlantUML</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Use Case Diagram</h2>
   <div class="contents-body">
@@ -2537,10 +2550,10 @@ xychart-beta
 </div></div>
 </section>
 
-<section data-slide-hash="#/42" class="layout-_contents">
+<section data-slide-hash="#/42" class="layout-_contents"><div class="m2-license-badge" data-m2-license="true">Powered by finfra.kr, Made by m2slide</div>
   <div class="contents-head-bar">
     <div class="contents-head-left">PlantUML</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">핵심 정리</h2>
   <div class="contents-body">
@@ -2952,7 +2965,7 @@ xychart-beta
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/22\">StateDiagram </a>",
+                              "content": "<a href=\"#/22\">StateDiagram</a>",
                               "children": []
                         },
                         {

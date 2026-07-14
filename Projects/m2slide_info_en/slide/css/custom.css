@@ -38,6 +38,14 @@
   min-height: 0;
   overflow: hidden;
 }
+/* Issue284: 컴포넌트 블록(htmlArt/cards/media) 바로 뒤 텍스트는 간격을 더 벌려
+   붙어 보이지 않게 함. contents-body gap(0.5em) 위에 추가 상단 마진(총 ~1.4em).
+   컴포넌트 자체엔 margin 금지(Issue198)이므로 "다음 형제"에만 부여. */
+.reveal section[class*="layout-"] .contents-body > .component-container + *,
+.reveal section[class*="layout-"] .contents-body > .m2-cards + *,
+.reveal section[class*="layout-"] .contents-body > .m2-htmlart + * {
+  margin-top: 0.9em;
+}
 .reveal section[class*="layout-"] .component-container > svg {
   flex: 1 1 0;
   width: 100% !important;
@@ -132,7 +140,18 @@
 /* 카드 제목 밴드 — 테마 컬러 변수. 제목은 `**볼드**`로 작성 */
 .reveal section[class*="layout-"] .m2-cards > ul > li > strong,
 .reveal section[class*="layout-"] .m2-cards > ol > li > strong {
-  display: block;
+  /* Issue284: 제목 밴드 높이 균일화 — 1줄/2줄 제목이 섞여도 같은 높이.
+     flex 중앙정렬 + min-height(2줄 기준, border-box). 3줄 이상은 min-height 초과로 자연 확장. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 마커 간격: 심벌(:fa-*: → <i>)이 제목 앞 마커로 올 때 flex 는 <i>·텍스트를
+     별개 item 으로 나눠 사이 공백(마크다운 1칸)을 제거함 → glyph 가 글자에 붙음.
+     gap 으로 심벌↔텍스트 시각 간격 확보(이모지는 텍스트 노드 내부라 무영향).
+     단일 item(순수 텍스트 제목)에는 no-op. 정책: md-m2slide-rules.md "마커 간격". */
+  gap: 0.4em;
+  min-height: 3.2em;
+  box-sizing: border-box;
   margin: 0;
   padding: 0.25em 0.6em;
   background: var(--m2-card-title-bg, var(--kn-accent));
@@ -212,10 +231,11 @@
   --htmlart-accent-5: var(--m2-accent-5, #2ECC71);
   --htmlart-accent-6: var(--m2-accent-6, #E74C3C);
   --htmlart-fg: var(--m2-text, var(--kn-text, #ffffff));
-  --htmlart-box-bg: rgba(0, 0, 0, 0.045);
   --htmlart-surface: var(--m2-surface, #f4f4f5);            /* 노드 박스 불투명 배경 — d3 연결선이 박스 뒤로 가려지게 (Issue195) */
-  --htmlart-box-border: rgba(0, 0, 0, 0.16);
-  --htmlart-arrow: rgba(0, 0, 0, 0.5);
+  /* Issue274: 선/화살표/테두리 색 = config override(--m2-htmlart-line) > 테마 기본(--m2-line) > 하드코딩 fallback.
+     라이트 테마(default·default_lec)는 --m2-line 미설정 → 기존 rgba 유지(회귀 0). 다크 테마는 --m2-line 로 밝은 선색 지정. */
+  --htmlart-box-border: var(--m2-htmlart-line, var(--m2-line, rgba(0, 0, 0, 0.16)));
+  --htmlart-arrow: var(--m2-htmlart-line, var(--m2-line, rgba(0, 0, 0, 0.5)));
   font-size: 0.92em;
   /* Issue197/198: .contents-body(flex column)의 bullet 다음 잔여 세로 공간을 도해가 채움
      — .media-container·.component-container 와 동일한 콘텐츠 컨테이너 fill 계약.
@@ -259,6 +279,19 @@
 .reveal .m2-cols:has(.m2-htmlart),
 .reveal .columns:has(.m2-htmlart) {
   align-items: stretch;
+}
+/* 이미지가 든 columns: 텍스트 컬럼도 행(=이미지) 높이를 받도록 stretch —
+   base.css `.m2-cols{align-items:center}` 가 텍스트 컬럼을 콘텐츠 높이로 붕괴시켜
+   컬럼 안 하단 anchor(margin-top:auto)가 무력화되는 것을 보정 (htmlArt 패턴과 동일 취지). */
+.reveal .m2-cols:has(.media-container),
+.reveal .columns:has(.media-container) {
+  align-items: stretch;
+}
+/* 컬럼의 마지막 요소가 요약 blockquote(punchline)면 컬럼 하단으로 밀어
+   위 본문과 시각적으로 분리 — flex column 의 margin-top:auto 로 남은 세로 공간을 흡수. */
+.reveal .m2-col > blockquote:last-child,
+.reveal .column > blockquote:last-child {
+  margin-top: auto;
 }
 .reveal .m2-htmlart ul,
 .reveal .m2-htmlart ol {
@@ -367,6 +400,67 @@
   --htmlart-explain-center-fg: var(--htmlart-accent);
   --htmlart-explain-leaf-fg: var(--m2-text, var(--kn-text, inherit));
   --htmlart-explain-line: var(--htmlart-accent);
+}
+
+/* ── License attribution badge (Issue292) ─────────────────────────────────
+   LICENSE.md CC BY 4.0 조건 — 첫 장·마지막 장에 항상 표기.
+   설계 SSOT: _doc_arch/license-attribution.md
+   - 위치: 하단 중앙, 상하단 노랑 가로선(section[class*="layout-"]::after, bottom:12px
+     height:10px, z-index:100 — 본 파일 §2) "바깥"(아래)에 배치. 2026-07-15 사용자 시각
+     피드백("노란바 아래로") 반영 — 기존 bottom:0.5em은 그 노랑 선과 겹쳐 보였음.
+     .cover-corner(github_url·homepage 등 기존 코너 뱃지)가 이미 동일하게
+     bottom:1px + font-size:0.31em 조합으로 그 선 바깥 좁은 띠에 배치하는 선례를 그대로 따름.
+   - 크기: 노랑 선 바깥 띠(~11px)에 맞춰 0.3em대로 축소 — 이 슬롯의 "참조용 텍스트" 기준을
+     본문 캡션이 아닌 같은 위치의 기존 .cover-corner 관례(0.31em)로 재해석.
+   - 색상: 전용 변수 --m2-license-fg(진한회색, theme별 override) — 순수 --kn-text(검정/흰색)보다
+     부드럽게. 각 theme의 기본 배경 위에서 WCAG 2.1 contrast ratio ≥4.5:1 보증
+     (검증: `./m2slide.sh --lint-license`). 대비는 색상만으로 결정되므로 크기 축소와 무관.
+   - 장식: --kn-accent(노랑, 전 theme 공통 고정 식별색) 저알파 text-shadow로 은은한 노랑 그림자
+     — "너무 진하지 않게" 요청 반영. 그림자는 장식일 뿐 대비 계산에는 무관(글자色만 대비 대상).
+   - 크기 하한: max()로 고정 — 프로젝트 커스텀 CSS가 font-size를 줄여도 --m2-license-fs-min 밑으로 못 내려감.
+   - opacity로 색을 흐리게 하지 않음 — opacity는 대비 보증을 깨뜨리므로 사용 금지. "연한 느낌"은
+     회색 톤 자체(--m2-license-fg)와 노랑 그림자로만 표현.
+   ──────────────────────────────────────────────────────────────────────── */
+:root {
+  --m2-license-fs-min: 0.3em;    /* 하한 — .cover-corner(0.31em) 관례에 맞춘 값. 이 아래로 줄어들 수 없음 */
+  --m2-license-fs: 0.34em;       /* 기본 크기 */
+  --m2-license-fg: #5a5a5a;      /* 진한회색(라이트 테마 기본) — dark 테마는 --m2-license-fg override */
+  --m2-license-shadow: rgba(245, 197, 24, 0.45); /* --kn-accent(#F5C518) 저알파 — 은은한 노랑 그림자 */
+}
+.reveal .slides section .m2-license-badge {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  transform: translateX(-50%);
+  font-size: max(var(--m2-license-fs-min), var(--m2-license-fs));
+  color: var(--m2-license-fg);
+  text-shadow: 0 0 6px var(--m2-license-shadow);
+  font-family: inherit;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 5;
+}
+/* standalone 페이지(agenda.html 등, reveal.js 미사용) — 노랑 가로선 요소 자체가 없어 겹침 위험은
+   없으나, 시각 통일을 위해 동일하게 절대 px 하한으로 축소 배치 */
+.m2-license-badge--frame,
+.m2-license-badge--standalone {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  transform: translateX(-50%);
+  font-size: max(10px, 0.6vw);
+  color: var(--m2-license-fg);
+  text-shadow: 0 0 6px var(--m2-license-shadow);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 50;
+}
+.m2-license-badge--standalone {
+  position: fixed; /* .agenda-frame 미탐지 시 fallback — 위치 앵커(position:relative)가 없을 수 있어 fixed */
 }
 
 /* <<< @import ../_shared/components.css */
@@ -548,6 +642,10 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  /* Issue284: default 테마 parity — 컴포넌트↔인접 텍스트 세로 간격 (gap only, Issue198 margin 금지 회피) */
+  gap: 0.5em;
+  /* Issue284 opt-in: _config.yml contents_balance: center → --m2-contents-justify 주입 (기본 flex-start = 기존 동작) */
+  justify-content: var(--m2-contents-justify, flex-start);
 }
 
 /* contents-body flex:1 1 auto 가 definite height 를 받으려면 부모 section 자체가
@@ -645,7 +743,8 @@
    Issue97: min-height 100vh → 100% (default §3.1 동일, base.css §10 layout-* 100% 규칙 따름) */
 .reveal section.layout-_cover,
 .guide-line-mode .reveal .slides section.layout-_cover {
-  background-color: #ffffff !important;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응. 미정의 테마는 #ffffff fallback (회귀 0) */
+  background-color: var(--m2-bg, #ffffff) !important;
   background-image: url('../theme-img/finfraPuffer1.png');
   background-repeat: no-repeat;
   background-position: 6% 14%;
@@ -1171,6 +1270,24 @@
   height: 100%;
   min-height: 0;
   display: block;
+}
+
+/* agenda_card_mode: 카드 그리드(.toc-cards)도 markmap 박스와 동일한 accent 테두리 프레임.
+   카드 모드 컨테이너는 .layout-_cards.layout-_toc — .toc-markmap 셀렉터에 매치되지 않아
+   테두리가 소실되던 회귀 보정 (default 테마 parity). */
+.agenda-frame .layout-_cards {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.agenda-frame .toc-cards {
+  flex: 1 1 0;
+  min-height: 0;
+  border: 2px solid var(--kn-accent);
+  border-radius: 8px;
+  padding: 12px;
+  overflow: auto;
+  background: #ffffff;
 }
 
 /* Issue113: agenda-frame은 transform: scale을 받지 않는 standalone 컨테이너.

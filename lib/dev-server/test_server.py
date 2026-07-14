@@ -8,7 +8,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from server import DevHandler
+from server import DevHandler, _PATH_PROJECT_RE, to_short_url
 
 
 class RegexTest(unittest.TestCase):
@@ -28,6 +28,48 @@ class RegexTest(unittest.TestCase):
         # /p/<P>/s/<chap>/<slide> 와 충돌 없음
         self.assertIsNone(DevHandler._SHORT_COVER_C_RE.match('/p/m2Slide/s/1/3'))
         self.assertIsNone(DevHandler._SHORT_AGENDA_A_RE.match('/p/m2Slide/s/1'))
+
+
+class PathProjectResolveTest(unittest.TestCase):
+    """Issue290 — _PATH_PROJECT_RE must extract project(or deck) token from both
+    Projects/ and Projects_deck/ build-artifact rel paths (rewrite crux)."""
+
+    def test_project_path_group(self):
+        m = _PATH_PROJECT_RE.match('Projects/aTest_v1/slide/index.html')
+        self.assertIsNotNone(m)
+        self.assertEqual(m.group(1), 'aTest_v1')
+        self.assertEqual(m.group(2), 'index')
+
+    def test_project_chapter_stem_group(self):
+        m = _PATH_PROJECT_RE.match('Projects/MyLec/slide/02-code.html')
+        self.assertEqual(m.group(1), 'MyLec')
+        self.assertEqual(m.group(2), '02-code')
+
+    def test_deck_path_group(self):
+        m = _PATH_PROJECT_RE.match(
+            'Projects_deck/decks/misc/RamyeonCooking/slide/index.html')
+        self.assertIsNotNone(m)
+        self.assertEqual(m.group(1), 'RamyeonCooking')  # deck basename, not category
+        self.assertEqual(m.group(2), 'index')
+
+    def test_deck_chapter_stem_group(self):
+        m = _PATH_PROJECT_RE.match(
+            'Projects_deck/decks/tech/DeepDive/slide/03-arch.html')
+        self.assertEqual(m.group(1), 'DeepDive')
+        self.assertEqual(m.group(2), '03-arch')
+
+    def test_non_artifact_path_no_match(self):
+        self.assertIsNone(_PATH_PROJECT_RE.match('theme/default/slide.css'))
+        self.assertIsNone(_PATH_PROJECT_RE.match('Projects/foo/bar.txt'))
+
+    def test_to_short_url_roundtrip_project_and_deck(self):
+        # deck token round-trips to /p/<deck> form same as a project
+        self.assertEqual(
+            to_short_url('Projects/aTest_v1/slide/index.html', n=3),
+            '/p/aTest_v1/s/3')
+        self.assertEqual(
+            to_short_url('Projects_deck/decks/misc/RamyeonCooking/slide/index.html', n=3),
+            '/p/RamyeonCooking/s/3')
 
 
 class ActivationTest(unittest.TestCase):

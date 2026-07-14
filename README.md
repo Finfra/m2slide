@@ -520,4 +520,7 @@ Check the help:
 
 ## License
 
-MIT License
+Dual license — see [LICENSE.md](./LICENSE.md) for full terms.
+
+* **Free (CC BY 4.0)**: Presentations generated with m2slide must keep the attribution line **"Powered by finfra.kr, Made by m2slide"** on the **first and last slides**.
+* **Paid (Commercial license)**: Generating presentations with that attribution removed requires a paid commercial license. Contact: <finfra@gmail.com> / <https://finfra.kr>

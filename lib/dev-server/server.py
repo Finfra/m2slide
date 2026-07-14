@@ -91,8 +91,12 @@ def extract_section_title(section_html: str) -> str:
     return re.sub(r'\s+', ' ', text).strip()
 
 
+# Issue290 — accept both Projects/<P>/slide/<X>.html and deck path
+# Projects_deck/decks/<cat>/<deck>/slide/<X>.html. Optional non-capturing prefix
+# keeps group(1)=project(or deck basename), group(2)=stem intact for both.
 _PATH_PROJECT_RE = re.compile(
-    r'^Projects/([^/]+)/slide/(.+)\.html$', re.IGNORECASE)
+    r'^(?:Projects/|Projects_deck/decks/[^/]+/)([^/]+)/slide/(.+)\.html$',
+    re.IGNORECASE)
 
 
 def to_short_url(file_path: str, n=None, mode: str = '') -> str:
@@ -251,6 +255,9 @@ class DevHandler(SimpleHTTPRequestHandler):
         # Project list
         if path_only in ('/p', '/p/'):
             return self._serve_project_list()
+        # Deck list (Projects_deck/decks, Issue281): /pd/
+        if path_only in ('/pd', '/pd/'):
+            return self._serve_deck_list()
         # Config editor JSON (config GUI, Issue275): GET /p/<P>/config
         m = self._CONFIG_RE.match(path_only)
         if m:
@@ -402,11 +409,38 @@ class DevHandler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def _project_root(self, project: str) -> str:
+        """Resolve <project> token to its abs source dir (Issue290).
+
+        Projects/<project> first; else Projects_deck/decks/*/<project>
+        (deck token = deck basename). Falls back to the (non-existent)
+        Projects/<project> path when neither exists, so downstream
+        isdir/isfile guards behave as today for the not-found case.
+        """
+        direct = os.path.join(os.getcwd(), 'Projects', project)
+        if os.path.isdir(direct):
+            return direct
+        decks_root = os.path.join(os.getcwd(), 'Projects_deck', 'decks')
+        if os.path.isdir(decks_root):
+            matches = [
+                os.path.join(decks_root, cat, project)
+                for cat in sorted(os.listdir(decks_root))
+                if os.path.isdir(os.path.join(decks_root, cat, project))
+            ]
+            if matches:
+                if len(matches) > 1:
+                    sys.stderr.write(
+                        f"[dev-server] ambiguous deck token '{project}': "
+                        f"{len(matches)} matches under Projects_deck/decks/*/, "
+                        f"using {os.path.relpath(matches[0], os.getcwd())}\n")
+                return matches[0]
+        return direct
+
     def _short_file_rel(self, project: str, chapter):
-        """Build relative path for /p/<project>[/<chapter>] form."""
-        base = f'Projects/{project}/slide'
+        """Build cwd-relative path for /p/<project>[/<chapter>] form (deck-aware, Issue290)."""
         stem = chapter if chapter else 'index'
-        return f'{base}/{stem}.html'
+        full = os.path.join(self._project_root(project), 'slide', f'{stem}.html')
+        return os.path.relpath(full, os.getcwd())
 
     def _resolve_chapter_index(self, project: str, chap_idx: int):
         """Map 1-base chapter index to a .html file stem.
@@ -418,7 +452,7 @@ class DevHandler(SimpleHTTPRequestHandler):
               chap_idx=N → N-th file in sorted order, excluding agenda.html and index.html
         Returns chapter stem (without .html) or None.
         """
-        slide_dir = os.path.join(os.getcwd(), 'Projects', project, 'slide')
+        slide_dir = os.path.join(self._project_root(project), 'slide')
         if not os.path.isdir(slide_dir):
             return None
         files = sorted(
@@ -452,7 +486,7 @@ class DevHandler(SimpleHTTPRequestHandler):
 
     def _stem_to_chapter_index(self, project: str, stem: str):
         """Inverse of _resolve_chapter_index. Returns 1-base chap index or None."""
-        slide_dir = os.path.join(os.getcwd(), 'Projects', project, 'slide')
+        slide_dir = os.path.join(self._project_root(project), 'slide')
         if not os.path.isdir(slide_dir):
             return None
         files = sorted(
@@ -723,7 +757,7 @@ class DevHandler(SimpleHTTPRequestHandler):
         — the single-mode analog of the chapter-mode bug fixed in Issue239.
         Fall back to the agenda chain only if index.html is genuinely absent.
         """
-        index_abs = os.path.join(os.getcwd(), 'Projects', project,
+        index_abs = os.path.join(self._project_root(project),
                                  'slide', 'index.html')
         if not os.path.isfile(index_abs):
             return self._redirect_302(self._with_query(f'/p/{project}/n/a'))
@@ -734,7 +768,9 @@ class DevHandler(SimpleHTTPRequestHandler):
         """/p/<P>/n/a — agenda (deck). Fallback: not active → 302 /n/t."""
         if not self._agenda_active(project):
             return self._redirect_302(self._with_query(f'/p/{project}/n/t'))
-        file_rel = f'Projects/{project}/slide/agenda.html'
+        file_rel = os.path.relpath(
+            os.path.join(self._project_root(project), 'slide', 'agenda.html'),
+            os.getcwd())
         return self._proxy_build_artifact(file_rel)
 
     def _serve_nav_t(self, project: str):
@@ -1069,7 +1105,7 @@ class DevHandler(SimpleHTTPRequestHandler):
 
     def _list_slide_files(self, project: str):
         """List .html files in Projects/<project>/slide/ (excluding hidden)."""
-        slide_dir = os.path.join(os.getcwd(), 'Projects', project, 'slide')
+        slide_dir = os.path.join(self._project_root(project), 'slide')
         if not os.path.isdir(slide_dir):
             return []
         out = []
@@ -1114,9 +1150,23 @@ class DevHandler(SimpleHTTPRequestHandler):
             # Negative margins absorb the post-scale layout box so siblings flow tightly.
             '.slide-preview{display:block;width:1920px;height:1080px;border:0;'
             'background:#fff;transform-origin:top left;transform:scale(0.25);'
+            'transition:transform .12s ease;'
             'margin:0 -1440px -810px 0;pointer-events:none}'
-            '.preview-cell{width:480px;height:270px;overflow:hidden;border:1px solid #ccc;'
-            'border-radius:4px;background:#fff}'
+            '.preview-cell{position:relative;width:480px;height:270px;overflow:hidden;'
+            'border:1px solid #ccc;border-radius:4px;background:#fff}'
+            # hover-zoom: enlarge preview on hover; Tab pins it while writing 의견.
+            # origin top-right → grows left+down, never covers the feedback textarea (col 4).
+            '.preview-cell.zoomed{overflow:visible;z-index:60}'
+            '.preview-cell.zoomed .slide-preview{position:absolute;top:0;right:0;margin:0;'
+            'transform-origin:top right;transform:scale(0.6);z-index:60;'
+            'box-shadow:0 8px 30px rgba(0,0,0,0.4);outline:2px solid hsl(191,60%,45%)}'
+            '.preview-cell.zoomed.pinned .slide-preview{outline-color:hsl(28,85%,52%)}'
+            # Tab-usage hint badge — shown over the enlarged preview until pinned.
+            '.zoom-hint{display:none;position:absolute;top:6px;right:6px;z-index:61;'
+            'background:rgba(20,20,20,0.82);color:#fff;font-size:12px;font-weight:600;'
+            'padding:3px 9px;border-radius:12px;pointer-events:none;white-space:nowrap;'
+            'box-shadow:0 1px 4px rgba(0,0,0,0.3)}'
+            '.preview-cell.zoomed:not(.pinned) .zoom-hint{display:block}'
             'code{background:#f3f3f3;padding:2px 6px;border-radius:3px;font-size:0.9em}'
             'pre{background:#2d2d2d;color:#f8f8f2;padding:12px;border-radius:4px;overflow-x:auto}'
             # Issue261 — overview feedback UI (bytes badge + opinion cell + bulk bar)
@@ -1174,7 +1224,7 @@ class DevHandler(SimpleHTTPRequestHandler):
             '.cfg-panel.hidden{display:none}'
             '.cfg-panel{display:flex;flex-direction:column;gap:9px}'
             '.cfg-lab .cfg-set{font-size:11px;white-space:nowrap;margin-left:3px;opacity:0.8}'
-            '.cfg-combo{position:relative;flex:1 1 auto;min-width:0;display:flex}'
+            '.cfg-combo{position:relative;flex:0 1 auto;width:210px;max-width:100%;min-width:0;display:flex}'
             '.cfg-row input.cfg-combo-input{flex:1 1 auto;min-width:0;padding:5px 8px;'
             'border:1px solid #ccc;border-right:none;border-radius:5px 0 0 5px;'
             'font:inherit;background:#fff;color:#1a1a1a}'
@@ -1202,7 +1252,7 @@ class DevHandler(SimpleHTTPRequestHandler):
             '.cfg-row>.cfg-lab{flex:0 0 44%;color:#555;display:flex;justify-content:flex-start;'
             'align-items:center;gap:3px;text-align:left;line-height:1.25}'
             '.cfg-row input[type=text],.cfg-row input[type=number],.cfg-row select{'
-            'flex:1 1 auto;width:auto;min-width:0;padding:5px 8px;'
+            'flex:0 1 auto;width:210px;max-width:100%;min-width:0;padding:5px 8px;'
             'border:1px solid #ccc;border-radius:5px;font:inherit;background:#fff;color:#1a1a1a}'
             '.cfg-bool{cursor:pointer}'
             '.cfg-bool>.cfg-lab{color:#1a1a1a}'
@@ -1225,6 +1275,18 @@ class DevHandler(SimpleHTTPRequestHandler):
             '.cfg-openfile{cursor:pointer;padding:7px 12px;border:1px solid #ccc;'
             'background:#f2f4f6;color:#1a1a1a;border-radius:6px;font-size:13px;white-space:nowrap;flex:0 0 auto}'
             '.cfg-openfile:hover{background:#e6e9ec}'
+            '.cfg-help{flex:0 0 auto;width:16px;height:16px;padding:0;margin:0;'
+            'border:1px solid #bbb;border-radius:50%;background:#f2f6f7;color:#666;'
+            'font-size:11px;line-height:1;cursor:help;display:inline-flex;align-items:center;justify-content:center}'
+            '.cfg-help:hover,.cfg-help:focus-visible{background:hsl(191,60%,45%);color:#fff;border-color:hsl(191,60%,45%);outline:none}'
+            '.cfg-tip{position:fixed;z-index:10000;max-width:280px;background:#1a1a1a;color:#f5f5f5;'
+            'padding:8px 11px;border-radius:7px;font-size:12.5px;line-height:1.5;'
+            'box-shadow:0 4px 18px rgba(0,0,0,0.32);pointer-events:none}'
+            '.cfg-tip::after{content:"";position:absolute;left:12px;width:0;height:0;'
+            'border-left:6px solid transparent;border-right:6px solid transparent}'
+            '.cfg-tip.below::after{top:-6px;border-bottom:6px solid #1a1a1a}'
+            '.cfg-tip.above::after{bottom:-6px;border-top:6px solid #1a1a1a}'
+            '.cfg-tip[hidden]{display:none}'
             '@media (prefers-color-scheme:dark){body{background:#1a1a1a;color:#e0e0e0}'
             '.card{background:#222;border-color:#444}.card .links a{background:#2a3a3e}'
             'th{background:#2a3a3e}td,th{border-color:#444}code{background:#2d2d2d;color:#e0e0e0}'
@@ -1246,6 +1308,9 @@ class DevHandler(SimpleHTTPRequestHandler):
             '.cfg-lang{border-color:#555}.cfg-lang-btn{background:#2a2a2d;color:#aaa}'
             '.cfg-tabs{border-color:#444}.cfg-tab:hover{color:#e0e0e0}'
             '.cfg-lab .cfg-set{opacity:0.85}'
+            '.cfg-help{background:#2a2a2d;border-color:#555;color:#bbb}'
+            '.cfg-tip{background:#000;color:#f0f0f0;box-shadow:0 4px 18px rgba(0,0,0,0.6)}'
+            '.cfg-tip.below::after{border-bottom-color:#000}.cfg-tip.above::after{border-top-color:#000}'
             '.cfg-row input.cfg-combo-input{background:#2a2a2a;color:#e0e0e0;border-color:#555}'
             '.cfg-combo-toggle{background:#333;border-color:#555;color:#bbb}'
             '.cfg-combo-toggle:hover{background:#3a4145}'
@@ -1254,12 +1319,17 @@ class DevHandler(SimpleHTTPRequestHandler):
             '</style>'
         )
 
-    def _common_header(self, title: str, show_projects_link: bool = True):
+    def _common_header(self, title: str, show_projects_link: bool = True, deck_context: bool = False):
         links = ['<a href="/">🏠 home</a>']
         if show_projects_link:
             links.append('<a href="/p/">📂 projects</a>')
         else:
             links.append('<a href="https://finfra.github.io/m2slide/" target="_blank">🌐 finfra.github.io/m2slide</a>')
+        if deck_context:
+            # /pd/ 자체에서는 self-link 대신 dev-server 홈으로 돌아가는 토글
+            links.append('<a href="/">🛠️ Dev</a>')
+        elif os.path.isdir(os.path.join(os.getcwd(), 'Projects_deck', 'decks')):
+            links.append('<a href="/pd/">🎴 decks</a>')
         return f'<header><h1>{title}</h1><div>' + ' · '.join(links) + '</div></header>'
 
     def _serve_root(self):
@@ -1378,6 +1448,67 @@ class DevHandler(SimpleHTTPRequestHandler):
     def _publishing_badge(cls, v: str) -> str:
         return '🌐 공개' if cls._PUBLISH_AFFIRM_RE.match((v or '').strip()) else '🔒 비공개'
 
+    def _serve_deck_list(self):
+        """GET /pd/ — Projects_deck/decks/<category>/<deck> listing (Issue281).
+
+        Deck builds are file://-portable static artifacts; entry links go straight
+        to the static path (super().do_GET) — no /p/ proxy machinery involved.
+        """
+        decks_root = os.path.join(os.getcwd(), 'Projects_deck', 'decks')
+        if not os.path.isdir(decks_root):
+            self.send_error(404, 'Projects_deck/decks not found')
+            return
+        sections_html = []
+        total = 0
+        for cat in sorted(os.listdir(decks_root)):
+            cat_dir = os.path.join(decks_root, cat)
+            if cat.startswith(('.', '_')) or not os.path.isdir(cat_dir):
+                continue
+            cards = []
+            for name in sorted(os.listdir(cat_dir)):
+                deck_dir = os.path.join(cat_dir, name)
+                if name.startswith(('.', '_')) or not os.path.isdir(deck_dir):
+                    continue
+                total += 1
+                title = self._esc_html(name)
+                entry = os.path.join(deck_dir, 'slide', 'index.html')
+                if os.path.isfile(entry):
+                    # Issue290 — decks now enter via /p/ proxy (deck token = basename),
+                    # gaining slide list, deck nav, solo view, text, config GUI.
+                    nav = f'/p/{name}/n/c'
+                    overview = f'/p/{name}'
+                    cards.append(
+                        f'<div class="card"><h3><a href="{nav}" target="_blank" rel="noopener">🎴 {title}</a></h3>'
+                        '<div class="links">'
+                        f'<a href="{overview}" target="_blank" rel="noopener">📋 슬라이드 목록</a>'
+                        f'<a href="{nav}" target="_blank" rel="noopener">🎬 진입 (cover/agenda/toc/첫슬라이드 fallback)</a>'
+                        '</div></div>'
+                    )
+                else:
+                    cards.append(
+                        f'<div class="card"><h3>🎴 {title}</h3>'
+                        '<div class="meta">⚠️ 빌드 산출물 없음 (slide/index.html 부재)</div></div>'
+                    )
+            if cards:
+                sections_html.append(
+                    f'<section class="proj-section"><div class="section-header">'
+                    f'<h2 class="section-title">📁 {self._esc_html(cat)} '
+                    f'<span class="section-count">({len(cards)})</span></h2></div>'
+                    '<div class="grid">' + '\n'.join(cards) + '</div></section>'
+                )
+        body = (
+            '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
+            '<title>m2slide — decks</title>'
+            + self._common_styles() +
+            '</head><body>'
+            + self._common_header('🎴 덱 목록 (Projects_deck)', deck_context=True) +
+            f'<p>총 <b>{total}</b>개 덱 — <code>Projects_deck/decks/&lt;category&gt;/&lt;deck&gt;</code> '
+            '(빌드 산출물 static 직접 서빙).</p>'
+            + ''.join(sections_html) +
+            '</body></html>'
+        )
+        self._write_html(body)
+
     def _serve_project_list(self):
         """GET /p/ — project directory listing."""
         projects = self._list_projects()
@@ -1493,7 +1624,7 @@ class DevHandler(SimpleHTTPRequestHandler):
         if safe.startswith('..'):
             self.send_error(403, 'forbidden: path traversal')
             return
-        slide_root = os.path.join(os.getcwd(), 'Projects', project, 'slide')
+        slide_root = os.path.join(self._project_root(project), 'slide')
         full = os.path.join(slide_root, safe)
         if not full.startswith(slide_root + os.sep):
             self.send_error(403, 'forbidden: path escapes slide dir')
@@ -1518,7 +1649,7 @@ class DevHandler(SimpleHTTPRequestHandler):
         """GET /p/<project> — slide list (all .html files + sections)."""
         files = self._list_slide_files(project)
         if not files:
-            project_dir = os.path.join(os.getcwd(), 'Projects', project)
+            project_dir = self._project_root(project)
             if not os.path.isdir(project_dir):
                 self.send_error(404, f'project not found: {project}')
                 return
@@ -1534,7 +1665,7 @@ class DevHandler(SimpleHTTPRequestHandler):
         sections_html_blocks = []
         for f in files:
             stem = f[:-len('.html')]
-            full = os.path.join(os.getcwd(), 'Projects', project, 'slide', f)
+            full = os.path.join(self._project_root(project), 'slide', f)
             try:
                 with open(full, 'r', encoding='utf-8') as fh:
                     html = fh.read()
@@ -1572,6 +1703,7 @@ class DevHandler(SimpleHTTPRequestHandler):
                     f'<td class="preview-cell">'
                     f'<iframe class="slide-preview" loading="lazy" src="{solo_url}" '
                     f'title="slide {one} preview"></iframe>'
+                    f'<span class="zoom-hint">⇥ Tab → 의견 작성</span>'
                     f'</td>'
                     f'<td class="feedback-cell" data-chap="{chap_idx}" data-slide="{one}">'
                     f'<textarea class="fb-text" rows="2" placeholder="의견..."></textarea>'
@@ -1675,7 +1807,7 @@ class DevHandler(SimpleHTTPRequestHandler):
         Sufficient for cover_enabled / toc_placeholder lookups. Returns {}
         if missing or unparseable.
         """
-        cfg_path = os.path.join(os.getcwd(), 'Projects', project, '_config.yml')
+        cfg_path = os.path.join(self._project_root(project), '_config.yml')
         if not os.path.isfile(cfg_path):
             return {}
         out = {}
@@ -1701,53 +1833,55 @@ class DevHandler(SimpleHTTPRequestHandler):
     _CSS_LEN_PAT = r'^(0|[0-9]+(\.[0-9]+)?(px|em|rem|vh|vw|vmin|vmax|%))$'
     _CONFIG_SCHEMA = [
         # Tab 1 — Theme & Layout
-        {'key': 'theme', 'tab': 1, 'type': 'combo', 'label': '테마', 'en': 'Theme', 'default': 'default', 'pattern': r'^[a-z][a-z0-9_-]*$'},
-        {'key': 'palette', 'tab': 1, 'type': 'combo', 'label': '팔레트', 'en': 'Palette', 'default': 'default', 'pattern': r'^[a-z][a-z0-9_-]*$', 'options': ['default', 'warm', 'cool', 'mono', 'office_rainbow']},
-        {'key': 'theme_default_layout', 'tab': 1, 'type': 'text', 'label': '기본 레이아웃', 'en': 'Default layout', 'default': 'contents', 'pattern': r'^_?[a-z][a-z0-9-]*$'},
-        {'key': 'cover_enabled', 'tab': 1, 'type': 'bool', 'label': '커버 슬라이드', 'en': 'Cover slide', 'default': 'false'},
-        {'key': 'cover_layout', 'tab': 1, 'type': 'text', 'label': '커버 레이아웃', 'en': 'Cover layout', 'default': '_cover', 'pattern': r'^_?[a-z][a-z0-9-]*$'},
-        {'key': 'auto_layout_detect', 'tab': 1, 'type': 'bool', 'label': '자동 레이아웃 감지', 'en': 'Auto layout detect', 'default': 'true'},
-        {'key': 'top_align', 'tab': 1, 'type': 'bool', 'label': '상단 정렬', 'en': 'Top align', 'default': 'false'},
-        {'key': 'guide_line', 'tab': 1, 'type': 'bool', 'label': '가이드 라인(디버그)', 'en': 'Guide line (debug)', 'default': 'false'},
-        {'key': 'use_open_props', 'tab': 1, 'type': 'bool', 'label': 'Open Props 로드', 'en': 'Load Open Props', 'default': 'false'},
-        {'key': 'title_contents_gap', 'tab': 1, 'type': 'int', 'label': '제목↔본문 갭(%)', 'en': 'Title-content gap (%)', 'default': '30', 'min': 0, 'max': 100},
-        {'key': 'card_columns', 'tab': 1, 'type': 'int', 'label': '카드 열 수', 'en': 'Card columns', 'default': 'auto', 'min': 1, 'max': 12},
+        {'key': 'theme', 'tab': 1, 'type': 'combo', 'label': '테마', 'en': 'Theme', 'default': 'default', 'pattern': r'^[a-z][a-z0-9_-]*$', 'help': '슬라이드 테마. theme/{name}/ 디렉터리 이름.', 'help_en': 'Slide theme; the name of a theme/{name}/ directory.'},
+        {'key': 'palette', 'tab': 1, 'type': 'combo', 'label': '팔레트', 'en': 'Palette', 'default': 'default', 'pattern': r'^[a-z][a-z0-9_-]*$', 'options': ['default', 'warm', 'cool', 'mono', 'office_rainbow'], 'help': '테마 색상 variant. default·warm·cool·mono·office_rainbow.', 'help_en': 'Color palette variant of the theme.'},
+        {'key': 'theme_default_layout', 'tab': 1, 'type': 'text', 'label': '기본 레이아웃', 'en': 'Default layout', 'default': 'contents', 'pattern': r'^_?[a-z][a-z0-9-]*$', 'help': '슬라이드 기본 레이아웃. 개별 슬라이드는 #layout-* 로 override.', 'help_en': 'Default slide layout; override per slide with #layout-*.'},
+        {'key': 'cover_enabled', 'tab': 1, 'type': 'bool', 'label': '커버 슬라이드', 'en': 'Cover slide', 'default': 'false', 'help': '첫 슬라이드에 표지(cover)를 자동 삽입.', 'help_en': 'Auto-insert a cover slide at the front.'},
+        {'key': 'cover_layout', 'tab': 1, 'type': 'text', 'label': '커버 레이아웃', 'en': 'Cover layout', 'default': '_cover', 'pattern': r'^_?[a-z][a-z0-9-]*$', 'help': '표지에 사용할 레이아웃 이름 (기본 _cover).', 'help_en': 'Layout used for the cover slide (default _cover).'},
+        {'key': 'auto_layout_detect', 'tab': 1, 'type': 'bool', 'label': '자동 레이아웃 감지', 'en': 'Auto layout detect', 'default': 'true', 'help': '이미지 1장·빈 제목 등 패턴을 감지해 레이아웃 자동 선택.', 'help_en': 'Auto-pick a layout from patterns (single image, empty title, etc.).'},
+        {'key': 'top_align', 'tab': 1, 'type': 'bool', 'label': '상단 정렬', 'en': 'Top align', 'default': 'false', 'help': '슬라이드 콘텐츠를 상단 정렬 (기본은 세로 중앙).', 'help_en': 'Align content to the top instead of vertical center.'},
+        {'key': 'guide_line', 'tab': 1, 'type': 'bool', 'label': '가이드 라인(디버그)', 'en': 'Guide line (debug)', 'default': 'false', 'help': '레이아웃 디버그용 가이드 선 표시.', 'help_en': 'Show layout debug guide lines.'},
+        {'key': 'use_open_props', 'tab': 1, 'type': 'bool', 'label': 'Open Props 로드', 'en': 'Load Open Props', 'default': 'false', 'help': 'Open Props CSS 변수 라이브러리 로드.', 'help_en': 'Load the Open Props CSS variables library.'},
+        {'key': 'title_contents_gap', 'tab': 1, 'type': 'int', 'label': '제목↔본문 갭(%)', 'en': 'Title-content gap (%)', 'default': '30', 'min': 0, 'max': 100, 'help': '제목과 본문 사이 간격 (제목 높이의 %).', 'help_en': 'Gap between title and content (% of title height).'},
+        {'key': 'card_columns', 'tab': 1, 'type': 'int', 'label': '카드 열 수', 'en': 'Card columns', 'default': 'auto', 'min': 1, 'max': 12, 'help': '::: cards 그리드 열 수. auto = 콘텐츠 폭 자동.', 'help_en': 'Column count for ::: cards grids; auto = fit to content.'},
+        {'key': 'contents_balance', 'tab': 1, 'type': 'enum', 'label': '본문 세로 분산', 'en': 'Content vertical balance', 'default': 'top', 'options': ['top', 'center'], 'help': '.contents-body 세로 분산. center = 본문을 세로 중앙 분산 (opt-in, Issue284).', 'help_en': 'Vertical distribution of slide body; center distributes content vertically (opt-in).'},
         # Tab 2 — TOC & Structure
-        {'key': 'toc_placeholder', 'tab': 2, 'type': 'bool', 'label': '첫 슬라이드 TOC', 'en': 'First-slide TOC', 'default': 'true'},
-        {'key': 'cards_placeholder', 'tab': 2, 'type': 'bool', 'label': 'H1 카드 페이지', 'en': 'H1 cards page', 'default': 'true'},
-        {'key': 'agenda_enabled', 'tab': 2, 'type': 'bool', 'label': 'agenda 페이지', 'en': 'Agenda page', 'default': 'true'},
-        {'key': 'agenda_card_mode', 'tab': 2, 'type': 'bool', 'label': 'agenda 카드 렌더', 'en': 'Agenda card mode', 'default': 'false'},
-        {'key': 'toc_card_mode', 'tab': 2, 'type': 'bool', 'label': 'TOC 카드 렌더', 'en': 'TOC card mode', 'default': 'false'},
-        {'key': 'agenda_title', 'tab': 2, 'type': 'text', 'label': 'agenda 제목', 'en': 'Agenda title', 'default': 'Agenda'},
-        {'key': 'markmap_depth', 'tab': 2, 'type': 'int', 'label': 'markmap 깊이', 'en': 'Markmap depth', 'default': '2', 'min': 0, 'max': 9},
-        {'key': 'chapter_markmap_depth', 'tab': 2, 'type': 'int', 'label': '챕터 markmap 깊이', 'en': 'Chapter markmap depth', 'default': '3', 'min': 0, 'max': 9},
-        {'key': 'head_left', 'tab': 2, 'type': 'text', 'label': 'head 좌측', 'en': 'Head left', 'default': 'd1', 'pattern': r'^(d[0-9]{1,2}|now|none)$'},
-        {'key': 'head_right', 'tab': 2, 'type': 'text', 'label': 'head 우측', 'en': 'Head right', 'default': 'now', 'pattern': r'^(d[0-9]{1,2}|now|none)$'},
-        {'key': 'head_breadcum', 'tab': 2, 'type': 'bool', 'label': 'breadcrumb', 'en': 'Breadcrumb', 'default': 'true'},
+        {'key': 'toc_placeholder', 'tab': 2, 'type': 'bool', 'label': '첫 슬라이드 TOC', 'en': 'First-slide TOC', 'default': 'true', 'help': '첫 슬라이드에 목차(markmap) 자동 생성.', 'help_en': 'Auto-generate a TOC (markmap) on the first slide.'},
+        {'key': 'cards_placeholder', 'tab': 2, 'type': 'bool', 'label': 'H1 카드 페이지', 'en': 'H1 cards page', 'default': 'true', 'help': 'H1 챕터마다 카드형 섹션 페이지 생성.', 'help_en': 'Generate a card-style section page per H1 chapter.'},
+        {'key': 'agenda_enabled', 'tab': 2, 'type': 'bool', 'label': 'agenda 페이지', 'en': 'Agenda page', 'default': 'true', 'help': 'agenda(개요) 페이지 생성.', 'help_en': 'Generate an agenda page.'},
+        {'key': 'agenda_card_mode', 'tab': 2, 'type': 'bool', 'label': 'agenda 카드 렌더', 'en': 'Agenda card mode', 'default': 'false', 'help': 'agenda 를 카드 그리드로 렌더.', 'help_en': 'Render the agenda as a card grid.'},
+        {'key': 'toc_card_mode', 'tab': 2, 'type': 'bool', 'label': 'TOC 카드 렌더', 'en': 'TOC card mode', 'default': 'false', 'help': '목차를 카드 그리드로 렌더.', 'help_en': 'Render the TOC as a card grid.'},
+        {'key': 'agenda_title', 'tab': 2, 'type': 'text', 'label': 'agenda 제목', 'en': 'Agenda title', 'default': 'Agenda', 'help': 'agenda 페이지 제목 문구.', 'help_en': 'Title text of the agenda page.'},
+        {'key': 'markmap_depth', 'tab': 2, 'type': 'int', 'label': 'markmap 깊이', 'en': 'Markmap depth', 'default': '2', 'min': 0, 'max': 9, 'help': '목차 마인드맵 초기 펼침 깊이.', 'help_en': 'Initial expand depth of the TOC mindmap.'},
+        {'key': 'chapter_markmap_depth', 'tab': 2, 'type': 'int', 'label': '챕터 markmap 깊이', 'en': 'Chapter markmap depth', 'default': '3', 'min': 0, 'max': 9, 'help': '챕터별 페이지 마인드맵 펼침 깊이.', 'help_en': 'Expand depth of per-chapter page mindmaps.'},
+        {'key': 'head_left', 'tab': 2, 'type': 'text', 'label': 'head 좌측', 'en': 'Head left', 'default': 'd1', 'pattern': r'^(d[0-9]{1,2}|now|none)$', 'help': '헤더 좌측 표시. dN=outline depth, now=현재 위치, none=숨김.', 'help_en': 'Header left slot: dN=outline depth, now=current position, none=hide.'},
+        {'key': 'head_right', 'tab': 2, 'type': 'text', 'label': 'head 우측', 'en': 'Head right', 'default': 'now', 'pattern': r'^(d[0-9]{1,2}|now|none)$', 'help': '헤더 우측 표시 (좌측과 동일 옵션).', 'help_en': 'Header right slot (same options as left).'},
+        {'key': 'head_breadcum', 'tab': 2, 'type': 'bool', 'label': 'breadcrumb', 'en': 'Breadcrumb', 'default': 'true', 'help': 'now 슬롯의 breadcrumb(경로) 표시 master 토글.', 'help_en': 'Master toggle for breadcrumb display in the now slot.'},
         # Tab 3 — Navigation
-        {'key': 'nav_indicator', 'tab': 3, 'type': 'enum', 'label': '네비게이터', 'en': 'Nav indicator', 'default': 'both', 'options': ['both', 'diamond', 'page']},
-        {'key': 'nav_color', 'tab': 3, 'type': 'color', 'label': '네비 색', 'en': 'Nav color', 'default': 'auto'},
-        {'key': 'page_number_mode', 'tab': 3, 'type': 'enum', 'label': '페이지 번호 모드', 'en': 'Page number mode', 'default': 'global', 'options': ['global', 'local']},
-        {'key': 'breadcrumb', 'tab': 3, 'type': 'bool', 'label': 'breadcrumb 접두', 'en': 'Breadcrumb prefix', 'default': 'true'},
+        {'key': 'nav_indicator', 'tab': 3, 'type': 'enum', 'label': '네비게이터', 'en': 'Nav indicator', 'default': 'both', 'options': ['both', 'diamond', 'page'], 'help': '네비게이터 표시 형태. both·diamond·page.', 'help_en': 'Navigator indicator style: both, diamond, or page.'},
+        {'key': 'nav_color', 'tab': 3, 'type': 'color', 'label': '네비 색', 'en': 'Nav color', 'default': 'auto', 'help': '네비게이터 색. auto|light|dark|CSS 색.', 'help_en': 'Navigator color: auto | light | dark | any CSS color.'},
+        {'key': 'page_number_mode', 'tab': 3, 'type': 'enum', 'label': '페이지 번호 모드', 'en': 'Page number mode', 'default': 'global', 'options': ['global', 'local'], 'help': '페이지 번호. global=전체 통번, local=챕터별.', 'help_en': 'Page numbering: global (whole deck) or local (per chapter).'},
+        {'key': 'breadcrumb', 'tab': 3, 'type': 'bool', 'label': 'breadcrumb 접두', 'en': 'Breadcrumb prefix', 'default': 'true', 'help': '페이지 번호 앞 챕터 breadcrumb 접두 표시.', 'help_en': 'Show a chapter breadcrumb prefix before the page number.'},
         # Tab 4 — Color & Animation
-        {'key': 'htmlart_line_color', 'tab': 4, 'type': 'color', 'label': 'htmlArt 선 색', 'en': 'htmlArt line color', 'default': 'auto'},
-        {'key': 'animation.default_transition', 'tab': 4, 'type': 'enum', 'label': '전환 효과', 'en': 'Transition', 'default': 'slide', 'options': _TRANSITIONS},
-        {'key': 'animation.default_transition_speed', 'tab': 4, 'type': 'enum', 'label': '전환 속도', 'en': 'Transition speed', 'default': 'default', 'options': ['default', 'fast', 'slow']},
-        {'key': 'animation.default_background_transition', 'tab': 4, 'type': 'enum', 'label': '배경 전환', 'en': 'Background transition', 'default': 'slide', 'options': _TRANSITIONS},
-        {'key': 'video_default', 'tab': 4, 'type': 'text', 'label': '비디오 기본', 'en': 'Video default', 'default': 'controls', 'pattern': r'^[a-z][a-z-]*$'},
-        {'key': 'background', 'tab': 4, 'type': 'text', 'label': '전역 배경', 'en': 'Global background', 'default': 'none'},
+        {'key': 'htmlart_line_color', 'tab': 4, 'type': 'color', 'label': 'htmlArt 선 색', 'en': 'htmlArt line color', 'default': 'auto', 'help': 'htmlArt 도형 선 색. auto|light|dark|CSS 색.', 'help_en': 'htmlArt shape line color: auto | light | dark | CSS color.'},
+        {'key': 'animation.default_transition', 'tab': 4, 'type': 'enum', 'label': '전환 효과', 'en': 'Transition', 'default': 'slide', 'options': _TRANSITIONS, 'help': '슬라이드 전환 효과 기본값.', 'help_en': 'Default slide transition effect.'},
+        {'key': 'animation.default_transition_speed', 'tab': 4, 'type': 'enum', 'label': '전환 속도', 'en': 'Transition speed', 'default': 'default', 'options': ['default', 'fast', 'slow'], 'help': '전환 속도. default·fast·slow.', 'help_en': 'Transition speed: default, fast, or slow.'},
+        {'key': 'animation.default_background_transition', 'tab': 4, 'type': 'enum', 'label': '배경 전환', 'en': 'Background transition', 'default': 'slide', 'options': _TRANSITIONS, 'help': '배경 전환 효과 기본값.', 'help_en': 'Default background transition effect.'},
+        {'key': 'video_default', 'tab': 4, 'type': 'text', 'label': '비디오 기본', 'en': 'Video default', 'default': 'controls', 'pattern': r'^[a-z][a-z-]*$', 'help': '비디오 기본 속성 (controls 등).', 'help_en': 'Default video element attributes (e.g. controls).'},
+        {'key': 'background', 'tab': 4, 'type': 'text', 'label': '전역 배경', 'en': 'Global background', 'default': 'none', 'help': '전역 슬라이드 배경 (CSS 색/이미지, none=없음).', 'help_en': 'Global slide background (CSS color/image; none = off).'},
         # Tab 5 — Size & Font
-        {'key': 'slide_ratio', 'tab': 5, 'type': 'enum', 'label': '슬라이드 비율', 'en': 'Slide ratio', 'default': '16:9', 'options': ['16:9', '3:2', 'fill']},
-        {'key': 'slide_outer_padding', 'tab': 5, 'type': 'text', 'label': '외부 패딩', 'en': 'Outer padding', 'default': '0', 'pattern': _CSS_LEN_PAT},
-        {'key': 'slide_inner_padding', 'tab': 5, 'type': 'text', 'label': '내부 패딩', 'en': 'Inner padding', 'default': '0', 'pattern': _CSS_LEN_PAT},
-        {'key': 'style.theContents.font_size_auto', 'tab': 5, 'type': 'bool', 'label': '본문 폰트 자동', 'en': 'Auto font size', 'default': 'true'},
-        {'key': 'style.theContents.font_size_min', 'tab': 5, 'type': 'text', 'label': '최소 폰트', 'en': 'Min font size', 'default': '20px', 'pattern': _CSS_LEN_PAT},
-        {'key': 'style.theContents.font_size_max_ratio', 'tab': 5, 'type': 'float', 'label': '본문 최대 비율', 'en': 'Max font ratio', 'default': '0.66', 'min': 0.0, 'max': 1.0},
-        {'key': 'style.theContents.media_container_enlarge', 'tab': 5, 'type': 'enum', 'label': '미디어 확대', 'en': 'Media enlarge', 'default': 'fit', 'options': ['original', 'width', 'height', 'fit']},
+        {'key': 'slide_ratio', 'tab': 5, 'type': 'enum', 'label': '슬라이드 비율', 'en': 'Slide ratio', 'default': '16:9', 'options': ['16:9', '3:2', 'fill'], 'help': '슬라이드 종횡비. 16:9·3:2·fill(창 채움).', 'help_en': 'Slide aspect ratio: 16:9, 3:2, or fill.'},
+        {'key': 'slide_outer_padding', 'tab': 5, 'type': 'text', 'label': '외부 패딩', 'en': 'Outer padding', 'default': '0', 'pattern': _CSS_LEN_PAT, 'help': '슬라이드 바깥 여백 (CSS 길이).', 'help_en': 'Outer padding around the slide (CSS length).'},
+        {'key': 'slide_inner_padding', 'tab': 5, 'type': 'text', 'label': '내부 패딩', 'en': 'Inner padding', 'default': '0', 'pattern': _CSS_LEN_PAT, 'help': '슬라이드 안쪽 여백 (CSS 길이).', 'help_en': 'Inner padding inside the slide (CSS length).'},
+        {'key': 'style.theContents.font_size_auto', 'tab': 5, 'type': 'bool', 'label': '본문 폰트 자동', 'en': 'Auto font size', 'default': 'true', 'help': '본문 폰트 크기 자동 조정.', 'help_en': 'Auto-fit the body font size to content.'},
+        {'key': 'style.theContents.font_size_min', 'tab': 5, 'type': 'text', 'label': '최소 폰트', 'en': 'Min font size', 'default': '20px', 'pattern': _CSS_LEN_PAT, 'help': '본문 자동 조정 시 최소 폰트 크기.', 'help_en': 'Minimum font size when auto-fitting.'},
+        {'key': 'style.theContents.font_size_max_ratio', 'tab': 5, 'type': 'float', 'label': '본문 최대 비율', 'en': 'Max font ratio', 'default': '0.66', 'min': 0.0, 'max': 1.0, 'help': '본문 최대 폰트 비율 (슬라이드 높이 대비, 0~1).', 'help_en': 'Max body font ratio relative to slide height (0-1).'},
+        {'key': 'style.theContents.media_container_enlarge', 'tab': 5, 'type': 'enum', 'label': '미디어 확대', 'en': 'Media enlarge', 'default': 'fit', 'options': ['original', 'width', 'height', 'fit'], 'help': '미디어(이미지·영상) 확대 방식. original·width·height·fit.', 'help_en': 'Media enlarge mode: original, width, height, or fit.'},
         # Tab 6 — Build & Deploy
-        {'key': 'asset_mode', 'tab': 6, 'type': 'enum', 'label': '자산 배치', 'en': 'Asset mode', 'default': 'vendor', 'options': ['vendor', 'cdn']},
-        {'key': 'deploy_formats', 'tab': 6, 'type': 'multi', 'label': '배포 형식', 'en': 'Deploy formats', 'default': '[]', 'options': ['epub', 'pdf', 'pptx']},
-        {'key': 'kroki_server', 'tab': 6, 'type': 'text', 'label': 'Kroki 서버', 'en': 'Kroki server', 'default': 'https://kroki.io', 'pattern': r'^https?://[^\s;{}<>"]+$'},
+        {'key': 'asset_mode', 'tab': 6, 'type': 'enum', 'label': '자산 배치', 'en': 'Asset mode', 'default': 'vendor', 'options': ['vendor', 'cdn'], 'help': '런타임 자산 배치. vendor=로컬 번들(오프라인), cdn=CDN.', 'help_en': 'Runtime asset mode: vendor (local, offline) or cdn.'},
+        {'key': 'deploy_formats', 'tab': 6, 'type': 'multi', 'label': '배포 형식', 'en': 'Deploy formats', 'default': '[]', 'options': ['epub', 'pdf', 'pptx'], 'help': '추가 배포 산출물. epub·pdf·pptx 다중 선택.', 'help_en': 'Extra deploy outputs: epub, pdf, pptx (multi-select).'},
+        {'key': 'kroki_server', 'tab': 6, 'type': 'text', 'label': 'Kroki 서버', 'en': 'Kroki server', 'default': 'https://kroki.io', 'pattern': r'^https?://[^\s;{}<>"]+$', 'help': 'Kroki 다이어그램 렌더 서버 URL.', 'help_en': 'Kroki diagram render server URL.'},
+        {'key': 'license_attribution', 'tab': 6, 'type': 'bool', 'label': '라이선스 표기', 'en': 'License attribution', 'default': 'true', 'help': '첫 장·마지막 장 "Powered by finfra.kr, Made by m2slide" 표기(CC BY 4.0 조건). false 시 위법 소지 경고 로그.', 'help_en': 'Attribution badge on first/last slide (CC BY 4.0 condition). Disabling logs a legal-risk warning.'},
     ]
     _CONFIG_I18N = {
         'ko': {
@@ -1772,7 +1906,7 @@ class DevHandler(SimpleHTTPRequestHandler):
         r'^(auto|light|dark|#[0-9a-fA-F]{3,8}|rgba?\([^;{}<>]+\)|hsla?\([^;{}<>]+\)|[a-zA-Z]+)$')
 
     def _config_path(self, project: str) -> str:
-        return os.path.join(os.getcwd(), 'Projects', project, '_config.yml')
+        return os.path.join(self._project_root(project), '_config.yml')
 
     def _list_themes(self):
         """Theme names under theme/ (excluding _ prefixed like _shared)."""
@@ -2021,7 +2155,7 @@ class DevHandler(SimpleHTTPRequestHandler):
     def _serve_config_get(self, project: str):
         """GET /p/<P>/config — schema (tabs·i18n labels), current values, defaults,
         themes, i18n bundle. Client renders tabs + language switch without re-fetch."""
-        if project not in self._list_projects():
+        if not os.path.isdir(self._project_root(project)):  # deck-aware (Issue290)
             self.send_error(404, f'project not found: {project}')
             return
         self._write_json({
@@ -2037,7 +2171,7 @@ class DevHandler(SimpleHTTPRequestHandler):
     def _handle_config_post(self, project: str):
         """POST /p/<P>/config — validate + write whitelisted keys (incl. nested) to
         _config.yml, then rebuild. Body: {"values": {key: val, ...}}."""
-        if project not in self._list_projects():
+        if not os.path.isdir(self._project_root(project)):  # deck-aware (Issue290)
             self.send_error(404, f'project not found: {project}')
             return
         try:
@@ -2098,7 +2232,7 @@ class DevHandler(SimpleHTTPRequestHandler):
         project is whitelisted via _list_projects() and the path is fixed under
         Projects/<P>/, so no arbitrary path is opened. Server binds 127.0.0.1
         only, so no extra IP allowlist is needed."""
-        if project not in self._list_projects():
+        if not os.path.isdir(self._project_root(project)):  # deck-aware (Issue290)
             self.send_error(404, f'project not found: {project}')
             return
         path = self._config_path(project)
@@ -2139,7 +2273,7 @@ class DevHandler(SimpleHTTPRequestHandler):
             'title="_config.yml 을 VSCode 로 열기">📄 설정 파일 열기</button>'
             '<span id="cfg-status" class="cfg-status"></span>'
             '<button type="button" id="cfg-save" class="cfg-save">저장 + 재빌드</button></div>'
-            '</div></div>'
+            '</div><div id="cfg-tip" class="cfg-tip" hidden></div></div>'
         )
 
     def _config_modal_script(self) -> str:
@@ -2152,6 +2286,7 @@ var titleEl=document.getElementById('cfg-title');
 var statusEl=document.getElementById('cfg-status');
 var saveBtn=document.getElementById('cfg-save');
 var openBtn=document.getElementById('cfg-openfile');
+var tipEl=document.getElementById('cfg-tip');
 var DATA=null, initial={}, lang='ko', activeTab=1;
 try{lang=localStorage.getItem('m2cfgLang')||'ko';}catch(e){}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
@@ -2171,12 +2306,13 @@ function ctrl(f){
   var id=idOf(f.key), val=(DATA.values[f.key]!=null?DATA.values[f.key]:''), def=DATA.defaults[f.key]||'';
   var cur=(f.type==='bool')?(val!==''?val:def):val;
   var badge=diffsDefault(f,cur,def)?badgeHtml():'';
+  var help=f.help?'<button type="button" class="cfg-help" tabindex="0" aria-label="?" data-hko="'+esc(f.help)+'" data-hen="'+esc(f.help_en||f.help)+'">?</button>':'';
   var lab='<span class="cfg-lab"><span class="cfg-lname" data-ko="'+esc(f.label)+'" data-en="'+esc(f.en)+'">'+esc(L(f))+'</span>'+badge+'</span>';
   var ctl;
   if(f.type==='bool'){
     var on=(val!==''?val==='true':def==='true');
     var sw='<span class="cfg-switch"><input type="checkbox" id="'+id+'"'+(on?' checked':'')+' role="switch"><span class="cfg-slider"></span></span>';
-    return '<label class="cfg-row cfg-bool" data-key="'+esc(f.key)+'">'+lab+sw+'</label>';
+    return '<label class="cfg-row cfg-bool" data-key="'+esc(f.key)+'">'+lab+sw+help+'</label>';
   }
   if(f.type==='int'||f.type==='float'){
     var step=f.type==='float'?' step="0.01"':'';
@@ -2197,7 +2333,7 @@ function ctrl(f){
   }else{
     ctl='<input type="text" id="'+id+'" value="'+esc(val)+'" placeholder="'+esc(def)+'">';
   }
-  return '<div class="cfg-row" data-key="'+esc(f.key)+'">'+lab+ctl+'</div>';
+  return '<div class="cfg-row" data-key="'+esc(f.key)+'">'+lab+ctl+help+'</div>';
 }
 function buildTabs(){
   tabsEl.innerHTML=DATA.i18n.ko.tabs.map(function(_,i){
@@ -2257,7 +2393,7 @@ function fieldOf(key){return DATA.schema.filter(function(f){return f.key===key;}
 function parseList(v){v=(v||'').trim();if(v.charAt(0)==='[')v=v.slice(1);if(v.charAt(v.length-1)===']')v=v.slice(0,-1);return v.split(',').map(function(x){return x.trim();}).filter(Boolean);}
 function readField(f){var el=document.getElementById(idOf(f.key));if(!el)return '';if(f.type==='bool')return el.checked?'true':'false';if(f.type==='multi'){var sel=[];el.querySelectorAll('input[type=checkbox]:checked').forEach(function(c){sel.push(c.dataset.mopt);});return '['+sel.join(', ')+']';}return (el.value||'').trim();}
 function applyLang(l){
-  lang=l; try{localStorage.setItem('m2cfgLang',l);}catch(e){}
+  lang=l; try{localStorage.setItem('m2cfgLang',l);}catch(e){} if(typeof hideTip==='function')hideTip();
   document.querySelectorAll('.cfg-lang-btn').forEach(function(b){b.classList.toggle('active',b.dataset.lang===l);});
   document.querySelectorAll('#cfg-overlay [data-ko]').forEach(function(el){
     var t=el.getAttribute('data-'+l); if(t!=null)el.textContent=t;
@@ -2286,7 +2422,7 @@ function openModal(project){
     tabsEl.querySelectorAll('.cfg-tab').forEach(function(b){b.addEventListener('click',function(){showTab(+b.dataset.tab);});});
   }).catch(function(e){statusEl.style.color='#c33';statusEl.textContent=T('load_fail')+': '+e.message;});
 }
-function closeModal(){overlay.hidden=true;}
+function closeModal(){hideTip();overlay.hidden=true;}
 function save(){
   var project=overlay.dataset.project, values={};
   DATA.schema.forEach(function(f){var v=readField(f);if(v!==initial[f.key])values[f.key]=v;});
@@ -2301,7 +2437,26 @@ function save(){
       DATA.schema.forEach(function(f){initial[f.key]=readField(f);});
     }).catch(function(e){saveBtn.disabled=false;statusEl.style.color='#c33';statusEl.textContent='✗ '+T('send_fail')+': '+e.message;});
 }
+function hideTip(){if(tipEl)tipEl.hidden=true;}
+// balloon tooltip on hover/focus; positioned just below (or above if no room) the ? button
+function showTip(btn){
+  if(!tipEl)return;
+  tipEl.textContent=(lang==='en'?(btn.dataset.hen||btn.dataset.hko):btn.dataset.hko)||'';
+  tipEl.hidden=false;
+  var r=btn.getBoundingClientRect(), w=tipEl.offsetWidth, h=tipEl.offsetHeight;
+  var left=r.left-4; if(left+w>window.innerWidth-10)left=window.innerWidth-10-w; if(left<8)left=8;
+  var below=(r.bottom+8+h<=window.innerHeight-6);
+  var top=below?(r.bottom+8):(r.top-8-h); if(top<8)top=8;
+  tipEl.classList.toggle('below',below); tipEl.classList.toggle('above',!below);
+  tipEl.style.left=left+'px'; tipEl.style.top=top+'px';
+}
+document.addEventListener('mouseover',function(e){var h=e.target.closest?e.target.closest('.cfg-help'):null;if(h)showTip(h);});
+document.addEventListener('mouseout',function(e){var h=e.target.closest?e.target.closest('.cfg-help'):null;if(h)hideTip();});
+document.addEventListener('focusin',function(e){var h=e.target.closest?e.target.closest('.cfg-help'):null;if(h)showTip(h);});
+document.addEventListener('focusout',function(e){var h=e.target.closest?e.target.closest('.cfg-help'):null;if(h)hideTip();});
 document.addEventListener('click',function(e){
+  var hp=e.target.closest?e.target.closest('.cfg-help'):null;
+  if(hp){e.preventDefault();e.stopPropagation();return;}
   var g=e.target.closest?e.target.closest('.cfg-gear'):null;
   if(g){e.preventDefault();openModal(g.dataset.project);return;}
   var lb=e.target.closest?e.target.closest('.cfg-lang-btn'):null;
@@ -2341,7 +2496,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!overlay.hi
         return cfg.get('cover_enabled', '').lower() == 'true'
 
     def _agenda_active(self, project: str) -> bool:
-        agenda = os.path.join(os.getcwd(), 'Projects', project, 'slide', 'agenda.html')
+        agenda = os.path.join(self._project_root(project), 'slide', 'agenda.html')
         return os.path.isfile(agenda)
 
     def _toc_active(self, project: str) -> bool:
@@ -2405,7 +2560,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!overlay.hi
         the inbox line count == pending count. 0 if file missing/unreadable.
         """
         path = os.path.join(
-            os.getcwd(), 'Projects', project,
+            self._project_root(project),
             '_pipeline', 'feedback', 'dev-feedback.jsonl')
         try:
             with open(path, 'r', encoding='utf-8') as fh:
@@ -2421,7 +2576,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!overlay.hi
         if '/' in project or os.sep in project or project.startswith('.'):
             self.send_error(404, f'project not found: {project}')
             return
-        project_dir = os.path.join(os.getcwd(), 'Projects', project)
+        project_dir = self._project_root(project)
         if not os.path.isdir(project_dir):
             self.send_error(404, f'project not found: {project}')
             return
@@ -2564,6 +2719,32 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!overlay.hi
             'document.body.removeChild(ta);}'
             'if(navigator.clipboard&&window.isSecureContext){'
             'navigator.clipboard.writeText(txt).then(done).catch(fb);}else{fb();}});});'
+            # hover-zoom preview + Tab pin → jump to 의견 textarea, blur → revert
+            'var __zc=null,__zp=false;'
+            'function __clr(cell){var f=cell.querySelector(".slide-preview");'
+            'if(f)f.style.transform="";cell.classList.remove("zoomed","pinned");}'
+            'function __uz(){if(__zc)__clr(__zc);__zc=null;__zp=false;}'
+            'function __zm(cell){if(__zc===cell)return;'
+            'if(__zc)__clr(__zc);'
+            '__zc=cell;__zp=false;cell.classList.add("zoomed");'
+            # fit-scale: grow left from feedback-col edge, but never past viewport left (12px pad).
+            'var f=cell.querySelector(".slide-preview");'
+            'if(f){var avail=cell.getBoundingClientRect().right-12;'
+            'var sc=Math.min(0.6,avail/1920);if(sc<0.3)sc=0.3;'
+            'f.style.transform="scale("+sc+")";}}'
+            'document.querySelectorAll(".preview-cell").forEach(function(cell){'
+            'cell.addEventListener("mouseenter",function(){__zm(cell);});'
+            'cell.addEventListener("mouseleave",function(){'
+            'if(!__zp&&__zc===cell)__uz();});});'
+            'document.addEventListener("keydown",function(e){'
+            'if(e.key!=="Tab"||e.shiftKey||!__zc||__zp)return;'
+            'var row=__zc.closest("tr");'
+            'var ta=row?row.querySelector(".fb-text"):null;'
+            'if(!ta)return;'
+            'e.preventDefault();__zp=true;'
+            'var pc=__zc;pc.classList.add("pinned");ta.focus();'
+            'ta.addEventListener("blur",function _b(){ta.removeEventListener("blur",_b);'
+            'if(__zc===pc&&__zp)__uz();});});'
             '})();</script>'
         )
 
