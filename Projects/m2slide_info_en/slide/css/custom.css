@@ -405,26 +405,32 @@
 /* ── License attribution badge (Issue292) ─────────────────────────────────
    LICENSE.md CC BY 4.0 조건 — 첫 장·마지막 장에 항상 표기.
    설계 SSOT: _doc_arch/license-attribution.md
-   - 위치: 하단 중앙 (2026-07-14 사용자 시각 컨펌 반영 — 우하단 초안에서 변경).
+   - 위치: 하단 중앙, 상하단 노랑 가로선(section[class*="layout-"]::after, bottom:12px
+     height:10px, z-index:100 — 본 파일 §2) "바깥"(아래)에 배치. 2026-07-15 사용자 시각
+     피드백("노란바 아래로") 반영 — 기존 bottom:0.5em은 그 노랑 선과 겹쳐 보였음.
+     .cover-corner(github_url·homepage 등 기존 코너 뱃지)가 이미 동일하게
+     bottom:1px + font-size:0.31em 조합으로 그 선 바깥 좁은 띠에 배치하는 선례를 그대로 따름.
+   - 크기: 노랑 선 바깥 띠(~11px)에 맞춰 0.3em대로 축소 — 이 슬롯의 "참조용 텍스트" 기준을
+     본문 캡션이 아닌 같은 위치의 기존 .cover-corner 관례(0.31em)로 재해석.
    - 색상: 전용 변수 --m2-license-fg(진한회색, theme별 override) — 순수 --kn-text(검정/흰색)보다
      부드럽게. 각 theme의 기본 배경 위에서 WCAG 2.1 contrast ratio ≥4.5:1 보증
-     (검증: `./m2slide.sh --lint-license`).
+     (검증: `./m2slide.sh --lint-license`). 대비는 색상만으로 결정되므로 크기 축소와 무관.
    - 장식: --kn-accent(노랑, 전 theme 공통 고정 식별색) 저알파 text-shadow로 은은한 노랑 그림자
      — "너무 진하지 않게" 요청 반영. 그림자는 장식일 뿐 대비 계산에는 무관(글자色만 대비 대상).
-   - 크기: max()로 하한 고정 — 프로젝트 커스텀 CSS가 font-size를 줄여도 --m2-license-fs-min 밑으로 못 내려감.
+   - 크기 하한: max()로 고정 — 프로젝트 커스텀 CSS가 font-size를 줄여도 --m2-license-fs-min 밑으로 못 내려감.
    - opacity로 색을 흐리게 하지 않음 — opacity는 대비 보증을 깨뜨리므로 사용 금지. "연한 느낌"은
      회색 톤 자체(--m2-license-fg)와 노랑 그림자로만 표현.
    ──────────────────────────────────────────────────────────────────────── */
 :root {
-  --m2-license-fs-min: 0.55em;   /* 하한 — 이 값 아래로 줄어들 수 없음 */
-  --m2-license-fs: 0.65em;       /* 기본 크기 */
+  --m2-license-fs-min: 0.3em;    /* 하한 — .cover-corner(0.31em) 관례에 맞춘 값. 이 아래로 줄어들 수 없음 */
+  --m2-license-fs: 0.34em;       /* 기본 크기 */
   --m2-license-fg: #5a5a5a;      /* 진한회색(라이트 테마 기본) — dark 테마는 --m2-license-fg override */
   --m2-license-shadow: rgba(245, 197, 24, 0.45); /* --kn-accent(#F5C518) 저알파 — 은은한 노랑 그림자 */
 }
 .reveal .slides section .m2-license-badge {
   position: absolute;
   left: 50%;
-  bottom: 0.5em;
+  bottom: 2px;
   transform: translateX(-50%);
   font-size: max(var(--m2-license-fs-min), var(--m2-license-fs));
   color: var(--m2-license-fg);
@@ -436,15 +442,15 @@
   pointer-events: none;
   z-index: 5;
 }
-/* standalone 페이지(agenda.html 등, reveal.js 미사용) — em 대신 절대 px 하한
-   (부모가 reveal section처럼 확대된 폰트 기준을 갖지 않으므로 em 재사용 부적절) */
+/* standalone 페이지(agenda.html 등, reveal.js 미사용) — 노랑 가로선 요소 자체가 없어 겹침 위험은
+   없으나, 시각 통일을 위해 동일하게 절대 px 하한으로 축소 배치 */
 .m2-license-badge--frame,
 .m2-license-badge--standalone {
   position: absolute;
   left: 50%;
-  bottom: 0.5em;
+  bottom: 2px;
   transform: translateX(-50%);
-  font-size: max(11px, 0.9vw);
+  font-size: max(10px, 0.6vw);
   color: var(--m2-license-fg);
   text-shadow: 0 0 6px var(--m2-license-shadow);
   font-weight: 400;
