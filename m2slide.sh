@@ -242,6 +242,13 @@ if [ "$1" = "--lint-deployment" ]; then
   exit 0
 fi
 
+# Subcommand: --lint-license (Issue292)
+# Verify --kn-text vs .reveal background WCAG contrast per theme (license badge reuses --kn-text).
+if [ "$1" = "--lint-license" ]; then
+  node "$SCRIPT_DIR/lib/lint-license.js"
+  exit $?
+fi
+
 # Parse options
 GENERATE_EPUB=false
 GENERATE_PDF=false

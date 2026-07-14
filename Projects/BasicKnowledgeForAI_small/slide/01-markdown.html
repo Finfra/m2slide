@@ -1310,7 +1310,8 @@ body.agenda-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (standalone agenda letterbox). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   font-family: var(--global-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif);
 }
@@ -1324,7 +1325,8 @@ body.agenda-page {
     calc(100vh - 2 * var(--slide-outer-padding, 0px)),
     calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
   );
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (ratio frame). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   position: relative;
 }
@@ -1406,7 +1408,7 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783349009797">
+  <link rel="stylesheet" href="css/custom.css?v=1784033927097">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1490,6 +1492,15 @@ html.ratio-fill .agenda-frame {
     .reveal .controls .navigate-down.m2-enabled:hover {
       opacity: 0.7;
     }
+    /* 마름모(↑/↓) + 좌우(←/→) 화살표 색 — 페이지번호와 동일 체인.
+       nav_color(--m2-nav-color) > 테마 --kn-page-num-color(다크 자동 대응) > 폴백.
+       reveal 기본 arrow 색을 덮어써 다크 테마에서 화살표가 안 보이는 문제 해결 */
+    .reveal .controls .navigate-up,
+    .reveal .controls .navigate-down,
+    .reveal .controls .navigate-left,
+    .reveal .controls .navigate-right {
+      color: var(--m2-nav-color, var(--kn-page-num-color, rgba(0, 0, 0, 0.6))) !important;
+    }
     /* 페이지 번호 — 마름모 정중앙 */
     /* theme/default/slide.css:80 에서 .reveal .controls를 position: fixed + bottom:0 right:0 으로 viewport 기준 강제 */
     /* → .controls 안의 화살표 button 좌표가 viewport 우측 하단 기준이 됨. 페이지번호도 같은 기준 위해 fixed */
@@ -1501,7 +1512,8 @@ html.ratio-fill .agenda-frame {
       width: 60px !important;
       height: 14px !important;
       background: transparent !important;
-      color: rgba(0, 0, 0, 0.6) !important;
+      /* 색: nav_color(--m2-nav-color) 명시 > 테마 --kn-page-num-color(다크 테마 자동 대응) > 하드코딩 폴백 */
+      color: var(--m2-nav-color, var(--kn-page-num-color, rgba(0, 0, 0, 0.6))) !important;
       padding: 0 !important;
       font-size: 13px !important;
       text-align: center;
@@ -1610,6 +1622,7 @@ html.ratio-fill .agenda-frame {
   --slide-outer-padding: 0px;
   --slide-inner-padding: 0px;
   --m2-card-columns: auto-fit;
+  --m2-contents-justify: flex-start;
 ">
   <!-- Issue107: nav-up-btn 제거 — Reveal 기본 .controls .navigate-up/.navigate-down에 동작 위임 -->
   <!-- Issue55 Phase 7: #toc-container 오버레이 제거 — 마크맵은 _toc.html layout 내부 SVG 또는 agenda.html에서 렌더 -->
@@ -1653,7 +1666,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/2" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Markdown이란?</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">Markdown이란?</h1>
   <div class="contents-body">
@@ -1683,7 +1696,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/3" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Markdown의 장-단점</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">Markdown의 장-단점</h1>
   <div class="contents-body">
@@ -1717,7 +1730,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/4" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Markdown Example</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">Markdown Example</h1>
   <div class="contents-body">
@@ -1748,13 +1761,13 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/5" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Markdown 문법 - Header</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">Markdown 문법 - Header</h1>
   <div class="contents-body">
 
 <div class="m2-cols columns">
-<div class="m2-col column" style="flex: 0 0 50%; max-width: 50%">
+<div class="m2-col column" style="flex: 0 0 48%; max-width: 48%">
 <ul>
 <li class="bullet-dot">큰제목: 문서 제목</li>
 </ul>
@@ -1767,7 +1780,7 @@ html.ratio-fill .agenda-frame {
 
 <div class="media-container"><img src="./img/s06_i2.png" alt="H2 underline 예제"></div>
 </div>
-<div class="m2-col column" style="flex: 0 0 50%; max-width: 50%">
+<div class="m2-col column" style="flex: 0 0 48%; max-width: 48%">
 <ul>
 <li class="bullet-dot">글머리: 1~6까지만 지원</li>
 </ul>
@@ -1784,7 +1797,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/6" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Markdown 문법 - BlockQuote</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">Markdown 문법 - BlockQuote</h1>
   <div class="contents-body">
@@ -1809,7 +1822,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/7" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Markdown 문법 - 순서있는 목록(번호)</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">Markdown 문법 - 순서있는 목록(번호)</h1>
   <div class="contents-body">
@@ -1846,7 +1859,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/8" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Markdown 문법 - 순서없는 목록(글머리 기호)</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">Markdown 문법 - 순서없는 목록(글머리 기호)</h1>
   <div class="contents-body">
@@ -1874,7 +1887,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/9" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Markdown 문법 - 수평선</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">Markdown 문법 - 수평선</h1>
   <div class="contents-body">
@@ -1889,7 +1902,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/10" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Markdown 문법 - 링크</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">Markdown 문법 - 링크</h1>
   <div class="contents-body">
@@ -1917,7 +1930,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/11" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Markdown 문법 - 강조</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">Markdown 문법 - 강조</h1>
   <div class="contents-body">
@@ -1932,7 +1945,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/12" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Markdown 문법 - 코드,HTML 블록</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">Markdown 문법 - 코드,HTML 블록</h1>
   <div class="contents-body">
@@ -1966,20 +1979,20 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/13" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Markdown 문법 - html삽입</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">Markdown 문법 - html삽입</h1>
   <div class="contents-body">
 
 <div class="m2-cols columns">
-<div class="m2-col column" style="flex: 0 0 50%; max-width: 50%">
+<div class="m2-col column" style="flex: 0 0 48%; max-width: 48%">
 <pre class="code-wrapper"><code class="language-markdown hljs">|id|name |
 |--|-----|
 |1 |aaa  |
 |2 |bbb  |
 |3 |cccc |</code></pre>
 </div>
-<div class="m2-col column" style="flex: 0 0 50%; max-width: 50%">
+<div class="m2-col column" style="flex: 0 0 48%; max-width: 48%">
 <table>
 <thead>
 <tr><th>id</th><th>name</th></tr>
@@ -2001,7 +2014,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/14" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Markdown 문법 - 이미지</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">Markdown 문법 - 이미지</h1>
   <div class="contents-body">
@@ -2026,7 +2039,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/15" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">Markdown 문법 - 표</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">Markdown 문법 - 표</h1>
   <div class="contents-body">
@@ -2054,7 +2067,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/16" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">MarkDown Editor</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">MarkDown Editor</h1>
   <div class="contents-body">

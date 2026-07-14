@@ -47,6 +47,14 @@
   min-height: 0;
   overflow: hidden;
 }
+/* Issue284: 컴포넌트 블록(htmlArt/cards/media) 바로 뒤 텍스트는 간격을 더 벌려
+   붙어 보이지 않게 함. contents-body gap(0.5em) 위에 추가 상단 마진(총 ~1.4em).
+   컴포넌트 자체엔 margin 금지(Issue198)이므로 "다음 형제"에만 부여. */
+.reveal section[class*="layout-"] .contents-body > .component-container + *,
+.reveal section[class*="layout-"] .contents-body > .m2-cards + *,
+.reveal section[class*="layout-"] .contents-body > .m2-htmlart + * {
+  margin-top: 0.9em;
+}
 .reveal section[class*="layout-"] .component-container > svg {
   flex: 1 1 0;
   width: 100% !important;
@@ -141,7 +149,18 @@
 /* 카드 제목 밴드 — 테마 컬러 변수. 제목은 `**볼드**`로 작성 */
 .reveal section[class*="layout-"] .m2-cards > ul > li > strong,
 .reveal section[class*="layout-"] .m2-cards > ol > li > strong {
-  display: block;
+  /* Issue284: 제목 밴드 높이 균일화 — 1줄/2줄 제목이 섞여도 같은 높이.
+     flex 중앙정렬 + min-height(2줄 기준, border-box). 3줄 이상은 min-height 초과로 자연 확장. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 마커 간격: 심벌(:fa-*: → <i>)이 제목 앞 마커로 올 때 flex 는 <i>·텍스트를
+     별개 item 으로 나눠 사이 공백(마크다운 1칸)을 제거함 → glyph 가 글자에 붙음.
+     gap 으로 심벌↔텍스트 시각 간격 확보(이모지는 텍스트 노드 내부라 무영향).
+     단일 item(순수 텍스트 제목)에는 no-op. 정책: md-m2slide-rules.md "마커 간격". */
+  gap: 0.4em;
+  min-height: 3.2em;
+  box-sizing: border-box;
   margin: 0;
   padding: 0.25em 0.6em;
   background: var(--m2-card-title-bg, var(--kn-accent));
@@ -221,10 +240,11 @@
   --htmlart-accent-5: var(--m2-accent-5, #2ECC71);
   --htmlart-accent-6: var(--m2-accent-6, #E74C3C);
   --htmlart-fg: var(--m2-text, var(--kn-text, #ffffff));
-  --htmlart-box-bg: rgba(0, 0, 0, 0.045);
   --htmlart-surface: var(--m2-surface, #f4f4f5);            /* 노드 박스 불투명 배경 — d3 연결선이 박스 뒤로 가려지게 (Issue195) */
-  --htmlart-box-border: rgba(0, 0, 0, 0.16);
-  --htmlart-arrow: rgba(0, 0, 0, 0.5);
+  /* Issue274: 선/화살표/테두리 색 = config override(--m2-htmlart-line) > 테마 기본(--m2-line) > 하드코딩 fallback.
+     라이트 테마(default·default_lec)는 --m2-line 미설정 → 기존 rgba 유지(회귀 0). 다크 테마는 --m2-line 로 밝은 선색 지정. */
+  --htmlart-box-border: var(--m2-htmlart-line, var(--m2-line, rgba(0, 0, 0, 0.16)));
+  --htmlart-arrow: var(--m2-htmlart-line, var(--m2-line, rgba(0, 0, 0, 0.5)));
   font-size: 0.92em;
   /* Issue197/198: .contents-body(flex column)의 bullet 다음 잔여 세로 공간을 도해가 채움
      — .media-container·.component-container 와 동일한 콘텐츠 컨테이너 fill 계약.
@@ -268,6 +288,19 @@
 .reveal .m2-cols:has(.m2-htmlart),
 .reveal .columns:has(.m2-htmlart) {
   align-items: stretch;
+}
+/* 이미지가 든 columns: 텍스트 컬럼도 행(=이미지) 높이를 받도록 stretch —
+   base.css `.m2-cols{align-items:center}` 가 텍스트 컬럼을 콘텐츠 높이로 붕괴시켜
+   컬럼 안 하단 anchor(margin-top:auto)가 무력화되는 것을 보정 (htmlArt 패턴과 동일 취지). */
+.reveal .m2-cols:has(.media-container),
+.reveal .columns:has(.media-container) {
+  align-items: stretch;
+}
+/* 컬럼의 마지막 요소가 요약 blockquote(punchline)면 컬럼 하단으로 밀어
+   위 본문과 시각적으로 분리 — flex column 의 margin-top:auto 로 남은 세로 공간을 흡수. */
+.reveal .m2-col > blockquote:last-child,
+.reveal .column > blockquote:last-child {
+  margin-top: auto;
 }
 .reveal .m2-htmlart ul,
 .reveal .m2-htmlart ol {
@@ -376,6 +409,50 @@
   --htmlart-explain-center-fg: var(--htmlart-accent);
   --htmlart-explain-leaf-fg: var(--m2-text, var(--kn-text, inherit));
   --htmlart-explain-line: var(--htmlart-accent);
+}
+
+/* ── License attribution badge (Issue292) ─────────────────────────────────
+   LICENSE.md CC BY 4.0 조건 — 첫 장·마지막 장에 항상 표기.
+   설계 SSOT: _doc_arch/license-attribution.md
+   - 위치: 우하단 고정 (theme 공통 1곳). 개별 theme이 필요 시 셀렉터 override 가능(자유 위치 원칙).
+   - 색상: 신규 색 정의 없이 theme의 --kn-text 재사용 — 각 theme이 이미 자신의 기본 배경 위에서
+     --kn-text 대비를 보증하므로(제목·본문 등 전체 텍스트가 동일 색 사용) 뱃지도 그 보증을 상속한다.
+     (WCAG 2.1 contrast ratio ≥4.5:1 — 검증은 `./m2slide.sh --lint-license` 참조)
+   - 크기: max()로 하한 고정 — 프로젝트 커스텀 CSS가 font-size를 줄여도 --m2-license-fs-min 밑으로 못 내려감.
+   - 텍스트는 --kn-text 그대로(투명도 낮추지 않음) — opacity를 낮추면 대비 보증이 깨지므로 사용 금지.
+   ──────────────────────────────────────────────────────────────────────── */
+:root {
+  --m2-license-fs-min: 0.55em;   /* 하한 — 이 값 아래로 줄어들 수 없음 */
+  --m2-license-fs: 0.65em;       /* 기본 크기 — 🚧 샘플 빌드 후 사용자 컨펌으로 최종 확정 예정 */
+}
+.reveal .slides section .m2-license-badge {
+  position: absolute;
+  right: 0.7em;
+  bottom: 0.5em;
+  font-size: max(var(--m2-license-fs-min), var(--m2-license-fs));
+  color: var(--kn-text, #666);
+  font-family: inherit;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 5;
+}
+/* standalone 페이지(agenda.html 등, reveal.js 미사용) — em 대신 절대 px 하한
+   (부모가 reveal section처럼 확대된 폰트 기준을 갖지 않으므로 em 재사용 부적절) */
+.m2-license-badge--frame,
+.m2-license-badge--standalone {
+  position: absolute;
+  right: 0.7em;
+  bottom: 0.5em;
+  font-size: max(11px, 0.9vw);
+  color: var(--kn-text, #666);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 50;
+}
+.m2-license-badge--standalone {
+  position: fixed; /* .agenda-frame 미탐지 시 fallback — 위치 앵커(position:relative)가 없을 수 있어 fixed */
 }
 
 /* <<< @import ../_shared/components.css */
@@ -660,6 +737,14 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  /* Issue284: 컴포넌트(htmlArt/cards/media)↔인접 텍스트 세로 간격 확보 (밸런싱).
+     margin 대신 gap 사용 — flex item margin 은 잔여공간 잠식(Issue198)이라 금지되므로
+     컨테이너 gap 으로 균일 간격만 부여(정렬·flex-grow 계약 불변). */
+  gap: 0.5em;
+  /* Issue284 opt-in: _config.yml contents_balance: center → --m2-contents-justify 주입.
+     기본(미설정)은 flex-start = 기존 동작과 동일 (justify-content 전역 강제는
+     제목 소실 가드 위험이라 CSS 변수 opt-in 으로만 노출). */
+  justify-content: var(--m2-contents-justify, flex-start);
 }
 
 /* _contents/_contents_no_title 본문·헤더 투명 배경
@@ -726,7 +811,8 @@
 /* 4.1 cover: puffer1 좌상단 + subtitle 박스 우하단 */
 .reveal section.layout-_cover,
 .guide-line-mode .reveal .slides section.layout-_cover {
-  background-color: #ffffff !important;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응. 미정의 테마는 #ffffff fallback (회귀 0) */
+  background-color: var(--m2-bg, #ffffff) !important;
   background-image: url('../theme-img/finfraPuffer1.png');
   background-repeat: no-repeat;
   background-position: 6% 14%;
@@ -1386,6 +1472,66 @@ body.agenda-page .agenda-frame {
   height: 100%;
   min-height: 0;
   display: block;
+}
+
+/* agenda_card_mode: 카드 그리드(.toc-cards)도 markmap 박스와 동일한 accent 테두리 프레임.
+   카드 모드 컨테이너는 .layout-_cards.layout-_toc — .toc-markmap 셀렉터에 매치되지 않아
+   테두리가 소실되던 회귀 보정. */
+.agenda-frame .layout-_cards {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.agenda-frame .toc-cards {
+  flex: 1 1 0;
+  min-height: 0;
+  margin-top: calc(var(--frame-h) * 0.05);
+  border: 2px solid var(--kn-accent);
+  border-radius: 8px;
+  padding: 12px;
+  /* overflow: auto → hidden (markmap .toc-markmap 과 동일). auto(스크롤 컨테이너) + 분수 margin-top
+     오프셋이 deviceScaleFactor 2 에서 top border paint 를 누락시키는 Chrome 렌더 버그 회피.
+     카드는 프레임 대비 항상 여유가 커 스크롤 불필요 → hidden 안전. */
+  overflow: hidden;
+  background: transparent;
+}
+
+/* 카드 모드 agenda(.layout-_cards) 마스코트 — markmap agenda(.layout-_agenda::after)와 동일한
+   고양이(finfraCat)를 우상단에 배치. 카드 wrapper 는 .layout-_agenda 가 아니라 ::after 마스코트가
+   없었음(사용자 지적). toc-cards(z-index:1, 투명 bg) 뒤(z-index:0)에 깔려 카드 위로 겹치지 않고
+   상단 여백에 노출. --frame-h/--frame-w 비례로 markmap 마스코트와 동일 스케일·위치. */
+.agenda-frame .layout-_cards { position: relative; }
+.agenda-frame .toc-cards { position: relative; z-index: 1; }
+.agenda-frame .layout-_cards::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--frame-h) * 0.03);
+  right: calc(var(--frame-w) * 0.02);
+  width: calc(var(--frame-w) * 0.126);
+  height: calc(var(--frame-h) * 0.198);
+  background-image: url('../theme-img/finfraCat.png');
+  background-repeat: no-repeat;
+  background-position: right top;
+  background-size: contain;
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: 0;
+  transform: translateY(-13.5%);
+}
+/* 카드 모드 제목 위 노랑 가로선(hr.png) — markmap agenda(.layout-_agenda::before)와 동일.
+   카드 wrapper 는 .layout-_agenda 가 아니라 상단 라인이 없었음(사용자 지적 "제목위 라인"). */
+.agenda-frame .layout-_cards::before {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 12px;
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* =========================================================================

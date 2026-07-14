@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 291
+* Issue HWM: 292
 * Checkpoints:
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
@@ -20,10 +20,25 @@
 * 로우·값 단위 개별 애니메이션 지원(VideoMaker 영상 플레이용). Issue149 완료 — reveal.js `<!-- .element: class="..." -->` + Pandoc `{.fragment}` 병존.
 
 # 🌱 이슈후보
-1. 라이선스 표기 자동 삽입 — 빌드 시 첫 장·마지막 장에 "Powered by finfra.kr, Made by m2slide" 표기 자동 주입 (LICENSE.md 이중 라이선스 정책 근거, 2026-07-13 신설). 현재 빌드 산출물에 표기 미구현 → generate-slides.js/html-builder.js 삽입 + 유료 라이선스용 제거 옵션(`_config.yml` 키 등) 설계 필요
 1. _doc_arch/media-creater-image-backend.md에 공개 이미지 받아서 프롬프트에 맞게 mflux로 수정하는 기능 필요. — 2026-07-13 검증: 큐 v1.1 img2img(--image-path·--image-strength) 지원 완료(prj55#Issue5). 단 **schnell img2img 는 정밀 편집(색만·글자만) 불가**(strength 0.3↑ 복제·0.1 재해석 실측) → edit 전용 모델(Qwen-Image-Edit ~수십 GB) 설치가 선행 조건. 글로벌 스킬화는 prj3#Issue219(jm4-mflux) 등록됨
 
 # 🔥 진행 중
+
+## Issue292. 라이선스 표기 자동 삽입 — 첫 장·마지막 장 고정 뱃지 + 대비 규칙 (등록: 2026-07-14)
+* 목적: LICENSE.md 이중 라이선스 정책("모든 산출물의 첫 장·마지막 장에 'Powered by finfra.kr, Made by m2slide' 표기 유지 의무", CC BY 4.0 근거)을 실제 빌드 산출물에 강제 반영. 현재는 문서(LICENSE.md)에만 명시되어 있고 빌드 코드에는 미구현 — 사용자 확인(2026-07-14 hub 폼 질의) 결과 "룰(rule)로 고정" = 빌드 시 자동 삽입·누락 시 자동 보정하는 강제 정책으로 구현하기로 확정. 위치는 자유(테마별 디자인 재량)이나 존재·최소 크기·대비는 규칙으로 강제.
+* plan: `_doc_work/plan/license-attribution_plan.md`
+* task: `_doc_work/tasks/license-attribution_task.md`
+* 상세:
+    - 대상: 현재 생성된 모든 프로젝트(`Projects/*`, z_done 제외)에 소급 적용 — 각 프로젝트 재빌드로 첫 장·마지막 장에 뱃지 반영
+    - 사용자 확정 사양 (2026-07-14 채팅 확인):
+        1. 위치는 자유 — 강제 고정 위치(bar)나 전용 슬라이드(credit roll) 아님. 테마별로 자연스러운 위치 선택
+        2. 빠지면(없으면) 자동으로 추가하는 빌드 규칙 — 매 빌드마다 첫 슬라이드·마지막 슬라이드 검증 + 누락 시 주입
+        3. 특정 크기 이하로 줄어들지 않는 최소 크기 제약 (참조용 텍스트 크기 이상)
+        4. 기본 크기는 디자인을 해치지 않는 범위에서 결정 (최종 디자인은 사용자 컨펌)
+        5. 배경색·글자색 구분(대비) 규칙 — 사용자 초안(채도 diff ≥50%, 명도 diff ≥50%, 색상差 ≥10°, 회색 예외)은 "더 표준적인 방법 있으면 적용" 승인 받음 → WCAG 2.1 contrast ratio(≥4.5:1, relative luminance 공식) 표준 채택 예정 (설계 문서에서 최종 확정)
+        6. `license_attribution: false`로 제거 시 "위법(라이선스 위반) 소지" 경고를 빌드 로그에 출력 가능하게 (하드 차단 아닌 경고 — 로컬 오픈소스 툴 특성상 기술적 강제는 불가, 경고로 인지시킴)
+    - 여러 프로젝트(테마별: default·default_lec·default_dark 등)에서 디자인 검토 필수 — 전체 소급 적용 전 대표 샘플로 사용자 시각 컨펌 선행
+    - nPTiR 전체 사이클 명시 트리거(triage 무관 plan→task→issue→구현→사용자 컨펌→report)
 
 # 📕 중요
 

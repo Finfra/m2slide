@@ -1310,7 +1310,8 @@ body.agenda-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (standalone agenda letterbox). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   font-family: var(--global-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif);
 }
@@ -1324,7 +1325,8 @@ body.agenda-page {
     calc(100vh - 2 * var(--slide-outer-padding, 0px)),
     calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
   );
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (ratio frame). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   position: relative;
 }
@@ -1406,7 +1408,7 @@ html.ratio-fill .agenda-frame {
 }
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783349009799">
+  <link rel="stylesheet" href="css/custom.css?v=1784033927099">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1490,6 +1492,15 @@ html.ratio-fill .agenda-frame {
     .reveal .controls .navigate-down.m2-enabled:hover {
       opacity: 0.7;
     }
+    /* 마름모(↑/↓) + 좌우(←/→) 화살표 색 — 페이지번호와 동일 체인.
+       nav_color(--m2-nav-color) > 테마 --kn-page-num-color(다크 자동 대응) > 폴백.
+       reveal 기본 arrow 색을 덮어써 다크 테마에서 화살표가 안 보이는 문제 해결 */
+    .reveal .controls .navigate-up,
+    .reveal .controls .navigate-down,
+    .reveal .controls .navigate-left,
+    .reveal .controls .navigate-right {
+      color: var(--m2-nav-color, var(--kn-page-num-color, rgba(0, 0, 0, 0.6))) !important;
+    }
     /* 페이지 번호 — 마름모 정중앙 */
     /* theme/default/slide.css:80 에서 .reveal .controls를 position: fixed + bottom:0 right:0 으로 viewport 기준 강제 */
     /* → .controls 안의 화살표 button 좌표가 viewport 우측 하단 기준이 됨. 페이지번호도 같은 기준 위해 fixed */
@@ -1501,7 +1512,8 @@ html.ratio-fill .agenda-frame {
       width: 60px !important;
       height: 14px !important;
       background: transparent !important;
-      color: rgba(0, 0, 0, 0.6) !important;
+      /* 색: nav_color(--m2-nav-color) 명시 > 테마 --kn-page-num-color(다크 테마 자동 대응) > 하드코딩 폴백 */
+      color: var(--m2-nav-color, var(--kn-page-num-color, rgba(0, 0, 0, 0.6))) !important;
       padding: 0 !important;
       font-size: 13px !important;
       text-align: center;
@@ -1610,6 +1622,7 @@ html.ratio-fill .agenda-frame {
   --slide-outer-padding: 0px;
   --slide-inner-padding: 0px;
   --m2-card-columns: auto-fit;
+  --m2-contents-justify: flex-start;
 ">
   <!-- Issue107: nav-up-btn 제거 — Reveal 기본 .controls .navigate-up/.navigate-down에 동작 위임 -->
   <!-- Issue55 Phase 7: #toc-container 오버레이 제거 — 마크맵은 _toc.html layout 내부 SVG 또는 agenda.html에서 렌더 -->
@@ -1642,7 +1655,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/2" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">리눅스를 알아야 하는 이유</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">리눅스를 알아야 하는 이유</h1>
   <div class="contents-body">
@@ -1659,13 +1672,13 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/3" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">윈도우에서 접속시</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">윈도우에서 접속시</h1>
   <div class="contents-body">
 
 <div class="m2-cols columns">
-<div class="m2-col column" style="flex: 0 0 50%; max-width: 50%">
+<div class="m2-col column" style="flex: 0 0 48%; max-width: 48%">
 <ul>
 <li class="bullet-dot">Putty.exe와 같은 ssh지원 어플 사용 접속</li>
 <li class="bullet-dot">file은 fileZillaftp사용</li>
@@ -1679,7 +1692,7 @@ html.ratio-fill .agenda-frame {
 
 <div class="media-container"><img src="./img/BasicKnowledgeForAI_small_12.png" alt="FileZilla 화면"></div>
 </div>
-<div class="m2-col column" style="flex: 0 0 50%; max-width: 50%">
+<div class="m2-col column" style="flex: 0 0 48%; max-width: 48%">
 <div class="media-container"><img src="./img/BasicKnowledgeForAI_small_11.png" alt="PuTTY 설정 + 터미널"></div>
 </div>
 </div></div>
@@ -1688,13 +1701,13 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/4" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">명령어 및 유틸리티 리스트</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">명령어 및 유틸리티 리스트</h1>
   <div class="contents-body">
 
 <div class="m2-cols columns">
-<div class="m2-col column" style="flex: 0 0 33%; max-width: 33%">
+<div class="m2-col column" style="flex: 0 0 30.36%; max-width: 30.36%">
 <ul>
 <li class="bullet-dot"><strong>alias</strong><span class="fragment" data-fragment-index="1"> — 명령어 별칭 지정</span></li>
 <li class="bullet-dot"><strong>cat</strong><span class="fragment" data-fragment-index="1"> — 파일 내용 출력·연결</span></li>
@@ -1707,7 +1720,7 @@ html.ratio-fill .agenda-frame {
 <li class="bullet-dot"><strong>date</strong><span class="fragment" data-fragment-index="1"> — 날짜·시간 표시</span></li>
 </ul>
 </div>
-<div class="m2-col column" style="flex: 0 0 33%; max-width: 33%">
+<div class="m2-col column" style="flex: 0 0 30.36%; max-width: 30.36%">
 <ul>
 <li class="bullet-dot"><strong>echo</strong><span class="fragment" data-fragment-index="1"> — 문자열·변수 출력</span></li>
 <li class="bullet-dot"><strong>head</strong><span class="fragment" data-fragment-index="1"> — 파일 앞부분 출력</span></li>
@@ -1720,7 +1733,7 @@ html.ratio-fill .agenda-frame {
 <li class="bullet-dot"><strong>pwd</strong><span class="fragment" data-fragment-index="1"> — 현재 경로 출력</span></li>
 </ul>
 </div>
-<div class="m2-col column" style="flex: 0 0 34%; max-width: 34%">
+<div class="m2-col column" style="flex: 0 0 31.28%; max-width: 31.28%">
 <ul>
 <li class="bullet-dot"><strong>rm</strong><span class="fragment" data-fragment-index="1"> — 파일 삭제</span></li>
 <li class="bullet-dot"><strong>rmdir</strong><span class="fragment" data-fragment-index="1"> — 빈 디렉토리 삭제</span></li>
@@ -1736,10 +1749,10 @@ html.ratio-fill .agenda-frame {
 </div></div>
 </section>
 
-<section data-slide-hash="#/5" class="layout-_contents">
+<section data-slide-hash="#/5" class="layout-_contents"><div class="m2-license-badge" data-m2-license="true">Powered by finfra.kr, Made by m2slide</div>
   <div class="contents-head-bar">
     <div class="contents-head-left">절대경로 이름과 상대경로 이름</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">절대경로 이름과 상대경로 이름</h1>
   <div class="contents-body">

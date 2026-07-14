@@ -154,6 +154,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  /* 마커 간격: 심벌(:fa-*: → <i>)이 제목 앞 마커로 올 때 flex 는 <i>·텍스트를
+     별개 item 으로 나눠 사이 공백(마크다운 1칸)을 제거함 → glyph 가 글자에 붙음.
+     gap 으로 심벌↔텍스트 시각 간격 확보(이모지는 텍스트 노드 내부라 무영향).
+     단일 item(순수 텍스트 제목)에는 no-op. 정책: md-m2slide-rules.md "마커 간격". */
+  gap: 0.4em;
   min-height: 3.2em;
   box-sizing: border-box;
   margin: 0;
@@ -284,6 +289,19 @@
 .reveal .columns:has(.m2-htmlart) {
   align-items: stretch;
 }
+/* 이미지가 든 columns: 텍스트 컬럼도 행(=이미지) 높이를 받도록 stretch —
+   base.css `.m2-cols{align-items:center}` 가 텍스트 컬럼을 콘텐츠 높이로 붕괴시켜
+   컬럼 안 하단 anchor(margin-top:auto)가 무력화되는 것을 보정 (htmlArt 패턴과 동일 취지). */
+.reveal .m2-cols:has(.media-container),
+.reveal .columns:has(.media-container) {
+  align-items: stretch;
+}
+/* 컬럼의 마지막 요소가 요약 blockquote(punchline)면 컬럼 하단으로 밀어
+   위 본문과 시각적으로 분리 — flex column 의 margin-top:auto 로 남은 세로 공간을 흡수. */
+.reveal .m2-col > blockquote:last-child,
+.reveal .column > blockquote:last-child {
+  margin-top: auto;
+}
 .reveal .m2-htmlart ul,
 .reveal .m2-htmlart ol {
   list-style: none;
@@ -391,6 +409,61 @@
   --htmlart-explain-center-fg: var(--htmlart-accent);
   --htmlart-explain-leaf-fg: var(--m2-text, var(--kn-text, inherit));
   --htmlart-explain-line: var(--htmlart-accent);
+}
+
+/* ── License attribution badge (Issue292) ─────────────────────────────────
+   LICENSE.md CC BY 4.0 조건 — 첫 장·마지막 장에 항상 표기.
+   설계 SSOT: _doc_arch/license-attribution.md
+   - 위치: 하단 중앙 (2026-07-14 사용자 시각 컨펌 반영 — 우하단 초안에서 변경).
+   - 색상: 전용 변수 --m2-license-fg(진한회색, theme별 override) — 순수 --kn-text(검정/흰색)보다
+     부드럽게. 각 theme의 기본 배경 위에서 WCAG 2.1 contrast ratio ≥4.5:1 보증
+     (검증: `./m2slide.sh --lint-license`).
+   - 장식: --kn-accent(노랑, 전 theme 공통 고정 식별색) 저알파 text-shadow로 은은한 노랑 그림자
+     — "너무 진하지 않게" 요청 반영. 그림자는 장식일 뿐 대비 계산에는 무관(글자色만 대비 대상).
+   - 크기: max()로 하한 고정 — 프로젝트 커스텀 CSS가 font-size를 줄여도 --m2-license-fs-min 밑으로 못 내려감.
+   - opacity로 색을 흐리게 하지 않음 — opacity는 대비 보증을 깨뜨리므로 사용 금지. "연한 느낌"은
+     회색 톤 자체(--m2-license-fg)와 노랑 그림자로만 표현.
+   ──────────────────────────────────────────────────────────────────────── */
+:root {
+  --m2-license-fs-min: 0.55em;   /* 하한 — 이 값 아래로 줄어들 수 없음 */
+  --m2-license-fs: 0.65em;       /* 기본 크기 */
+  --m2-license-fg: #5a5a5a;      /* 진한회색(라이트 테마 기본) — dark 테마는 --m2-license-fg override */
+  --m2-license-shadow: rgba(245, 197, 24, 0.45); /* --kn-accent(#F5C518) 저알파 — 은은한 노랑 그림자 */
+}
+.reveal .slides section .m2-license-badge {
+  position: absolute;
+  left: 50%;
+  bottom: 0.5em;
+  transform: translateX(-50%);
+  font-size: max(var(--m2-license-fs-min), var(--m2-license-fs));
+  color: var(--m2-license-fg);
+  text-shadow: 0 0 6px var(--m2-license-shadow);
+  font-family: inherit;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 5;
+}
+/* standalone 페이지(agenda.html 등, reveal.js 미사용) — em 대신 절대 px 하한
+   (부모가 reveal section처럼 확대된 폰트 기준을 갖지 않으므로 em 재사용 부적절) */
+.m2-license-badge--frame,
+.m2-license-badge--standalone {
+  position: absolute;
+  left: 50%;
+  bottom: 0.5em;
+  transform: translateX(-50%);
+  font-size: max(11px, 0.9vw);
+  color: var(--m2-license-fg);
+  text-shadow: 0 0 6px var(--m2-license-shadow);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 50;
+}
+.m2-license-badge--standalone {
+  position: fixed; /* .agenda-frame 미탐지 시 fallback — 위치 앵커(position:relative)가 없을 수 있어 fixed */
 }
 
 /* <<< @import ../_shared/components.css */

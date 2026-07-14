@@ -1310,7 +1310,8 @@ body.agenda-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (standalone agenda letterbox). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   font-family: var(--global-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif);
 }
@@ -1324,7 +1325,8 @@ body.agenda-page {
     calc(100vh - 2 * var(--slide-outer-padding, 0px)),
     calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
   );
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (ratio frame). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   position: relative;
 }
@@ -1390,7 +1392,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783349009460">
+  <link rel="stylesheet" href="css/custom.css?v=1784032794385">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1474,6 +1476,15 @@ html.ratio-fill .agenda-frame {
     .reveal .controls .navigate-down.m2-enabled:hover {
       opacity: 0.7;
     }
+    /* 마름모(↑/↓) + 좌우(←/→) 화살표 색 — 페이지번호와 동일 체인.
+       nav_color(--m2-nav-color) > 테마 --kn-page-num-color(다크 자동 대응) > 폴백.
+       reveal 기본 arrow 색을 덮어써 다크 테마에서 화살표가 안 보이는 문제 해결 */
+    .reveal .controls .navigate-up,
+    .reveal .controls .navigate-down,
+    .reveal .controls .navigate-left,
+    .reveal .controls .navigate-right {
+      color: var(--m2-nav-color, var(--kn-page-num-color, rgba(0, 0, 0, 0.6))) !important;
+    }
     /* 페이지 번호 — 마름모 정중앙 */
     /* theme/default/slide.css:80 에서 .reveal .controls를 position: fixed + bottom:0 right:0 으로 viewport 기준 강제 */
     /* → .controls 안의 화살표 button 좌표가 viewport 우측 하단 기준이 됨. 페이지번호도 같은 기준 위해 fixed */
@@ -1485,7 +1496,8 @@ html.ratio-fill .agenda-frame {
       width: 60px !important;
       height: 14px !important;
       background: transparent !important;
-      color: rgba(0, 0, 0, 0.6) !important;
+      /* 색: nav_color(--m2-nav-color) 명시 > 테마 --kn-page-num-color(다크 테마 자동 대응) > 하드코딩 폴백 */
+      color: var(--m2-nav-color, var(--kn-page-num-color, rgba(0, 0, 0, 0.6))) !important;
       padding: 0 !important;
       font-size: 13px !important;
       text-align: center;
@@ -1594,6 +1606,7 @@ html.ratio-fill .agenda-frame {
   --slide-outer-padding: 0px;
   --slide-inner-padding: 0px;
   --m2-card-columns: auto-fit;
+  --m2-contents-justify: flex-start;
 ">
   <!-- Issue107: nav-up-btn 제거 — Reveal 기본 .controls .navigate-up/.navigate-down에 동작 위임 -->
   <!-- Issue55 Phase 7: #toc-container 오버레이 제거 — 마크맵은 _toc.html layout 내부 SVG 또는 agenda.html에서 렌더 -->
@@ -1615,7 +1628,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/2" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">VSCode ↔ 대시보드 연동</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">VSCode ↔ 대시보드 연동</h1>
   <div class="contents-body">
@@ -1649,20 +1662,20 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/3" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">카드에서 명명 브라우저 탭으로 점프</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">카드에서 명명 브라우저 탭으로 점프</h1>
   <div class="contents-body">
 
 <div class="m2-cols columns">
-<div class="m2-col column" style="flex: 0 0 40%; max-width: 40%">
+<div class="m2-col column" style="flex: 0 0 38.4%; max-width: 38.4%">
 <ul>
 <li class="bullet-dot">hub 문서 카드의 <strong>↗ 버튼</strong>은 그 문서를 <strong>이름이 붙은 브라우저 탭</strong>으로 엶</li>
 <li class="bullet-dot">탭 제목이 <code>fSnippet — Issue941 커밋</code>처럼 의미로 표기되어 여러 탭을 헷갈리지 않음</li>
 <li class="bullet-dot">같은 문서를 다시 열면 새 탭을 만들지 않고 그 탭으로 포커스가 이동함</li>
 </ul>
 </div>
-<div class="m2-col column" style="flex: 0 0 60%; max-width: 60%">
+<div class="m2-col column" style="flex: 0 0 57.6%; max-width: 57.6%">
 <div class="media-container"><img src="./img/screenshots/04-jump-tab.png" alt="hub 문서 카드의 ↗ 버튼 → 'fSnippet — Issue941 커밋' 명명 탭으로 점프"></div>
 </div>
 </div></div>
@@ -1671,13 +1684,13 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/4" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">문서를 만든 세션으로 되돌아가기</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">문서를 만든 세션으로 되돌아가기</h1>
   <div class="contents-body">
 
 <div class="m2-cols columns">
-<div class="m2-col column" style="flex: 0 0 40%; max-width: 40%">
+<div class="m2-col column" style="flex: 0 0 38.4%; max-width: 38.4%">
 <ul>
 <li class="bullet-dot">hub 문서 카드의 <strong>VS 버튼</strong>은 그 문서를 만든 <strong>원본 세션을 VSCode로 포커스</strong>함</li>
 <li class="bullet-dot">"이 결과 누가 만들었더라"를 찾을 필요 없이 작업하던 자리로 즉시 복귀함</li>
@@ -1688,7 +1701,7 @@ html.ratio-fill .agenda-frame {
 Before → After: "창 3개를 오가며 찾기"에서 "카드 버튼 한 번으로 탭·세션 점프"로 바뀜
 </blockquote>
 </div>
-<div class="m2-col column" style="flex: 0 0 60%; max-width: 60%">
+<div class="m2-col column" style="flex: 0 0 57.6%; max-width: 57.6%">
 <div class="media-container"><img src="./img/screenshots/04-jump-vscode.png" alt="hub 문서 카드의 VS 버튼 → 원본 세션(fSnippet)을 VSCode로 포커스"></div>
 </div>
 </div></div>
@@ -1697,20 +1710,20 @@ Before → After: "창 3개를 오가며 찾기"에서 "카드 버튼 한 번으
 <section data-slide-hash="#/5" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">슬래시 커맨드로 통합 조작</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h1 class="title">슬래시 커맨드로 통합 조작</h1>
   <div class="contents-body">
 
 <div class="m2-cols columns">
-<div class="m2-col column" style="flex: 0 0 40%; max-width: 40%">
+<div class="m2-col column" style="flex: 0 0 38.4%; max-width: 38.4%">
 <ul>
 <li class="bullet-dot">VSCode Claude Code 패널에서 <code>/fpm</code> 입력 → fPM 기능이 <strong>슬래시 커맨드 목록</strong>으로 뜸</li>
 <li class="bullet-dot"><code>/fpm-board</code>·<code>/fpm-hub</code>·<code>/fpm-show</code>·<code>/fpm-pm-do</code> 등 앞서 본 기능을 IDE 안에서 바로 호출</li>
 <li class="bullet-dot">프로젝트 열기·세션 포커스·문서 렌더가 모두 에디터를 떠나지 않고 이어짐</li>
 </ul>
 </div>
-<div class="m2-col column" style="flex: 0 0 60%; max-width: 60%">
+<div class="m2-col column" style="flex: 0 0 57.6%; max-width: 57.6%">
 <div class="media-container"><img src="./img/screenshots/04-fpm-commands.png" alt="Claude Code 패널에서 /fpm 입력 → fpm-board·hub·show·pm-do 등 슬래시 커맨드 목록"></div>
 </div>
 </div></div>

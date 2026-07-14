@@ -1306,7 +1306,8 @@ body.agenda-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (standalone agenda letterbox). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   font-family: var(--global-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif);
 }
@@ -1320,7 +1321,8 @@ body.agenda-page {
     calc(100vh - 2 * var(--slide-outer-padding, 0px)),
     calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
   );
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (ratio frame). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   position: relative;
 }
@@ -1414,7 +1416,7 @@ html.ratio-fill .agenda-frame {
     @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
 </style>
-<link rel="stylesheet" href="css/custom.css?v=1783349009800">
+<link rel="stylesheet" href="css/custom.css?v=1784033927100">
 </head>
 <body class="agenda-page" data-nav-indicator="both">
 <div class="agenda-frame">
@@ -1437,7 +1439,8 @@ html.ratio-fill .agenda-frame {
   function init() {
     if (!window.markmap) { return setTimeout(init, 50); }
     const svg = document.querySelector('.toc-mindmap-svg');
-    if (!svg) return;
+    // agenda_card_mode: markmap svg 없음 → 가드 즉시 해제 (2초 fallback 대기로 인한 blank 방지)
+    if (!svg) { requestAnimationFrame(m2ReleaseCrossGuard); return; }
     const opts = window.markmap.deriveOptions({ initialExpandLevel: 2 });
     window.mm = window.markmap.Markmap.create(svg, opts, tocData);
     // Issue110: cross-page 가드 해제 (markmap 렌더 후 다음 frame)

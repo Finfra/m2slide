@@ -1881,6 +1881,7 @@ class DevHandler(SimpleHTTPRequestHandler):
         {'key': 'asset_mode', 'tab': 6, 'type': 'enum', 'label': '자산 배치', 'en': 'Asset mode', 'default': 'vendor', 'options': ['vendor', 'cdn'], 'help': '런타임 자산 배치. vendor=로컬 번들(오프라인), cdn=CDN.', 'help_en': 'Runtime asset mode: vendor (local, offline) or cdn.'},
         {'key': 'deploy_formats', 'tab': 6, 'type': 'multi', 'label': '배포 형식', 'en': 'Deploy formats', 'default': '[]', 'options': ['epub', 'pdf', 'pptx'], 'help': '추가 배포 산출물. epub·pdf·pptx 다중 선택.', 'help_en': 'Extra deploy outputs: epub, pdf, pptx (multi-select).'},
         {'key': 'kroki_server', 'tab': 6, 'type': 'text', 'label': 'Kroki 서버', 'en': 'Kroki server', 'default': 'https://kroki.io', 'pattern': r'^https?://[^\s;{}<>"]+$', 'help': 'Kroki 다이어그램 렌더 서버 URL.', 'help_en': 'Kroki diagram render server URL.'},
+        {'key': 'license_attribution', 'tab': 6, 'type': 'bool', 'label': '라이선스 표기', 'en': 'License attribution', 'default': 'true', 'help': '첫 장·마지막 장 "Powered by finfra.kr, Made by m2slide" 표기(CC BY 4.0 조건). false 시 위법 소지 경고 로그.', 'help_en': 'Attribution badge on first/last slide (CC BY 4.0 condition). Disabling logs a legal-risk warning.'},
     ]
     _CONFIG_I18N = {
         'ko': {

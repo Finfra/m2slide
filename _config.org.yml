@@ -83,4 +83,6 @@ style:
 # asset_mode: vendor            # 런타임 자산 배치: vendor(기본, self-contained 오프라인) | cdn(발행 데크 웹 서빙)
 # deploy_formats: []            # /deploy-docs 시 함께 빌드·배포할 형식 (예: [epub, pdf, pptx])
 
+# license_attribution: true     # Issue292: 첫 장·마지막 장 "Powered by finfra.kr, Made by m2slide" 표기(CC BY 4.0 조건). false 시 위법 소지 경고 로그. 설계: _doc_arch/license-attribution.md
+
 # 참고: mode_hint 키는 소비처가 없는 orphan (GenContentProd 1곳 잔존) — 정리 대상, 신규 사용 금지
