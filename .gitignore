@@ -187,3 +187,6 @@ Projects/*/refs/
 # Projects_deck/ 는 독립 git repo (github.com/finfra/m2slide-deck) — embedded repo 회피.
 # m2slide 본체는 이 폴더를 추적하지 않음. 설계: _doc_arch/deck-repo.md
 Projects_deck/
+
+# issue-map 산출물 (Issue.md 로부터 재생성 — prj1#Issue286)
+Issue_map.htm
