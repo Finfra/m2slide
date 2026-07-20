@@ -243,8 +243,61 @@ def cmd_action(repo_root: Path, action: str, proposal_path: Path, reason: Option
         print()
         print(_category_merge_guide(prop.category, target_yml))
         print()
+        print(_confidence_scaffold(prop))
+        print()
         print("⚠️ 본 도구는 status만 갱신함. 실제 yml 머지는 사용자가 직접 Edit 후 commit.")
+        print("⚠️ 정책 yml 은 코드·산출물과 분리된 단독 커밋으로 (Issue265 사례 B).")
     return 0
+
+
+def _suggest_confidence(count: int, threshold: int) -> str:
+    """근거 축적 정도 → 적용 강도 제안 (Issue265 사례 C 차단).
+
+    사례 1건이 곧바로 enforce 로 승격되는 경로를 막는 것이 목적이다.
+    high(enforce)는 도구가 자동 제안하지 않는다 — 다수 사례 + 기간 검증을
+    사람이 확인한 뒤에만 올린다.
+    """
+    if count <= 1:
+        return "low"
+    if count >= max(threshold, 2):
+        return "medium"
+    return "low"
+
+
+def _confidence_scaffold(prop: "Proposal") -> str:
+    """머지 시 yml 에 붙여넣을 confidence/evidence 스캐폴드 출력.
+
+    goal-oriented 스키마(schema_version 2) 대상 yml 에만 해당한다.
+    스키마 정의 SSOT: _doc_arch/policy-goal-schema.md
+    """
+    try:
+        threshold = int(prop.frontmatter.get("threshold") or 2)
+    except (TypeError, ValueError):
+        threshold = 2
+    count = prop.count
+    confidence = _suggest_confidence(count, threshold)
+
+    effect = {
+        "low": "적용 안 함 — _proposals/ 기록만 (사례 1건으로 enforce 직행 금지)",
+        "medium": "적용하되 위반을 경고 로그로 남김",
+    }[confidence]
+
+    lines = [
+        "confidence 제안 (Issue265 — goal-oriented 스키마 대상 yml 한정):",
+        f"  근거 {count}건 / 임계 {threshold} → confidence: {confidence}",
+        f"  효과: {effect}",
+        "",
+        "  머지할 룰이 schema_version 2 파일이면 아래를 함께 기입:",
+        "",
+        f"    confidence: {confidence}",
+        "    evidence:",
+        f"      - {{ project: <프로젝트>, date: {prop.round_ts[:10] or '<YYYY-MM-DD>'}, "
+        f"count: {count}, note: \"<무엇이 관측됐는가>\" }}",
+        "",
+        "  high(enforce)로 올리려면 서로 다른 프로젝트의 사례 + 기간 검증이 필요하며,",
+        "  goal_type·goal·goal_check 를 반드시 함께 채워야 --lint-data 를 통과함.",
+    ]
+    return "\n".join(lines)
 
 
 def _maybe_backup_target_yml(repo_root: Path, target_yml_text: str) -> None:

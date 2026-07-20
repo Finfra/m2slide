@@ -227,6 +227,24 @@ PY
     echo "ℹ️ $PROP_DIR 없음 — skip"
   fi
 
+  # 4. goal-oriented 정책 룰 스키마 검증 (Issue265 — schema_version 2)
+  echo ""
+  echo "── 4. goal-oriented 룰 스키마 (goal_type·goal_check·evidence) ──"
+  if [ -f "$SCRIPT_DIR/lib/lint-policy-schema.py" ]; then
+    python3 "$SCRIPT_DIR/lib/lint-policy-schema.py" "$SCRIPT_DIR" || FAIL=1
+  else
+    echo "ℹ️ lib/lint-policy-schema.py 없음 — skip"
+  fi
+
+  # 5. 산출물 검사 — goal_check 를 실제 md 에 적용해 위반 잔존 검출 (Issue265)
+  echo ""
+  echo "── 5. 산출물 위반 잔존 (goal_check 속성 판정) ──"
+  if [ -f "$SCRIPT_DIR/lib/lint-policy-artifacts.py" ]; then
+    python3 "$SCRIPT_DIR/lib/lint-policy-artifacts.py" "$SCRIPT_DIR" || FAIL=1
+  else
+    echo "ℹ️ lib/lint-policy-artifacts.py 없음 — skip"
+  fi
+
   echo ""
   if [ "$FAIL" -ne 0 ]; then
     echo "❌ lint-data 실패 — 위 위반 항목 수정 필요" >&2

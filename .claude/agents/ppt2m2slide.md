@@ -193,13 +193,15 @@ pptx2md + raw-media + SmartArt XML 파싱을 거쳐도 시각 정보가 빈 슬�
 
 #### 원본 PDF 통짜 스크린샷 재활용 정책 (글로벌)
 
-> 정책 SSOT: `heuristics.yml conversion_mode.md_first_constraints.drop_redundant_page_screenshot`.
+> 정책 SSOT: `heuristics.yml conversion_mode.md_first_constraints.drop_redundant_page_screenshot` (schema v2 goal-oriented 룰 — 스키마 정의는 [`_doc_arch/policy-goal-schema.md`](../../_doc_arch/policy-goal-schema.md)).
+>
+> **판정은 파일명이 아니라 속성으로 한다.** `detect_hints` 의 정규식은 후보를 좁히는 힌트일 뿐이며, 힌트에 걸리지 않아도 `goal_check`(면적 점유율·페이지 종횡비 근접·형제 텍스트 존재·빈 alt)를 만족하면 통짜 페이지 래스터로 판정해 제거한다. 구 버전이 `pdf-p\d+` 정규식만 보고 `sNN_iM.png` bleed 8건을 놓친 회귀(AgenticCoding 2026-07-06)가 이 변경의 근거다.
 
 * PDF 페이지 통짜 캡처(`pdf-pNNN.png`)는 재구성 작업의 **참조 소스로만** 활용 — 의미 단위 마크다운을 작성하는 동안 원본 시각을 확인하는 용도.
 * 어떤 재구성 경로(텍스트·이미지·카드·htmlart)든 **성공한 슬라이드**는 같은 슬라이드의 `pdf-pNNN.png` active 참조(`![...](img/pdf-pNNN.png)`)를 최종 `markdown/*.md`에서 **무조건 제거**. (재구성 결과 이미지와 원본 PDF 캡처가 한 슬라이드에 중복 삽입되어 겹쳐 렌더되는 회귀 차단 — GenContentProd_v1.1 사례)
 * **box_group_to_cards 한정 아님** — 매트릭스 표·일반 이미지 재구성 등 모든 경로 적용.
 * **빌드 의존 금지**: `generate-slides.js`(HTML 생성) 단계가 아니라 본 agent(md 생성) 단계에서 잔재 0건을 보장해야 함. HTML 산출물에서 거르는 사후 필터에 의존하면 안 됨 (소스 md 자체가 SSOT).
-* **보존 예외**: 재구성에 실패(텍스트 빈약)했고 `copy` 모드가 명시된 슬라이드만 `pdf-pNNN.png` 보존 — 시각 SSOT 손실 방지.
+* **보존 예외**: `keep_when` 조건(= `conversion_mode: copy` 명시 **그리고** 재구성 실패(형제 텍스트 부재))을 모두 만족하는 슬라이드만 통짜 캡처 보존 — 시각 SSOT 손실 방지. 자연어 예외 서술(`keep_screenshot_when`)은 기계 판정이 불가해 폐기됨.
 
 ### copy 모드 (`--copy` 플래그 명시 시) 동작
 
@@ -301,12 +303,14 @@ pdftoppm -r 150 -png Projects/<Name>/_pipeline/slide-png/<Name>.pdf Projects/<Na
 * [ ] `Projects/<Name>/_pipeline/ppt-meta.yml` 존재
 * [ ] `data/_proposals/<Name>-YYYY-MM-DD.md` 존재 (proposal이 0건이어도 통계 보고서로 생성)
 * [ ] 기존 카탈로그 (`data/htmlart/types.yml` 등) git diff 미변경
-* [ ] **원본 PDF 통짜 스크린샷 잔재 0건** — 재구성 성공 슬라이드의 `pdf-pNNN.png` active 참조가 최종 md에 남으면 안 됨. 검증:
+* [ ] **원본 페이지 통짜 래스터 잔재 0건** — 재구성 성공 슬라이드에 통짜 캡처 active 참조가 최종 md에 남으면 안 됨. 힌트 기반 1차 검출:
     ```bash
-    # md_first 모드: 재구성 성공 슬라이드의 pdf-pNNN.png 잔재 검출 (0건 기대)
-    grep -rnE '!\[[^]]*\]\((\./)?img/pdf-p[0-9]+\.png\)' Projects/<Name>/markdown/ Projects/<Name>/<Name>.md 2>/dev/null
+    # detect_hints 3종(pdf-pNNN / sNN_iM / slide-NN) 일괄 검출 (0건 기대)
+    grep -rnE '!\[[^]]*\]\((\./)?img/(pdf-p[0-9]+|s[0-9]+_i[0-9]+|slide-[0-9]+)\.(png|jpg|jpeg)\)' \
+      Projects/<Name>/markdown/ Projects/<Name>/<Name>.md 2>/dev/null
     ```
-    검출 시 해당 라인 제거 후 재검증. (보존 예외: 재구성 실패 + `copy` 모드 명시 슬라이드 — `heuristics.yml ...drop_redundant_page_screenshot.keep_screenshot_when`)
+    ⚠️ **위 grep 통과 = 안전 아님.** 힌트는 관례 네이밍만 커버하므로, 네이밍이 다른 통짜 캡처는 `goal_check` 기준(슬라이드 면적 75% 초과 점유 + 페이지 종횡비 근접 + 같은 슬라이드에 재구성 텍스트 존재 + alt 빈 값)으로 직접 판정해 제거할 것. 자동 검사는 `./m2slide.sh --lint-data` 가 수행.
+    검출 시 해당 라인 제거 후 재검증. (보존 예외: `keep_when` 두 조건 동시 충족 — `heuristics.yml ...drop_redundant_page_screenshot.keep_when`)
 
 ## round-trip 검증 (체크포인트 3 후)
 

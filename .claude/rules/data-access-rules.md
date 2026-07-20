@@ -144,13 +144,44 @@ agent·skill이 위 대상 yml을 Edit 도구로 직접 수정하는 경우 **�
 * yml 수정 후 backup 누락 발견 시 즉시 사용자 보고 + 다음 수정 전 backup 보강
 * `~/.claude/learning_log.md`에 한 줄 기록 (`* YYYY-MM-DD: m2slide data yml backup 누락 — <파일>`)
 
-# 데이터 schema lint (Issue247 Phase D-3 완료)
+# 정책 yml 커밋 규율 (Issue265)
 
-`./m2slide.sh --lint-data` subcommand로 data yml schema 일관성 검증. 다음 3종 검사:
+정책 `data/<stage>/*.yml` 변경은 **코드·산출물과 분리된 단독 커밋**으로 한다.
+
+## 왜 (사례 B)
+
+정책 yml + 코드 + 빌드 산출물이 한 커밋에 섞이면 회귀가 났을 때 원인을 격리할 수 없다. 실제로 `01ad51a`·`80cd65b`·`b580e13` 세 커밋이 이 형태였고, theme fallback 회귀를 일으킨 코드가 `01ad51a` 안에 정책 변경과 함께 묻혀 있어 추적이 지연됐다. 정책은 "무엇을 강제할지"를 바꾸므로 산출물 전체에 파급되는데, 그 변경이 무해한 파일들 사이에 섞이면 diff 를 봐도 위험도가 드러나지 않는다.
+
+## 규칙
+
+* `data/<stage>/*.yml` 을 수정한 커밋에는 **다른 종류의 파일을 함께 담지 않는다**. 정책 문서(`_doc_arch/*.md`)·정책 lint 구현은 같은 변경의 일부이므로 예외적으로 동반 허용하되, **빌드 산출물(`Projects/*/slide/`)·무관한 코드 변경은 금지**한다.
+* 커밋 메시지에 **근거를 명시**한다 — 이슈 번호 또는 `evidence` 출처(프로젝트·날짜·관측 내용).
+* backup 은 수정 **직전**에 뜬다: `./lib/tuner/backup-data-yml.sh data/<stage>/<file>.yml` (본 문서 "Promotion 머지 시 backup 의무" 절).
+
+## 커밋 메시지 형태
+
+```
+Policy(Issue265): drop_redundant_page_screenshot 를 goal-oriented 로 전환
+
+근거: AgenticCoding 2026-07-06 bleed 8건 — 구 정규식(pdf-p\d+)이 sNN_iM.png 를 미검출
+```
+
+## 위반 시
+
+* 이미 섞어 커밋했다면 되돌리지 말고 **후속 커밋에서 분리 이력을 남긴다**(정책 변경분을 별도 커밋으로 재기술). 강제 히스토리 재작성은 협업자 재clone 을 요구하므로 하지 않는다.
+* 반복되면 `~/.claude/learning_log.md` 에 한 줄 기록.
+
+# 데이터 schema lint (Issue247 Phase D-3 완료 / Issue265 확장)
+
+`./m2slide.sh --lint-data` subcommand로 data yml schema 일관성 검증. 다음 5종 검사:
 
 1. **`data/<stage>/*.yml` yaml 파싱 가능성** — 구조 깨짐 차단. `_backup/` 하위 제외
 2. **`data/slide-tuner/patterns.yml` categories ↔ priority 매핑** — `categories[].id`가 `priority` 리스트에 모두 포함 + priority에 미정의 id 부재
 3. **`data/_proposals/promotion-*.md` frontmatter status 유효성** — `pending|merged|rejected|held` 중 하나
+4. **goal-oriented 룰 스키마** (`lib/lint-policy-schema.py`, Issue265) — `schema_version: 2` 파일에서 `goal_type` 을 선언한 룰만 대상. enum 유효성 · `goal` 서술 존재 · enforce 룰의 `goal_check` 필수 · `goal_type`↔`goal_check` 계열 정합성 · `detect_hints` 단독 판정 금지 · `confidence>=medium` 의 `evidence` 필수
+5. **산출물 위반 잔존** (`lib/lint-policy-artifacts.py`, Issue265) — 정책이 enforce 인데 실제 md 에 위반이 남아 있으면 fail-loud. 판정은 파일명이 아니라 이미지 속성(슬라이드 유일 이미지 · 페이지 종횡비 근접 · 형제 텍스트 존재 · 빈 alt). 옵트인 범위 = `Projects/<Name>/_pipeline/` 보유 프로젝트(ppt2m2slide 역변환 산출물)
+
+> 검사 4~5 의 스키마 정의 SSOT 는 [`_doc_arch/policy-goal-schema.md`](../../_doc_arch/policy-goal-schema.md). `goal_type` enum 확장·술어 추가는 그 문서를 먼저 고치고 `lib/lint-policy-schema.py` 의 `GOAL_CHECK_FAMILIES` 를 동기화한다.
 
 사용 예:
 
@@ -166,8 +197,18 @@ agent·skill이 위 대상 yml을 Edit 도구로 직접 수정하는 경우 **�
 * CI 도입 시 pre-commit hook으로 자동 실행
 * `promote-to-data.py --action merge` 후 사용자 yml 편집 완료 직후
 
+회귀 테스트:
+
+```bash
+./z_test/run-policy-fixture.sh
+```
+
+골든 픽스처(`z_test/fixtures/policy/redundant-page-screenshot/`)로 정책이 **파일명 의존 판정으로 회귀하지 않았는지** 검증한다. 픽스처는 네이밍 3종(`pdf-pNNN` · `sNN_iM` · `Deck_vNN_N`)을 담고 있으며, `detect_hints` 에 등록되지 않은 세 번째 네이밍까지 검출해야 통과한다.
+
 확장 후보 (TODO):
 
+* 🚧 [TODO] 나머지 정책 yml 9종의 goal-oriented 전환 (본 이슈 파일럿은 `heuristics.yml` 1종). 미전환 룰 수는 `--lint-data` 검사 4가 정보 라인으로 보고
+* 🚧 [TODO] 덱 목적(`purpose`) 축 도입 시 `applies_to_purpose`·`relax_when` 검사 추가 — Issue295
 * `data/md-builder/styles.yml` schema 검증 (스타일 룰 구조 정합성)
 * `data/layout-selector/rules.yml` schema 검증
 * `data/_proposals/promotion-*.md`에 `category`·`count`·`threshold` 필드 누락 검증
