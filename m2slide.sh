@@ -14,6 +14,35 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/dev-server/lifecycle.sh
 . "$SCRIPT_DIR/lib/dev-server/lifecycle.sh"
 
+# 프로젝트 이름 → 소스 폴더 절대경로 해석 (Issue294)
+# Projects/<name> 우선, 없으면 Projects_deck/decks/*/<name> (덱 basename) 탐색.
+# 다중 매칭 시 stderr 경고 후 사전순 첫 매칭 사용 — dev-server `_project_root`(Issue290)와 동일 규약.
+# 어느 쪽에도 없으면 Projects/<name> 을 그대로 반환하여 호출부의 기존 not-found 처리를 유지.
+_resolve_project_dir() {
+  local name="$1"
+  local direct="$SCRIPT_DIR/Projects/$name"
+  if [ -d "$direct" ]; then
+    echo "$direct"
+    return 0
+  fi
+  local decks_root="$SCRIPT_DIR/Projects_deck/decks"
+  if [ -d "$decks_root" ]; then
+    local matches=()
+    local cat
+    for cat in "$decks_root"/*/; do
+      [ -d "${cat}${name}" ] && matches+=("${cat}${name}")
+    done
+    if [ ${#matches[@]} -gt 0 ]; then
+      if [ ${#matches[@]} -gt 1 ]; then
+        echo "⚠️  ambiguous deck token '$name': ${#matches[@]} matches under Projects_deck/decks/*/, using ${matches[0]}" >&2
+      fi
+      echo "${matches[0]}"
+      return 0
+    fi
+  fi
+  echo "$direct"
+}
+
 usage() {
   cat <<EOF
 Usage: $(basename "$0") [project_dir] [--epub] [--pdf] [--pptx] [-h|--help]
@@ -222,10 +251,12 @@ if [ "$1" = "--lint-deployment" ]; then
   if [ -n "$LINT_TARGET" ]; then
     if [ -d "$LINT_TARGET" ]; then
       LINT_BASE="$LINT_TARGET"
-    elif [ -d "$SCRIPT_DIR/Projects/$LINT_TARGET" ]; then
-      LINT_BASE="$SCRIPT_DIR/Projects/$LINT_TARGET"
     else
-      echo "❌ Error: project not found: $LINT_TARGET" >&2; exit 1
+      # 이름 형태 — Projects/ + Projects_deck/decks/*/ 양쪽 해석 (Issue294)
+      LINT_BASE=$(_resolve_project_dir "$LINT_TARGET")
+      if [ ! -d "$LINT_BASE" ]; then
+        echo "❌ Error: project not found: $LINT_TARGET" >&2; exit 1
+      fi
     fi
   fi
   echo "🔍 Lint deployment artifacts under: $LINT_BASE"
@@ -305,8 +336,9 @@ _read_current_project() {
 if [ -n "$PROJECT_DIR" ]; then
   if [ -d "$PROJECT_DIR" ]; then
     PROJECT_DIR=$(cd "$PROJECT_DIR" && pwd)
-  elif [ -d "$SCRIPT_DIR/Projects/$PROJECT_DIR" ]; then
-    PROJECT_DIR="$SCRIPT_DIR/Projects/$PROJECT_DIR"
+  else
+    # 이름 형태 — Projects/ + Projects_deck/decks/*/ 양쪽 해석 (Issue294)
+    PROJECT_DIR=$(_resolve_project_dir "$PROJECT_DIR")
   fi
   echo "Using project from parameter: $(basename "$PROJECT_DIR")"
 elif [ -f "$PWD/_config.yml" ]; then
