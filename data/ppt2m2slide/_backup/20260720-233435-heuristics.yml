@@ -4,11 +4,7 @@
 # 설계 SSOT: _doc_arch/ppt2m2slide.md
 # 본 파일 수정 시 agent 본문 변경 없이 즉시 반영됨 (데이터-주도 SCAR).
 ---
-# schema_version 2 = goal-oriented 룰(goal_type/goal/goal_check/detect_hints)을 포함할 수 있는 파일.
-# 전환 단위는 파일이 아니라 룰 — goal_type 을 선언한 룰만 v2 규율(--lint-data 검사 4~8)을 받고,
-# 나머지 룰은 미전환(legacy)으로 기존 해석·동작을 그대로 유지함.
-# 스키마 정의 SSOT: _doc_arch/policy-goal-schema.md
-schema_version: 2
+schema_version: 1
 
 # ── 변환 모드 (Issue + 사용자 결정 2026-05-27) ─────────────────
 # ppt2m2slide는 기본적으로 텍스트·SmartArt·이미지 등 의미 단위로 마크다운을 재구성함 (md_first).
@@ -42,36 +38,9 @@ conversion_mode:
     # (rules.drop_redundant_page_screenshot)을 전역으로 승격 — 매트릭스 표 등 일반 재구성
     # 슬라이드도 적용. 빌드(generate-slides.js = HTML 생성) 단계 의존 금지: md 생성 단계
     # (본 agent)에서 잔재 0건을 보장해야 함 (사용자 요청 — "html 생성 이전 SCAR에서 처리 필수").
-    # ── goal-oriented 룰 (schema v2 파일럿) ──────────────────────
-    # 구 형태(v1)는 `drop_redundant_page_screenshot: true` + `redundant_screenshot_pattern`(정규식)
-    # + `keep_screenshot_when`(자연어) 3필드였음. 정규식이 `pdf-p\d+`만 검출하여 다른 추출
-    # 네이밍(sNN_iM.png)에서 정책이 조용히 무력화됨 (AgenticCoding 2026-07-06, bleed 8건 미검출).
-    # → 목적(goal)·판정(goal_check)·힌트(detect_hints)를 분리하고, 파일명 정규식은 판정 권한을
-    #   잃고 "후보 축소 힌트"로 강등. 힌트가 못 잡아도 goal_check 전수 판정이 위반을 검출함.
-    drop_redundant_page_screenshot:
-      enabled: true
-      goal_type: machine_readable
-      goal: "재구성에 성공한 슬라이드에는 원본 페이지 통짜 래스터 참조가 남지 않는다"
-      goal_check:
-        # 파일명에 의존하지 않는 속성 판정. 아래 조건을 모두 만족하면 '통짜 페이지 래스터'로 판정.
-        # ⚠️ md 소스만으로는 렌더 면적을 알 수 없으므로 '점유율'은 sole_image_in_slide 로 대리한다.
-        #    픽셀 수를 면적 비율로 환산하는 프록시는 저해상도 페이지 캡처(1440x810 등)를 놓쳐 폐기됨.
-        sole_image_in_slide: true         # 슬라이드의 유일 이미지 = 사실상 전면 점유
-        aspect_ratio_near_page: 0.05      # 원본 페이지 종횡비와의 허용 오차 (16:9·4:3·A4·letter 가로)
-        min_pixel_width: 800              # 아이콘·썸네일 오검출 방지 하한
-        require_sibling_text: true        # 같은 슬라이드에 재구성 텍스트가 존재 = 재구성 성공 = 래스터 불필요
-        empty_alt_is_signal: true         # alt 빈 이미지는 의미 전달 목적이 아닌 페이지 캡처일 가능성 높음
-      detect_hints:                       # 후보 축소용 힌트 — 단독 판정 금지 (여기 없어도 goal_check 가 잡음)
-        - '!\[[^\]]*\]\((\./)?img/pdf-p\d+\.png\)'          # PDF 페이지 캡처 관례 네이밍
-        - '!\[[^\]]*\]\((\./)?img/s\d+_i\d+\.(png|jpg|jpeg)\)'  # PPT 슬라이드 추출 네이밍 (사례 A 누락분)
-        - '!\[[^\]]*\]\((\./)?img/slide-\d+\.png\)'         # copy 모드 슬라이드 캡처 네이밍
-      keep_when:                          # 기계 판정 가능한 보존 예외 (구 keep_screenshot_when 자연어 대체)
-        conversion_mode: copy             # 사용자가 --copy 를 명시한 변환
-        reconstruction_failed: true       # 텍스트 재구성 실패(형제 텍스트 부재) — 시각 SSOT 손실 방지
-      confidence: high
-      evidence:
-        - { project: GenContentProd_v1.1, date: 2026-05-27, count: all_slides, note: "전 슬라이드 PNG 풀스크린 — 검색·복사·접근성 손상" }
-        - { project: AgenticCoding, date: 2026-07-06, count: 8, note: "sNN_i1.png bleed — 구 정규식(pdf-p) 미검출" }
+    drop_redundant_page_screenshot: true
+    redundant_screenshot_pattern: '!\[[^\]]*\]\((\./)?img/pdf-p\d+\.png\)'  # 잔재 검출 정규식 (md active 이미지 참조)
+    keep_screenshot_when: "재구성 실패(텍스트 빈약) + copy 모드 명시 — 이 경우만 pdf-pNNN.png 보존 (시각 SSOT 손실 방지)"
 
 # ── layout 자동 판정 휴리스틱 ─────────────────────────────────
 # PPT 슬라이드의 제목 위치·이미지 비율·텍스트 양을 기준으로
