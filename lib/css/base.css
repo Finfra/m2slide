@@ -1335,3 +1335,47 @@ html.ratio-fill .agenda-frame {
   opacity: 0.7;
   text-decoration: none;
 }
+
+/* =========================================================================
+   Mobile Navigation Arrows (Issue301)
+   ========================================================================= */
+.m2-nav-arrows {
+  display: none;
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  gap: 12px;
+  z-index: 10;
+}
+
+.m2-nav-arrows button {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(128, 128, 128, 0.3);
+  color: rgba(128, 128, 128, 0.8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
+  padding: 0;
+  font-size: 20px;
+}
+
+.m2-nav-arrows button:hover {
+  background: rgba(128, 128, 128, 0.5);
+  color: rgba(128, 128, 128, 1);
+}
+
+.m2-nav-arrows button:active {
+  transform: scale(0.95);
+}
+
+/* 모바일에서만 표시 (≤768px) */
+@media (max-width: 768px) {
+  .m2-nav-arrows {
+    display: flex;
+  }
+}

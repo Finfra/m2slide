@@ -29,6 +29,18 @@
 
 # 📙 일반
 
+## Issue301. 모바일 네비게이션 화살표 추가 (등록: 2026-07-21, 완료: 2026-07-21)
+* 목적: 모바일 디바이스에서 터치/클릭으로 다음/이전 페이지 이동 가능하게 함. 현재는 키보드 네비게이션만 지원되어 모바일 사용성 저하.
+* 구현 완료:
+    - ✅ layout 템플릿: 모든 기본 layout(_contents, _blank, _cover, _cards, _toc, _agenda, _contents_no_title)에 `<div class="m2-nav-arrows">` 추가
+    - ✅ 버튼 UI: Font Awesome chevron-left/right 아이콘, 회색(rgba 128,128,128), 44px 원형 버튼, hover/active 상태 포함
+    - ✅ CSS: base.css에 모바일 전용 스타일 추가 (@media ≤768px에서만 display:flex)
+    - ✅ JavaScript: html-builder.js에 클릭 핸들러 추가
+      - 좌버튼: Reveal.prev() 호출
+      - 우버튼: Reveal.next() 호출, 마지막 슬라이드면 첫 페이지로 루프
+    - ✅ 빌드 테스트: m2Slide 프로젝트 정상 빌드, 화살표 요소 HTML 포함 확인
+* 커밋: (pending)
+
 ## Issue300. 슬라이드 부제목 표시 정책 결정 (등록: 2026-07-21)
 * 목적: 상위 프로젝트 videoMaker(prj41) Issue19에서 위임. videoMaker Issue9(2026-04-13, commit 8fddb16)로 frontmatter `subtitle` 렌더링 자체는 구현됐으나, "그대로 노출 / 제거 / 상위 주제 값으로 대체" 중 어느 정책을 취할지 결정된 바 없어 현재는 frontmatter 값을 그대로 노출하는 임시 상태로 남아있음. **본 프로젝트(m2slide)가 해결 담당**
 * 상세:
