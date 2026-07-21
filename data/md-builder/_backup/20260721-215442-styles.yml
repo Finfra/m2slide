@@ -263,24 +263,12 @@ content_limits:
 # 청중에게 보이는 텍스트(제목·본문·표)에 내부 이슈 추적 표기를 남기지 않는다.
 # 학습 사례 (2026-07-05, m2Slide_single_mode): 챕터 제목 "0. Chapter Divider 테스트 (Issue229)"
 # — 이슈 번호가 슬라이드에 그대로 노출되어 사용자 제거 요청. 이슈 추적은 Issue.md·git에 위임.
-# goal-oriented 룰 (Issue296) — 스키마 정의 SSOT: _doc_arch/policy-goal-schema.md
 slide_text_hygiene_policy:
-  goal_type: hygiene
-  goal: "청중에게 보이는 렌더 텍스트에 내부 추적 표기(이슈 번호·작업 마커)가 남지 않는다"
-  goal_check:
-    text_pattern_absent: '\(?\bIssue[ _]?\d+(_\d+)?\)?|\bTODO\b|\bFIXME\b'
-  # enforce 판정 범위(lint-policy-artifacts.py)는 제목(H1~H6)으로 한정. 본문 bullet·단락의
-  # 이슈 번호는 덱 콘텐츠(도구 데모 등)일 수 있어 문맥 의존이므로 기계 enforce 에서 제외한다.
-  # agent 는 아래 scope 서술을 md 생성 시 참고(bullet·표셀 포함 비-enforce 가이드).
-  enforce_scope: headings
-  detect_hints:                              # 후보 축소용 — 단독 판정 금지
+  forbidden_visible_patterns:
     - regex: '\(?\bIssue[ _]?\d+(_\d+)?\)?'
       reason: "내부 이슈 번호 — 슬라이드 노출 금지 (Issue.md·git이 추적 담당)"
     - regex: '\bTODO\b|\bFIXME\b'
       reason: "작업 마커 — 산출 슬라이드에 잔존 금지"
-  confidence: high
-  evidence:
-    - { project: m2Slide_single_mode, date: 2026-07-05, count: 1, note: "챕터 제목에 (Issue229) 노출 → 사용자 제거 요청" }
   scope: "제목(H1~H6)·본문 bullet·표 셀 등 렌더 노출 텍스트. 코드블록 예제 내부는 예외"
   apply_when: "md 생성·수정 시 상시. 발견 시 표기 제거 후 진행"
 
@@ -291,13 +279,6 @@ slide_text_hygiene_policy:
 # 교육 목적으로 표시하는 슬라이드는 syntax 가 렌더되어 사라지지 않도록
 # 반드시 백틱(`...`) 으로 wrap. 학습자가 raw syntax 를 봐야 함.
 inline_syntax_preservation:
-  goal_type: fidelity
-  goal: "문법 교육 슬라이드의 마크업 토큰이 auto-render 로 사라지지 않고 raw 로 보존된다"
-  goal_check:
-    markup_tokens_wrapped: true            # backtick/코드블록 밖에 노출된 마크업 토큰이 없음
-  confidence: high
-  evidence:
-    - { project: BasicKnowledgeForAI_small, date: 2026-07-05, count: 2, note: "링크 syntax [name](URL) 가 렌더되어 아이콘만 표시 → 학습 불가" }
   trigger_titles:
     - "*Markdown 문법*"
     - "*Markdown syntax*"
@@ -483,16 +464,6 @@ vertical_balance_policy:
 # 4-D. 마크다운 syntax 본문 → 코드블록 wrap (literal 표시 보장)
 # ============================================================================
 backtick_marker_conflict_policy:
-  goal_type: legibility
-  goal: "단일 마커 백틱이 파서 충돌을 일으켜 빈 bullet <li> 가 렌더되지 않는다"
-  goal_check:
-    no_empty_bullet_li: '`\s*[\*\-\+]\s*`'   # 소스에 이 패턴이 있으면 빈 li 위험
-  detect_hints:
-    - regex: '`\s*[\*\-\+]\s*`'
-      reason: "단일 marker 백틱 (`* `, `- `, `+ `) — bullet parser 충돌"
-  confidence: high
-  evidence:
-    - { project: BasicKnowledgeForAI_small, date: 2026-07-05, count: 1, note: "단일 marker 백틱이 빈 bullet-dot li 유발" }
   description: |
     bullet line 내부 backtick에 markdown bullet marker (`*`/`-`/`+`) 가 단독 토큰으로
     들어가면 m2slide parser가 `*` 를 nested bullet 시작으로 오해석하여 li 비워짐.
