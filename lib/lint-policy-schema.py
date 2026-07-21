@@ -26,6 +26,7 @@ GOAL_CHECK_FAMILIES = {
     "fidelity": {
         "text_node_count_min", "text_chars_min", "text_ratio_min",
         "source_text_coverage_min",
+        "markup_tokens_wrapped",       # 마크업 토큰이 backtick/코드블록 밖에 노출되지 않음
     },
     "machine_readable": {
         "sole_image_in_slide", "aspect_ratio_near_page", "min_pixel_width",
@@ -42,6 +43,7 @@ GOAL_CHECK_FAMILIES = {
     "legibility": {
         "chars_max", "items_max", "font_size_min", "box_overflow_max",
         "lines_max",
+        "no_empty_bullet_li",          # 파서 충돌로 빈 <li> 가 생기지 않음
     },
     "attribution": {
         "require_badge", "require_credits_entry", "require_source_url",
@@ -49,6 +51,9 @@ GOAL_CHECK_FAMILIES = {
     },
     "hygiene": {
         "residual_count_max", "forbid_empty_slot", "forbid_placeholder",
+        "text_pattern_absent",         # 렌더 텍스트에 특정 패턴(내부추적 표기 등) 잔존 금지
+        "h1_not_duplicate_title",      # 본문 H1 이 frontmatter title·상위 제목과 중복 아님
+        "note_not_echo_body",          # 발표 노트가 슬라이드 본문을 그대로 복사하지 않음
     },
 }
 
@@ -98,11 +103,18 @@ def lint_file(path: Path):
 
     if not isinstance(cfg, dict):
         return [], 0, 0
-    if cfg.get("schema_version") != 2:
-        return [], 0, 0                             # v1 파일은 검사 4~8 대상 아님
+
+    # 검사 대상 판정은 파일 버전이 아니라 goal_type 룰 존재로 한다 (Issue296).
+    # schema_version:2 뿐 아니라 version:2 파일(md-builder 등)에 goal 룰을 넣어도,
+    # 심지어 버전 필드가 없어도 goal_type 을 선언한 순간 v2 규율을 받는다.
+    # count_legacy_flags 는 버전 필드가 2 일 때만 전환 진척 지표로 보고한다.
+    rule_list = list(walk_rules(cfg))
+    versioned = cfg.get("schema_version") == 2 or cfg.get("version") == 2
+    if not rule_list:
+        return [], 0, 0                             # goal 룰 없음 → 검사 4~8 대상 아님
 
     migrated = 0
-    for rule_path, rule in walk_rules(cfg):
+    for rule_path, rule in rule_list:
         migrated += 1
         rid = f"{path}:{'.'.join(rule_path)}"
         goal_type = rule.get("goal_type")
@@ -169,7 +181,7 @@ def lint_file(path: Path):
                     if not isinstance(ev, dict) or not ev.get("project"):
                         errors.append(f"{rid}: evidence[{i}] 에 project 필드 필요")
 
-    legacy = count_legacy_flags(cfg)
+    legacy = count_legacy_flags(cfg) if versioned else 0
     return errors, migrated, legacy
 
 

@@ -57,6 +57,33 @@ else
   bad "실 프로젝트에서 위반 검출 — ./m2slide.sh --lint-data 로 상세 확인"
 fi
 
+# ── 텍스트 위생 검사 회귀 (Issue296) ──────────────────────────────────
+echo ""
+echo "🔍 텍스트 위생 검사 (Issue296 md-builder hygiene)"
+HYFX="$ROOT/z_test/fixtures/policy/text-hygiene"
+if [ -d "$HYFX" ]; then
+  HYOUT="$(python3 "$LINT" "$ROOT" "$HYFX" 2>&1 || true)"
+  # 제목 위반 2건 검출
+  if printf '%s' "$HYOUT" | grep -q "01-cases.md:6:.*Issue229"; then
+    pass "제목 이슈번호 검출: (Issue229)"
+  else
+    bad "제목 이슈번호 미검출"
+  fi
+  if printf '%s' "$HYOUT" | grep -q "01-cases.md:22:.*TODO"; then
+    pass "제목 TODO 검출"
+  else
+    bad "제목 TODO 미검출"
+  fi
+  # 본문 bullet·단락의 Issue3/Issue941 은 미검출(문맥 의존)
+  if printf '%s' "$HYOUT" | grep -qE "Issue3|Issue941"; then
+    bad "본문 이슈번호 오검출 — 제목 한정 enforce 위반 (콘텐츠일 수 있음)"
+  else
+    pass "본문 이슈번호 미검출 (문맥 의존 제외)"
+  fi
+else
+  bad "텍스트 위생 픽스처 없음: $HYFX"
+fi
+
 # ── L2 override 병합 검사 회귀 (Issue297) ──────────────────────────────
 echo ""
 echo "🔍 L2 override 병합 검사 (Issue297)"

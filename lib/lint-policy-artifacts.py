@@ -181,34 +181,129 @@ def check_project(proj: Path, rule: dict):
     return violations
 
 
+# ── hygiene: 렌더 노출 텍스트 위생 (Issue296) ──────────────────────────────
+# md-builder slide_text_hygiene_policy — 청중에게 보이는 텍스트(제목·bullet·표셀)에
+# 내부 추적 표기(이슈 번호·TODO·FIXME)가 남으면 위반. 코드블록 예제 내부는 예외.
+# drop_redundant 와 달리 전 덱 공통(옵트인 아님) — 내부 표기 노출은 어느 덱이든 결함.
+
+def load_hygiene_rule(root: Path):
+    path = root / "data" / "md-builder" / "styles.yml"
+    if not path.exists():
+        return None
+    try:
+        cfg = yaml.safe_load(path.read_text()) or {}
+    except Exception:
+        return None
+    rule = cfg.get("slide_text_hygiene_policy")
+    if not isinstance(rule, dict) or rule.get("confidence") != "high":
+        return None
+    pat = (rule.get("goal_check") or {}).get("text_pattern_absent")
+    if not pat:
+        return None
+    try:
+        return re.compile(pat)
+    except re.error:
+        return None
+
+
+HEADING_RE = re.compile(r"^\s*#{1,6}\s+(.*)$")
+
+
+def _heading_lines(text: str):
+    """코드블록 밖 마크다운 제목(H1~H6) 라인. (라인번호, 제목텍스트).
+
+    enforce 대상을 제목으로 한정한다. 본문 bullet·단락의 이슈 번호는 덱 콘텐츠
+    (도구 데모 등)일 수 있어 문맥 의존이므로 기계 enforce 에서 제외 — 원 학습
+    사례(m2Slide_single_mode 챕터 제목에 (Issue229) 노출)는 제목 실수였다.
+    bullet·단락 검사는 md-builder agent 가 scope 서술로 참고한다(비-enforce).
+    """
+    in_code = False
+    for i, line in enumerate(text.splitlines(), 1):
+        if line.lstrip().startswith("```"):
+            in_code = not in_code
+            continue
+        if in_code:
+            continue
+        m = HEADING_RE.match(line)
+        if m and not m.group(1).lstrip().startswith("layout-"):
+            yield i, m.group(1)
+
+
+# 슬라이드 소스가 아닌 파이프라인 부산물 — 위생 검사 제외
+_HYGIENE_SKIP = {"info.md", "readme.md", "credits.md"}
+
+
+def check_hygiene(proj: Path, pattern):
+    md_files = sorted(proj.glob("markdown/*.md")) + sorted(proj.glob("*.md"))
+    violations = []
+    for md in md_files:
+        if md.name.upper() == "AGENDA.MD" or md.name.lower() in _HYGIENE_SKIP:
+            continue
+        try:
+            text = md.read_text()
+        except OSError:
+            continue
+        for line_no, heading in _heading_lines(text):
+            m = pattern.search(heading)
+            if m:
+                violations.append(
+                    f"{md.relative_to(proj.parent.parent)}:{line_no}: "
+                    f"슬라이드 제목에 내부 추적 표기 '{m.group(0)}' 잔존"
+                )
+    return violations
+
+
 def main():
     args = sys.argv[1:]
     root = Path(args[0]) if args else Path.cwd()
-    rule = load_rule(root)
-    if rule is None:
-        print("ℹ️ drop_redundant_page_screenshot 미전환/비활성 — 산출물 검사 skip")
-        return 0
 
     if len(args) > 1:
-        # 명시 프로젝트 디렉토리 (골든 픽스처 회귀 테스트용 — Projects/ 밖도 허용)
-        projects = [Path(a).resolve() for a in args[1:]]
+        explicit = [Path(a).resolve() for a in args[1:]]
     else:
-        projects = [p.parent for p in sorted(root.glob("Projects/*/_pipeline"))]
-    if not projects:
-        print("ℹ️ _pipeline 보유 프로젝트 없음 — 산출물 검사 대상 0")
-        return 0
+        explicit = None
 
-    all_violations = []
-    for proj in projects:
-        all_violations.extend(check_project(proj, rule))
+    failed = False
 
-    print(f"ℹ️ 산출물 검사 대상 {len(projects)}개 프로젝트 (ppt2m2slide 역변환 옵트인)")
-    if all_violations:
-        for v in all_violations:
-            print(f"❌ {v}", file=sys.stderr)
-        return 1
-    print(f"✅ 통짜 페이지 래스터 잔재 0건 (goal_check 속성 판정)")
-    return 0
+    # ── 검사 1: drop_redundant_page_screenshot (이미지, _pipeline 옵트인) ──
+    rule = load_rule(root)
+    if rule is None:
+        print("ℹ️ drop_redundant_page_screenshot 미전환/비활성 — 이미지 검사 skip")
+    else:
+        projects = explicit or [p.parent for p in sorted(root.glob("Projects/*/_pipeline"))]
+        if not projects:
+            print("ℹ️ _pipeline 보유 프로젝트 없음 — 이미지 검사 대상 0")
+        else:
+            v = []
+            for proj in projects:
+                v.extend(check_project(proj, rule))
+            print(f"ℹ️ 통짜 래스터 검사 {len(projects)}개 프로젝트 (ppt2m2slide 역변환 옵트인)")
+            if v:
+                for x in v:
+                    print(f"❌ {x}", file=sys.stderr)
+                failed = True
+            else:
+                print("✅ 통짜 페이지 래스터 잔재 0건 (goal_check 속성 판정)")
+
+    # ── 검사 2: slide_text_hygiene_policy (텍스트, 전 덱 공통) ──
+    hy = load_hygiene_rule(root)
+    if hy is None:
+        print("ℹ️ slide_text_hygiene_policy 미전환/비활성 — 텍스트 위생 검사 skip")
+    else:
+        hy_projects = explicit or sorted(
+            p for p in root.glob("Projects/*") if p.is_dir() and p.name != "z_done"
+        )
+        v = []
+        for proj in hy_projects:
+            v.extend(check_hygiene(proj, hy))
+        print(f"ℹ️ 텍스트 위생 검사 {len(hy_projects)}개 프로젝트")
+        if v:
+            for x in v:
+                print(f"❌ {x}", file=sys.stderr)
+            failed = True
+        else:
+            print("✅ 렌더 노출 텍스트 내부 추적 표기 0건")
+
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":
