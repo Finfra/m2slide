@@ -171,6 +171,15 @@ Policy(Issue265): drop_redundant_page_screenshot 를 goal-oriented 로 전환
 * 이미 섞어 커밋했다면 되돌리지 말고 **후속 커밋에서 분리 이력을 남긴다**(정책 변경분을 별도 커밋으로 재기술). 강제 히스토리 재작성은 협업자 재clone 을 요구하므로 하지 않는다.
 * 반복되면 `~/.claude/learning_log.md` 에 한 줄 기록.
 
+## pre-commit 경고 훅 (Issue298)
+
+문서 규율만으로는 사람 주의력에 의존하므로 pre-commit 훅으로 보강한다. staged 에 `data/<stage>/*.yml` 이 포함되고 동시에 무관한 파일(설계 문서·정책 lint 구현·정책 픽스처는 동반 허용)이 섞이면 **경고**한다(차단 아님 — 정당한 동반 변경이 존재하므로 hard fail 은 과함).
+
+* 검사 로직: [`lib/hooks/check-policy-commit.sh`](../../lib/hooks/check-policy-commit.sh)
+* 설치: `./lib/hooks/install-hooks.sh` — `.git/hooks/pre-commit` 에 심는다. 기존 pre-commit 이 있으면 덮지 않고 chain 라인만 append
+* ⚠️ `.git/hooks/` 는 git 추적 대상이 아니므로 **clone 마다 개별 설치**. `graphify hook install` 처럼 다른 도구가 pre-commit 을 덮으면 재실행 필요
+* `_backup/` 하위 yml 은 판정에서 제외
+
 # 데이터 schema lint (Issue247 Phase D-3 완료 / Issue265 확장)
 
 `./m2slide.sh --lint-data` subcommand로 data yml schema 일관성 검증. 다음 5종 검사:
