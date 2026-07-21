@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 298
+* Issue HWM: 300
 * Checkpoints:
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
@@ -20,13 +20,22 @@
 * 로우·값 단위 개별 애니메이션 지원(VideoMaker 영상 플레이용). Issue149 완료 — reveal.js `<!-- .element: class="..." -->` + Pandoc `{.fragment}` 병존.
 
 # 🌱 이슈후보
-1. **이미지 정밀 편집(색만·글자만 교체) 지원** — schnell img2img 로는 불가(strength 0.3↑ 원본 복제 / 0.1 재해석 드리프트, 2026-07-13 실측). edit 전용 모델(Qwen-Image-Edit·FLUX Kontext, ~수십 GB) 설치가 선행 조건이며 설치·큐 연동은 prj55 소관. 모델 확보 통지 시 이슈 승격 (Issue293 스타일 통일과 구분되는 별개 기능)
+1. **`data/htmlart/types.yml` `type_count` drift** — `type_count: 26` 선언이나 실제 타입 블록·코드(`HTMLART_TYPES`)는 27종. data SSOT 가 문서·코드보다 1 뒤짐. Issue299 감사 중 발견(out-of-scope: data 파일). 수정 시 `backup-data-yml.sh` 선행 필요
+2. **이미지 정밀 편집(색만·글자만 교체) 지원** — schnell img2img 로는 불가(strength 0.3↑ 원본 복제 / 0.1 재해석 드리프트, 2026-07-13 실측). edit 전용 모델(Qwen-Image-Edit·FLUX Kontext, ~수십 GB) 설치가 선행 조건이며 설치·큐 연동은 prj55 소관. 모델 확보 통지 시 이슈 승격 (Issue293 스타일 통일과 구분되는 별개 기능)
 
 # 🔥 진행 중
 
 # 📕 중요
 
 # 📙 일반
+
+## Issue300. 슬라이드 부제목 표시 정책 결정 (등록: 2026-07-21)
+* 목적: 상위 프로젝트 videoMaker(prj41) Issue19에서 위임. videoMaker Issue9(2026-04-13, commit 8fddb16)로 frontmatter `subtitle` 렌더링 자체는 구현됐으나, "그대로 노출 / 제거 / 상위 주제 값으로 대체" 중 어느 정책을 취할지 결정된 바 없어 현재는 frontmatter 값을 그대로 노출하는 임시 상태로 남아있음. **본 프로젝트(m2slide)가 해결 담당**
+* 상세:
+    - 수정 지점: `lib/html-builder.js`(styleConfig 기반 title-card 렌더링 — Issue9 당시 `generate-slides.js` 하드코딩에서 이후 이 구조로 재편됨)
+    - 정책 후보: (a) subtitle 필드 렌더링 완전 제거 (b) AGENDA.md 등 상위 주제 값으로 대체 표시 (c) 현행(frontmatter subtitle 그대로) 유지 확정
+* 구현 명세: TBD — 정책 결정 후 구현 방식 확정
+* 상위 이슈: videoMaker(prj41) Issue19
 
 # 📗 선택
 
@@ -92,6 +101,18 @@
 * 근거 문서: `_doc_work/htm/hub_htm_20260720_192649_a_goal-taxonomy.htm` (목적 2축 분리 + enum 후보 도출)
 
 # ✅ 완료
+
+## Issue299. _doc_arch ↔ 소스코드 정합성 감사 (등록: 2026-07-21, 해결: 2026-07-21, commit: 없음—gitignore) ✅
+* 목적: `_doc_arch/` 영속 설계 문서가 참조하는 파일 경로·스크립트명·함수명·CLI 플래그·동작 서술이 현재 소스코드와 어긋난 곳(stale)을 전수 검토하여 교정.
+* plan: `_doc_work/plan/doc-arch-audit_plan.md`
+* task: `_doc_work/tasks/doc-arch-audit_task.md`
+* 결과: 문서 42개 7-subagent fan-out 감사 → **42건 발견, 39건 교정, 3건 false-positive 기각**(htmlArt PANDOC_LAYOUT_RESERVED 실존 확인 slide-parser.js:282). CLEAN 15개.
+    - HIGH 2건: dev-server.md `/n/` 네임스페이스 미구현 오기(실제 구현 완료) · theme_layout_lec.md underscore class 서술 stale(실제 `layout-_*`)
+    - 주요 교정: nowage 테마 폐기 잔존→default_lec 정정(theme/css/theme_layout_default/video-player) · keynote 자산 `_doc_base/background/` 이동 경로 · Issue257 파이프라인 재번호(stage9=note-writer, info/cost-manager/authoring-pipeline) · 함수·라인번호 drift(brittle 라인번호는 심볼 참조로 대체) · _README 인덱스 32→41 문서 · htmlArt 19종→27종 · 테스트 30→63 · `--lint-palette`/`--lint-config` 실존 확인
+    - 재-grep 검증 통과: keynote 경로·opus-4-8·_README 41/41 링크·`_applyDirectiveAttrs` 실존
+* 미해결 마커: color-palette.md `--lint-palette` 🚧 [TODO] 2곳 (전용 lint 미구현, 현행 warn+fallback)
+* **커밋 없음 사유**: `_doc_arch`·`Issue.md`·`_doc_work` 가 `.gitignore` 대상(L4-6)이라 commit hash 생성 불가. `-f` 강제 추적·gitignore 수정 금지 지침 준수 — hash 없이 종결. (public remote 존재, 내부 설계문서 강제 추가 금지)
+* 방법론 원본: prj1#Issue306, fan-out: prj1#Issue307
 
 ## Issue265. policy 데이터 yml 목적 지향(goal-oriented) 스키마 + confidence 가중치 도입 — 정책 무력화·오변경 예방 (등록: 2026-07-06, 보류: 2026-07-11, 보류해제: 2026-07-20, 해결: 2026-07-21, commit: 1fc4c24, 70fca45) ✅
 * branch따서 작업할 것. 
