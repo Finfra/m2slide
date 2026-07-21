@@ -20,6 +20,7 @@
 * 로우·값 단위 개별 애니메이션 지원(VideoMaker 영상 플레이용). Issue149 완료 — reveal.js `<!-- .element: class="..." -->` + Pandoc `{.fragment}` 병존.
 
 # 🌱 이슈후보
+1. **Issue296 잔여 — 정책 goal 룰 5건 전환** (파일럿 md-builder 완료 후 잔여): agenda-designer 2건(chapter/single H1 중복 금지, hygiene) · note-writer 1건(발표노트 본문 복사 금지, hygiene) · media-creater 1건(외부 CC 이미지 출처 표기, attribution) · SmartArt 상표어 노출 금지(consistency, 현재 주석 산재). 각 goal_check 판정 코드가 독립 작업이라 건별 후속. 감사: `_doc_work/htm/hub_htm_20260721_215009_a_yml-audit.htm`
 1. **`data/htmlart/types.yml` `type_count` drift** — `type_count: 26` 선언이나 실제 타입 블록·코드(`HTMLART_TYPES`)는 27종. data SSOT 가 문서·코드보다 1 뒤짐. Issue299 감사 중 발견(out-of-scope: data 파일). 수정 시 `backup-data-yml.sh` 선행 필요
 2. **이미지 정밀 편집(색만·글자만 교체) 지원** — schnell img2img 로는 불가(strength 0.3↑ 원본 복제 / 0.1 재해석 드리프트, 2026-07-13 실측). edit 전용 모델(Qwen-Image-Edit·FLUX Kontext, ~수십 GB) 설치가 선행 조건이며 설치·큐 연동은 prj55 소관. 모델 확보 통지 시 이슈 승격 (Issue293 스타일 통일과 구분되는 별개 기능)
 
@@ -51,50 +52,6 @@
 
 # 📗 선택
 
-## Issue296. 나머지 정책 yml 9종 goal-oriented 전환 (등록: 2026-07-21)
-* 목적: Issue265 가 파일럿 1종(`heuristics.yml`)만 전환했으므로, 남은 정책 yml 이 여전히 목적 없는 플래그·정규식 상태로 남아 사례 A 형 무력화에 노출되어 있다. `--lint-data` 검사 4가 매 실행 시 미전환 플래그 후보 43개를 보고하는 것이 그 가시화다.
-* depends: Issue265
-* trigger: Issue265 ✅ 완료 (commit 1fc4c24, 70fca45) — 스키마·lint 정착 확인됨
-* 상세:
-    - 대상 9종: `mappings.yml`(ppt2m2slide) · `patterns.yml`(slide-tuner·slot-designer·agenda-designer·note-writer) · `styles.yml`(md-builder) · `rules.yml`(layout-selector) · `tools.yml`(media-creater) · `questions.yml`(info-filler) · `channels.yml`(refs-collector)
-    - `heuristics.yml` 내부에도 미전환 플래그 43개 잔존 — 파일 단위가 아니라 룰 단위 전환이므로 같은 파일을 여러 번 손대게 됨
-    - 전환 판단 기준: 그 룰이 **위반을 검출해야 하는 룰인가**. 단순 설정값(임계치·목록·템플릿)은 goal 이 없으므로 전환 대상 아님
-* 구현 명세:
-    - 룰별로 `goal_type`(7종 enum) 선택 → `goal` 서술 → `goal_check` 판정식 작성. 기존 정규식·자연어 조건은 `detect_hints`·기계 판정 필드로 이관
-    - `goal_check` 술어가 기존 7계열에 없으면 `_doc_arch/policy-goal-schema.md` 를 먼저 갱신하고 `lib/lint-policy-schema.py GOAL_CHECK_FAMILIES` 동기화
-    - 각 yml 수정 전 `./lib/tuner/backup-data-yml.sh` 선행 + 정책 yml 단독 커밋 규율 준수
-    - 전환 룰마다 골든 픽스처 1건 추가 권장 (`z_test/fixtures/policy/`)
-    - 단계 분할 권장: 파급 큰 `styles.yml`·`rules.yml` 을 뒤로, 독립성 높은 `channels.yml`·`tools.yml` 을 앞으로
-
-## Issue297. L2 프로젝트 override 병합 결과의 goal_check 정합성 검사 (등록: 2026-07-21)
-* 목적: `--lint-data` 검사 4~6 이 L1(`data/<stage>/*.yml`) 정의만 검사하므로, 프로젝트 override(`Projects/<N>/_pipeline/policy/<stage>.yml`)가 `goal_check` 를 덮어써 판정을 무력화해도 lint 가 통과한다. 정책 cascade 와 goal 스키마가 각각은 검증되지만 **병합 결과는 아무도 검증하지 않는** 사각지대다.
-* depends: Issue265
-* trigger: Issue265 ✅ 완료 (commit 1fc4c24, 70fca45)
-* 상세:
-    - cascade 설계: `_doc_arch/pipeline-policy-cascade.md` (L1 글로벌 ↔ L2 프로젝트 deep-merge)
-    - goal 스키마: `_doc_arch/policy-goal-schema.md` (룰의 목적·판정)
-    - 두 축은 직교하나 병합 후 값이 스키마 규율을 지키는지는 미검사 — 동 문서 "룰 내부 스키마와의 경계" 절에 🚧 TODO 마커 부착됨
-    - 위험 시나리오: L2 가 `goal_check` 를 빈 매핑으로 덮어 enforce 룰을 사실상 무력화, 또는 `goal_type` 계열 밖 술어를 주입
-* 구현 명세:
-    - `lib/lint-policy-schema.py` 에 병합 모드 추가 — 프로젝트별로 L1+L2 deep-merge 결과를 구성해 검사 4~8 재적용
-    - L2 가 `goal_type` 자체를 바꾸는 것은 금지(룰의 정체성 변경) — 발견 시 실패
-    - L2 가 `goal_check` 를 **완화**하는 경우 경고, **삭제**하는 경우 실패로 분리
-    - 검사 대상 프로젝트가 늘면 비용 증가 → `_pipeline/policy/` 존재 프로젝트만 스캔
-
-## Issue298. 정책 yml 혼재 커밋 pre-commit 경고 훅 (등록: 2026-07-21)
-* 목적: Issue265 Phase 4 에서 커밋 규율을 문서화했으나 강제 수단이 없어, 사례 B(정책 yml + 코드 + 산출물 혼합 커밋으로 회귀 원인 격리 불가)가 사람 주의력에만 의존한다. 문서 규율을 기계 경고로 보강한다.
-* depends: Issue265
-* trigger: Issue265 ✅ 완료 (commit 1fc4c24, 70fca45) — 규율 문서(`data-access-rules.md` "정책 yml 커밋 규율") 확정됨
-* 상세:
-    - 규율 SSOT: `.claude/rules/data-access-rules.md` "정책 yml 커밋 규율" 절
-    - Issue265 task 에서 선택 항목으로 취소(`- [x]`)했던 항목 — 규율 자체는 문서로 성립하나 위반 검출이 없음
-    - `.git/hooks/` 는 git 추적 대상이 아니므로 repo 마다 개별 설치 필요 (graphify post-commit 훅과 동일 제약)
-* 구현 명세:
-    - staged 파일에 `data/<stage>/*.yml` 이 포함되고 동시에 그 외 파일(정책 문서·정책 lint 구현 제외)이 있으면 경고 출력
-    - 차단이 아니라 경고 + 확인 프롬프트 — 정당한 동반 변경(설계 문서·lint 구현)이 존재하므로 hard fail 은 과함
-    - 설치 스크립트 제공 (`z_test/` 또는 `lib/` 하위) + README 안내. `graphify hook install` 이 훅을 덮는 선례가 있으므로 재설치 시 패치 유실 주의 문구 포함
-    - `_backup/` 하위 yml 은 판정에서 제외
-
 ## Issue295. 덱 목적(purpose) enum 도입 — 정책 적용 강도의 덱 용도 스코프 (등록: 2026-07-20)
 * 목적: 정책 룰이 모든 덱에 무차별 전역 강제되는 구조를 해소한다. 강의 덱에서 결함인 것(통짜 래스터·텍스트 미추출)이 광고 덱에서는 의도된 선택일 수 있으므로, 덱의 용도를 1급 메타로 두고 정책 적용 강도를 그 축으로 스코프한다. 목적 축이 없으면 예외가 자연어로 누적되어 다시 기계 판정 불가 상태로 되돌아간다(Issue265 사례 A 재발 경로).
 * depends: Issue265
@@ -113,6 +70,63 @@
 * 근거 문서: `_doc_work/htm/hub_htm_20260720_192649_a_goal-taxonomy.htm` (목적 2축 분리 + enum 후보 도출)
 
 # ✅ 완료
+
+## Issue298. 정책 yml 혼재 커밋 pre-commit 경고 훅 (등록: 2026-07-21) — 해결: 2026-07-21 (commit: 50de0fb) ✅
+* 목적: Issue265 Phase 4 에서 커밋 규율을 문서화했으나 강제 수단이 없어, 사례 B(정책 yml + 코드 + 산출물 혼합 커밋으로 회귀 원인 격리 불가)가 사람 주의력에만 의존한다. 문서 규율을 기계 경고로 보강한다.
+* depends: Issue265
+* trigger: Issue265 ✅ 완료 (commit 1fc4c24, 70fca45) — 규율 문서(`data-access-rules.md` "정책 yml 커밋 규율") 확정됨
+* 상세:
+    - 규율 SSOT: `.claude/rules/data-access-rules.md` "정책 yml 커밋 규율" 절
+    - Issue265 task 에서 선택 항목으로 취소(`- [x]`)했던 항목 — 규율 자체는 문서로 성립하나 위반 검출이 없음
+    - `.git/hooks/` 는 git 추적 대상이 아니므로 repo 마다 개별 설치 필요 (graphify post-commit 훅과 동일 제약)
+* 구현 명세:
+    - staged 파일에 `data/<stage>/*.yml` 이 포함되고 동시에 그 외 파일(정책 문서·정책 lint 구현 제외)이 있으면 경고 출력
+    - 차단이 아니라 경고 + 확인 프롬프트 — 정당한 동반 변경(설계 문서·lint 구현)이 존재하므로 hard fail 은 과함
+    - 설치 스크립트 제공 (`z_test/` 또는 `lib/` 하위) + README 안내. `graphify hook install` 이 훅을 덮는 선례가 있으므로 재설치 시 패치 유실 주의 문구 포함
+    - `_backup/` 하위 yml 은 판정에서 제외
+* 결과: `lib/hooks/check-policy-commit.sh`(staged 정책 yml + 무관 파일 혼재 경고) + `install-hooks.sh`(pre-commit 설치, 기존 훅 chain append). bash 3.2 호환
+* 동반 허용: 설계 문서·lint 구현·정책 픽스처. 차단 아닌 경고. `_backup` 제외
+* 검증: 혼재(경고)·단독(무출력)·동반허용(무출력) 3케이스
+
+## Issue297. L2 프로젝트 override 병합 결과의 goal_check 정합성 검사 (등록: 2026-07-21) — 해결: 2026-07-21 (commit: 3e350bb) ✅
+* 목적: `--lint-data` 검사 4~6 이 L1(`data/<stage>/*.yml`) 정의만 검사하므로, 프로젝트 override(`Projects/<N>/_pipeline/policy/<stage>.yml`)가 `goal_check` 를 덮어써 판정을 무력화해도 lint 가 통과한다. 정책 cascade 와 goal 스키마가 각각은 검증되지만 **병합 결과는 아무도 검증하지 않는** 사각지대다.
+* depends: Issue265
+* trigger: Issue265 ✅ 완료 (commit 1fc4c24, 70fca45)
+* 상세:
+    - cascade 설계: `_doc_arch/pipeline-policy-cascade.md` (L1 글로벌 ↔ L2 프로젝트 deep-merge)
+    - goal 스키마: `_doc_arch/policy-goal-schema.md` (룰의 목적·판정)
+    - 두 축은 직교하나 병합 후 값이 스키마 규율을 지키는지는 미검사 — 동 문서 "룰 내부 스키마와의 경계" 절에 🚧 TODO 마커 부착됨
+    - 위험 시나리오: L2 가 `goal_check` 를 빈 매핑으로 덮어 enforce 룰을 사실상 무력화, 또는 `goal_type` 계열 밖 술어를 주입
+* 구현 명세:
+    - `lib/lint-policy-schema.py` 에 병합 모드 추가 — 프로젝트별로 L1+L2 deep-merge 결과를 구성해 검사 4~8 재적용
+    - L2 가 `goal_type` 자체를 바꾸는 것은 금지(룰의 정체성 변경) — 발견 시 실패
+    - L2 가 `goal_check` 를 **완화**하는 경우 경고, **삭제**하는 경우 실패로 분리
+    - 검사 대상 프로젝트가 늘면 비용 증가 → `_pipeline/policy/` 존재 프로젝트만 스캔
+* 결과: `lib/lint-policy-schema.py lint_l2_overrides` — L1(data/<stage>/*.yml deep-merge)+L2 병합 결과에 검사 4·6 재적용. L2의 goal_type 변경·goal_check null 교체·계열밖 술어·룰 소멸 검출. `--lint-data` 검사 4 자동 포함
+* deep-merge 시맨틱상 키 제거 불가 → 완화는 null 교체 형태로만 나타남을 반영
+* 현재 실 override(feedback·note-writer)는 goal 룰 무관 0쌍, 픽스처 `z_test/fixtures/policy/l2-override/` 5쌍(P1~P5·OK)으로 검증
+
+## Issue296. 나머지 정책 yml 9종 goal-oriented 전환 (등록: 2026-07-21) — 해결: 2026-07-21 (commit: 1e03c52, c63df03) ✅
+* 목적: Issue265 가 파일럿 1종(`heuristics.yml`)만 전환했으므로, 남은 정책 yml 이 여전히 목적 없는 플래그·정규식 상태로 남아 사례 A 형 무력화에 노출되어 있다. `--lint-data` 검사 4가 매 실행 시 미전환 플래그 후보 43개를 보고하는 것이 그 가시화다.
+* depends: Issue265
+* trigger: Issue265 ✅ 완료 (commit 1fc4c24, 70fca45) — 스키마·lint 정착 확인됨
+* 상세:
+    - 대상 9종: `mappings.yml`(ppt2m2slide) · `patterns.yml`(slide-tuner·slot-designer·agenda-designer·note-writer) · `styles.yml`(md-builder) · `rules.yml`(layout-selector) · `tools.yml`(media-creater) · `questions.yml`(info-filler) · `channels.yml`(refs-collector)
+    - `heuristics.yml` 내부에도 미전환 플래그 43개 잔존 — 파일 단위가 아니라 룰 단위 전환이므로 같은 파일을 여러 번 손대게 됨
+    - 전환 판단 기준: 그 룰이 **위반을 검출해야 하는 룰인가**. 단순 설정값(임계치·목록·템플릿)은 goal 이 없으므로 전환 대상 아님
+* 구현 명세:
+    - 룰별로 `goal_type`(7종 enum) 선택 → `goal` 서술 → `goal_check` 판정식 작성. 기존 정규식·자연어 조건은 `detect_hints`·기계 판정 필드로 이관
+    - `goal_check` 술어가 기존 7계열에 없으면 `_doc_arch/policy-goal-schema.md` 를 먼저 갱신하고 `lib/lint-policy-schema.py GOAL_CHECK_FAMILIES` 동기화
+    - 각 yml 수정 전 `./lib/tuner/backup-data-yml.sh` 선행 + 정책 yml 단독 커밋 규율 준수
+    - 전환 룰마다 골든 픽스처 1건 추가 권장 (`z_test/fixtures/policy/`)
+    - 단계 분할 권장: 파급 큰 `styles.yml`·`rules.yml` 을 뒤로, 독립성 높은 `channels.yml`·`tools.yml` 을 앞으로
+* status: **파일럿 완료** — md-builder styles.yml 3룰 전환 + hygiene 산출물 판정. 9종 전면 전환은 감사로 범위 재정의됨(아래)
+* 감사 결과 (subagent 13파일 전수): 실제 goal 전환 대상은 **4파일 8건**, 나머지 9파일은 설정값 전용(룩업·분류·질문·채널 — goal 개념 없음). "43개 미전환 플래그"의 대부분이 설정 boolean 이었음
+* 완료분: `slide_text_hygiene_policy`(hygiene, 제목 내부표기 노출 금지) · `inline_syntax_preservation`(fidelity, 문법 토큰 wrap) · `backtick_marker_conflict_policy`(legibility, 빈 li 방지)
+* 핵심 개선: lint 검사 게이트를 `schema_version:2` → **`goal_type` 룰 존재**로 변경 — `version:` 파일도 goal 룰 넣는 즉시 검사됨 (감사가 짚은 버전 필드 네이밍 불일치 우회)
+* hygiene enforce_scope=headings: 본문 bullet·단락의 이슈번호는 덱 콘텐츠(도구 데모)일 수 있어 제목만 기계 판정. 실 프로젝트 23개 위반 0건
+* 잔여 5건은 🌱 이슈후보에 기록(개별 goal_check 판정 코드가 독립 작업이라 건별 후속 분리)
+* 근거 문서: `_doc_work/htm/hub_htm_20260721_215009_a_yml-audit.htm`
 
 ## Issue299. _doc_arch ↔ 소스코드 정합성 감사 (등록: 2026-07-21, 해결: 2026-07-21, commit: 없음—gitignore) ✅
 * 목적: `_doc_arch/` 영속 설계 문서가 참조하는 파일 경로·스크립트명·함수명·CLI 플래그·동작 서술이 현재 소스코드와 어긋난 곳(stale)을 전수 검토하여 교정.
