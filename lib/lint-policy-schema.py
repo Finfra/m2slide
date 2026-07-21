@@ -173,6 +173,113 @@ def lint_file(path: Path):
     return errors, migrated, legacy
 
 
+# ── L2 프로젝트 override 병합 검사 (Issue297) ──────────────────────────────
+# cascade 설계: _doc_arch/pipeline-policy-cascade.md
+# L1(data/<stage>/*.yml) 위에 L2(Projects/<N>/_pipeline/policy/<stage>.yml)를
+# deep-merge 한 결과가 goal 스키마 규율을 지키는지 검사한다. 각 축(cascade·goal)은
+# 개별 검증되나 병합 결과는 아무도 검증하지 않던 사각지대를 메운다.
+
+def deep_merge(base, override):
+    """override 를 base 위에 깊은 병합 (프로젝트 우선). dict 만 재귀, 그 외는 교체."""
+    if not isinstance(base, dict) or not isinstance(override, dict):
+        return override
+    out = dict(base)
+    for k, v in override.items():
+        out[k] = deep_merge(base.get(k), v) if k in base else v
+    return out
+
+
+def _rules_by_path(cfg):
+    """schema_version 2 파일의 goal_type 룰을 {경로: 룰} 로."""
+    if not isinstance(cfg, dict) or cfg.get("schema_version") != 2:
+        return {}
+    return {path: rule for path, rule in walk_rules(cfg)}
+
+
+def lint_l2_overrides(root: Path):
+    """Projects/*/_pipeline/policy/<stage>.yml 이 L1 goal 룰을 덮을 때 정합성 검사.
+
+    deep-merge 시맨틱상 L2 는 키를 추가/교체만 할 수 있고 제거는 못 한다
+    (제거는 `null` 명시 교체로만 가능). 따라서 검출 대상은:
+    - L2 가 goal_type 자체 변경 → 실패 (룰 정체성 훼손)
+    - L2 가 goal_check 를 null/비-dict 로 교체 → 실패 (판정 무력화)
+    - L2 가 goal_check 에 계열 밖 술어 추가 → 실패 (검사 6 재적용)
+    - L2 가 goal_type 을 비-goal 값으로 덮어 룰 소멸 → 실패
+
+    반환: (errors, checked_pairs)
+    """
+    errors = []
+    checked = 0
+
+    l2_files = sorted(root.glob("Projects/*/_pipeline/policy/*.yml"))
+    for l2_path in l2_files:
+        stage = l2_path.stem                    # note-writer.yml → note-writer
+        l1_dir = root / "data" / stage
+        if not l1_dir.is_dir():
+            continue                            # 대응 L1 stage 없음 (feedback inbox 등)
+
+        # L1 = data/<stage>/ 하위 모든 yml 을 deep-merge 한 stage 네임스페이스
+        l1_cfg = {}
+        for l1_yml in sorted(l1_dir.glob("*.yml")):
+            if "_backup" in l1_yml.parts:
+                continue
+            try:
+                part = yaml.safe_load(l1_yml.read_text()) or {}
+            except Exception:
+                continue
+            if isinstance(part, dict):
+                l1_cfg = deep_merge(l1_cfg, part)
+
+        l1_rules = _rules_by_path(l1_cfg)
+        if not l1_rules:
+            continue                            # 이 stage 에 goal 룰 없음 → 병합 검사 무의미
+
+        try:
+            l2_cfg = yaml.safe_load(l2_path.read_text()) or {}
+        except Exception:
+            continue
+        if not isinstance(l2_cfg, dict):
+            continue
+
+        merged = deep_merge(l1_cfg, l2_cfg)
+        merged_rules = _rules_by_path(merged)
+
+        for path, l1_rule in l1_rules.items():
+            checked += 1
+            rid = f"{l2_path.relative_to(root)}:{'.'.join(path)}"
+            m_rule = merged_rules.get(path)
+            if m_rule is None:
+                # 병합 후 goal_type 이 사라짐 = L2 가 룰을 비-goal 값으로 덮음
+                errors.append(f"{rid}: L2 가 goal 룰을 goal_type 없는 값으로 덮어씀 (판정 소멸)")
+                continue
+
+            # goal_type 정체성 변경 금지
+            if m_rule.get("goal_type") != l1_rule.get("goal_type"):
+                errors.append(
+                    f"{rid}: L2 가 goal_type 변경 "
+                    f"({l1_rule.get('goal_type')} → {m_rule.get('goal_type')}) — 룰 정체성 훼손 금지"
+                )
+
+            l1_gc = l1_rule.get("goal_check")
+            m_gc = m_rule.get("goal_check")
+            # goal_check 를 null/비-dict 로 교체 = 판정 무력화 (deep-merge 로 키 제거는 불가)
+            if isinstance(l1_gc, dict) and l1_gc and not (isinstance(m_gc, dict) and m_gc):
+                errors.append(f"{rid}: L2 가 goal_check 를 삭제/무력화 (null 또는 비-매핑 교체)")
+
+            # 병합 결과에 스키마 검사 4·6 재적용
+            gt = m_rule.get("goal_type")
+            if gt not in GOAL_CHECK_FAMILIES:
+                errors.append(f"{rid}: 병합 결과 goal_type={gt!r} 미등록")
+            elif isinstance(m_gc, dict):
+                unknown = sorted(set(m_gc) - GOAL_CHECK_FAMILIES[gt])
+                if unknown:
+                    errors.append(
+                        f"{rid}: 병합 결과 goal_type={gt} 계열 밖 술어 {unknown}"
+                    )
+
+    return errors, checked
+
+
 def main():
     root = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.cwd()
     targets = sorted(
@@ -192,6 +299,12 @@ def main():
 
     for rel, migrated, legacy in v2_files:
         print(f"ℹ️ {rel}: goal-oriented 룰 {migrated}개 전환됨 / 미전환 플래그 후보 {legacy}개")
+
+    # L2 프로젝트 override 병합 검사 (Issue297)
+    l2_errors, l2_checked = lint_l2_overrides(root)
+    all_errors.extend(l2_errors)
+    if l2_checked:
+        print(f"ℹ️ L2 override 병합 검사 — goal 룰 {l2_checked}쌍 대조")
 
     if all_errors:
         for err in all_errors:

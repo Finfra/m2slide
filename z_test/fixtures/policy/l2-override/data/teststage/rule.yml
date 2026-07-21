@@ -1,0 +1,10 @@
+schema_version: 2
+myrule:
+  goal_type: machine_readable
+  goal: "테스트 목표"
+  goal_check:
+    sole_image_in_slide: true
+    min_pixel_width: 800
+  confidence: high
+  evidence:
+    - { project: X, date: 2026-07-21, count: 3 }

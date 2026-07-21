@@ -57,6 +57,45 @@ else
   bad "실 프로젝트에서 위반 검출 — ./m2slide.sh --lint-data 로 상세 확인"
 fi
 
+# ── L2 override 병합 검사 회귀 (Issue297) ──────────────────────────────
+echo ""
+echo "🔍 L2 override 병합 검사 (Issue297)"
+L2FX="$ROOT/z_test/fixtures/policy/l2-override"
+SCHEMA="$ROOT/lib/lint-policy-schema.py"
+
+if [ -d "$L2FX" ]; then
+  L2OUT="$(python3 - "$SCHEMA" "$L2FX" <<'PY'
+import sys, importlib.util, pathlib
+spec = importlib.util.spec_from_file_location("lps", sys.argv[1])
+m = importlib.util.module_from_spec(spec); sys.modules["lps"] = m; spec.loader.exec_module(m)
+errs, n = m.lint_l2_overrides(pathlib.Path(sys.argv[2]))
+print(f"checked={n}")
+for e in errs: print("ERR::" + e)
+PY
+)"
+  # 5쌍 대조 기대 (P1·P2·P3·P5·OK)
+  if printf '%s' "$L2OUT" | grep -q "checked=5"; then
+    pass "L2 goal 룰 5쌍 대조"
+  else
+    bad "L2 대조 쌍 수 불일치: $(printf '%s' "$L2OUT" | grep checked)"
+  fi
+  # 위반 4종 검출 + 정상(OK) 미검출
+  for pat in "P1.*goal_type 변경" "P2.*goal_check 를 삭제" "P3.*계열 밖 술어" "P5.*판정 소멸"; do
+    if printf '%s' "$L2OUT" | grep -qE "ERR::.*$pat"; then
+      pass "L2 위반 검출: ${pat%%.*}"
+    else
+      bad "L2 위반 미검출: $pat"
+    fi
+  done
+  if printf '%s' "$L2OUT" | grep -qE "ERR::Projects/OK/"; then
+    bad "정상 override(OK) 오검출 — 무관 키만 있는데 위반 처리됨"
+  else
+    pass "정상 override(OK) 통과"
+  fi
+else
+  bad "L2 픽스처 없음: $L2FX"
+fi
+
 echo ""
 if [ "$fail" -ne 0 ]; then
   echo "❌ 픽스처 회귀 테스트 실패" >&2

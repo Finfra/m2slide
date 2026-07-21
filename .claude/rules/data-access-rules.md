@@ -191,6 +191,8 @@ Policy(Issue265): drop_redundant_page_screenshot 를 goal-oriented 로 전환
 5. **산출물 위반 잔존** (`lib/lint-policy-artifacts.py`, Issue265) — 정책이 enforce 인데 실제 md 에 위반이 남아 있으면 fail-loud. 판정은 파일명이 아니라 이미지 속성(슬라이드 유일 이미지 · 페이지 종횡비 근접 · 형제 텍스트 존재 · 빈 alt). 옵트인 범위 = `Projects/<Name>/_pipeline/` 보유 프로젝트(ppt2m2slide 역변환 산출물)
 
 > 검사 4~5 의 스키마 정의 SSOT 는 [`_doc_arch/policy-goal-schema.md`](../../_doc_arch/policy-goal-schema.md). `goal_type` enum 확장·술어 추가는 그 문서를 먼저 고치고 `lib/lint-policy-schema.py` 의 `GOAL_CHECK_FAMILIES` 를 동기화한다.
+>
+> 검사 4 는 L1 정의뿐 아니라 **L1+L2(`Projects/*/_pipeline/policy/<stage>.yml`) deep-merge 결과**도 검사한다 (Issue297) — L2 가 `goal_type` 변경·`goal_check` 무력화·계열 밖 술어 주입으로 정책을 우회하는 것을 차단. cascade 경계는 [`_doc_arch/pipeline-policy-cascade.md`](../../_doc_arch/pipeline-policy-cascade.md) "룰 내부 스키마와의 경계".
 
 사용 예:
 
