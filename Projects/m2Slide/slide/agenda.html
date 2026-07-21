@@ -1384,6 +1384,50 @@ html.ratio-fill .agenda-frame {
   text-decoration: none;
 }
 
+/* =========================================================================
+   Mobile Navigation Arrows (Issue301)
+   ========================================================================= */
+.m2-nav-arrows {
+  display: none;
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  gap: 12px;
+  z-index: 10;
+}
+
+.m2-nav-arrows button {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(128, 128, 128, 0.3);
+  color: rgba(128, 128, 128, 0.8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
+  padding: 0;
+  font-size: 20px;
+}
+
+.m2-nav-arrows button:hover {
+  background: rgba(128, 128, 128, 0.5);
+  color: rgba(128, 128, 128, 1);
+}
+
+.m2-nav-arrows button:active {
+  transform: scale(0.95);
+}
+
+/* 모바일에서만 표시 (≤768px) */
+@media (max-width: 768px) {
+  .m2-nav-arrows {
+    display: flex;
+  }
+}
+
 </style>
 <style data-m2slide-palette="default">
 
@@ -1400,7 +1444,7 @@ html.ratio-fill .agenda-frame {
     @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
 </style>
-<link rel="stylesheet" href="css/custom.css?v=1784042299363">
+<link rel="stylesheet" href="css/custom.css?v=1784638692663">
 </head>
 <body class="agenda-page" data-nav-indicator="both">
 <div class="agenda-frame">
@@ -1412,6 +1456,10 @@ html.ratio-fill .agenda-frame {
     <svg class="toc-mindmap-svg"></svg>
   </div>
   <div class="toc-page-downloads"><a href="m2Slide.epub" download class="toc-download-btn toc-download-epub">📚 EPUB</a></div>
+  <div class="m2-nav-arrows">
+    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
 </div>
 </div>
 
@@ -1419,7 +1467,7 @@ html.ratio-fill .agenda-frame {
 <script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
 <script>
 (function(){
-  const tocData = {"content":"","children":[{"content":"<a href=\"01-what.html\">1. m2Slide란?</a>","children":[]},{"content":"<a href=\"02-why.html\">2. 왜 m2Slide인가</a>","children":[]},{"content":"<a href=\"03-start.html\">3. 30초 시작</a>","children":[]}]};
+  const tocData = {"content":"","children":[{"content":"<a href=\"01-what.html\">1. m2Slide란?</a>","children":[{"content":"<a href=\"01-what.html#/1\">m2Slide란?</a>","children":[]},{"content":"<a href=\"01-what.html#/2\">마크다운 한 벌이면 끝</a>","children":[]},{"content":"<a href=\"01-what.html#/3\">한 번 쓰고, 네 가지로 낸다</a>","children":[]}]},{"content":"<a href=\"02-why.html\">2. 왜 m2Slide인가</a>","children":[{"content":"<a href=\"02-why.html#/1\">왜 m2Slide인가</a>","children":[]},{"content":"<a href=\"02-why.html#/2\">도구와 씨름 끝, 콘텐츠에 집중</a>","children":[]},{"content":"<a href=\"02-why.html#/3\">네 가지 이유</a>","children":[]},{"content":"<a href=\"02-why.html#/4\">발표가 편해진다</a>","children":[]}]},{"content":"<a href=\"03-start.html\">3. 30초 시작</a>","children":[{"content":"<a href=\"03-start.html#/1\">30초 시작</a>","children":[]},{"content":"<a href=\"03-start.html#/2\">빌드 한 줄</a>","children":[]},{"content":"<a href=\"03-start.html#/3\">더 깊이</a>","children":[]}]}]};
   function init() {
     if (!window.markmap) { return setTimeout(init, 50); }
     const svg = document.querySelector('.toc-mindmap-svg');
@@ -1475,7 +1523,7 @@ html.ratio-fill .agenda-frame {
       var sep = base.indexOf('?') === -1 ? '?' : '&';
       return base + sep + signal + hash;
     }
-  const _tocData = {"content":"","children":[{"content":"<a href=\"01-what.html\">1. m2Slide란?</a>","children":[]},{"content":"<a href=\"02-why.html\">2. 왜 m2Slide인가</a>","children":[]},{"content":"<a href=\"03-start.html\">3. 30초 시작</a>","children":[]}]};
+  const _tocData = {"content":"","children":[{"content":"<a href=\"01-what.html\">1. m2Slide란?</a>","children":[{"content":"<a href=\"01-what.html#/1\">m2Slide란?</a>","children":[]},{"content":"<a href=\"01-what.html#/2\">마크다운 한 벌이면 끝</a>","children":[]},{"content":"<a href=\"01-what.html#/3\">한 번 쓰고, 네 가지로 낸다</a>","children":[]}]},{"content":"<a href=\"02-why.html\">2. 왜 m2Slide인가</a>","children":[{"content":"<a href=\"02-why.html#/1\">왜 m2Slide인가</a>","children":[]},{"content":"<a href=\"02-why.html#/2\">도구와 씨름 끝, 콘텐츠에 집중</a>","children":[]},{"content":"<a href=\"02-why.html#/3\">네 가지 이유</a>","children":[]},{"content":"<a href=\"02-why.html#/4\">발표가 편해진다</a>","children":[]}]},{"content":"<a href=\"03-start.html\">3. 30초 시작</a>","children":[{"content":"<a href=\"03-start.html#/1\">30초 시작</a>","children":[]},{"content":"<a href=\"03-start.html#/2\">빌드 한 줄</a>","children":[]},{"content":"<a href=\"03-start.html#/3\">더 깊이</a>","children":[]}]}]};
   function firstHrefFromToc(node){
     if (!node || !node.children || node.children.length === 0) return null;
     for (const child of node.children) {
@@ -1554,6 +1602,36 @@ html.ratio-fill .agenda-frame {
       return;
     }
   }, true);
+
+  // Issue301: Mobile Navigation Arrows
+  (function setupMobileNavigation() {
+    const prevBtn = document.querySelector('.m2-nav-prev');
+    const nextBtn = document.querySelector('.m2-nav-next');
+
+    if (!prevBtn || !nextBtn) return; // No nav arrows in this layout
+
+    prevBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (Reveal.getProgress().v > 0 || Reveal.getProgress().h > 0) {
+        Reveal.prev();
+      }
+    });
+
+    nextBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const progress = Reveal.getProgress();
+      const isLastSlide = progress.v + progress.h >= Reveal.getTotalSlides() - 1;
+
+      if (isLastSlide) {
+        // Loop to first slide (like keyboard behavior)
+        window.location.href = window.location.href.split('#')[0] + '#/0';
+      } else {
+        Reveal.next();
+      }
+    });
+  })();
 })();
 </script>
 </body>
