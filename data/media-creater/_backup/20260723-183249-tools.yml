@@ -444,17 +444,6 @@ validation_rules:
     fields: [name, description, date, target]
   - id: alt_text_required
     desc: "모든 이미지 참조에 alt 텍스트 존재"
-  - id: external_cc_source_attribution
-    # goal-oriented 룰 (Issue304) — 스키마 정의 SSOT: _doc_arch/policy-goal-schema.md
-    goal_type: attribution
-    goal: "외부 수집 이미지(CC 스톡 등, source_attribution: required 백엔드 산출물)는 출처·라이선스 표기를 갖춘다 (덱 ::: source + CREDITS.md 항목). 자체 저작·AI 생성물(source_attribution: none)은 대상 아님"
-    goal_check:
-      require_source_url: true            # 외부 CC 이미지에 대응하는 출처 URL/credits 항목 존재
-    desc: "source_attribution: required 백엔드(free_image 등) 산출 이미지는 ::: source 표시 + CREDITS.md 기록 의무"
-    detect_hints:                         # 후보 축소용 — 단독 판정 금지
-      - reason: "source_attribution: required 백엔드(free_image·image_restyle inherit) 산출 이미지"
-        backend_field: "source_attribution == required|inherit_from_source"
-    confidence: low                       # goal 스키마 전환 완료 · enforce 스캐너(require_source_url)는 후속
 
 # ============================================================================
 # 6. 외부 이미지 출처 (수동 다운로드 시 참고)
