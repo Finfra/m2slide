@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 302
+* Issue HWM: 305
 * Checkpoints:
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
@@ -20,15 +20,29 @@
 * 로우·값 단위 개별 애니메이션 지원(VideoMaker 영상 플레이용). Issue149 완료 — reveal.js `<!-- .element: class="..." -->` + Pandoc `{.fragment}` 병존.
 
 # 🌱 이슈후보
-1. **Issue296 잔여 — 정책 goal 룰 5건 전환** (파일럿 md-builder 완료 후 잔여): agenda-designer 2건(chapter/single H1 중복 금지, hygiene) · note-writer 1건(발표노트 본문 복사 금지, hygiene) · media-creater 1건(외부 CC 이미지 출처 표기, attribution) · SmartArt 상표어 노출 금지(consistency, 현재 주석 산재). 각 goal_check 판정 코드가 독립 작업이라 건별 후속. 감사: `_doc_work/htm/hub_htm_20260721_215009_a_yml-audit.htm`
-1. **`data/htmlart/types.yml` `type_count` drift** — `type_count: 26` 선언이나 실제 타입 블록·코드(`HTMLART_TYPES`)는 27종. data SSOT 가 문서·코드보다 1 뒤짐. Issue299 감사 중 발견(out-of-scope: data 파일). 수정 시 `backup-data-yml.sh` 선행 필요
-2. **이미지 정밀 편집(색만·글자만 교체) 지원** — schnell img2img 로는 불가(strength 0.3↑ 원본 복제 / 0.1 재해석 드리프트, 2026-07-13 실측). edit 전용 모델(Qwen-Image-Edit·FLUX Kontext, ~수십 GB) 설치가 선행 조건이며 설치·큐 연동은 prj55 소관. 모델 확보 통지 시 이슈 승격 (Issue293 스타일 통일과 구분되는 별개 기능)
 
 # 🔥 진행 중
 
 # 📕 중요
 
 # 📙 일반
+
+## Issue304. Issue296 잔여 — 정책 goal 룰 5건 전환 (등록: 2026-07-23)
+* 목적: Issue296 파일럿(md-builder styles.yml 3룰)에서 범위 재정의로 남긴 잔여 goal 전환 대상 5건. 각 룰이 여전히 목적 없는 플래그·주석 상태라 사례 A 형 무력화에 노출됨. `goal_check` 판정 코드가 룰별 독립 작업이라 건별 후속으로 분리 등록.
+* depends: Issue296, Issue265
+* trigger: Issue296 ✅ 완료 (commit 1e03c52, c63df03) — 스키마·lint 게이트(`goal_type` 룰 존재 기반) 정착
+* 상세:
+    - agenda-designer 2건: chapter/single H1 중복 금지(hygiene) · agenda hygiene
+    - note-writer 1건: 발표노트 본문 복사 금지(hygiene)
+    - media-creater 1건: 외부 CC 이미지 출처 표기(attribution)
+    - SmartArt 상표어 노출 금지(consistency) — 현재 주석 산재, 룰화 필요
+* 구현 명세:
+    - 룰별 `goal_type`(7종 enum) 선택 → `goal` 서술 → `goal_check` 판정식 작성. 기존 정규식·자연어 조건은 `detect_hints` 로 이관
+    - `goal_check` 술어가 기존 7계열에 없으면 `_doc_arch/policy-goal-schema.md` 먼저 갱신 + `lib/lint-policy-schema.py GOAL_CHECK_FAMILIES` 동기화
+    - 각 yml 수정 전 `./lib/tuner/backup-data-yml.sh` 선행 + 정책 yml 단독 커밋 규율 준수
+    - 전환 룰마다 골든 픽스처 1건 (`z_test/fixtures/policy/`)
+    - 건별 독립 착수 가능 (서로 의존 없음)
+* 근거 문서: `_doc_work/htm/hub_htm_20260721_215009_a_yml-audit.htm` (subagent 13파일 전수 감사)
 
 ## Issue300. 슬라이드 부제목 표시 정책 결정 (등록: 2026-07-21)
 * 목적: 상위 프로젝트 videoMaker(prj41) Issue19에서 위임. videoMaker Issue9(2026-04-13, commit 8fddb16)로 frontmatter `subtitle` 렌더링 자체는 구현됐으나, "그대로 노출 / 제거 / 상위 주제 값으로 대체" 중 어느 정책을 취할지 결정된 바 없어 현재는 frontmatter 값을 그대로 노출하는 임시 상태로 남아있음. **본 프로젝트(m2slide)가 해결 담당**
@@ -39,6 +53,13 @@
 * 상위 이슈: videoMaker(prj41) Issue19
 
 # 📗 선택
+
+## Issue305. 이미지 정밀 편집(색만·글자만 교체) 지원 (!) (등록: 2026-07-23)
+* 목적: schnell img2img 로는 부분 정밀 편집 불가(strength 0.3↑ 원본 복제 / 0.1 재해석 드리프트, 2026-07-13 실측). edit 전용 모델 필요. **착수 불가** — 해결 수단(모델)이 아직 확보되지 않아 `(!)` 마커. Issue293 스타일 통일과 구분되는 별개 기능.
+* 상세(착수 조건):
+    - edit 전용 모델(Qwen-Image-Edit·FLUX Kontext, ~수십 GB) 설치가 선행 조건
+    - 모델 설치·큐 연동은 prj55(이미지 생성 인프라) 소관 — 본 프로젝트 범위 밖
+    - prj55 에서 모델 확보 통지 시 마커 제거 + 상세·구현명세 채워 승격
 
 ## Issue295. 덱 목적(purpose) enum 도입 — 정책 적용 강도의 덱 용도 스코프 (등록: 2026-07-20)
 * 목적: 정책 룰이 모든 덱에 무차별 전역 강제되는 구조를 해소한다. 강의 덱에서 결함인 것(통짜 래스터·텍스트 미추출)이 광고 덱에서는 의도된 선택일 수 있으므로, 덱의 용도를 1급 메타로 두고 정책 적용 강도를 그 축으로 스코프한다. 목적 축이 없으면 예외가 자연어로 누적되어 다시 기계 판정 불가 상태로 되돌아간다(Issue265 사례 A 재발 경로).
@@ -58,6 +79,12 @@
 * 근거 문서: `_doc_work/htm/hub_htm_20260720_192649_a_goal-taxonomy.htm` (목적 2축 분리 + enum 후보 도출)
 
 # ✅ 완료
+
+## Issue303. data/htmlart/types.yml type_count drift 교정 (등록: 2026-07-23, 해결: 2026-07-23, commit: bc3e77d) ✅
+* 목적: `data/htmlart/types.yml` `type_count: 26` 선언이 실제 타입 수(코드 `HTMLART_TYPES` Set 27 · yml 타입 키 27 · `_doc_arch` 문서 27종)와 어긋난 SSOT drift. Issue299 감사 중 발견(out-of-scope 로 이관됐던 건).
+* 근본 원인: v6 serpentine `bend_process`(Issue218, Bending Process 흡수)가 타입 헤더 주석 열거에서 누락 → 열거 합계가 26 으로 고정. 코드·yml 키·설계문서는 27 로 정상이었음.
+* 구현: `type_count: 26`→`27`, 헤더 주석 `26종`→`27종` + `v6 워크플로 1`→`v6 워크플로·serpentine 2`, `bend_process` 열거 행 추가.
+* 검증: type_count 27 == yml 키 27 == 코드 Set 27 정합. `./m2slide.sh --lint-data` 통과. backup 선행(`data/htmlart/_backup/20260723-182041-types.yml`).
 
 ## Issue301. 챕터 경계에서 ←/→ 화살표 회색 노출 + 클릭 위임 (등록: 2026-07-21, 해결: 2026-07-23, commit: 3d44c4d) ✅
 * 목적: 마우스/터치 클릭으로 다음/이전 페이지 이동 가능하게 함. reveal.js 기본 동작은 챕터 첫/마지막 슬라이드에서 ←/→ 컨트롤을 숨겨(`.enabled` 제거 + `disabled` 속성) 클릭 불가. m2slide는 챕터 경계에서 →가 다음 챕터, ←가 이전 챕터로 이어지므로 화살표를 숨기면 안 됨.
