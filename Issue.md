@@ -30,18 +30,6 @@
 
 # 📙 일반
 
-## Issue301. 모바일 네비게이션 화살표 추가 (등록: 2026-07-21, 완료: 2026-07-21)
-* 목적: 모바일 디바이스에서 터치/클릭으로 다음/이전 페이지 이동 가능하게 함. 현재는 키보드 네비게이션만 지원되어 모바일 사용성 저하.
-* 구현 완료:
-    - ✅ layout 템플릿: 모든 기본 layout(_contents, _blank, _cover, _cards, _toc, _agenda, _contents_no_title)에 `<div class="m2-nav-arrows">` 추가
-    - ✅ 버튼 UI: Font Awesome chevron-left/right 아이콘, 회색(rgba 128,128,128), 44px 원형 버튼, hover/active 상태 포함
-    - ✅ CSS: base.css에 모바일 전용 스타일 추가 (@media ≤768px에서만 display:flex)
-    - ✅ JavaScript: html-builder.js에 클릭 핸들러 추가
-      - 좌버튼: Reveal.prev() 호출
-      - 우버튼: Reveal.next() 호출, 마지막 슬라이드면 첫 페이지로 루프
-    - ✅ 빌드 테스트: m2Slide 프로젝트 정상 빌드, 화살표 요소 HTML 포함 확인
-* 커밋: (pending)
-
 ## Issue300. 슬라이드 부제목 표시 정책 결정 (등록: 2026-07-21)
 * 목적: 상위 프로젝트 videoMaker(prj41) Issue19에서 위임. videoMaker Issue9(2026-04-13, commit 8fddb16)로 frontmatter `subtitle` 렌더링 자체는 구현됐으나, "그대로 노출 / 제거 / 상위 주제 값으로 대체" 중 어느 정책을 취할지 결정된 바 없어 현재는 frontmatter 값을 그대로 노출하는 임시 상태로 남아있음. **본 프로젝트(m2slide)가 해결 담당**
 * 상세:
@@ -70,6 +58,20 @@
 * 근거 문서: `_doc_work/htm/hub_htm_20260720_192649_a_goal-taxonomy.htm` (목적 2축 분리 + enum 후보 도출)
 
 # ✅ 완료
+
+## Issue301. 챕터 경계에서 ←/→ 화살표 회색 노출 + 클릭 위임 (등록: 2026-07-21, 해결: 2026-07-23, commit: 3d44c4d) ✅
+* 목적: 마우스/터치 클릭으로 다음/이전 페이지 이동 가능하게 함. reveal.js 기본 동작은 챕터 첫/마지막 슬라이드에서 ←/→ 컨트롤을 숨겨(`.enabled` 제거 + `disabled` 속성) 클릭 불가. m2slide는 챕터 경계에서 →가 다음 챕터, ←가 이전 챕터로 이어지므로 화살표를 숨기면 안 됨.
+* 방향 전환 경위:
+    - 최초(2026-07-21): 별도 원형 `m2-nav-arrows` 버튼을 8개 layout에 추가 → 사용자가 스크린샷으로 지적한 대상은 기존 reveal.js **다이아몬드 컨트롤**(우하단 마름모)이었음. 원형 버튼은 다이아몬드와 중복되는 오해석 → 전량 revert
+    - 확정(2026-07-23): 기존 다이아몬드 nav의 ←/→를 ↑/↓와 동일하게 "항상 회색 노출 + 클릭 위임"으로 처리
+* 구현 완료:
+    - ✅ 원형 `m2-nav-arrows` 전량 제거: 8개 layout HTML(`theme/default/layouts/*.html` 7종 + `theme/default_lec/layouts/_contents.html`) + base.css CSS 블록 + html-builder.js `setupMobileNavigation` 함수
+    - ✅ CSS(html-builder.js): `.navigate-left/-right`를 ↑/↓처럼 항상 `visibility:visible` + `opacity:0.25`(회색), reveal의 `.enabled` 있으면 `opacity:1`, hover 0.7. `body[data-nav-indicator="page"]` 숨김 규칙은 specificity로 여전히 우선(회귀 0)
+    - ✅ JS(html-builder.js): `m2UpdateNavControls`에서 매 slidechanged마다 ←/→의 `disabled` 속성 제거(disabled 버튼은 click 미발화) + `Reveal.on('ready')`에서 ←/→ 클릭을 `ArrowLeft/ArrowRight` 키로 위임 → 기존 키 네비게이션 매트릭스(마지막→다음챕터, 첫→이전챕터) 재사용
+    - ✅ 검증(m2Slide 프로젝트, Playwright): 챕터1 마지막(3/3) → navigate-right `disabled:false` `opacity:0.25` / 1클릭 → 안내 메시지 / 2클릭 → 챕터2(2/1) 이동 / 중간 슬라이드 단일 클릭 1칸 전진(메시지 없음) / `--lint-deployment` 통과
+* 근본 원인: reveal.js가 끝단 슬라이드에서 nav 버튼에 `disabled="disabled"` 부여 → disabled 버튼은 click 이벤트 미발화(CSS `pointer-events`로 못 뚫음). slidechanged마다 `removeAttribute('disabled')`로 해소
+* 후속(2026-07-23): 마지막 슬라이드에서 → 가 우측으로 삐져나오는 위치 버그 — reveal 기본이 비활성 ←/→에 `transform:translateX(±10px)`를 남기고 `.enabled`일 때만 `transform:none`으로 제자리 복귀시킴. 회색(비활성) 상태에도 항상 노출하므로 `.navigate-left/-right`에 `transform:none !important` 강제 → 활성/비활성 무관 마름모 정위치 유지. 검증: 마지막 슬라이드 → x=1663(뷰포트 1707 내), transform:none
+* 캡처: `_doc_work/capture/issue301-last-slide-gray-arrow.png`, `_doc_work/capture/issue301-last-slide-arrow-fixed.png`
 
 ## Issue302. agenda markmap 챕터 노드 확장 미작동 — 평면 AGENDA 챕터에 슬라이드 children 부재 (등록: 2026-07-21, 해결: 2026-07-21, commit: e6897c7) ✅
 * 목적: 서브챕터(`### [..]`) 없는 평면 챕터 데크는 agenda 목차 markmap 의 각 챕터 노드 `children` 이 빈 배열이라 펼침 원이 그려지지 않아, 노드를 클릭해도 확장이 일어나지 않았다. `parseAgenda` 가 AGENDA.md 의 서브챕터 엔트리에서만 children 을 만드는 구조적 한계.
