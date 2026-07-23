@@ -666,28 +666,6 @@ preservation:
     chapter_mode_action: drop
     note: "PPT cover_root dropped in chapter mode — toc-placeholder가 챕터 진입 표현"
 
-# ── SmartArt 상표어 위생 (Issue304) ────────────────────────────
-# "SmartArt" 는 Microsoft 상표. ppt2m2slide 역변환 산출물(마크다운·htmlArt 문법
-# 키워드·CSS 클래스·사용자 노출 명칭)에 상표어가 잔존하면 안 됨 — htmlArt 로 표기.
-# 참조: data/htmlart/smartart-catalog.yml(설계 참조 자료는 상표어 사용 허용) vs
-#       산출물(금지). 본 룰은 산출물 텍스트에만 적용.
-#
-# goal_type 판정: Issue304 상세는 "(consistency)" 로 라벨했으나, 실제 성격은
-#   "산출물에 특정 패턴(상표어)이 잔존하지 않음" = hygiene(잔재 제거)이다.
-#   consistency 계열 술어(palette/style/font/tone_match)에는 상표어 부재를 표현할
-#   술어가 없어 신규 술어·스키마 갱신을 요구하는 반면, hygiene 의 text_pattern_absent
-#   가 정확히 이 의미다. 라벨보다 술어 정합성을 우선하여 hygiene 로 확정.
-smartart_trademark_hygiene:
-  goal_type: hygiene
-  goal: "ppt2m2slide 역변환 산출물(렌더 텍스트·htmlArt 문법·클래스명·노출 명칭)에 Microsoft 상표어 'SmartArt' 가 잔존하지 않는다 (htmlArt 로 표기)"
-  goal_check:
-    text_pattern_absent: '\bSmartArt\b'
-  detect_hints:                          # 후보 축소용 — 단독 판정 금지
-    - regex: '\bSmartArt\b'
-      reason: "Microsoft 상표어 — 산출물 코드·클래스명·노출 텍스트에 사용 금지, htmlArt 사용"
-  confidence: low                        # goal 스키마 전환 완료 · enforce 스캐너(산출물 스캔)는 후속
-  scope: "역변환 산출 마크다운·htmlArt 클래스/키워드·사용자 노출 명칭. 설계 참조(smartart-catalog.yml)·소스 주석은 예외"
-
 # ── AGENDA.md / <Name>.md frontmatter emit 양식 ────────────────
 # ppt2m2slide 가 슬라이드 소스 메타 파일(chapter mode = markdown/AGENDA.md,
 # single mode = <Name>.md) 작성 시 cover layout(`_cover`)이 요구하는 운영 메타
