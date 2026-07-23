@@ -75,7 +75,7 @@ Read("data/component-libraries.yml")
 # 예외
 
 * **프로젝트 policy override**: `Projects/<N>/_pipeline/policy/<단계>.yml` — 해당 단계 SCAR만 읽음. 다른 단계의 override 파일은 읽지 않음.
-* **단계 10 (`md2tts-txt`)**: 글로벌 `~/.claude/rules/tts-pronunciation-rules.md` 읽기 허용 — m2slide data/ 외부 글로벌 룰이므로 예외. 단, `data/<other_stage>/` 접근은 금지.
+* **단계 10 (`md2tts-txt`)**: `lib/tts/.claude/rules/tts-pronunciation-rules.md` 읽기 허용 — m2slide data/ 외부 룰이므로 예외. 단, `data/<other_stage>/` 접근은 금지. (경로 정정: 구 표기 `~/.claude/rules/...` 는 글로벌 SCAR 를 가리켜 실재하지 않았음. 실 소유는 videoMaker → **lib/tts** — Issue23 이관)
 * **orchestrator (`authoring-pipeline` agent)**: 각 단계 위임·결과 검증용으로 state.yml·history.md만 읽음. `data/<stage>/` 직접 읽기 금지 (각 단계 SCAR에 위임).
 
 # 실행 가드 (SCAR 본문 작성 시)
