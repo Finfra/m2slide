@@ -2,6 +2,12 @@
 name: Info
 description: <PROJECT_NAME> 프로젝트 기획 메타
 date: <YYYY-MM-DD>
+# 덱 목적 — 정책 적용 강도 스코프 (Issue295). 기계 판독 canonical 위치.
+# lecture(가장 엄격·기본) | info | promo | handout | archive. 미기재 시 lecture 간주.
+# 단일: `purpose: lecture` / 복합: {primary: <1개>, secondary: [<N개>]} (primary 가 강도 결정)
+purpose:
+  primary: lecture
+  secondary: []
 ---
 
 # 주제

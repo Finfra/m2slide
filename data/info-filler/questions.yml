@@ -46,6 +46,19 @@ planning:
         type: enum
         values: [강의, 내레이션, 대화, 튜토리얼, 발표, 기타]
 
+    - id: purpose
+      label: 덱 목적
+      section: 덱 목적
+      # 축 2 — 정책 적용 강도 스코프 (Issue295). tone(화법)과 별개 축.
+      # 설계 SSOT: _doc_arch/policy-goal-schema.md "축 2 — 덱 목적(purpose)"
+      # Info.md frontmatter `purpose` 로 기록. 미기재 시 lecture(가장 엄격) 간주.
+      prompt: "이 덱의 용도는? 정책 강도를 결정합니다 (lecture=강의·가장 엄격 / info=정보전달 / promo=광고·비주얼 우선 / handout=배포·인쇄물 / archive=원본 보존)"
+      example: "lecture"
+      default: lecture
+      validation:
+        type: enum
+        values: [lecture, info, promo, handout, archive]
+
     - id: goals
       label: 학습 목표
       section: 학습 목표
