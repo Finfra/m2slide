@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 305
+* Issue HWM: 306
 * Checkpoints:
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
@@ -23,28 +23,26 @@
 
 # 🔥 진행 중
 
-## Issue304. Issue296 잔여 — 정책 goal 룰 5건 전환 (등록: 2026-07-23)
-* 목적: Issue296 파일럿(md-builder styles.yml 3룰)에서 범위 재정의로 남긴 잔여 goal 전환 대상 5건. 각 룰이 여전히 목적 없는 플래그·주석 상태라 사례 A 형 무력화에 노출됨. `goal_check` 판정 코드가 룰별 독립 작업이라 건별 후속으로 분리 등록.
-* depends: Issue296, Issue265
-* trigger: Issue296 ✅ 완료 (commit 1e03c52, c63df03) — 스키마·lint 게이트(`goal_type` 룰 존재 기반) 정착
-* 상세:
-    - agenda-designer 2건: chapter/single H1 중복 금지(hygiene) · agenda hygiene
-    - note-writer 1건: 발표노트 본문 복사 금지(hygiene)
-    - media-creater 1건: 외부 CC 이미지 출처 표기(attribution)
-    - SmartArt 상표어 노출 금지(consistency) — 현재 주석 산재, 룰화 필요
-* 구현 명세:
-    - 룰별 `goal_type`(7종 enum) 선택 → `goal` 서술 → `goal_check` 판정식 작성. 기존 정규식·자연어 조건은 `detect_hints` 로 이관
-    - `goal_check` 술어가 기존 7계열에 없으면 `_doc_arch/policy-goal-schema.md` 먼저 갱신 + `lib/lint-policy-schema.py GOAL_CHECK_FAMILIES` 동기화
-    - 각 yml 수정 전 `./lib/tuner/backup-data-yml.sh` 선행 + 정책 yml 단독 커밋 규율 준수
-    - 전환 룰마다 골든 픽스처 1건 (`z_test/fixtures/policy/`)
-    - 건별 독립 착수 가능 (서로 의존 없음)
-* 근거 문서: `_doc_work/htm/hub_htm_20260721_215009_a_yml-audit.htm` (subagent 13파일 전수 감사)
-
 # 📕 중요
 
 # 📙 일반
 
 # 📗 선택
+
+## Issue306. Issue304 goal 룰 5건 enforce 스캐너 + 골든 픽스처 (등록: 2026-07-23)
+* 목적: Issue304 는 5룰을 goal-oriented 스키마로 전환(confidence: low, detect+spec)했으나, `goal_check` 술어의 **실제 산출물 판정 코드**(lib/lint-policy-artifacts.py)가 미구현이라 enforce 되지 않음. 현재 스캐너는 `text_pattern_absent`(hygiene)·`sole_image_in_slide`(machine_readable) 2종만 존재. 각 술어별 스캐너 + 골든 픽스처로 enforce 승격.
+* depends: Issue304
+* trigger: Issue304 ✅ 완료 (5룰 goal 스키마 전환 + 검사 4~8 통과) + commit hash 기록
+* 상세:
+    - `h1_not_duplicate_title` (agenda 2룰) — 첫 H1 ↔ frontmatter.title·AGENDA parent H2 대조 스캐너
+    - `note_not_echo_body` (note-writer) — 노트 블록 ↔ 대응 슬라이드 bullet 유사도(≥0.9) 스캐너
+    - `require_source_url` (media-creater) — source_attribution: required 이미지의 ::: source·CREDITS 항목 존재 검증
+    - `text_pattern_absent: \bSmartArt\b` (ppt2m2slide 산출물) — 역변환 마크다운·htmlArt 클래스명 상표어 스캔
+* 구현 명세:
+    - 각 스캐너를 lib/lint-policy-artifacts.py 에 추가 + main() wiring (styles.yml hygiene 패턴 재사용)
+    - 룰마다 골든 픽스처 1건 (`z_test/fixtures/policy/`) — 위반 검출 + 오검출 방지 케이스
+    - 스캐너 정착 후 각 룰 confidence 를 evidence 축적 따라 medium/high 승격
+    - 건별 독립 착수 가능
 
 ## Issue305. 이미지 정밀 편집(색만·글자만 교체) 지원 (!) (등록: 2026-07-23)
 * 목적: schnell img2img 로는 부분 정밀 편집 불가(strength 0.3↑ 원본 복제 / 0.1 재해석 드리프트, 2026-07-13 실측). edit 전용 모델 필요. **착수 불가** — 해결 수단(모델)이 아직 확보되지 않아 `(!)` 마커. Issue293 스타일 통일과 구분되는 별개 기능.
@@ -71,6 +69,19 @@
 * 근거 문서: `_doc_work/htm/hub_htm_20260720_192649_a_goal-taxonomy.htm` (목적 2축 분리 + enum 후보 도출)
 
 # ✅ 완료
+
+## Issue304. Issue296 잔여 — 정책 goal 룰 5건 전환 (등록: 2026-07-23, 해결: 2026-07-23, commit: cc7c3bb, aa02a9b, 67e47aa, fa364e8, c8f5d92) ✅
+* 목적: Issue296 파일럿(md-builder 3룰)에서 남긴 잔여 goal 전환 대상 5건. 각 룰이 목적 없는 플래그·주석 상태라 사례 A 형(파일명 의존 무력화)에 노출됨.
+* 완료 범위 — 5룰 **goal-oriented 스키마 전환** (goal_type/goal/goal_check 속성 spec + detect_hints 로 기존 정규식·자연어 조건 이관, confidence: low):
+    - agenda-designer 2건: `chapter_no_redundant_title_slide`·`h1_no_duplicate_with_title` → hygiene / `h1_not_duplicate_title` (cc7c3bb)
+    - note-writer 1건: `no_verbatim_echo` → hygiene / `note_not_echo_body` (67e47aa)
+    - media-creater 1건: `external_cc_source_attribution` 신설 → attribution / `require_source_url` (fa364e8)
+    - SmartArt 상표어 1건: `smartart_trademark_hygiene` 신설(ppt2m2slide) → hygiene / `text_pattern_absent(\bSmartArt\b)` (c8f5d92)
+* 판정 이탈 기록: SmartArt 룰은 이슈 상세가 "(consistency)" 라벨했으나 consistency 계열에 상표어 부재 술어가 없고 hygiene/`text_pattern_absent` 가 정확한 의미 → **hygiene 확정**(라벨보다 술어 정합성 우선, 룰 주석에 근거 기재).
+* 인프라: `data/*` gitignore 화이트리스트에 note-writer·media-creater stage 누락분 추가 (aa02a9b) — 두 stage 정책 yml 추적 가능화.
+* 검증: `./m2slide.sh --lint-data` 통과(goal 룰 9개 검사 4~8) + `z_test/run-policy-fixture.sh` 회귀 통과(산출물 위반 0·L2 override·텍스트 위생). 4개 yml 수정 전 backup 선행 + 정책 yml 단독 커밋 규율 준수.
+* 후속: enforce **판정 코드(스캐너)·골든 픽스처**는 Issue306 으로 분리 (Issue304 자체가 "판정 코드는 룰별 후속"으로 프레임 — 현 스캐너는 text_pattern_absent·sole_image 2종만 구현). 스캐너 정착 후 confidence medium/high 승격.
+* 근거 문서: `_doc_work/htm/hub_htm_20260721_215009_a_yml-audit.htm`
 
 ## Issue300. 슬라이드 부제목 표시 정책 결정 (등록: 2026-07-21, 해결: 2026-07-23, commit: d094fda) ✅
 * 목적: 상위 프로젝트 videoMaker(prj41) Issue19에서 위임. videoMaker Issue9(2026-04-13, commit 8fddb16)로 frontmatter `subtitle` 렌더링 자체는 구현됐으나, "그대로 노출 / 제거 / 상위 주제 값으로 대체" 중 어느 정책을 취할지 미결정 상태였음.
