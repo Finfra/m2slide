@@ -29,21 +29,6 @@
 
 # 📗 선택
 
-## Issue306. Issue304 goal 룰 5건 enforce 스캐너 + 골든 픽스처 (등록: 2026-07-23)
-* 목적: Issue304 는 5룰을 goal-oriented 스키마로 전환(confidence: low, detect+spec)했으나, `goal_check` 술어의 **실제 산출물 판정 코드**(lib/lint-policy-artifacts.py)가 미구현이라 enforce 되지 않음. 현재 스캐너는 `text_pattern_absent`(hygiene)·`sole_image_in_slide`(machine_readable) 2종만 존재. 각 술어별 스캐너 + 골든 픽스처로 enforce 승격.
-* depends: Issue304
-* trigger: Issue304 ✅ 완료 (5룰 goal 스키마 전환 + 검사 4~8 통과) + commit hash 기록
-* 상세:
-    - `h1_not_duplicate_title` (agenda 2룰) — 첫 H1 ↔ frontmatter.title·AGENDA parent H2 대조 스캐너
-    - `note_not_echo_body` (note-writer) — 노트 블록 ↔ 대응 슬라이드 bullet 유사도(≥0.9) 스캐너
-    - `require_source_url` (media-creater) — source_attribution: required 이미지의 ::: source·CREDITS 항목 존재 검증
-    - `text_pattern_absent: \bSmartArt\b` (ppt2m2slide 산출물) — 역변환 마크다운·htmlArt 클래스명 상표어 스캔
-* 구현 명세:
-    - 각 스캐너를 lib/lint-policy-artifacts.py 에 추가 + main() wiring (styles.yml hygiene 패턴 재사용)
-    - 룰마다 골든 픽스처 1건 (`z_test/fixtures/policy/`) — 위반 검출 + 오검출 방지 케이스
-    - 스캐너 정착 후 각 룰 confidence 를 evidence 축적 따라 medium/high 승격
-    - 건별 독립 착수 가능
-
 ## Issue305. 이미지 정밀 편집(색만·글자만 교체) 지원 (!) (등록: 2026-07-23)
 * 목적: schnell img2img 로는 부분 정밀 편집 불가(strength 0.3↑ 원본 복제 / 0.1 재해석 드리프트, 2026-07-13 실측). edit 전용 모델 필요. **착수 불가** — 해결 수단(모델)이 아직 확보되지 않아 `(!)` 마커. Issue293 스타일 통일과 구분되는 별개 기능.
 * 상세(착수 조건):
@@ -69,6 +54,19 @@
 * 근거 문서: `_doc_work/htm/hub_htm_20260720_192649_a_goal-taxonomy.htm` (목적 2축 분리 + enum 후보 도출)
 
 # ✅ 완료
+
+## Issue306. Issue304 goal 룰 5건 enforce 스캐너 + 골든 픽스처 (등록: 2026-07-23, 해결: 2026-07-23, commit: d7d514c) ✅
+* 목적: Issue304 가 goal 스키마로 전환한 5룰의 `goal_check` 술어에 실제 산출물 판정 코드가 미구현이라 enforce 불가. 각 술어별 스캐너 + 골든 픽스처로 enforce 승격 기반 마련.
+* depends: Issue304
+* 완료 범위 — `lib/lint-policy-artifacts.py` 검사 3~6 신설 (파일명 아닌 속성 판정):
+    - 검사 3 `h1_not_duplicate_title` (agenda 2룰): 첫 본문 H1 ↔ frontmatter.title·AGENDA 상위 제목 정규화 대조(선두 번호·강조 제거)
+    - 검사 4 `note_not_echo_body` (note-writer): 노트 블록 ↔ `#id-` 대응 슬라이드 bullet `SequenceMatcher` 유사도 ≥0.9
+    - 검사 5 `require_source_url` (media-creater): CREDITS.md(외부 CC 권위 목록) 항목 URL 존재 + 등재 이미지 사용 슬라이드 `::: source` 존재. CREDITS.md 보유 프로젝트 옵트인
+    - 검사 6 `text_pattern_absent: \bSmartArt\b` (ppt2m2slide): `_pipeline` 옵트인 역변환 산출물 상표어 스캔(코드펜스 예외)
+* confidence 게이팅: low=미적용(픽스처 검증만)·medium=warn·high=enforce. 5룰 전부 low → 실 프로젝트 무영향(회귀 0). evidence 축적 시 승격.
+* 골든 픽스처 4종 (`z_test/fixtures/policy/{h1-dup-title,note-echo,source-attribution,smartart-hygiene}/`): 룰마다 위반 검출 + 오검출 방지 케이스. importlib 로 `check_*` 직접 호출(confidence 무관) — 파일명 의존 회귀 차단.
+* 검증: `run-policy-fixture.sh` 회귀 통과(신규 11개 assert) + `./m2slide.sh --lint-data` rc0 + schema lint rc0. 정책 yml 미수정 → 커밋 규율 무관.
+* 설계 SSOT: `_doc_arch/policy-goal-schema.md` "산출물 enforce 스캐너 (검사 9)" 절 추가.
 
 ## Issue304. Issue296 잔여 — 정책 goal 룰 5건 전환 (등록: 2026-07-23, 해결: 2026-07-23, commit: cc7c3bb, aa02a9b, 67e47aa, fa364e8, c8f5d92) ✅
 * 목적: Issue296 파일럿(md-builder 3룰)에서 남긴 잔여 goal 전환 대상 5건. 각 룰이 목적 없는 플래그·주석 상태라 사례 A 형(파일명 의존 무력화)에 노출됨.
