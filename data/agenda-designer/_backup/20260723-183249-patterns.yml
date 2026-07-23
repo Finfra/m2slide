@@ -223,23 +223,14 @@ validation_rules:
       desc: "각 챕터 파일 frontmatter title + type:ppt 필수"
       fields: [title, type]
     - id: chapter_no_redundant_title_slide
-      # goal-oriented 룰 (Issue304) — 스키마 정의 SSOT: _doc_arch/policy-goal-schema.md
-      goal_type: hygiene
-      goal: "챕터 .md 첫 슬라이드 H1 이 챕터 제목·상위 섹션 제목과 중복되지 않는다 (toc-placeholder 가 이미 챕터 제목을 표시하므로 재기술 시 #/2 에 동일 제목 중복 노출)"
-      goal_check:
-        h1_not_duplicate_title: true         # 첫 H1 이 frontmatter.title·AGENDA parent H2 title 과 불일치
       desc: |
         챕터 .md 첫 슬라이드가 챕터 제목·상위 섹션 제목과 동일하면 안 됨.
         m2slide가 #/1 toc-placeholder(cards layout)를 자동 주입하여 챕터 제목을
         이미 표시하므로, 챕터 .md에 `# {chapter_title}` 또는 `# {parent_section}`을
         다시 두면 동일 제목이 #/2에 중복 노출됨. 첫 슬라이드는 첫 실제 본문이어야 함.
-      detect_hints:                          # 후보 축소용 — 단독 판정 금지
-        - reason: "첫 H1 == frontmatter.title (챕터 제목 중복)"
-          compare: "first_h1 == frontmatter.title"
-        - reason: "첫 H1 == AGENDA parent H2 title (상위 섹션 제목 중복)"
-          compare: "first_h1 == agenda_parent_h2_title"
-      confidence: low                        # goal 스키마 전환 완료 · enforce 스캐너(h1_not_duplicate_title)는 후속
-      # enforce 판정 코드(lib/lint-policy-artifacts.py 신규 스캐너)는 Issue304 후속으로 분리.
+      pattern_forbidden_first_h1:
+        - "must_not_equal: frontmatter.title"
+        - "must_not_equal: AGENDA parent H2 title"
   single:
     - id: single_frontmatter_required
       desc: "single .md frontmatter title + type:ppt 필수"
@@ -247,16 +238,7 @@ validation_rules:
     - id: h2_slide_separator
       desc: "슬라이드 구분은 '---' 단독 줄"
     - id: h1_no_duplicate_with_title
-      # goal-oriented 룰 (Issue304) — 스키마 정의 SSOT: _doc_arch/policy-goal-schema.md
-      goal_type: hygiene
-      goal: "single .md frontmatter title 과 본문 첫 H1 이 중복되지 않는다 (md-slide-rules — title 이 표지 제목 역할이므로 본문 H1 재기술 시 이중 노출)"
-      goal_check:
-        h1_not_duplicate_title: true
       desc: "frontmatter title과 본문 H1 중복 금지 (md-slide-rules)"
-      detect_hints:
-        - reason: "본문 첫 H1 == frontmatter.title"
-          compare: "first_h1 == frontmatter.title"
-      confidence: low                        # goal 스키마 전환 완료 · enforce 스캐너는 후속
   shared:
     - id: md_slide_rules_compliant
       desc: "~/.claude/rules/md-slide-rules.md 준수"
