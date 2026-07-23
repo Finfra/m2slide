@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """data/<stage>/*.yml 의 goal-oriented 정책 룰(schema_version: 2) 검증.
 
-`./m2slide.sh --lint-data` 의 검사 4~8 을 담당한다. 스키마 정의 SSOT 는
+`./m2slide.sh --lint-data` 의 검사 4~8(goal 스키마) + 10(룰 축 2 필드) +
+11(Info.md purpose) 을 담당한다. 스키마 정의 SSOT 는
 `_doc_arch/policy-goal-schema.md` 이며, 본 파일의 GOAL_CHECK_FAMILIES 가
 "goal_type 별 허용 술어" 의 실행 SSOT 다 (문서와 동기화 의무).
 
@@ -60,6 +61,11 @@ GOAL_CHECK_FAMILIES = {
 VALID_CONFIDENCE = ("low", "medium", "high")
 ENFORCE_LEVELS = ("high",)          # enforce = goal_check 필수
 EVIDENCE_REQUIRED = ("medium", "high")
+
+# 축 2 — 덱 목적(purpose) enum (닫힌 집합, Issue295).
+# _doc_arch/policy-goal-schema.md "축 2 — 덱 목적(purpose)" 절과 동기화 의무.
+VALID_PURPOSE = ("lecture", "info", "promo", "handout", "archive")
+PURPOSE_RULE_FIELDS = ("applies_to_purpose", "relax_when")   # 룰이 소비하는 축 2 필드
 
 
 def walk_rules(node, path=()):
@@ -166,6 +172,21 @@ def lint_file(path: Path):
         elif goal_check is not None:
             errors.append(f"{rid}: goal_check 는 매핑이어야 함 (현재 {type(goal_check).__name__})")
 
+        # 검사 10 — 축 2 필드(applies_to_purpose·relax_when) 값 유효성 (Issue295)
+        for pf in PURPOSE_RULE_FIELDS:
+            pv = rule.get(pf)
+            if pv is None:
+                continue                            # 생략 = 전 목적 적용 (현행 동작)
+            if not isinstance(pv, list):
+                errors.append(f"{rid}: {pf} 는 리스트여야 함 (현재 {type(pv).__name__})")
+                continue
+            bad = sorted(set(pv) - set(VALID_PURPOSE))
+            if bad:
+                errors.append(
+                    f"{rid}: {pf} 에 미등록 purpose {bad} "
+                    f"(허용: {', '.join(VALID_PURPOSE)})"
+                )
+
         # 검사 8 — evidence 유무
         if confidence in EVIDENCE_REQUIRED:
             evidence = rule.get("evidence")
@@ -183,6 +204,65 @@ def lint_file(path: Path):
 
     legacy = count_legacy_flags(cfg) if versioned else 0
     return errors, migrated, legacy
+
+
+# ── Info.md 덱 목적(purpose) 검사 (검사 11, Issue295) ──────────────────────
+# 축 2 canonical 위치 = Info.md frontmatter `purpose`. 미기재는 lecture 간주(회귀 0)
+# 이므로 실패가 아니라 aggregate 정보 라인으로 보고한다. enum·구조 위반만 실패.
+
+def _read_frontmatter(text):
+    """`---` 로 감싼 첫 YAML frontmatter 블록을 dict 로. 없으면 None."""
+    if not text.startswith("---"):
+        return None
+    end = text.find("\n---", 3)
+    if end == -1:
+        return None
+    try:
+        fm = yaml.safe_load(text[3:end])
+    except Exception:
+        return None
+    return fm if isinstance(fm, dict) else None
+
+
+def lint_info_purpose(root: Path):
+    """Projects/*/Info.md 의 purpose frontmatter 유효성. (errors, missing_count) 반환."""
+    errors = []
+    missing = 0
+    for info_path in sorted(root.glob("Projects/*/Info.md")):
+        try:
+            fm = _read_frontmatter(info_path.read_text())
+        except Exception:
+            continue
+        rid = str(info_path.relative_to(root))
+        purpose = fm.get("purpose") if fm else None
+        if purpose is None:
+            missing += 1                            # 미기재 = lecture 간주 (정상)
+            continue
+
+        if isinstance(purpose, str):
+            primary, secondary = purpose, []
+        elif isinstance(purpose, dict):
+            primary = purpose.get("primary")
+            secondary = purpose.get("secondary") or []
+            extra = sorted(set(purpose) - {"primary", "secondary"})
+            if extra:
+                errors.append(f"{rid}: purpose 에 미지원 키 {extra} (허용: primary, secondary)")
+        else:
+            errors.append(f"{rid}: purpose 는 문자열 또는 {{primary,secondary}} 여야 함")
+            continue
+
+        if primary not in VALID_PURPOSE:
+            errors.append(
+                f"{rid}: purpose.primary={primary!r} 미등록 "
+                f"(허용: {', '.join(VALID_PURPOSE)})"
+            )
+        if not isinstance(secondary, list):
+            errors.append(f"{rid}: purpose.secondary 는 리스트여야 함")
+        else:
+            bad = sorted(set(secondary) - set(VALID_PURPOSE))
+            if bad:
+                errors.append(f"{rid}: purpose.secondary 에 미등록 {bad}")
+    return errors, missing
 
 
 # ── L2 프로젝트 override 병합 검사 (Issue297) ──────────────────────────────
@@ -289,6 +369,14 @@ def lint_l2_overrides(root: Path):
                         f"{rid}: 병합 결과 goal_type={gt} 계열 밖 술어 {unknown}"
                     )
 
+            # 병합 결과 축 2 필드 유효성 (검사 10 재적용 — L2 가 purpose 변조 시 차단)
+            for pf in PURPOSE_RULE_FIELDS:
+                pv = m_rule.get(pf)
+                if pv is None:
+                    continue
+                if not isinstance(pv, list) or (set(pv) - set(VALID_PURPOSE)):
+                    errors.append(f"{rid}: 병합 결과 {pf} 값 부적합 ({pv!r})")
+
     return errors, checked
 
 
@@ -311,6 +399,14 @@ def main():
 
     for rel, migrated, legacy in v2_files:
         print(f"ℹ️ {rel}: goal-oriented 룰 {migrated}개 전환됨 / 미전환 플래그 후보 {legacy}개")
+
+    # Info.md 덱 목적(purpose) 검사 (검사 11, Issue295)
+    purpose_errors, purpose_missing = lint_info_purpose(root)
+    all_errors.extend(purpose_errors)
+    if purpose_missing:
+        print(
+            f"ℹ️ Info.md purpose 미기재 {purpose_missing}개 — lecture(가장 엄격)로 간주 (축 2, Issue295)"
+        )
 
     # L2 프로젝트 override 병합 검사 (Issue297)
     l2_errors, l2_checked = lint_l2_overrides(root)

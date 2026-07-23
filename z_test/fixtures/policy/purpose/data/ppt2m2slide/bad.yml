@@ -1,0 +1,10 @@
+# 검사 10 negative 픽스처 — 룰 축 2 필드에 미등록 purpose (Issue295)
+schema_version: 2
+
+bad_purpose_field:
+  goal_type: hygiene
+  goal: "픽스처 — 축 2 필드 유효성 검사용"
+  goal_check:
+    residual_count_max: 0
+  applies_to_purpose: [lecture, bogus]   # bogus = 미등록 → 검사 10 실패
+  relax_when: notalist                   # 리스트 아님 → 검사 10 실패
