@@ -23,10 +23,6 @@
 
 # 🔥 진행 중
 
-# 📕 중요
-
-# 📙 일반
-
 ## Issue304. Issue296 잔여 — 정책 goal 룰 5건 전환 (등록: 2026-07-23)
 * 목적: Issue296 파일럿(md-builder styles.yml 3룰)에서 범위 재정의로 남긴 잔여 goal 전환 대상 5건. 각 룰이 여전히 목적 없는 플래그·주석 상태라 사례 A 형 무력화에 노출됨. `goal_check` 판정 코드가 룰별 독립 작업이라 건별 후속으로 분리 등록.
 * depends: Issue296, Issue265
@@ -44,13 +40,9 @@
     - 건별 독립 착수 가능 (서로 의존 없음)
 * 근거 문서: `_doc_work/htm/hub_htm_20260721_215009_a_yml-audit.htm` (subagent 13파일 전수 감사)
 
-## Issue300. 슬라이드 부제목 표시 정책 결정 (등록: 2026-07-21)
-* 목적: 상위 프로젝트 videoMaker(prj41) Issue19에서 위임. videoMaker Issue9(2026-04-13, commit 8fddb16)로 frontmatter `subtitle` 렌더링 자체는 구현됐으나, "그대로 노출 / 제거 / 상위 주제 값으로 대체" 중 어느 정책을 취할지 결정된 바 없어 현재는 frontmatter 값을 그대로 노출하는 임시 상태로 남아있음. **본 프로젝트(m2slide)가 해결 담당**
-* 상세:
-    - 수정 지점: `lib/html-builder.js`(styleConfig 기반 title-card 렌더링 — Issue9 당시 `generate-slides.js` 하드코딩에서 이후 이 구조로 재편됨)
-    - 정책 후보: (a) subtitle 필드 렌더링 완전 제거 (b) AGENDA.md 등 상위 주제 값으로 대체 표시 (c) 현행(frontmatter subtitle 그대로) 유지 확정
-* 구현 명세: TBD — 정책 결정 후 구현 방식 확정
-* 상위 이슈: videoMaker(prj41) Issue19
+# 📕 중요
+
+# 📙 일반
 
 # 📗 선택
 
@@ -79,6 +71,16 @@
 * 근거 문서: `_doc_work/htm/hub_htm_20260720_192649_a_goal-taxonomy.htm` (목적 2축 분리 + enum 후보 도출)
 
 # ✅ 완료
+
+## Issue300. 슬라이드 부제목 표시 정책 결정 (등록: 2026-07-21, 해결: 2026-07-23, commit: 6f9705e) ✅
+* 목적: 상위 프로젝트 videoMaker(prj41) Issue19에서 위임. videoMaker Issue9(2026-04-13, commit 8fddb16)로 frontmatter `subtitle` 렌더링 자체는 구현됐으나, "그대로 노출 / 제거 / 상위 주제 값으로 대체" 중 어느 정책을 취할지 미결정 상태였음.
+* 결정: **(c) 현행 유지 확정** — frontmatter `subtitle` 값을 `_cover` layout `{{subtitle}}` slot 에 그대로 노출하는 현행 동작을 정책으로 확정. 코드 변경 없음.
+* 근거:
+    - subtitle 렌더 지점은 `_cover` layout 1곳뿐 (title-card 는 미표시) — 임시 상태가 아니라 이미 국소화된 명확한 동작.
+    - `subtitle:` frontmatter 사용 프로젝트 21개 — (a) 제거·(b) 상위 주제 대체는 21개 데크 표시를 일괄 변경하는 회귀 리스크. (c) 는 회귀 0.
+    - 저자가 frontmatter 에 subtitle 을 명시하는 것은 명시적 의도 — 자동 제거·대체보다 저자 입력 존중이 KISS.
+* 정책 결정 폼: `_doc_work/htm/hub_htm_20260723_182841_b_subtitle-policy.htm` (사용자 (c) 선택)
+* 후속: 상위 videoMaker(prj41) Issue19 에 "정책=현행 유지 확정" 결과 반영 필요 (본 repo 범위 밖).
 
 ## Issue303. data/htmlart/types.yml type_count drift 교정 (등록: 2026-07-23, 해결: 2026-07-23, commit: bc3e77d) ✅
 * 목적: `data/htmlart/types.yml` `type_count: 26` 선언이 실제 타입 수(코드 `HTMLART_TYPES` Set 27 · yml 타입 키 27 · `_doc_arch` 문서 27종)와 어긋난 SSOT drift. Issue299 감사 중 발견(out-of-scope 로 이관됐던 건).
