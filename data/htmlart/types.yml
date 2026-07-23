@@ -15,9 +15,9 @@ meta:
   status: active          # core 구현 완료 (v1 4종 + v2 10종 + v3 list 5종 + v4 비율·균형 2종 + v5 비교·풀이 2종 + v6 워크플로 1종 + ext annotate + v7 callout)
   syntax: "::: htmlart <type>"
   input_model: "들여쓰기 아웃라인 (2칸 = 1레벨, ::: cards 본문과 동일)"
-  type_count: 26
+  type_count: 27
 
-# ── htmlArt 타입 (26종 = v1 4 + v2 확장 10 + v3 list 5 + v4 비율·균형 2 + v5 비교·풀이 2 + v6 워크플로 1 + ext annotate 1 + v7 callout 1) ─────
+# ── htmlArt 타입 (27종 = v1 4 + v2 확장 10 + v3 list 5 + v4 비율·균형 2 + v5 비교·풀이 2 + v6 워크플로·serpentine 2 + ext annotate 1 + v7 callout 1) ─────
 # v1 (Issue188): process · cycle · hierarchy · pyramid
 # v2 확장 (Issue202): timeline · venn · matrix · target · funnel · gear · radial · chevron · step · arrow
 # v3 list (Issue204): numbered · hexagon · bracket · block · tab
@@ -25,6 +25,7 @@ meta:
 # v5 비교 (Issue208): compare (Opposing Ideas · Counterbalance Arrows · Opposing Arrows 흡수)
 # v5 풀이 (Issue211): explain (중앙 명제 + 사방 풀이 phrase, radial 변형)
 # v6 워크플로 (Issue209): workflow (사람 endcap + 단계 박스 체인, process 변형)
+# v6 serpentine (Issue218): bend_process (N단계 줄바꿈 흐름, Bending Process 흡수)
 types:
   process:
     tier: v1
