@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 306
+* Issue HWM: 307
 * Checkpoints:
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
@@ -29,31 +29,40 @@
 
 # 📗 선택
 
-## Issue305. 이미지 정밀 편집(색만·글자만 교체) 지원 (!) (등록: 2026-07-23)
-* 목적: schnell img2img 로는 부분 정밀 편집 불가(strength 0.3↑ 원본 복제 / 0.1 재해석 드리프트, 2026-07-13 실측). edit 전용 모델 필요. **착수 불가** — 해결 수단(모델)이 아직 확보되지 않아 `(!)` 마커. Issue293 스타일 통일과 구분되는 별개 기능.
-* 상세(착수 조건):
-    - edit 전용 모델(Qwen-Image-Edit·FLUX Kontext, ~수십 GB) 설치가 선행 조건
-    - 모델 설치·큐 연동은 prj55(이미지 생성 인프라) 소관 — 본 프로젝트 범위 밖
-    - prj55 에서 모델 확보 통지 시 마커 제거 + 상세·구현명세 채워 승격
-
-## Issue295. 덱 목적(purpose) enum 도입 — 정책 적용 강도의 덱 용도 스코프 (등록: 2026-07-20)
-* 목적: 정책 룰이 모든 덱에 무차별 전역 강제되는 구조를 해소한다. 강의 덱에서 결함인 것(통짜 래스터·텍스트 미추출)이 광고 덱에서는 의도된 선택일 수 있으므로, 덱의 용도를 1급 메타로 두고 정책 적용 강도를 그 축으로 스코프한다. 목적 축이 없으면 예외가 자연어로 누적되어 다시 기계 판정 불가 상태로 되돌아간다(Issue265 사례 A 재발 경로).
-* depends: Issue265
-* trigger: Issue265 ✅ 완료 (schema_version 2 + goal_type/goal_check 정착) + commit hash 기록
+## Issue305. 이미지 정밀 편집(색만·글자만 교체) 지원 (등록: 2026-07-23)
+* 목적: schnell img2img 로는 부분 정밀 편집 불가(strength 0.3↑ 원본 복제 / 0.1 재해석 드리프트, 2026-07-13 실측). edit 전용 모델 기반 img-add `--edit` 모드를 media-creater 가 소비하여 슬라이드 이미지의 색·글자만 정밀 교체. Issue293 스타일 통일과 별개 기능.
+* depends: prj3#Issue277
+* trigger: prj3#Issue277 ✅ 완료 (img-add `--edit` 가용) + commit hash 기록
 * 상세:
-    - 현재 `Info.md` 에는 자유 서술 `goals[]` 와 `tone` enum(강의·내레이션·대화·튜토리얼·발표·기타)만 존재 — 덱 *용도* 를 나타내는 객관식 필드 부재 (`data/info-filler/questions.yml` 확인)
-    - `tone` 은 화법 축이라 정책 스코프로 쓸 수 없음 (같은 "강의" 톤으로 만든 홍보 덱이 존재 가능)
-    - 결과: `drop_redundant_page_screenshot` 같은 룰이 전역 강제 → 광고·아카이브 덱에서 불편 → 자연어 예외(`keep_screenshot_when`) 추가 → 기계 판정 불가 회귀
+    - 진입점은 반드시 img-add (글로벌 SCAR). media-creater 는 flux 직접 호출 금지 — img-add `--edit` 경유 (img-add 필수 원칙 계승)
+    - 선행 체인: prj55 fg1 edit 모델 설치 → prj3#Issue277 img-add `--edit` 모드 → 본 이슈 media-creater 소비
+    - edit 모델·큐 연동은 prj55(DeviceManagement) 소관 — 본 프로젝트 범위 밖. fg1 `~/apps/flux/models/` 현재 비어있음(2026-07-23 확인) → 구현 착수 불가, 설계만 확정
 * 구현 명세:
-    - `purpose` enum 5종 신설: `lecture`(강의·교육, 가장 엄격) · `info`(정보 전달·브리핑) · `promo`(광고·홍보, 비주얼 우선) · `handout`(배포·인쇄물) · `archive`(원본 충실 보존, 재구성 강제 완화)
-    - 복합 목적은 **동등 나열 금지** — `purpose: {primary: <1개>, secondary: [<N개>]}`. 정책 강도는 `primary` 가 단독 결정하며 `secondary` 는 그 자체로 완화 근거가 되지 못함
-    - 룰 측 소비 필드: `applies_to_purpose: [...]`(적용 대상) + `relax_when: [...]`(완화 화이트리스트 — 명시된 조합만 완화. `intent_guard` 철학과 동일)
-    - 적용 강도 = `confidence`(Issue265 증거 축적 축) × `purpose`(본 이슈 용도 축)의 2차원 함수. 설계 SSOT `_doc_arch/policy-goal-schema.md` 에 매트릭스 기재
-    - 파급 지점: `data/info-filler/questions.yml`(질문 1건 추가) · `Projects/<Name>/Info.md` frontmatter · `data/md-builder/styles.yml` · `data/slide-tuner/patterns.yml` · `--lint-data`(purpose 미기재 덱 경고)
-    - 마이그레이션: `purpose` 미기재 덱은 `lecture` 로 간주(가장 엄격) — 기존 동작 회귀 0
-* 근거 문서: `_doc_work/htm/hub_htm_20260720_192649_a_goal-taxonomy.htm` (목적 2축 분리 + enum 후보 도출)
+    - `data/media-creater/tools.yml` 에 edit 도구 항목 추가: 정밀 부분 편집(색·글자 교체) 용도. when-to-use = 기존 이미지 재생성이 아닌 국소 수정(구도 보존 필수)
+    - media-creater agent: 편집 후보 감지 시 `img-add --edit --image-path <slide img> --edit-instruction "<색/글자 지시>" --edit-type color|text` 명세 생성
+    - 산출물 경로: 기존 media placeholder 규약 재사용 (Projects/<Name>/img/ 갱신)
+    - 검증: edit 모델 가용 환경에서 색만/글자만 교체 각 1건 실측 (원본 구도 보존 확인)
+    - data-access-rules: tools.yml 수정 전 backup 선행 + 정책 yml 단독 커밋
+
+## Issue307. 런타임 relax 게이팅 소비 — enforce 스캐너가 덱 purpose 로 룰 완화 (!) (등록: 2026-07-23)
+* 목적: Issue295 가 정의한 축 2 필드(룰 `applies_to_purpose`/`relax_when` + Info.md `purpose`)를 실제 런타임에서 소비. enforce 스캐너(`lib/lint-policy-artifacts.py`)가 대상 덱의 `purpose.primary` 를 읽어, 룰의 `relax_when` 에 포함된 목적의 덱에서는 위반을 skip(광고·아카이브 덱에서 통짜 래스터 등 정당 허용). Issue295 는 필드·lint 정의까지였고 스캐너가 아직 purpose 를 읽지 않아 런타임 완화가 미작동.
+* depends: Issue295
+* trigger: Issue295 ✅ 완료 (축 2 필드·lint 검사 10·11 정착, commit 7263d61·795fde7) + 스캐너의 아티팩트→덱 purpose 매핑 설계 확정
 
 # ✅ 완료
+
+## Issue295. 덱 목적(purpose) enum 도입 — 정책 적용 강도의 덱 용도 스코프 (등록: 2026-07-20, 해결: 2026-07-23, commit: 7263d61, 795fde7) ✅
+* 목적: 정책 룰이 모든 덱에 무차별 전역 강제되는 구조를 해소한다. 강의 덱에서 결함인 것(통짜 래스터·텍스트 미추출)이 광고 덱에서는 의도된 선택일 수 있으므로, 덱의 용도를 1급 메타로 두고 정책 적용 강도를 그 축으로 스코프한다.
+* 스코프 결정 (2026-07-23 사용자 A 선택): 본 이슈 = **스키마·필드·수집·lint 검증까지**. 런타임 완화 게이팅 소비는 enforce 스캐너 부재(현 2종만)로 검증 불가 → Issue307 로 분리.
+* 완료 범위:
+    - 설계 SSOT `_doc_arch/policy-goal-schema.md`(로컬-전용, gitignore) "축 2 — 덱 목적(purpose)" 절 신설 — `purpose` enum 5종(lecture/info/promo/handout/archive) + `{primary,secondary}` 구조 + 룰 소비 필드 `applies_to_purpose`/`relax_when` + `confidence`×`purpose` 2차원 매트릭스. line32 `🚧 TODO` 해소.
+    - 수집(7263d61): `data/info-filler/questions.yml` purpose 질문 1건(default lecture) + `data/Info.template.md` frontmatter `purpose` (canonical 위치).
+    - lint(795fde7): `lib/lint-policy-schema.py` VALID_PURPOSE + 검사 10(룰 `applies_to_purpose`/`relax_when` 값 유효성) + 검사 11(Info.md `purpose` frontmatter enum·구조) + L2 override 반영. `--lint-data` 통과·purpose 미기재 aggregate info line(13개→lecture).
+    - 골든 픽스처(795fde7): `z_test/run-purpose-fixture.sh` + `z_test/fixtures/policy/purpose/` negative — 검사 10·11 fail-loud 4건 회귀 고정.
+    - 마이그레이션: `purpose` 미기재 = `lecture` 간주 — 기존 동작 회귀 0.
+* 파급 지점 판정: `data/md-builder/styles.yml`·`data/slide-tuner/patterns.yml` 은 런타임 *소비* 지점이라 Issue307(스캐너 확장)에서 처리 — 본 이슈 미변경(회귀 0). 원 명세의 "--lint-data purpose 경고"는 aggregate info line 으로 구현(미기재 = 정상 fallback 이라 per-deck 경고는 노이즈).
+* 검증: `./m2slide.sh --lint-data` 통과(goal 9룰 + 검사 10·11) · `z_test/run-purpose-fixture.sh` rc0 · `z_test/run-policy-fixture.sh` 회귀 통과. questions.yml backup 선행 + 정책/코드 커밋 분리.
+* 근거 문서: `_doc_work/htm/hub_htm_20260720_192649_a_goal-taxonomy.htm`, plan `_doc_work/plan/purpose-enum_plan.md`
 
 ## Issue306. Issue304 goal 룰 5건 enforce 스캐너 + 골든 픽스처 (등록: 2026-07-23, 해결: 2026-07-23, commit: d7d514c) ✅
 * 목적: Issue304 가 goal 스키마로 전환한 5룰의 `goal_check` 술어에 실제 산출물 판정 코드가 미구현이라 enforce 불가. 각 술어별 스캐너 + 골든 픽스처로 enforce 승격 기반 마련.
