@@ -147,6 +147,10 @@ Temporary Items
 !/data/md-builder/**
 !/data/m2unity/
 !/data/m2unity/**
+!/data/note-writer/
+!/data/note-writer/**
+!/data/media-creater/
+!/data/media-creater/**
 
 # Backup files
 *.bak
