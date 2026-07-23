@@ -253,6 +253,413 @@ def check_hygiene(proj: Path, pattern):
     return violations
 
 
+# ── 공통: confidence 게이팅 · frontmatter · 제목 ─────────────────────────────
+# low → 실 프로젝트 미적용(proposal), medium → warn, high → enforce(fail-loud).
+# 골든 픽스처는 check_* 를 직접 호출하므로 이 게이팅과 무관하게 스캐너 로직을 검증한다.
+
+def enforce_action(rule: dict) -> str:
+    c = (rule or {}).get("confidence", "low")
+    if c == "high":
+        return "enforce"
+    if c == "medium":
+        return "warn"
+    return "skip"
+
+
+_FM_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.S)
+_FM_KV = re.compile(r"^(\w[\w-]*):\s*(.*)$")
+
+
+def parse_frontmatter(text: str):
+    """(frontmatter dict, 본문) 반환. frontmatter 없으면 ({}, 원문)."""
+    m = _FM_RE.match(text)
+    if not m:
+        return {}, text
+    fm = {}
+    for line in m.group(1).splitlines():
+        kv = _FM_KV.match(line)
+        if kv:
+            fm[kv.group(1)] = kv.group(2).strip().strip('"').strip("'")
+    return fm, text[m.end():]
+
+
+def first_body_h1(body: str):
+    """코드블록 밖 본문 첫 H1 (# ) 텍스트. 없으면 None."""
+    in_code = False
+    for line in body.splitlines():
+        if line.lstrip().startswith("```"):
+            in_code = not in_code
+            continue
+        if in_code:
+            continue
+        m = re.match(r"^#\s+(.*)$", line)
+        if m:
+            return m.group(1).strip()
+    return None
+
+
+def norm_title(s: str) -> str:
+    """중복 비교용 정규화 — 선두 번호·강조 마크·공백·대소문자 제거."""
+    if s is None:
+        return ""
+    s = re.sub(r"^\s*\d+(\.\d+)*\.?\s*", "", s)      # "4.2. " 선두 번호
+    s = s.replace("*", "").replace("`", "").replace("#", "")
+    return re.sub(r"\s+", " ", s).strip().lower()
+
+
+_AGENDA_LINK = re.compile(r"^(#{2,3})\s*\[([^\]]+)\]\(\.?/?([^)]+)\)")
+
+
+def parse_agenda(agenda_path: Path):
+    """AGENDA.md → (own: file→링크텍스트, parent: file→상위 H2 링크텍스트)."""
+    own, parent = {}, {}
+    last_h2 = None
+    try:
+        lines = agenda_path.read_text().splitlines()
+    except OSError:
+        return own, parent
+    for line in lines:
+        m = _AGENDA_LINK.match(line.strip())
+        if not m:
+            continue
+        level = len(m.group(1))
+        title = m.group(2).strip()
+        fname = Path(m.group(3)).name
+        own[fname] = title
+        if level == 2:
+            last_h2 = title
+            parent[fname] = None
+        else:
+            parent[fname] = last_h2
+    return own, parent
+
+
+def _body_md_files(proj: Path):
+    """AGENDA·note·부산물 제외한 슬라이드 소스 md."""
+    files = sorted(proj.glob("markdown/*.md")) + sorted(proj.glob("*.md"))
+    out = []
+    for md in files:
+        n = md.name.lower()
+        if n == "agenda.md" or n.endswith("_note.md") or n in _HYGIENE_SKIP:
+            continue
+        out.append(md)
+    return out
+
+
+# ── 검사 3: h1_not_duplicate_title (agenda 2룰, hygiene) ─────────────────────
+# 첫 본문 H1 이 frontmatter.title·AGENDA 상위 제목과 중복되면 위반. toc-placeholder
+# 가 이미 챕터 제목을 표시하므로 재기술 시 #/2 에 동일 제목이 이중 노출된다.
+
+def load_h1_rule(root: Path):
+    path = root / "data" / "agenda-designer" / "patterns.yml"
+    if not path.exists():
+        return None
+    try:
+        cfg = yaml.safe_load(path.read_text()) or {}
+    except Exception:
+        return None
+    best = None
+    stack = [cfg]
+    while stack:                                     # 중첩 리스트/딕트 전수 탐색
+        node = stack.pop()
+        if isinstance(node, dict):
+            gc = node.get("goal_check")
+            if isinstance(gc, dict) and gc.get("h1_not_duplicate_title"):
+                best = node                          # 마지막 매칭 룰 보관 (confidence 게이팅용)
+            stack.extend(node.values())
+        elif isinstance(node, list):
+            stack.extend(node)
+    return best
+
+
+def check_h1_dup(proj: Path):
+    """첫 H1 ↔ frontmatter.title·AGENDA 상위 제목 중복 검출."""
+    agenda = proj / "markdown" / "AGENDA.md"
+    own, parent = parse_agenda(agenda) if agenda.exists() else ({}, {})
+    violations = []
+    for md in _body_md_files(proj):
+        try:
+            text = md.read_text()
+        except OSError:
+            continue
+        fm, body = parse_frontmatter(text)
+        h1 = first_body_h1(body)
+        if not h1:
+            continue
+        nh1 = norm_title(h1)
+        rel = md.relative_to(proj.parent.parent)
+        cand = []
+        if fm.get("title"):
+            cand.append(("frontmatter.title", fm["title"]))
+        if own.get(md.name):
+            cand.append(("AGENDA 챕터 제목", own[md.name]))
+        if parent.get(md.name):
+            cand.append(("AGENDA 상위 섹션 제목", parent[md.name]))
+        for label, val in cand:
+            if norm_title(val) == nh1 and nh1:
+                violations.append(
+                    f"{rel}: 첫 슬라이드 H1 '{h1}' 이 {label} '{val}' 과 중복 "
+                    "— toc-placeholder 가 이미 표시하므로 #/2 이중 노출"
+                )
+                break
+    return violations
+
+
+# ── 검사 4: note_not_echo_body (note-writer, hygiene) ────────────────────────
+# 발표 노트 블록이 대응 슬라이드 bullet 과 90% 이상 문자열 일치하면 verbatim echo.
+
+def load_note_rule(root: Path):
+    path = root / "data" / "note-writer" / "patterns.yml"
+    if not path.exists():
+        return None
+    try:
+        cfg = yaml.safe_load(path.read_text()) or {}
+    except Exception:
+        return None
+    stack = [cfg]
+    while stack:
+        node = stack.pop()
+        if isinstance(node, dict):
+            gc = node.get("goal_check")
+            if isinstance(gc, dict) and gc.get("note_not_echo_body"):
+                return node
+            stack.extend(node.values())
+        elif isinstance(node, list):
+            stack.extend(node)
+    return None
+
+
+_ID_RE = re.compile(r"^#id-([a-z][a-z0-9-]*)\s*$", re.M)
+_BULLET_RE = re.compile(r"^\s*[*-]\s+(.*)$")
+_NOTE_HDR = re.compile(r"^##\s+([a-z][a-z0-9-]*)\s*$")
+
+
+def _slide_bullets(chunk: str) -> str:
+    """슬라이드 청크의 bullet 텍스트를 이어붙임 (인라인 attr·강조 제거)."""
+    out = []
+    in_code = False
+    for line in chunk.splitlines():
+        if line.lstrip().startswith("```"):
+            in_code = not in_code
+            continue
+        if in_code:
+            continue
+        m = _BULLET_RE.match(line)
+        if m:
+            t = re.sub(r"\{[^}]*\}\s*$", "", m.group(1))           # {.fragment}
+            t = re.sub(r"<!--.*?-->", "", t)                        # .element 주석
+            out.append(t.strip())
+    return " ".join(out)
+
+
+def _note_blocks(text: str):
+    """note.md → [(slug, note본문)]. `## slug` 블록 단위."""
+    blocks = []
+    cur_slug, cur_lines = None, []
+    for line in text.splitlines():
+        m = _NOTE_HDR.match(line)
+        if m:
+            if cur_slug:
+                blocks.append((cur_slug, "\n".join(cur_lines).strip()))
+            cur_slug, cur_lines = m.group(1), []
+        elif cur_slug:
+            cur_lines.append(line)
+    if cur_slug:
+        blocks.append((cur_slug, "\n".join(cur_lines).strip()))
+    return blocks
+
+
+def check_note_echo(proj: Path, threshold: float = 0.9):
+    from difflib import SequenceMatcher
+
+    id_bullets = {}
+    for md in _body_md_files(proj):
+        try:
+            text = md.read_text()
+        except OSError:
+            continue
+        for _ln, chunk in slide_chunks(text):
+            m = _ID_RE.search(chunk)
+            if m:
+                id_bullets[m.group(1)] = (md, _slide_bullets(chunk))
+
+    violations = []
+    notes = sorted(proj.glob("markdown/*_note.md")) + sorted(proj.glob("*_note.md"))
+    for note in notes:
+        try:
+            ntext = note.read_text()
+        except OSError:
+            continue
+        rel = note.relative_to(proj.parent.parent)
+        for slug, ntxt in _note_blocks(ntext):
+            if slug not in id_bullets or not ntxt:
+                continue
+            bullets = id_bullets[slug][1]
+            if not bullets:
+                continue
+            a = re.sub(r"\s+", " ", ntxt).strip().lower()
+            b = re.sub(r"\s+", " ", bullets).strip().lower()
+            ratio = SequenceMatcher(None, a, b).ratio()
+            if ratio >= threshold:
+                violations.append(
+                    f"{rel}: 노트 '## {slug}' 이 대응 슬라이드 bullet 과 "
+                    f"{ratio * 100:.0f}% 일치 — verbatim echo (노트는 '말할 것'이지 '쓰인 것' 아님)"
+                )
+    return violations
+
+
+# ── 검사 5: require_source_url (media-creater, attribution) ──────────────────
+# CREDITS.md 를 외부 CC 이미지의 권위 목록으로 삼는다. CREDITS 에 오른 이미지는
+# (1) 항목에 출처 URL 존재, (2) 그 이미지를 쓴 슬라이드에 ::: source 표기 필요.
+# CREDITS.md 없는 프로젝트 = 외부 CC 이미지 미선언 → 검사 대상 아님(opt-in).
+
+def load_source_rule(root: Path):
+    path = root / "data" / "media-creater" / "tools.yml"
+    if not path.exists():
+        return None
+    try:
+        cfg = yaml.safe_load(path.read_text()) or {}
+    except Exception:
+        return None
+    stack = [cfg]
+    while stack:
+        node = stack.pop()
+        if isinstance(node, dict):
+            gc = node.get("goal_check")
+            if isinstance(gc, dict) and gc.get("require_source_url"):
+                return node
+            stack.extend(node.values())
+        elif isinstance(node, list):
+            stack.extend(node)
+    return None
+
+
+_CREDIT_ENTRY = re.compile(r"^\s*\*\s+\*\*([^*]+?)\*\*", re.M)
+_URL_RE = re.compile(r"https?://\S+")
+_SOURCE_DIV = re.compile(r"^\s*:{3}\s*source\b", re.M)
+
+
+def _find_credits(proj: Path):
+    for cand in (proj / "img" / "CREDITS.md",
+                 proj / "markdown" / "CREDITS.md",
+                 proj / "CREDITS.md"):
+        if cand.exists():
+            return cand
+    return None
+
+
+def check_source_attr(proj: Path):
+    credits = _find_credits(proj)
+    if credits is None:
+        return []
+    try:
+        ctext = credits.read_text()
+    except OSError:
+        return []
+    crel = credits.relative_to(proj.parent.parent)
+    violations = []
+
+    # CREDITS 항목: basename → 그 항목 블록에 URL 존재 여부
+    entries = list(_CREDIT_ENTRY.finditer(ctext))
+    credit_names = set()
+    for i, m in enumerate(entries):
+        name = Path(m.group(1).strip()).name
+        credit_names.add(name)
+        blk_end = entries[i + 1].start() if i + 1 < len(entries) else len(ctext)
+        block = ctext[m.start():blk_end]
+        if not _URL_RE.search(block):
+            violations.append(
+                f"{crel}: CREDITS 항목 '{name}' 에 출처 URL 없음 (require_source_url)"
+            )
+
+    if not credit_names:
+        return violations
+
+    # 각 슬라이드: CREDITS 등재 이미지를 쓰면서 ::: source 부재 → 위반
+    for md in _body_md_files(proj):
+        try:
+            text = md.read_text()
+        except OSError:
+            continue
+        rel = md.relative_to(proj.parent.parent)
+        for _ln, chunk in slide_chunks(text):
+            used = [Path(m.group("src")).name for m in IMG_RE.finditer(chunk)]
+            cc_used = [u for u in used if u in credit_names]
+            if cc_used and not _SOURCE_DIV.search(chunk):
+                violations.append(
+                    f"{rel}: 외부 CC 이미지 {cc_used} 사용 슬라이드에 ::: source 표기 없음"
+                )
+    return violations
+
+
+# ── 검사 6: smartart_trademark_hygiene (ppt2m2slide 산출물, hygiene) ─────────
+# 역변환 산출 마크다운에 Microsoft 상표어 'SmartArt' 잔존 금지 (htmlArt 사용).
+# _pipeline 보유 프로젝트(역변환 산출물)만 대상. 코드펜스 내부는 예제로 예외.
+
+def load_smartart_rule(root: Path):
+    path = root / "data" / "ppt2m2slide" / "heuristics.yml"
+    if not path.exists():
+        return None
+    try:
+        cfg = yaml.safe_load(path.read_text()) or {}
+    except Exception:
+        return None
+    rule = cfg.get("smartart_trademark_hygiene")
+    if not isinstance(rule, dict):
+        return None
+    pat = (rule.get("goal_check") or {}).get("text_pattern_absent")
+    if not pat:
+        return None
+    try:
+        rule["_compiled"] = re.compile(pat)
+    except re.error:
+        return None
+    return rule
+
+
+def check_smartart(proj: Path, pattern):
+    violations = []
+    for md in _body_md_files(proj):
+        try:
+            text = md.read_text()
+        except OSError:
+            continue
+        rel = md.relative_to(proj.parent.parent)
+        in_code = False
+        for i, line in enumerate(text.splitlines(), 1):
+            if line.lstrip().startswith("```"):
+                in_code = not in_code
+                continue
+            if in_code:
+                continue                             # 코드펜스 예제는 예외
+            m = pattern.search(line)
+            if m:
+                violations.append(
+                    f"{rel}:{i}: 역변환 산출물에 상표어 '{m.group(0)}' 잔존 (htmlArt 로 표기)"
+                )
+    return violations
+
+
+def _run_gated(name, rule, projects, scanner, failed_ref):
+    """confidence 게이팅 공통 러너. low→skip, medium→warn, high→enforce."""
+    action = enforce_action(rule)
+    if action == "skip":
+        print(f"ℹ️ {name} confidence=low — 실 프로젝트 미적용(proposal), 스캐너는 픽스처로 검증")
+        return
+    v = []
+    for proj in projects:
+        v.extend(scanner(proj))
+    print(f"ℹ️ {name} 검사 {len(projects)}개 프로젝트 (confidence={rule.get('confidence')})")
+    if v:
+        for x in v:
+            print(f"{'❌' if action == 'enforce' else '⚠️'} {x}",
+                  file=sys.stderr)
+        if action == "enforce":
+            failed_ref[0] = True
+    else:
+        print(f"✅ {name} 위반 0건")
+
+
 def main():
     args = sys.argv[1:]
     root = Path(args[0]) if args else Path.cwd()
@@ -303,7 +710,45 @@ def main():
         else:
             print("✅ 렌더 노출 텍스트 내부 추적 표기 0건")
 
-    return 1 if failed else 0
+    failed_ref = [failed]
+
+    all_projects = explicit or sorted(
+        p for p in root.glob("Projects/*") if p.is_dir() and p.name != "z_done"
+    )
+    pipeline_projects = explicit or [
+        p.parent for p in sorted(root.glob("Projects/*/_pipeline"))
+    ]
+
+    # ── 검사 3: h1_not_duplicate_title (agenda, hygiene) ──
+    r3 = load_h1_rule(root)
+    if r3 is None:
+        print("ℹ️ h1_not_duplicate_title 룰 부재 — 검사 skip")
+    else:
+        _run_gated("h1_not_duplicate_title", r3, all_projects, check_h1_dup, failed_ref)
+
+    # ── 검사 4: note_not_echo_body (note-writer, hygiene) ──
+    r4 = load_note_rule(root)
+    if r4 is None:
+        print("ℹ️ note_not_echo_body 룰 부재 — 검사 skip")
+    else:
+        _run_gated("note_not_echo_body", r4, all_projects, check_note_echo, failed_ref)
+
+    # ── 검사 5: require_source_url (media-creater, attribution) ──
+    r5 = load_source_rule(root)
+    if r5 is None:
+        print("ℹ️ require_source_url 룰 부재 — 검사 skip")
+    else:
+        _run_gated("require_source_url", r5, all_projects, check_source_attr, failed_ref)
+
+    # ── 검사 6: smartart_trademark_hygiene (ppt2m2slide 산출물, hygiene) ──
+    r6 = load_smartart_rule(root)
+    if r6 is None:
+        print("ℹ️ smartart_trademark_hygiene 룰 부재 — 검사 skip")
+    else:
+        _run_gated("smartart_trademark_hygiene", r6, pipeline_projects,
+                   lambda p: check_smartart(p, r6["_compiled"]), failed_ref)
+
+    return 1 if failed_ref[0] else 0
 
 
 if __name__ == "__main__":

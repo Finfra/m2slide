@@ -123,6 +123,57 @@ else
   bad "L2 픽스처 없음: $L2FX"
 fi
 
+# ── Issue306: goal 룰 4종 enforce 스캐너 골든 픽스처 ────────────────────────
+# 룰이 confidence:low(미적용)라 실 프로젝트 스캔은 skip 되므로, 스캐너 로직은
+# check_* 함수를 importlib 로 직접 호출해 검증한다(L2 override 검사와 동일 패턴).
+echo ""
+echo "🔍 goal 스캐너 골든 픽스처 (Issue306)"
+FXROOT="$ROOT/z_test/fixtures/policy"
+SCAN_OUT="$(python3 - "$LINT" "$ROOT" "$FXROOT" <<'PY'
+import importlib.util, pathlib, re, sys
+spec = importlib.util.spec_from_file_location("lpa", sys.argv[1])
+m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+root = pathlib.Path(sys.argv[2]); FX = pathlib.Path(sys.argv[3])
+
+def emit(tag, viols):
+    for v in viols:
+        print(f"{tag}::{v}")
+
+emit("H1",   m.check_h1_dup(FX / "h1-dup-title"))
+emit("NOTE", m.check_note_echo(FX / "note-echo"))
+emit("SRC",  m.check_source_attr(FX / "source-attribution"))
+r = m.load_smartart_rule(root)
+pat = r["_compiled"] if r else re.compile(r"\bSmartArt\b")
+emit("SART", m.check_smartart(FX / "smartart-hygiene", pat))
+PY
+)"
+
+check_hit()  { if printf '%s' "$SCAN_OUT" | grep -qE "$1"; then pass "$2"; else bad "$2 (미검출)"; fi; }
+check_miss() { if printf '%s' "$SCAN_OUT" | grep -qE "$1"; then bad "$2 (오검출)"; else pass "$2"; fi; }
+
+# 검사 3: h1_not_duplicate_title — 3건 검출 + conclusion 오검출 방지
+check_hit  "H1::.*01-intro\.md"      "h1 검출: frontmatter.title 중복"
+check_hit  "H1::.*01\.1-deep\.md"    "h1 검출: AGENDA 상위 제목 중복(parent)"
+check_hit  "H1::.*single\.md"        "h1 검출: single 모드 title 중복"
+check_miss "H1::.*02-conclusion\.md" "h1 오검출 없음: 비중복 챕터"
+
+# 검사 4: note_not_echo_body — verbatim 검출 + 비-echo 오검출 방지
+check_hit  "NOTE::.*core-features"   "note 검출: verbatim echo(100%)"
+check_miss "NOTE::.*other-slide"     "note 오검출 없음: 비-echo 블록"
+
+# 검사 5: require_source_url — URL 누락 + ::: source 누락 검출, mountain 오검출 방지
+check_hit  "SRC::.*river\.jpg.*URL 없음"        "src 검출: CREDITS URL 누락"
+check_hit  "SRC::.*01-images\.md.*::: source"   "src 검출: ::: source 누락"
+check_miss "SRC::.*mountain\.jpg"               "src 오검출 없음: 출처 완비 이미지"
+
+# 검사 6: smartart_trademark_hygiene — 텍스트 잔존 검출, 코드펜스 예외
+check_hit  "SART::.*01-cases\.md:8"  "smartart 검출: 렌더 텍스트 상표어"
+if printf '%s' "$SCAN_OUT" | grep -E "SART::" | grep -qv ":8:"; then
+  bad "smartart 오검출: 코드펜스 예제/htmlArt 정상 라인이 잡힘"
+else
+  pass "smartart 오검출 없음: 코드펜스·htmlArt 라인 제외"
+fi
+
 echo ""
 if [ "$fail" -ne 0 ]; then
   echo "❌ 픽스처 회귀 테스트 실패" >&2
