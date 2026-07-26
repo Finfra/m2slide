@@ -1,0 +1,13 @@
+# Issue295 — 도구 코드 그래프에서 대상물·중복 경로 제외
+Projects/
+logs/
+*.log
+z_old/
+z_backup/
+z_past/
+.sleep-log/
+transcripts/
+scrap/
+cache/
+tmp/
+_doc_work/
