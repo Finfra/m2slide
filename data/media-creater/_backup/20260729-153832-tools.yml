@@ -156,51 +156,6 @@ tools:
       - "실패 시 image_fallback_chain 진입 금지 — 원본 free_image 산출물을 그대로 유지하고 사유만 보고 (사진이 이미 확보된 상태이므로 강등 불요)"
     note: "단독 라우팅 대상 아님 — processing_policy.style_unification 조건 충족 시 free_image 산출물에 대해서만 후처리로 실행"
 
-  - id: image_edit
-    type: photo_precise_edit
-    handler: img-add                 # 동일 라우팅 스킬 — edit 모드 (--edit, fg1 FLUX Kontext 고정)
-    # Issue305 — 기존 슬라이드 이미지의 국소 정밀 편집(색만·글자만 교체). 구도 보존이 목적.
-    #   image_restyle(img2img)과 배타: restyle=덱 전체 톤 통일 / edit=한 이미지의 부분 교체
-    triggers:
-      - "색만 바꿔"
-      - "글자만 교체"
-      - "이 부분만 수정"
-      - "구도 유지하고"
-      - "정밀 편집"
-    when_to_use: |
-      기존 이미지를 **재생성하지 않고** 국소 수정할 때. 판정 기준은 "원본 구도·비편집 영역 보존이 필수인가"
-      — 필수면 image_edit, 새로 만들어도 되면 local_image_gen, 덱 톤만 맞추면 image_restyle.
-      대상 이미지는 이미 Projects/<Name>/img/ 에 실존해야 한다(생성 도구 아님).
-    invocation: |
-      # img-add 글로벌 스킬 호출 (Skill tool) — edit 모드. fg1 고정 라우팅(0절), jm4 강등 없음
-      #   --edit
-      #   --image-path       <repo절대경로>/Projects/<Name>/img/<slide_id>.png   # 편집 원본(실존 필수)
-      #   --edit-instruction "<영어 지시 + 보존 절>"   # ex: "change the chart bars to blue, keep everything else unchanged"
-      #   --edit-type        color|text|region        # 편집 종류 힌트
-      #   [--steps 28] [--guidance-scale 2.5]         # Kontext 기본값. 낮은 steps=지시 반영 저하, 높은 guidance=원본 보존 저하
-      #   --output           <repo절대경로>/Projects/<Name>/img/<slide_id>_edit.png
-      #   --project          <Name>
-      # --prompt 는 불필요(있어도 무시) — 편집 지시는 --edit-instruction 에만 넣는다
-    input_spec: _doc_work/media/{slide_id}.md   # 기존 생성 명세 재사용 — 편집 지시는 명세 "편집 지시" 절에 기재
-    output_path: img/
-    output_format: png
-    source_attribution: inherit_from_source
-    attribution_note: |
-      원본이 free_image(CC 스톡) 산출물이면 편집본은 2차적저작물 — 출처·라이선스 표기를 승계한다
-      (CREDITS.md 항목 유지 + `::: source` 표시, "변형함(adapted)" 명시). 자체 산출물이면 표시 불요.
-    perf: "steps 28 기준 ≈ 7분/건 실측(prj3 Issue277 스모크, 2026-07-29). 폴링 타임아웃 12분"
-    limits:
-      - "생성 도구 아님 — 편집 원본이 없으면 선택 불가. 원본 확보는 image_fallback_chain 이 선행"
-      - "jm4 백엔드에 edit 파이프라인 없음 → fg1 전용. fg1 불가 시 대체 백엔드 없음"
-      - "지시문은 영어 + 보존 절 명시가 원칙 — 보존 절 누락 시 비편집 영역까지 재해석될 수 있음"
-    guard:
-      - "⚠️ `flux-fg1`·`flux-enqueue` 직접 호출 금지 — 반드시 img-add `--edit` 경유 (img-add 필수 원칙 계승)"
-      - "⚠️ 강등 금지 (fail-loud) — edit 실패 시 image_restyle(img2img)·local_image_gen 으로 조용히 대체하지 말 것. img2img 는 정밀 편집을 못 하므로(strength 0.3↑ 원본 복제 / 0.1 드리프트, 2026-07-13 실측) 사용자가 못 알아채는 품질 회귀가 된다. \"edit 백엔드 불가(사유)\" 명시 후 원본 유지·중단"
-      - "--image-path 는 실존 파일 절대경로. 미존재 시 편집 생략 + 사유 1줄 보고"
-      - "image_fallback_chain 진입 금지 — 원본이 이미 확보된 상태이므로 강등 불요(image_restyle 과 동일 정책)"
-      - "원본 파일 덮어쓰기 금지 — `_edit` 접미 산출물로 저장하고 원본 보존(라이선스 추적·재편집 가능성)"
-    note: "단독 라우팅 대상 아님 — processing_policy.precise_edit 조건 충족 시에만 후처리로 실행. 백엔드 SSOT: ~/.claude/skills/img-add/SKILL.md 0절 (edit 모드 분기)"
-
   - id: image_placeholder
     type: photo
     handler: placeholder_png
@@ -433,30 +388,7 @@ processing_policy:
       원본이 CC 스톡이면 변형본도 출처 표기 승계 — CREDITS.md 항목 유지 + "변형함(adapted)" 명시.
       원본 파일은 삭제하지 않고 img/ 에 함께 보존 (라이선스 추적·재처리 가능성).
     checkpoint: "restyle 적용 시 체크포인트에 원본↔변형본 파일명 쌍 + strength 값 보고"
-    note: "정밀 편집(색만·글자만 교체)은 불가 — image_restyle.limits 참조. 덱 톤 통일 용도로만 사용. 국소 편집은 processing_policy.precise_edit 참조"
-
-  # Issue305 — 기존 이미지의 국소 정밀 편집(색만·글자만). opt-in 후처리이며 기본은 비적용
-  precise_edit:
-    enabled_when:
-      - "편집 대상 이미지가 Projects/<Name>/img/ 에 이미 실존할 것 (생성 경로가 아니라 수정 경로)"
-      - "요청이 국소 변경일 것 — 색 교체·글자 교체·특정 요소만 수정. 전면 재해석 요청은 local_image_gen 이 담당"
-      - "원본 구도·비편집 영역 보존이 요구될 것 (보존이 불필요하면 재생성이 더 싸고 빠름)"
-    tool: image_edit
-    edit_type_map:
-      color: "색상 교체 — 특정 요소의 색만 변경 (ex: 막대그래프 색, 로고 색)"
-      text: "문자 교체 — 이미지 내 글자·라벨 변경 (ex: 간판 문구, 캡션)"
-      region: "영역 교체 — 특정 구역의 객체·배경 변경"
-    instruction_format: |
-      영어 + 보존 절 필수. 형식: "<change clause>, keep everything else unchanged"
-      ex) "change the bar chart colors to blue, keep everything else unchanged"
-      ex) "replace the sign text with 'm2slide', keep everything else unchanged"
-    output_naming: "{slide_id}_edit.png"   # 원본 덮어쓰기 금지 — img/ 에 원본과 함께 보존
-    on_failure: keep_original   # 실패 시 원본 유지 + 사유 1줄 보고 (fallback_chain 강등·img2img 대체 금지)
-    attribution: |
-      원본이 CC 스톡이면 편집본도 출처 표기 승계 — CREDITS.md 항목 유지 + "변형함(adapted)" 명시.
-      원본 파일은 삭제하지 않고 img/ 에 함께 보존.
-    checkpoint: "edit 적용 시 체크포인트에 원본↔편집본 파일명 쌍 + edit_type + 지시문 보고. 실패 시 사유 명시(조용한 img2img 대체 금지)"
-    note: "image_restyle 과 배타 — restyle 은 덱 전체 톤 통일, precise_edit 은 한 이미지의 부분 교체. 두 조건이 동시에 걸리면 precise_edit 우선(더 구체적 의도)"
+    note: "정밀 편집(색만·글자만 교체)은 불가 — image_restyle.limits 참조. 덱 톤 통일 용도로만 사용"
 
 # ============================================================================
 # 4. 생성 명세 frontmatter 양식 (외부 도구 위임용)
