@@ -149,6 +149,49 @@ for each slide (H2 단위):
 * `Projects/<Name>/img/<slide-id>.html` 작성 위임 (delegate_skill: design-html)
 * 본문에 `![<설명>](./img/<slide-id>.html)` 참조 추가
 
+### 이미지 정밀 편집 (`tools.image_edit` — 후처리, Issue305)
+
+기존 이미지의 **국소 수정**(색만·글자만 교체) 경로. 생성 경로가 아니라 **이미 확보된 이미지에 대한 후처리**이므로 §3의 도구 선택(§2 패턴 매칭)이 아니라 아래 조건 판정으로 진입한다.
+
+**진입 판정** — `processing_policy.precise_edit.enabled_when` 3조건을 모두 만족할 때만:
+
+1. 편집 대상이 `Projects/<Name>/img/` 에 실존 (미존재면 편집 생략 + 사유 1줄)
+2. 요청이 국소 변경 (색 교체·글자 교체·특정 요소). 전면 재해석이면 `local_image_gen`
+3. 원본 구도·비편집 영역 보존이 요구됨 (보존 불필요하면 재생성이 더 싸고 빠름)
+
+`style_unification`(덱 톤 통일)과 동시에 걸리면 **precise_edit 우선** — 더 구체적 의도이기 때문.
+
+**명세 작성** — `_doc_work/media/<slide-id>.md` 에 "편집 지시" 절을 추가한다:
+
+```markdown
+# 편집 지시
+
+* 원본: img/<slide-id>.png
+* 편집 종류: color        # edit_type_map — color | text | region
+* 지시문: change the bar chart colors to blue, keep everything else unchanged
+* 산출물: img/<slide-id>_edit.png
+```
+
+지시문은 `precise_edit.instruction_format` 을 따른다 — **영어 + 보존 절(`keep everything else unchanged`) 필수**. 보존 절이 없으면 비편집 영역까지 재해석될 수 있다.
+
+**호출** — `img-add` 글로벌 스킬을 Skill tool 로 호출. `tools.image_edit.invocation` 그대로:
+
+```
+img-add --edit \
+        --image-path       <repo절대경로>/Projects/<Name>/img/<slide-id>.png \
+        --edit-instruction "<영어 지시 + 보존 절>" \
+        --edit-type        color|text|region \
+        --output           <repo절대경로>/Projects/<Name>/img/<slide-id>_edit.png \
+        --project          <Name>
+```
+
+* ⚠️ `flux-fg1`·`flux-enqueue` **직접 호출 금지** — img-add 경유만 (img-add 필수 원칙)
+* ⚠️ **강등 금지 (fail-loud)** — edit 실패 시 `image_restyle`(img2img)·`local_image_gen` 으로 조용히 대체하지 말 것. img2img 는 정밀 편집을 못 하므로(strength 0.3↑ 원본 복제 / 0.1 드리프트, 2026-07-13 실측) 사용자가 못 알아채는 품질 회귀가 된다. "edit 백엔드 불가(사유)" 명시 후 **원본 유지·중단**(`on_failure: keep_original`)
+* ⚠️ **원본 덮어쓰기 금지** — `_edit` 접미 산출물로 저장하고 원본은 `img/` 에 함께 보존
+* 소요 ≈ 7분/건 (steps 28, 폴링 타임아웃 12분). 다건이면 체크포인트에 예상 소요 명시
+
+**성공 시** — 슬라이드 본문의 이미지 참조를 편집본 경로로 갱신하고, 원본이 CC 스톡이면 `CREDITS.md` 출처 항목을 유지한 채 "변형함(adapted)" 을 병기한다.
+
 ## 4. 슬라이드 참조 갱신
 
 이미지·excalidraw·HTML placeholder 생성 시 슬라이드 본문에 `processing_policy.image_reference_format` 적용:
@@ -186,6 +229,8 @@ assets:
 
 * `{mermaid_count}` / `{excalidraw_count}` / `{image_spec_count}`
 * `{paths}` — 산출 위치 목록
+
+정밀 편집(`precise_edit`)을 적용했으면 `precise_edit.checkpoint` 에 따라 **원본↔편집본 파일명 쌍 + `edit_type` + 지시문**을 함께 보고한다. 편집 실패 시 사유를 명시한다 — 조용한 img2img 대체는 금지.
 
 `on_reject.action: ask_user_modifications` (`max_iterations: 3`)
 
