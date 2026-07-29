@@ -266,6 +266,64 @@ def enforce_action(rule: dict) -> str:
     return "skip"
 
 
+# ── 축 2: 덱 목적(purpose) 런타임 게이팅 (Issue307) ──────────────────────────
+# 스캐너가 산출물 위반을 판정하기 전에 그 덱의 purpose 로 룰 적용 여부를 결정한다.
+# 설계 SSOT: _doc_arch/policy-goal-schema.md "런타임 소비 게이팅".
+VALID_PURPOSE = ("lecture", "info", "promo", "handout", "archive")
+
+
+def deck_purpose(proj: Path) -> str:
+    """Projects/<Name>/Info.md frontmatter purpose.primary. 미기재/부재 → lecture.
+
+    frontmatter yaml 파싱은 lint-policy-schema.py `_read_frontmatter` 와 동일 로직
+    (판정 단일 지점). 여기서 별도 parse_frontmatter(정규식)를 쓰지 않는 이유는
+    purpose 가 {primary, secondary} 중첩 구조라 yaml 블록 파싱이 필요하기 때문.
+    """
+    info = proj / "Info.md"
+    if not info.exists():
+        return "lecture"
+    try:
+        text = info.read_text()
+    except OSError:
+        return "lecture"
+    if not text.startswith("---"):
+        return "lecture"
+    end = text.find("\n---", 3)
+    if end == -1:
+        return "lecture"
+    try:
+        fm = yaml.safe_load(text[3:end]) or {}
+    except Exception:
+        return "lecture"
+    purpose = fm.get("purpose") if isinstance(fm, dict) else None
+    if isinstance(purpose, str):
+        primary = purpose
+    elif isinstance(purpose, dict):
+        primary = purpose.get("primary")
+    else:
+        primary = None
+    return primary if primary in VALID_PURPOSE else "lecture"
+
+
+def purpose_gates_out(rule: dict, purpose: str) -> bool:
+    """True 면 이 덱에서 룰 판정을 skip (축 2 게이트).
+
+    ① applies_to_purpose 존재 AND purpose ∉ → skip (이 목적엔 애초 미적용)
+    ② purpose ∈ relax_when → skip (완화 화이트리스트)
+    둘 다 생략 → False (전 목적 무차별 = 현행 동작, 회귀 0).
+    confidence 강도 판정 앞단에서 작동 — 두 축은 직교.
+    """
+    if not isinstance(rule, dict):
+        return False
+    atp = rule.get("applies_to_purpose")
+    if isinstance(atp, list) and atp and purpose not in atp:
+        return True
+    rw = rule.get("relax_when")
+    if isinstance(rw, list) and purpose in rw:
+        return True
+    return False
+
+
 _FM_RE = re.compile(r"^---\s*\n(.*?)\n---\s*\n", re.S)
 _FM_KV = re.compile(r"^(\w[\w-]*):\s*(.*)$")
 
@@ -647,9 +705,14 @@ def _run_gated(name, rule, projects, scanner, failed_ref):
         print(f"ℹ️ {name} confidence=low — 실 프로젝트 미적용(proposal), 스캐너는 픽스처로 검증")
         return
     v = []
+    gated = 0
     for proj in projects:
+        if purpose_gates_out(rule, deck_purpose(proj)):
+            gated += 1                          # 축 2 게이트 — 덱 purpose 로 완화 (Issue307)
+            continue
         v.extend(scanner(proj))
-    print(f"ℹ️ {name} 검사 {len(projects)}개 프로젝트 (confidence={rule.get('confidence')})")
+    suffix = f", purpose 완화 skip {gated}개" if gated else ""
+    print(f"ℹ️ {name} 검사 {len(projects) - gated}개 프로젝트 (confidence={rule.get('confidence')}{suffix})")
     if v:
         for x in v:
             print(f"{'❌' if action == 'enforce' else '⚠️'} {x}",
@@ -681,9 +744,14 @@ def main():
             print("ℹ️ _pipeline 보유 프로젝트 없음 — 이미지 검사 대상 0")
         else:
             v = []
+            gated = 0
             for proj in projects:
+                if purpose_gates_out(rule, deck_purpose(proj)):
+                    gated += 1                  # 축 2 게이트 (Issue307) — promo·archive 등 완화
+                    continue
                 v.extend(check_project(proj, rule))
-            print(f"ℹ️ 통짜 래스터 검사 {len(projects)}개 프로젝트 (ppt2m2slide 역변환 옵트인)")
+            _sfx = f", purpose 완화 skip {gated}개" if gated else ""
+            print(f"ℹ️ 통짜 래스터 검사 {len(projects) - gated}개 프로젝트 (ppt2m2slide 역변환 옵트인{_sfx})")
             if v:
                 for x in v:
                     print(f"❌ {x}", file=sys.stderr)

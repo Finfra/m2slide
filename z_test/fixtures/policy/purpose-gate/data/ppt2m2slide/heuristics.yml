@@ -1,0 +1,17 @@
+# purpose-gate 골든 픽스처 (Issue307) — drop_redundant 에 relax_when:[promo]
+schema_version: 2
+conversion_mode:
+  md_first_constraints:
+    drop_redundant_page_screenshot:
+      enabled: true
+      goal_type: machine_readable
+      goal: "재구성 슬라이드에 통짜 페이지 래스터가 남지 않는다"
+      goal_check:
+        sole_image_in_slide: true
+        aspect_ratio_near_page: 0.05
+        min_pixel_width: 800
+        require_sibling_text: true
+        empty_alt_is_signal: true
+      applies_to_purpose: [lecture, info, handout]
+      relax_when: [promo, archive]
+      confidence: high
