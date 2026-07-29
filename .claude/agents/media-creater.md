@@ -174,6 +174,16 @@ for each slide (H2 단위):
 
 지시문은 `precise_edit.instruction_format` 을 따른다 — **영어 + 보존 절(`keep everything else unchanged`) 필수**. 보존 절이 없으면 비편집 영역까지 재해석될 수 있다.
 
+**편집 종류별 신뢰도** (2026-07-29 실측, `tools.image_edit.limits`):
+
+| 종류 | 판정 | 근거 |
+| :--- | :--- | :--- |
+| `color` | ✅ 신뢰 가능 | 일러스트 그릇 색 교체에서 면·젓가락·배경·구도 전부 보존 |
+| `text` | ⚠️ 조건부 | 텍스트 밀집 이미지에서 **비편집 영역의 다른 텍스트가 gibberish 로 재생성**됨 |
+| `region` | 미검증 | 실측 전 |
+
+`text` 편집은 `precise_edit.text_edit_gate` 3조건을 **추가로** 만족할 때만 진입한다 — ① 대상 문자열이 라틴 문자(한글은 재생성 품질 미달) ② 이미지 내 텍스트 밀도가 낮음(코드블록·표·다중 카드 캡처는 대상 아님) ③ 편집 후 육안 확인(문장부호 유실 사례 있음). 붕괴를 발견하면 `on_failure: keep_original` 대로 원본을 유지하고 사유를 보고한다.
+
 **호출** — `img-add` 글로벌 스킬을 Skill tool 로 호출. `tools.image_edit.invocation` 그대로:
 
 ```
