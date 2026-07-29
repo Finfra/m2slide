@@ -44,21 +44,16 @@
     - 검증: edit 모델 가용 환경에서 색만/글자만 교체 각 1건 실측 (원본 구도 보존 확인)
     - data-access-rules: tools.yml 수정 전 backup 선행 + 정책 yml 단독 커밋
 
-## Issue307. 런타임 relax 게이팅 소비 — enforce 스캐너가 덱 purpose 로 룰 완화 (등록: 2026-07-23)
-* 목적: Issue295 가 정의한 축 2 필드(룰 `applies_to_purpose`/`relax_when` + Info.md `purpose`)를 실제 런타임에서 소비. enforce 스캐너(`lib/lint-policy-artifacts.py`)가 대상 덱의 `purpose.primary` 를 읽어, 룰의 `relax_when` 에 포함된 목적의 덱에서는 위반을 skip(광고·아카이브 덱에서 통짜 래스터 등 정당 허용). Issue295 는 필드·lint 정의까지였고 스캐너가 아직 purpose 를 읽지 않아 런타임 완화가 미작동.
+## Issue307. 런타임 relax 게이팅 소비 — enforce 스캐너가 덱 purpose 로 룰 완화 (등록: 2026-07-23, 해결: 2026-07-29, commit: 6d22698, 700bcb3) ✅
+* 목적: Issue295 가 정의한 축 2 필드(룰 `applies_to_purpose`/`relax_when` + Info.md `purpose`)를 enforce 스캐너(`lib/lint-policy-artifacts.py`)가 런타임 소비 — 대상 덱 `purpose.primary` 를 읽어 `relax_when` 매치 목적의 덱에서 위반 skip(광고·아카이브 덱 통짜 래스터 정당 허용).
 * depends: Issue295
-* trigger: Issue295 ✅ 완료 (축 2 필드·lint 검사 10·11 정착, commit 7263d61·795fde7)
-* 설계 확정 (2026-07-29 승격 — `(!)` 제거): 소비 설계는 `_doc_arch/policy-goal-schema.md` "런타임 소비 게이팅" 절 확정. 아티팩트→덱 purpose 매핑 + skip 판정 순서 + 픽스처 설계 기재.
-* 상세:
-    - 현 스캐너는 프로젝트 단위(`Projects/<Name>/`)로 순회 → 산출물 경로에서 `<Name>` 확보 → `Info.md` frontmatter `purpose.primary` 로 덱 목적 판정. 미기재=lecture(안전 기본).
-    - frontmatter 파싱은 `lib/lint-policy-schema.py` 의 `_read_frontmatter` 와 동일 로직 공유(판정 단일 지점 — 중복 금지). 공통 헬퍼로 추출하거나 import.
-    - 판정 기준 `primary` 단독. `secondary` 는 게이팅 무관.
-* 구현 명세:
-    - 게이트 헬퍼: 룰 R × 프로젝트 P → purpose 확보 → ① `applies_to_purpose` 존재 & purpose ∉ → skip · ② purpose ∈ `relax_when` → skip · ③ 그 외 정상 판정. confidence 강도 판정 **앞단** 배치.
-    - 스캐너가 각 룰의 `applies_to_purpose`·`relax_when` 을 기존 `data/<stage>/*.yml` 로드 경로에서 함께 읽음. L2 override 는 lint 검사 10 이 유효성 보장하므로 deep-merge 결과 신뢰.
-    - 둘 다 생략한 룰 = 전 목적 무차별(현행, 회귀 0).
-    - 골든 픽스처: `promo` 덱 + `relax_when:[promo]` 룰 위반 산출물 → skip / 동일 위반 `lecture`(또는 미기재) 덱 → 검출. 두 케이스 대조를 `z_test/` 회귀로 고정.
-    - 검증: `z_test/run-policy-fixture.sh` 확장 또는 신규 스크립트 + `--lint-data`·기존 픽스처 회귀 0.
+* 승격 (2026-07-29, `(!)` 제거): 소비 설계 `_doc_arch/policy-goal-schema.md` "런타임 소비 게이팅" 절 확정 (commit 6d22698).
+* 완료 범위 (구현 700bcb3):
+    - `deck_purpose(proj)` — `Projects/<Name>/Info.md` frontmatter `purpose.primary`(yaml 블록 파싱, lint-policy-schema `_read_frontmatter` 동일 로직). 미기재/부재/무효 → lecture(안전 기본). `secondary` 무관.
+    - `purpose_gates_out(rule, purpose)` — ① `applies_to_purpose` 존재 & purpose ∉ → skip · ② purpose ∈ `relax_when` → skip · ③ 그 외 정상. confidence 강도 판정 **앞단**, 두 축 직교.
+    - 배선: 검사1(drop_redundant, machine_readable) + `_run_gated`(검사3~6). 검사2(hygiene)는 purpose-불변(내부표기 노출은 어느 덱이든 결함)이라 의도적 미게이팅. 완화 skip 카운트 로그 보고.
+    - 골든 픽스처 `z_test/run-purpose-gate-fixture.sh` + `z_test/fixtures/policy/purpose-gate/` — 동일 위반이 promo 덱(relax_when:[promo]) skip / lecture 덱 검출 대조 고정.
+* 검증: 신규 게이팅 픽스처 rc0(4단언) · `run-policy-fixture.sh`·`run-purpose-fixture.sh` 회귀 통과 · 실 repo `--lint-data` 통과(실 룰 relax_when 미보유 → 게이트 무발화, 회귀 0).
 
 # ✅ 완료
 
