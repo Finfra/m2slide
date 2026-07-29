@@ -29,21 +29,21 @@
 
 # 📗 선택
 
-## Issue305. 이미지 정밀 편집(색만·글자만 교체) 지원 (등록: 2026-07-23)
+
+# ✅ 완료
+## Issue305. 이미지 정밀 편집(색만·글자만 교체) 지원 (등록: 2026-07-23, 해결: 2026-07-29, commit: 59405d7, cb52c5b, 958f816, 2c8a653) ✅
 * 목적: schnell img2img 로는 부분 정밀 편집 불가(strength 0.3↑ 원본 복제 / 0.1 재해석 드리프트, 2026-07-13 실측). edit 전용 모델 기반 img-add `--edit` 모드를 media-creater 가 소비하여 슬라이드 이미지의 색·글자만 정밀 교체. Issue293 스타일 통일과 별개 기능.
 * depends: prj3#Issue277
-* trigger: prj3#Issue277 ✅ 완료 (img-add `--edit` 가용) + commit hash 기록
-* 상세:
-    - 진입점은 반드시 img-add (글로벌 SCAR). media-creater 는 flux 직접 호출 금지 — img-add `--edit` 경유 (img-add 필수 원칙 계승)
-    - 선행 체인: prj55 fg1 edit 모델 설치 → prj3#Issue277 img-add `--edit` 모드 → 본 이슈 media-creater 소비
-    - edit 모델·큐 연동은 prj55(DeviceManagement) 소관 — 본 프로젝트 범위 밖. fg1 `~/apps/flux/models/` 현재 비어있음(2026-07-23 확인) → 구현 착수 불가, 설계만 확정
-* 구현 명세:
-    - `data/media-creater/tools.yml` 에 edit 도구 항목 추가: 정밀 부분 편집(색·글자 교체) 용도. when-to-use = 기존 이미지 재생성이 아닌 국소 수정(구도 보존 필수)
-    - media-creater agent: 편집 후보 감지 시 `img-add --edit --image-path <slide img> --edit-instruction "<색/글자 지시>" --edit-type color|text` 명세 생성
-    - 산출물 경로: 기존 media placeholder 규약 재사용 (Projects/<Name>/img/ 갱신)
-    - 검증: edit 모델 가용 환경에서 색만/글자만 교체 각 1건 실측 (원본 구도 보존 확인)
-    - data-access-rules: tools.yml 수정 전 backup 선행 + 정책 yml 단독 커밋
-
+* trigger: prj3#Issue277 ✅ 완료 (img-add `--edit` 가용) + commit hash 기록 → **충족** (2026-07-29, commit a6f1b8b). 등록 시 차단 사유였던 fg1 모델 부재도 해소 — Kontext 는 `~/apps/flux/hf-cache/hub/models--black-forest-labs--FLUX.1-Kontext-dev` 에 설치됨(구 표기 `~/apps/flux/models/` 는 실경로 아님)
+* 완료 범위:
+    - `data/media-creater/tools.yml` — `tools.image_edit` 신설(handler img-add edit 모드, fg1 고정, when_to_use·invocation·limits·guard) + `processing_policy.precise_edit`(enabled_when 3조건·edit_type_map·instruction_format·output_naming `_edit` 접미·on_failure keep_original). `image_restyle` 과 배타이며 동시 매칭 시 precise_edit 우선
+    - `.claude/agents/media-creater.md` — §3 "이미지 정밀 편집" 절 신설(진입 판정·명세 "편집 지시" 절 양식·img-add 호출 형태·편집 종류별 신뢰도 표), §7 체크포인트에 원본↔편집본 쌍·edit_type·지시문 보고 의무
+    - 강등 금지 fail-loud 명문화 — edit 실패 시 img2img·jm4 로 조용히 대체 금지, 원본 유지 후 사유 보고
+* 검증 (2026-07-29 fg1 FLUX Kontext 실측 2건):
+    - **color ✅** — `Projects/MediaBackendTest/img/ramen-art.png` 그릇 금색→청색 교체. 면·젓가락·배경·나무 테이블·구도 전부 보존 (1024², steps 28, guidance 2.5, ~7분)
+    - **text ⚠️ 조건부** — `Projects/AgenticCoding/img/s22_i1.png`(1793×843, 카드 4개) `(File Ops)`→`(File Work)`. 지시 대상 헤딩은 교체됐고 상단 2카드는 보존됐으나 **하단 2카드의 코드·한글이 gibberish 로 재생성**, 닫는 괄호도 유실. 증거: `_doc_work/capture/issue305-text-edit-evidence.png`(gitignore — 로컬 보존)
+    - 위 실측을 `limits`·`edit_type_map`·`text_edit_gate`(라틴 문자 한정 · 텍스트 밀도 낮을 것 · 육안 확인 필수)에 박제. `region` 은 미검증으로 표기
+    - `--lint-data` 통과 · 정책 yml 단독 커밋 + backup 선행(20260729-153832, 20260729-160352) 준수
 ## Issue307. 런타임 relax 게이팅 소비 — enforce 스캐너가 덱 purpose 로 룰 완화 (등록: 2026-07-23, 해결: 2026-07-29, commit: 6d22698, 700bcb3) ✅
 * 목적: Issue295 가 정의한 축 2 필드(룰 `applies_to_purpose`/`relax_when` + Info.md `purpose`)를 enforce 스캐너(`lib/lint-policy-artifacts.py`)가 런타임 소비 — 대상 덱 `purpose.primary` 를 읽어 `relax_when` 매치 목적의 덱에서 위반 skip(광고·아카이브 덱 통짜 래스터 정당 허용).
 * depends: Issue295
@@ -54,8 +54,6 @@
     - 배선: 검사1(drop_redundant, machine_readable) + `_run_gated`(검사3~6). 검사2(hygiene)는 purpose-불변(내부표기 노출은 어느 덱이든 결함)이라 의도적 미게이팅. 완화 skip 카운트 로그 보고.
     - 골든 픽스처 `z_test/run-purpose-gate-fixture.sh` + `z_test/fixtures/policy/purpose-gate/` — 동일 위반이 promo 덱(relax_when:[promo]) skip / lecture 덱 검출 대조 고정.
 * 검증: 신규 게이팅 픽스처 rc0(4단언) · `run-policy-fixture.sh`·`run-purpose-fixture.sh` 회귀 통과 · 실 repo `--lint-data` 통과(실 룰 relax_when 미보유 → 게이트 무발화, 회귀 0).
-
-# ✅ 완료
 
 ## Issue295. 덱 목적(purpose) enum 도입 — 정책 적용 강도의 덱 용도 스코프 (등록: 2026-07-20, 해결: 2026-07-23, commit: 7263d61, 795fde7) ✅
 * 목적: 정책 룰이 모든 덱에 무차별 전역 강제되는 구조를 해소한다. 강의 덱에서 결함인 것(통짜 래스터·텍스트 미추출)이 광고 덱에서는 의도된 선택일 수 있으므로, 덱의 용도를 1급 메타로 두고 정책 적용 강도를 그 축으로 스코프한다.
