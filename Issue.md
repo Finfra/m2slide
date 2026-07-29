@@ -44,10 +44,21 @@
     - 검증: edit 모델 가용 환경에서 색만/글자만 교체 각 1건 실측 (원본 구도 보존 확인)
     - data-access-rules: tools.yml 수정 전 backup 선행 + 정책 yml 단독 커밋
 
-## Issue307. 런타임 relax 게이팅 소비 — enforce 스캐너가 덱 purpose 로 룰 완화 (!) (등록: 2026-07-23)
+## Issue307. 런타임 relax 게이팅 소비 — enforce 스캐너가 덱 purpose 로 룰 완화 (등록: 2026-07-23)
 * 목적: Issue295 가 정의한 축 2 필드(룰 `applies_to_purpose`/`relax_when` + Info.md `purpose`)를 실제 런타임에서 소비. enforce 스캐너(`lib/lint-policy-artifacts.py`)가 대상 덱의 `purpose.primary` 를 읽어, 룰의 `relax_when` 에 포함된 목적의 덱에서는 위반을 skip(광고·아카이브 덱에서 통짜 래스터 등 정당 허용). Issue295 는 필드·lint 정의까지였고 스캐너가 아직 purpose 를 읽지 않아 런타임 완화가 미작동.
 * depends: Issue295
-* trigger: Issue295 ✅ 완료 (축 2 필드·lint 검사 10·11 정착, commit 7263d61·795fde7) + 스캐너의 아티팩트→덱 purpose 매핑 설계 확정
+* trigger: Issue295 ✅ 완료 (축 2 필드·lint 검사 10·11 정착, commit 7263d61·795fde7)
+* 설계 확정 (2026-07-29 승격 — `(!)` 제거): 소비 설계는 `_doc_arch/policy-goal-schema.md` "런타임 소비 게이팅" 절 확정. 아티팩트→덱 purpose 매핑 + skip 판정 순서 + 픽스처 설계 기재.
+* 상세:
+    - 현 스캐너는 프로젝트 단위(`Projects/<Name>/`)로 순회 → 산출물 경로에서 `<Name>` 확보 → `Info.md` frontmatter `purpose.primary` 로 덱 목적 판정. 미기재=lecture(안전 기본).
+    - frontmatter 파싱은 `lib/lint-policy-schema.py` 의 `_read_frontmatter` 와 동일 로직 공유(판정 단일 지점 — 중복 금지). 공통 헬퍼로 추출하거나 import.
+    - 판정 기준 `primary` 단독. `secondary` 는 게이팅 무관.
+* 구현 명세:
+    - 게이트 헬퍼: 룰 R × 프로젝트 P → purpose 확보 → ① `applies_to_purpose` 존재 & purpose ∉ → skip · ② purpose ∈ `relax_when` → skip · ③ 그 외 정상 판정. confidence 강도 판정 **앞단** 배치.
+    - 스캐너가 각 룰의 `applies_to_purpose`·`relax_when` 을 기존 `data/<stage>/*.yml` 로드 경로에서 함께 읽음. L2 override 는 lint 검사 10 이 유효성 보장하므로 deep-merge 결과 신뢰.
+    - 둘 다 생략한 룰 = 전 목적 무차별(현행, 회귀 0).
+    - 골든 픽스처: `promo` 덱 + `relax_when:[promo]` 룰 위반 산출물 → skip / 동일 위반 `lecture`(또는 미기재) 덱 → 검출. 두 케이스 대조를 `z_test/` 회귀로 고정.
+    - 검증: `z_test/run-policy-fixture.sh` 확장 또는 신규 스크립트 + `--lint-data`·기존 픽스처 회귀 0.
 
 # ✅ 완료
 
