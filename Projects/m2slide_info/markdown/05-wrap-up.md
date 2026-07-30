@@ -23,7 +23,7 @@ Chapter 5.
 * **어디에 쓰면 좋은가**
   - 반복 저작이 필요한 강의·발표·사내 문서, PPT 자산 이관
 * **강점은 무엇인가**
-  - 내장 컴포넌트·멀티포맷 산출·자유로운 배포·PPT 양방향 변환·AI 저작 파이프라인
+  - 패턴 단위 일괄 변경·내장 컴포넌트·멀티포맷 산출·코드처럼 리뷰·PPT 양방향 변환·AI 저작 파이프라인
 :::
 
 ---
@@ -52,6 +52,7 @@ Chapter 5.
 | 온라인 데모 | [finfra.github.io/m2slide](https://finfra.github.io/m2slide) |
 | 더 자세한 소개 | [finfra.github.io/m2slide/m2Slide](https://finfra.github.io/m2slide/m2Slide/index.html) |
 | 사용법 | [README.md](https://github.com/Finfra/m2slide/blob/main/README.md) |
+| 라이선스 | 무료 (CC BY 4.0 — 첫·끝 슬라이드 출처표기 조건) · 출처표기 제거는 상용 라이선스 |
 | 이 자료의 소스 | `Projects/m2slide_info/markdown/` |
 
 ---

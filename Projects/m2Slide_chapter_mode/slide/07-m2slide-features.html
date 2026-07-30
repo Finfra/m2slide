@@ -1388,11 +1388,52 @@ html.ratio-fill .agenda-frame {
   text-decoration: none;
 }
 
+/* =========================================================================
+   Mobile Navigation Arrows (Issue301)
+   ========================================================================= */
+.m2-nav-arrows {
+  display: none;
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  gap: 12px;
+  z-index: 10;
+}
+
+.m2-nav-arrows button {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(128, 128, 128, 0.3);
+  color: rgba(128, 128, 128, 0.8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
+  padding: 0;
+  font-size: 20px;
+}
+
+.m2-nav-arrows button:hover {
+  background: rgba(128, 128, 128, 0.5);
+  color: rgba(128, 128, 128, 1);
+}
+
+.m2-nav-arrows button:active {
+  transform: scale(0.95);
+}
+
+.m2-nav-arrows {
+  display: flex;
+}
+
   </style>
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1784042240822">
+  <link rel="stylesheet" href="css/custom.css?v=1784783129423">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1569,6 +1610,7 @@ html.ratio-fill .agenda-frame {
     @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
   </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.6.0/css/all.min.css">
 </head>
 <body class=" guide-line-mode media-enlarge-fit" data-nav-indicator="both" style="
   --global-font-family: Pretendard, sans-serif;
@@ -1616,14 +1658,27 @@ html.ratio-fill .agenda-frame {
   <div class="reveal ratio-3-2">
     <div class="slides">
 
-      <section data-slide-hash="#/1" id="toc-placeholder" class="layout-_toc title-slide">
+<!--
+  Issue138: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
+  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
+-->
+<section data-slide-hash="#/1" class="layout-_cards layout-_toc title-slide" id="toc-placeholder">
   <header class="toc-page-header">
     <h1 class="toc-page-title">7. m2Slide 기능 소개</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
+  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="2">
+<li class="chapter-card"><a href="#/2">네비게이션</a></li>
+<li class="chapter-card"><a href="#/3">마무리</a></li>
+</ul></div>
+  <div class="m2-nav-arrows">
+    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
   </div>
-      </section>
+</section>
+
 
 <section data-slide-hash="#/2" class="layout-_contents">
   <div class="contents-head-bar">
@@ -1638,6 +1693,10 @@ html.ratio-fill .agenda-frame {
 <li class="bullet-dot"><strong>Space/화살표</strong>: 슬라이드 이동</li>
 <li class="bullet-dot">슬라이드 하단 프로그레스 바 확인</li>
 </ul></div>
+  <div class="m2-nav-arrows">
+    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
 </section>
 
 <section data-slide-hash="#/3" class="layout-_contents"><div class="m2-license-badge" data-m2-license="true">Powered by finfra.kr, Made by m2slide</div>
@@ -1652,6 +1711,10 @@ html.ratio-fill .agenda-frame {
 <li class="bullet-dot">m2Slide를 사용하여 멋진 프레젠테이션을 만드세요.</li>
 <li class="bullet-dot">Markdown으로 쉽고 빠르게 작성할 수 있습니다.</li>
 </ul></div>
+  <div class="m2-nav-arrows">
+    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
 </section>
 
     </div>

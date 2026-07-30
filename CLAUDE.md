@@ -361,7 +361,7 @@ open Projects/LlmAndVibeCoding/slide/01-opening.html
 - `getParentPage()`: AGENDA.md에서 상위 페이지 파일명 추출
 
 **특수 처리**:
-- 테이블 슬라이드는 Reveal.js의 markdown 플러그인에 위임 (`data-markdown` 사용)
+- 테이블 슬라이드도 `convertMarkdownToHTML`이 직접 `<table>` HTML을 생성하고 layout 경로를 통과시켜 `theme_default_layout` 적용을 보장 (Issue94. 과거 `data-markdown`으로 reveal.js markdown 플러그인에 위임하던 우회는 폐기됨)
 - 첫 슬라이드는 제목 슬라이드로 자동 인식하고 Markmap 목차 포함
 - 이미지는 상대 경로 유지 (`img/` 폴더 자동 복사로 해결)
 - 모든 HTML 파일에 상위 페이지 버튼 자동 추가 (우측 하단 "↑ 상위")

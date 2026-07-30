@@ -231,4 +231,4 @@ Policy(Issue265): drop_redundant_page_screenshot 를 goal-oriented 로 전환
 * 정책 cascade: [`../../_doc_arch/pipeline-policy-cascade.md`](../../_doc_arch/pipeline-policy-cascade.md)
 * backup 스크립트: [`../../lib/tuner/backup-data-yml.sh`](../../lib/tuner/backup-data-yml.sh)
 * promote-to-data: [`../../lib/tuner/promote-to-data.py`](../../lib/tuner/promote-to-data.py)
-* 학습 루프 plan: [`../../_doc_work/plan/feedback-learning-loop_plan.md`](../../_doc_work/plan/feedback-learning-loop_plan.md)
+* 학습 루프 plan: [`../../_doc_work/z_done/plan/feedback-learning-loop_plan.md`](../../_doc_work/z_done/plan/feedback-learning-loop_plan.md)

@@ -231,7 +231,7 @@ yml `report_template` 양식으로 보고. 변수 치환:
 * SSOT: [`_doc_arch/info.md`](../../_doc_arch/info.md) (Info.md 스키마)
 * yml SSOT: [`data/info-filler/questions.yml`](../../data/info-filler/questions.yml) (인터뷰·옵션·검증)
 * 파이프라인 전반: [`_doc_arch/authoring-pipeline.md`](../../_doc_arch/authoring-pipeline.md) 단계 1~10 (m2slide 책임). 단계 11은 [`videoMaker_arch.md`](../../../../_doc_arch/videoMaker_arch.md)
-* umbrella task: [`_doc_work/tasks/authoring-pipeline_task.md`](../../_doc_work/tasks/authoring-pipeline_task.md)
+* umbrella task: [`_doc_work/z_done/tasks/authoring-pipeline_task.md`](../../_doc_work/z_done/tasks/authoring-pipeline_task.md)
 * v2 패턴 reference: [`refs-collector.md`](refs-collector.md) (Issue166)
 * 담당 이슈: Issue158 (운영) / Issue169 (v2 데이터-주도 전환)
 * 후속 agent (m2slide 범위): refs-collector(2), agenda-designer(3), md-builder(4), media-creater(5), layout-selector(6), slot-designer(7), m2slide.sh(8), md2subs/txt2tts(9)

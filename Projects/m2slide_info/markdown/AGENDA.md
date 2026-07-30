@@ -3,8 +3,8 @@ title: m2Slide란?
 subtitle: "마크다운 한 벌로 발표·<strong>EPUB·PDF·PPTX</strong>까지 — 왜 필요하고, 어디에 쓰면 좋고, 무엇이 강점인지 처음 만나는 사람을 위한 소개 자료"
 date: 2026-06-30
 type: ppt
-release_date: 2026-07-03
-version_badge: "v0.9"
+release_date: 2026-07-21
+version_badge: "v0.8.0"
 github_url: "github.com/Finfra/m2slide"
 homepage: "finfra.kr"
 ---

@@ -8,7 +8,7 @@ theme: default                   # theme/{name}/slide.css + layouts/ (default �
 theme_default_layout: contents   # 슬라이드 기본 layout (모든 본문 슬라이드를 layout-_contents로 wrap → §2 노랑 가로선 적용)
 cover_enabled: true              # true 시 첫 파일 첫 슬라이드 위치에 cover 자동 주입
 toc_placeholder: true            # true 시 모든 파일에 #/0 TOC 슬라이드 강제 삽입(Chapter모드에서 Only)
-cards_placeholder: true          # true 시 H1 챕터 타이틀 슬라이드를 Cards Page(autoToc cards, layout-_cards)로 변환 / false 시 H1 슬라이드 자체를 deck에서 제거 (Issue144)
+cards_placeholder: false          # true 시 H1 챕터 타이틀 슬라이드를 Cards Page(autoToc cards, layout-_cards)로 변환 / false 시 H1 슬라이드 자체를 deck에서 제거 (Issue144)
 top_align: false                 # true 시 reveal.js 중앙정렬 덮어쓰고 'top-align-mode' 클래스 적용 (주의)
 markmap_depth: 2                 # Markmap 초기 펼침 깊이 (1=루트+1단계, 2=2단계까지)
 chapter_markmap_depth: 3         # 챕터별 페이지 Markmap 펼침 깊이 (markmap_depth+1 권장)
@@ -71,7 +71,7 @@ style:
 # cover_layout: _cover          # cover 슬라이드 layout override (기본 _cover). Issue119
 # agenda_enabled: true          # agenda.html 생성 + 챕터 back navigation (기본 true)
 # agenda_card_mode: false       # agenda.html(/n/a) 을 markmap 대신 카드 그리드로 렌더
-# toc_card_mode: false          # toc_placeholder Map Slide를 markmap SVG 대신 H1 카드 그리드로 렌더
+# toc_card_mode: true           # toc_placeholder Map Slide를 markmap SVG 대신 H1 카드 그리드로 렌더
 # agenda_title: Agenda          # agenda 페이지 헤더 타이틀 (AGENDA.md frontmatter agenda_title 우선)
 # card_columns: 3               # ::: cards 그리드 열 수 (1~12). 미설정 시 auto-fit(콘텐츠 폭 자동)
 # contents_balance: top         # .contents-body 세로 분산 (top | center). center = 텍스트 슬라이드 본문 세로 중앙 분산 opt-in. Issue284
@@ -80,7 +80,7 @@ style:
 
 # 다이어그램·빌드·배포 (Issue270 asset_mode / deploy-docs)
 # kroki_server: https://kroki.io   # 다이어그램 렌더링 서버 endpoint (ditaa 등)
-# asset_mode: vendor            # 런타임 자산 배치: vendor(기본, self-contained 오프라인) | cdn(발행 데크 웹 서빙)
+# asset_mode: cdn            # 런타임 자산 배치: vendor(기본, self-contained 오프라인) | cdn(발행 데크 웹 서빙)
 # deploy_formats: []            # /deploy-docs 시 함께 빌드·배포할 형식 (예: [epub, pdf, pptx])
 
 # license_attribution: true     # Issue292: 첫 장·마지막 장 "Powered by finfra.kr, Made by m2slide" 표기(CC BY 4.0 조건). false 시 위법 소지 경고 로그. 설계: _doc_arch/license-attribution.md

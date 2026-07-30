@@ -290,6 +290,6 @@ grep -rE '\{\{[a-zA-Z]' Projects/<Name>/slide/*.html | grep -v markmap
 * slot 통합 가이드: [`../../_doc_arch/slot_guide.md`](../../_doc_arch/slot_guide.md)
 * theme/layout 시스템: [`../../_doc_arch/theme_layout.md`](../../_doc_arch/theme_layout.md)
 * 파이프라인: [`../../_doc_arch/authoring-pipeline.md`](../../_doc_arch/authoring-pipeline.md) 단계 7
-* umbrella task: [`../../_doc_work/tasks/authoring-pipeline_task.md`](../../_doc_work/tasks/authoring-pipeline_task.md)
+* umbrella task: [`../../_doc_work/z_done/tasks/authoring-pipeline_task.md`](../../_doc_work/z_done/tasks/authoring-pipeline_task.md)
 * v2 패턴 reference: [`info-filler.md`](info-filler.md) (Issue169), [`agenda-designer.md`](agenda-designer.md) (Issue170), [`layout-selector.md`](layout-selector.md) (Issue173)
 * 담당 이슈: Issue163 (운영) / Issue174 (v2 데이터-주도 전환)

@@ -1388,11 +1388,52 @@ html.ratio-fill .agenda-frame {
   text-decoration: none;
 }
 
+/* =========================================================================
+   Mobile Navigation Arrows (Issue301)
+   ========================================================================= */
+.m2-nav-arrows {
+  display: none;
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  gap: 12px;
+  z-index: 10;
+}
+
+.m2-nav-arrows button {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(128, 128, 128, 0.3);
+  color: rgba(128, 128, 128, 0.8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
+  padding: 0;
+  font-size: 20px;
+}
+
+.m2-nav-arrows button:hover {
+  background: rgba(128, 128, 128, 0.5);
+  color: rgba(128, 128, 128, 1);
+}
+
+.m2-nav-arrows button:active {
+  transform: scale(0.95);
+}
+
+.m2-nav-arrows {
+  display: flex;
+}
+
   </style>
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1784042240820">
+  <link rel="stylesheet" href="css/custom.css?v=1784783129418">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1569,6 +1610,7 @@ html.ratio-fill .agenda-frame {
     @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
   </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.6.0/css/all.min.css">
 </head>
 <body class=" guide-line-mode media-enlarge-fit" data-nav-indicator="both" style="
   --global-font-family: Pretendard, sans-serif;
@@ -1616,14 +1658,32 @@ html.ratio-fill .agenda-frame {
   <div class="reveal ratio-3-2">
     <div class="slides">
 
-      <section data-slide-hash="#/1" id="toc-placeholder" class="layout-_toc title-slide">
+<!--
+  Issue138: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
+  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
+-->
+<section data-slide-hash="#/1" class="layout-_cards layout-_toc title-slide" id="toc-placeholder">
   <header class="toc-page-header">
     <h1 class="toc-page-title">5. 레이아웃 예제 (DIV 활용)</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
+  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="7">
+<li class="chapter-card"><a href="#/2">2분할 레이아웃 - 1단계</a></li>
+<li class="chapter-card"><a href="#/3">2분할 레이아웃 - 1단계 [좌이미지]</a></li>
+<li class="chapter-card"><a href="#/4">2분할 레이아웃 - 2단계</a></li>
+<li class="chapter-card"><a href="#/5">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - Pandoc 펜스 div</a></li>
+<li class="chapter-card"><a href="#/6">3분할 레이아웃 (카드 형태) - Pandoc 펜스 div</a></li>
+<li class="chapter-card"><a href="#/7">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev</a></li>
+<li class="chapter-card"><a href="#/8">3분할 레이아웃 (카드 형태) - div</a></li>
+</ul></div>
+  <div class="m2-nav-arrows">
+    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
   </div>
-      </section>
+</section>
+
 
 <section data-slide-hash="#/2" class="layout-_contents">
   <div class="contents-head-bar">
@@ -1643,6 +1703,10 @@ html.ratio-fill .agenda-frame {
 <div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
 </div>
 </div></div>
+  <div class="m2-nav-arrows">
+    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
 </section>
 
 <section data-slide-hash="#/3" class="layout-_contents">
@@ -1664,6 +1728,10 @@ html.ratio-fill .agenda-frame {
 </ul>
 </div>
 </div></div>
+  <div class="m2-nav-arrows">
+    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
 </section>
 
 <section data-slide-hash="#/4" class="layout-_contents">
@@ -1683,6 +1751,10 @@ html.ratio-fill .agenda-frame {
 <div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
 </div>
 </div></div>
+  <div class="m2-nav-arrows">
+    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
 </section>
 
 <section data-slide-hash="#/5" class="layout-_contents">
@@ -1709,6 +1781,10 @@ html.ratio-fill .agenda-frame {
 <div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
 </div>
 </div></div>
+  <div class="m2-nav-arrows">
+    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
 </section>
 
 <section data-slide-hash="#/6" class="layout-_contents">
@@ -1738,6 +1814,10 @@ html.ratio-fill .agenda-frame {
 <div class="media-container"><img src="./img/scenery.png" alt="Chart"></div>
 </div>
 </div></div>
+  <div class="m2-nav-arrows">
+    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
 </section>
 
 <section data-slide-hash="#/7" class="layout-_contents">
@@ -1761,6 +1841,10 @@ html.ratio-fill .agenda-frame {
 <p>    <img src="./img/chart.png" alt="Chart" style="width: 100%; border-radius: 10px;"></p>
   </div>
 </div></div>
+  <div class="m2-nav-arrows">
+    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
 </section>
 
 <section data-slide-hash="#/8" class="layout-_contents">
@@ -1785,6 +1869,10 @@ html.ratio-fill .agenda-frame {
 <p>    <p>세 번째 카드의 내용입니다.</p></p>
   </div>
 </div></div>
+  <div class="m2-nav-arrows">
+    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
 </section>
 
     </div>

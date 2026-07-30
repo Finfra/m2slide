@@ -1387,11 +1387,52 @@ html.ratio-fill .agenda-frame {
   text-decoration: none;
 }
 
+/* =========================================================================
+   Mobile Navigation Arrows (Issue301)
+   ========================================================================= */
+.m2-nav-arrows {
+  display: none;
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  gap: 12px;
+  z-index: 10;
+}
+
+.m2-nav-arrows button {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(128, 128, 128, 0.3);
+  color: rgba(128, 128, 128, 0.8);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, color 0.2s;
+  padding: 0;
+  font-size: 20px;
+}
+
+.m2-nav-arrows button:hover {
+  background: rgba(128, 128, 128, 0.5);
+  color: rgba(128, 128, 128, 1);
+}
+
+.m2-nav-arrows button:active {
+  transform: scale(0.95);
+}
+
+.m2-nav-arrows {
+  display: flex;
+}
+
   </style>
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1784042240823">
+  <link rel="stylesheet" href="css/custom.css?v=1784783129427">
   <style>
     /* 커버 페이지 전용: 컨트롤·슬라이드번호·프로그레스 숨김 */
     .reveal .controls, .reveal .progress, .reveal .slide-number { display: none !important; }
@@ -1470,6 +1511,10 @@ html.ratio-fill .agenda-frame {
   </div>
 
   
+  <div class="m2-nav-arrows">
+    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
 </section>
   </div>
 </div>

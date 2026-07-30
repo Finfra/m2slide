@@ -427,6 +427,9 @@
    - 장식: --kn-accent(노랑, 전 theme 공통 고정 식별색) 저알파 text-shadow로 은은한 노랑 그림자
      — "너무 진하지 않게" 요청 반영. 그림자는 장식일 뿐 대비 계산에는 무관(글자色만 대비 대상).
    - 크기 하한: max()로 고정 — 프로젝트 커스텀 CSS가 font-size를 줄여도 --m2-license-fs-min 밑으로 못 내려감.
+   - bottom: 0 (2026-07-18) — 뱃지 박스(≈19px)가 노랑 선 아래 띠(12px)보다 커서 선과 겹쳐
+     "답답해" 보인다는 피드백. 위치로 확보 가능한 최대 여유가 2px 뿐이라 bottom:2px → 0 으로 내림.
+     더 떼려면 선 자체를 올리거나(::after bottom 상향) 글자를 줄여야 함.
    - opacity로 색을 흐리게 하지 않음 — opacity는 대비 보증을 깨뜨리므로 사용 금지. "연한 느낌"은
      회색 톤 자체(--m2-license-fg)와 노랑 그림자로만 표현.
    ──────────────────────────────────────────────────────────────────────── */
@@ -439,7 +442,7 @@
 .reveal .slides section .m2-license-badge {
   position: absolute;
   left: 50%;
-  bottom: 2px;
+  bottom: 0;
   transform: translateX(-50%);
   font-size: max(var(--m2-license-fs-min), var(--m2-license-fs));
   color: var(--m2-license-fg);
@@ -457,7 +460,7 @@
 .m2-license-badge--standalone {
   position: absolute;
   left: 50%;
-  bottom: 2px;
+  bottom: 0;
   transform: translateX(-50%);
   font-size: max(10px, 0.6vw);
   color: var(--m2-license-fg);
@@ -530,8 +533,11 @@
   z-index: 100;            /* layout 자식 요소(flex item) 위로 — 하단 가로선이 본문 영역에 가려지지 않도록 */
 }
 
-.reveal section[class*="layout-"]::before { top: 12px; }
-.reveal section[class*="layout-"]::after  { bottom: 12px; }
+/* 12px → 22px (2026-07-18): 하단 선 바깥 띠(선~슬라이드 하단)가 12px 뿐이라
+   라이선스 뱃지 박스(≈17px)가 선과 겹쳐 "답답해" 보였음. 띠를 22px 로 넓혀 분리.
+   상단도 같은 값으로 올려 상하 대칭 유지 (.cover-corner github_url 여유도 함께 확보). */
+.reveal section[class*="layout-"]::before { top: 22px; }
+.reveal section[class*="layout-"]::after  { bottom: 22px; }
 
 /* 모든 layout-* section min-height: 100% 강제 — 상하 inner gap 대칭 보장
    기존: .layout-_cover만 min-height 적용 → contents/blank/toc는 contents 크기로 짧아져

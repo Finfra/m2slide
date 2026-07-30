@@ -1392,7 +1392,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1784042299362">
+  <link rel="stylesheet" href="css/custom.css?v=1785309930778">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1474,6 +1474,30 @@ html.ratio-fill .agenda-frame {
     }
     .reveal .controls .navigate-up.m2-enabled:hover,
     .reveal .controls .navigate-down.m2-enabled:hover {
+      opacity: 0.7;
+    }
+    /* Issue301: ←/→ 도 ↑/↓ 처럼 항상 회색 노출 (reveal 기본은 마지막/첫 슬라이드에서 .enabled 제거 → 숨김).
+       챕터 마지막 페이지에서 → 를 숨기지 않고 회색으로 남겨 "다음 챕터로 갈 수 있음"을 표시.
+       reveal 의 .enabled 클래스가 붙으면(이동 가능) opacity 1, 아니면 0.25 회색. page-indicator 모드는
+       body[data-nav-indicator="page"] 규칙(더 높은 specificity)이 여전히 display:none 으로 숨김. */
+    .reveal .controls .navigate-left,
+    .reveal .controls .navigate-right {
+      display: block !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+      opacity: 0.25;
+      transition: opacity 0.2s;
+      /* Issue301: reveal 기본은 비활성 ←/→에 translateX(±10px)를 남겨(마름모 밖으로 밀림),
+         .enabled 일 때만 transform:none 으로 제자리 복귀시킴. 회색(비활성) 상태에도 항상 노출하므로
+         transform:none 을 강제해 활성/비활성 무관하게 마름모 정위치를 유지(우측 → 삐져나옴 방지). */
+      transform: none !important;
+    }
+    .reveal .controls .navigate-left.enabled,
+    .reveal .controls .navigate-right.enabled {
+      opacity: 1;
+    }
+    .reveal .controls .navigate-left:hover,
+    .reveal .controls .navigate-right:hover {
       opacity: 0.7;
     }
     /* 마름모(↑/↓) + 좌우(←/→) 화살표 색 — 페이지번호와 동일 체인.
@@ -1616,14 +1640,24 @@ html.ratio-fill .agenda-frame {
   <div class="reveal ratio-3-2">
     <div class="slides">
 
-      <section data-slide-hash="#/1" id="toc-placeholder" class="layout-_toc title-slide">
+<!--
+  Issue138: Cards Page 전용 layout (autoToc cards 표시).
+  class="layout-_cards layout-_toc" 동시 부여:
+    - layout-_cards: SSOT 신규 명명 (Glossary "Cards Page" 항목)
+    - layout-_toc:  기존 CSS(theme/default/slide.css §6) 호환성 유지
+  CSS 정리(.layout-_toc → .layout-_cards 대체)는 후속 작업.
+-->
+<section data-slide-hash="#/1" class="layout-_cards layout-_toc title-slide" id="toc-placeholder">
   <header class="toc-page-header">
     <h1 class="toc-page-title">왜 m2Slide인가</h1>
   </header>
-  <div class="toc-markmap">
-    <svg class="toc-mindmap-svg"></svg>
-  </div>
-      </section>
+  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="3">
+<li class="chapter-card"><a href="#/2">도구와 씨름 끝, 콘텐츠에 집중</a></li>
+<li class="chapter-card"><a href="#/3">네 가지 이유</a></li>
+<li class="chapter-card"><a href="#/4">발표가 편해진다</a></li>
+</ul></div>
+</section>
+
 
 <section data-slide-hash="#/2" class="layout-_contents">
   <div class="contents-head-bar">
@@ -4215,6 +4249,13 @@ html.ratio-fill .agenda-frame {
       upBtn.classList.toggle('m2-enabled', !isCoverSlide(cur));
       // ↓ : leaf fall-through 가능 여부 + Cover/TOC/Anchor 항상 활성
       downBtn.classList.toggle('m2-enabled', m2EvalDownEnabled());
+      // Issue301: reveal 이 끝단(첫/마지막 슬라이드)에서 ←/→ 버튼에 disabled 속성을 붙이면
+      //   disabled 버튼은 click 이벤트를 발화하지 않아 클릭 위임이 무력화된다. 매 slidechanged 마다
+      //   disabled 를 제거해 챕터 경계에서도 ←/→ 클릭이 키 네비게이션(다음/이전 챕터)으로 위임되게 한다.
+      var leftC = document.querySelector('.reveal .controls .navigate-left');
+      var rightC = document.querySelector('.reveal .controls .navigate-right');
+      if (leftC) leftC.removeAttribute('disabled');
+      if (rightC) rightC.removeAttribute('disabled');
     }
     Reveal.on('ready', function() {
       var upBtn = document.querySelector('.reveal .controls .navigate-up');
@@ -4233,6 +4274,25 @@ html.ratio-fill .agenda-frame {
           e.stopImmediatePropagation();
           if (!downBtn.classList.contains('m2-enabled')) return;
           m2DispatchKey('ArrowDown', 40);
+        }, true);
+      }
+      // Issue301: ←/→ 클릭을 키보드 ArrowLeft/ArrowRight 로 위임 → 키 네비게이션 매트릭스 재사용.
+      //   마지막 슬라이드 → 는 안내 메시지 후 다음 챕터(?fwd=1), 첫 슬라이드 ← 는 이전 챕터/agenda 로 이동.
+      //   capture + stopImmediatePropagation 으로 reveal 기본 click(단순 next/prev, 끝단에서 no-op) 차단.
+      var leftBtn = document.querySelector('.reveal .controls .navigate-left');
+      var rightBtn = document.querySelector('.reveal .controls .navigate-right');
+      if (leftBtn) {
+        leftBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          m2DispatchKey('ArrowLeft', 37);
+        }, true);
+      }
+      if (rightBtn) {
+        rightBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          m2DispatchKey('ArrowRight', 39);
         }, true);
       }
       m2UpdateNavControls();

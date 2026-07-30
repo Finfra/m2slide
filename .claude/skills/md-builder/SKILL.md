@@ -239,6 +239,6 @@ Glob refs/*.md → 키워드별 발췌 인덱싱
 * release-date 규칙: [`../../rules/release-date-rules.md`](../../rules/release-date-rules.md)
 * apply-verify 규칙: [`../../rules/apply-verify-rules.md`](../../rules/apply-verify-rules.md)
 * 파이프라인: [`../../../_doc_arch/authoring-pipeline.md`](../../../_doc_arch/authoring-pipeline.md) 단계 4
-* umbrella task: [`../../../_doc_work/tasks/authoring-pipeline_task.md`](../../../_doc_work/tasks/authoring-pipeline_task.md)
+* umbrella task: [`../../../_doc_work/z_done/tasks/authoring-pipeline_task.md`](../../../_doc_work/z_done/tasks/authoring-pipeline_task.md)
 * v2 패턴 reference: [`../../agents/info-filler.md`](../../agents/info-filler.md) (Issue169), [`../../agents/agenda-designer.md`](../../agents/agenda-designer.md) (Issue170)
 * 담당 이슈: Issue161 (운영) / Issue171 (v2 데이터-주도 전환)

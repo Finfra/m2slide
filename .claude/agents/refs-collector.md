@@ -214,5 +214,5 @@ date: YYYY-MM-DD
 * 글로벌 refs 규칙: `~/.claude/rules/refs-rules.md`
 * 파이프라인: [`_doc_arch/authoring-pipeline.md`](../../_doc_arch/authoring-pipeline.md) 단계 2
 * 입력 SSOT: [`_doc_arch/info.md`](../../_doc_arch/info.md)
-* umbrella task: [`_doc_work/tasks/authoring-pipeline_task.md`](../../_doc_work/tasks/authoring-pipeline_task.md)
+* umbrella task: [`_doc_work/z_done/tasks/authoring-pipeline_task.md`](../../_doc_work/z_done/tasks/authoring-pipeline_task.md)
 * 담당 이슈: Issue159 (depends: Issue158)

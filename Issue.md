@@ -66,7 +66,7 @@
     - 마이그레이션: `purpose` 미기재 = `lecture` 간주 — 기존 동작 회귀 0.
 * 파급 지점 판정: `data/md-builder/styles.yml`·`data/slide-tuner/patterns.yml` 은 런타임 *소비* 지점이라 Issue307(스캐너 확장)에서 처리 — 본 이슈 미변경(회귀 0). 원 명세의 "--lint-data purpose 경고"는 aggregate info line 으로 구현(미기재 = 정상 fallback 이라 per-deck 경고는 노이즈).
 * 검증: `./m2slide.sh --lint-data` 통과(goal 9룰 + 검사 10·11) · `z_test/run-purpose-fixture.sh` rc0 · `z_test/run-policy-fixture.sh` 회귀 통과. questions.yml backup 선행 + 정책/코드 커밋 분리.
-* 근거 문서: `_doc_work/htm/hub_htm_20260720_192649_a_goal-taxonomy.htm`, plan `_doc_work/plan/purpose-enum_plan.md`
+* 근거 문서: `_doc_work/htm/hub_htm_20260720_192649_a_goal-taxonomy.htm`, plan `_doc_work/z_done/plan/purpose-enum_plan.md`
 
 ## Issue306. Issue304 goal 룰 5건 enforce 스캐너 + 골든 픽스처 (등록: 2026-07-23, 해결: 2026-07-23, commit: d7d514c) ✅
 * 목적: Issue304 가 goal 스키마로 전환한 5룰의 `goal_check` 술어에 실제 산출물 판정 코드가 미구현이라 enforce 불가. 각 술어별 스캐너 + 골든 픽스처로 enforce 승격 기반 마련.
@@ -194,8 +194,8 @@
 
 ## Issue299. _doc_arch ↔ 소스코드 정합성 감사 (등록: 2026-07-21, 해결: 2026-07-21, commit: 없음—gitignore) ✅
 * 목적: `_doc_arch/` 영속 설계 문서가 참조하는 파일 경로·스크립트명·함수명·CLI 플래그·동작 서술이 현재 소스코드와 어긋난 곳(stale)을 전수 검토하여 교정.
-* plan: `_doc_work/plan/doc-arch-audit_plan.md`
-* task: `_doc_work/tasks/doc-arch-audit_task.md`
+* plan: `_doc_work/z_done/plan/doc-arch-audit_plan.md`
+* task: `_doc_work/z_done/tasks/doc-arch-audit_task.md`
 * 결과: 문서 42개 7-subagent fan-out 감사 → **42건 발견, 39건 교정, 3건 false-positive 기각**(htmlArt PANDOC_LAYOUT_RESERVED 실존 확인 slide-parser.js:282). CLEAN 15개.
     - HIGH 2건: dev-server.md `/n/` 네임스페이스 미구현 오기(실제 구현 완료) · theme_layout_lec.md underscore class 서술 stale(실제 `layout-_*`)
     - 주요 교정: nowage 테마 폐기 잔존→default_lec 정정(theme/css/theme_layout_default/video-player) · keynote 자산 `_doc_base/background/` 이동 경로 · Issue257 파이프라인 재번호(stage9=note-writer, info/cost-manager/authoring-pipeline) · 함수·라인번호 drift(brittle 라인번호는 심볼 참조로 대체) · _README 인덱스 32→41 문서 · htmlArt 19종→27종 · 테스트 30→63 · `--lint-palette`/`--lint-config` 실존 확인
@@ -210,8 +210,8 @@
 * 범위 확정 (2026-07-20 사용자 결정): 축 1(룰 목적)만. 축 2(덱 목적 purpose enum)는 Issue295 로 분리. `goal_type` enum 7종 전량 채택
 * 후행: Issue295 (덱 목적 purpose enum) — **trigger 충족, 착수 가능** / Issue296·297·298 (미해결 항목 이관)
 * 목적: `data/<stage>/*.yml` 정책이 (A) 파일명 정규식 하드코딩으로 조용히 무력화되고(`drop_redundant_page_screenshot`가 `pdf-p\d+`만 검출 → AgenticCoding `sNN_i1.png` bleed 8건 미검출), (B) 일괄 커밋(chore bulk)에 섞여 회귀 원인 격리가 불가하며, (C) 학습 사례 1건이 즉시 전역 enforce로 승격되어 과소/과대 일반화 위험을 안는 구조적 약점을 차단.
-* plan: `_doc_work/plan/policy-goal-schema_plan.md`
-* task: `_doc_work/tasks/policy-goal-schema_task.md`
+* plan: `_doc_work/z_done/plan/policy-goal-schema_plan.md`
+* task: `_doc_work/z_done/tasks/policy-goal-schema_task.md`
 * 분석 문서: http://jm4.local:9876/htm-doc?path=/Users/nowage/_git/__all/videoMaker/lib/m2slide/_doc_work/z_htm/hub_htm_20260706_210035_a_policy-history.htm (git history 사례 A/B/C + 예방책 ①~⑤ 상세)
 * 목적 2축 분리 근거: `_doc_work/htm/hub_htm_20260720_192649_a_goal-taxonomy.htm` (goal_type enum 7종 도출 + 축 2 분리 판단)
 * 상세:
@@ -226,7 +226,7 @@
     - ⑤ 학습 사례 골든 픽스처화: rationale 사례 슬라이드 재변환 회귀 테스트
     - 우선순위: ①+④ (사례 A 직접 차단) → ② (사례 C 구조 개선) → ③⑤
     - triage: 복잡 (heuristics.yml 스키마 개편 + promote-to-data.py + lint 확장 — 설계 결정이 후속 이슈에 영향)
-* report: `_doc_work/report/policy-goal-schema_issue265_report.md`
+* report: `_doc_work/z_done/report/policy-goal-schema_issue265_report.md`
 * 설계 SSOT: `_doc_arch/policy-goal-schema.md` (신규)
 * 결과:
     - 목적 3필드 하이브리드 도입 — `goal_type`(enum 7종) + `goal`(서술) + `goal_check`(판정식). 파일명 정규식은 `detect_hints` 로 강등되어 판정 권한 상실
@@ -284,8 +284,8 @@
 
 ## Issue292. 라이선스 표기 자동 삽입 — 첫 장·마지막 장 뱃지 + 대비 규칙 (등록: 2026-07-14, 해결: 2026-07-14, commit: 659f9f1) ✅
 * 목적: LICENSE.md 이중 라이선스 정책("모든 산출물의 첫 장·마지막 장에 'Powered by finfra.kr, Made by m2slide' 표기 유지 의무", CC BY 4.0 근거)을 실제 빌드 산출물에 강제 반영.
-* plan: `_doc_work/plan/license-attribution_plan.md`
-* task: `_doc_work/tasks/license-attribution_task.md`
+* plan: `_doc_work/z_done/plan/license-attribution_plan.md`
+* task: `_doc_work/z_done/tasks/license-attribution_task.md`
 * 설계: `_doc_arch/license-attribution.md`
 * 최종 확정 사양 (2026-07-14 사용자 시각 컨펌 2회):
     1. 위치: 하단 중앙 (`left:50%; transform:translateX(-50%);`) — 초안(우하단)에서 사용자 피드백으로 변경

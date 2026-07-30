@@ -15,9 +15,9 @@
 
 ## Issue290. dev-server `/pd/` 덱에 `/p/` proxy 전 기능 부여 — 단일 root resolver 통합 (등록: 2026-07-13, 해결: 2026-07-13, commit: 5bd3efb) ✅
 * 목적: `/pd/`(덱 목록)이 static `index.html` 직링크만 제공 → `/p/` 의 슬라이드 목록·deck nav(`/n/`)·solo view(`/s/`)·text 추출·config GUI 를 전혀 못 씀. 있는 코드 최소 수정으로 덱도 동일 proxy 진입 → 전 기능 획득
-* plan: `_doc_work/plan/pd-p-unify_plan.md`
-* task: `_doc_work/tasks/pd-p-unify_task.md`
-* report: `_doc_work/report/pd-p-unify_issue290_report.md`
+* plan: `_doc_work/z_done/plan/pd-p-unify_plan.md`
+* task: `_doc_work/z_done/tasks/pd-p-unify_task.md`
+* report: `_doc_work/z_done/report/pd-p-unify_issue290_report.md`
 * depends: Issue281
 * 구현 명세 (Walkthrough):
     - 원인: `/p/<X>/...` proxy 가 `os.path.join(getcwd(), 'Projects', project)` 를 12곳 하드코딩 → 2단계 깊이 덱(`Projects_deck/decks/<cat>/<deck>/`) 도달 불가. Issue281 이 이 때문에 proxy 우회(static 직링크)로 최소 구현
@@ -32,8 +32,8 @@
 
 ## Issue289. local_image_gen 큐 경유 전환 — 직접 실행 폐지, mflux-enqueue+폴링 (등록: 2026-07-13, 해결: 2026-07-13, commit: 427fb61, 5344e09) ✅
 * 목적: 동시 생성 메모리 사고(2026-07-13) 대응 — prj55 잡 큐(Issue4)에 맞춰 `local_image_gen`을 직접 mflux 실행 → 큐 등록·폴링으로 교체 (P5, Issue287 후속)
-* plan: `_doc_work/plan/media-creater-image-backend_plan.md`
-* task: `_doc_work/tasks/media-creater-image-backend_task.md`
+* plan: `_doc_work/z_done/plan/media-creater-image-backend_plan.md`
+* task: `_doc_work/z_done/tasks/media-creater-image-backend_task.md`
 * depends: prj55#Issue4
 * 구현 결과 (Walkthrough):
     - tools.yml invocation 교체 (5344e09): `mflux-enqueue`(출력 절대경로) → `mflux-queue-status <id>` 폴링(30s·타임아웃 5분/잡·종료코드 0/2/3/4/5). pgrep 임시 가드 폐지 → 직접 실행 전면 금지 + 큐 미가용 즉시 강등. `--lint-data` rc 0
@@ -54,8 +54,8 @@
 
 ## Issue287. media-creater 이미지 생성 백엔드 확장 — svg_direct·free_image·local_image_gen (등록: 2026-07-12, 해결: 2026-07-13, commit: 87b7cf7, d9ae44b, d0bfa24) ✅
 * 목적: Claude가 래스터 이미지를 생성하지 못해 media-creater(파이프라인 단계 5)가 placeholder·생성 명세만 남기고 실제 이미지를 산출하지 못하는 공백 해소 — 생성 명세를 소비할 실행 백엔드 3종을 tools.yml에 반영
-* plan: `_doc_work/plan/media-creater-image-backend_plan.md`
-* task: `_doc_work/tasks/media-creater-image-backend_task.md`
+* plan: `_doc_work/z_done/plan/media-creater-image-backend_plan.md`
+* task: `_doc_work/z_done/tasks/media-creater-image-backend_task.md`
 * depends: prj55#Issue3
 * 구현 결과 (Walkthrough):
     - P1 `svg_direct` 신설 (d9ae44b) — Claude SVG 직접 저작, viewBox 필수·외부 참조 금지(file:// 배포 규약)·시스템 폰트. `vector_illustration` 패턴 룰 추가
@@ -133,8 +133,8 @@
 
 ## Issue281. dev-server /pd/ — Projects_deck 덱 목록 페이지 (등록: 2026-07-12, 해결: 2026-07-12, commit: e31da3c) ✅
 * 목적: `Projects_deck/decks/<category>/<deck>` 공유 덱 저장소를 dev-server 에서 열람 가능하게 함 (최소 코드)
-* plan: `_doc_work/plan/pd-deck-list_plan.md`
-* task: `_doc_work/tasks/pd-deck-list_task.md`
+* plan: `_doc_work/z_done/plan/pd-deck-list_plan.md`
+* task: `_doc_work/z_done/tasks/pd-deck-list_task.md`
 * 상세:
     - `GET /pd/` — 카테고리별 섹션 + 덱 카드 목록. `slide/index.html` 존재 시 static 경로(`/Projects_deck/.../slide/index.html`) 직링크, 없으면 "빌드 산출물 없음" 표시
     - `Projects_deck/decks/` 폴더 존재 시에만 공통 헤더(home·/p/ 등)에 `🃏 decks` 링크 노출
@@ -227,8 +227,8 @@
 
 ## Issue275. dev-server 프로젝트 목록(/p/) 카드별 _config.yml 설정 GUI + Open settings file (등록: 2026-07-10, 해결: 2026-07-11, commit: 1f18955) ✅
 * 목적: dev-server 프로젝트 목록 페이지(`/p/`)가 `Projects.md` 메타를 읽기 전용으로만 표시하여, 프로젝트별 렌더 옵션(`_config.yml`)을 바꾸려면 매번 파일을 손으로 편집해야 했음. 각 카드에서 바로 편집 가능한 GUI를 추가하여 반복 편집 부담을 제거.
-* plan: `_doc_work/plan/config-gui_plan.md`
-* task: `_doc_work/tasks/config-gui_task.md`
+* plan: `_doc_work/z_done/plan/config-gui_plan.md`
+* task: `_doc_work/z_done/tasks/config-gui_task.md`
 * arch: `_doc_arch/config-gui.md`
 * 확장 (2026-07-10 추가): 초판 13키 단일폼 → `_config.org.yml` 전체 옵션(약 30개)으로 확장.
     - theme 콤보박스(`theme/` 디렉토리 동적 스캔 + 자유입력).
@@ -279,7 +279,7 @@
 
 ## Issue270. SCAR·런타임 자산 self-contained 배치 + 중첩 하위 프로젝트 상위 호출 해결 (등록: 2026-07-09, 해결: 2026-07-10, commit: 9ba6278) ✅
 * 목적: 결정사항("배포 위해 SCAR는 프로젝트 폴더 배치") 실현 + 부작용(중첩 하위 프로젝트 상위 호출 불가)·오프라인 자산 self-containment 해결. 타 PC clone 후 오프라인 즉시 작동.
-* report: `_doc_work/report/scar-selfcontained_issue270_report.md` / 설계: `_doc_arch/scar-portability.md`
+* report: `_doc_work/z_done/report/scar-selfcontained_issue270_report.md` / 설계: `_doc_arch/scar-portability.md`
 * 결과 (A+B 방식, 4 Phase 완료):
     - **상위 호출**: m2slide 로컬 `.claude/`=SSOT + 상위 `videoMaker/.claude/commands/m2s.md` 위임 bridge(commit ae6620e, 별도 repo). 복제 없음. standalone은 bridge 불요.
     - **오프라인 vendor**: `lib/asset-manifest.js` + `lib/vendor/fetch-vendor.js`(21M, .ttf prune) + `lib/vendor-rewrite.js` 빌드 후처리 CDN→`./vendor` 치환. 잔여 CDN 0, 실렌더 콘솔 에러 0.
@@ -386,8 +386,8 @@
 
 ## Issue261. dev-server 개요 페이지 슬라이드 목록 피드백 UI — bytes 이동 + 의견 입력 + policy 체크 전송 (등록: 2026-07-05, 해결: 2026-07-05, commit: 320d2cd) ✅
 * 목적: `/p/<P>` 슬라이드 목록을 읽기 전용에서 슬라이드 단위 피드백 수집 채널로 확장 — bytes를 title 셀 우측 하단 배지로 이동하고, 그 자리에 의견 textarea + 행 [전송] + [policy] 체크박스(기본 false), 페이지 하단 일괄 전송 바를 추가. policy=true 항목은 프로젝트 L2 정책 인박스까지 반영.
-* plan: `_doc_work/plan/dev-server-feedback_plan.md`
-* task: `_doc_work/tasks/dev-server-feedback_task.md`
+* plan: `_doc_work/z_done/plan/dev-server-feedback_plan.md`
+* task: `_doc_work/z_done/tasks/dev-server-feedback_task.md`
 * 상세:
     - 설계 SSOT: `_doc_arch/dev-server-feedback.md` (UI·API·저장·policy 흐름)
     - 신규 `POST /p/<P>/feedback` (`items[]` 단일 스키마, 행 단건·하단 일괄 공용, do_POST 최초 도입)
@@ -463,7 +463,7 @@
 ## Issue257. note-writer agent 실장 + authoring-pipeline 단계 재번호(9=note-writer, 10=md2tts-txt, 11=외부) (등록: 2026-07-03, 해결: 2026-07-03, commit: e09bb16) ✅
 * 목적: Issue256에서 "4.5" 자리에 표만 등재하고 미구현으로 남겼던 note-writer agent를 실제 구현하고, 오케스트레이터 흐름에 정식 연동. 사용자 지시: note-writer는 md2tts-txt와 포지션이 같음(슬라이드 완전 구성 끝난 이후 시행) — 4.5가 아니라 단계 8(slide 생성) 다음, md2tts-txt 바로 앞자리(신규 단계 9)로 재번호.
 * depends: Issue256
-* plan: `_doc_work/plan/note-writer-agent_plan.md`
+* plan: `_doc_work/z_done/plan/note-writer-agent_plan.md`
 * 상세:
     - 재번호: 4.5(폐기) → 9=note-writer(신규) → 10=md2tts-txt(기존 9에서 이동) → 11=외부 videoMaker(기존 10에서 이동)
     - 영향 파일: `_doc_arch/authoring-pipeline.md`(SSOT) · `.claude/agents/authoring-pipeline.md`(오케스트레이터, 실제 흐름 연동) · `.claude/commands/m2.md` · `.claude/rules/data-access-rules.md` · `Harness.md` · `noteForHuman.md` · `_doc_arch/speaker-notes-design.md`(포지션 재설계) · 기타 "단계 9"/"1~9" 언급 문서 다수
@@ -479,8 +479,8 @@
 
 ## Issue256. 발표자 노트 `{md파일명}_note.md` 분리 관리 — slide-id 매칭 + 빌드 병합 (등록: 2026-07-03, 해결: 2026-07-03, commit: e09bb16) ✅
 * 목적: 발표자 노트를 슬라이드 본문 `.md`에 인라인(`Note:`)하지 않고 `{md파일명}_note.md` 별도 파일로 분리 관리. reveal.js speaker view(`s` 키)가 실제로 노트를 표시하는지는 현재 미구현·미검증 상태(reveal.js notes plugin은 로드되어 있으나 파싱·병합 로직 전무) — 기술적 증명 필요.
-* plan: `_doc_work/plan/speaker-notes_plan.md`
-* task: `_doc_work/tasks/speaker-notes_task.md`
+* plan: `_doc_work/z_done/plan/speaker-notes_plan.md`
+* task: `_doc_work/z_done/tasks/speaker-notes_task.md`
 * 상세:
     - 설계 문서: `_doc_arch/speaker-notes-design.md` (Q&A로 확정 — 매칭 방식: slide id, 파이프라인 편입: 신규 stage `note-writer`)
     - 본 이슈 범위: `#id-{slug}` 디렉티브 파싱 + `lib/notes.js` note.md 파서 + `lib/html-builder.js` 빌드 병합(`<aside class="notes">` 삽입) + aTest 프로젝트 기술 검증
@@ -494,7 +494,7 @@
     - 빌드 중 부수 발견 — `{stem}_note.md`가 별도 챕터로도 렌더되던 문제를 `lib/generate-slides.js`·`lib/generate-epub.js`의 `.md` glob 필터에 `_note.md` 제외 조건 추가로 해결
     - 1차: `<aside class="notes">` 정확 삽입(2줄 노트는 `<p>` 2개 분리) · id 미부여 슬라이드는 `<aside>` 미삽입 · orphan note.md 항목 `console.warn` 정상 발화 · `--lint-deployment aTest` 위반 0건 · 기존 애니메이션 디렉티브 테스트 21/21 통과(회귀 없음)
     - 2차: dev-server 접속 → `s` 키 → speaker view 팝업 즉시 포착 → 스크린샷 3장으로 노트 텍스트 실제 렌더 확인. 스크린샷: `_doc_work/capture/issue256-speaker-view-{notes-check-1,notes-check-2,no-id}.png`
-    - 상세는 `_doc_work/tasks/speaker-notes_task.md` "검증 결과" 섹션, 설계 문서 갱신은 `_doc_arch/speaker-notes-design.md`
+    - 상세는 `_doc_work/z_done/tasks/speaker-notes_task.md` "검증 결과" 섹션, 설계 문서 갱신은 `_doc_arch/speaker-notes-design.md`
     - note-writer agent(stage 4.5)는 계획대로 범위 밖 유지 — 별도 이슈 필요 시 🌱 이슈후보 등록
     - 문서 정정: 2026-07-03 이슈-선후행-정리 작업에서 코드(`lib/notes.js`·`lib/slide-parser.js`·`lib/html-builder.js`)·테스트(`node --test` 회귀 통과)·산출물(`Projects/aTest/markdown/20-speaker-notes-test_note.md` 등) 대조로 완료 재확인 후 🔥 진행 중 → ✅ 완료 이동. 2026-07-06 deploy 세션에서 미커밋 구현분(`lib/notes.js`·`lib/slide-parser.js`·`lib/html-builder.js` + `_note.md` glob 제외)이 commit e09bb16으로 랜딩 → commit: TBD 확정.
 
@@ -579,7 +579,7 @@
 
 ## Issue246. ppt2m2slide 사후 diff 학습 — 변환본 vs 사용자 수정본 차이 자동 추출 (등록: 2026-05-27, 해결: 2026-05-27, commit: 31aa92d) ✅
 * 목적: Issue245 Phase C — ppt2m2slide로 .pptx 변환 후 사용자가 markdown/*.md를 수정한 내용을 원본 변환본과 diff하여 mappings.yml 학습 후보로 추출. ppt2m2slide의 후속 변환 정확도를 점진 향상.
-* plan: `_doc_work/plan/ppt2m2slide-post-diff_plan.md`
+* plan: `_doc_work/z_done/plan/ppt2m2slide-post-diff_plan.md`
 * 결과 (Phase C-1·C-2·C-3·C-4 모두 완료):
     - C-1: `lib/tuner/ppt-post-diff.py` 신규 — line-level diff + 카테고리화 + `data/_proposals/post-convert-<ts>-<cat>.md` 자동 생성
     - C-2: 6종 카테고리(layout_changed·slot_added·image_replaced·mapping_missing·frontmatter_changed·text_corrected) 정의 + 카테고리별 임계치(mapping_missing=1, layout/slot=2, image=3, text=5)
@@ -605,7 +605,7 @@
 
 ## Issue245. 피드백 → `data/<stage>/` 학습 루프 v1 — slide-tuner · ppt2m2slide 사용자 피드백 자동 분류·격리·promotion (등록: 2026-05-27, 해결: 2026-05-27, commit: e53b0bf) ✅
 * 목적: slide-tuner / ppt2m2slide 사용 중 발생하는 사용자 피드백을 forward 단계 표(noteForHuman.md L42-58)의 참조 `data/<stage>/*.yml`에 자동·반자동으로 누적하여, 다음 회차 작업 시 같은 패턴 반복 수정을 회피하는 학습 루프 구축. v1 MVP는 slide-tuner 측 집계기 + promotion 폼까지.
-* plan: `_doc_work/plan/feedback-learning-loop_plan.md`
+* plan: `_doc_work/z_done/plan/feedback-learning-loop_plan.md`
 * 결과 (Phase A·B 완료):
     - Phase A: `lib/tuner/aggregate-feedback.py` 신규 + slide-tuner agent Step 9 — round-N.md 파싱 후 카테고리별 카운트, 임계치 초과 시 `data/_proposals/promotion-<ts>-<cat>.md` 자동 생성
     - Phase B: `lib/tuner/promote-to-data.py` 신규 (list/show/action merge|reject|hold) + Step 10 — AskUserQuestion 카드 컨펌 후 status 갱신 + 카테고리별 머지 가이드 출력
@@ -617,8 +617,8 @@
 
 ## Issue244. slide-tuner — source(PDF/PPTX) ↔ 웹 캡처 side-by-side 일괄 피드백 자동화 (등록: 2026-05-26, 해결: 2026-05-27, commit: 3ae083a) ✅
 * 목적: ppt2m2slide 변환 후 사용자가 매번 스크린샷 + CSV로 피드백을 주는 수동 워크플로우를, 사용자가 폼 한 장으로 N장 슬라이드의 의견을 일괄 제출하면 agent가 자동 수정 + 재빌드 + 재확인까지 반복하는 학습 루프로 자동화
-* plan: `_doc_work/plan/slide-tuner_plan.md`
-* task: `_doc_work/tasks/slide-tuner_task.md`
+* plan: `_doc_work/z_done/plan/slide-tuner_plan.md`
+* task: `_doc_work/z_done/tasks/slide-tuner_task.md`
 * arch: `_doc_arch/slide-tuner.md`
 * round-1: `_doc_work/tuner/1779801709/round-1.md`
 * 상세:
@@ -762,7 +762,7 @@
 
 ## Issue235. 슬라이드 dev-server + 파일 단위 배포 rule (등록: 2026-05-25, 해결: 2026-05-25, commit: 6a65b1d) ✅
 * 목적: `file://` 단독 동작(배포 호환)을 SSOT로 유지하면서 개발 중 HTTP server 자동 시동으로 Playwright·curl 헤드리스 검증 채널 확보. 빌드 산출물의 파일 단위 배포 가능성을 rule로 명시·검증.
-* plan: `_doc_work/plan/slide-dev-server_plan.md`
+* plan: `_doc_work/z_done/plan/slide-dev-server_plan.md`
 * 상세:
     - 기존 AppleScript Chrome 제어는 시각 확인만 가능, 헤드리스 검증 불가 (curl/Playwright 채널 부재)
     - Playwright MCP는 `file://` 차단 → HTTP server 별도 시동 필요
@@ -802,7 +802,7 @@
 
 ## Issue233. ppt2m2slide data 폴더 학습 — BasicKnowledgeForAI_small.pptx 슬라이드별 분석 + office_rainbow palette + PPT 보존 정책 보강 (등록: 2026-05-25, 해결: 2026-05-25, commit: 41b5e5a) ✅
 * 목적: `/Users/nowage/Desktop/BasicKnowledgeForAI_small.pptx` (23슬라이드)를 슬라이드별 PNG 캡처 후 m2slide 빌드 산출물과 1:1 비교하여 ppt2m2slide 단발 실행만으로 원본과 ≥80% 시각 유사 산출물이 나오도록 data 카탈로그 학습. 단발 PPT 변환 정확도 향상이 산출물.
-* plan: `_doc_work/plan/ppt2m2slide_data_training_plan.md`
+* plan: `_doc_work/z_done/plan/ppt2m2slide_data_training_plan.md`
 * 상세:
     - 입력: BasicKnowledgeForAI_small.pptx (23장 — 부록1 Markdown 17장 + 부록2 Linux 5장 + 빈 슬라이드 1장)
     - 기준선 캡처: PowerPoint sandbox 제약 → libreoffice headless → PDF → macOS Quartz PyObjC 렌더로 PNG 23장 생성
@@ -889,8 +889,8 @@
 ## Issue214. ppt2m2slide 에이전트 설계 — 기존 PPT를 m2slide 프로젝트로 역변환 (등록: 2026-05-24, 해결: 2026-05-24, commit: b897367) ✅
 * 목적: m2slide가 미완성이라 그동안 m2slide → PPT export → PPT 수정 → 발표 워크플로우로 작업했음. PPT 수정분이 m2slide로 환류되지 않아 매번 같은 PPT 작업을 반복. 기존 PPT(.pptx)를 m2slide 프로젝트(`Projects/<Name>/`)로 역변환하는 agent를 신설하여 PPT 자산을 m2slide 카탈로그로 흡수.
 * depends: Issue217 ✅
-* plan: `_doc_work/plan/ppt2m2slide_plan.md`
-* task: `_doc_work/tasks/ppt2m2slide_task.md`
+* plan: `_doc_work/z_done/plan/ppt2m2slide_plan.md`
+* task: `_doc_work/z_done/tasks/ppt2m2slide_task.md`
 * 구현:
     - 신규: `.claude/agents/ppt2m2slide.md` (model:opus, color:magenta, tools:Read/Write/Edit/Bash/Glob) — info-filler/agenda-designer 데이터-주도 패턴 차용
     - 신규: `data/ppt2m2slide/heuristics.yml` (layout 판정·mode 임계값·palette 매칭·체크포인트 메시지) + `mappings.yml` (SmartArt→htmlart·chart→component·media·fallback)
@@ -1211,8 +1211,8 @@
 
 ## Issue210. 컬러 팔레트 시스템 — theme variant + htmlArt 객체 단위 컬러 override (등록: 2026-05-24, 해결: 2026-05-24, commit: 83dfe2a) ✅
 * 목적: PowerPoint Office Theme 대응 — theme별 N색 팔레트(`Accent 1-6 + Text/Bg + Surface`) 도입으로 (1) `_config.yml palette:` 키로 theme 컬러 variant 교체, (2) htmlArt 블록 단위 `{.palette-X}`/`{.accent-N}` override. pie 슬라이드 teal 톤 하드코딩 동반 정리.
-* plan: `_doc_work/plan/color-palette_plan.md`
-* task: `_doc_work/tasks/color-palette_task.md`
+* plan: `_doc_work/z_done/plan/color-palette_plan.md`
+* task: `_doc_work/z_done/tasks/color-palette_task.md`
 * arch: `_doc_arch/color-palette.md`
 * 상세:
     - 신규 CSS 변수 9 슬롯: `--m2-accent-1`~`--m2-accent-6` + `--m2-text` + `--m2-bg` + `--m2-surface`
@@ -1233,7 +1233,7 @@
 
 ## Issue207. Simulation View(p5.js) 컴포넌트 추가 (등록: 2026-05-24, 해결: 2026-05-24, commit: 4e75e96, cf8b76e, e42ae02, 4752f0a, 00b5435, fc0262a, 9e5c957) ✅
 * 목적: 슬라이드에 인터랙티브 시뮬레이션(자율 움직임·마우스 반응·입자 시스템)을 작성할 수 있도록 p5.js 컴포넌트 추가. component-slide-visual.md 119행 "Simulation View ❌ 적용 예정(1순위)" 해소
-* plan: `_doc_work/plan/simulation-p5_plan.md`
+* plan: `_doc_work/z_done/plan/simulation-p5_plan.md`
 * 카테고리: Generator + Frontend + Asset
 * 구현:
     - `data/component-libraries.yml` 에 p5 엔트리 등재 (conditional CDN + p5_dispatch 훅, p5@1.11.2)
@@ -1493,7 +1493,7 @@
 
 ## Issue184. 시각화 4도구 통합 — React artifact·HTML artifact(WordArt)·excalidraw·d3 콘텐츠 기반 자동 선택 (등록: 2026-05-21, 해결: 2026-05-21, commit: 2df139e) ✅
 * 목적: media-creater agent가 슬라이드 본문 성격에 따라 4종 시각화 도구를 `data/media-creater/tools.yml` 기준으로 자동 선택하도록 통합. React artifact(기본)·HTML artifact(WordArt 장식 텍스트)·excalidraw(복잡 다이어그램)·d3(그래프)를 콘텐츠 패턴에 매핑.
-* plan: `_doc_work/plan/visualization-4tools_plan.md`
+* plan: `_doc_work/z_done/plan/visualization-4tools_plan.md`
 * 카테고리: Generator (`markdown.js` fenced) + Asset (component-hooks, `component-libraries.yml`) + Theme (WordArt CSS) + Project (media-creater `tools.yml`·agent)
 * depends: Issue183 ✅ (diagram/component 슬롯 분리)
 * 구현 명세 (해결):
@@ -1506,7 +1506,7 @@
 
 ## Issue185. authoring-pipeline 정책 글로벌↔프로젝트 cascade — L1 data/<단계>/*.yml + L2 Projects/<N>/_pipeline/policy/<단계>.yml (등록: 2026-05-21, 해결: 2026-05-21, commit: 050a60c, 586d339, 825bcbe, 3874521, cbe0cf9) ✅
 * 목적: 파이프라인 정책(`data/<단계>/*.yml`)이 글로벌 전용이라 "이 프로젝트만 카드를 넓게" 같은 프로젝트별 요청을 영구 저장할 자리가 없던 문제 해소. `_config.yml`이 쓰는 글로벌↔프로젝트 cascade 패턴을 정책 축에 도입. 렌더 설정·Info.md 불변.
-* plan: `_doc_work/plan/pipeline-policy-cascade_plan.md`
+* plan: `_doc_work/z_done/plan/pipeline-policy-cascade_plan.md`
 * arch: `_doc_arch/pipeline-policy-cascade.md`
 * 카테고리: Project (authoring-pipeline 정책 cascade) + Generator (SCAR 데이터 로드 절차)
 * 상세:
@@ -1542,8 +1542,8 @@
 
 ## Issue182. 슬라이드 구성요소 라이브러리 Phase 2 — 지도·인포그래픽 (등록: 2026-05-20, 해결: 2026-05-20, commit: ef8baef) ✅
 * 목적: Issue180 Phase 0 인프라 위에 데이터 시각화 구성요소 2종(지도·인포그래픽)을 적용. `component-libraries.yml`의 leaflet `planned → applied`, d3 `planned → applied`(인포그래픽 직접 사용 경로 신설로 `🚧 → ✅` 승격).
-* plan: `_doc_work/plan/slide-components_plan.md`
-* task: `_doc_work/tasks/slide-components_task.md`
+* plan: `_doc_work/z_done/plan/slide-components_plan.md`
+* task: `_doc_work/z_done/tasks/slide-components_task.md`
 * depends: Issue180 (Phase 0 인프라)
 * 카테고리: Generator (`markdown.js` fenced 디스패처 generic화) + Asset (component-hooks)
 * 상세:
@@ -1557,8 +1557,8 @@
 
 ## Issue181. 슬라이드 구성요소 라이브러리 Phase 1 — 수식·아이콘·차트 (등록: 2026-05-20, 해결: 2026-05-20, commit: ef8baef) ✅
 * 목적: Issue180 Phase 0 인프라(레지스트리·generic 디스패처) 위에 강의 최빈 구성요소 3종(수식·아이콘·차트)을 적용. `component-libraries.yml`의 katex·fontawesome·chartjs를 `planned → applied` 전환.
-* plan: `_doc_work/plan/slide-components_plan.md`
-* task: `_doc_work/tasks/slide-components_task.md`
+* plan: `_doc_work/z_done/plan/slide-components_plan.md`
+* task: `_doc_work/z_done/tasks/slide-components_task.md`
 * depends: Issue180 (Phase 0 인프라)
 * 카테고리: Generator (`markdown.js` 인라인 변환·fenced 디스패처) + Asset (component-hooks)
 * 상세:
@@ -1571,8 +1571,8 @@
 
 ## Issue180. 슬라이드 구성요소 라이브러리 Phase 0 — 레지스트리·generic fenced 디스패처 인프라 (등록: 2026-05-20, 해결: 2026-05-20, commit: ef8baef) ✅
 * 목적: 시각화 라이브러리 표의 미적용 항목 중 강의 코어 5종(수식·차트·아이콘·지도·인포그래픽)을 적용하기 위한 기반 인프라 구축. Phase 0는 레지스트리 + generic fenced 디스패처를 **신규 모듈·신규 경로로만** 추가하여 기존 코드(mermaid 경로·기존 4종 CDN 주입)를 비파괴로 유지. Phase 1·2의 단독 선행 의존.
-* plan: `_doc_work/plan/slide-components_plan.md`
-* task: `_doc_work/tasks/slide-components_task.md`
+* plan: `_doc_work/z_done/plan/slide-components_plan.md`
+* task: `_doc_work/z_done/tasks/slide-components_task.md`
 * 카테고리: Generator (`html-builder.js` 디스패처) + Build (레지스트리 인프라) + Asset (`component-libraries.yml`)
 * 상세:
     - `_doc_arch/component-libraries.md` 신규 — 구현 아키텍처 SSOT (레지스트리 스키마·문법 컨벤션·디스패처 contract·파이프라인 배정)
@@ -1754,7 +1754,7 @@
 * 산출물:
     - `.claude/agents/info-filler.md` — 3개 신규 절(데이터 로드 / 적용 알고리즘 / 확장 지점) 추가 + 본문 하드코딩(7개 필드 표·선택 옵션 4개 섹션 명세) 제거 → yml 참조로 대체
     - `data/info-filler/questions.yml` — v2 스키마 9개 최상위 키 (`planning`/`build_options`/`media_options`/`output_options`/`dependencies`/`tts_text_rules`/`validation_rules`/`interview_policy`/`report_template`)
-    - `_doc_work/tasks/authoring-pipeline_task.md` — 단계 1 SCAR 전환 표 ⏳ → ✅ Issue169 갱신
+    - `_doc_work/z_done/tasks/authoring-pipeline_task.md` — 단계 1 SCAR 전환 표 ⏳ → ✅ Issue169 갱신
 * 검증:
     - 단위 7/7 PASS (yml 스키마 + SCAR 절 존재 + 하드코딩 제거 확인)
     - 회귀 빌드 OK (`./m2slide.sh m2SlideStyle1_single`)
@@ -1769,7 +1769,7 @@
     - 구 v1 deprecation stub `_doc_arch/authoring-pipeline.md` 삭제
     - 모든 참조 일괄 갱신 (plan/task/report/SCAR/Issue.md)
     - 본문 v1/v2 라벨 정리 (frontmatter name·H2·표 컬럼·후보 라벨)
-    - report: `_doc_work/report/authoring-pipeline-naming-unification_issue168_report.md`
+    - report: `_doc_work/z_done/report/authoring-pipeline-naming-unification_issue168_report.md`
 * 검증:
     - 단위 7/7 PASS
     - 회귀 빌드 OK
@@ -1786,7 +1786,7 @@
     - `_doc_arch/authoring-pipeline.md` 확장 — 단계 1~9 상세 명세 통합 (자기-완결)
     - SCAR 갱신: `.claude/commands/m2.md`, `.claude/agents/authoring-pipeline.md` — v1 fallback 라벨 제거
     - plan/task: "v1 시대 참고" → "보조 arch" 절로 재정의
-    - report: `_doc_work/report/authoring-pipeline-v1-deprecation_issue167_report.md` 신규
+    - report: `_doc_work/z_done/report/authoring-pipeline-v1-deprecation_issue167_report.md` 신규
 * 검증:
     - 단위 7/7 PASS
     - v1 ref 잔존 = deprecation notice·역사적 기록(report) 한정
@@ -1796,9 +1796,9 @@
 * 목적: Issue157 umbrella를 승계하여 Issue164(`/m2` 라우터) + Issue166(v2 인프라) 완료 후의 매핑 기준으로 plan/task 재정렬.
 * depends: Issue166 ✅ (commit dac9db9)
 * 산출물:
-    - `_doc_work/plan/authoring-pipeline_plan.md` 갱신 — v2 진입점 절 + 단계별 매핑 표에 data 폴더/artifacts 경로/SCAR v2 전환 컬럼 추가
-    - `_doc_work/tasks/authoring-pipeline_task.md` 갱신 — v2 SCAR 전환 추적 표 신설
-    - `_doc_work/report/authoring-pipeline_issue165_report.md` 신규
+    - `_doc_work/z_done/plan/authoring-pipeline_plan.md` 갱신 — v2 진입점 절 + 단계별 매핑 표에 data 폴더/artifacts 경로/SCAR v2 전환 컬럼 추가
+    - `_doc_work/z_done/tasks/authoring-pipeline_task.md` 갱신 — v2 SCAR 전환 추적 표 신설
+    - `_doc_work/z_done/report/authoring-pipeline_issue165_report.md` 신규
 * 후속:
     - 6개 SCAR(info-filler, agenda-designer, md-builder, media-creater, layout-selector, slot-designer) v2 패턴 전환 후속 이슈 (각 단계별)
     - 본 umbrella는 후속 이슈 종결 시마다 v2 전환 추적 표 ⏳ → ✅ 갱신 의무
@@ -1813,8 +1813,8 @@
     - `lib/pipeline-history.js` — append-only 로그
     - `lib/pipeline-artifacts.js` — 단계별 스냅샷
     - `.claude/commands/m2.md`, `.claude/agents/authoring-pipeline.md`, `.claude/agents/refs-collector.md` 갱신 (refs-collector는 v2 패턴 reference)
-    - `_doc_work/plan/authoring-pipeline-v2_plan.md`, `_doc_work/tasks/authoring-pipeline-v2_task.md`
-    - report: `_doc_work/report/authoring-pipeline-v2_issue166_report.md`
+    - `_doc_work/z_done/plan/authoring-pipeline-v2_plan.md`, `_doc_work/z_done/tasks/authoring-pipeline-v2_task.md`
+    - report: `_doc_work/z_done/report/authoring-pipeline-v2_issue166_report.md`
 * 검증:
     - 단위 7/7 PASS (`lib/__tests__/pipeline-v2.test.js`)
     - 통합 `Projects/v2test/` end-to-end — state.yml/history.md/artifacts/ 정상 생성
@@ -1846,7 +1846,7 @@
 ## Issue157. authoring-pipeline 단계 1~9 전체 통합 추적 umbrella task (등록: 2026-05-17, 해결: 2026-05-18, 승계: Issue165) ✅
 * 목적: `_doc_arch/authoring-pipeline.md` 10단계 중 m2slide 책임 영역(단계 1~9) 전체 구현 상태를 단일 산출물에서 추적하는 umbrella plan/task 신규.
 * 결과: Issue164 `/m2` 라우터 커맨드 신규로 운영 진입점이 orchestrator agent에서 라우터 subcommand로 전환됨에 따라 본 umbrella는 Issue165로 승계. 매핑 표·추적 정책은 Issue165에서 `/m2` subcommand 컬럼 추가로 재정렬.
-* 산출물: `_doc_work/plan/authoring-pipeline_plan.md`, `_doc_work/tasks/authoring-pipeline_task.md` (Issue165가 계속 갱신)
+* 산출물: `_doc_work/z_done/plan/authoring-pipeline_plan.md`, `_doc_work/z_done/tasks/authoring-pipeline_task.md` (Issue165가 계속 갱신)
 * 카테고리: Project (nPTiR 메타 추적)
 * 종결 사유: 운영 진입점 변경에 따른 추적 기준 재수립 → Issue165 승계
 
@@ -1907,8 +1907,8 @@
 
 ## Issue155. m2slide layout-selector LLM agent 구현 (단계 6) (등록: 2026-05-17, 해결: 2026-05-17, commit: 4d82d13) ✅
 * 목적: `_doc_arch/authoring-pipeline.md` 단계 6 (layout selector)를 LLM agent로 구현. 슬라이드 소스 `.md` → `.ppt.md` 파생본 변환, 각 슬라이드에 `#layout-*` 메타 주입. PowerPoint Designer 추천 능력을 markdown SSOT + reveal.js 출력에 이식.
-* plan: `_doc_work/plan/layout-selector-agent_plan.md`
-* task: `_doc_work/tasks/layout-selector-agent_task.md`
+* plan: `_doc_work/z_done/plan/layout-selector-agent_plan.md`
+* task: `_doc_work/z_done/tasks/layout-selector-agent_task.md`
 * depends: Issue154 ✅ (commit 605e479)
 * 카테고리: Generator (agent)
 * 해결:
@@ -1935,8 +1935,8 @@
 
 ## Issue154. theme HTML layout 파일에 description frontmatter 주입 (등록: 2026-05-17, 해결: 2026-05-17, commit: 605e479) ✅
 * 목적: `theme/{default,default_lec}/layouts/*.html` 각 layout에 표준화된 메타(description, recommended_for, slots, example)를 HTML 주석 `<!-- @meta ... -->` 형식으로 주입. 후속 Issue155 layout-selector LLM agent의 layout discovery 입력 품질 보장 선행 작업.
-* plan: `_doc_work/plan/layout-description-frontmatter_plan.md`
-* task: `_doc_work/tasks/layout-description-frontmatter_task.md`
+* plan: `_doc_work/z_done/plan/layout-description-frontmatter_plan.md`
+* task: `_doc_work/z_done/tasks/layout-description-frontmatter_task.md`
 * 카테고리: Theme
 * 해결:
     - `lib/layout-meta-parser.js` 신규 — zero-dep mini-YAML parser (parseLayoutMeta/loadAllLayouts), 메타 누락 시 silent fallback, YAML 오류 시 throw
@@ -2198,8 +2198,8 @@
 ## Issue141. _contents head_left/head_right 시스템 슬롯 + outline depth + breadcrumb (등록: 2026-05-10, 해결: 2026-05-10, commit: 7f9a416..e79357a) ✅
 * 목적: `_contents` layout 상단에 outline 컨텍스트를 좌/우 분리 자동 표시. 발표 도중 청중이 현재 챕터 위치를 시각화. d{N}/now/none 옵션 + breadcrumb 알고리즘 + head_breadcum master toggle.
 * design: `_doc_arch/head.md` (영속 SSOT)
-* plan: `_doc_work/plan/head-slots-contents-layout_plan.md`
-* task: `_doc_work/tasks/head-slots-contents-layout_task.md`
+* plan: `_doc_work/z_done/plan/head-slots-contents-layout_plan.md`
+* task: `_doc_work/z_done/tasks/head-slots-contents-layout_task.md`
 * 해결:
     - 신규 모듈 `lib/_internal/head-resolver.js` — `_resolveHeadSlot(option, otherOption, outlinePath, separator, headBreadcum)` 순수 함수
     - `lib/agenda.js` — `getOutlinePath(fileName, agendaPath)` 함수 추가 (현재 head-bar에서는 미사용, 향후 활용 여지)
@@ -2740,8 +2740,8 @@
 ## Issue70. 키 네비게이션 체계 정리 — Single ←·Chapter ↑·Chapter 챕터 간 ← (등록: 2026-05-03, 해결: 2026-05-03, commit: fa43351) ✅
 * 목적: m2slide 키보드(swipe/drag 포함) 네비게이션을 페이지 계층 기반 단일 매트릭스로 정리하고, 사용자 보고 4건(Single ↑/←, Chapter ↑/←) 해결
 * design: `_doc_arch/key_navigation.md`
-* plan: `_doc_work/plan/key_navigation_plan.md`
-* task: `_doc_work/tasks/key_navigation_task.md`
+* plan: `_doc_work/z_done/plan/key_navigation_plan.md`
+* task: `_doc_work/z_done/tasks/key_navigation_task.md`
 * 카테고리: Frontend, Generator
 * 복잡도: 중간 (변경 파일 2개, ↑ 검증·prev chapter lookup 신규)
 * 선행 이슈: Issue51 (swipe/drag), Issue55 (3페이지 모델), Issue57 (Agenda/TOC ←)
@@ -2889,7 +2889,7 @@
 
 ## Issue65. slide_ratio: none 값 제거 — 유효값 단일화 (16:9 / 3:2 / fill) (등록: 2026-05-03, 해결: 2026-05-03, commit: 9c83d87, 201eeba) ✅
 * 목적: Issue63 이후 `none`이 `16:9`의 단순 alias로 전락. 유효값을 명확히 하기 위해 `none` 제거 + 기본값을 `16:9`로 명시. `fill`은 비율 무제약(viewport 채움) 단독 의미 유지.
-* plan: `_doc_work/plan/slide_ratio_none_removal_plan.md`
+* plan: `_doc_work/z_done/plan/slide_ratio_none_removal_plan.md`
 * 카테고리: Build / Generator
 * 복잡도: 중간 (plan 필수, task/report 생략)
 * 선행 이슈: Issue63 (slide_ratio 기반 슬라이드 레이아웃 크기 체계 정립)
@@ -2919,9 +2919,9 @@
 
 ## Issue63. slide_ratio 기반 슬라이드 레이아웃 크기 체계 정립 (등록: 2026-05-02, 해결: 2026-05-03, commit: c34d560, 33d4cc1) ✅
 * 목적: `_config.yml`의 `slide_ratio` 값을 핵심 설계 기준으로 삼아 슬라이드 전 영역(contents 높이·너비·패딩)의 크기를 수학적으로 일관되게 결정
-* plan: `_doc_work/plan/slide_ratio_layout_plan.md`
-* task: `_doc_work/tasks/slide_ratio_layout_task.md`
-* report: `_doc_work/report/slide_ratio_layout_issue63_report.md`
+* plan: `_doc_work/z_done/plan/slide_ratio_layout_plan.md`
+* task: `_doc_work/z_done/tasks/slide_ratio_layout_task.md`
+* report: `_doc_work/z_done/report/slide_ratio_layout_issue63_report.md`
 * 카테고리: Theme / Build
 * 복잡도: 복잡
 * 선행 이슈: Issue62 (cover-title 반응형 크기 조정 및 CSS 구현 설계 문서화)
@@ -2955,9 +2955,9 @@
 
 ## Issue64. lib/css/base.css 도입 — _config.yml + slide.css 슬림화 (KISS·DRY) (등록: 2026-05-02, 해결: 2026-05-03, commit: 7a10b81, 028284e) ✅
 * 목적: 두 테마(`default`/`nowage`) `slide.css`가 1422줄 100% 동일한 상태를 해소. 공통 CSS를 `lib/css/base.css`로 추출하여 `_config.yml` style 섹션 + `slide.css`를 슬림화하고 KISS·DRY 원칙 회복.
-* plan: `_doc_work/plan/css_refactoring_plan.md`
-* task: `_doc_work/tasks/css_refactoring_task.md`
-* report: `_doc_work/report/css_refactoring_issue64_report.md`
+* plan: `_doc_work/z_done/plan/css_refactoring_plan.md`
+* task: `_doc_work/z_done/tasks/css_refactoring_task.md`
+* report: `_doc_work/z_done/report/css_refactoring_issue64_report.md`
 * 카테고리: Theme / Build
 * 복잡도: 복잡 (plan 필수, 7 Phase 다중 단계, 두 테마 + 세 프로젝트 회귀 검증)
 * 선행 이슈: Issue62 (cover-title clamp + min-height) — 완료됨
@@ -3010,7 +3010,7 @@
 
 ## Issue60. generate-slides.js 모듈 분리 리팩터링 (등록: 2026-05-02, 해결: 2026-05-02, commit: 05c1299) ✅
 * 목적: 3202줄 단일 파일을 7개 모듈(module.exports)로 분리하여 유지보수성 향상
-* plan: `_doc_work/plan/m2slide_lib_plan.md`
+* plan: `_doc_work/z_done/plan/m2slide_lib_plan.md`
 * 카테고리: Generator
 * 해결:
     - 7개 모듈 추출: utils.js / config.js / layout.js / agenda.js / markdown.js / slide-parser.js / html-builder.js
@@ -3089,8 +3089,8 @@
 * 목적: chapter/single 모드 출력 비대칭 해소 — 두 모드 모두 Cover Page (`index.html`) + Agenda Page (`agenda.html`) + (chapter 한정) TOC Page 3페이지 모델로 통일
 * 카테고리: Generator + Theme + Frontend
 * 복잡도: 복잡 (plan + task 필수, CSS 인접 영역, 키 네비게이션 재정의 포함)
-* plan: `_doc_work/plan/chapter-single-mode-unify_plan.md`
-* task: `_doc_work/tasks/chapter-single-mode-unify_task.md`
+* plan: `_doc_work/z_done/plan/chapter-single-mode-unify_plan.md`
+* task: `_doc_work/z_done/tasks/chapter-single-mode-unify_task.md`
 * design: `_doc_arch/chapter-single-mode.md`
 * 상세:
     - 현재 single 모드는 `{ProjectName}.html` 단독 + `#toc-container` 오버레이로 마크맵 표시. chapter 모드는 `index.html`에 마크맵 + 다운로드 헤더(인라인 CSS).
@@ -3451,8 +3451,8 @@
 
 ## Issue36. theme/{name}/ + HTML 템플릿 layout 시스템 도입 (2026-05-01 해결, commit: 687ce22) ✅
 * **목적**: `resource/` 단일 CSS 구조를 `theme/{name}/` 디렉토리 기반 + HTML 템플릿 layout 시스템으로 전환
-* plan: `_doc_work/plan/theme_plan.md`
-* task: `_doc_work/tasks/theme_task.md`
+* plan: `_doc_work/z_done/plan/theme_plan.md`
+* task: `_doc_work/z_done/tasks/theme_task.md`
 * design: `_doc_arch/theme.md`
 * **상세**:
     - `resource/slide.css` → `theme/default/slide.css` 이동
@@ -3499,7 +3499,7 @@
 
 ## Issue34. 다분할 레이아웃 마크다운 단축 표기 지원 (2026-05-01 해결, commit: bfdd1c0) ✅
 * **목적**: 좌/우·상/하·N분할·그리드 레이아웃을 최소 지시자 마크다운으로 작성 가능하게 함
-* **task**: `_doc_work/tasks/layout-multi-column_task.md`
+* **task**: `_doc_work/z_done/tasks/layout-multi-column_task.md`
 * **design**: `_doc_arch/layout.md`
 * **상세**:
     - 1단계 휴리스틱: 한 슬라이드에 리스트+이미지 공존 시 좌/우 자동 2분할 (raw `<div>`가 있으면 자동 스킵)

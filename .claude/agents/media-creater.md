@@ -297,6 +297,6 @@ assets:
 * SSOT yml: [`data/media-creater/tools.yml`](../../data/media-creater/tools.yml) (도구·패턴·검증)
 * m2slide 마크다운 규칙: [`../rules/md-m2slide-rules.md`](../rules/md-m2slide-rules.md)
 * 파이프라인: [`_doc_arch/authoring-pipeline.md`](../../_doc_arch/authoring-pipeline.md) 단계 5
-* umbrella task: [`_doc_work/tasks/authoring-pipeline_task.md`](../../_doc_work/tasks/authoring-pipeline_task.md)
+* umbrella task: [`_doc_work/z_done/tasks/authoring-pipeline_task.md`](../../_doc_work/z_done/tasks/authoring-pipeline_task.md)
 * v2 패턴 reference: [`info-filler.md`](info-filler.md) (Issue169), [`agenda-designer.md`](agenda-designer.md) (Issue170)
 * 담당 이슈: Issue162 (운영) / Issue172 (v2 데이터-주도 전환)

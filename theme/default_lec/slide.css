@@ -64,8 +64,10 @@
   z-index: 100;            /* layout 자식(flex item) 위로 — 하단 가로선이 본문에 가려지지 않도록 */
 }
 
-.reveal section[class*="layout-"]::before { top: 12px; }
-.reveal section[class*="layout-"]::after  { bottom: 12px; }
+/* 12px → 22px (2026-07-18): 하단 선 바깥 띠가 좁아 라이선스 뱃지와 겹치던 문제.
+   theme/default 와 동일 값 유지 (parity). */
+.reveal section[class*="layout-"]::before { top: 22px; }
+.reveal section[class*="layout-"]::after  { bottom: 22px; }
 
 /* 모든 layout-* section min-height:100% (default 테마 동등 포팅) — flex 높이 chain 확보.
    default_lec엔 누락되어 있어 contents-body flex-grow가 definite height를 못 받음 →

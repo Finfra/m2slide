@@ -677,17 +677,31 @@ ASCII 와이어프레임을 변환 없이 **원문 그대로** D2Coding 모노�
 
 # 발표자 노트
 
-reveal.js 표준 사용:
+노트는 슬라이드 본문 `.md`와 **분리된 `{원본파일명}_note.md`** 파일로 관리한다. 슬라이드에 `#id-{slug}` 디렉티브로 식별자를 부여하고, note 파일의 `## {slug}` 블록이 빌드 시 `<aside class="notes">`로 병합된다. 설계 SSOT: [`_doc_arch/speaker-notes-design.md`](../../_doc_arch/speaker-notes-design.md).
+
+슬라이드 본문 (`markdown/04-media.md`):
 
 ```markdown
-## 슬라이드
+## 핵심 기능
+#id-core-features
 
-* 내용
-
-Note: 발표 시 참고할 메모. 슬라이드에 표시 안 됨.
+* 4종 출력 형식
+* 발표를 돕는 요소
 ```
 
-* `S` 키로 발표자 모드 진입 시 표시
+노트 파일 (`markdown/04-media_note.md`):
+
+```markdown
+## core-features
+이 슬라이드는 4종 산출물 관계를 먼저 짚고 시작.
+청중에게 "왜 4종이 필요한가" 질문 던지고 답 유도.
+```
+
+* `S` 키로 발표자 모드 진입 시 표시. 노트 반영은 **재빌드 후**에 보임(`./m2slide.sh <Name>`)
+* `{slug}` 화이트리스트: `^[a-z][a-z0-9-]*$` (영소문자·숫자·하이픈). **대문자·한글 헤더는 노트로 인식되지 않고 경고도 없이 무시됨**
+* note 파일은 선택 — 없으면 스킵(에러 아님). Frontmatter 불필요
+* 노트 초안 자동 생성은 authoring-pipeline 단계 9 `note-writer` agent 담당
+* ❌ **reveal.js 표준 `Note:` 문법은 m2slide 미지원** — 파서에 해당 처리가 없어 본문 텍스트로 그대로 렌더된다. `<aside class="notes">` 직접 작성도 마크다운 파서를 거치므로 사용하지 말 것
 
 # 작성 시 체크리스트
 

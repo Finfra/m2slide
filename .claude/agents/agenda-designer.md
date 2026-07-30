@@ -261,6 +261,6 @@ orchestrator `--no-checkpoint` 미지정 시 `checkpoint.template` 메시지 출
 * 슬라이드 공통 규칙: [`~/.claude/rules/md-slide-rules.md`](../../../../../.claude/rules/md-slide-rules.md)
 * 파이프라인: [`_doc_arch/authoring-pipeline.md`](../../_doc_arch/authoring-pipeline.md) 단계 3
 * 입력 SSOT: [`_doc_arch/info.md`](../../_doc_arch/info.md)
-* umbrella task: [`_doc_work/tasks/authoring-pipeline_task.md`](../../_doc_work/tasks/authoring-pipeline_task.md)
+* umbrella task: [`_doc_work/z_done/tasks/authoring-pipeline_task.md`](../../_doc_work/z_done/tasks/authoring-pipeline_task.md)
 * v2 패턴 reference: [`info-filler.md`](info-filler.md) (Issue169), [`refs-collector.md`](refs-collector.md) (Issue166)
 * 담당 이슈: Issue160 (운영) / Issue170 (v2 데이터-주도 전환)

@@ -10,8 +10,8 @@ model: sonnet
 > ⚠️ 본 agent는 m2slide 프로젝트 로컬. 글로벌 SCAR 아님.
 >
 > * 설계 SSOT: `_doc_arch/slide-tuner.md`
-> * plan: `_doc_work/plan/slide-tuner_plan.md`
-> * task: `_doc_work/tasks/slide-tuner_task.md`
+> * plan: `_doc_work/z_done/plan/slide-tuner_plan.md`
+> * task: `_doc_work/z_done/tasks/slide-tuner_task.md`
 > * 정책: `data/slide-tuner/patterns.yml`
 
 # 호출 형식

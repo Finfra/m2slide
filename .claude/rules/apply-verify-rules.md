@@ -276,6 +276,21 @@ file:///<abs_path>/Projects/{Name}/slide/{chapter}.html?fwd=1#/N
 
 상세 룰: [`file-deployment-rules.md`](file-deployment-rules.md). 핵심: 빌드 산출물은 임의 단일 `.html` 파일 + `img/` 만으로 `file://` 동작해야 함. server-only 기능(`localhost` 하드코딩, server-side include, dynamic endpoint, WebSocket, SSE, POST endpoint) 금지.
 
+## 4.6 라이선스 뱃지 대비 검증 (Issue292)
+
+**theme CSS 또는 신규 theme을 건드린 경우 의무.** 라이선스 뱃지는 테마 변수 `--m2-license-fg`를 재사용하므로, 테마 색을 바꾸면 뱃지 글자가 배경에 묻혀도 빌드는 성공한다 — 육안 확인만으로는 놓친다.
+
+```bash
+./m2slide.sh --lint-license
+```
+
+* 검사 내용: 전 theme의 `--m2-license-fg`(뱃지 글자색) ↔ `.reveal` 배경 WCAG 2.1 대비비. 기준 **4.5:1**
+* 트리거: `theme/*/slide.css`·`theme/_shared/*.css`·팔레트 CSS 수정, **신규 theme 추가**, 라이선스 뱃지 스타일 변경
+* 위반 발견 → 색 조정 후 재lint 통과까지 진행 (기준 미달인 채로 커밋 금지)
+* 상세 설계: [`../../_doc_arch/license-attribution.md`](../../_doc_arch/license-attribution.md)
+
+> lint subcommand 전체 목록: `--lint-deployment`(§4.5) · `--lint-license`(본 절) · `--lint-data`([`data-access-rules.md`](data-access-rules.md)) · `--lint-config`·`--lint-layouts`([`../../_doc_arch/theme_layout.md`](../../_doc_arch/theme_layout.md))
+
 ## 5. 결과 보고
 
 사용자에게 다음을 한 묶음으로 보고:

@@ -171,6 +171,6 @@ Projects/<Name>/                # 대상 프로젝트 경로 (필수)
 * 단계 6 agent: [`./layout-selector.md`](layout-selector.md)
 * 단계 9 agent: [`./note-writer.md`](note-writer.md) — data: [`../../data/note-writer/patterns.yml`](../../data/note-writer/patterns.yml)
 * 단계 10 agent: [`./md2subs.md`](md2subs.md), [`./txt2tts.md`](txt2tts.md), [`./md2tts.md`](md2tts.md)
-* umbrella plan: [`../../_doc_work/plan/authoring-pipeline_plan.md`](../../_doc_work/plan/authoring-pipeline_plan.md)
+* umbrella plan: [`../../_doc_work/z_done/plan/authoring-pipeline_plan.md`](../../_doc_work/z_done/plan/authoring-pipeline_plan.md)
 * 글로벌 SCAR 변경 규칙: `~/.claude/rules/global-scar-change-rules.md`
 * Opus 4.7 실행 제약: `~/.claude/rules/opus-4-7-execution-rules.md`

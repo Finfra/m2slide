@@ -75,8 +75,11 @@
   z-index: 100;            /* layout 자식 요소(flex item) 위로 — 하단 가로선이 본문 영역에 가려지지 않도록 */
 }
 
-.reveal section[class*="layout-"]::before { top: 12px; }
-.reveal section[class*="layout-"]::after  { bottom: 12px; }
+/* 12px → 22px (2026-07-18): 하단 선 바깥 띠(선~슬라이드 하단)가 12px 뿐이라
+   라이선스 뱃지 박스(≈17px)가 선과 겹쳐 "답답해" 보였음. 띠를 22px 로 넓혀 분리.
+   상단도 같은 값으로 올려 상하 대칭 유지 (.cover-corner github_url 여유도 함께 확보). */
+.reveal section[class*="layout-"]::before { top: 22px; }
+.reveal section[class*="layout-"]::after  { bottom: 22px; }
 
 /* 모든 layout-* section min-height: 100% 강제 — 상하 inner gap 대칭 보장
    기존: .layout-_cover만 min-height 적용 → contents/blank/toc는 contents 크기로 짧아져

@@ -45,7 +45,7 @@
       } catch (e) {}
     })();
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"4","slideOffset":22,"totalSlides":37};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"4","slideOffset":22,"totalSlides":39};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1392,7 +1392,7 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1784042299556">
+  <link rel="stylesheet" href="css/custom.css?v=1784637737804">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1636,13 +1636,15 @@ html.ratio-fill .agenda-frame {
   <header class="toc-page-header">
     <h1 class="toc-page-title">m2slide의 강점</h1>
   </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="6">
+  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="8">
 <li class="chapter-card"><a href="#/3">강점 한눈에 보기</a></li>
-<li class="chapter-card"><a href="#/4">강점 1 — 내장 컴포넌트가 많음</a></li>
-<li class="chapter-card"><a href="#/5">강점 2 — HTML·EPUB·PDF·PPTX를 한 번에</a></li>
-<li class="chapter-card"><a href="#/6">강점 3 — 어디서든 열리는 배포</a></li>
-<li class="chapter-card"><a href="#/7">강점 4 — PowerPoint와 양방향으로 오갈 수 있음</a></li>
-<li class="chapter-card"><a href="#/8">강점 5 — AI가 저작을 함께함</a></li>
+<li class="chapter-card"><a href="#/4">강점 1 — 슬라이드를 고치지 말고 패턴을 고침</a></li>
+<li class="chapter-card"><a href="#/5">강점 2 — 내장 컴포넌트가 많음</a></li>
+<li class="chapter-card"><a href="#/6">강점 3 — HTML·EPUB·PDF·PPTX를 한 번에</a></li>
+<li class="chapter-card"><a href="#/7">강점 4 — 발표자료를 코드처럼 리뷰함</a></li>
+<li class="chapter-card"><a href="#/8">강점 5 — PowerPoint와 양방향으로 오갈 수 있음</a></li>
+<li class="chapter-card"><a href="#/9">강점 6 — 어디서든 열리는 배포</a></li>
+<li class="chapter-card"><a href="#/10">강점 7 — AI가 저작을 함께함</a></li>
 </ul></div>
 </section>
 
@@ -1657,6 +1659,11 @@ html.ratio-fill .agenda-frame {
 
 <div class="m2-cards cards">
 <ul>
+<li class="bullet-dot"><strong>패턴을 고치면 덱 전체가 바뀜</strong>
+<ul>
+<li class="bullet-dash">슬라이드를 한 장씩 손대지 않고 설정·정책 한 줄로 일괄 적용</li>
+</ul>
+</li>
 <li class="bullet-dot"><strong>내장 컴포넌트</strong>
 <ul>
 <li class="bullet-dash">차트·수식·지도·3D·인터랙티브까지 설치 없이 바로 사용</li>
@@ -1667,14 +1674,19 @@ html.ratio-fill .agenda-frame {
 <li class="bullet-dash">HTML·EPUB·PDF·PPTX를 한 소스에서</li>
 </ul>
 </li>
-<li class="bullet-dot"><strong>어디서든 열리는 배포</strong>
+<li class="bullet-dot"><strong>코드처럼 리뷰</strong>
 <ul>
-<li class="bullet-dash">서버 없이 <code>file://</code>만으로 동작</li>
+<li class="bullet-dash">마크다운 소스라서 diff·PR로 발표자료를 검토</li>
 </ul>
 </li>
 <li class="bullet-dot"><strong>PPT 양방향 변환</strong>
 <ul>
 <li class="bullet-dash">기존 PPT 자산 이관·제출 모두 지원</li>
+</ul>
+</li>
+<li class="bullet-dot"><strong>어디서든 열리는 배포</strong>
+<ul>
+<li class="bullet-dash">서버 없이 <code>file://</code>만으로 동작</li>
 </ul>
 </li>
 <li class="bullet-dot"><strong>AI 저작 파이프라인</strong>
@@ -1691,7 +1703,34 @@ html.ratio-fill .agenda-frame {
     <div class="contents-head-left">04. m2slide의 강점</div>
     <div class="contents-head-right"></div>
   </div>
-  <h2 class="title">강점 1 — 내장 컴포넌트가 많음</h2>
+  <h2 class="title">강점 1 — 슬라이드를 고치지 말고 패턴을 고침</h2>
+  <div class="contents-body">
+
+<p>수백 장짜리 덱에 "타이틀 스타일을 전부 바꿔달라"는 요청이 들어오면, 슬라이드 도구에서는 장수만큼 반복 작업이 생김. m2slide는 바꾸는 대상이 슬라이드가 아니라 <strong>패턴</strong>임.</p>
+
+<table>
+<thead>
+<tr><th style="text-align:left">바꾸는 것</th><th style="text-align:left">파일</th><th style="text-align:left">적용 범위</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align:left">테마·팔레트</td><td style="text-align:left"><code>_config.yml</code>의 <code>theme</code> · <code>palette</code></td><td style="text-align:left">재빌드만으로 덱 전체 외관</td></tr>
+<tr><td style="text-align:left">레이아웃 기본값</td><td style="text-align:left"><code>_config.yml</code>의 <code>theme_default_layout</code></td><td style="text-align:left">슬라이드별 지정이 없는 전부</td></tr>
+<tr><td style="text-align:left">본문 작성 패턴</td><td style="text-align:left"><code>_pipeline/policy/&lt;단계&gt;.yml</code></td><td style="text-align:left">이후 재생성되는 본문 전체</td></tr>
+</tbody>
+</table>
+
+<ul>
+<li class="bullet-dot">앞의 둘은 <strong>재빌드만으로 즉시 반영</strong>되고, 마지막은 본문을 다시 생성할 때 적용됨</li>
+<li class="bullet-dot">프로젝트별 정책은 글로벌 기본값 위에 얹히는 구조라, 한 프로젝트만 다르게 두어도 나머지는 영향받지 않음</li>
+</ul></div>
+</section>
+
+<section data-slide-hash="#/5" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">04. m2slide의 강점</div>
+    <div class="contents-head-right"></div>
+  </div>
+  <h2 class="title">강점 2 — 내장 컴포넌트가 많음</h2>
   <div class="contents-body">
 
 <ul>
@@ -1711,17 +1750,18 @@ html.ratio-fill .agenda-frame {
 </div></div>
 </section>
 
-<section data-slide-hash="#/5" class="layout-_contents">
+<section data-slide-hash="#/6" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">04. m2slide의 강점</div>
     <div class="contents-head-right"></div>
   </div>
-  <h2 class="title">강점 2 — HTML·EPUB·PDF·PPTX를 한 번에</h2>
+  <h2 class="title">강점 3 — HTML·EPUB·PDF·PPTX를 한 번에</h2>
   <div class="contents-body">
 
 <ul>
 <li class="bullet-dot">슬라이드 소스 한 벌로 <strong>네 가지 산출물</strong>을 각각 옵션 하나씩만 켜서 생성</li>
 <li class="bullet-dot">발표용 HTML, 배포용 전자책(EPUB), 인쇄·공유용 PDF, 편집 요청 대응용 PPTX를 <strong>따로 만들 필요가 없음</strong></li>
+<li class="bullet-dot">PDF·PPTX 산출은 외부 변환 도구(pandoc·decktape)에 의존함 — 처음 쓰는 환경에서는 설치가 한 번 필요</li>
 </ul>
 
 <div class="media-container mermaid">
@@ -1733,12 +1773,52 @@ graph LR
 </div></div>
 </section>
 
-<section data-slide-hash="#/6" class="layout-_contents">
+<section data-slide-hash="#/7" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">04. m2slide의 강점</div>
     <div class="contents-head-right"></div>
   </div>
-  <h2 class="title">강점 3 — 어디서든 열리는 배포</h2>
+  <h2 class="title">강점 4 — 발표자료를 코드처럼 리뷰함</h2>
+  <div class="contents-body">
+
+<p>슬라이드 리뷰가 파일을 주고받으며 "3장 고쳤어요"를 말로 전달하는 방식으로 도는 경우가 많음. 덱이 마크다운 소스이면 그 과정이 코드 리뷰와 같아짐.</p>
+
+<ul>
+<li class="bullet-dot">무엇이 바뀌었는지 <strong>줄 단위로</strong> 드러나므로 전체를 다시 훑을 필요가 없음</li>
+<li class="bullet-dot">리뷰 이력이 저장소에 남아 어떤 문장을 왜 고쳤는지 추적 가능</li>
+<li class="bullet-dot">여러 명이 서로 다른 챕터를 동시에 고쳐도 병합이 성립함</li>
+</ul>
+
+<div class="media-container mermaid">
+graph LR
+  A[md 수정] --> B[git diff — 바뀐 줄만 노출]
+  B --> C[PR 코멘트로 리뷰]
+  C --> D[merge 후 재빌드]
+</div></div>
+</section>
+
+<section data-slide-hash="#/8" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">04. m2slide의 강점</div>
+    <div class="contents-head-right"></div>
+  </div>
+  <h2 class="title">강점 5 — PowerPoint와 양방향으로 오갈 수 있음</h2>
+  <div class="contents-body">
+
+<ul>
+<li class="bullet-dot">기존에 만들어둔 <code>.pptx</code> 자산은 <strong><code>ppt2m2slide</code></strong> 로 마크다운 프로젝트로 역변환해 이관함 — 이후 git으로 관리되는 소스가 됨</li>
+<li class="bullet-dot">반대로 마크다운에서 PowerPoint 파일로 <strong>내보내기</strong>도 가능 — PPT를 요구하는 곳에도 대응</li>
+<li class="bullet-dot"><code>ppt2m2slide</code> 변환은 <strong>Claude Code 환경을 필요로 함</strong>. 복잡한 레이아웃은 변환 후 손보정이 필요할 수 있음</li>
+<li class="bullet-dot">"한쪽 포맷에 갇힌다"는 부담 없이 상황에 맞는 형식을 골라 쓸 수 있음</li>
+</ul></div>
+</section>
+
+<section data-slide-hash="#/9" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">04. m2slide의 강점</div>
+    <div class="contents-head-right"></div>
+  </div>
+  <h2 class="title">강점 6 — 어디서든 열리는 배포</h2>
   <div class="contents-body">
 
 <ul>
@@ -1748,27 +1828,12 @@ graph LR
 </ul></div>
 </section>
 
-<section data-slide-hash="#/7" class="layout-_contents">
+<section data-slide-hash="#/10" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">04. m2slide의 강점</div>
     <div class="contents-head-right"></div>
   </div>
-  <h2 class="title">강점 4 — PowerPoint와 양방향으로 오갈 수 있음</h2>
-  <div class="contents-body">
-
-<ul>
-<li class="bullet-dot">기존에 만들어둔 <code>.pptx</code> 자산을 마크다운 프로젝트로 <strong>역변환</strong>해 이관 가능</li>
-<li class="bullet-dot">반대로 마크다운에서 PowerPoint 파일로 <strong>내보내기</strong>도 가능 — PPT를 요구하는 곳에도 대응</li>
-<li class="bullet-dot">"한쪽 포맷에 갇힌다"는 부담 없이 상황에 맞는 형식을 골라 쓸 수 있음</li>
-</ul></div>
-</section>
-
-<section data-slide-hash="#/8" class="layout-_contents">
-  <div class="contents-head-bar">
-    <div class="contents-head-left">04. m2slide의 강점</div>
-    <div class="contents-head-right"></div>
-  </div>
-  <h2 class="title">강점 5 — AI가 저작을 함께함</h2>
+  <h2 class="title">강점 7 — AI가 저작을 함께함</h2>
   <div class="contents-body">
 
 <ul>
@@ -2107,23 +2172,31 @@ graph LR
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/3\">강점 1 — 내장 컴포넌트가 많음</a>",
+                              "content": "<a href=\"#/3\">강점 1 — 슬라이드를 고치지 말고 패턴을 고침</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/4\">강점 2 — HTML·EPUB·PDF·PPTX를 한 번에</a>",
+                              "content": "<a href=\"#/4\">강점 2 — 내장 컴포넌트가 많음</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/5\">강점 3 — 어디서든 열리는 배포</a>",
+                              "content": "<a href=\"#/5\">강점 3 — HTML·EPUB·PDF·PPTX를 한 번에</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/6\">강점 4 — PowerPoint와 양방향으로 오갈 수 있음</a>",
+                              "content": "<a href=\"#/6\">강점 4 — 발표자료를 코드처럼 리뷰함</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/7\">강점 5 — AI가 저작을 함께함</a>",
+                              "content": "<a href=\"#/7\">강점 5 — PowerPoint와 양방향으로 오갈 수 있음</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/8\">강점 6 — 어디서든 열리는 배포</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/9\">강점 7 — AI가 저작을 함께함</a>",
                               "children": []
                         }
                   ]
