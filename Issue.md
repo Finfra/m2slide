@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 307
+* Issue HWM: 308
 * Checkpoints:
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
@@ -31,6 +31,21 @@
 
 
 # ✅ 완료
+## Issue308. 호문쿨루스 학습 결과를 policy 로 받는 파일럿 (등록: 2026-08-03, 해결: 2026-08-03, commit: 46966f4) ✅
+* 목적: prj3(`~/.claude`) 가 학습(instinct) → policy yml **제안** 컴파일러를 완성했다(Issue334 P4-2). 본 프로젝트는 그 첫 소비처다. *"쓰다 보면 policy 가 생기는"* 파이프라인이 실제로 도는지 note-writer **1개 stage 로 검증**.
+* depends: prj3#Issue334
+* trigger: prj3#Issue334 P4-2 ✅ 완료 (commit e9c4324) → **충족** — `hooks/policy-compile.py` 실존 확인 후 진행
+* 완료 범위:
+    - `.claude/policy-map.yml` 신규 — note-writer stage → `data/note-writer/patterns.yml`의 `tone_presets` 컬렉션 매핑. 필드 `id`(copy) · `trigger`(keywords, 사람이 채움) · `confidence`(enum high≥0.8/medium≥0.6/low) · `action`(text, instinct `## Action` 절 추출 → `style`). `sink`는 파일럿 검증용 고정 프로젝트 `Projects/m2Slide_chapter_mode/_pipeline/policy`로 명시 — m2slide가 `Projects/<N>` 다건 저장소라 매핑 하나로 "실 배포 시 어느 프로젝트에 착지시킬지"까지는 못 정한다는 한계를 주석으로 남김(후속 과제)
+    - `_doc_arch/pipeline-policy-cascade.md` "병합 알고리즘" 절에 캐비앗 추가 — 리스트 컬렉션에 delta-only 제안을 그대로 L2 적용하면 deep-merge의 "리스트 전치환" 시맨틱 때문에 L1 기존 항목이 전멸함을 실측 근거로 명문화(아래 검증 참조)
+* 검증 (2026-08-03):
+    - **① 매핑 문법**: `python3 ~/.claude/hooks/policy-compile.py --project . --list` → 매핑 파싱 성공, "instinct 없음"(m2slide 실 instinct 0건, 선행 조건대로) 정상 보고 — rc1(엔진 사양대로 정상 종료 코드)
+    - **② 드라이런**(선행 조건이 명시한 "타 프로젝트 instinct로 드라이런" 경로): `--project ~/work/AgenticCoding-lec --map .claude/policy-map.yml`로 workflow 도메인 instinct 1건(`diagram-asset-generation`, confidence 0.85) 컴파일 → `trigger: [] # __NEEDS_HUMAN__`(키워드 미채움 정상) · `confidence: high`(0.85→high 임계 정확) · `style`에 `## Action` 본문 정확 추출. keywords/enum/text 3핸들러 전부 정상 동작
+    - **③ L2 착지 스모크테스트**: `__NEEDS_HUMAN__`를 사람이 채운 뒤 `Projects/m2Slide_chapter_mode/_pipeline/policy/note-writer.yml`에 임시 착지 → `./m2slide.sh --lint-data` rc0(스키마 위반 0건). 검증 직후 원복 — 해당 instinct는 m2slide 소유가 아니고 내용도 "노트 톤"이 아닌 "다이어그램 생성 워크플로"라 실 채택 대상이 아님(파이프라인 동작 검증 목적 한정, 실제 채택 여부는 사람이 판단해 기각한 사례로 기록)
+    - **발견**: `tone_presets` 같은 리스트 컬렉션은 deep-merge가 "치환"이므로 delta-only L2를 그대로 적용하면 L1 프리셋(`casual_lecture`·`formal_conference`·`workshop_handson`·`default`) 이 전멸 — `pipeline-policy-cascade.md`에 경고 반영. note-writer 뿐 아니라 리스트 형태 primary yml을 쓰는 모든 stage에 해당하는 일반 위험
+    - `data-access-rules.md` 격리 위반 없음 — 본 작업은 note-writer stage 범위만 다뤘고 타 stage `data/` 접근 없음
+* 범위 밖(후속 과제로 이월): 엔진 수정(prj3 소관) · 다른 stage 확대 · 자동 apply 배선 · m2slide 실 instinct 축적 후 재검증 · sink 프로젝트별 파라미터화(현재 매핑 1개 = 고정 sink 1개 한계)
+
 ## Issue305. 이미지 정밀 편집(색만·글자만 교체) 지원 (등록: 2026-07-23, 해결: 2026-07-29, commit: 59405d7, cb52c5b, 958f816, 2c8a653) ✅
 * 목적: schnell img2img 로는 부분 정밀 편집 불가(strength 0.3↑ 원본 복제 / 0.1 재해석 드리프트, 2026-07-13 실측). edit 전용 모델 기반 img-add `--edit` 모드를 media-creater 가 소비하여 슬라이드 이미지의 색·글자만 정밀 교체. Issue293 스타일 통일과 별개 기능.
 * depends: prj3#Issue277
