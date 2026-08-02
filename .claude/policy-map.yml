@@ -1,0 +1,26 @@
+# .claude/policy-map.yml — Issue308 파일럿: instinct(호문쿨루스 학습) → m2slide policy 매핑 선언
+#
+# 엔진: ~/.claude/hooks/policy-compile.py 는 이 파일의 스키마를 모른다.
+# stage 이름·필드명·열거값은 전부 여기서 선언한다 (계약 SSOT: ~/.claude/commands/policy-compile.md "계약 ②").
+#
+# ⚠️ sink 는 단일 경로다 — m2slide 는 Projects/<N> 다건을 담은 저장소라 이 매핑 하나로는
+#   "어느 프로젝트에 착지시킬지"까지 결정할 수 없다(엔진에 프로젝트별 sink 템플릿 기능 없음).
+#   파일럿은 검증용 고정 프로젝트(m2Slide_chapter_mode — CLAUDE.md base.css 회귀 테스트
+#   3종 중 하나, 실 배포 콘텐츠 아님)에 착지시킨다. 실 배포 시 대상 프로젝트별로 sink 를
+#   바꿔 재실행해야 한다 — 이 갭은 Issue308 범위 밖(후속 과제).
+sink: "Projects/m2Slide_chapter_mode/_pipeline/policy"
+
+stages:
+  note-writer:                       # 파일럿 stage — 이미 trigger/confidence 사용 + _backup 이력 4건 보유
+    file: note-writer.yml
+    collection: tone_presets         # data/note-writer/patterns.yml 의 tone_presets 컬렉션에 대응
+    domains: [workflow]              # 이 stage 로 보낼 instinct domain (workflow 외 제외)
+    fields:
+      id: id
+      trigger: {to: trigger, as: keywords}     # 자연어 문장 → 키워드 배열. 사람이 채움(엔진은 의미 판단 안 함)
+      confidence: {to: confidence, as: enum}   # 실수 → high/medium/low. tone_presets 원 스키마엔 없는 확장 필드 — 채택 여부는 사람이 결정
+      action: {to: style, as: text, section: Action}   # instinct '## Action' 본문 → 노트 톤 지시문 초안
+    enum:
+      high: 0.8
+      medium: 0.6
+      low: 0.0
