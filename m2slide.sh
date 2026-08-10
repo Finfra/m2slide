@@ -522,42 +522,17 @@ if [ "$GENERATE_PPTX" = true ]; then
   fi
 
   PPTX_OUTPUT="$OUTPUT_DIR/$PROJECT_NAME.pptx"
-  
-  # Check if we are in Single Page Mode
-  if [ "$INPUT_DIR" = "$PROJECT_DIR" ]; then
-    # Single mode: find the main markdown file
-    # We re-use logic similar to generate-epub but simplified for shell
-    MD_FILE=""
-    if [ -f "$PROJECT_DIR/$PROJECT_NAME.md" ]; then
-      MD_FILE="$PROJECT_DIR/$PROJECT_NAME.md"
-    elif [ -f "$PROJECT_DIR/README.md" ]; then
-       MD_FILE="$PROJECT_DIR/README.md"
-    else
-       # First .md file
-       MD_FILE=$(find "$PROJECT_DIR" -maxdepth 1 -name "*.md" -not -name "AGENDA.md" | head -n 1)
-    fi
-    
-    if [ -n "$MD_FILE" ]; then
-      if pandoc "$MD_FILE" -o "$PPTX_OUTPUT" --resource-path="$PROJECT_DIR"; then
-         echo "  ✅ Generated: $PROJECT_NAME.pptx"
-      else
-         echo "  ❌ Failed to generate PPTX"
-      fi
-    else
-      echo "  ❌ No markdown file found for PPTX generation"
-    fi
+
+  # Issue315/316 — 테마 반영 경로. single/chapter 분기는 md2pptx.py 의 --m2slide 가 흡수한다.
+  #   구 경로(`pandoc <md...>` 직접)는 --reference-doc 이 없어 테마·팔레트가 소실되고
+  #   `#layout-*` 지시자가 본문에 누출됐다(igTest 실측 5건). 폴백을 두지 않는 이유는
+  #   그 산출물이 "성공"으로 보이면서 조용히 품질을 되돌리기 때문이다.
+  if "$SCRIPT_DIR/lib/pptx/build-pptx.sh" "$PROJECT_DIR" "$PPTX_OUTPUT"; then
+      echo "  ✅ Generated: $PROJECT_NAME.pptx"
   else
-    # Chapter Mode: Combine all markdown files
-    # Only include .md files not AGENDA.md
-    echo "  Combining markdown files from $INPUT_DIR..."
-    
-    # Use glob carefully
-    if pandoc "$INPUT_DIR"/*.md -o "$PPTX_OUTPUT" --resource-path="$INPUT_DIR"; then
-        echo "  ✅ Generated: $PROJECT_NAME.pptx"
-    else
-        echo "  ❌ Failed to generate PPTX"
-        echo "  Note: Ensure markdown files do not contain syntax incompatible with Pandoc."
-    fi
+      echo "  ❌ Failed to generate PPTX"
+      echo "  Note: 원고에 pandoc 이 처리 못 하는 문법이 있는지, ppt-* 글로벌 SCAR 가 설치돼 있는지 확인."
+      exit 1
   fi
 
 fi
