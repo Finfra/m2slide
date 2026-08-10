@@ -43,14 +43,33 @@ tools:
     output_format: [svg, png, excalidraw]
     delegate_skill: excalidraw-diagram
 
-  - id: design_html
+  # Issue312 — 구 `design_html` 대체. `handler: design-html` 은 글로벌·로컬 어디에도 실재하지
+  # 않는 orphan 이었고(2026-08-11 실측), 그 결과 인포그래픽 요구가 mermaid·htmlart 로 흘러가
+  # 품질이 떨어졌다. 실동작하는 전용 생성기(ig-maker)로 교체한다.
+  - id: ig_maker
     type: infographic
-    handler: design-html
+    handler: ig-maker                # 글로벌 subagent (~/.claude/agents/ig-maker.md)
     triggers:
       - "infographic"
       - "complex_layout"
+      - "인포그래픽"
+      - "구조적 텍스트 도해"
     output_path: img/
-    output_format: [html, png]
+    output_format: svg               # ⚠️ m2slide 소비 산출물은 pptx 가 아니라 SVG 다
+    output_name: "{ppt명}-{장표번호}.svg"
+    source_attribution: none         # 자체 저작 산출물 → 슬라이드 출처 표시 불요
+    input_bridge: lib/ig/capture-for-ig.sh   # md 덱 → PNG (ig-maker 입력 계약이 이미지 1장이므로)
+    cost: "1장 = 약 33만 토큰 · 25~30분 (글로벌 실측)"
+    gate: |
+      ⚠️ 자동 팬아웃 금지. 선별·승인·팬아웃·조합·발행은 전부 ig-selector 소유이며
+      `igselect.py cost` 가 hard_pages 이상에서 exit 4 로 끊는다. media-creater 는
+      후보와 예상 비용을 제시하고 사용자 승인을 받은 뒤에만 진입한다.
+    constraints:
+      - "외부 참조(href·image·@import·웹폰트) 금지 — file:// 단일 파일 배포 규약"
+      - "viewBox 필수 (반응형 스케일)"
+      - "슬라이드 크롬(head-bar·페이지 번호·H2 제목) 복제 금지 — m2slide 가 렌더한다"
+      - "원문 문구 보존 — 구조·묶음·관계만 재편"
+    note: "그림에 갇힌 구조를 꺼내거나, 구조가 있는데 글로만 있는 장을 도해로 만든다."
 
   # 이미지 출처(::: source) 표시 정책 — 각 백엔드 source_attribution 필드로 판정:
   #   * none     = 자체 산출물(AI 생성·SVG 저작·placeholder) → 슬라이드 ::: source 표시 불요
@@ -365,9 +384,13 @@ content_pattern_rules:
     note: "Cards 로 구현하기 복잡한 장식 HTML — WordArt 효과 (Issue184 기준)"
 
   - id: infographic_layout
-    label: 인포그래픽 (HTML 기반)
-    body_patterns: ["infographic", "complex_layout"]
-    recommended_tool: design_html
+    label: 인포그래픽 (ig-maker SVG)
+    body_patterns: ["infographic", "complex_layout", "인포그래픽"]
+    recommended_tool: ig_maker
+    note: |
+      Issue312 — 구 design_html(실체 없는 handler) 대체. 비용이 크므로 승인 게이트 뒤에서만
+      진입한다(tools.ig_maker.gate). 단순 관계도는 mermaid_inline, 데이터 그래프는 d3_inline,
+      균질 항목 나열은 htmlart/cards 가 여전히 더 싸고 적절하다.
 
   - id: numeric_chart
     label: 수치 데이터 차트 (막대·꺾은선·원형)
@@ -577,7 +600,7 @@ report_template: |
       - svg 직접 저작: {svg_count}
       - free-image 사진: {photo_count}
       - 이미지 placeholder(최종 fallback): {image_count}
-      - design-html: {html_count}
+      - ig-maker 인포그래픽 SVG: {ig_count}   # 승인 게이트 통과분만
   * 외부 위임 명세 생성: {spec_count}건 ({spec_dir})
   * 검증: mermaid syntax {mermaid_status} / placeholder {placeholder_status}
   * 다음 단계: 단계 6 layout-selector
