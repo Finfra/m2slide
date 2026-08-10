@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 318
+* Issue HWM: 319
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -35,6 +35,8 @@
         3. **인포그래픽 handler 공백** — [`data/media-creater/tools.yml`](data/media-creater/tools.yml) 의 `design_html` 은 `handler: design-html` / `delegate_skill: design-html` 을 가리키는데 **그 스킬이 글로벌·로컬 어디에도 없다**(실측 2026-08-11). `type: infographic` 도구 중 실동작하는 것은 `d3_inline` 뿐이고, 나머지 인포그래픽 요구는 htmlart·mermaid 로 흘러간다 — "인포그래픽 품질이 나쁘다"는 사용자 관측의 구조적 원인
     - ig-maker 는 **m2slide host 규약을 이미 문서화하고 있다** — `Projects/{name}/.claude/pptx.yml` 에 `ppt_root`·`publish: img/` 를 적으면 `_source/{장표번호}/7.svg` → `img/{ppt명}-{장표번호}.svg` 로 발행된다. 즉 m2slide 쪽은 **소비 배선만** 만들면 된다(글로벌 SCAR 수정 불필요)
     - 입력 계약 불일치가 유일한 실질 간극: ig-maker 입력은 **이미지 1장 또는 pptx/pdf 페이지**인데 m2slide 원본은 md 다 → 캡처 브리지가 필요(Issue311)
+    - **선행 실측 자산 발견 (2026-08-11)** — `~/.claude/playground/` 에 테스트 6종(`0.zero_base`~`5.doc_to_ppt`)이 정의·실행되고 있고, 그중 **1번(m2slide 인포그래픽 업그레이드)·2번(m2slide 원고→덱)** 이 본 통합의 두 목표와 동일하다. 각 케이스의 `run.sh` 가 곧 참조 구현이며 `test_task_define.md` 가 통과 기준·회귀 모드를 정의한다. 설계 SSOT 는 이것을 **재발명하지 말고 인용**한다
+    - 그 결과 이미 구현된 것이 3종 확인됨 — `ppt-deck/scripts/md2pptx.py --m2slide <프로젝트> --pages 1-3`(m2slide 전용 진입점, `deck.py` 순환 우회) · `ppt-spec/scripts/theme-from-css.py <m2slide루트> --theme --palette`(theme CSS·palette 실측 → theme.yml, `slide/css/custom.css` 폴백 포함) · `ppt-deck/scripts/theme2reference.py`(theme.yml → reference.pptx). Issue315·316 은 **신규 개발이 아니라 배선**으로 축소됐다
 * 구현 명세:
     - `_doc_arch/ig-ppt-integration.md` 신설 — 경계표(무엇을 글로벌이 갖고 무엇을 m2slide 가 갖나) · 순환 방지 규약 · 4키 경로 매핑 · 비용 게이트 소유권 · 산출물 배포 규약
     - 글로벌 SCAR(`~/.claude/skills/ig-*`·`ppt-*`)는 **읽기만** 한다. 수정 필요가 발견되면 `~/.claude/Issue.md` 에 이슈 등록 후 별도 세션(global-scar-change-rules)
@@ -88,17 +90,18 @@
     - media-creater 가 인포그래픽을 여러 장 요구할 때 **일괄 자동 실행 금지** — 후보·예상 비용 제시 후 사용자 승인(체크포인트) 절차를 agent 본문에 명문화
     - exit 4 를 rc0 으로 뭉개는 wrapper 금지 — 스모크테스트로 확인
 
-## Issue315. `m2slide.sh --pptx` → ppt-deck lane A 전환 + 순환 방지 (등록: 2026-08-11)
-* 목적: PPTX 산출이 테마를 잃는 현 상태를 고친다. pandoc 직접 호출을 글로벌 `ppt-deck` lane A(`--adapt` + `--reference`)로 교체한다.
+## Issue315. `m2slide.sh --pptx` → md2pptx.py 배선 (테마 반영) (등록: 2026-08-11)
+* 목적: PPTX 산출이 테마를 잃는 현 상태를 고친다. pandoc 직접 호출을 글로벌 `ppt-deck` 의 **m2slide 전용 진입점**으로 교체한다.
 * depends: Issue309
 * 상세:
     - 현재 코드: `m2slide.sh` PPTX 블록이 single/chapter 분기 후 `pandoc ... -o "$PPTX_OUTPUT"` 직접 호출. `--reference-doc` 없음 → 조직 서식·테마 전무
-    - **순환 방지가 이 이슈의 핵심 제약**: `ppt-deck` ①이 m2slide 로 되위임하므로 호출 시 반드시 `--force-lane a`. 이 플래그가 빠지면 `m2slide.sh → deck.py → m2slide.sh` 무한 재귀
-    - lane A 함정 3종(레이아웃 영문명 미보유 · placeholder 부재 · 이미지 1개 실패가 전체 실패)은 `--adapt` 로 흡수. pandoc 부재 시 기존과 동일하게 명시적 실패
+    - **범위 축소 (2026-08-11 실측)** — 쓸 도구는 `deck.py` 가 아니라 [`md2pptx.py`](file:///Users/nowage/.claude/skills/ppt-deck/scripts/md2pptx.py) 다. `--m2slide <프로젝트폴더>` 플래그가 `markdown/*.md` 를 자동 수집(AGENDA 제외·이름순)하고 `--pages 1-3` 부분 변환·`#layout-*` 지시자 제거까지 이미 처리한다. 문서 예시 자체가 이 repo 경로(`m2slide/Projects/fPmIntro_en`)를 가리킨다
+    - **순환은 `deck.py` 경로에만 있다** — `deck.py` 폴백 ①이 `m2slide.sh` 로 되위임하므로 그 경로를 쓰면 `m2slide.sh → deck.py → m2slide.sh` 무한 재귀가 된다. `md2pptx.py` 직접 호출은 이 재귀가 성립하지 않는다. 만약 `deck.py` 를 쓰기로 바꾸면 `--force-lane a` 가 필수
+    - reference 는 [`theme2reference.py`](file:///Users/nowage/.claude/skills/ppt-deck/scripts/theme2reference.py) 가 theme.yml 에서 만든다(Issue316) — lane A 가 색을 물려받는 유일한 경로
 * 구현 명세:
-    - `m2slide.sh` PPTX 블록 교체 — `python3 ~/.claude/skills/ppt-deck/scripts/deck.py <md...> --out <slide/<Name>.pptx> --force-lane a [--reference <potx>] --adapt`
+    - `m2slide.sh` PPTX 블록 교체 — `python3 ~/.claude/skills/ppt-deck/scripts/md2pptx.py --m2slide "$PROJECT_DIR" --reference "$REF" -o "$PPTX_OUTPUT"` (single/chapter 분기는 `--m2slide` 가 흡수하는지 실측 후 결정)
     - `ppt-deck`·pandoc 미설치 시 **기존 pandoc 직접 경로로 폴백하지 말 것** — 조용한 품질 회귀. 명시적 안내 후 종료
-    - 회귀 검증: `./m2slide.sh m2Slide --pptx` → 산출 pptx 를 열어 서식 반영 확인 + `index.html` 다운로드 버튼 정상
+    - 회귀 검증은 Issue319 픽스처로 — `./m2slide.sh igTest --pptx` (전체) + `--pages 1-3` 부분 변환. 통과 조건은 playground 2번 케이스와 동일(3장 · accent 색 반영 · `#layout-*` 누출 0)
     - 옵션 키가 추가되면([`_config.yml`](_config.org.yml) `pptx_reference` 등) [`config-sync-rules`](.claude/rules/config-sync-rules.md) 4곳 동기화 의무
 
 # 📙 일반
@@ -114,15 +117,19 @@
     - SVG 내 외부 참조 검사 항목 추가 검토(현 lint 패턴은 localhost·절대경로 중심)
     - 대표 슬라이드 1장 `file://` 직접 열기 육안 검증
 
-## Issue316. PPTX 테마 자산 — m2slide theme → potx 매핑 (등록: 2026-08-11)
-* 목적: lane A 의 `--reference <potx>` 에 넘길 서식 원본을 m2slide theme 체계와 잇는다.
+## Issue316. theme CSS → reference.pptx 2단 배선 (등록: 2026-08-11)
+* 목적: PPTX 가 m2slide 덱과 **같은 팔레트**를 쓰게 한다. 이 단계를 빼면 덱은 나오지만 색이 원본과 무관해진다(playground 실측: accent 검출 0회).
 * depends: Issue315
 * 상세:
-    - 글로벌 `ppt-spec` 이 기준 파일을 실측해 `theme.yml`·`potx.md` 를 만든다 — m2slide 의 `theme/{name}/slide.css`·palette 와는 표현 계층이 달라 **자동 변환은 범위 밖**
-    - 현실적 1차 목표: 덱별 potx 를 사람이 지정할 수 있는 경로(`_config.yml` 키 또는 `_asset_ppt/`)를 여는 것
+    - **범위 축소 (2026-08-11 실측)** — "조사"가 아니라 **이미 있는 2단 파이프 배선**이다:
+        1. [`theme-from-css.py`](file:///Users/nowage/.claude/skills/ppt-spec/scripts/theme-from-css.py) `<m2slide루트> --theme <name> --palette <p> --name <테마명> --out theme.yml` — `theme/<name>/slide.css`·`palettes/<p>.css` 를 실측하고, 없으면 `slide/css/custom.css` 로 폴백한다. `[data-palette="X"]` 스코프 병합까지 지원
+        2. [`theme2reference.py`](file:///Users/nowage/.claude/skills/ppt-deck/scripts/theme2reference.py) `theme.yml --out reference.pptx --adapt` — 그 테마를 pandoc reference-doc 으로
+    - 즉 m2slide 가 할 일은 `_config.yml` 의 `theme:`·`palette:` 값을 두 스크립트에 **그대로 전달**하는 것뿐이다. 손으로 만든 potx 는 선택 사항으로 남는다
 * 구현 명세:
-    - potx 미지정 시 pandoc 기본 템플릿으로 산출(실패 아님) — `ppt-deck` 규약 그대로
-    - theme↔potx 색·폰트 대응표는 조사 결과만 문서화, 자동 생성은 후속
+    - `_config.yml` 의 `theme`·`palette` 를 읽어 `--theme`·`--palette` 로 전달 (파서는 [`lib/config.js`](lib/config.js) 가 이미 해석)
+    - 산출 `theme.yml`·`reference.pptx` 위치는 덱 작업 폴더(`ppt/<ppt명>/_asset_ppt/`·`_source/`) — Issue310 경로 규약을 따른다
+    - 사용자 지정 potx 를 우선하는 override 경로를 남길지 설계에서 확정
+    - 검증: 산출 pptx 에서 m2slide accent 색 검출 ≥1회 (playground 2번 케이스 기준)
 
 ## Issue317. ppt-check 검증 배선 + m2slide lint 통합 (등록: 2026-08-11)
 * 목적: PPTX·인포그래픽 산출을 "성공했다"가 아니라 **검증 통과**로 판정한다.
@@ -132,6 +139,20 @@
 * 구현 명세:
     - `--pptx` 산출 직후 `ppt-check` 자동 실행, 실패 시 rc≠0 로 빌드 실패 처리 여부 결정(경고 vs 차단은 설계에서 확정)
     - [`apply-verify-rules`](.claude/rules/apply-verify-rules.md) 의 lint 목록에 항목 추가
+
+## Issue319. 소규모 테스트 픽스처 + 회귀 러너 (등록: 2026-08-11)
+* 목적: 통합 검증을 **적은 페이지**로 돌린다. 40장짜리 실덱으로 검증하면 ig-maker 비용(장당 33만 토큰)과 회귀 원인 격리 난이도가 동시에 폭발한다.
+* depends: Issue309
+* 상세:
+    - 픽스처 `Projects/igTest` 배치 완료 (2026-08-11) — `~/.claude/playground/resource/m2slide` 소스 복사(markdown 5챕터 + `_config.yml` + `VERSION` + `Info.md`). 빌드 산출물·`_pipeline/` 은 복사하지 않음
+    - **페이지 수 기준이 둘이라 혼동 주의** — playground `test_task_define.md` 의 "9 페이지"는 **pandoc 슬라이드(H1 기준)** 이고, 같은 원고를 m2slide 로 빌드하면 **39 슬라이드**다(실측: 7+7+8+10+7). 인포그래픽 대상 "6·7 페이지"는 전자 기준(04-strengths · 05-wrap-up 진입 장)
+    - 픽스처는 **git 미추적**이다 — `Projects/.gitignore` 가 `Projects.md` publishing 열에서 생성되고 igTest 는 발행 대상이 아니다. 재생성은 playground 원본 복사로 언제든 가능하므로 추적하지 않는다([repo-tracking-rules](.claude/rules/repo-tracking-rules.md) 판정 4)
+    - ⚠️ `./m2slide.sh --sync-projects` 는 `Projects/.gitignore`·`Projects_org.md` 를 **함께** 갱신하며, 실행 시 기존 미추적 프로젝트 3건(AgenticCoding·StellarEvolution·graphify)이 추적 목록에 추가되는 부작용이 관측됐다(2026-08-11, revert 처리). 픽스처 작업 중 무심코 커밋하지 말 것
+* 구현 명세:
+    - playground 6종 중 **1·2번을 m2slide 쪽 러너로 이식** — `z_test/ig-ppt/{1.infographic,2.deck}/run.sh`. 각 run.sh 는 playground 원본을 인용하되 입력을 `Projects/igTest` 로 바꾼다
+    - 통과 조건은 playground `test_task_define.md` 를 그대로 인용 — 1번: 2장·이미지 0·원본 문구가 편집 가능한 도형 텍스트로 존재·회귀 `summary` / 2번: 3장·accent 색 반영·`#layout-*` 누출 0·회귀 `convert`(어휘 커버리지 90%↑)
+    - `ppt-check --baseline Projects/igTest --regress-mode <mode> --strict` 로 판정
+    - 비용 상한 명시 — 1번은 팬아웃 0(ppt-info 블록 데이터), ig-maker 팬아웃이 붙는 경로는 **2장 이하**로 제한
 
 ## Issue318. 문서·룰 동기화 (등록: 2026-08-11)
 * 목적: 통합 결과를 CLAUDE.md·룰·설계 문서에 반영해 다음 세션이 같은 조사를 반복하지 않게 한다.
