@@ -64,6 +64,17 @@ tools:
       ⚠️ 자동 팬아웃 금지. 선별·승인·팬아웃·조합·발행은 전부 ig-selector 소유이며
       `igselect.py cost` 가 hard_pages 이상에서 exit 4 로 끊는다. media-creater 는
       후보와 예상 비용을 제시하고 사용자 승인을 받은 뒤에만 진입한다.
+
+      exit 4 를 rc0 으로 뭉개지 말 것 — 실측된 삼킴 경로는 **파이프**다(Issue313).
+      `igselect cost ... | tee log` 의 rc 는 마지막 명령의 것이라 4 가 0 이 된다.
+      파이프가 필요하면 `set -o pipefail` 을 함께 건다. 회귀 검사는
+      `./z_test/ig-ppt/0.cost-gate.sh` (비용 0 — 장수만 센다).
+
+      ⚠️ 기본 임계(warn 5 · hard 10)는 m2slide 덱에서 사실상 걸리지 않는다.
+      게이트가 세는 것은 덱 장수가 아니라 후보 장수이고, 35장 덱의 후보가 6장
+      (198만 토큰)인데 통과했다(Issue313 실측). 프로젝트에
+      `.claude/ig-selector.yml` 로 `warn 2 · hard 3` 을 깔 것 —
+      템플릿 `data/ppt-integration/ig-selector.yml.template`.
     constraints:
       - "외부 참조(href·image·@import·웹폰트) 금지 — file:// 단일 파일 배포 규약"
       - "viewBox 필수 (반응형 스케일)"
