@@ -144,10 +144,21 @@ for each slide (H2 단위):
     - `spec_template.frontmatter` 4필드 치환
     - `spec_template.body_format` 변수 치환 (`{slide_title}`/`{body_excerpt}`/`{style}` 등)
 
-### design-html 인포그래픽 (`tools.design_html`)
+### ig-maker 인포그래픽 SVG (`tools.ig_maker` — Issue312)
 
-* `Projects/<Name>/img/<slide-id>.html` 작성 위임 (delegate_skill: design-html)
-* 본문에 `![<설명>](./img/<slide-id>.html)` 참조 추가
+⚠️ **소비 산출물은 pptx 가 아니라 SVG** 다. m2slide 슬라이드가 `![](./img/<ppt명>-<장표번호>.svg)` 로 참조하고, 빌드가 `slide/img/` 로 복사한다.
+
+⚠️ **자동 진입 금지.** 장당 약 33만 토큰·25~30분이 든다(글로벌 실측). 후보와 예상 비용을 제시하고 **사용자 승인을 받은 뒤에만** 팬아웃한다 — 선별·승인·팬아웃·조합·발행은 전부 `ig-selector` 소유이며 `igselect.py cost` 가 `exit 4` 로 끊는다. 그 코드를 삼키지 말 것.
+
+절차:
+
+1. **경로 규약** — `Projects/<Name>/.claude/pptx.yml` 에 `ppt_root: ppt/<덱>` · `publish: img/` (없으면 만든다). `igpath.py resolve --start Projects/<Name> --json` 으로 4키 확인
+2. **덱 준비** — `ppt-init/scripts/init.py <덱> --lane b --root Projects/<Name>/ppt --source <캡처>` (멱등)
+3. **입력 브리지** — 대상 슬라이드를 PNG 로: `./lib/ig/capture-for-ig.sh <Name> <chap> <slide> --deck <덱>`. ig-maker 의 입력 계약이 이미지 1장이라 이 단계가 필수다
+4. **테마** — `ppt-spec/scripts/theme-from-css.py Projects/<Name> --theme <theme> --name <n> --out <theme.yml>`. palette 미지정 덱은 `--kn-accent` 로 교정할 것(warm 오탐)
+5. **팬아웃** — `Agent(subagent_type="ig-maker")`, 인스턴스 하나가 page 하나
+6. **검증** — `z_test/ig-ppt/1.infographic.sh` 기준: viewBox 존재 · 외부 참조 0 · 원문 문구 보존 · **슬라이드 크롬(head-bar·페이지 번호·H2 제목) 복제 없음** · `--lint-deployment` 통과
+7. **본문 반영** — 대상 슬라이드의 원본 블록을 `![<설명>](./img/<ppt명>-<장표번호>.svg)` 로 교체
 
 ### 이미지 정밀 편집 (`tools.image_edit` — 후처리, Issue305)
 
@@ -274,7 +285,7 @@ assets:
 | `excalidraw-diagram` skill | excalidraw JSON 파일 생성                  |
 | `gemini-image-describer`   | 이미지 → 설명 (역방향 검증용)              |
 | `mermaid-diagram` skill    | mermaid 문법 레퍼런스                      |
-| `design-html` skill        | HTML 기반 인포그래픽 생성                  |
+| `ig-maker` subagent        | 인포그래픽 SVG 생성 (글로벌, 승인 게이트 뒤) |
 
 # 정책 변경 요청 처리
 
