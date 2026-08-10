@@ -1,7 +1,8 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 308
+* Issue HWM: 318
 * Checkpoints:
+    - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
 * Save Point :
@@ -25,7 +26,120 @@
 
 # 📕 중요
 
+## Issue309. ig-maker·ppt-maker 통합 설계 SSOT 작성 (등록: 2026-08-11)
+* 목적: 글로벌 SCAR 로 완성된 `ig-maker`(인포그래픽)·`ppt-maker`(덱) 계열을 m2slide 의 **인포그래픽 생성기**·**PPT 생성 옵션** 자리에 붙이기 위한 경계·계약·순환 위험을 하나의 설계 문서로 확정. 후속 이슈 전부가 이 문서를 근거로 움직인다.
+* 상세:
+    - 사전 분석 결과 3건이 이 문서의 출발점:
+        1. **PPTX 경로 결함** — 현재 [`m2slide.sh`](m2slide.sh) `--pptx` 는 `pandoc <md...> -o x.pptx` 직접 호출이라 `--reference-doc` 이 없다. 테마·layout·htmlart 가 전부 소실되고 Calibri 기본 서식으로 나온다. 글로벌 `ppt-deck` lane A(`--adapt` + `--reference`)가 정확히 이 결함을 메우는 도구다
+        2. **순환 위험(크리티컬)** — `ppt-deck` 의 폴백 ①은 *"프로젝트에 m2slide 가 있으면 `m2slide.sh` 에 위임"* 이다(`deck.py:66-79`). m2slide 가 무조건 `ppt-deck` 를 부르면 **상호 재귀**가 된다. 반드시 `--force-lane a` 로 ①을 봉인해야 한다
+        3. **인포그래픽 handler 공백** — [`data/media-creater/tools.yml`](data/media-creater/tools.yml) 의 `design_html` 은 `handler: design-html` / `delegate_skill: design-html` 을 가리키는데 **그 스킬이 글로벌·로컬 어디에도 없다**(실측 2026-08-11). `type: infographic` 도구 중 실동작하는 것은 `d3_inline` 뿐이고, 나머지 인포그래픽 요구는 htmlart·mermaid 로 흘러간다 — "인포그래픽 품질이 나쁘다"는 사용자 관측의 구조적 원인
+    - ig-maker 는 **m2slide host 규약을 이미 문서화하고 있다** — `Projects/{name}/.claude/pptx.yml` 에 `ppt_root`·`publish: img/` 를 적으면 `_source/{장표번호}/7.svg` → `img/{ppt명}-{장표번호}.svg` 로 발행된다. 즉 m2slide 쪽은 **소비 배선만** 만들면 된다(글로벌 SCAR 수정 불필요)
+    - 입력 계약 불일치가 유일한 실질 간극: ig-maker 입력은 **이미지 1장 또는 pptx/pdf 페이지**인데 m2slide 원본은 md 다 → 캡처 브리지가 필요(Issue311)
+* 구현 명세:
+    - `_doc_arch/ig-ppt-integration.md` 신설 — 경계표(무엇을 글로벌이 갖고 무엇을 m2slide 가 갖나) · 순환 방지 규약 · 4키 경로 매핑 · 비용 게이트 소유권 · 산출물 배포 규약
+    - 글로벌 SCAR(`~/.claude/skills/ig-*`·`ppt-*`)는 **읽기만** 한다. 수정 필요가 발견되면 `~/.claude/Issue.md` 에 이슈 등록 후 별도 세션(global-scar-change-rules)
+    - 기존 문서와의 관계 명시: [`_doc_arch/authoring-pipeline.md`](_doc_arch/authoring-pipeline.md) 단계 5(media-creater) · [`_doc_arch/component-slide.md`](_doc_arch/component-slide.md) · `data/htmlart/`
+
+## Issue310. 프로젝트별 `.claude/pptx.yml` 경로 규약 도입 (등록: 2026-08-11)
+* 목적: ig-maker 4키(`asset_root`·`ppt_root`·`out_root`·`publish`)를 m2slide 프로젝트 구조에 착지시켜, 어느 덱에서 실행해도 산출물이 그 덱의 `img/` 로 발행되게 한다.
+* depends: Issue309
+* 상세:
+    - ig-maker `igpath.py` 는 `.claude/pptx.yml` 을 **상향 탐색 8단계·가장 가까운 하나만** 채택(병합 안 함). 상대경로 기준은 `.claude/` 의 부모
+    - m2slide 는 `Projects/<Name>/` 이 덱 단위이므로 `Projects/<Name>/.claude/pptx.yml` 이 자연스러운 자리 — repo 루트 `.claude/` 와 충돌하지 않는지 실측 필요(루트에 pptx.yml 을 두면 모든 덱이 같은 ppt_root 를 물어 사고)
+* 구현 명세:
+    - 템플릿 `data/ppt-integration/pptx.yml.template` 신설 (`ppt_root: ppt/{ppt명}` · `publish: img/`)
+    - 파일럿 1개 프로젝트에만 실배치(`Projects/m2Slide_chapter_mode/`) — 전 프로젝트 롤아웃은 검증 후 별도
+    - `python3 ~/.claude/skills/ig-maker/scripts/igpath.py resolve --start Projects/<Name> --json` 이 의도한 4키를 내는지 실측 로그를 이슈에 첨부
+    - `ppt/` 작업 폴더는 중간 산출물(`_source/`·`_org/`)을 담으므로 `.gitignore` 판정 필요 — [`repo-tracking-rules`](.claude/rules/repo-tracking-rules.md) 절차 적용
+
+## Issue311. 슬라이드 캡처 브리지 — md 덱 → ig-maker 입력 (등록: 2026-08-11)
+* 목적: ig-maker 입력 계약(이미지 1장)과 m2slide 원본(md)의 간극을 메운다. 대상 슬라이드를 PNG 로 렌더해 ig-maker 에 넘기는 단일 경로를 만든다.
+* depends: Issue310
+* 상세:
+    - 기존 자산 재사용 우선: [`lib/slide_capture/`](lib/slide_capture/) (Puppeteer) · dev-server solo view `/p/<P>/s/<chap>/<slide>` · [`.claude/skills/slide-compare`](.claude/skills/slide-compare) — **새 캡처기를 만들지 않는다**
+    - 캡처 출력은 [`capture-output-rules`](.claude/rules/capture-output-rules.md) 를 따라 `_doc_work/capture/` 하위. ig-maker `_org/` 투입은 복사로 처리
+    - 슬라이드 번호 ↔ ig-maker `{장표번호}` 매핑 규칙 확정 필요 — m2slide 는 `chap/slide` 2축, ig-maker 는 단일 장표번호
+* 구현 명세:
+    - `lib/ppt-integration/capture-for-ig.sh` (또는 python) — 입력 `<Project> <chap> <slide>`, 출력 `_doc_work/capture/ig/<Project>-<chap>_<slide>.png` + `_org/` 복사
+    - dev-server 미기동 시 자동 `--serve start` (idempotent)
+    - 실패는 fail-loud — 캡처 실패를 무시하고 빈 이미지로 진행 금지
+
+## Issue312. media-creater 에 ig_maker 도구 등록 + design_html orphan 정리 (등록: 2026-08-11)
+* 목적: 파이프라인 단계 5(media-creater)가 인포그래픽 요구를 ig-maker 로 라우팅하게 하고, 실체 없는 `design_html` handler 를 정리한다.
+* depends: Issue309, Issue311
+* 상세:
+    - `design_html` 은 `delegate_skill: design-html` 을 가리키나 그 스킬이 **존재하지 않음**(실측). 선택지는 ① 제거 ② ig_maker 로 대체 ③ 실제 스킬 신설 — 설계(Issue309)에서 확정
+    - `type: infographic` 라우팅 순서를 재정의: 구조적 텍스트·기존 그래픽 → ig_maker, 단순 관계도 → mermaid, 데이터 그래프 → d3, SmartArt 형 → htmlart
+* 구현 명세:
+    - `data/media-creater/tools.yml` 수정 — **수정 직전** `./lib/tuner/backup-data-yml.sh data/media-creater/tools.yml` 필수([data-access-rules](.claude/rules/data-access-rules.md))
+    - 정책 yml 변경은 **단독 커밋**(코드·산출물 동반 금지). 커밋 메시지에 근거 명시
+    - [`.claude/agents/media-creater.md`](.claude/agents/media-creater.md) 의 "design-html 인포그래픽" 절 동기 수정
+    - `./m2slide.sh --lint-data` rc0 확인
+
+## Issue313. ig-selector 비용 게이트 배선 — 자동 팬아웃 금지 (등록: 2026-08-11)
+* 목적: 장당 **33만 토큰·25~30분**(글로벌 실측)인 ig-maker 를 파이프라인이 조용히 N장 돌리는 사고를 구조적으로 차단한다.
+* depends: Issue312
+* 상세:
+    - 선별·승인·팬아웃·조합·발행은 전부 `ig-selector` 소유 — m2slide 가 팬아웃을 **가져오지 않는다**(글로벌 사용자 결정 2026-08-09). m2slide 는 호출과 결과 회수만
+    - `igselect.py cost` 가 `hard_pages`(기본 10) 이상에서 `exit 4` — m2slide 쪽 어떤 경로도 이 코드를 삼키면 안 된다
+    - m2slide 덱은 장수가 많으므로(20~40장) 기본 임계로는 거의 항상 게이트에 걸린다 → `.claude/ig-selector.yml` 부분 재정의로 덱 성격에 맞춘 임계 검토
+* 구현 명세:
+    - `Projects/<Name>/.claude/ig-selector.yml` 부분 재정의 템플릿 + 판정 축 문서화
+    - media-creater 가 인포그래픽을 여러 장 요구할 때 **일괄 자동 실행 금지** — 후보·예상 비용 제시 후 사용자 승인(체크포인트) 절차를 agent 본문에 명문화
+    - exit 4 를 rc0 으로 뭉개는 wrapper 금지 — 스모크테스트로 확인
+
+## Issue315. `m2slide.sh --pptx` → ppt-deck lane A 전환 + 순환 방지 (등록: 2026-08-11)
+* 목적: PPTX 산출이 테마를 잃는 현 상태를 고친다. pandoc 직접 호출을 글로벌 `ppt-deck` lane A(`--adapt` + `--reference`)로 교체한다.
+* depends: Issue309
+* 상세:
+    - 현재 코드: `m2slide.sh` PPTX 블록이 single/chapter 분기 후 `pandoc ... -o "$PPTX_OUTPUT"` 직접 호출. `--reference-doc` 없음 → 조직 서식·테마 전무
+    - **순환 방지가 이 이슈의 핵심 제약**: `ppt-deck` ①이 m2slide 로 되위임하므로 호출 시 반드시 `--force-lane a`. 이 플래그가 빠지면 `m2slide.sh → deck.py → m2slide.sh` 무한 재귀
+    - lane A 함정 3종(레이아웃 영문명 미보유 · placeholder 부재 · 이미지 1개 실패가 전체 실패)은 `--adapt` 로 흡수. pandoc 부재 시 기존과 동일하게 명시적 실패
+* 구현 명세:
+    - `m2slide.sh` PPTX 블록 교체 — `python3 ~/.claude/skills/ppt-deck/scripts/deck.py <md...> --out <slide/<Name>.pptx> --force-lane a [--reference <potx>] --adapt`
+    - `ppt-deck`·pandoc 미설치 시 **기존 pandoc 직접 경로로 폴백하지 말 것** — 조용한 품질 회귀. 명시적 안내 후 종료
+    - 회귀 검증: `./m2slide.sh m2Slide --pptx` → 산출 pptx 를 열어 서식 반영 확인 + `index.html` 다운로드 버튼 정상
+    - 옵션 키가 추가되면([`_config.yml`](_config.org.yml) `pptx_reference` 등) [`config-sync-rules`](.claude/rules/config-sync-rules.md) 4곳 동기화 의무
+
 # 📙 일반
+
+## Issue314. ig 산출 SVG 의 배포 규약 검증 (등록: 2026-08-11)
+* 목적: ig-maker 가 발행한 `img/{ppt명}-{장표번호}.svg` 가 m2slide 의 단일 파일 배포 규약을 깨지 않는지 보장한다.
+* depends: Issue312
+* 상세:
+    - [`file-deployment-rules`](.claude/rules/file-deployment-rules.md): 빌드 산출물은 임의 단일 `.html` + 동일 디렉토리 `img/` 만으로 `file://` 동작해야 함. SVG 내부의 외부 폰트·`@import`·remote href 는 위반
+    - ig-maker 발행은 **복사**(symlink 아님)라 `slide/img/` 자동 복사 규약과 충돌 없음 — 실측으로 확인
+* 구현 명세:
+    - `./m2slide.sh --lint-deployment <project>` rc0
+    - SVG 내 외부 참조 검사 항목 추가 검토(현 lint 패턴은 localhost·절대경로 중심)
+    - 대표 슬라이드 1장 `file://` 직접 열기 육안 검증
+
+## Issue316. PPTX 테마 자산 — m2slide theme → potx 매핑 (등록: 2026-08-11)
+* 목적: lane A 의 `--reference <potx>` 에 넘길 서식 원본을 m2slide theme 체계와 잇는다.
+* depends: Issue315
+* 상세:
+    - 글로벌 `ppt-spec` 이 기준 파일을 실측해 `theme.yml`·`potx.md` 를 만든다 — m2slide 의 `theme/{name}/slide.css`·palette 와는 표현 계층이 달라 **자동 변환은 범위 밖**
+    - 현실적 1차 목표: 덱별 potx 를 사람이 지정할 수 있는 경로(`_config.yml` 키 또는 `_asset_ppt/`)를 여는 것
+* 구현 명세:
+    - potx 미지정 시 pandoc 기본 템플릿으로 산출(실패 아님) — `ppt-deck` 규약 그대로
+    - theme↔potx 색·폰트 대응표는 조사 결과만 문서화, 자동 생성은 후속
+
+## Issue317. ppt-check 검증 배선 + m2slide lint 통합 (등록: 2026-08-11)
+* 목적: PPTX·인포그래픽 산출을 "성공했다"가 아니라 **검증 통과**로 판정한다.
+* depends: Issue314, Issue315
+* 상세:
+    - 글로벌 `ppt-check` 는 검증 5종 보유(PowerPoint 가 거부하는 위반 포함) — m2slide 자체 lint(`--lint-deployment`·`--lint-data`·`--lint-license`)와 역할이 겹치지 않음
+* 구현 명세:
+    - `--pptx` 산출 직후 `ppt-check` 자동 실행, 실패 시 rc≠0 로 빌드 실패 처리 여부 결정(경고 vs 차단은 설계에서 확정)
+    - [`apply-verify-rules`](.claude/rules/apply-verify-rules.md) 의 lint 목록에 항목 추가
+
+## Issue318. 문서·룰 동기화 (등록: 2026-08-11)
+* 목적: 통합 결과를 CLAUDE.md·룰·설계 문서에 반영해 다음 세션이 같은 조사를 반복하지 않게 한다.
+* depends: Issue312, Issue315
+* 구현 명세:
+    - [`CLAUDE.md`](CLAUDE.md) — PPTX 변환 절(현 pandoc 직접 안내)을 ppt-deck 경유로 갱신
+    - [`_doc_arch/authoring-pipeline.md`](_doc_arch/authoring-pipeline.md) 단계 5 갱신 · [`.claude/rules/data-access-rules.md`](.claude/rules/data-access-rules.md) 단계별 data 접근표에 ig 관련 항목 반영 여부 판정
+    - [`_doc_arch/ig-ppt-integration.md`](_doc_arch/ig-ppt-integration.md) 의 미해결 마커(🚧/🔧) 정리
 
 # 📗 선택
 
