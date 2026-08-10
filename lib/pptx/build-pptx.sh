@@ -111,5 +111,33 @@ fi
 # ── ② theme.yml → reference.pptx
 python3 "$T2R" "$THEME_YML" --out "$REF" --adapt >/dev/null
 
-# ── ③ 원고 → pptx
-python3 "$MD2P" --m2slide "$PROJECT_DIR" --reference "$REF" -o "$OUT" "$@"
+# ── ③ 원고 → pptx (+ 산출 직후 검증 — md2pptx 가 check-conform 을 내장 호출한다)
+#
+#   ⚠️ check-conform 은 **`--lane a` 가 필수**다. 기본값은 `b`(인포그래픽)라서
+#      lane A 덱을 그 기본값으로 재면 mermaid 렌더 이미지를 "본문 이미지화"로 보고
+#      FAIL 한다 — 실측: 같은 pptx 가 lane a rc0 / lane b rc1 (Issue317).
+#      md2pptx 가 이미 `--lane a` 로 부르므로 여기서 따로 부르지 않는다.
+#      손으로 재검할 때만 주의하면 된다.
+#
+#   md2pptx 의 rc 는 **생성 실패와 검증 실패가 둘 다 1** 이라 구분되지 않는다.
+#   호출자에게 둘은 전혀 다른 사건이므로(전자는 산출물이 없고, 후자는 있는데
+#   못 쓴다) 산출 파일이 이번 실행에서 갱신됐는지로 가른다.
+BEFORE_MTIME=""
+[ -f "$OUT" ] && BEFORE_MTIME="$(stat -f %m "$OUT" 2>/dev/null || stat -c %Y "$OUT" 2>/dev/null || echo "")"
+
+rc=0
+python3 "$MD2P" --m2slide "$PROJECT_DIR" --reference "$REF" -o "$OUT" "$@" || rc=$?
+[ "$rc" = "0" ] && exit 0
+
+AFTER_MTIME=""
+[ -f "$OUT" ] && AFTER_MTIME="$(stat -f %m "$OUT" 2>/dev/null || stat -c %Y "$OUT" 2>/dev/null || echo "")"
+
+if [ -n "$AFTER_MTIME" ] && [ "$AFTER_MTIME" != "$BEFORE_MTIME" ]; then
+  echo "  ❌ 검증 실패 — pptx 는 만들어졌지만 규격 위반이 남아 있다 (rc=$rc)" >&2
+  echo "     위 check-conform·check-xml-order 판정의 FAIL 항목을 보라." >&2
+  echo "     FAIL 은 PowerPoint 가 거부하거나 깨져 보이는 위반이다 — 배포 대상이 아니다." >&2
+  echo "     WARN 은 여기서 막지 않는다(판정은 check-conform 이 가른다)." >&2
+  exit 2      # 2 = 검증 실패 (산출물은 존재)
+fi
+echo "  ❌ 생성 실패 — pptx 가 만들어지지 않았다 (rc=$rc)" >&2
+exit 1        # 1 = 생성 실패 (산출물 없음)

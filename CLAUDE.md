@@ -278,6 +278,10 @@ node generate-epub.js Projects/[ProjectName]
 
 ⚠️ `ppt-deck` 의 `deck.py` 는 쓰지 않는다 — 그쪽 폴백 ①이 `m2slide.sh` 로 되위임하므로 상호 재귀가 된다. `md2pptx.py` 직접 호출만 안전하다.
 
+**검증은 빌드에 내장돼 있고 FAIL 은 빌드를 실패시킨다** (Issue317). `md2pptx.py` 가 산출 직후 `check-conform`(`--lane a`) + `check-xml-order` 를 돌린다. WARN 은 통과, FAIL 은 `exit 1`. 의도적으로 넘기려면 `--pptx-no-verify`.
+
+⚠️ 손으로 재검할 때 **`--lane a` 를 빠뜨리지 말 것**. 기본값 `b`(인포그래픽)는 본문 이미지를 위반으로 보므로, mermaid 렌더 이미지가 정상 콘텐츠인 m2slide 덱을 오판한다 — 같은 pptx 가 `--lane a` rc0 / 미지정 rc1 (실측).
+
 ### 새 프로젝트 추가
 
 ```bash

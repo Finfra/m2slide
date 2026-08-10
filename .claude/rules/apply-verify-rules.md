@@ -289,7 +289,26 @@ file:///<abs_path>/Projects/{Name}/slide/{chapter}.html?fwd=1#/N
 * 위반 발견 → 색 조정 후 재lint 통과까지 진행 (기준 미달인 채로 커밋 금지)
 * 상세 설계: [`../../_doc_arch/license-attribution.md`](../../_doc_arch/license-attribution.md)
 
-> lint subcommand 전체 목록: `--lint-deployment`(§4.5) · `--lint-license`(본 절) · `--lint-data`([`data-access-rules.md`](data-access-rules.md)) · `--lint-config`·`--lint-layouts`([`../../_doc_arch/theme_layout.md`](../../_doc_arch/theme_layout.md))
+## 4.7 PPTX 규격 검증 (Issue317)
+
+**`--pptx` 로 PowerPoint 를 산출한 경우 자동 적용.** 별도 lint subcommand 가 아니라 **빌드에 내장**돼 있다 — `md2pptx.py` 가 산출 직후 `check-conform` + `check-xml-order` 를 실행하고, FAIL 이면 빌드가 **실패한다**(rc≠0).
+
+```bash
+./m2slide.sh <project> --pptx              # 검증 포함. FAIL 이면 exit 1
+./m2slide.sh <project> --pptx-no-verify    # 차단을 의도적으로 넘길 때만
+```
+
+* **경고가 아니라 차단인 이유**: `check-conform` 의 FAIL 은 *"PowerPoint 가 거부하거나 깨져 보이는 위반"*이다. 통과시키면 `index.html` 에 다운로드 버튼까지 달려 배포된다. `build-pptx.sh` 가 구 pandoc 직접 경로로 **폴백하지 않는 것과 같은 이유** — 성공으로 보이는 품질 회귀를 막는다
+* **심각도 구분은 m2slide 가 하지 않는다.** FAIL/WARN 은 `check-conform` 이 이미 가르며 WARN 은 rc0 이라 통과한다 (실측: igTest 35장 → FAIL 0 · WARN 1(템플릿 밖 폰트 Courier) → 빌드 성공)
+* **실패 종류를 구분해 보고한다**: rc 2 = 검증 실패(파일은 있다) · rc 1 = 생성 실패(파일이 없다). `build-pptx.sh` 가 산출 파일의 갱신 여부로 가른다
+
+> ⚠️ **손으로 재검할 때는 `--lane a` 가 필수다.** `check-conform` 의 기본값은 `b`(인포그래픽)이고, 그 lane 은 본문 이미지를 위반으로 본다. m2slide 덱은 lane A 라 mermaid 렌더 이미지가 **정상 콘텐츠**인데 기본값으로 재면 FAIL 이 뜬다 — 같은 pptx 실측: `--lane a` rc 0 / lane 미지정 rc 1 (Issue317).
+>
+> ```bash
+> python3 ~/.claude/skills/ppt-check/scripts/check-conform.py <out.pptx> --lane a
+> ```
+
+> lint subcommand 전체 목록: `--lint-deployment`(§4.5) · `--lint-license`(§4.6) · `--lint-data`([`data-access-rules.md`](data-access-rules.md)) · `--lint-config`·`--lint-layouts`([`../../_doc_arch/theme_layout.md`](../../_doc_arch/theme_layout.md)). PPTX 규격 검증(§4.7)은 subcommand 가 아니라 `--pptx` 빌드 내장이다.
 
 ## 5. 결과 보고
 

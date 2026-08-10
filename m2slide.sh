@@ -59,6 +59,8 @@ Options:
   --epub            EPUB 파일도 함께 생성
   --pdf             PDF 파일도 함께 생성 (decktape 사용)
   --pptx            PowerPoint 파일도 함께 생성 (pandoc 사용)
+                    산출 직후 check-conform 이 자동 검증하며, FAIL 이면 빌드 실패
+  --pptx-no-verify  --pptx + 검증 생략. 차단을 의도적으로 넘길 때만 사용
   --export-ir       덱 IR(JSON) export (m2unity 계약, stub — _doc_arch/m2unity-contract.md)
   --unity           IR export 후 m2unity 백엔드로 위임 (stub)
   -h, --help        이 도움말 출력 후 종료
@@ -302,6 +304,7 @@ fi
 GENERATE_EPUB=false
 GENERATE_PDF=false
 GENERATE_PPTX=false
+PPTX_NO_VERIFY=false
 DEV_SERVE=true
 PROJECT_DIR=""
 
@@ -319,6 +322,12 @@ for arg in "$@"; do
       ;;
     --pptx)
       GENERATE_PPTX=true
+      ;;
+    --pptx-no-verify)
+      # 검증 FAIL 이 빌드를 막는 것이 기본이다(Issue317). 이 플래그는 그 차단을
+      # **의도적으로** 넘길 때만 쓴다 — 산출물이 규격을 지킨다는 뜻이 아니다.
+      GENERATE_PPTX=true
+      PPTX_NO_VERIFY=true
       ;;
     --no-serve)
       DEV_SERVE=false
@@ -527,13 +536,38 @@ if [ "$GENERATE_PPTX" = true ]; then
   #   구 경로(`pandoc <md...>` 직접)는 --reference-doc 이 없어 테마·팔레트가 소실되고
   #   `#layout-*` 지시자가 본문에 누출됐다(igTest 실측 5건). 폴백을 두지 않는 이유는
   #   그 산출물이 "성공"으로 보이면서 조용히 품질을 되돌리기 때문이다.
-  if "$SCRIPT_DIR/lib/pptx/build-pptx.sh" "$PROJECT_DIR" "$PPTX_OUTPUT"; then
+  #
+  # Issue317 — **검증 FAIL 은 빌드를 실패시킨다(차단).** 경고로 두지 않은 이유:
+  #   check-conform 의 FAIL 은 "PowerPoint 가 거부하거나 깨져 보이는 위반"이다.
+  #   그런 파일을 성공으로 통과시키면 index.html 에 다운로드 버튼까지 달려 배포된다 —
+  #   바로 위 폴백을 없앤 것과 같은 이유다. 심각도 구분은 m2slide 가 하지 않는다:
+  #   FAIL/WARN 은 check-conform 이 이미 가르며, WARN 은 rc0 이라 통과한다.
+  #   --pptx 는 옵트인 경로라 기본 빌드(`./m2slide.sh <P>`)에는 영향이 없다.
+  PPTX_ARGS=()
+  [ "$PPTX_NO_VERIFY" = true ] && PPTX_ARGS+=(--no-verify)
+
+  PPTX_RC=0
+  "$SCRIPT_DIR/lib/pptx/build-pptx.sh" "$PROJECT_DIR" "$PPTX_OUTPUT" "${PPTX_ARGS[@]+"${PPTX_ARGS[@]}"}" || PPTX_RC=$?
+
+  case "$PPTX_RC" in
+    0)
       echo "  ✅ Generated: $PROJECT_NAME.pptx"
-  else
+      [ "$PPTX_NO_VERIFY" = true ] && echo "  ⚠️  검증 생략됨 (--pptx-no-verify) — 규격 위반 여부는 확인되지 않았다"
+      ;;
+    2)
+      echo "  ❌ PPTX 검증 실패 — 파일은 생성됐으나 규격 위반이 있다: $PPTX_OUTPUT"
+      echo "  Note: 위 판정의 FAIL 항목을 고친 뒤 다시 돌린다. 이 파일은 배포하지 말 것."
+      echo "        손으로 재검할 때는 --lane a 를 반드시 붙인다 (기본값 b 는 lane A 덱을 오판한다):"
+      echo "          python3 ~/.claude/skills/ppt-check/scripts/check-conform.py \"$PPTX_OUTPUT\" --lane a"
+      echo "        검증을 의도적으로 건너뛰려면: ./m2slide.sh $PROJECT_NAME --pptx --pptx-no-verify"
+      exit 1
+      ;;
+    *)
       echo "  ❌ Failed to generate PPTX"
       echo "  Note: 원고에 pandoc 이 처리 못 하는 문법이 있는지, ppt-* 글로벌 SCAR 가 설치돼 있는지 확인."
       exit 1
-  fi
+      ;;
+  esac
 
 fi
 
