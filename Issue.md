@@ -28,21 +28,25 @@
 
 # 📙 일반
 
-## Issue317. ppt-check 검증 배선 + m2slide lint 통합 (등록: 2026-08-11)
-* 진행: 상당 부분 자동 충족 (2026-08-11) — `md2pptx.py` 가 산출 직후 `check-conform` 을 **내장 실행**하고(`--no-verify` 로만 끌 수 있음), 러너 2종이 그 위에 판정을 얹는다. 남은 결정은 *"빌드를 실패시킬 것인가"* 뿐
-* 실측 주의: `check-conform` 은 **`--lane a` 가 필수**다. 없으면 mermaid 렌더 이미지를 "본문 이미지화 의심"으로 보고 FAIL 한다 — lane A 에서 다이어그램이 그림으로 들어가는 것은 정상 콘텐츠다(도구 자신의 안내문과 판정이 어긋나는 자리)
+# 📗 선택
+
+
+# ✅ 완료
+
+## Issue317. ppt-check 검증 배선 + m2slide lint 통합 (등록: 2026-08-11, 해결: 2026-08-11, commit: 647db93) ✅
+* **결정: 경고가 아니라 차단** (2026-08-11). 근거 — `check-conform` 의 FAIL 은 *"PowerPoint 가 거부하거나 깨져 보이는 위반"*이다. 통과시키면 `index.html` 에 다운로드 버튼까지 달려 배포된다. [`build-pptx.sh`](lib/pptx/build-pptx.sh) 가 구 pandoc 직접 경로로 **폴백하지 않는 것과 같은 이유**이며(성공으로 보이는 품질 회귀 차단), `--pptx` 는 옵트인 경로라 기본 빌드(`./m2slide.sh <P>`)에는 영향이 없다
+* **심각도 구분은 m2slide 가 하지 않는다.** FAIL/WARN 은 `check-conform` 이 이미 가르며 WARN 은 rc0 이라 통과한다 — igTest 35장 실측 `FAIL 0 · WARN 1`(템플릿 밖 폰트 Courier)에서 빌드 성공. m2slide 가 자체 임계를 또 두면 판정이 두 곳으로 갈라진다
+* **배선 결함 발견·수정**: 기존 코드는 검증 실패를 `❌ Failed to generate PPTX` 로 보고했다 — 파일은 생성됐는데 생성 실패라 하고, "pandoc 이 처리 못 하는 문법" 을 의심하라고 오도했다. `build-pptx.sh` 가 **산출 파일 갱신 여부**로 두 사건을 가른다 (rc 2 = 검증 실패·파일 있음 / rc 1 = 생성 실패·파일 없음). 낡은 산출물이 남아 있어도 mtime 비교로 오분류하지 않는다
+* **`--pptx-no-verify` 신설**: 차단을 의도적으로 넘길 때만. 산출물이 규격을 지킨다는 뜻이 아니므로 통과 시에도 생략 사실을 출력한다
+* 실측 5종 전부 확인 — 정상 `rc0` · 검증실패 `rc2` → m2slide.sh `exit 1`(이때 `index.html` 갱신도 건너뛰므로 실패한 덱에 다운로드 버튼이 붙지 않는다) · 생성실패 `rc1` · 낡은 산출물 잔존 시 오분류 0 · `--pptx-no-verify` `rc0`
+* ⚠️ **`--lane a` 필수** — `check-conform` 기본값은 `b`(인포그래픽)이고 그 lane 은 본문 이미지를 위반으로 본다. m2slide 덱은 lane A 라 mermaid 렌더 이미지가 **정상 콘텐츠**인데 기본값으로 재면 FAIL 이 뜬다. 같은 pptx 실측: `--lane a` rc 0 / lane 미지정 rc 1. `md2pptx.py` 는 이미 `--lane a` 로 부르므로 **손으로 재검할 때만** 문제가 된다 → 3곳에 명시([`build-pptx.sh`](lib/pptx/build-pptx.sh) 주석·실패 안내문·[`CLAUDE.md`](CLAUDE.md)·[`apply-verify-rules`](.claude/rules/apply-verify-rules.md) §4.7)
 * 목적: PPTX·인포그래픽 산출을 "성공했다"가 아니라 **검증 통과**로 판정한다.
 * depends: Issue314, Issue315
 * 상세:
     - 글로벌 `ppt-check` 는 검증 5종 보유(PowerPoint 가 거부하는 위반 포함) — m2slide 자체 lint(`--lint-deployment`·`--lint-data`·`--lint-license`)와 역할이 겹치지 않음
 * 구현 명세:
-    - `--pptx` 산출 직후 `ppt-check` 자동 실행, 실패 시 rc≠0 로 빌드 실패 처리 여부 결정(경고 vs 차단은 설계에서 확정)
-    - [`apply-verify-rules`](.claude/rules/apply-verify-rules.md) 의 lint 목록에 항목 추가
-
-# 📗 선택
-
-
-# ✅ 완료
+    - `--pptx` 산출 직후 `ppt-check` 자동 실행, 실패 시 rc≠0 로 빌드 실패 ✅ — `md2pptx.py` 가 `check-conform`(`--lane a`) + `check-xml-order` 를 내장 실행하고, 그 rc 가 `build-pptx.sh` → `m2slide.sh` 로 전파된다
+    - [`apply-verify-rules`](.claude/rules/apply-verify-rules.md) 의 lint 목록에 항목 추가 ✅ — §4.7 신설. **lint subcommand 가 아니라 `--pptx` 빌드 내장**이라는 점을 목록에 명시
 
 ## Issue313. ig-selector 비용 게이트 배선 — 자동 팬아웃 금지 (등록: 2026-08-11, 해결: 2026-08-11, commit: ca62a88, fb49bbe, 7373785, 55e5895) ✅
 * 완료 실측 (2026-08-11, `Projects/igTest` 35장 덱): 스모크테스트 5개 단언 전부 통과 — 10장 `exit 4` / 9장 `exit 0`(임계 경계) · 파이프 삼킴 재현 · pipefail 시 4 보존 · 실덱 후보 6장이 프로젝트 임계 초과로 `exit 4`. 회귀 러너 [`z_test/ig-ppt/0.cost-gate.sh`](z_test/ig-ppt/0.cost-gate.sh) — ig-maker 를 돌리지 않으므로 **비용 0**
