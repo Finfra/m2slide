@@ -26,20 +26,6 @@
 
 # 📕 중요
 
-## Issue313. ig-selector 비용 게이트 배선 — 자동 팬아웃 금지 (등록: 2026-08-11)
-* 진행: 부분 완료 (2026-08-11, commit `ca62a88`·`fb49bbe`) — `tools.yml` 의 `ig_maker.gate` 명문화 · agent 절차 7단계 · [`ig-selector.yml.template`](data/ppt-integration/ig-selector.yml.template) 배치
-* 잔여: `igselect.py cost` 의 `exit 4` 를 m2slide 경로에서 실제로 태워 보는 스모크테스트. 지금까지의 실행은 **1쪽 원본**(지목이 곧 선택)이라 선별·비용 게이트가 개입할 자리가 없었다 — 다장 덱으로 한 번 태워야 판정이 성립한다
-* 목적: 장당 **33만 토큰·25~30분**(글로벌 실측)인 ig-maker 를 파이프라인이 조용히 N장 돌리는 사고를 구조적으로 차단한다.
-* depends: Issue312
-* 상세:
-    - 선별·승인·팬아웃·조합·발행은 전부 `ig-selector` 소유 — m2slide 가 팬아웃을 **가져오지 않는다**(글로벌 사용자 결정 2026-08-09). m2slide 는 호출과 결과 회수만
-    - `igselect.py cost` 가 `hard_pages`(기본 10) 이상에서 `exit 4` — m2slide 쪽 어떤 경로도 이 코드를 삼키면 안 된다
-    - m2slide 덱은 장수가 많으므로(20~40장) 기본 임계로는 거의 항상 게이트에 걸린다 → `.claude/ig-selector.yml` 부분 재정의로 덱 성격에 맞춘 임계 검토
-* 구현 명세:
-    - `Projects/<Name>/.claude/ig-selector.yml` 부분 재정의 템플릿 + 판정 축 문서화
-    - media-creater 가 인포그래픽을 여러 장 요구할 때 **일괄 자동 실행 금지** — 후보·예상 비용 제시 후 사용자 승인(체크포인트) 절차를 agent 본문에 명문화
-    - exit 4 를 rc0 으로 뭉개는 wrapper 금지 — 스모크테스트로 확인
-
 # 📙 일반
 
 ## Issue317. ppt-check 검증 배선 + m2slide lint 통합 (등록: 2026-08-11)
@@ -57,6 +43,22 @@
 
 
 # ✅ 완료
+
+## Issue313. ig-selector 비용 게이트 배선 — 자동 팬아웃 금지 (등록: 2026-08-11, 해결: 2026-08-11, commit: ca62a88, fb49bbe, 7373785, 55e5895) ✅
+* 완료 실측 (2026-08-11, `Projects/igTest` 35장 덱): 스모크테스트 5개 단언 전부 통과 — 10장 `exit 4` / 9장 `exit 0`(임계 경계) · 파이프 삼킴 재현 · pipefail 시 4 보존 · 실덱 후보 6장이 프로젝트 임계 초과로 `exit 4`. 회귀 러너 [`z_test/ig-ppt/0.cost-gate.sh`](z_test/ig-ppt/0.cost-gate.sh) — ig-maker 를 돌리지 않으므로 **비용 0**
+* ⚠️ **등록 당시 가정이 반증됐다.** "덱이 20~40장이라 기본 임계에 거의 항상 걸린다"는 틀렸다 — 게이트가 세는 것은 **덱 장수가 아니라 후보 장수**이고 분류기가 크게 걷어낸다. 35장 → 후보 6장(17%) = 198만 토큰인데 기본 임계(warn 5 · hard 10)에서 **rc0 통과**했다. 즉 기본값은 m2slide 덱에서 사실상 무동작이며, 임계는 **올릴 것이 아니라 내려야** 한다
+* 확정 임계: `warn_pages: 2` · `hard_pages: 3` ([`ig-selector.yml.template`](data/ppt-integration/ig-selector.yml.template) 에 주석 해제 반영). 근거 — warn 2 는 Issue319 가 회귀 러너 팬아웃 상한으로 이미 확정한 값, hard 3 은 99만 토큰·75~90분으로 한 세션 무인 실행 상한선
+* ⚠️ **삼킴 경로는 파이프로 특정됐다.** `igselect cost ... | tee log` 의 rc 는 마지막 명령의 것이라 `exit 4` 가 `0` 으로 바뀐다(실측). 파이프가 필요하면 `set -o pipefail` 을 함께 건다 — 명령치환(`$(...)`)은 rc 를 전파하므로 안전
+* 부수 정정: [`data/ppt-integration/README.md`](data/ppt-integration/README.md) 의 "임계를 낮추면 팬아웃이 는다" 는 방향이 반대였다 — 팬아웃을 늘리는 쪽은 **올리는** 재정의다
+* 목적: 장당 **33만 토큰·25~30분**(글로벌 실측)인 ig-maker 를 파이프라인이 조용히 N장 돌리는 사고를 구조적으로 차단한다.
+* depends: Issue312
+* 상세:
+    - 선별·승인·팬아웃·조합·발행은 전부 `ig-selector` 소유 — m2slide 가 팬아웃을 **가져오지 않는다**(글로벌 사용자 결정 2026-08-09). m2slide 는 호출과 결과 회수만
+    - 픽스처의 `Projects/igTest/.claude/ig-selector.yml` 은 **git 미추적**이다(igTest 자체가 미추적). 템플릿 복사로 언제든 재생성된다
+* 구현 명세:
+    - `Projects/<Name>/.claude/ig-selector.yml` 부분 재정의 템플릿 + 판정 축 문서화 ✅ — 부분 재정의 동작 확인(`cost.warn/hard` 만 교체, `tokens_per_page`·`text.*` 등 기본값 보존)
+    - media-creater 가 인포그래픽을 여러 장 요구할 때 **일괄 자동 실행 금지** ✅ — `tools.yml` `ig_maker.gate` 에 삼킴 경로·임계 실측 추가
+    - exit 4 를 rc0 으로 뭉개는 wrapper 금지 — 스모크테스트로 확인 ✅
 
 ## Issue319. 소규모 테스트 픽스처 + 회귀 러너 (등록: 2026-08-11, 해결: 2026-08-11, commit: d6e1aaa, 2dc8453, fea7dbc) ✅
 * 완료 실측: 러너 2종 전부 통과. 픽스처는 `Projects/igTest`(git 미추적, playground 원본 복사로 재생성). ⚠️ 러너 작성 중 오탐 2건을 겪음 — ig-maker 가 헤더 주석에 규약 문구(`@import 0`)와 제거 대상 문자열(`4 › 23 / 39`)을 그대로 인용하므로 **XML 주석을 먼저 걷어내고 `<text>`/`<tspan>` 렌더 텍스트만 판정**해야 한다
