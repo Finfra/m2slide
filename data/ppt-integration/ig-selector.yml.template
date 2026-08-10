@@ -1,0 +1,22 @@
+# ig-selector 임계 부분 재정의 — Projects/<N>/.claude/ig-selector.yml 로 복사 (Issue313)
+#
+# 바꿀 키만 적는다. 나머지는 글로벌 기본값(~/.claude/skills/ig-selector/policy.yml)이 남는다.
+# 전체를 베껴 적으면 기본값이 갱신돼도 이 프로젝트만 낡은 사본을 계속 쓴다.
+#
+# 확인: python3 ~/.claude/skills/ig-selector/scripts/igpolicy.py show
+#       python3 ~/.claude/skills/ig-selector/scripts/igpolicy.py sources
+#
+# ⚠️ 리스트는 **통째로 교체**된다(이어붙이기 아님). bullet_markers 등을 손볼 때 주의.
+
+# m2slide 강의 덱은 장당 글자수가 제안서보다 많다 — 산문 판정 임계를 올려
+# "구조가 있는데 글로만 있는 장"이 산문으로 밀려나지 않게 한다.
+# text:
+#   body_min_chars: 600
+#   crowded_chars: 1500
+
+# 덱이 20~40장이라 기본 임계(warn 5 · hard 10)에는 거의 항상 걸린다.
+# ⚠️ 이 값을 올리는 것은 승인 없이 도는 팬아웃을 늘린다는 뜻이다.
+#    장당 약 33만 토큰이므로, 올릴 때는 근거를 프로젝트 이슈에 남길 것.
+# cost:
+#   warn_pages: 5
+#   hard_pages: 10

@@ -151,6 +151,8 @@ Temporary Items
 !/data/note-writer/**
 !/data/media-creater/
 !/data/media-creater/**
+!/data/ppt-integration/
+!/data/ppt-integration/**
 
 # Backup files
 *.bak

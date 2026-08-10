@@ -1,0 +1,14 @@
+# ig-maker 경로 4키 — Projects/<N>/.claude/pptx.yml 로 복사해 쓴다 (Issue310)
+#
+# ⚠️ 상대경로 기준은 `.claude/` 의 **부모**(= 프로젝트 폴더)다. cwd 도 `.claude/` 자신도 아니다.
+# ⚠️ 루트 `.claude/` 에 두면 모든 덱이 같은 ppt_root 를 물어 서로의 산출물을 덮는다.
+#
+# 해소 확인: python3 ~/.claude/skills/ig-maker/scripts/igpath.py resolve --start Projects/<N> --json
+
+ppt_root: ppt/<덱이름>     # 덱 1건이 사는 폴더 (_org/·_source/ 중간 산출물 포함 — git 미추적)
+publish:  img/             # _source/<장표>/7.svg → img/<ppt명>-<장표번호>.svg 로 **복사** 발행
+
+# asset_root 는 적지 않아도 된다 — 기본값이 {ppt_root}/_asset_ppt 이고,
+# 상향 탐색으로 ppt/_asset_ppt 를 찾아 여러 덱이 테마를 공유한다.
+# 공유를 명시하고 싶으면:
+# asset_root: ppt/_asset_ppt
