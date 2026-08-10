@@ -259,12 +259,24 @@ node generate-epub.js Projects/[ProjectName]
 ### PowerPoint 변환 (옵션)
 
 ```bash
-# 단일 파일
-pandoc Projects/LlmAndVibeCoding/markdown/01-opening.md -o output.pptx
+# 빌드와 함께
+./m2slide.sh [ProjectName] --pptx
 
-# 전체 파일 통합
-pandoc Projects/LlmAndVibeCoding/markdown/*.md -o complete.pptx
+# 단독 실행 (부분 변환 가능)
+./lib/pptx/build-pptx.sh Projects/[ProjectName] out.pptx [--pages 1-3]
 ```
+
+산출 경로는 `Projects/<Name>/slide/<Name>.pptx` 이며 `index.html` 에 다운로드 버튼이 붙는다.
+
+**pandoc 을 직접 부르지 말 것** (Issue315). `pandoc <md...> -o x.pptx` 는 `--reference-doc` 이 없어 테마·팔레트가 통째로 빠지고 `#layout-*` 지시자가 본문에 누출된다(igTest 실측 5건). [build-pptx.sh](lib/pptx/build-pptx.sh) 가 글로벌 ppt-* SCAR 3종을 순서대로 잇는다:
+
+| 단계 | 스크립트 | 하는 일 |
+| :-- | :--- | :--- |
+| ① | `ppt-spec/theme-from-css.py` | 빌드 산출 CSS 실측 → `theme.yml` |
+| ② | `ppt-deck/theme2reference.py` | `theme.yml` → pandoc reference-doc |
+| ③ | `ppt-deck/md2pptx.py --m2slide` | 원고 → pptx (single·chapter 자동 판별) |
+
+⚠️ `ppt-deck` 의 `deck.py` 는 쓰지 않는다 — 그쪽 폴백 ①이 `m2slide.sh` 로 되위임하므로 상호 재귀가 된다. `md2pptx.py` 직접 호출만 안전하다.
 
 ### 새 프로젝트 추가
 
