@@ -188,6 +188,13 @@ Projects/*/refs/
 !/docs/m2Slide/m2Slide.epub
 !/docs/m2Slide_MermaidExample/*.epub
 
+# pptx 는 pandoc 재생성 산출물 — epub 과 동일하게 실제 퍼블리싱되는 것만 추적
+*.pptx
+!/Projects/m2Slide/slide/m2Slide.pptx
+
+# data/<stage>/_backup/ 는 정책 yml 회전 백업(상한 30) — 로컬 전용, git 미추적
+data/*/_backup/
+
 # Projects_deck/ 는 독립 git repo (github.com/finfra/m2slide-deck) — embedded repo 회피.
 # m2slide 본체는 이 폴더를 추적하지 않음. 설계: _doc_arch/deck-repo.md
 Projects_deck/
