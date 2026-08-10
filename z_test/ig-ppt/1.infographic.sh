@@ -47,9 +47,18 @@ PY
 [ "$ext" = "0" ] && echo "  ✅ 외부 참조 0" || { echo "  ❌ 외부 참조 ${ext}건 — file-deployment-rules 위반"; fail=1; }
 
 # 슬라이드 크롬 복제 금지 — 헤더·페이지번호는 m2slide 가 렌더한다
-chrome=0
-grep -qE '[0-9]+ *[›>/] *[0-9]+ */ *[0-9]+' "$SVG" && { echo "  ❌ 페이지 번호가 SVG 에 박혔다 — 재빌드 시 실제 번호와 어긋난다"; chrome=1; }
-[ "$chrome" = "0" ] && echo "  ✅ 페이지 번호 복제 없음" || fail=1
+# ⚠️ 여기서도 주석을 먼저 걷어낸다 — ig-maker 가 "제거했다"는 사실을 주석에 적으면서
+#    제거 대상 문자열을 그대로 인용하기 때문이다(실측 오탐 1건).
+chrome="$(python3 - "$SVG" <<'PY'
+import re, sys
+s = re.sub(r"<!--.*?-->", "", open(sys.argv[1], encoding="utf-8").read(), flags=re.S)
+# 렌더되는 것만 본다 — <text>/<tspan> 안의 "4 › 23 / 39" 꼴
+body = " ".join(re.findall(r"<t(?:ext|span)[^>]*>(.*?)</t(?:ext|span)>", s, flags=re.S))
+print(len(re.findall(r"[0-9]+\s*[›>]\s*[0-9]+\s*/\s*[0-9]+", body)))
+PY
+)"
+[ "$chrome" = "0" ] && echo "  ✅ 페이지 번호 복제 없음" \
+  || { echo "  ❌ 페이지 번호가 SVG 에 박혔다 — 재빌드 시 실제 번호와 어긋난다"; fail=1; }
 
 # 원문 문구 보존 — 7개 항목 제목이 전부 살아 있어야 한다
 missing=""
