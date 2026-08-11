@@ -30,10 +30,9 @@
 
 # 📗 선택
 
-
 # ✅ 완료
 
-## Issue317. ppt-check 검증 배선 + m2slide lint 통합 (등록: 2026-08-11, 해결: 2026-08-11, commit: 647db93) ✅
+## Issue317: ppt-check 검증 배선 + m2slide lint 통합 (등록: 2026-08-11, 해결: 2026-08-11, commit: 647db93) ✅
 * **결정: 경고가 아니라 차단** (2026-08-11). 근거 — `check-conform` 의 FAIL 은 *"PowerPoint 가 거부하거나 깨져 보이는 위반"*이다. 통과시키면 `index.html` 에 다운로드 버튼까지 달려 배포된다. [`build-pptx.sh`](lib/pptx/build-pptx.sh) 가 구 pandoc 직접 경로로 **폴백하지 않는 것과 같은 이유**이며(성공으로 보이는 품질 회귀 차단), `--pptx` 는 옵트인 경로라 기본 빌드(`./m2slide.sh <P>`)에는 영향이 없다
 * **심각도 구분은 m2slide 가 하지 않는다.** FAIL/WARN 은 `check-conform` 이 이미 가르며 WARN 은 rc0 이라 통과한다 — igTest 35장 실측 `FAIL 0 · WARN 1`(템플릿 밖 폰트 Courier)에서 빌드 성공. m2slide 가 자체 임계를 또 두면 판정이 두 곳으로 갈라진다
 * **배선 결함 발견·수정**: 기존 코드는 검증 실패를 `❌ Failed to generate PPTX` 로 보고했다 — 파일은 생성됐는데 생성 실패라 하고, "pandoc 이 처리 못 하는 문법" 을 의심하라고 오도했다. `build-pptx.sh` 가 **산출 파일 갱신 여부**로 두 사건을 가른다 (rc 2 = 검증 실패·파일 있음 / rc 1 = 생성 실패·파일 없음). 낡은 산출물이 남아 있어도 mtime 비교로 오분류하지 않는다
@@ -48,7 +47,7 @@
     - `--pptx` 산출 직후 `ppt-check` 자동 실행, 실패 시 rc≠0 로 빌드 실패 ✅ — `md2pptx.py` 가 `check-conform`(`--lane a`) + `check-xml-order` 를 내장 실행하고, 그 rc 가 `build-pptx.sh` → `m2slide.sh` 로 전파된다
     - [`apply-verify-rules`](.claude/rules/apply-verify-rules.md) 의 lint 목록에 항목 추가 ✅ — §4.7 신설. **lint subcommand 가 아니라 `--pptx` 빌드 내장**이라는 점을 목록에 명시
 
-## Issue313. ig-selector 비용 게이트 배선 — 자동 팬아웃 금지 (등록: 2026-08-11, 해결: 2026-08-11, commit: ca62a88, fb49bbe, 7373785, 55e5895) ✅
+## Issue313: ig-selector 비용 게이트 배선 — 자동 팬아웃 금지 (등록: 2026-08-11, 해결: 2026-08-11, commit: ca62a88, fb49bbe, 7373785, 55e5895) ✅
 * 완료 실측 (2026-08-11, `Projects/igTest` 35장 덱): 스모크테스트 5개 단언 전부 통과 — 10장 `exit 4` / 9장 `exit 0`(임계 경계) · 파이프 삼킴 재현 · pipefail 시 4 보존 · 실덱 후보 6장이 프로젝트 임계 초과로 `exit 4`. 회귀 러너 [`z_test/ig-ppt/0.cost-gate.sh`](z_test/ig-ppt/0.cost-gate.sh) — ig-maker 를 돌리지 않으므로 **비용 0**
 * ⚠️ **등록 당시 가정이 반증됐다.** "덱이 20~40장이라 기본 임계에 거의 항상 걸린다"는 틀렸다 — 게이트가 세는 것은 **덱 장수가 아니라 후보 장수**이고 분류기가 크게 걷어낸다. 35장 → 후보 6장(17%) = 198만 토큰인데 기본 임계(warn 5 · hard 10)에서 **rc0 통과**했다. 즉 기본값은 m2slide 덱에서 사실상 무동작이며, 임계는 **올릴 것이 아니라 내려야** 한다
 * 확정 임계: `warn_pages: 2` · `hard_pages: 3` ([`ig-selector.yml.template`](data/ppt-integration/ig-selector.yml.template) 에 주석 해제 반영). 근거 — warn 2 는 Issue319 가 회귀 러너 팬아웃 상한으로 이미 확정한 값, hard 3 은 99만 토큰·75~90분으로 한 세션 무인 실행 상한선
@@ -64,7 +63,7 @@
     - media-creater 가 인포그래픽을 여러 장 요구할 때 **일괄 자동 실행 금지** ✅ — `tools.yml` `ig_maker.gate` 에 삼킴 경로·임계 실측 추가
     - exit 4 를 rc0 으로 뭉개는 wrapper 금지 — 스모크테스트로 확인 ✅
 
-## Issue319. 소규모 테스트 픽스처 + 회귀 러너 (등록: 2026-08-11, 해결: 2026-08-11, commit: d6e1aaa, 2dc8453, fea7dbc) ✅
+## Issue319: 소규모 테스트 픽스처 + 회귀 러너 (등록: 2026-08-11, 해결: 2026-08-11, commit: d6e1aaa, 2dc8453, fea7dbc) ✅
 * 완료 실측: 러너 2종 전부 통과. 픽스처는 `Projects/igTest`(git 미추적, playground 원본 복사로 재생성). ⚠️ 러너 작성 중 오탐 2건을 겪음 — ig-maker 가 헤더 주석에 규약 문구(`@import 0`)와 제거 대상 문자열(`4 › 23 / 39`)을 그대로 인용하므로 **XML 주석을 먼저 걷어내고 `<text>`/`<tspan>` 렌더 텍스트만 판정**해야 한다
 * 목적: 통합 검증을 **적은 페이지**로 돌린다. 40장짜리 실덱으로 검증하면 ig-maker 비용(장당 33만 토큰)과 회귀 원인 격리 난이도가 동시에 폭발한다.
 * depends: Issue309
@@ -79,7 +78,7 @@
     - `ppt-check --baseline Projects/igTest --regress-mode <mode> --strict` 로 판정
     - 비용 상한 명시 — 1번은 팬아웃 0(ppt-info 블록 데이터), ig-maker 팬아웃이 붙는 경로는 **2장 이하**로 제한
 
-## Issue318. 문서·룰 동기화 (등록: 2026-08-11, 해결: 2026-08-11, commit: 4235c61, fb49bbe) ✅
+## Issue318: 문서·룰 동기화 (등록: 2026-08-11, 해결: 2026-08-11, commit: 4235c61, fb49bbe) ✅
 * 목적: 통합 결과를 CLAUDE.md·룰·설계 문서에 반영해 다음 세션이 같은 조사를 반복하지 않게 한다.
 * depends: Issue312, Issue315
 * 구현 명세:
@@ -87,7 +86,7 @@
     - [`_doc_arch/authoring-pipeline.md`](_doc_arch/authoring-pipeline.md) 단계 5 갱신 · [`.claude/rules/data-access-rules.md`](.claude/rules/data-access-rules.md) 단계별 data 접근표에 ig 관련 항목 반영 여부 판정
     - [`_doc_arch/ig-ppt-integration.md`](_doc_arch/ig-ppt-integration.md) 의 미해결 마커(🚧/🔧) 정리
 
-## Issue316. theme CSS → reference.pptx 2단 배선 (등록: 2026-08-11, 해결: 2026-08-11, commit: 9c94d97) ✅
+## Issue316: theme CSS → reference.pptx 2단 배선 (등록: 2026-08-11, 해결: 2026-08-11, commit: 9c94d97) ✅
 * 목적: PPTX 가 m2slide 덱과 **같은 팔레트**를 쓰게 한다. 이 단계를 빼면 덱은 나오지만 색이 원본과 무관해진다(playground 실측: accent 검출 0회).
 * depends: Issue315
 * 상세:
@@ -101,7 +100,7 @@
     - 사용자 지정 potx 를 우선하는 override 경로를 남길지 설계에서 확정
     - 검증: 산출 pptx 에서 m2slide accent 색 검출 ≥1회 (playground 2번 케이스 기준)
 
-## Issue315. `m2slide.sh --pptx` → md2pptx.py 배선 (테마 반영) (등록: 2026-08-11, 해결: 2026-08-11, commit: 9c94d97) ✅
+## Issue315: `m2slide.sh --pptx` → md2pptx.py 배선 (테마 반영) (등록: 2026-08-11, 해결: 2026-08-11, commit: 9c94d97) ✅
 * 완료 실측 (igTest): accent 검출 17회 (구 경로 0회) · Malgun Gothic 193회 (0회) · `#layout-*` 누출 0건 (5건) · 전체 변환 35장 FAIL 0. 회귀 러너 [`z_test/ig-ppt/2.deck.sh`](z_test/ig-ppt/2.deck.sh) 4항목 통과
 * 목적: PPTX 산출이 테마를 잃는 현 상태를 고친다. pandoc 직접 호출을 글로벌 `ppt-deck` 의 **m2slide 전용 진입점**으로 교체한다.
 * depends: Issue309
@@ -116,7 +115,7 @@
     - 회귀 검증은 Issue319 픽스처로 — `./m2slide.sh igTest --pptx` (전체) + `--pages 1-3` 부분 변환. 통과 조건은 playground 2번 케이스와 동일(3장 · accent 색 반영 · `#layout-*` 누출 0)
     - 옵션 키가 추가되면([`_config.yml`](_config.org.yml) `pptx_reference` 등) [`config-sync-rules`](.claude/rules/config-sync-rules.md) 4곳 동기화 의무
 
-## Issue314. ig 산출 SVG 의 배포 규약 검증 (등록: 2026-08-11, 해결: 2026-08-11, commit: 9a5f7cb, 2dc8453) ✅
+## Issue314: ig 산출 SVG 의 배포 규약 검증 (등록: 2026-08-11, 해결: 2026-08-11, commit: 9a5f7cb, 2dc8453) ✅
 * 목적: ig-maker 가 발행한 `img/{ppt명}-{장표번호}.svg` 가 m2slide 의 단일 파일 배포 규약을 깨지 않는지 보장한다.
 * depends: Issue312
 * 상세:
@@ -127,7 +126,7 @@
     - SVG 내 외부 참조 검사 항목 추가 검토(현 lint 패턴은 localhost·절대경로 중심)
     - 대표 슬라이드 1장 `file://` 직접 열기 육안 검증
 
-## Issue312. media-creater 에 ig_maker 도구 등록 + design_html orphan 정리 (등록: 2026-08-11, 해결: 2026-08-11, commit: ca62a88, 8fad72b) ✅
+## Issue312: media-creater 에 ig_maker 도구 등록 + design_html orphan 정리 (등록: 2026-08-11, 해결: 2026-08-11, commit: ca62a88, 8fad72b) ✅
 * 완료 실측: `ig_maker` 도구로 실제 SVG 1장 산출 → 슬라이드 반영까지 확인. 구 `design_html` 은 handler 부재 orphan 이었음이 확정됐고 참조 3곳(tools.yml 2 · agent md 1) 전부 정리
 * 목적: 파이프라인 단계 5(media-creater)가 인포그래픽 요구를 ig-maker 로 라우팅하게 하고, 실체 없는 `design_html` handler 를 정리한다.
 * depends: Issue309, Issue311
@@ -140,7 +139,7 @@
     - [`.claude/agents/media-creater.md`](.claude/agents/media-creater.md) 의 "design-html 인포그래픽" 절 동기 수정
     - `./m2slide.sh --lint-data` rc0 확인
 
-## Issue311. 슬라이드 캡처 브리지 — md 덱 → ig-maker 입력 (등록: 2026-08-11, 해결: 2026-08-11, commit: 9a5f7cb) ✅
+## Issue311: 슬라이드 캡처 브리지 — md 덱 → ig-maker 입력 (등록: 2026-08-11, 해결: 2026-08-11, commit: 9a5f7cb) ✅
 * 목적: ig-maker 입력 계약(이미지 1장)과 m2slide 원본(md)의 간극을 메운다. 대상 슬라이드를 PNG 로 렌더해 ig-maker 에 넘기는 단일 경로를 만든다.
 * depends: Issue310
 * 상세:
@@ -152,7 +151,7 @@
     - dev-server 미기동 시 자동 `--serve start` (idempotent)
     - 실패는 fail-loud — 캡처 실패를 무시하고 빈 이미지로 진행 금지
 
-## Issue310. 프로젝트별 `.claude/pptx.yml` 경로 규약 도입 (등록: 2026-08-11, 해결: 2026-08-11, commit: fb49bbe) ✅
+## Issue310: 프로젝트별 `.claude/pptx.yml` 경로 규약 도입 (등록: 2026-08-11, 해결: 2026-08-11, commit: fb49bbe) ✅
 * 목적: ig-maker 4키(`asset_root`·`ppt_root`·`out_root`·`publish`)를 m2slide 프로젝트 구조에 착지시켜, 어느 덱에서 실행해도 산출물이 그 덱의 `img/` 로 발행되게 한다.
 * depends: Issue309
 * 상세:
@@ -164,7 +163,7 @@
     - `python3 ~/.claude/skills/ig-maker/scripts/igpath.py resolve --start Projects/<Name> --json` 이 의도한 4키를 내는지 실측 로그를 이슈에 첨부
     - `ppt/` 작업 폴더는 중간 산출물(`_source/`·`_org/`)을 담으므로 `.gitignore` 판정 필요 — [`repo-tracking-rules`](.claude/rules/repo-tracking-rules.md) 절차 적용
 
-## Issue309. ig-maker·ppt-maker 통합 설계 SSOT 작성 (등록: 2026-08-11, 해결: 2026-08-11, commit: fea7dbc) ✅
+## Issue309: ig-maker·ppt-maker 통합 설계 SSOT 작성 (등록: 2026-08-11, 해결: 2026-08-11, commit: fea7dbc) ✅
 * 목적: 글로벌 SCAR 로 완성된 `ig-maker`(인포그래픽)·`ppt-maker`(덱) 계열을 m2slide 의 **인포그래픽 생성기**·**PPT 생성 옵션** 자리에 붙이기 위한 경계·계약·순환 위험을 하나의 설계 문서로 확정. 후속 이슈 전부가 이 문서를 근거로 움직인다.
 * 상세:
     - 사전 분석 결과 3건이 이 문서의 출발점:
@@ -180,7 +179,7 @@
     - 글로벌 SCAR(`~/.claude/skills/ig-*`·`ppt-*`)는 **읽기만** 한다. 수정 필요가 발견되면 `~/.claude/Issue.md` 에 이슈 등록 후 별도 세션(global-scar-change-rules)
     - 기존 문서와의 관계 명시: [`_doc_arch/authoring-pipeline.md`](_doc_arch/authoring-pipeline.md) 단계 5(media-creater) · [`_doc_arch/component-slide.md`](_doc_arch/component-slide.md) · `data/htmlart/`
 
-## Issue308. 호문쿨루스 학습 결과를 policy 로 받는 파일럿 (등록: 2026-08-03, 해결: 2026-08-03, commit: 46966f4) ✅
+## Issue308: 호문쿨루스 학습 결과를 policy 로 받는 파일럿 (등록: 2026-08-03, 해결: 2026-08-03, commit: 46966f4) ✅
 * 목적: prj3(`~/.claude`) 가 학습(instinct) → policy yml **제안** 컴파일러를 완성했다(Issue334 P4-2). 본 프로젝트는 그 첫 소비처다. *"쓰다 보면 policy 가 생기는"* 파이프라인이 실제로 도는지 note-writer **1개 stage 로 검증**.
 * depends: prj3#Issue334
 * trigger: prj3#Issue334 P4-2 ✅ 완료 (commit e9c4324) → **충족** — `hooks/policy-compile.py` 실존 확인 후 진행
@@ -195,7 +194,7 @@
     - `data-access-rules.md` 격리 위반 없음 — 본 작업은 note-writer stage 범위만 다뤘고 타 stage `data/` 접근 없음
 * 범위 밖(후속 과제로 이월): 엔진 수정(prj3 소관) · 다른 stage 확대 · 자동 apply 배선 · m2slide 실 instinct 축적 후 재검증 · sink 프로젝트별 파라미터화(현재 매핑 1개 = 고정 sink 1개 한계)
 
-## Issue305. 이미지 정밀 편집(색만·글자만 교체) 지원 (등록: 2026-07-23, 해결: 2026-07-29, commit: 59405d7, cb52c5b, 958f816, 2c8a653) ✅
+## Issue305: 이미지 정밀 편집(색만·글자만 교체) 지원 (등록: 2026-07-23, 해결: 2026-07-29, commit: 59405d7, cb52c5b, 958f816, 2c8a653) ✅
 * 목적: schnell img2img 로는 부분 정밀 편집 불가(strength 0.3↑ 원본 복제 / 0.1 재해석 드리프트, 2026-07-13 실측). edit 전용 모델 기반 img-add `--edit` 모드를 media-creater 가 소비하여 슬라이드 이미지의 색·글자만 정밀 교체. Issue293 스타일 통일과 별개 기능.
 * depends: prj3#Issue277
 * trigger: prj3#Issue277 ✅ 완료 (img-add `--edit` 가용) + commit hash 기록 → **충족** (2026-07-29, commit a6f1b8b). 등록 시 차단 사유였던 fg1 모델 부재도 해소 — Kontext 는 `~/apps/flux/hf-cache/hub/models--black-forest-labs--FLUX.1-Kontext-dev` 에 설치됨(구 표기 `~/apps/flux/models/` 는 실경로 아님)
@@ -208,7 +207,7 @@
     - **text ⚠️ 조건부** — `Projects/AgenticCoding/img/s22_i1.png`(1793×843, 카드 4개) `(File Ops)`→`(File Work)`. 지시 대상 헤딩은 교체됐고 상단 2카드는 보존됐으나 **하단 2카드의 코드·한글이 gibberish 로 재생성**, 닫는 괄호도 유실. 증거: `_doc_work/capture/issue305-text-edit-evidence.png`(gitignore — 로컬 보존)
     - 위 실측을 `limits`·`edit_type_map`·`text_edit_gate`(라틴 문자 한정 · 텍스트 밀도 낮을 것 · 육안 확인 필수)에 박제. `region` 은 미검증으로 표기
     - `--lint-data` 통과 · 정책 yml 단독 커밋 + backup 선행(20260729-153832, 20260729-160352) 준수
-## Issue307. 런타임 relax 게이팅 소비 — enforce 스캐너가 덱 purpose 로 룰 완화 (등록: 2026-07-23, 해결: 2026-07-29, commit: 6d22698, 700bcb3) ✅
+## Issue307: 런타임 relax 게이팅 소비 — enforce 스캐너가 덱 purpose 로 룰 완화 (등록: 2026-07-23, 해결: 2026-07-29, commit: 6d22698, 700bcb3) ✅
 * 목적: Issue295 가 정의한 축 2 필드(룰 `applies_to_purpose`/`relax_when` + Info.md `purpose`)를 enforce 스캐너(`lib/lint-policy-artifacts.py`)가 런타임 소비 — 대상 덱 `purpose.primary` 를 읽어 `relax_when` 매치 목적의 덱에서 위반 skip(광고·아카이브 덱 통짜 래스터 정당 허용).
 * depends: Issue295
 * 승격 (2026-07-29, `(!)` 제거): 소비 설계 `_doc_arch/policy-goal-schema.md` "런타임 소비 게이팅" 절 확정 (commit 6d22698).
@@ -219,7 +218,7 @@
     - 골든 픽스처 `z_test/run-purpose-gate-fixture.sh` + `z_test/fixtures/policy/purpose-gate/` — 동일 위반이 promo 덱(relax_when:[promo]) skip / lecture 덱 검출 대조 고정.
 * 검증: 신규 게이팅 픽스처 rc0(4단언) · `run-policy-fixture.sh`·`run-purpose-fixture.sh` 회귀 통과 · 실 repo `--lint-data` 통과(실 룰 relax_when 미보유 → 게이트 무발화, 회귀 0).
 
-## Issue295. 덱 목적(purpose) enum 도입 — 정책 적용 강도의 덱 용도 스코프 (등록: 2026-07-20, 해결: 2026-07-23, commit: 7263d61, 795fde7) ✅
+## Issue295: 덱 목적(purpose) enum 도입 — 정책 적용 강도의 덱 용도 스코프 (등록: 2026-07-20, 해결: 2026-07-23, commit: 7263d61, 795fde7) ✅
 * 목적: 정책 룰이 모든 덱에 무차별 전역 강제되는 구조를 해소한다. 강의 덱에서 결함인 것(통짜 래스터·텍스트 미추출)이 광고 덱에서는 의도된 선택일 수 있으므로, 덱의 용도를 1급 메타로 두고 정책 적용 강도를 그 축으로 스코프한다.
 * 스코프 결정 (2026-07-23 사용자 A 선택): 본 이슈 = **스키마·필드·수집·lint 검증까지**. 런타임 완화 게이팅 소비는 enforce 스캐너 부재(현 2종만)로 검증 불가 → Issue307 로 분리.
 * 완료 범위:
@@ -232,7 +231,7 @@
 * 검증: `./m2slide.sh --lint-data` 통과(goal 9룰 + 검사 10·11) · `z_test/run-purpose-fixture.sh` rc0 · `z_test/run-policy-fixture.sh` 회귀 통과. questions.yml backup 선행 + 정책/코드 커밋 분리.
 * 근거 문서: `_doc_work/htm/hub_htm_20260720_192649_a_goal-taxonomy.htm`, plan `_doc_work/z_done/plan/purpose-enum_plan.md`
 
-## Issue306. Issue304 goal 룰 5건 enforce 스캐너 + 골든 픽스처 (등록: 2026-07-23, 해결: 2026-07-23, commit: d7d514c) ✅
+## Issue306: Issue304 goal 룰 5건 enforce 스캐너 + 골든 픽스처 (등록: 2026-07-23, 해결: 2026-07-23, commit: d7d514c) ✅
 * 목적: Issue304 가 goal 스키마로 전환한 5룰의 `goal_check` 술어에 실제 산출물 판정 코드가 미구현이라 enforce 불가. 각 술어별 스캐너 + 골든 픽스처로 enforce 승격 기반 마련.
 * depends: Issue304
 * 완료 범위 — `lib/lint-policy-artifacts.py` 검사 3~6 신설 (파일명 아닌 속성 판정):
@@ -245,7 +244,7 @@
 * 검증: `run-policy-fixture.sh` 회귀 통과(신규 11개 assert) + `./m2slide.sh --lint-data` rc0 + schema lint rc0. 정책 yml 미수정 → 커밋 규율 무관.
 * 설계 SSOT: `_doc_arch/policy-goal-schema.md` "산출물 enforce 스캐너 (검사 9)" 절 추가.
 
-## Issue304. Issue296 잔여 — 정책 goal 룰 5건 전환 (등록: 2026-07-23, 해결: 2026-07-23, commit: cc7c3bb, aa02a9b, 67e47aa, fa364e8, c8f5d92) ✅
+## Issue304: Issue296 잔여 — 정책 goal 룰 5건 전환 (등록: 2026-07-23, 해결: 2026-07-23, commit: cc7c3bb, aa02a9b, 67e47aa, fa364e8, c8f5d92) ✅
 * 목적: Issue296 파일럿(md-builder 3룰)에서 남긴 잔여 goal 전환 대상 5건. 각 룰이 목적 없는 플래그·주석 상태라 사례 A 형(파일명 의존 무력화)에 노출됨.
 * 완료 범위 — 5룰 **goal-oriented 스키마 전환** (goal_type/goal/goal_check 속성 spec + detect_hints 로 기존 정규식·자연어 조건 이관, confidence: low):
     - agenda-designer 2건: `chapter_no_redundant_title_slide`·`h1_no_duplicate_with_title` → hygiene / `h1_not_duplicate_title` (cc7c3bb)
@@ -258,7 +257,7 @@
 * 후속: enforce **판정 코드(스캐너)·골든 픽스처**는 Issue306 으로 분리 (Issue304 자체가 "판정 코드는 룰별 후속"으로 프레임 — 현 스캐너는 text_pattern_absent·sole_image 2종만 구현). 스캐너 정착 후 confidence medium/high 승격.
 * 근거 문서: `_doc_work/htm/hub_htm_20260721_215009_a_yml-audit.htm`
 
-## Issue300. 슬라이드 부제목 표시 정책 결정 (등록: 2026-07-21, 해결: 2026-07-23, commit: d094fda) ✅
+## Issue300: 슬라이드 부제목 표시 정책 결정 (등록: 2026-07-21, 해결: 2026-07-23, commit: d094fda) ✅
 * 목적: 상위 프로젝트 videoMaker(prj41) Issue19에서 위임. videoMaker Issue9(2026-04-13, commit 8fddb16)로 frontmatter `subtitle` 렌더링 자체는 구현됐으나, "그대로 노출 / 제거 / 상위 주제 값으로 대체" 중 어느 정책을 취할지 미결정 상태였음.
 * 결정: **(c) 현행 유지 확정** — frontmatter `subtitle` 값을 `_cover` layout `{{subtitle}}` slot 에 그대로 노출하는 현행 동작을 정책으로 확정. 코드 변경 없음.
 * 근거:
@@ -268,13 +267,13 @@
 * 정책 결정 폼: `_doc_work/htm/hub_htm_20260723_182841_b_subtitle-policy.htm` (사용자 (c) 선택)
 * 후속: 상위 videoMaker(prj41) Issue19 에 "정책=현행 유지 확정" 결과 반영 필요 (본 repo 범위 밖).
 
-## Issue303. data/htmlart/types.yml type_count drift 교정 (등록: 2026-07-23, 해결: 2026-07-23, commit: bc3e77d) ✅
+## Issue303: data/htmlart/types.yml type_count drift 교정 (등록: 2026-07-23, 해결: 2026-07-23, commit: bc3e77d) ✅
 * 목적: `data/htmlart/types.yml` `type_count: 26` 선언이 실제 타입 수(코드 `HTMLART_TYPES` Set 27 · yml 타입 키 27 · `_doc_arch` 문서 27종)와 어긋난 SSOT drift. Issue299 감사 중 발견(out-of-scope 로 이관됐던 건).
 * 근본 원인: v6 serpentine `bend_process`(Issue218, Bending Process 흡수)가 타입 헤더 주석 열거에서 누락 → 열거 합계가 26 으로 고정. 코드·yml 키·설계문서는 27 로 정상이었음.
 * 구현: `type_count: 26`→`27`, 헤더 주석 `26종`→`27종` + `v6 워크플로 1`→`v6 워크플로·serpentine 2`, `bend_process` 열거 행 추가.
 * 검증: type_count 27 == yml 키 27 == 코드 Set 27 정합. `./m2slide.sh --lint-data` 통과. backup 선행(`data/htmlart/_backup/20260723-182041-types.yml`).
 
-## Issue301. 챕터 경계에서 ←/→ 화살표 회색 노출 + 클릭 위임 (등록: 2026-07-21, 해결: 2026-07-23, commit: 3d44c4d) ✅
+## Issue301: 챕터 경계에서 ←/→ 화살표 회색 노출 + 클릭 위임 (등록: 2026-07-21, 해결: 2026-07-23, commit: 3d44c4d) ✅
 * 목적: 마우스/터치 클릭으로 다음/이전 페이지 이동 가능하게 함. reveal.js 기본 동작은 챕터 첫/마지막 슬라이드에서 ←/→ 컨트롤을 숨겨(`.enabled` 제거 + `disabled` 속성) 클릭 불가. m2slide는 챕터 경계에서 →가 다음 챕터, ←가 이전 챕터로 이어지므로 화살표를 숨기면 안 됨.
 * 방향 전환 경위:
     - 최초(2026-07-21): 별도 원형 `m2-nav-arrows` 버튼을 8개 layout에 추가 → 사용자가 스크린샷으로 지적한 대상은 기존 reveal.js **다이아몬드 컨트롤**(우하단 마름모)이었음. 원형 버튼은 다이아몬드와 중복되는 오해석 → 전량 revert
@@ -288,7 +287,7 @@
 * 후속(2026-07-23): 마지막 슬라이드에서 → 가 우측으로 삐져나오는 위치 버그 — reveal 기본이 비활성 ←/→에 `transform:translateX(±10px)`를 남기고 `.enabled`일 때만 `transform:none`으로 제자리 복귀시킴. 회색(비활성) 상태에도 항상 노출하므로 `.navigate-left/-right`에 `transform:none !important` 강제 → 활성/비활성 무관 마름모 정위치 유지. 검증: 마지막 슬라이드 → x=1663(뷰포트 1707 내), transform:none
 * 캡처: `_doc_work/capture/issue301-last-slide-gray-arrow.png`, `_doc_work/capture/issue301-last-slide-arrow-fixed.png`
 
-## Issue302. agenda markmap 챕터 노드 확장 미작동 — 평면 AGENDA 챕터에 슬라이드 children 부재 (등록: 2026-07-21, 해결: 2026-07-21, commit: e6897c7) ✅
+## Issue302: agenda markmap 챕터 노드 확장 미작동 — 평면 AGENDA 챕터에 슬라이드 children 부재 (등록: 2026-07-21, 해결: 2026-07-21, commit: e6897c7) ✅
 * 목적: 서브챕터(`### [..]`) 없는 평면 챕터 데크는 agenda 목차 markmap 의 각 챕터 노드 `children` 이 빈 배열이라 펼침 원이 그려지지 않아, 노드를 클릭해도 확장이 일어나지 않았다. `parseAgenda` 가 AGENDA.md 의 서브챕터 엔트리에서만 children 을 만드는 구조적 한계.
 * 상세:
     - 재현: 평면 5챕터 데크(fWarrangeCliIntro·fSnippetCliIntro·m2slide_info 등) 목차에서 챕터 노드 클릭 시 무반응. `tocData` 각 챕터 `children:[]` 확인.
@@ -299,7 +298,7 @@
     - 회귀 방지: children 이 이미 있는 노드(서브챕터 보유)는 미변경. fPmIntro 서브챕터 노드(1·2·5장) 보존 + 서브챕터 없던 3·4·6장만 슬라이드 보강 확인. lint rc=0(fWarrangeCliIntro·fSnippetCliIntro). 대표 빌드(m2slide_info·chapter_mode·single_mode·fPmIntro) 정상.
     - 적용 범위: chapter mode 전 데크(평면 목차 데크 포함) — 순수 추가라 회귀 없음. 초기 펼침 단계 축소·옵트인 플래그화는 후속 필요 시.
 
-## Issue298. 정책 yml 혼재 커밋 pre-commit 경고 훅 (등록: 2026-07-21) — 해결: 2026-07-21 (commit: 50de0fb) ✅
+## Issue298: 정책 yml 혼재 커밋 pre-commit 경고 훅 (등록: 2026-07-21) — 해결: 2026-07-21 (commit: 50de0fb) ✅
 * 목적: Issue265 Phase 4 에서 커밋 규율을 문서화했으나 강제 수단이 없어, 사례 B(정책 yml + 코드 + 산출물 혼합 커밋으로 회귀 원인 격리 불가)가 사람 주의력에만 의존한다. 문서 규율을 기계 경고로 보강한다.
 * depends: Issue265
 * trigger: Issue265 ✅ 완료 (commit 1fc4c24, 70fca45) — 규율 문서(`data-access-rules.md` "정책 yml 커밋 규율") 확정됨
@@ -316,7 +315,7 @@
 * 동반 허용: 설계 문서·lint 구현·정책 픽스처. 차단 아닌 경고. `_backup` 제외
 * 검증: 혼재(경고)·단독(무출력)·동반허용(무출력) 3케이스
 
-## Issue297. L2 프로젝트 override 병합 결과의 goal_check 정합성 검사 (등록: 2026-07-21) — 해결: 2026-07-21 (commit: 3e350bb) ✅
+## Issue297: L2 프로젝트 override 병합 결과의 goal_check 정합성 검사 (등록: 2026-07-21) — 해결: 2026-07-21 (commit: 3e350bb) ✅
 * 목적: `--lint-data` 검사 4~6 이 L1(`data/<stage>/*.yml`) 정의만 검사하므로, 프로젝트 override(`Projects/<N>/_pipeline/policy/<stage>.yml`)가 `goal_check` 를 덮어써 판정을 무력화해도 lint 가 통과한다. 정책 cascade 와 goal 스키마가 각각은 검증되지만 **병합 결과는 아무도 검증하지 않는** 사각지대다.
 * depends: Issue265
 * trigger: Issue265 ✅ 완료 (commit 1fc4c24, 70fca45)
@@ -334,7 +333,7 @@
 * deep-merge 시맨틱상 키 제거 불가 → 완화는 null 교체 형태로만 나타남을 반영
 * 현재 실 override(feedback·note-writer)는 goal 룰 무관 0쌍, 픽스처 `z_test/fixtures/policy/l2-override/` 5쌍(P1~P5·OK)으로 검증
 
-## Issue296. 나머지 정책 yml 9종 goal-oriented 전환 (등록: 2026-07-21) — 해결: 2026-07-21 (commit: 1e03c52, c63df03) ✅
+## Issue296: 나머지 정책 yml 9종 goal-oriented 전환 (등록: 2026-07-21) — 해결: 2026-07-21 (commit: 1e03c52, c63df03) ✅
 * 목적: Issue265 가 파일럿 1종(`heuristics.yml`)만 전환했으므로, 남은 정책 yml 이 여전히 목적 없는 플래그·정규식 상태로 남아 사례 A 형 무력화에 노출되어 있다. `--lint-data` 검사 4가 매 실행 시 미전환 플래그 후보 43개를 보고하는 것이 그 가시화다.
 * depends: Issue265
 * trigger: Issue265 ✅ 완료 (commit 1fc4c24, 70fca45) — 스키마·lint 정착 확인됨
@@ -356,7 +355,7 @@
 * 잔여 5건은 🌱 이슈후보에 기록(개별 goal_check 판정 코드가 독립 작업이라 건별 후속 분리)
 * 근거 문서: `_doc_work/htm/hub_htm_20260721_215009_a_yml-audit.htm`
 
-## Issue299. _doc_arch ↔ 소스코드 정합성 감사 (등록: 2026-07-21, 해결: 2026-07-21, commit: 없음—gitignore) ✅
+## Issue299: _doc_arch ↔ 소스코드 정합성 감사 (등록: 2026-07-21, 해결: 2026-07-21, commit: 없음—gitignore) ✅
 * 목적: `_doc_arch/` 영속 설계 문서가 참조하는 파일 경로·스크립트명·함수명·CLI 플래그·동작 서술이 현재 소스코드와 어긋난 곳(stale)을 전수 검토하여 교정.
 * plan: `_doc_work/z_done/plan/doc-arch-audit_plan.md`
 * task: `_doc_work/z_done/tasks/doc-arch-audit_task.md`
@@ -368,7 +367,7 @@
 * **커밋 없음 사유**: `_doc_arch`·`Issue.md`·`_doc_work` 가 `.gitignore` 대상(L4-6)이라 commit hash 생성 불가. `-f` 강제 추적·gitignore 수정 금지 지침 준수 — hash 없이 종결. (public remote 존재, 내부 설계문서 강제 추가 금지)
 * 방법론 원본: prj1#Issue306, fan-out: prj1#Issue307
 
-## Issue265. policy 데이터 yml 목적 지향(goal-oriented) 스키마 + confidence 가중치 도입 — 정책 무력화·오변경 예방 (등록: 2026-07-06, 보류: 2026-07-11, 보류해제: 2026-07-20, 해결: 2026-07-21, commit: 1fc4c24, 70fca45) ✅
+## Issue265: policy 데이터 yml 목적 지향(goal-oriented) 스키마 + confidence 가중치 도입 — 정책 무력화·오변경 예방 (등록: 2026-07-06, 보류: 2026-07-11, 보류해제: 2026-07-20, 해결: 2026-07-21, commit: 1fc4c24, 70fca45) ✅
 * branch따서 작업할 것. 
 * status: 완료 — 브랜치 `fix/issue265-policy-goal-schema` (main 병합 미수행, 사용자 검토 대기)
 * 범위 확정 (2026-07-20 사용자 결정): 축 1(룰 목적)만. 축 2(덱 목적 purpose enum)는 Issue295 로 분리. `goal_type` enum 7종 전량 채택
@@ -403,7 +402,7 @@
 * 설계 교정 1건: 초안 `image_area_ratio_max`(픽셀 수 → 면적비 프록시)가 저해상도 페이지 캡처(1440x810·1600x900)를 놓쳐 픽스처 3건 중 1건만 검출. md 소스로는 렌더 면적 판정이 원리적으로 불가하므로 폐기하고 `sole_image_in_slide` + `min_pixel_width` 로 교체 — 판정 불가능한 값을 그럴듯하게 적어두는 것이 본 이슈가 막으려는 실패 모드
 * 검증: `--lint-data` rc0(검사 1~5) · `z_test/run-policy-fixture.sh` rc0(위반 3건 검출·오검출 0) · 실 프로젝트 11개 잔재 0건 · `m2Slide_single_mode` 빌드 rc0
 
-## Issue294. m2slide.sh 프로젝트 이름 해석이 Projects_deck 덱을 못 찾음 (등록: 2026-07-20, 해결: 2026-07-20, commit: 49f64fe) ✅
+## Issue294: m2slide.sh 프로젝트 이름 해석이 Projects_deck 덱을 못 찾음 (등록: 2026-07-20, 해결: 2026-07-20, commit: 49f64fe) ✅
 * 목적: `./m2slide.sh <덱이름>` 이 `Projects/` 하위만 조회하여 `Projects_deck/decks/<cat>/<deck>` 덱을 "존재하지 않음"으로 처리하는 비대칭을 해소한다. dev-server(`_project_root`, Issue290)는 이미 덱을 해석하므로 브라우저에서는 열리는 덱이 빌드에서는 안 잡히며, 이 때문에 Issue292 라이선스 뱃지 소급 재빌드가 덱 저장소 전체를 조용히 건너뛰었다.
 * 상세:
     - 재현: `./m2slide.sh RamyeonCooking` → `❌ Error: Project directory does not exist: RamyeonCooking`. 같은 덱이 dev-server 에서는 `/p/RamyeonCooking/n/1/1` 로 정상 서빙됨
@@ -422,7 +421,7 @@
     - `Projects_deck/decks/*/*` 전수 스캔 — 덱 1건(RamyeonCooking) 전부 뱃지 보유, 소급 누락 잔존 0
 * 후속 관찰(이슈 아님): `agenda.html` 은 전 프로젝트 공통으로 뱃지 0 — RamyeonCooking 고유 회귀가 아니라 현행 삽입 대상 목록의 특성. 필요 시 별도 이슈로 판단.
 
-## Issue293. 공개 이미지 스타일 통일 (free_image → img2img) + 이미지 백엔드 img-add 전환 (등록: 2026-07-19, 해결: 2026-07-19, commit: c28d94f) ✅
+## Issue293: 공개 이미지 스타일 통일 (free_image → img2img) + 이미지 백엔드 img-add 전환 (등록: 2026-07-19, 해결: 2026-07-19, commit: c28d94f) ✅
 * 목적: free_image(Openverse CC)로 받은 사진이 덱의 톤·스타일과 따로 노는 문제를 img2img 재해석으로 해소하고, 2026-07-13 이후 신설된 글로벌 스킬 `img-add`(fg1 주력·jm4 폴백 자동 라우팅)로 이미지 생성 호출 경로를 통일한다.
 * 설계: `_doc_arch/media-creater-image-backend.md`
 * 상세:
@@ -446,7 +445,7 @@
     - `./m2slide.sh --lint-data` 통과 (파싱·categories↔priority·promotion status 3종 전부 ✅)
     - 미해결 이관: 정밀 편집(색만·글자만)은 edit 전용 모델(prj55 소관) 대기 → 이슈후보1. `image_restyle` 실사용 검증은 `_doc_arch` 🚧 TODO
 
-## Issue292. 라이선스 표기 자동 삽입 — 첫 장·마지막 장 뱃지 + 대비 규칙 (등록: 2026-07-14, 해결: 2026-07-14, commit: 659f9f1) ✅
+## Issue292: 라이선스 표기 자동 삽입 — 첫 장·마지막 장 뱃지 + 대비 규칙 (등록: 2026-07-14, 해결: 2026-07-14, commit: 659f9f1) ✅
 * 목적: LICENSE.md 이중 라이선스 정책("모든 산출물의 첫 장·마지막 장에 'Powered by finfra.kr, Made by m2slide' 표기 유지 의무", CC BY 4.0 근거)을 실제 빌드 산출물에 강제 반영.
 * plan: `_doc_work/z_done/plan/license-attribution_plan.md`
 * task: `_doc_work/z_done/tasks/license-attribution_task.md`
@@ -469,7 +468,7 @@
 
 # ⏸️ 보류
 
-## Issue145. Fragment 단계별 등장 + 색 강조 동시 적용 syntax 부재 (등록: 2026-05-10, 보류: 2026-05-10)
+## Issue145: Fragment 단계별 등장 + 색 강조 동시 적용 syntax 부재 (등록: 2026-05-10, 보류: 2026-05-10)
 * 목적: 한 요소에 두 개의 fragment-index를 거는 reveal.js 표준 패턴(등장 → 다음 단계에서 색 강조)을 m2slide 마크다운으로 자연스럽게 표현할 수 있게 함. 현재 인라인 attribute `{.fragment .highlight-red}`는 단일 class 세트만 li/p에 주입하므로 등장과 색 강조를 분리 적용할 수 없음.
 * 카테고리: Generator
 * 보류 사유: 사용자 결정 — 진행하지 않는 것으로 보류. 현재 raw HTML 우회 경로가 존재하고 사용 빈도가 낮아 우선순위 후순위. 재개 시 본 문서의 구현 명세 그대로 활용 가능.
@@ -505,7 +504,7 @@
     - `.claude/rules/md-m2slide-rules.md` "단계별 등장 — Pandoc inline attribute (Issue118)" 섹션에 옵션 A 신규 syntax 사례 추가
     - `Projects/animationTest/animationTest.md` 슬라이드 3·4 갱신 — 신규 syntax 데모로 전환
 
-## Issue42. `slide_ratio` 옵션 완전 제거 (보류: 2026-05-01)
+## Issue42: `slide_ratio` 옵션 완전 제거 (보류: 2026-05-01)
 * 목적: theme 시스템 도입 후 사실상 단일 분기(`none`)만 사용되는 `slide_ratio` 옵션을 코드·CSS·설정에서 완전 제거
 * 상세:
     - 도입 배경: c0a24ef(2025-11-28)에서 Reveal.js 기본 중앙정렬을 끄기 위해 `.ratio-none`/`.ratio-16-9`/`.ratio-3-2` 클래스 + `Reveal.initialize({width,height})` 분기로 도입
@@ -525,7 +524,7 @@
 
 # 📜 참고
 
-## Issue25. 배경 이미지 설정 기능 (보류: 2026-05-01)
+## Issue25: 배경 이미지 설정 기능 (보류: 2026-05-01)
 * 마크다운 메타데이터(YAML frontmatter)를 통해 전체 슬라이드의 배경 이미지를 지정하는 기능 구현
 * `background` 속성으로 이미지 경로 혹은 color 지정 지원
 * **보류 사유**: theme/{name}/slide.css 시스템(Issue36/38)으로 동일 목적 달성 가능 (ex: `.reveal { background: url('img/bg.png') center/cover; }`). 비기술 사용자가 마크다운만으로 슬라이드별 배경을 자주 바꾸는 use-case가 누적되면 재검토.

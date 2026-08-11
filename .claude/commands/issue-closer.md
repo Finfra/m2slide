@@ -22,14 +22,14 @@ date: 2026-05-01
 ### 이슈 헤더 형식 (완료 시)
 
 ```markdown
-## IssueNN. [제목] (등록: YYYY-MM-DD, 해결: YYYY-MM-DD, commit: <hash>) ✅
+## IssueNN: [제목] (등록: YYYY-MM-DD, 해결: YYYY-MM-DD, commit: <hash>) ✅
 ```
 
 ### GitHub Issue 연동
 
 `Issue.md` 상단에 명시된 규칙(`Issue.md:5-9`):
 
-- GitHub Issue 등록 시 `IssueNN. ` 접두사 제거
+- GitHub Issue 등록 시 `IssueNN: ` 접두사 제거
 - 등록 후 완료 시 `gh issue close {IssueNum}`
 
 해당 이슈가 GitHub에도 등록되어 있다면 종결과 함께 닫기:
