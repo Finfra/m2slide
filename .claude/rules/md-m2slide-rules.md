@@ -669,6 +669,13 @@ ASCII 와이어프레임을 변환 없이 **원문 그대로** D2Coding 모노�
 * D2Coding 웹폰트(CDN `d2coding@1.3.2`)는 `text-wireframe` 블록이 있는 데크에만 조건 주입 (file:// 배포 호환)
 * 도형 렌더가 필요하면 `ditaa`(영문 라벨 권장) 또는 `mermaid` 사용. 한글 라벨 + 텍스트 보존이 목적이면 `text-wireframe`
 
+## ⚠️ `pptx-info` 펜스 블록 — m2slide 마크다운에서 미지원 (Issue322)
+
+` ```pptx-info ` 는 글로벌 ppt-info(lane B 인포그래픽 덱)의 페이지 정의 입력이며 **m2slide 파서는 처리하지 않는다**. 실측(2026-08-18): HTML 빌드는 `<code class="language-pptx-info">` 코드블록 리터럴로 렌더되고(빌드는 깨지지 않음), `--pptx`(lane A)도 pandoc 일반 코드블록으로 통과한다(검증 rc0) — 즉 의도한 인포그래픽 페이지가 아니라 **yaml 소스가 청중에게 그대로 노출**된다.
+
+* m2slide 덱의 인포그래픽 경로는 **ig-maker SVG 발행**(`![](img/<ppt명>-<장표번호>.svg)` 참조)이 정본 — [`_doc_arch/ig-ppt-integration.md`](../../_doc_arch/ig-ppt-integration.md)
+* 인포그래픽 전용 덱(lane B)이 필요하면 m2slide 밖에서 글로벌 `/ppt-info` 경로를 쓴다
+
 # 이미지·자산
 
 * 이미지는 `Projects/{Name}/img/` 또는 `markdown/img/`에 배치
