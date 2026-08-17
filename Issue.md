@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 319
+* Issue HWM: 324
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -24,9 +24,67 @@
 
 # 🔥 진행 중
 
+## Issue320: ig·ppt·cartoon 설계 2차 정합 — 글로벌 8/11~8/17 변경 반영 (등록: 2026-08-18)
+* 목적: 1라운드(Issue309~319) 종결 이후 글로벌 *-maker 쪽에 들어온 변경(prj3 Issue382~388·412·425·426)을 m2slide 통합 SSOT 에 반영하고, [`ig-ppt-integration.md`](_doc_arch/ig-ppt-integration.md) 미해결 4건 + 상위 설계([`pptx-scar-design.md`](file:///Users/nowage/.claude/_doc_arch/pptx-scar-design.md) §8 "prj42 수정 필요 3건" 중 잔여 2건)를 재판정해 결정을 박제한다. 검토 결론 — **글로벌 *-maker 는 수정 불요**, m2slide 쪽 문서·배선 갱신으로 전부 흡수된다.
+* 상세:
+    - 반영 대상 글로벌 변경: `igsvg` 대조 게이트 재정의(prj3#388 — 입력을 5.svg 고정에서 해제, 기준은 `7.pptx` 문구·우회 플래그 없음) · `7.svg` 생성 주체 확정(#383 — 에이전트가 그리고 igsvg 는 판정만) · agent id 형식 집행(#384) · `.ready` `seeded_by` 쓰기 권한 확대(#382) · ig-selector 갈래 2 = promo-cartoon 위임(pptx-scar-design §6-1-c P5)
+    - 재판정 ①: 상위 설계 §8-2 `Projects/_ppt/` 공용 자산 루트 — **신설하지 않음**. m2slide 는 프로젝트=덱 단위고 테마가 프로젝트마다 다르다. `Projects/<N>/ppt/_asset_ppt` 상향 탐색 공유(Issue310)로 충분
+    - 재판정 ②: 파이프라인 단계 5 선별 자동화 — **사람 지목 유지**. 팬아웃·승인 게이트는 ig-selector 소유(Issue313)라 m2slide 가 자동화하면 게이트 우회가 된다
+    - 재판정 ③: `pptx.yml` 전 프로젝트 롤아웃 — **옵트인 유지**(필요 프로젝트만 템플릿 복사). 근거: ppt/ 폴더는 덱 작업이 실제로 있는 프로젝트에만 의미가 있다
+    - 부수 정정: [`.claude/rules/issue-rules.md`](.claude/rules/issue-rules.md) 의 완료 섹션명 기술(`🏁 완료-해결순`)이 실제 파일(`✅ 완료`)·상위 videoMaker 규칙(2026-05-10 단일화)과 어긋남 — 실물에 맞춰 정정
+* 구현 명세:
+    - `_doc_arch/ig-ppt-integration.md` 섹션 단위 Edit — "알려진 편차·미해결" 4건 재판정 결과 반영 + igsvg 게이트·카툰 편입 경로 절 추가
+    - `.claude/rules/issue-rules.md` 완료 섹션명 정정
+    - 검증: 문서 내 죽은 참조 0 · 미해결 마커 잔존은 근거와 함께만
+
+## Issue321: promo-cartoon(cartoon-maker) L2 정책 배선 — m2slide 최초 도입 + 파일럿 1장 (등록: 2026-08-18)
+* 목적: 글로벌 [`promo-cartoon`](file:///Users/nowage/.claude/skills/promo-cartoon/SKILL.md) 설계의 "최초 프로젝트 도입 시 L2 정책 파일 생성" TODO 를 m2slide 에서 이행한다. m2slide 제품 홍보 카툰(세로형 1장 SVG→PNG)을 이 repo 에서 정책 기반으로 생성 가능하게 한다.
+* 상세:
+    - L2 `data/promo-cartoon/policy.yml` — `product: m2slide` · `killer_scene_source: ~/_git/___common/_doc_base/promotion_0.initial.md`(m2slide Killer Scene ①~④ 표 실존 확인) · `output_dir: data/promo-cartoon/output/`
+    - gitignore 는 이미 충족 — 루트 `.gitignore` 의 `/data/*` 기본 제외 + 화이트리스트 방식이라 `data/promo-cartoon/` 은 화이트리스트 미추가로 자동 제외(`git check-ignore` 실측). 설계 문서의 ".gitignore 추가 필수"는 m2slide 에선 구조적으로 이행됨
+    - ⚠️ ③ `{{STEP*_ICON}}` 은 호출자 주입값 — **이모지 금지, SVG 도형 주입**(prj3#426 이 ④는 템플릿에서 해결했으나 ③은 호출자 책임으로 잔존. 이모지를 넣으면 rsvg 가 검은 사각으로 렌더)
+    - 마스코트 7종은 기존 스프라이트 재사용 — 이미지 생성 비용 0
+* 구현 명세:
+    - `data/promo-cartoon/policy.yml` 생성 (L2 허용 키만)
+    - 파일럿 카툰 1장 — m2slide Killer Scene ①("슬라이드를 고치지 말고 패턴을 고쳐라") 6블록 SVG 조립 + `rsvg-convert` PNG export → `data/promo-cartoon/output/`
+    - 검증: PNG 실렌더에서 검은 사각·실루엣 0 (③ 아이콘 SVG 도형 사용) · 마스코트 base64 embed 정상 · L1+L2 병합 값 확인
+
+## Issue322: ```pptx-info 펜스 블록의 m2slide 빌드 통과성 실측 + 사용 정책 박제 (등록: 2026-08-18)
+* 목적: 상위 설계 [`pptx-scar-design.md`](file:///Users/nowage/.claude/_doc_arch/pptx-scar-design.md) §8-3 이 prj42 몫으로 지정한 *"` ```pptx-info ` 블록을 파서가 통과시키는지 확인(미지원 코드블록으로 렌더될 수 있음)"* 을 이행한다. 실측 후 m2slide 마크다운에서의 사용 정책을 규칙으로 박제한다.
+* 상세:
+    - `pptx-info` 블록은 파트 C(ppt-info, lane B 인포그래픽 덱)의 페이지 정의 입력이다. m2slide 덱(lane A)의 인포그래픽 경로는 ig-maker SVG 발행(`img/`)이 정본이므로, m2slide 마크다운에서는 **쓰지 않는다**가 유력 — 실측으로 확정
+    - 확인 지점 2곳: ① m2slide HTML 빌드가 블록을 만나면 어떻게 렌더되나(코드블록 리터럴? 빌드 깨짐?) ② `--pptx`(md2pptx lane A) 경로에서의 처리
+* 구현 명세:
+    - 스크래치 프로젝트에 `pptx-info` 블록 포함 md 를 넣고 빌드 실측
+    - 결과를 [`md-m2slide-rules.md`](.claude/rules/md-m2slide-rules.md) 시각화 구성요소 절에 1항 추가 + `ig-ppt-integration.md` 연동
+    - 실측이 "빌드 깨짐"이면 대응 재판정(별도 이슈 분리)
+
+## Issue324: igTest 재구축 — 픽스처 초기화 + 통합 회귀 전판 + ig-maker 1장 E2E (등록: 2026-08-18)
+* depends: Issue320, Issue322
+* 목적: 사용자 지시("igTest 다시 만드는 수준") 이행 — playground 원본에서 픽스처를 fresh 재생성하고, 2차 정합 상태에서 통합 경로 전판(빌드 · `--pptx` 검증 차단 · 비용 게이트 · 회귀 러너 3종 · lint)을 재검증한다. ig-maker 1장 E2E(캡처→팬아웃→발행→슬라이드 참조)로 SVG 소비 경로를 재실증한다.
+* 상세:
+    - 기존 igTest 는 삭제하지 않고 스크래치로 이동 보존(오판 대비 — ig-maker-design §4-5 "삭제를 승인 대상으로 남겨 둔 절차가 오판을 막았다"와 같은 취지)
+    - 재생성 절차 = Issue319 규약: `~/.claude/playground/resource/m2slide` 복사(markdown 5챕터 + `_config.yml` + `VERSION` + `Info.md`) + [`data/ppt-integration/`](data/ppt-integration/README.md) 템플릿 2종 복사
+    - E2E 팬아웃은 **1장** — 게이트 임계(warn 2) 미만, 1라운드 선례(Issue312) 있음. 인스턴스는 sonnet 모델 명시(본 세션 모델 상속 금지 — 크레딧 과금 회피)
+    - 픽스처는 git 미추적(Issue319) — `--sync-projects` 실행 금지(추적 목록 부작용 실측 있음)
+* 구현 명세:
+    - 재구축: 이동 보존 → playground 복사 → 템플릿 복사 → `igpath resolve` 4키 기대값 확인
+    - 회귀: `./m2slide.sh igTest` 빌드 → `--pptx` 검증 통과 → `z_test/ig-ppt/0.cost-gate.sh` → `2.deck.sh` → lint(deployment)
+    - E2E: [`lib/ig/capture-for-ig.sh`](lib/ig/capture-for-ig.sh) → ig-maker 1장(sonnet) → `igpublish` → `04-strengths.md` 참조 → 재빌드 → `1.infographic.sh` 통과
+
 # 📕 중요
 
 # 📙 일반
+
+## Issue323: theme-from-css `--kn-accent` 오탐 — prj3 위임 + 임시 교정 수명 관리 (등록: 2026-08-18)
+* depends: prj3#Issue434
+* trigger: prj3#Issue434 ✅ 완료 + commit hash 기록 → [`build-pptx.sh`](lib/pptx/build-pptx.sh) 의 `--kn-accent` 임시 교정 제거 + igTest `--pptx` 재검증
+* 목적: [`ig-ppt-integration.md`](_doc_arch/ig-ppt-integration.md) 🔧 FIXME(palette 미지정 덱 accent 오탐 — 글로벌 `theme-from-css.py` 소관)를 prj3#Issue434 로 정식 위임하고, m2slide 쪽 임시 교정의 제거 조건을 명시한다. *-maker 는 prj82·범용 공용이라 m2slide 세션에서 직접 수정하지 않는다(사용자 지시 2026-08-18).
+* 상세:
+    - prj3#Issue434 등록 완료 (2026-08-18, prj3 commit 3c54dd7) — 오탐 메커니즘·폴백 명세·검증 조건 포함
+    - m2slide 는 그때까지 `build-pptx.sh` 의 임시 우회(palette 미지정 시 `--kn-accent` 덮어쓰기)를 유지한다
+* 구현 명세:
+    - 본 이슈는 prj3 해결 대기 — trigger 충족 시 임시 교정 제거 + 재검증 후 종결
 
 # 📗 선택
 
