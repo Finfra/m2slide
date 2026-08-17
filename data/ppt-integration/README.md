@@ -31,3 +31,19 @@ python3 ~/.claude/skills/ig-maker/scripts/igpath.py resolve --start Projects/<N>
 ```bash
 ./z_test/ig-ppt/0.cost-gate.sh     # ig-maker 를 돌리지 않는다. 장수만 센다
 ```
+
+## igTest 픽스처 재구축 시퀀스 (Issue324 실측 2026-08-18)
+
+픽스처를 처음부터 다시 만들 때의 검증된 순서. 1~4는 분 단위·비용 0, 5의 팬아웃 1장만 약 32만 토큰·23분(sonnet 실측 — 글로벌 장당 실측치와 일치).
+
+1. **보존**: 기존 `Projects/igTest` 는 삭제하지 말고 밖(스크래치)으로 이동
+2. **원본 복사**: `~/.claude/playground/resource/m2slide` 에서 `markdown/`·`_config.yml`·`VERSION`·`Info.md` 만 (빌드 산출물·`_pipeline/` 제외 — Issue319 규약)
+3. **템플릿 배치**: 본 폴더 2종 → `Projects/igTest/.claude/` (`pptx.yml` 의 `<덱이름>` → `strengths`) → `igpath resolve --start Projects/igTest --json` 으로 4키 확인
+4. **회귀**: `./m2slide.sh igTest` → `./m2slide.sh igTest --pptx`(rc0 = 검증 통과) → `./z_test/ig-ppt/0.cost-gate.sh` → `./z_test/ig-ppt/2.deck.sh`
+5. **E2E 1장** (게이트 임계 warn 2 미만):
+    - `./lib/ig/capture-for-ig.sh igTest 4 3 --deck strengths` — 덱 투입구가 없으면 fail-loud 로 `ppt-init` 명령을 안내한다(`_org/` 생성은 ppt-init 소관, 설계 §5-3-a)
+    - `python3 ~/.claude/skills/ppt-init/scripts/init.py strengths --lane b --root Projects/igTest/ppt --source <캡처>.png --theme strengths`
+    - `Agent(subagent_type="ig-maker")` page 1 — 작업 기준 디렉토리를 `Projects/igTest` 로 명시(4키 해소), m2slide SVG 규약 5종(특히 슬라이드 크롬 미포함·원문 문구 보존)을 프롬프트에 동봉
+    - `python3 ~/.claude/skills/ig-maker/scripts/igpublish.py --ppt strengths --pages 1 --start Projects/igTest`
+    - `markdown/04-strengths.md` 의 `::: cards` 7항목 블록을 `![](./img/strengths-1.svg)` 로 교체 (+ AGENDA.md `release_date` 갱신)
+    - `./z_test/ig-ppt/1.infographic.sh` — 검사 4(원문 보존)는 **렌더 텍스트·공백 무시** 기준이다: SVG 는 자동 줄바꿈이 없어 제목이 `<tspan>` 분절로 감싸이는데, raw `grep -F` 는 그것을 누락으로 오탐한다(2026-08-18 실측·교정)

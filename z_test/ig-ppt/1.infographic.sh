@@ -61,19 +61,22 @@ PY
   || { echo "  ❌ 페이지 번호가 SVG 에 박혔다 — 재빌드 시 실제 번호와 어긋난다"; fail=1; }
 
 # 원문 문구 보존 — 7개 항목 제목이 전부 살아 있어야 한다
-missing=""
-while IFS= read -r term; do
-  grep -qF "$term" "$SVG" || missing="$missing $term"
-done <<'TERMS'
-패턴을 고치면 덱 전체가 바뀜
-내장 컴포넌트
-멀티포맷 동시 산출
-코드처럼 리뷰
-PPT 양방향 변환
-어디서든 열리는 배포
-AI 저작 파이프라인
-TERMS
-[ -z "$missing" ] && echo "  ✅ 원문 7개 항목 전부 보존" || { echo "  ❌ 누락:$missing"; fail=1; }
+# ⚠️ 렌더 텍스트 기준 + 공백 무시 매칭 (Issue324, 2026-08-18) — SVG 는 자동 줄바꿈이 없어
+#    제목이 <tspan> 분절로 감싸일 수 있다(실측: "패턴을 고치면|덱 전체가 바뀜" 2분절).
+#    raw grep -F 는 분절 경계를 못 넘어 **보존된 문구를 누락으로 오탐**한다. 이 검사의
+#    목적은 문구 재작성 검출이므로, 주석·태그를 걷어낸 본문에서 공백 무시 부분일치로 판정한다.
+missing="$(python3 - "$SVG" <<'PY'
+import re, sys
+s = re.sub(r"<!--.*?-->", "", open(sys.argv[1], encoding="utf-8").read(), flags=re.S)
+body = " ".join(re.findall(r"<t(?:ext|span)[^>]*>(.*?)</t(?:ext|span)>", s, flags=re.S))
+body = re.sub(r"<[^>]+>", " ", body)
+norm = re.sub(r"\s+", "", body)
+terms = ["패턴을 고치면 덱 전체가 바뀜", "내장 컴포넌트", "멀티포맷 동시 산출",
+         "코드처럼 리뷰", "PPT 양방향 변환", "어디서든 열리는 배포", "AI 저작 파이프라인"]
+print(" ".join(t for t in terms if re.sub(r"\s+", "", t) not in norm))
+PY
+)"
+[ -z "$missing" ] && echo "  ✅ 원문 7개 항목 전부 보존 (렌더 텍스트 기준)" || { echo "  ❌ 누락: $missing"; fail=1; }
 
 # 발행본과 원본이 같은 내용인가 (igpublish 는 복사다)
 if [ -f "$SRC" ]; then
