@@ -24,19 +24,6 @@
 
 # 🔥 진행 중
 
-## Issue324: igTest 재구축 — 픽스처 초기화 + 통합 회귀 전판 + ig-maker 1장 E2E (등록: 2026-08-18)
-* depends: Issue320, Issue322
-* 목적: 사용자 지시("igTest 다시 만드는 수준") 이행 — playground 원본에서 픽스처를 fresh 재생성하고, 2차 정합 상태에서 통합 경로 전판(빌드 · `--pptx` 검증 차단 · 비용 게이트 · 회귀 러너 3종 · lint)을 재검증한다. ig-maker 1장 E2E(캡처→팬아웃→발행→슬라이드 참조)로 SVG 소비 경로를 재실증한다.
-* 상세:
-    - 기존 igTest 는 삭제하지 않고 스크래치로 이동 보존(오판 대비 — ig-maker-design §4-5 "삭제를 승인 대상으로 남겨 둔 절차가 오판을 막았다"와 같은 취지)
-    - 재생성 절차 = Issue319 규약: `~/.claude/playground/resource/m2slide` 복사(markdown 5챕터 + `_config.yml` + `VERSION` + `Info.md`) + [`data/ppt-integration/`](data/ppt-integration/README.md) 템플릿 2종 복사
-    - E2E 팬아웃은 **1장** — 게이트 임계(warn 2) 미만, 1라운드 선례(Issue312) 있음. 인스턴스는 sonnet 모델 명시(본 세션 모델 상속 금지 — 크레딧 과금 회피)
-    - 픽스처는 git 미추적(Issue319) — `--sync-projects` 실행 금지(추적 목록 부작용 실측 있음)
-* 구현 명세:
-    - 재구축: 이동 보존 → playground 복사 → 템플릿 복사 → `igpath resolve` 4키 기대값 확인
-    - 회귀: `./m2slide.sh igTest` 빌드 → `--pptx` 검증 통과 → `z_test/ig-ppt/0.cost-gate.sh` → `2.deck.sh` → lint(deployment)
-    - E2E: [`lib/ig/capture-for-ig.sh`](lib/ig/capture-for-ig.sh) → ig-maker 1장(sonnet) → `igpublish` → `04-strengths.md` 참조 → 재빌드 → `1.infographic.sh` 통과
-
 # 📕 중요
 
 # 📙 일반
@@ -54,6 +41,21 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue324: igTest 재구축 — 픽스처 초기화 + 통합 회귀 전판 + ig-maker 1장 E2E (등록: 2026-08-18, 해결: 2026-08-18, commit: 11c6ad1) ✅
+* 완료 실측 (2026-08-18): 재구축(기존본 스크래치 보존 → playground fresh 복사 → 템플릿 2종 → `igpath resolve` 4키 기대값 일치) + 회귀 전판 통과 — 빌드 · `--pptx` rc0(검증 내장) · `0.cost-gate` 5단언(실덱 후보 6장 exit 4 재현) · `2.deck` 4단언 · `1.infographic` 8단언 · lint-deployment. E2E 1장 — 인스턴스 `ig-1-5e92`(sonnet, 31.8만 토큰·23분·재시도 0, 글로벌 장당 실측치와 일치), `7.pptx` 이미지 0·텍스트 프레임 15·conform WARN 0, igsvg rc0, palette 채움(`seeded_by: ppt-init` 쓰기 확대 경로 prj3#382 검증), 발행본=원본 cmp 일치, 슬라이드 실렌더 육안 확인(크롬 비복제 — 1라운드의 revise 사유를 프롬프트 선제 명시로 재발 방지)
+* 부수 교정: 러너 검사 4(원문 보존)가 `<tspan>` 줄바꿈 분절을 누락으로 **오탐**(실측 5건) — 렌더 텍스트·공백 무시 기준으로 교정, 가짜 문구 반증 테스트로 검출력 유지 확인
+* depends: Issue320, Issue322
+* 목적: 사용자 지시("igTest 다시 만드는 수준") 이행 — playground 원본에서 픽스처를 fresh 재생성하고, 2차 정합 상태에서 통합 경로 전판(빌드 · `--pptx` 검증 차단 · 비용 게이트 · 회귀 러너 3종 · lint)을 재검증한다. ig-maker 1장 E2E(캡처→팬아웃→발행→슬라이드 참조)로 SVG 소비 경로를 재실증한다.
+* 상세:
+    - 기존 igTest 는 삭제하지 않고 스크래치로 이동 보존(오판 대비 — ig-maker-design §4-5 "삭제를 승인 대상으로 남겨 둔 절차가 오판을 막았다"와 같은 취지)
+    - 재생성 절차 = Issue319 규약: `~/.claude/playground/resource/m2slide` 복사(markdown 5챕터 + `_config.yml` + `VERSION` + `Info.md`) + [`data/ppt-integration/`](data/ppt-integration/README.md) 템플릿 2종 복사
+    - E2E 팬아웃은 **1장** — 게이트 임계(warn 2) 미만, 1라운드 선례(Issue312) 있음. 인스턴스는 sonnet 모델 명시(본 세션 모델 상속 금지 — 크레딧 과금 회피)
+    - 픽스처는 git 미추적(Issue319) — `--sync-projects` 실행 금지(추적 목록 부작용 실측 있음)
+* 구현 명세:
+    - 재구축: 이동 보존 → playground 복사 → 템플릿 복사 → `igpath resolve` 4키 기대값 확인
+    - 회귀: `./m2slide.sh igTest` 빌드 → `--pptx` 검증 통과 → `z_test/ig-ppt/0.cost-gate.sh` → `2.deck.sh` → lint(deployment)
+    - E2E: [`lib/ig/capture-for-ig.sh`](lib/ig/capture-for-ig.sh) → ig-maker 1장(sonnet) → `igpublish` → `04-strengths.md` 참조 → 재빌드 → `1.infographic.sh` 통과
 
 ## Issue322: ```pptx-info 펜스 블록의 m2slide 빌드 통과성 실측 + 사용 정책 박제 (등록: 2026-08-18, 해결: 2026-08-18, commit: e496f0c) ✅
 * 완료 실측 (스크래치 프로젝트, 2026-08-18): HTML 빌드 = `<code class="language-pptx-info hljs">` 코드블록 리터럴 렌더·빌드 정상. `--pptx`(lane A) = pandoc 일반 코드블록 통과·검증 rc0. 즉 빌드는 비파괴지만 **yaml 소스가 청중에 노출** → "m2slide 마크다운에서 쓰지 않는다" 정책을 [`md-m2slide-rules`](.claude/rules/md-m2slide-rules.md) 에 박제 + 통합 SSOT 판정 완료 표기
