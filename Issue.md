@@ -26,20 +26,6 @@
 
 # 📕 중요
 
-## Issue327: pptx 원고 생성기 골격 — `lib/pptx/build-source.py` 신설 (등록: 2026-08-18)
-* depends: Issue326
-* 목적: m2slide 만 아는 것(빌드 지식)을 pptx 경로에 전달할 **유일한 통로**를 만든다. 구조 슬라이드·layout·cards 는 원고 md 에 없고 `_config.yml`·AGENDA·빌더가 만들기 때문에, md 만 읽는 글로벌 변환기는 원리적으로 알 수 없다.
-* 상세:
-    - 아키텍처 결정 근거·대안 3안 비교는 [`pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) "아키텍처 결정" 절. 채택안 ⓒ = **중간 원고**
-    - `md2pptx.py` 는 위치 인자로 md 파일 목록을 받으므로(`md nargs="*"`), `--m2slide <폴더>` 대신 **생성 원고를 넘기면** 글로벌 수정 없이 성립한다
-    - 산출 위치 `Projects/<N>/_pipeline/pptx/source/*.md` — `_pipeline/` 은 git 미추적([repo-tracking-rules](.claude/rules/repo-tracking-rules.md))
-    - ⚠️ **내용을 새로 쓰지 않는다.** 문구는 원본 그대로 옮기고 구조만 만든다 — 넘으면 두 산출물이 다른 말을 하기 시작한다
-* 구현 명세:
-    - 본 이슈 범위는 **골격 + 문법 정리(G5)** 까지: `{.fragment}`·`<!-- .element: -->`·`::right::`·`#id-*`·비-pandoc 슬롯 fenced div 제거·평탄화
-    - 구조 슬라이드 주입은 Issue328, layout 유도는 Issue329 로 분리 (한 커밋에 몰면 회귀 원인 격리가 안 된다)
-    - `build-pptx.sh` 가 원고 생성 → 그 목록을 `md2pptx.py` 에 전달하도록 배선 교체
-    - 검증: 산출 pptx 에서 `{.`·`:::`·`#layout-` 리터럴 0 (현행 `{.fragment}` 4번 장·`# ` 5번 장 누출)
-
 ## Issue328: 구조 슬라이드 주입 — cover·agenda·챕터 TOC 12장 복원 (등록: 2026-08-18)
 * depends: Issue327
 * 목적: 원본 39장 중 **12장(cover 1 · agenda 1 · 챕터 TOC 10)이 pptx 에 통째로 없다.** 이 장들은 원고 md 에 존재하지 않고 m2slide 빌드가 주입하므로, 원고 생성기가 같은 일을 pptx 원고에도 해야 한다.
@@ -104,6 +90,23 @@
     - 검증: 해당 장이 그림 0·편집 가능한 도형 텍스트로 존재 (`check-conform --lane a`)
 
 # ✅ 완료
+
+## Issue327: pptx 원고 생성기 골격 — `lib/pptx/build-source.py` 신설 (등록: 2026-08-18, 해결: 2026-08-18, commit: 0338cc3) ✅
+* 완료 실측 (2026-08-18): [`build-source.py`](lib/pptx/build-source.py) 신설 + [`build-pptx.sh`](lib/pptx/build-pptx.sh) 를 `--m2slide` 자동수집 → **중간 원고 전달**로 교체. igTest — 산출 pptx 리터럴 누출 **0건**(`{.`·`:::`·`#layout-`·`#id-`·주석), 45장·Title 39(87%)·FAIL 0 유지. single mode 회귀 없음(aTest 42장 FAIL 0, 정리 attr 10·`#id` 31·심벌 8·애니 3)
+* 🔑 **G8 발견·해소** — ig-maker 가 만든 `img/strengths-1.svg`(장당 33만 토큰)가 pptx 에서 **조용히 누락**되고 있었다. 원고는 `markdown/` 에 있고 실물은 프로젝트 루트 `img/` 에 있는데 **빌드만 두 곳을 병합 복사**하기 때문. 변환 로그가 `✕ 없음` 을 정직하게 찍었지만 빌드가 성공으로 끝나 아무도 보지 않았다 — *"성공으로 보이는 품질 회귀"*. 생성기가 m2slide 탐색 규칙(원고 옆 → 프로젝트 루트)으로 해소: **이미지 파일없음 1→0 · SVG 변환 0→1**(산출 94KB→179KB)
+* 역할 경계 준수: `#layout-*` 제거·fenced div 껍데기·mermaid 렌더는 **md2pptx 소관이라 건드리지 않았다** — 같은 판정을 두 곳에서 하면 갈린다(Issue323 에서 실제로 겪은 형태)
+* depends: Issue326
+* 목적: m2slide 만 아는 것(빌드 지식)을 pptx 경로에 전달할 **유일한 통로**를 만든다. 구조 슬라이드·layout·cards 는 원고 md 에 없고 `_config.yml`·AGENDA·빌더가 만들기 때문에, md 만 읽는 글로벌 변환기는 원리적으로 알 수 없다.
+* 상세:
+    - 아키텍처 결정 근거·대안 3안 비교는 [`pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) "아키텍처 결정" 절. 채택안 ⓒ = **중간 원고**
+    - `md2pptx.py` 는 위치 인자로 md 파일 목록을 받으므로(`md nargs="*"`), `--m2slide <폴더>` 대신 **생성 원고를 넘기면** 글로벌 수정 없이 성립한다
+    - 산출 위치 `Projects/<N>/_pipeline/pptx/source/*.md` — `_pipeline/` 은 git 미추적([repo-tracking-rules](.claude/rules/repo-tracking-rules.md))
+    - ⚠️ **내용을 새로 쓰지 않는다.** 문구는 원본 그대로 옮기고 구조만 만든다 — 넘으면 두 산출물이 다른 말을 하기 시작한다
+* 구현 명세:
+    - 본 이슈 범위는 **골격 + 문법 정리(G5)** 까지: `{.fragment}`·`<!-- .element: -->`·`::right::`·`#id-*`·비-pandoc 슬롯 fenced div 제거·평탄화
+    - 구조 슬라이드 주입은 Issue328, layout 유도는 Issue329 로 분리 (한 커밋에 몰면 회귀 원인 격리가 안 된다)
+    - `build-pptx.sh` 가 원고 생성 → 그 목록을 `md2pptx.py` 에 전달하도록 배선 교체
+    - 검증: 산출 pptx 에서 `{.`·`:::`·`#layout-` 리터럴 0 (현행 `{.fragment}` 4번 장·`# ` 5번 장 누출)
 
 ## Issue323: theme-from-css `--kn-accent` 오탐 — prj3 위임 + 임시 교정 수명 관리 (등록: 2026-08-18, 해결: 2026-08-18, commit: 81ea414) ✅
 * 완료 실측 (2026-08-18): **trigger 충족** — prj3#Issue434 가 `cc01ad8`(`:root --kn-accent` 폴백)로 완료됨을 확인. m2slide 임시 교정 36줄 제거 후 **글로벌 단독 산출이 구 교정본과 accent 4색 전부 일치**(`#F5C518 #FFE15A #C49D13 #977A0E` — 실렌더 `--kn-accent` 와 같다). reference.pptx accent1~4 반영 확인 · `2.deck` 러너 5단언 통과 · `check-conform --lane a` FAIL 0
