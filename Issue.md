@@ -89,16 +89,6 @@
     - lane A 완주(Issue326~329)와 parity 러너(Issue330) 통과가 선행 — 구조가 틀린 덱을 오케스트레이션으로 감싸면 결함이 자동화된다
     - m2slide 쪽은 **호출과 결과 회수**만. 오케스트레이션 로직을 복제하지 않는다
 
-## Issue323: theme-from-css `--kn-accent` 오탐 — prj3 위임 + 임시 교정 수명 관리 (등록: 2026-08-18)
-* depends: prj3#Issue434
-* trigger: prj3#Issue434 ✅ 완료 + commit hash 기록 → [`build-pptx.sh`](lib/pptx/build-pptx.sh) 의 `--kn-accent` 임시 교정 제거 + igTest `--pptx` 재검증
-* 목적: [`ig-ppt-integration.md`](_doc_arch/ig-ppt-integration.md) 🔧 FIXME(palette 미지정 덱 accent 오탐 — 글로벌 `theme-from-css.py` 소관)를 prj3#Issue434 로 정식 위임하고, m2slide 쪽 임시 교정의 제거 조건을 명시한다. *-maker 는 prj82·범용 공용이라 m2slide 세션에서 직접 수정하지 않는다(사용자 지시 2026-08-18).
-* 상세:
-    - prj3#Issue434 등록 완료 (2026-08-18, prj3 commit 3c54dd7) — 오탐 메커니즘·폴백 명세·검증 조건 포함
-    - m2slide 는 그때까지 `build-pptx.sh` 의 임시 우회(palette 미지정 시 `--kn-accent` 덮어쓰기)를 유지한다
-* 구현 명세:
-    - 본 이슈는 prj3 해결 대기 — trigger 충족 시 임시 교정 제거 + 재검증 후 종결
-
 # 📗 선택
 
 ## Issue331: lane B — cards·htmlart 를 네이티브 도형으로 (등록: 2026-08-18)
@@ -114,6 +104,18 @@
     - 검증: 해당 장이 그림 0·편집 가능한 도형 텍스트로 존재 (`check-conform --lane a`)
 
 # ✅ 완료
+
+## Issue323: theme-from-css `--kn-accent` 오탐 — prj3 위임 + 임시 교정 수명 관리 (등록: 2026-08-18, 해결: 2026-08-18, commit: 81ea414) ✅
+* 완료 실측 (2026-08-18): **trigger 충족** — prj3#Issue434 가 `cc01ad8`(`:root --kn-accent` 폴백)로 완료됨을 확인. m2slide 임시 교정 36줄 제거 후 **글로벌 단독 산출이 구 교정본과 accent 4색 전부 일치**(`#F5C518 #FFE15A #C49D13 #977A0E` — 실렌더 `--kn-accent` 와 같다). reference.pptx accent1~4 반영 확인 · `2.deck` 러너 5단언 통과 · `check-conform --lane a` FAIL 0
+* 판정 근거: 같은 판정을 로컬·글로벌 두 곳에서 하면 갈린다. 글로벌이 같은 로직(`shade()` 포함)을 승계했으므로 로컬 사본은 중복이며, 남겨 두면 다음 글로벌 개선이 로컬 덮어쓰기에 가려진다
+* depends: prj3#Issue434
+* trigger: prj3#Issue434 ✅ 완료 + commit hash 기록 → [`build-pptx.sh`](lib/pptx/build-pptx.sh) 의 `--kn-accent` 임시 교정 제거 + igTest `--pptx` 재검증
+* 목적: [`ig-ppt-integration.md`](_doc_arch/ig-ppt-integration.md) 🔧 FIXME(palette 미지정 덱 accent 오탐 — 글로벌 `theme-from-css.py` 소관)를 prj3#Issue434 로 정식 위임하고, m2slide 쪽 임시 교정의 제거 조건을 명시한다. *-maker 는 prj82·범용 공용이라 m2slide 세션에서 직접 수정하지 않는다(사용자 지시 2026-08-18).
+* 상세:
+    - prj3#Issue434 등록 완료 (2026-08-18, prj3 commit 3c54dd7) — 오탐 메커니즘·폴백 명세·검증 조건 포함
+    - m2slide 는 그때까지 `build-pptx.sh` 의 임시 우회(palette 미지정 시 `--kn-accent` 덮어쓰기)를 유지한다
+* 구현 명세:
+    - 본 이슈는 prj3 해결 대기 — trigger 충족 시 임시 교정 제거 + 재검증 후 종결
 
 ## Issue326: `--slide-level 2` 전환 — 제목 소실(5/35) 복원 (등록: 2026-08-18, 해결: 2026-08-18, commit: 6ea4db9) ✅
 * 완료 실측 (2026-08-18): [`build-pptx.sh`](lib/pptx/build-pptx.sh) 에 `--slide-level 2` 전달(사용자 인자가 뒤에 와서 덮을 수 있게 배치). igTest 재산출 — **35장 Title 5(14%) → 45장 Title 39(87%)**, `check-conform --lane a` FAIL 0 유지(WARN 1 = 기존 Courier). single mode 회귀 없음 확인: aTest 41장 Title 8(20%) → 42장 Title 38(90%) — 두 모드 다 H2 가 슬라이드 제목이라는 같은 규약을 따르기 때문
