@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 324
+* Issue HWM: 332
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -26,7 +26,79 @@
 
 # 📕 중요
 
+## Issue326: `--slide-level 2` 전환 — 제목 소실(5/35) 복원 (등록: 2026-08-18)
+* depends: Issue325
+* 목적: PPTX 산출물의 **86% 슬라이드에 제목이 없는** 상태를 고친다. m2slide 는 **H2 가 슬라이드 제목**인데 변환이 `--slide-level=1`(H1 경계)로 돌아 H2 가 본문 첫 줄로 강등된다.
+* 상세:
+    - 🟢 **실측으로 이미 확인된 해법** (2026-08-18): 같은 원고·같은 reference 로 `--slide-level` 만 바꾼 결과 — `1` → 35장·Title **5**장 / `2` → 45장·Title **39**장. **39 는 원본 HTML 슬라이드 수와 정확히 일치**한다
+    - 45−39=6 은 H1 챕터 진입 장이 별도 슬라이드로 서기 때문 — 없앨 것이 아니라 `Section Header` 로 매핑할 대상(Issue329)
+    - 비용 0·즉시 되돌림 가능. 다른 격차와 달리 **인자 한 개**다
+* 구현 명세:
+    - [`lib/pptx/build-pptx.sh`](lib/pptx/build-pptx.sh) 가 `md2pptx.py` 호출 시 `--slide-level 2` 전달
+    - ⚠️ single mode 덱(H1 이 슬라이드 제목인 프로젝트)에서 회귀하지 않는지 확인 — 필요하면 chapter/single 판별로 레벨을 가른다
+    - 검증: `igTest` 재산출 후 Title placeholder ≥95% · `check-conform --lane a` FAIL 0 · 기존 [`2.deck.sh`](z_test/ig-ppt/2.deck.sh) 통과 유지
+
+## Issue327: pptx 원고 생성기 골격 — `lib/pptx/build-source.py` 신설 (등록: 2026-08-18)
+* depends: Issue326
+* 목적: m2slide 만 아는 것(빌드 지식)을 pptx 경로에 전달할 **유일한 통로**를 만든다. 구조 슬라이드·layout·cards 는 원고 md 에 없고 `_config.yml`·AGENDA·빌더가 만들기 때문에, md 만 읽는 글로벌 변환기는 원리적으로 알 수 없다.
+* 상세:
+    - 아키텍처 결정 근거·대안 3안 비교는 [`pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) "아키텍처 결정" 절. 채택안 ⓒ = **중간 원고**
+    - `md2pptx.py` 는 위치 인자로 md 파일 목록을 받으므로(`md nargs="*"`), `--m2slide <폴더>` 대신 **생성 원고를 넘기면** 글로벌 수정 없이 성립한다
+    - 산출 위치 `Projects/<N>/_pipeline/pptx/source/*.md` — `_pipeline/` 은 git 미추적([repo-tracking-rules](.claude/rules/repo-tracking-rules.md))
+    - ⚠️ **내용을 새로 쓰지 않는다.** 문구는 원본 그대로 옮기고 구조만 만든다 — 넘으면 두 산출물이 다른 말을 하기 시작한다
+* 구현 명세:
+    - 본 이슈 범위는 **골격 + 문법 정리(G5)** 까지: `{.fragment}`·`<!-- .element: -->`·`::right::`·`#id-*`·비-pandoc 슬롯 fenced div 제거·평탄화
+    - 구조 슬라이드 주입은 Issue328, layout 유도는 Issue329 로 분리 (한 커밋에 몰면 회귀 원인 격리가 안 된다)
+    - `build-pptx.sh` 가 원고 생성 → 그 목록을 `md2pptx.py` 에 전달하도록 배선 교체
+    - 검증: 산출 pptx 에서 `{.`·`:::`·`#layout-` 리터럴 0 (현행 `{.fragment}` 4번 장·`# ` 5번 장 누출)
+
+## Issue328: 구조 슬라이드 주입 — cover·agenda·챕터 TOC 12장 복원 (등록: 2026-08-18)
+* depends: Issue327
+* 목적: 원본 39장 중 **12장(cover 1 · agenda 1 · 챕터 TOC 10)이 pptx 에 통째로 없다.** 이 장들은 원고 md 에 존재하지 않고 m2slide 빌드가 주입하므로, 원고 생성기가 같은 일을 pptx 원고에도 해야 한다.
+* 상세:
+    - 원본 layout 분포 실측(2026-08-18): `_contents` 29 · `_toc` 10 · `chapter` 5 · `_cover` 1 · `_agenda` 1
+    - cover 메타 출처는 `markdown/AGENDA.md` frontmatter(instructor·version·lecture_date 등) + `_config.yml` `cover_enabled`·`cover_layout` — [`meta-yml.md`](_doc_arch/meta-yml.md) 규약 준수
+    - 챕터 TOC 는 각 챕터의 H2 목록에서 생성 (`toc_card_mode` 는 HTML 전용 표현이므로 pptx 에서는 불릿 목록으로 등가 처리)
+* 구현 명세:
+    - 원고 생성기가 cover(문서 최상단 제목·부제 메타) · agenda(H2+불릿) · 챕터 TOC(각 챕터 진입부) 를 md 로 생성
+    - `cover_enabled: false` 프로젝트에서는 주입하지 않는다 — 설정을 존중
+    - 검증: 산출 장수가 원본 `<section>` 수와 대응 · cover/agenda/TOC 각 1장 이상 실존
+
 # 📙 일반
+
+## Issue329: 테마 일치 완성 — layout 유도 매핑 + 코드 폰트 이탈 제거 (등록: 2026-08-18)
+* depends: Issue327
+* 목적: 색·서체는 옮겨졌지만(accent `F5C518`·Malgun Gothic 실측 확인) **layout 개념과 코드 서식이 이탈**해 있다. m2slide layout 5종과 pptx 마스터의 대응을 세우고 템플릿 밖 폰트를 없앤다.
+* 상세:
+    - 🟢 **초기 판단이 실측에서 뒤집혔다** — "마스터 레이아웃을 신설해야 한다"고 봤으나, `theme2reference.py --adapt` 가 표준 11종을 **이미 만들어 두었다**(reference.pptx 실측). 즉 G3 는 마스터 문제가 아니라 **원고를 그 모양으로 쓰는 문제**다
+    - pandoc 은 레이아웃을 이름으로 고르지 않고 **슬라이드 구조로 자동 선택**한다 → 매핑표는 [`pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) "layout 매핑" 절
+    - G6: `Courier` 15회(코드블록). 출처가 reference 테마인지 pandoc 하드코딩인지 **미판정** — 전자면 글로벌(prj3) 위임, 후자면 원고에서 코드블록 표현 교체
+* 구현 명세:
+    - 원고 생성기에 layout 유도 규칙 구현 (`chapter`→H1 단독 / 도해 장→이미지+캡션 / 2분할→`::: columns`)
+    - 코드 폰트 출처 판정 후 분기 — 위임이면 `~/.claude/Issue.md` 등록(*-maker·ppt-* 무수정 원칙)
+    - 검증: 산출 pptx 레이아웃 분포가 원본 layout 분포와 대응 · 테마 밖 폰트 0 · `check-conform --lane a` WARN 감소
+
+## Issue330: parity 회귀 러너 — `z_test/ig-ppt/3.parity.sh` (등록: 2026-08-18)
+* depends: Issue326
+* 목적: 충실도를 **눈이 아니라 러너가** 판정하게 한다. 기존 [`2.deck.sh`](z_test/ig-ppt/2.deck.sh)는 *"3장 나오고 색이 있고 지시자가 안 샜다"* 만 보므로 **35장이 제목 없이 나와도 통과했다** — 실제로 통과했고, 그래서 결함이 배포까지 갔다.
+* 상세:
+    - 판정 기준은 **원본 HTML** 이다 — 그쪽이 정본이고, 두 산출물을 같은 잣대로 재는 유일한 지점이다
+    - 팬아웃 0 이라 비용 0 — 매 빌드에 붙일 수 있다
+* 구현 명세:
+    - 단언 7종: 슬라이드 수 대응 · Title placeholder ≥95% · 제목 문자열·순서 일치 · 구조 슬라이드 존재 · 마크다운 누출 0 · 테마 밖 폰트 0 · `check-conform --lane a` FAIL 0
+    - 픽스처는 `Projects/igTest` (Issue324 재구축본)
+    - 러너 작성 시 **오탐 주의** — 선례 2건(XML 주석 인용·`<tspan>` 분절)이 있다. 렌더 텍스트 기준으로 판정할 것
+
+## Issue332: ppt-maker 오케스트레이션 도입 — 원본 하나로 완성 덱까지 (등록: 2026-08-18)
+* depends: Issue330
+* 목적: 지금은 사람이 lane 을 고르고 단계를 잇는다. 글로벌 [`ppt-maker`](file:///Users/nowage/.claude/skills/ppt-maker/SKILL.md)(원본 → init·trace·spec·deck·check 오케스트레이션)를 m2slide 진입점에 붙여 **한 번의 호출로 완성 덱**까지 가게 한다. prj82 가 `run.sh` 로 하던 일을 제품 경로로 옮기는 것과 같은 성격.
+* 상세:
+    - prj82 계승·비계승 판정은 [`pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) "prj82 에서 무엇을 가져오나" 절 — `potx.md` **원칙**은 계승(m2slide 판은 `theme.yml`), `pages.py` 파이썬 원고는 **비계승**(m2slide 원고는 마크다운이고 그것이 존재 이유)
+    - ⚠️ 순환 주의 — `ppt-deck`/`ppt-maker` 폴백 ①이 *"m2slide 가 있으면 m2slide.sh 에 위임"* 이라 무조건 호출하면 상호 재귀([`ig-ppt-integration.md`](_doc_arch/ig-ppt-integration.md) "순환" 절). `md2pptx.py` 직접 호출 원칙 유지
+    - lane 자동 선택은 **하지 않는다** — lane C(ig-maker)는 장당 33만 토큰이라 `ig-selector` 승인 게이트가 존재 이유다
+* 구현 명세:
+    - lane A 완주(Issue326~329)와 parity 러너(Issue330) 통과가 선행 — 구조가 틀린 덱을 오케스트레이션으로 감싸면 결함이 자동화된다
+    - m2slide 쪽은 **호출과 결과 회수**만. 오케스트레이션 로직을 복제하지 않는다
 
 ## Issue323: theme-from-css `--kn-accent` 오탐 — prj3 위임 + 임시 교정 수명 관리 (등록: 2026-08-18)
 * depends: prj3#Issue434
@@ -40,7 +112,32 @@
 
 # 📗 선택
 
+## Issue331: lane B — cards·htmlart 를 네이티브 도형으로 (등록: 2026-08-18)
+* depends: Issue328, Issue329
+* 목적: 파리티 3축 중 **표현 등가**를 올린다. `::: cards` 7항목이 평문 불릿으로, htmlart 는 통째로 사라진 상태(실측)를 정형 도형 렌더로 메운다.
+* 상세:
+    - 수단은 글로벌 `ppt-info` 블록 렌더러(네이티브 도형) — prj82 `lib/blocks.py`·`ppt_kit.py` 의 졸업본이다. **사본을 m2slide 에 두지 않는다**
+    - lane B 와 lane C(ig-maker)의 경계는 *"패턴 카탈로그에 있는가"* — 있으면 B(값싸고 재현 가능), 없으면 C(판단 필요·장당 33만 토큰)
+    - ⚠️ 구조(lane A)가 먼저다. 제목이 없는 덱을 도형으로 예쁘게 만드는 것은 순서가 거꾸로다 — 그래서 우선순위 📗
+* 구현 명세:
+    - cards → `ppt-info` 카드 블록 · 정형 프로세스 → 흐름 블록 매핑
+    - 원고 생성기가 대상 장을 표시하고, 렌더는 글로벌 호출로 수행
+    - 검증: 해당 장이 그림 0·편집 가능한 도형 텍스트로 존재 (`check-conform --lane a`)
+
 # ✅ 완료
+
+## Issue325: PPTX 충실도 설계 SSOT 작성 — 실측 격차 카탈로그 + 원고 생성기 아키텍처 (등록: 2026-08-18, 해결: 2026-08-18) ✅
+* 목적: *"다운로드한 pptx 가 원본과 너무 다르다"* 는 관측을 **격차 목록·원인·해법 경계**로 확정해 후속 이슈 전부의 근거로 삼는다. 일치화를 시도한 적이 없었으므로(사용자 확인) 배선 문서와 별개로 충실도 설계가 필요했다.
+* 산출: [`_doc_arch/pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) 신설
+* 완료 범위 (실측 2026-08-18 · `~/Downloads/igTest.pptx` 35장 ↔ 원본 39장):
+    - **파리티 정의** — 픽셀 일치가 아니라 3축(구조 동형 → 테마 동일 → 표현 등가) 우선순위. pptx 는 편집 가능해야 하므로 캡처 복제는 목표가 아니다
+    - **격차 카탈로그 G1~G7** — 제목 5/35 · 구조 슬라이드 12장 부재 · layout 대응 0 · cards/htmlart 소실 · 마크다운 누출 2종 · Courier 15회 · 팔레트 스코프 오탐
+    - **원인 3종 분리** — O1 경계 레벨(인자) · O2 전달 경로 부재(구조적) · O3 어휘 미정의(렌더러). ⚠️ O2 를 글로벌 변환기 결함으로 읽으면 안 된다는 판정 포함
+    - **아키텍처 결정** — 대안 3안(글로벌 확장·캡처 경유·중간 원고) 비교 후 **ⓒ 중간 원고 생성기** 채택. 글로벌 무수정 + 중간물이 검사 가능
+    - **layout 매핑표** — 🟢 초기 판단 뒤집힘: 마스터 신설이 아니라 **원고 구조로 유도**하는 문제(표준 11종은 `--adapt` 가 이미 생성해 둠, 실측)
+    - **3레인 경계** — A(텍스트·토큰 0) / B(도형·소) / C(ig-maker·장당 33만). "A 를 건너뛰고 C 로 가지 않는다"
+    - **prj82 계승 판정** — `potx.md` 원칙 계승 · 렌더러는 글로벌 경유 · `pages.py` 파이썬 원고는 비계승(m2slide 원고는 마크다운이고 그것이 존재 이유)
+* 부수 실측: `--slide-level` 을 `2` 로 바꾸면 Title placeholder 가 **5 → 39장**(원본 슬라이드 수와 정확히 일치) — Issue326 의 근거
 
 ## Issue324: igTest 재구축 — 픽스처 초기화 + 통합 회귀 전판 + ig-maker 1장 E2E (등록: 2026-08-18, 해결: 2026-08-18, commit: 11c6ad1) ✅
 * 완료 실측 (2026-08-18): 재구축(기존본 스크래치 보존 → playground fresh 복사 → 템플릿 2종 → `igpath resolve` 4키 기대값 일치) + 회귀 전판 통과 — 빌드 · `--pptx` rc0(검증 내장) · `0.cost-gate` 5단언(실덱 후보 6장 exit 4 재현) · `2.deck` 4단언 · `1.infographic` 8단언 · lint-deployment. E2E 1장 — 인스턴스 `ig-1-5e92`(sonnet, 31.8만 토큰·23분·재시도 0, 글로벌 장당 실측치와 일치), `7.pptx` 이미지 0·텍스트 프레임 15·conform WARN 0, igsvg rc0, palette 채움(`seeded_by: ppt-init` 쓰기 확대 경로 prj3#382 검증), 발행본=원본 cmp 일치, 슬라이드 실렌더 육안 확인(크롬 비복제 — 1라운드의 revise 사유를 프롬프트 선제 명시로 재발 방지)
