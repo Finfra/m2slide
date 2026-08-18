@@ -105,8 +105,22 @@ BEFORE_MTIME=""
 #        aTest (single)  41장 Title  8(20%) → 42장 Title 38(90%)
 #      두 모드 다 개선된다 — single 도 H2 가 슬라이드 제목이라 규약이 같기 때문이다.
 #      사용자가 `--slide-level` 을 직접 주면 그쪽이 이긴다(뒤에 오는 "$@" 가 덮는다).
+#   ⚠️ `--m2slide <폴더>`(자동 수집) 대신 **중간 원고**를 넘긴다 (Issue327).
+#      m2slide 만 아는 것(빌드 지식·고유 지시자·이미지가 사는 두 자리)을 전달할 통로가
+#      달리 없기 때문이다. 글로벌 변환기를 m2slide 전용으로 고치지 않는 대신,
+#      m2slide 가 자기가 아는 것을 원고로 적어서 준다.
+#      설계: _doc_arch/pptx-parity-design.md "아키텍처 결정"
+BUILD_SRC="$SCRIPT_DIR/build-source.py"
+[ -f "$BUILD_SRC" ] || { echo "  ❌ 원고 생성기 없음: $BUILD_SRC" >&2; exit 1; }
+
+SRC_FILES=()
+while IFS= read -r line; do [ -n "$line" ] && SRC_FILES+=("$line"); done \
+  < <(python3 "$BUILD_SRC" "$PROJECT_DIR")
+# 생성 0건은 조용히 넘기지 않는다 — 빈 덱이 "성공" 으로 나오는 실패 모양을 막는다
+[ "${#SRC_FILES[@]}" -gt 0 ] || { echo "  ❌ 중간 원고 생성 0건" >&2; exit 1; }
+
 rc=0
-python3 "$MD2P" --m2slide "$PROJECT_DIR" --reference "$REF" -o "$OUT" --slide-level 2 "$@" || rc=$?
+python3 "$MD2P" "${SRC_FILES[@]}" --reference "$REF" -o "$OUT" --slide-level 2 "$@" || rc=$?
 [ "$rc" = "0" ] && exit 0
 
 AFTER_MTIME=""
