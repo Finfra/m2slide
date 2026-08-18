@@ -125,8 +125,16 @@ python3 "$T2R" "$THEME_YML" --out "$REF" --adapt >/dev/null
 BEFORE_MTIME=""
 [ -f "$OUT" ] && BEFORE_MTIME="$(stat -f %m "$OUT" 2>/dev/null || stat -c %Y "$OUT" 2>/dev/null || echo "")"
 
+#   ⚠️ `--slide-level 2` 는 **m2slide 규약에서 나온다** (Issue326). m2slide 는
+#      **H2 가 슬라이드 제목**이고(md-m2slide-rules) H1 은 챕터 그룹이다. 기본값 `1`
+#      로 두면 H2 가 본문 첫 줄로 강등돼 **제목 placeholder 가 통째로 비고**, 개요
+#      보기·목차·접근성이 함께 죽는다. 실측(2026-08-18) — 같은 원고에서 레벨만 바꿈:
+#        igTest(chapter) 35장 Title  5(14%) → 45장 Title 39(87%)   ※ 원본 슬라이드 39장
+#        aTest (single)  41장 Title  8(20%) → 42장 Title 38(90%)
+#      두 모드 다 개선된다 — single 도 H2 가 슬라이드 제목이라 규약이 같기 때문이다.
+#      사용자가 `--slide-level` 을 직접 주면 그쪽이 이긴다(뒤에 오는 "$@" 가 덮는다).
 rc=0
-python3 "$MD2P" --m2slide "$PROJECT_DIR" --reference "$REF" -o "$OUT" "$@" || rc=$?
+python3 "$MD2P" --m2slide "$PROJECT_DIR" --reference "$REF" -o "$OUT" --slide-level 2 "$@" || rc=$?
 [ "$rc" = "0" ] && exit 0
 
 AFTER_MTIME=""
