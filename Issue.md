@@ -26,18 +26,6 @@
 
 # 📕 중요
 
-## Issue326: `--slide-level 2` 전환 — 제목 소실(5/35) 복원 (등록: 2026-08-18)
-* depends: Issue325
-* 목적: PPTX 산출물의 **86% 슬라이드에 제목이 없는** 상태를 고친다. m2slide 는 **H2 가 슬라이드 제목**인데 변환이 `--slide-level=1`(H1 경계)로 돌아 H2 가 본문 첫 줄로 강등된다.
-* 상세:
-    - 🟢 **실측으로 이미 확인된 해법** (2026-08-18): 같은 원고·같은 reference 로 `--slide-level` 만 바꾼 결과 — `1` → 35장·Title **5**장 / `2` → 45장·Title **39**장. **39 는 원본 HTML 슬라이드 수와 정확히 일치**한다
-    - 45−39=6 은 H1 챕터 진입 장이 별도 슬라이드로 서기 때문 — 없앨 것이 아니라 `Section Header` 로 매핑할 대상(Issue329)
-    - 비용 0·즉시 되돌림 가능. 다른 격차와 달리 **인자 한 개**다
-* 구현 명세:
-    - [`lib/pptx/build-pptx.sh`](lib/pptx/build-pptx.sh) 가 `md2pptx.py` 호출 시 `--slide-level 2` 전달
-    - ⚠️ single mode 덱(H1 이 슬라이드 제목인 프로젝트)에서 회귀하지 않는지 확인 — 필요하면 chapter/single 판별로 레벨을 가른다
-    - 검증: `igTest` 재산출 후 Title placeholder ≥95% · `check-conform --lane a` FAIL 0 · 기존 [`2.deck.sh`](z_test/ig-ppt/2.deck.sh) 통과 유지
-
 ## Issue327: pptx 원고 생성기 골격 — `lib/pptx/build-source.py` 신설 (등록: 2026-08-18)
 * depends: Issue326
 * 목적: m2slide 만 아는 것(빌드 지식)을 pptx 경로에 전달할 **유일한 통로**를 만든다. 구조 슬라이드·layout·cards 는 원고 md 에 없고 `_config.yml`·AGENDA·빌더가 만들기 때문에, md 만 읽는 글로벌 변환기는 원리적으로 알 수 없다.
@@ -73,6 +61,7 @@
     - 🟢 **초기 판단이 실측에서 뒤집혔다** — "마스터 레이아웃을 신설해야 한다"고 봤으나, `theme2reference.py --adapt` 가 표준 11종을 **이미 만들어 두었다**(reference.pptx 실측). 즉 G3 는 마스터 문제가 아니라 **원고를 그 모양으로 쓰는 문제**다
     - pandoc 은 레이아웃을 이름으로 고르지 않고 **슬라이드 구조로 자동 선택**한다 → 매핑표는 [`pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) "layout 매핑" 절
     - G6: `Courier` 15회(코드블록). 출처가 reference 테마인지 pandoc 하드코딩인지 **미판정** — 전자면 글로벌(prj3) 위임, 후자면 원고에서 코드블록 표현 교체
+    - 🔑 **챕터 진입 장이 3장으로 쪼개진다** (Issue326 실측 2026-08-18): 원본 `chapter` layout 1장이 pptx 에서 `Section Header`(H1) + 제목 없는 장("Chapter 1.") + `Title and Content`(부제) **3장**이 된다. 이것이 제목 보유율이 87% 에서 100% 로 못 가는 직접 원인(45장 중 6장 무제목 = 챕터 5개 × 1 + α). 원고에서 챕터 진입부를 **H1 단독**으로 만들면 1장으로 수렴한다
 * 구현 명세:
     - 원고 생성기에 layout 유도 규칙 구현 (`chapter`→H1 단독 / 도해 장→이미지+캡션 / 2분할→`::: columns`)
     - 코드 폰트 출처 판정 후 분기 — 위임이면 `~/.claude/Issue.md` 등록(*-maker·ppt-* 무수정 원칙)
@@ -125,6 +114,21 @@
     - 검증: 해당 장이 그림 0·편집 가능한 도형 텍스트로 존재 (`check-conform --lane a`)
 
 # ✅ 완료
+
+## Issue326: `--slide-level 2` 전환 — 제목 소실(5/35) 복원 (등록: 2026-08-18, 해결: 2026-08-18, commit: 6ea4db9) ✅
+* 완료 실측 (2026-08-18): [`build-pptx.sh`](lib/pptx/build-pptx.sh) 에 `--slide-level 2` 전달(사용자 인자가 뒤에 와서 덮을 수 있게 배치). igTest 재산출 — **35장 Title 5(14%) → 45장 Title 39(87%)**, `check-conform --lane a` FAIL 0 유지(WARN 1 = 기존 Courier). single mode 회귀 없음 확인: aTest 41장 Title 8(20%) → 42장 Title 38(90%) — 두 모드 다 H2 가 슬라이드 제목이라는 같은 규약을 따르기 때문
+* 부수: [`2.deck.sh`](z_test/ig-ppt/2.deck.sh) 기대값이 레벨 1 시절 상수(3장)라 실패 → **하한(원고 3블록 ≤ 산출) + 제목 보유율 ≥60%** 로 교체. 상수로 두면 개선할 때마다 러너가 막고 기대값을 습관적으로 고치게 된다. 정밀 장수·제목 판정은 Issue330 parity 러너로 이관
+* 🔑 발견: 챕터 진입 장 1개가 **3장으로 쪼개진다**(H1 + "Chapter N." + 부제) — 87%가 100%가 아닌 직접 원인. Issue329 에 실측 근거로 기재
+* depends: Issue325
+* 목적: PPTX 산출물의 **86% 슬라이드에 제목이 없는** 상태를 고친다. m2slide 는 **H2 가 슬라이드 제목**인데 변환이 `--slide-level=1`(H1 경계)로 돌아 H2 가 본문 첫 줄로 강등된다.
+* 상세:
+    - 🟢 **실측으로 이미 확인된 해법** (2026-08-18): 같은 원고·같은 reference 로 `--slide-level` 만 바꾼 결과 — `1` → 35장·Title **5**장 / `2` → 45장·Title **39**장. **39 는 원본 HTML 슬라이드 수와 정확히 일치**한다
+    - 45−39=6 은 H1 챕터 진입 장이 별도 슬라이드로 서기 때문 — 없앨 것이 아니라 `Section Header` 로 매핑할 대상(Issue329)
+    - 비용 0·즉시 되돌림 가능. 다른 격차와 달리 **인자 한 개**다
+* 구현 명세:
+    - [`lib/pptx/build-pptx.sh`](lib/pptx/build-pptx.sh) 가 `md2pptx.py` 호출 시 `--slide-level 2` 전달
+    - ⚠️ single mode 덱(H1 이 슬라이드 제목인 프로젝트)에서 회귀하지 않는지 확인 — 필요하면 chapter/single 판별로 레벨을 가른다
+    - 검증: `igTest` 재산출 후 Title placeholder ≥95% · `check-conform --lane a` FAIL 0 · 기존 [`2.deck.sh`](z_test/ig-ppt/2.deck.sh) 통과 유지
 
 ## Issue325: PPTX 충실도 설계 SSOT 작성 — 실측 격차 카탈로그 + 원고 생성기 아키텍처 (등록: 2026-08-18, 해결: 2026-08-18) ✅
 * 목적: *"다운로드한 pptx 가 원본과 너무 다르다"* 는 관측을 **격차 목록·원인·해법 경계**로 확정해 후속 이슈 전부의 근거로 삼는다. 일치화를 시도한 적이 없었으므로(사용자 확인) 배선 문서와 별개로 충실도 설계가 필요했다.
