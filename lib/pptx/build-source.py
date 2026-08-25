@@ -73,6 +73,14 @@ import sys
 # ── ① pandoc attribute. `.column`·`.columns` 는 pandoc 이 아는 어휘라 건드리지 않는다.
 #    (m2slide 멀티컬럼이 그 문법을 쓰고, md2pptx 도 PANDOC_DIV 로 통과시킨다)
 ATTR = re.compile(r"\s*\{\.(?!column\b|columns\b)[a-zA-Z][\w .:=\"'-]*\}")
+# ⚠️ fenced div 를 **여는 줄**의 attribute 는 인라인 장식이 아니라 **구조**다 (Issue329).
+#    ① 의 취지는 `{.fragment}` 처럼 문장에 붙은 장식을 지우는 것인데, 같은 정규식이
+#    `::::::: {.row .card}` 에도 물리면 그 줄이 맨 `:::::::` 가 된다. 그 순간
+#    `md2pptx.FENCE_OPEN` 이 정보 없는 `:::` 를 **닫는 줄**로 읽어(`info == ""` → stack.pop)
+#    여닫이가 어긋나고, 짝을 잃은 `:::: {.column}` 이 본문에 글자 그대로 새어 나온다
+#    (실측 2026-08-25, aTest 2×2 장: 9번 슬라이드에 `:::: {.column}` · `:::::::` 리터럴).
+#    따라서 fence 줄에서는 ① 을 건너뛴다 — 껍데기 처리는 md2pptx 소관이다.
+FENCE_LINE = re.compile(r"^[ \t]*:::")
 ELEMENT_COMMENT = re.compile(r"\s*<!--\s*\.(element|slide):.*?-->", re.S)
 ID_LINE = re.compile(r"^[ \t]*#id-[a-z][a-z0-9-]*[ \t]*$", re.M)
 ANIM_LINE = re.compile(
@@ -338,7 +346,10 @@ def clean(text, srcdir, proj, stat, chapter_title=None):
             rebuilt.append(line)
             continue
         line, n1 = ELEMENT_COMMENT.subn("", line)
-        line, n2 = ATTR.subn("", line)
+        # fence 여는 줄의 `{.row .card}` 는 구조다 — 벗기면 닫는 줄로 오독된다(위 FENCE_LINE 주석)
+        n2 = 0
+        if not FENCE_LINE.match(line):
+            line, n2 = ATTR.subn("", line)
         line, n3 = SYMBOL.subn("", line)
         stat["element"] += n1
         stat["attr"] += n2

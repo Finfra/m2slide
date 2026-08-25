@@ -80,6 +80,57 @@ python3 "$SPEC" "$PROJECT_DIR" "${SPEC_ARGS[@]}" >/dev/null
 #   실측(2026-08-18): 글로벌 단독 산출이 구 교정본과 accent 4색 전부 일치
 #   (#F5C518 #FFE15A #C49D13 #977A0E — 실렌더 `--kn-accent` 와 같다).
 
+# ── ①-c 본문 글자 크기 교정 — **CSS 가 정본이다** (Issue329)
+#
+#   `theme-from-css.py` 는 이름과 달리 **글자 크기를 재지 않는다** — `title: 27`·`body: 9.5`
+#   따위가 소스에 박힌 상수다(색·캔버스만 실측한다). 조직 템플릿이 없을 때 쓰는 무난한
+#   기본값이지만 m2slide 는 그것을 **실측할 수 있다**.
+#
+#   실측(2026-08-25, igTest): HTML 본문은 `.reveal` 40px / reveal 캔버스 1920px = 폭의
+#   **2.08%** 인데, pptx 는 9.5pt / 960pt = **0.99%** 였다. 절반도 안 된다 — 같은 덱인데
+#   pptx 만 글자가 깨알같이 나오던 원인이다. 리스트 항목은 여기에 1.1em 이 더 붙어
+#   실렌더 44px(2.29%)까지 간다(n=92 중앙값).
+#
+#   두 값 모두 **빌드 산출 HTML 한 장**에서 읽힌다 — base.css 가 `<style>` 로 인라인되고
+#   reveal 캔버스는 `Reveal.initialize({width: …})` 에 적히기 때문이다. 브라우저를 띄우지
+#   않는다(빌드에 헤드리스 의존을 들이지 않는다).
+#
+#   ⚠️ 크기를 키우면 넘칠 수 있으므로 ③-b 에서 본문 placeholder 에도 자동 축소를 건다.
+#      제목에 이미 같은 처리를 하고 있고, 이유도 같다(pandoc 이 빈 `<a:bodyPr/>` 로 덮는다).
+python3 - "$PROJECT_DIR" "$THEME_YML" <<'PY' || echo "  ⚠️ 본문 크기 교정 생략(계속 진행)" >&2
+import glob, os, re, sys
+proj, yml = sys.argv[1], sys.argv[2]
+
+html = sorted(glob.glob(os.path.join(proj, "slide", "*.html")))
+if not html:
+    raise SystemExit("빌드 산출 HTML 이 없다")
+
+fs_px = rv_w = None
+for h in html:                                  # 둘 다 가진 첫 장을 쓴다
+    t = open(h, encoding="utf-8", errors="ignore").read()
+    m1 = re.search(r"--r-main-font-size:\s*([\d.]+)px", t)
+    m2 = re.search(r"\bwidth:\s*(\d{3,5})\s*,", t)
+    if m1 and m2:
+        fs_px, rv_w = float(m1.group(1)), float(m2.group(1))
+        break
+if not fs_px:
+    raise SystemExit("CSS 본문 크기·reveal 캔버스 폭을 못 읽었다")
+
+#   pptx 캔버스는 theme.yml 이 정한다. 폭 mm → pt (1in = 25.4mm = 72pt)
+src = open(yml, encoding="utf-8").read()
+mw = re.search(r"^canvas:.*?^\s*w:\s*([\d.]+)", src, re.S | re.M)
+w_pt = float(mw.group(1)) / 25.4 * 72 if mw else 960.0
+
+body = round(fs_px / rv_w * w_pt, 1)
+new, n = re.subn(r"^(\s*body:\s*)[\d.]+", r"\g<1>%s" % body, src, count=1, flags=re.M)
+if not n:
+    raise SystemExit("theme.yml 에 font.body 가 없다")
+open(yml, "w", encoding="utf-8").write(new)
+old = re.search(r"^\s*body:\s*([\d.]+)", src, re.M)
+print("  본문 크기 교정 — CSS 실측 %gpx / 캔버스 %gpx = 폭의 %.2f%% → %gpt (기존 %s)"
+      % (fs_px, rv_w, fs_px / rv_w * 100, body, old.group(1) if old else "?"))
+PY
+
 # ── ② theme.yml → reference.pptx
 python3 "$T2R" "$THEME_YML" --out "$REF" --adapt >/dev/null
 
@@ -229,7 +280,7 @@ from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import PP_PLACEHOLDER
 from pptx.enum.text import MSO_AUTO_SIZE
-prs, n, fit = Presentation(out), 0, 0
+prs, n, fit, bfit = Presentation(out), 0, 0, 0
 for s in prs.slides:
     for sh in s.shapes:
         if not sh.has_text_frame:
@@ -246,20 +297,67 @@ for s in prs.slides:
                 continue
         except Exception:
             pass
+        # 본문에도 같은 처리를 건다 (Issue329) — ①-c 가 본문을 9.5pt → 실측 비율로
+        # 키웠으므로 항목이 많은 장은 넘칠 수 있다. 자동 축소가 있으면 넘치는 장만
+        # 렌더러가 줄이고 나머지는 실측 크기를 유지한다. 여기서도 **장 쪽에** 걸어야
+        # 듣는 이유는 제목과 같다(pandoc 의 빈 `<a:bodyPr/>` 가 레이아웃을 덮는다).
+        try:
+            sh.text_frame.word_wrap = True
+            sh.text_frame.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
+            bfit += 1
+        except Exception:
+            pass
         for para in sh.text_frame.paragraphs:
             for run in para.runs:
                 if run.font.bold:
                     run.font.color.rgb = RGBColor.from_string(col)
                     n += 1
 prs.save(out)
-print("  강조 색 교정 — CSS 실측 #%s 로 bold run %d개 갱신 · 제목 자동축소 %d장" % (col, n, fit))
+print("  강조 색 교정 — CSS 실측 #%s 로 bold run %d개 갱신 · 자동축소 제목 %d · 본문 %d"
+      % (col, n, fit, bfit))
 PY
   fi
+  # ── ③-c 코드 폰트 이탈 제거 — `Courier` 는 **pandoc 이 박는다** (Issue329)
+  #
+  #   출처 판정(2026-08-25, 실측 3종):
+  #     ① `reference.pptx` 전수 스캔 — `Courier` 0회 (테마 탓이 아니다)
+  #     ② 산출 pptx 에서 `Courier` 는 `ppt/slides/*.xml` 에만 있다 — master·layout·theme 에 없다
+  #     ③ 인라인 코드 한 줄짜리 md 를 같은 reference 로 pandoc 3.10 에 넣으면 그대로 발생
+  #   → 원인은 pandoc pptx writer 하드코딩이다. 글로벌 자산의 결함이 아니므로 위임 대상이
+  #     아니고, **m2slide 배선으로 걷어낸다**.
+  #
+  #   왜 남기면 안 되나 — 템플릿 밖 폰트는 그 폰트가 없는 머신에서 조용히 대체된다.
+  #   배포본이 보는 사람마다 달라지므로 `check-conform` 도 `3.parity.sh` ⑥ 도 이것을 센다.
+  #
+  #   수단은 글로벌에 이미 있다(`ppt-deck/retheme.py`) — 비-`+` typeface 를 theme 서체로
+  #   바꾼다. **`--font-only` 가 필수**다. 색까지 맡기면 방금 ②-b·③-b 가 CSS 실측으로
+  #   교정한 제목색·강조색을 theme.yml 값으로 되돌린다.
+  RETHEME="${M2SLIDE_PPT_RETHEME:-$HOME/.claude/skills/ppt-deck/scripts/retheme.py}"
+  if [ -f "$RETHEME" ]; then
+    if python3 "$RETHEME" "$OUT" --theme "$THEME_YML" --out "$OUT.retheme" --font-only >/dev/null 2>&1 \
+       && [ -s "$OUT.retheme" ]; then
+      mv "$OUT.retheme" "$OUT"
+      echo "  코드 폰트 교정 — pandoc 이 박은 템플릿 밖 서체를 테마 서체로 치환"
+    else
+      rm -f "$OUT.retheme"
+      echo "  ⚠️ 코드 폰트 교정 생략 — retheme 실패(템플릿 밖 폰트가 남는다)" >&2
+    fi
+  else
+    echo "  ⚠️ 코드 폰트 교정 생략 — retheme.py 없음: $RETHEME" >&2
+  fi
+
   #   교정 뒤 상태로 다시 잰다 — 검증이 최종 파일을 설명하지 못하면 fail-loud 가 무의미하다
   CK="${M2SLIDE_PPT_CHECK:-$HOME/.claude/skills/ppt-check/scripts}"
   if [ -f "$CK/check-xml-order.py" ]; then
     python3 "$CK/check-xml-order.py" "$OUT" >/dev/null || {
       echo "  ❌ 교정 후 XML 순서 위반 — 교정 로직을 의심하라" >&2; exit 2; }
+  fi
+  #   ⚠️ md2pptx 내장 검증은 ③ 시점 상태를 잰 것이라 ③-b·③-c 교정 **이전** 수치다.
+  #      최종 파일의 판정을 다시 찍어 준다(`--lane a` 필수 — 기본값 b 는 본문 이미지를
+  #      위반으로 보아 m2slide 덱을 오판한다).
+  if [ -f "$CK/check-conform.py" ]; then
+    python3 "$CK/check-conform.py" "$OUT" --lane a --template "$REF" 2>/dev/null \
+      | tail -1 | sed 's/^/  최종 /' || true
   fi
   exit 0
 fi
