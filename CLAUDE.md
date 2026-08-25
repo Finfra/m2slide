@@ -262,6 +262,10 @@ node generate-epub.js Projects/[ProjectName]
 # 빌드와 함께
 ./m2slide.sh [ProjectName] --pptx
 
+# 오케스트레이션 — 앞단·lane A·뒷단·보고를 한 호출로 (Issue332)
+./m2slide.sh [ProjectName] --ppt-make
+./m2slide.sh [ProjectName] --ppt-make --ig     # + 인포그래픽 선별·비용 게이트
+
 # 단독 실행 (부분 변환 가능)
 ./lib/pptx/build-pptx.sh Projects/[ProjectName] out.pptx [--pages 1-3]
 ```
@@ -281,6 +285,22 @@ node generate-epub.js Projects/[ProjectName]
 **검증은 빌드에 내장돼 있고 FAIL 은 빌드를 실패시킨다** (Issue317). `md2pptx.py` 가 산출 직후 `check-conform`(`--lane a`) + `check-xml-order` 를 돌린다. WARN 은 통과, FAIL 은 `exit 1`. 의도적으로 넘기려면 `--pptx-no-verify`.
 
 ⚠️ 손으로 재검할 때 **`--lane a` 를 빠뜨리지 말 것**. 기본값 `b`(인포그래픽)는 본문 이미지를 위반으로 보므로, mermaid 렌더 이미지가 정상 콘텐츠인 m2slide 덱을 오판한다 — 같은 pptx 가 `--lane a` rc0 / 미지정 rc1 (실측).
+
+#### `--ppt-make` — ppt-maker 오케스트레이션 (Issue332)
+
+`--pptx` 는 lane A(원고 → 덱) 하나만 돈다. `--ppt-make` 는 그 앞뒤를 잇는다 — 구현은 [ppt-make.sh](lib/pptx/ppt-make.sh) 이고 **하는 일은 글로벌 호출과 결과 회수뿐**이다(오케스트레이션 로직을 복제하지 않는다).
+
+| 단계 | 부르는 것 | 비고 |
+| :-: | :--- | :--- |
+| ① 입력 판정 | — | **lane 은 자동 선택하지 않는다.** m2slide 원본은 언제나 마크다운이라 lane A 고정 |
+| ② 앞단 | `ppt-init/init.py` | 덱 폴더·자산 확보(멱등). `Projects/<N>/.claude/pptx.yml` **옵트인 프로젝트만** |
+| ③ lane A | `build-pptx.sh` | 위 3종 배선 그대로. **차단 게이트는 여기 하나다** |
+| ④ 뒷단 | `ppt-check/check.py` + `check-palette.py` | 검증 5종·팔레트를 **보고**. 차단하지 않는다 |
+| ⑤ 인포그래픽 | `ig-selector/igselect.py scan`·`cost` | 선별·비용만. **팬아웃 없음** (`--ig` 옵트인) |
+
+⚠️ **`ppt-maker/make.py` 도 `ppt-deck/deck.py` 도 부르지 않는다.** 되위임 폴백이 사는 지점이 그 둘이고(`make.py` lane A 가 `deck.py` 를 거친다), 부르면 `m2slide.sh → deck.py → m2slide.sh` 무한 재귀다. 그 위에 `m2slide.sh` 가 `M2SLIDE_PPTX_DEPTH` **재진입 가드**를 걸어, 되불림이 루프가 아니라 rc1 즉시 실패가 되게 한다.
+
+⚠️ **뒷단은 차단하지 않는다.** PowerPoint 가 거부하는 위반은 ③ 이 이미 막았고(Issue317), 뒷단이 더하는 `legible` 류는 휴리스틱이라 오탐이 성립한다 — 실측(aTest p24): 문법 소개 덱의 산문 `flowchart TD 위→아래 흐름` 을 *"mermaid 원문 노출"* 로 FAIL 판정. 판정 줄을 읽고 실재 결함인지 사람이 가른다.
 
 ### 새 프로젝트 추가
 

@@ -296,7 +296,11 @@ file:///<abs_path>/Projects/{Name}/slide/{chapter}.html?fwd=1#/N
 ```bash
 ./m2slide.sh <project> --pptx              # 검증 포함. FAIL 이면 exit 1
 ./m2slide.sh <project> --pptx-no-verify    # 차단을 의도적으로 넘길 때만
+./m2slide.sh <project> --ppt-make          # 앞단·lane A·뒷단·보고 (Issue332)
+./m2slide.sh <project> --ppt-make --ig     # + 인포그래픽 선별·비용 게이트 (팬아웃 없음)
 ```
+
+> `--ppt-make` 의 **뒷단(`ppt-check`)은 보고 전용**이다 — 차단 지점은 `--pptx` 와 같은 자리(lane A 내장 검증) 하나다. 뒷단이 더하는 `legible` 류는 휴리스틱이라 오탐이 성립하므로(실측: aTest p24 산문 `flowchart TD 위→아래 흐름` → *"mermaid 원문 노출"* FAIL) 판정 줄을 사람이 읽고 가른다. 상세: [`../../_doc_arch/ig-ppt-integration.md`](../../_doc_arch/ig-ppt-integration.md) "오케스트레이션".
 
 * **경고가 아니라 차단인 이유**: `check-conform` 의 FAIL 은 *"PowerPoint 가 거부하거나 깨져 보이는 위반"*이다. 통과시키면 `index.html` 에 다운로드 버튼까지 달려 배포된다. `build-pptx.sh` 가 구 pandoc 직접 경로로 **폴백하지 않는 것과 같은 이유** — 성공으로 보이는 품질 회귀를 막는다
 * **심각도 구분은 m2slide 가 하지 않는다.** FAIL/WARN 은 `check-conform` 이 이미 가르며 WARN 은 rc0 이라 통과한다 (실측: igTest 35장 → FAIL 0 · WARN 1(템플릿 밖 폰트 Courier) → 빌드 성공)

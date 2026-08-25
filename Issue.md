@@ -28,17 +28,6 @@
 
 # 📙 일반
 
-## Issue332: ppt-maker 오케스트레이션 도입 — 원본 하나로 완성 덱까지 (등록: 2026-08-18)
-* depends: Issue330
-* 목적: 지금은 사람이 lane 을 고르고 단계를 잇는다. 글로벌 [`ppt-maker`](file:///Users/nowage/.claude/skills/ppt-maker/SKILL.md)(원본 → init·trace·spec·deck·check 오케스트레이션)를 m2slide 진입점에 붙여 **한 번의 호출로 완성 덱**까지 가게 한다. prj82 가 `run.sh` 로 하던 일을 제품 경로로 옮기는 것과 같은 성격.
-* 상세:
-    - prj82 계승·비계승 판정은 [`pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) "prj82 에서 무엇을 가져오나" 절 — `potx.md` **원칙**은 계승(m2slide 판은 `theme.yml`), `pages.py` 파이썬 원고는 **비계승**(m2slide 원고는 마크다운이고 그것이 존재 이유)
-    - ⚠️ 순환 주의 — `ppt-deck`/`ppt-maker` 폴백 ①이 *"m2slide 가 있으면 m2slide.sh 에 위임"* 이라 무조건 호출하면 상호 재귀([`ig-ppt-integration.md`](_doc_arch/ig-ppt-integration.md) "순환" 절). `md2pptx.py` 직접 호출 원칙 유지
-    - lane 자동 선택은 **하지 않는다** — lane C(ig-maker)는 장당 33만 토큰이라 `ig-selector` 승인 게이트가 존재 이유다
-* 구현 명세:
-    - lane A 완주(Issue326~329)와 parity 러너(Issue330) 통과가 선행 — 구조가 틀린 덱을 오케스트레이션으로 감싸면 결함이 자동화된다
-    - m2slide 쪽은 **호출과 결과 회수**만. 오케스트레이션 로직을 복제하지 않는다
-
 # 📗 선택
 
 ## Issue331: lane B — cards·htmlart 를 네이티브 도형으로 (등록: 2026-08-18)
@@ -54,6 +43,25 @@
     - 검증: 해당 장이 그림 0·편집 가능한 도형 텍스트로 존재 (`check-conform --lane a`)
 
 # ✅ 완료
+
+## Issue332: ppt-maker 오케스트레이션 도입 — 원본 하나로 완성 덱까지 (등록: 2026-08-18, 해결: 2026-08-25, commit: 62f1cb4) ✅
+* 완료 실측 (2026-08-25, commit 62f1cb4): 진입점 [`m2slide.sh --ppt-make`](m2slide.sh) 신설 — ①입력 판정 ②앞단 `ppt-init` ③lane A ④뒷단 `ppt-check` ⑤인포그래픽 게이트 ⑥보고. 구현은 [`lib/pptx/ppt-make.sh`](lib/pptx/ppt-make.sh) 이고 **하는 일은 글로벌 호출과 결과 회수뿐**이다. [`3.parity.sh`](z_test/ig-ppt/3.parity.sh) **rc0 · 7/7 유지**(회귀 0). 새 경로 산출물로 `--no-build` 재판정도 7/7. 신·구 경로 pptx 는 **전 XML 파트·미디어 3개 바이트 동일**(차이는 tempdir 이름·docProps 시각뿐 — 비결정 요소). `2.deck.sh` rc0 · `--lint-deployment` 위반 0
+* 🔑 **재귀 회피를 원칙 하나로 두지 않았다.** 되위임 폴백이 사는 지점은 글로벌에 정확히 둘이다 — `deck.py` 폴백 ①(*"m2slide 가 있으면 `m2slide.sh --pptx`"*)과 그 `deck.py` 를 lane A 에서 부르는 `make.py`. ① **그 둘을 부르지 않고** 되위임 폴백이 없는 하위 스크립트만 직접 부른다(`init.py`·`check.py`·`igselect.py`·`igpath.py`) → 호출 방향이 **m2slide → 글로벌 단방향**임이 구조로 성립한다. ② 그 위에 `M2SLIDE_PPTX_DEPTH` **재진입 가드**를 걸어 되불림이 무한 루프가 아니라 **rc1 즉시 실패**가 되게 했다. 둘 다 둔 이유는 성격이 다르기 때문이다 — **원칙은 사람이 어길 수 있고, 가드는 어겨지지 않는다**. 실증: 가드 무장(`=1`)에서 `--pptx`·`--ppt-make` 둘 다 rc1 · 평시 실행은 가드가 물린 채 rc0 완주(= 실행 중 재진입 0건) · 정적 grep 으로 `deck.py`/`make.py` 호출 0건(전부 주석)
+* 🔑 **`make.py` 를 부르지 않은 이유는 재귀만이 아니다 — 품질이 더 크다.** `make.py` lane A 는 `deck.py <파일>` 을 `--theme`·`--reference` **없이** 부른다(소스 확인). 그러면 pandoc 기본 서식이 나와 **테마가 통째로 빠진 덱**이 된다. m2slide 의 lane A 는 CSS 실측 → `theme.yml` → reference-doc 을 거치므로 글로벌 오케스트레이터의 lane A 로 대체할 수 없다 — 즉 이 이슈에서 붙일 수 있는 것은 **앞단·뒷단·게이트·보고**이고 lane A 는 기존 경로가 정본이다
+* 🔑 **차단 게이트는 ③ 하나로 남겼다.** `ppt-maker` 7단계는 *"통과하지 못하면 완료가 아니다"* 지만 m2slide 에서 그 역할은 ③ 이 이미 한다(Issue317). 뒷단이 더하는 `legible` 류는 **휴리스틱이라 오탐이 성립**한다 — 실측(aTest p24): `check-legible` 이 *"mermaid 원문 노출 — `flowchart TD`"* 로 FAIL 했지만 실제 문장은 문법 소개 덱의 **산문** `flowchart TD 위→아래 흐름` 이었다. 고칠 수 없는 글로벌 휴리스틱이 빌드를 죽이면 회피 수단이 *"검증 끄기"* 뿐이 되므로 **보고는 크게, 차단은 ③ 에** 둔다
+* 🔑 **팔레트 대조에 `--theme` 를 주지 않는다.** m2slide 는 제목색·강조색을 CSS 실측으로 **의도적으로 덮으므로**(Issue329) `theme.yml` 대조는 설계대로 동작한 결과를 FAIL 로 만든다. 대신 [`build-pptx.sh`](lib/pptx/build-pptx.sh) ③-d 가 덮은 값을 `_pipeline/pptx/measured.env` 로 남기고 뒷단이 그것만 `--allow` 로 풀어 **남는 이탈만** 비차단 정보로 찍는다
+* 🆕 **그 결과로 드러난 신규 결함**: igTest 팔레트 이탈 2 — `#60A0B0`·`#06287E`. 둘 다 **pandoc 이 코드 스팬에 박는 syntax highlighting 색**이며 `Courier`(Issue329 G6)와 정확히 같은 계열이다. `retheme.py --font-only` 는 서체만 바꾸므로 걷어내지 못한다 → 후속 이슈 후보(글로벌 위임 아님 — Courier 선례대로 m2slide 배선으로 걷어낼 사안)
+* 🔒 **경계 준수**: 글로벌 SCAR(`ppt-maker`·`ppt-deck`·`ppt-check`·`ig-selector`) **무수정**. lane C 팬아웃 **미실행**(장당 33만 토큰) — 실측으로 확인: `--ig` 실행 전후 `Projects/igTest/ppt/strengths/` 해시 동일. `ppt-init` 은 `pptx.yml` **옵트인 프로젝트만** 돈다(전 프로젝트 롤아웃 안 함 — 기존 판정 유지)
+* ⚠️ 설계 SSOT [`ig-ppt-integration.md`](_doc_arch/ig-ppt-integration.md) "오케스트레이션" 절을 함께 갱신했으나 이 repo 는 `_doc_arch/` 를 **gitignore** 한다(repo-tracking-rules) — 커밋에 담기지 않고 로컬 파일로만 남는다
+* depends: Issue330
+* 목적: 지금은 사람이 lane 을 고르고 단계를 잇는다. 글로벌 [`ppt-maker`](file:///Users/nowage/.claude/skills/ppt-maker/SKILL.md)(원본 → init·trace·spec·deck·check 오케스트레이션)를 m2slide 진입점에 붙여 **한 번의 호출로 완성 덱**까지 가게 한다. prj82 가 `run.sh` 로 하던 일을 제품 경로로 옮기는 것과 같은 성격.
+* 상세:
+    - prj82 계승·비계승 판정은 [`pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) "prj82 에서 무엇을 가져오나" 절 — `potx.md` **원칙**은 계승(m2slide 판은 `theme.yml`), `pages.py` 파이썬 원고는 **비계승**(m2slide 원고는 마크다운이고 그것이 존재 이유)
+    - ⚠️ 순환 주의 — `ppt-deck`/`ppt-maker` 폴백 ①이 *"m2slide 가 있으면 m2slide.sh 에 위임"* 이라 무조건 호출하면 상호 재귀([`ig-ppt-integration.md`](_doc_arch/ig-ppt-integration.md) "순환" 절). `md2pptx.py` 직접 호출 원칙 유지
+    - lane 자동 선택은 **하지 않는다** — lane C(ig-maker)는 장당 33만 토큰이라 `ig-selector` 승인 게이트가 존재 이유다
+* 구현 명세:
+    - lane A 완주(Issue326~329)와 parity 러너(Issue330) 통과가 선행 — 구조가 틀린 덱을 오케스트레이션으로 감싸면 결함이 자동화된다
+    - m2slide 쪽은 **호출과 결과 회수**만. 오케스트레이션 로직을 복제하지 않는다
 
 ## Issue329: 테마 일치 완성 — layout 유도 매핑 + 코드 폰트 이탈 제거 (등록: 2026-08-18, 해결: 2026-08-25, commit: 53169cb, 7220b2e) ✅
 * depends: Issue327
