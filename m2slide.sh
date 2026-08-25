@@ -45,7 +45,7 @@ _resolve_project_dir() {
 
 usage() {
   cat <<EOF
-Usage: $(basename "$0") [project_dir] [--epub] [--pdf] [--pptx] [-h|--help]
+Usage: $(basename "$0") [project_dir] [--epub] [--pdf] [--pptx|--ppt-make [--ig]] [-h|--help]
 
 Markdown to Reveal.js HTML converter.
 
@@ -61,6 +61,10 @@ Options:
   --pptx            PowerPoint 파일도 함께 생성 (pandoc 사용)
                     산출 직후 check-conform 이 자동 검증하며, FAIL 이면 빌드 실패
   --pptx-no-verify  --pptx + 검증 생략. 차단을 의도적으로 넘길 때만 사용
+  --ppt-make        ppt-maker 오케스트레이션으로 완성 덱까지 (앞단·lane A·뒷단·보고)
+                    --pptx 를 포함한다. lane 은 자동 선택하지 않는다(항상 lane A)
+  --ig              --ppt-make 에 인포그래픽 게이트 추가 (ig-selector 선별·비용만.
+                    팬아웃은 하지 않는다 — 장당 33만 토큰, 승인은 ig-selector 소유)
   --export-ir       덱 IR(JSON) export (m2unity 계약, stub — _doc_arch/m2unity-contract.md)
   --unity           IR export 후 m2unity 백엔드로 위임 (stub)
   -h, --help        이 도움말 출력 후 종료
@@ -305,6 +309,9 @@ GENERATE_EPUB=false
 GENERATE_PDF=false
 GENERATE_PPTX=false
 PPTX_NO_VERIFY=false
+PPT_ORCHESTRATE=false
+PPT_IG=false
+PPT_IG_PAGES=""
 DEV_SERVE=true
 PROJECT_DIR=""
 
@@ -328,6 +335,20 @@ for arg in "$@"; do
       # **의도적으로** 넘길 때만 쓴다 — 산출물이 규격을 지킨다는 뜻이 아니다.
       GENERATE_PPTX=true
       PPTX_NO_VERIFY=true
+      ;;
+    --ppt-make)
+      # Issue332 — 앞단(ppt-init) · lane A · 뒷단(ppt-check) · 보고를 한 호출로 잇는다.
+      #   오케스트레이션 **로직**은 글로벌 소유다. 여기는 호출과 결과 회수만 한다.
+      GENERATE_PPTX=true
+      PPT_ORCHESTRATE=true
+      ;;
+    --ig)
+      # 인포그래픽 게이트만 켠다. 팬아웃은 ig-selector 소유이고 여기서 하지 않는다.
+      PPT_IG=true
+      ;;
+    --ig-pages=*)
+      PPT_IG=true
+      PPT_IG_PAGES="${arg#*=}"
       ;;
     --no-serve)
       DEV_SERVE=false
@@ -524,6 +545,26 @@ if [ "$GENERATE_PPTX" = true ]; then
   echo ""
   echo "📊 Generating PowerPoint (PPTX) file..."
 
+  # ── 재진입 가드 (Issue332) — 상호 재귀를 **루프가 아니라 즉시 실패**로 만든다
+  #
+  #   글로벌 `ppt-deck/deck.py` 의 폴백 ①은 *"프로젝트에 m2slide 가 있으면 m2slide.sh
+  #   --pptx 에 위임"* 이다(`ppt-maker/make.py` 의 lane A 도 deck.py 를 거치므로 같다).
+  #   m2slide 가 그 둘을 부르지 않는 것이 1차 방어이고(설계 원칙 — build-pptx.sh 주석),
+  #   이 가드가 2차 방어다: 원칙은 사람이 어길 수 있지만 가드는 어겨지지 않는다.
+  #
+  #   PPTX 경로에 들어오는 순간 깊이를 1로 올려 자식 프로세스 전체에 물려준다. 글로벌이
+  #   어떤 경로로든 되불러 오면 그 재진입은 여기서 rc1 로 끊긴다 — 무한 루프도, 조용한
+  #   중복 빌드도 성립하지 않는다.
+  if [ "${M2SLIDE_PPTX_DEPTH:-0}" != "0" ]; then
+    echo "  ❌ PPTX 재귀 감지 (M2SLIDE_PPTX_DEPTH=$M2SLIDE_PPTX_DEPTH)" >&2
+    echo "     m2slide 의 pptx 경로가 자기 자신을 되부르고 있다." >&2
+    echo "     원인은 거의 언제나 하나다 — 글로벌 ppt-deck/deck.py(또는 ppt-maker/make.py)를" >&2
+    echo "     호출했고, 그쪽 폴백 ①이 m2slide.sh --pptx 로 되위임한 것이다." >&2
+    echo "     해법: md2pptx.py 를 직접 부르는 lib/pptx/build-pptx.sh 경로만 쓴다." >&2
+    exit 1
+  fi
+  export M2SLIDE_PPTX_DEPTH=1
+
   if ! command -v pandoc &> /dev/null; then
       echo "  ❌ Error: Pandoc is not installed. Please install it to use --pptx option."
       echo "  brew install pandoc"
@@ -546,13 +587,32 @@ if [ "$GENERATE_PPTX" = true ]; then
   PPTX_ARGS=()
   [ "$PPTX_NO_VERIFY" = true ] && PPTX_ARGS+=(--no-verify)
 
+  # Issue332 — `--ppt-make` 면 오케스트레이터를 거친다. 그 안에서도 lane A 는 결국
+  #   같은 build-pptx.sh 라, 산출물은 두 경로가 동일하다. 오케스트레이터가 더하는 것은
+  #   **앞단(ppt-init)·뒷단(ppt-check)·인포그래픽 게이트·보고**뿐이다.
+  PPTX_DRIVER="$SCRIPT_DIR/lib/pptx/build-pptx.sh"
+  if [ "$PPT_ORCHESTRATE" = true ]; then
+    PPTX_DRIVER="$SCRIPT_DIR/lib/pptx/ppt-make.sh"
+    [ "$PPT_IG" = true ] && PPTX_ARGS+=(--ig)
+    [ -n "$PPT_IG_PAGES" ] && PPTX_ARGS+=(--ig-pages "$PPT_IG_PAGES")
+  elif [ "$PPT_IG" = true ]; then
+    echo "  ⚠️  --ig 는 --ppt-make 와 함께 쓴다 (인포그래픽 게이트는 오케스트레이터 단계다). 무시함" >&2
+  fi
+
   PPTX_RC=0
-  "$SCRIPT_DIR/lib/pptx/build-pptx.sh" "$PROJECT_DIR" "$PPTX_OUTPUT" "${PPTX_ARGS[@]+"${PPTX_ARGS[@]}"}" || PPTX_RC=$?
+  "$PPTX_DRIVER" "$PROJECT_DIR" "$PPTX_OUTPUT" "${PPTX_ARGS[@]+"${PPTX_ARGS[@]}"}" || PPTX_RC=$?
 
   case "$PPTX_RC" in
     0)
       echo "  ✅ Generated: $PROJECT_NAME.pptx"
       [ "$PPTX_NO_VERIFY" = true ] && echo "  ⚠️  검증 생략됨 (--pptx-no-verify) — 규격 위반 여부는 확인되지 않았다"
+      ;;
+    4)
+      # 덱은 완주했고 **인포그래픽만** 승인 대기다(ig-selector 비용 게이트 exit 4).
+      # ppt-maker 규약과 같다 — 4는 실패가 아니라 개입 대기다. 덱 산출은 성공이므로
+      # 빌드를 실패시키지 않되, 신호가 묻히지 않도록 한 줄로 남긴다.
+      echo "  ✅ Generated: $PROJECT_NAME.pptx"
+      echo "  ⏸  인포그래픽 승인 대기 — 팬아웃 명령은 위 ⑤ 단계가 출력했다(ig-selector 소유)"
       ;;
     2)
       echo "  ❌ PPTX 검증 실패 — 파일은 생성됐으나 규격 위반이 있다: $PPTX_OUTPUT"

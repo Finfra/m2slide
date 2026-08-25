@@ -359,6 +359,15 @@ PY
     python3 "$CK/check-conform.py" "$OUT" --lane a --template "$REF" 2>/dev/null \
       | tail -1 | sed 's/^/  최종 /' || true
   fi
+
+  # ── ③-d 실측값 기록 (Issue332) — 뒷단([`ppt-make.sh`](ppt-make.sh))이 읽는다.
+  #   ②-b·③-b 가 **CSS 실측으로 덮은** 두 색은 theme.yml 에 없다(그것이 설계다).
+  #   뒷단 팔레트 대조가 그 사실을 모르면 의도한 동작을 이탈로 보고한다 — 그래서
+  #   "무엇을 왜 덮었는지"를 파일로 남겨 넘긴다. 재계산이 아니라 **전달**이다.
+  { echo "THEME=$THEME"
+    echo "PALETTE=$PALETTE"
+    echo "TITLE_COLOR=${TITLE_COL:-}"
+    echo "STRONG_COLOR=${STRONG_COL:-}"; } > "$WORK/measured.env"
   exit 0
 fi
 
