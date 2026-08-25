@@ -29,11 +29,12 @@
 #      lane a rc0 / 미지정 rc1).
 #
 #
-#   📌 현재 상태 (2026-08-25 실측, igTest): **6/7 통과 · ⑥ 만 실패**.
-#      `Courier ×20` 은 러너 오탐이 아니라 실재 결함이다 — reference.pptx 에는 Courier 가
-#      없고(실측), ppt-deck 스크립트에도 없다. **pandoc 이 코드 스팬에 하드코딩**한다
-#      (reference-doc 유무와 무관하게 재현). 소관은 Issue329 의 잔여 항목 G6 이며 여기서
-#      고치지 않는다. ⚠️ 화이트리스트로 덮지 말 것 — 덮는 순간 이 러너의 존재 이유가 사라진다.
+#   📌 현재 상태 (2026-08-25 실측, igTest): **7/7 통과**.
+#      한때 ⑥ 만 실패했다(`Courier ×20`). 러너 오탐이 아니라 실재 결함이었고 —
+#      reference.pptx 에도 ppt-deck 스크립트에도 Courier 가 없으니 **pandoc 이 코드 스팬에
+#      하드코딩**한 것이다(reference-doc 유무와 무관하게 재현) — Issue329 가 `build-pptx.sh`
+#      ③-c 에 `retheme.py --font-only` 를 배선해 걷어냈다.
+#      ⚠️ 화이트리스트로 덮지 말 것 — 덮는 순간 이 러너의 존재 이유가 사라진다.
 #
 #   사용:  3.parity.sh [프로젝트명] [--no-build]
 set -euo pipefail

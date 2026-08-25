@@ -28,21 +28,6 @@
 
 # 📙 일반
 
-## Issue329: 테마 일치 완성 — layout 유도 매핑 + 코드 폰트 이탈 제거 (등록: 2026-08-18)
-* depends: Issue327
-* 목적: 색·서체는 옮겨졌지만(accent `F5C518`·Malgun Gothic 실측 확인) **layout 개념과 코드 서식이 이탈**해 있다. m2slide layout 5종과 pptx 마스터의 대응을 세우고 템플릿 밖 폰트를 없앤다.
-* 상세:
-    - 🟢 **초기 판단이 실측에서 뒤집혔다** — "마스터 레이아웃을 신설해야 한다"고 봤으나, `theme2reference.py --adapt` 가 표준 11종을 **이미 만들어 두었다**(reference.pptx 실측). 즉 G3 는 마스터 문제가 아니라 **원고를 그 모양으로 쓰는 문제**다
-    - pandoc 은 레이아웃을 이름으로 고르지 않고 **슬라이드 구조로 자동 선택**한다 → 매핑표는 [`pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) "layout 매핑" 절
-    - G6: `Courier` 15회(코드블록). 출처가 reference 테마인지 pandoc 하드코딩인지 **미판정** — 전자면 글로벌(prj3) 위임, 후자면 원고에서 코드블록 표현 교체
-    - 🔑 **챕터 진입 장이 3장으로 쪼개진다** (Issue326 실측 2026-08-18): 원본 `chapter` layout 1장이 pptx 에서 `Section Header`(H1) + 제목 없는 장("Chapter 1.") + `Title and Content`(부제) **3장**이 된다. 이것이 제목 보유율이 87% 에서 100% 로 못 가는 직접 원인(45장 중 6장 무제목 = 챕터 5개 × 1 + α). 원고에서 챕터 진입부를 **H1 단독**으로 만들면 1장으로 수렴한다
-* 🟢 부분 완료 (2026-08-19, commit: 53169cb): ① 챕터 진입 3장 → **2장**(Section Header + 챕터 TOC) 수렴 ② 무제목 장 **6 → 0**(igTest 41/41 제목 보유) — 원인이 둘이었다: H1 뒤 본문이 흘러나가는 것과 `Content with Caption` 넘침(표·그림 **뒤**의 글). 후자는 무거운 블록을 장 끝으로 옮겨 막았고, mermaid 펜스도 **그림이므로** 무거운 블록에 넣었다 ③ 제목색·강조색을 **CSS 실측값으로 교정**([`css-var.py`](lib/pptx/css-var.py)) — 글로벌 `title_color()` 는 accent 중 가장 어두운 색(#977A0E)을 고르는 추정이라 실제(#111111)와 달랐다 ④ 좁은 제목칸의 긴 한글 제목 잘림 → 자동 축소(레이아웃뿐 아니라 **장 쪽에도** 걸어야 듣는다. pandoc 이 빈 `<a:bodyPr/>` 로 상속을 덮는다)
-* ⏳ 남은 것: G6 코드 폰트 `Courier` WARN 1 (출처 미판정) · 본문 글자 크기(실측 9.5pt = 폭의 1.0%, HTML 은 1.9%) · 중첩 `::: {.column}` 누출(aTest 2×2 장)
-* 구현 명세:
-    - 원고 생성기에 layout 유도 규칙 구현 (`chapter`→H1 단독 / 도해 장→이미지+캡션 / 2분할→`::: columns`)
-    - 코드 폰트 출처 판정 후 분기 — 위임이면 `~/.claude/Issue.md` 등록(*-maker·ppt-* 무수정 원칙)
-    - 검증: 산출 pptx 레이아웃 분포가 원본 layout 분포와 대응 · 테마 밖 폰트 0 · `check-conform --lane a` WARN 감소
-
 ## Issue332: ppt-maker 오케스트레이션 도입 — 원본 하나로 완성 덱까지 (등록: 2026-08-18)
 * depends: Issue330
 * 목적: 지금은 사람이 lane 을 고르고 단계를 잇는다. 글로벌 [`ppt-maker`](file:///Users/nowage/.claude/skills/ppt-maker/SKILL.md)(원본 → init·trace·spec·deck·check 오케스트레이션)를 m2slide 진입점에 붙여 **한 번의 호출로 완성 덱**까지 가게 한다. prj82 가 `run.sh` 로 하던 일을 제품 경로로 옮기는 것과 같은 성격.
@@ -69,6 +54,24 @@
     - 검증: 해당 장이 그림 0·편집 가능한 도형 텍스트로 존재 (`check-conform --lane a`)
 
 # ✅ 완료
+
+## Issue329: 테마 일치 완성 — layout 유도 매핑 + 코드 폰트 이탈 제거 (등록: 2026-08-18, 해결: 2026-08-25, commit: 53169cb, 7220b2e) ✅
+* depends: Issue327
+* 완료 실측 (2026-08-25, commit 7220b2e): [`3.parity.sh`](z_test/ig-ppt/3.parity.sh) igTest **6/7 → 7/7 rc0**. 잔여 3종이 모두 닫혔다 — ① 테마 밖 폰트 `Courier` ×20 → **0** ② 본문 크기 9.5pt(폭의 0.99%) → **20.0pt(2.08%)** 로 HTML `--r-main-font-size` 40px / reveal 캔버스 1920px = 2.083% 와 일치 ③ aTest 2×2 장 `{.column}` 누출 1 → **0**, 장 쪼개짐 42 → **41장**. igTest 41장 · 제목 보유 41/41(100%) 로 Issue328 실측에서 회귀 없음. `check-conform --lane a` igTest FAIL 0 · aTest FAIL 0 WARN 0
+* 🔑 **G6 `Courier` 출처 = pandoc pptx writer 하드코딩** (판정 근거 3종: `reference.pptx` 전수 스캔 0회 · 산출 pptx 에서도 `ppt/slides/*.xml` 에만 있고 master·layout·theme 에 없음 · 코드 스팬 한 줄짜리 md 를 같은 reference 로 넣어도 재현). **글로벌 자산의 결함이 아니므로 위임하지 않았다** — [`build-pptx.sh`](lib/pptx/build-pptx.sh) ③-c 에 글로벌 [`retheme.py`](file:///Users/nowage/.claude/skills/ppt-deck/scripts/retheme.py)(비-`+` typeface → 테마 서체 치환)를 배선해 걷어낸다. ⚠️ `--font-only` 가 필수다 — 색까지 맡기면 ②-b·③-b 가 CSS 실측으로 교정한 제목색(#111111)·강조색(#2ECC71)이 theme.yml 값으로 되돌아간다
+* 🔑 **본문 크기는 CSS 가 정본이다** — `theme-from-css.py` 는 이름과 달리 크기를 재지 않고 `title: 27`·`body: 9.5` 를 상수로 박는다(색·캔버스만 실측한다). 조직 템플릿이 없을 때 쓰는 무난한 기본값이지만 m2slide 는 **빌드 산출 HTML 한 장에서 실측할 수 있다** — base.css 가 `<style>` 로 인라인되고 reveal 캔버스 폭이 `Reveal.initialize({width: …})` 에 적히기 때문이며, 브라우저를 띄우지 않으므로 빌드에 헤드리스 의존이 늘지 않는다. ①-c 가 그 비율을 pptx 캔버스로 환산해 덮고, 키우면 넘칠 수 있으므로 ③-b 에서 **본문 placeholder 에도 자동 축소**를 건다(제목과 같은 이유 — pandoc 이 빈 `<a:bodyPr/>` 로 레이아웃 설정을 덮는다)
+* 🔑 **중첩 `::: {.column}` 누출의 원인은 attribute 제거가 fence 줄까지 물린 것**이다. `ATTR` 정규식이 `::::::: {.row .card}` 의 attribute 를 벗기면 그 줄이 맨 `:::::::` 가 되고, `md2pptx.FENCE_OPEN` 이 정보 없는 `:::` 를 **닫는 줄**로 읽어(`info == ""` → `stack.pop`) 여닫이가 어긋난다. 짝을 잃은 `:::: {.column}` 이 본문에 글자 그대로 새고 장까지 쪼개졌다(교정 전 실측: aTest 8·9번 장이 `좌상단 …` / `좌하단 … :::: {.column} 우상단 … ::::::: 우하단 …`). [`build-source.py`](lib/pptx/build-source.py) 에 `FENCE_LINE` 가드를 넣어 fence 줄에서는 attribute 제거를 건너뛴다 — **껍데기 처리는 md2pptx 소관**이다
+* 목적: 색·서체는 옮겨졌지만(accent `F5C518`·Malgun Gothic 실측 확인) **layout 개념과 코드 서식이 이탈**해 있다. m2slide layout 5종과 pptx 마스터의 대응을 세우고 템플릿 밖 폰트를 없앤다.
+* 상세:
+    - 🟢 **초기 판단이 실측에서 뒤집혔다** — "마스터 레이아웃을 신설해야 한다"고 봤으나, `theme2reference.py --adapt` 가 표준 11종을 **이미 만들어 두었다**(reference.pptx 실측). 즉 G3 는 마스터 문제가 아니라 **원고를 그 모양으로 쓰는 문제**다
+    - pandoc 은 레이아웃을 이름으로 고르지 않고 **슬라이드 구조로 자동 선택**한다 → 매핑표는 [`pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) "layout 매핑" 절
+    - ~~G6: `Courier` 15회(코드블록). 출처가 reference 테마인지 pandoc 하드코딩인지 **미판정** — 전자면 글로벌(prj3) 위임, 후자면 원고에서 코드블록 표현 교체~~ → **판정 완료: pandoc 하드코딩**. 위 🔑 항 참조(위임 아님, `retheme.py --font-only` 배선으로 해소)
+    - 🔑 **챕터 진입 장이 3장으로 쪼개진다** (Issue326 실측 2026-08-18): 원본 `chapter` layout 1장이 pptx 에서 `Section Header`(H1) + 제목 없는 장("Chapter 1.") + `Title and Content`(부제) **3장**이 된다. 이것이 제목 보유율이 87% 에서 100% 로 못 가는 직접 원인(45장 중 6장 무제목 = 챕터 5개 × 1 + α). 원고에서 챕터 진입부를 **H1 단독**으로 만들면 1장으로 수렴한다
+* 🟢 부분 완료 (2026-08-19, commit: 53169cb): ① 챕터 진입 3장 → **2장**(Section Header + 챕터 TOC) 수렴 ② 무제목 장 **6 → 0**(igTest 41/41 제목 보유) — 원인이 둘이었다: H1 뒤 본문이 흘러나가는 것과 `Content with Caption` 넘침(표·그림 **뒤**의 글). 후자는 무거운 블록을 장 끝으로 옮겨 막았고, mermaid 펜스도 **그림이므로** 무거운 블록에 넣었다 ③ 제목색·강조색을 **CSS 실측값으로 교정**([`css-var.py`](lib/pptx/css-var.py)) — 글로벌 `title_color()` 는 accent 중 가장 어두운 색(#977A0E)을 고르는 추정이라 실제(#111111)와 달랐다 ④ 좁은 제목칸의 긴 한글 제목 잘림 → 자동 축소(레이아웃뿐 아니라 **장 쪽에도** 걸어야 듣는다. pandoc 이 빈 `<a:bodyPr/>` 로 상속을 덮는다)
+* 구현 명세:
+    - 원고 생성기에 layout 유도 규칙 구현 (`chapter`→H1 단독 / 도해 장→이미지+캡션 / 2분할→`::: columns`)
+    - 코드 폰트 출처 판정 후 분기 — 위임이면 `~/.claude/Issue.md` 등록(*-maker·ppt-* 무수정 원칙)
+    - 검증: 산출 pptx 레이아웃 분포가 원본 layout 분포와 대응 · 테마 밖 폰트 0 · `check-conform --lane a` WARN 감소
 
 ## Issue330: parity 회귀 러너 — `z_test/ig-ppt/3.parity.sh` (등록: 2026-08-18, 해결: 2026-08-25, commit: ebf226a) ✅
 * 완료 실측 (2026-08-25, igTest 빌드 포함 6.6초): **6/7 통과** — ① 슬라이드 41장 = HTML 본문 39 + 구조 2 ✅ · ② Title placeholder 41/41(100%) ✅ · ③ 제목 문자열·순서 일치(챕터 5 · 본문 29장) ✅ · ④ 구조 슬라이드 7장(표지 1 · 목차 1 · 챕터 진입 5) ✅ · ⑤ 마크다운 누출 0 ✅ · ⑥ **테마 밖 폰트 `Courier` ×20 ❌** · ⑦ `check-conform --lane a` FAIL 0 ✅
