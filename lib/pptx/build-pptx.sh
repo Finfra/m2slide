@@ -13,12 +13,28 @@
 #      m2slide.sh → deck.py → m2slide.sh 무한 재귀가 된다. md2pptx.py 직접 호출은
 #      그 재귀가 성립하지 않는다.
 #
-# 사용: build-pptx.sh <project_dir> <out_pptx> [--pages 1-3]
+# 사용: build-pptx.sh <project_dir> <out_pptx> [--pages 1-3] [--no-lane-b]
 set -euo pipefail
 
 PROJECT_DIR="${1:?project_dir 필요}"
 OUT="${2:?out_pptx 필요}"
 shift 2 || true
+
+# ── lane B 스위치 (Issue331) — 정형 블록(cards·process·compare)을 네이티브 도형으로.
+#   **기본 on** 이다. 설계 3레인 표는 lane B 를 "옵트인" 으로 적었지만, 그 표에서
+#   게이트가 필요한 이유로 든 것은 **lane C 의 토큰 비용**(장당 33만)이다. lane B 는
+#   초 단위·토큰 0 이고 결정적이며, 실패해도 lane A 산출물을 그대로 남긴다(덧칠이다).
+#   승인 게이트가 지키는 위험이 없는 곳에 게이트를 두면 기능이 그냥 안 쓰이게 된다.
+#   ⚠️ 끄는 스위치는 남긴다 — 회귀를 가를 때 "lane B 탓인가" 를 1초에 답할 수 있어야 한다.
+LANE_B=1
+_PASS=()
+for _a in "$@"; do
+  case "$_a" in
+    --no-lane-b) LANE_B=0 ;;
+    *)           _PASS+=("$_a") ;;
+  esac
+done
+set -- ${_PASS[@]+"${_PASS[@]}"}
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -317,6 +333,26 @@ print("  강조 색 교정 — CSS 실측 #%s 로 bold run %d개 갱신 · 자�
       % (col, n, fit, bfit))
 PY
   fi
+  # ── ③-b2 lane B — 정형 블록을 **네이티브 도형**으로 (Issue331)
+  #
+  #   `::: cards` 와 정형 htmlart 는 pptx 에 어휘가 없어 평문 불릿으로 눕는다(설계 G4·O3).
+  #   그 자리를 글로벌 `ppt-info` 블록 렌더러로 다시 그린다 — **그림이 아니라 도형**이라
+  #   문구를 그대로 고칠 수 있다. 사본을 두지 않고 호출만 한다(설계 "prj82 에서 무엇을…").
+  #
+  #   ⚠️ **자리는 여기다.** ③-b 보다 앞이면 그쪽의 bold 색 교정이 카드 글자까지 강조색으로
+  #      덮어 카드의 계단색이 사라진다. ③-c 보다 뒤면 도형이 쓰는 서체가 retheme 을 놓쳐
+  #      `3.parity.sh` ⑥(테마 밖 폰트 0)이 깨진다. 그래서 **③-b 다음 · ③-c 앞**이다.
+  #
+  #   ⚠️ 실패해도 빌드를 죽이지 않는다 — lane B 는 덧칠이고, 빠지면 lane A 의 평문 불릿이
+  #      그대로 남는다. 구조(lane A)가 먼저라는 순서를 배선으로 굳힌 것이다.
+  LANEB="$SCRIPT_DIR/lane-b.py"
+  if [ "$LANE_B" = 1 ] && [ -f "$LANEB" ]; then
+    python3 "$LANEB" "$PROJECT_DIR" "$OUT" --theme-yml "$THEME_YML" \
+      || echo "  ⚠️ lane B 생략(계속 진행) — 평문 불릿이 그대로 남는다" >&2
+  elif [ "$LANE_B" = 0 ]; then
+    echo "  lane B 생략 — --no-lane-b"
+  fi
+
   # ── ③-c 코드 폰트 이탈 제거 — `Courier` 는 **pandoc 이 박는다** (Issue329)
   #
   #   출처 판정(2026-08-25, 실측 3종):

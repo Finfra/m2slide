@@ -73,7 +73,7 @@ echo "🎼 ppt-maker 오케스트레이션 — $PROJECT_NAME"
 # ── 1. 입력 판정 — **자동으로 고르지 않는다**
 #   m2slide 의 원본은 `markdown/*.md`(또는 single mode 의 `<N>.md`) 뿐이라 lane 은 A 로
 #   결정돼 있다. 확장자 표를 여기에 다시 적으면 글로벌 판정의 사본이 되고, 사본은 갈린다.
-echo "  ① 입력 판정 — 원본=마크다운 → lane A 고정 (lane B/C 는 옵트인·게이트 뒤)"
+echo "  ① 입력 판정 — 원본=마크다운 → lane A 고정 (lane B 는 ③ 안에서 정형 블록만 · lane C 는 게이트 뒤)"
 note "✅" "① 입력 판정" "lane A (자동 선택 없음)"
 
 # ── 2. 앞단 `ppt-init` — 덱 폴더·자산 확보 (멱등)

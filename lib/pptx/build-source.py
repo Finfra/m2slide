@@ -33,6 +33,7 @@ pptx 변환기(`ppt-deck/md2pptx.py`)는 **마크다운만** 본다. 그런데 m
     ⑨ 구조 슬라이드 주입        표지(메타) · 목차           (Issue328)
     ⑩ 무거운 블록 후치          표·이미지를 장 끝으로       (Issue329)
     ⑪ 컴포넌트 펜스 평탄화      ```wordart → 평문, ```chart 류 → 제거
+    ⑫ lane B 대상 표시          cards·정형 htmlart 를 사이드카에 적는다  (Issue331)
 
 ⑦이 필수인 이유
 ---------------
@@ -66,6 +67,7 @@ pptx 변환기(`ppt-deck/md2pptx.py`)는 **마크다운만** 본다. 그런데 m
 """
 import argparse
 import glob
+import json
 import os
 import re
 import sys
@@ -331,7 +333,158 @@ def normalize_chapter(blocks, chapter_title, stat):
     return [entry, tocslide] + list(blocks[1:])
 
 
-def clean(text, srcdir, proj, stat, chapter_title=None):
+# ── ⑫ lane B 표시 — 정형 블록을 **네이티브 도형**으로 다시 그릴 장을 골라 적는다 (Issue331)
+#
+#   여기서 하는 일은 *"이 장의 이 블록은 도형으로 그릴 수 있다"* 를 사이드카
+#   (`_pipeline/pptx/lane-b.json`)에 적는 것뿐이다. **원고는 바꾸지 않는다** — 렌더는
+#   글로벌 `ppt-info` 가 하고([`lane-b.py`](lane-b.py) 가 호출·병합을 맡는다), 원고는
+#   지금처럼 평탄화된 채로 pandoc 에 간다.
+#
+#   원고를 바꾸지 않는 이유는 **lane A 가 먼저**이기 때문이다. lane B 가 어떤 이유로
+#   빠져도(자산 부재·렌더 실패·본문 대조 불일치) 제목·순서·문구는 평문 불릿으로 그대로
+#   남는다. 원고에서 블록을 들어내 버리면 그 안전망이 사라진다.
+#
+#   ⚠️ **lane B 와 lane C 의 경계는 "패턴 카탈로그에 있는가" 하나다**(설계 3레인 표).
+#      카탈로그에 없는 htmlart(pie·matrix·venn…)는 도형 배치 자체가 판단이고, 그 판단은
+#      장당 33만 토큰짜리 `ig-maker`(lane C) 소관이다. 여기서 비슷한 블록으로
+#      **근사하지 않는다** — 근사하면 원본과 다른 도해가 조용히 나간다.
+LANE_B_CATALOG = {
+    "cards":            "cards",     # 카드 그리드      → ppt-info `cards`
+    "htmlart numbered": "cards",     # 번호 카드        → 같은 블록(번호는 우리가 매긴다)
+    "htmlart process":  "process",   # 순차 단계        → `cards` + `flow_arrow` 네이티브 커넥터
+    "htmlart compare":  "compare",   # 좌우 동등 비교   → `compare` (1:1 대응)
+}
+FENCE_DIV_OPEN = re.compile(r"^[ \t]*:::+[ \t]*(cards|htmlart[ \t]+[a-z][a-z0-9-]*)"
+                            r"(?:[ \t]+\{[^}]*\})?[ \t]*$")
+FENCE_DIV_CLOSE = re.compile(r"^[ \t]*:::+[ \t]*$")
+
+# 인라인 마크다운 → pandoc 이 실제로 렌더할 글자. 병합 단계의 본문 대조가 이 문자열을 쓴다
+INLINE_MD = (
+    (re.compile(r"!\[[^\]]*\]\([^)]*\)"), ""),
+    (re.compile(r"\[([^\]]*)\]\([^)]*\)"), r"\1"),
+    (re.compile(r"\*\*(.+?)\*\*"), r"\1"),
+    (re.compile(r"(?<!\*)\*([^*\n]+)\*(?!\*)"), r"\1"),
+    (re.compile(r"`([^`]+)`"), r"\1"),
+)
+
+
+def strip_inline(s):
+    """인라인 마크다운을 벗겨 **pandoc 이 렌더할 글자**만 남긴다.
+
+    병합 단계는 이 문자열로 pptx 본문 문단의 끝을 대조하고, 일치할 때만 지운다.
+    그래서 여기 규칙은 *"보기 좋게"* 가 아니라 ***"pandoc 과 같게"*** 다.
+    """
+    for pat, rep in INLINE_MD:
+        s = pat.sub(rep, s)
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def parse_div_items(lines):
+    """fenced div 본문의 리스트를 `{title, subs[]}` 로 읽는다.
+
+    ⚠️ 들여쓰기 단위는 **2칸 = 1레벨**이다 — m2slide 파서 규약(md-m2slide-rules 카드 절).
+       4칸으로 재면 카드 본문이 최상위 항목으로 올라와 **카드 수가 부풀어 오른다.**
+    """
+    items = []
+    for ln in lines:
+        m = re.match(r"^([ \t]*)[*+-][ \t]+(.*)$", ln)
+        if not m:
+            continue
+        indent = len(m.group(1).replace("\t", "    "))
+        text = m.group(2).strip()
+        if indent < 2:
+            items.append({"title": text, "subs": []})
+        elif items:
+            items[-1]["subs"].append(text)
+    return items
+
+
+def scan_lane_b(blocks, src_label, seen, out, stat):
+    """정리가 끝난 슬라이드 블록에서 lane B 대상을 골라 `out` 에 적는다.
+
+    적는 것은 넷이다:
+        어느 장인가      제목 + **동명 장 안에서의 순번**(pandoc 장 번호는 여기서 알 수 없다)
+        무엇을 그리나    카탈로그 종류 + 항목
+        어디를 대체하나  블록이 만들어 낼 **문단 문자열 목록**
+        어디부터 그리나  블록 앞 본문 줄 수(대략치 — 실제 자리는 병합 단계가 실측한다)
+
+    셋째가 병합의 안전장치다. 실제 pptx 본문의 **끝**이 그 문자열들과 일치할 때만 지운다 —
+    위치를 셈으로 맞히면 원고가 조금만 달라져도 엉뚱한 문단이 사라진다.
+
+    ⚠️ **블록 뒤에 본문이 더 있으면 대상에서 뺀다.** 그 경우 지울 자리가 문단 목록의
+       끝이 아니라 중간이 되고, 도형을 어디에 놓아야 하는지도 정해지지 않는다.
+       흔한 모양이 아니므로(실측 8건 전부 블록이 장 끝) 근사하지 않고 lane C 로 넘긴다.
+    """
+    for blk in blocks:
+        lines = blk.split("\n")
+        title = None
+        for ln in lines:
+            m = H2.match(ln)
+            if m:
+                title = strip_inline(m.group(1))
+                break
+        if title is None:
+            continue
+        ordinal = seen.get(title, 0)
+        seen[title] = ordinal + 1
+
+        oi = next((i for i, ln in enumerate(lines) if FENCE_DIV_OPEN.match(ln)), None)
+        if oi is None:
+            continue
+        raw = re.sub(r"[ \t]+", " ", FENCE_DIV_OPEN.match(lines[oi]).group(1)).strip()
+        ci = next((j for j in range(oi + 1, len(lines)) if FENCE_DIV_CLOSE.match(lines[j])), None)
+        rec = {"src": src_label, "title": title, "ord": ordinal, "raw": raw}
+
+        kind = LANE_B_CATALOG.get(raw)
+        if kind is None:
+            rec["lane"] = "c"
+            rec["reason"] = "패턴 카탈로그 미등재"
+            out.append(rec)
+            stat["laneb_defer"] += 1
+            continue
+        if ci is None:
+            rec["lane"] = "c"
+            rec["reason"] = "fenced div 가 닫히지 않았다"
+            out.append(rec)
+            stat["laneb_defer"] += 1
+            continue
+        if any(l.strip() for l in lines[ci + 1:]):
+            rec["lane"] = "c"
+            rec["reason"] = "블록 뒤에 본문이 더 있다 — 대체 자리가 문단 끝이 아니다"
+            out.append(rec)
+            stat["laneb_defer"] += 1
+            continue
+
+        items = parse_div_items(lines[oi + 1:ci])
+        if not items:
+            rec["lane"] = "c"
+            rec["reason"] = "항목을 읽지 못했다"
+            out.append(rec)
+            stat["laneb_defer"] += 1
+            continue
+        if kind == "compare" and len(items) != 2:
+            rec["lane"] = "c"
+            rec["reason"] = "compare 는 최상위 항목이 정확히 2개여야 한다 (지금 %d)" % len(items)
+            out.append(rec)
+            stat["laneb_defer"] += 1
+            continue
+
+        flat = []
+        clean_items = []
+        for it in items:
+            t = strip_inline(it["title"])
+            subs = [strip_inline(s) for s in it["subs"]]
+            flat.append(t)
+            flat += subs
+            clean_items.append({"title": t, "subs": subs})
+        rec.update({"lane": "b", "kind": kind, "items": clean_items, "flat": flat,
+                    "lead": sum(1 for l in lines[:oi] if l.strip() and not H2.match(l))})
+        out.append(rec)
+        stat["laneb"] += 1
+
+
+def clean(text, srcdir, proj, stat, chapter_title=None,
+          lane_b=None, lane_b_seen=None, src_label=""):
     text = strip_frontmatter(text)
 
     # 줄 단위 제거 — 코드 안에 이 형태가 올 일은 없다(줄 전체가 지시자여야 매칭)
@@ -355,8 +508,14 @@ def clean(text, srcdir, proj, stat, chapter_title=None):
         stat["attr"] += n2
         stat["symbol"] += n3
         if n3:                                  # 심벌 자리에 남은 이중 공백 정리
-            line = re.sub(r"[ \t]{2,}", " ", line)
-            line = re.sub(r"(^|[*\-+] )[ \t]+", r"\1", line)
+            # ⚠️ **선두 들여쓰기는 건드리지 않는다** (Issue331). 줄 전체에 `[ \t]{2,}` 를
+            #    걸면 `  - :fa-check: 완료` 의 2칸 들여쓰기가 1칸으로 줄어 **중첩 레벨이
+            #    통째로 사라진다**(실측: aTest 심벌 카드 2장이 최상위 10항목으로 펴졌다).
+            #    m2slide 파서는 2칸 = 1레벨이라 1칸은 레벨 0 이다.
+            head = re.match(r"^[ \t]*", line).group(0)
+            body = re.sub(r"[ \t]{2,}", " ", line[len(head):])
+            body = re.sub(r"^([*\-+] )[ \t]+", r"\1", body)
+            line = head + body
         rebuilt.append(line)
     text = "\n".join(rebuilt)
 
@@ -376,6 +535,10 @@ def clean(text, srcdir, proj, stat, chapter_title=None):
     blocks = split_slides(text)
     blocks = normalize_chapter(blocks, chapter_title, stat)
     blocks = [defer_heavy(b, stat) for b in blocks]
+
+    # ⑫ lane B 표시 — **원고를 바꾸지 않고** 사이드카에만 적는다
+    if lane_b is not None:
+        scan_lane_b(blocks, src_label, lane_b_seen, lane_b, stat)
 
     text = "\n\n---\n\n".join(b.strip() for b in blocks if b.strip())
     text = re.sub(r"\n{3,}", "\n\n", text)
@@ -488,8 +651,12 @@ def main():
 
     stat = {k: 0 for k in ("attr", "element", "id", "anim", "slot", "symbol",
                            "img_abs", "img_proj", "img_missing",
-                           "chapter", "defer", "fence_flat", "fence_drop")}
+                           "chapter", "defer", "fence_flat", "fence_drop",
+                           "laneb", "laneb_defer")}
     made = []
+    #   제목 순번은 **덱 전체** 기준이다 — 병합은 pptx 한 벌에서 장을 찾으므로,
+    #   파일마다 0 부터 세면 동명 제목이 두 원고에 있을 때 서로를 가리킨다
+    lane_b, lane_b_seen = [], {}
 
     # ⑨ 표지 — `cover_enabled: false` 면 주입하지 않는다 (설정을 존중)
     cover_on = (config_flag(proj, "cover_enabled") or "").lower() not in ("false", "no", "0")
@@ -502,11 +669,22 @@ def main():
     for i, f in enumerate(srcs, 1):
         text = open(f, encoding="utf-8").read()
         text = clean(text, os.path.dirname(os.path.abspath(f)), proj, stat,
-                     chapter_title=chapter_of.get(os.path.basename(f)))
+                     chapter_title=chapter_of.get(os.path.basename(f)),
+                     lane_b=lane_b, lane_b_seen=lane_b_seen,
+                     src_label=os.path.basename(f))
         dst = os.path.join(outdir, "%02d-%s" % (i, os.path.basename(f)))
         with open(dst, "w", encoding="utf-8") as fp:
             fp.write(text)
         made.append(dst)
+
+    # ⑫ lane B 사이드카 — 원고 폴더 **옆**에 둔다(`_pipeline/pptx/lane-b.json`).
+    #   원고 폴더 안에 두면 `md2pptx` 가 `*.md` 를 긁을 때 섞일 위험이 있고, 이 파일은
+    #   원고가 아니라 **원고에 대한 메모**다. 대상이 0건이어도 쓴다 — 파일 부재와
+    #   "대상 없음" 은 다른 사실이고, 뒷단이 둘을 구분할 수 있어야 한다.
+    sidecar = os.path.join(os.path.dirname(outdir), "lane-b.json")
+    with open(sidecar, "w", encoding="utf-8") as fp:
+        json.dump({"project": os.path.basename(proj), "targets": lane_b}, fp,
+                  ensure_ascii=False, indent=2)
 
     if not a.quiet:
         print("  원고 %d편 → %s" % (len(made), os.path.relpath(outdir, os.getcwd())),
@@ -521,6 +699,9 @@ def main():
               % ("주입" if cover_on else "생략", len(chapters), stat["chapter"],
                  stat["defer"], stat["fence_flat"], stat["fence_drop"]),
               file=sys.stderr)
+        print("  lane B 표시 — 대상 %d장 · lane C 이월 %d건 (%s)"
+              % (stat["laneb"], stat["laneb_defer"],
+                 os.path.relpath(sidecar, os.getcwd())), file=sys.stderr)
         if stat["img_missing"]:
             # 조용히 넘기지 않는다 — 그림이 빠진 채로 "성공" 하는 것이 이 파이프의 고질이다
             print("  ⚠️ 실물을 못 찾은 이미지 %d건 — md2pptx 가 '파일없음' 으로 다시 보고한다"

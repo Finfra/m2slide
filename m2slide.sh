@@ -61,6 +61,8 @@ Options:
   --pptx            PowerPoint 파일도 함께 생성 (pandoc 사용)
                     산출 직후 check-conform 이 자동 검증하며, FAIL 이면 빌드 실패
   --pptx-no-verify  --pptx + 검증 생략. 차단을 의도적으로 넘길 때만 사용
+  --pptx-no-lane-b  --pptx + lane B(cards·정형 htmlart 를 네이티브 도형으로) 생략.
+                    기본은 켜져 있다 — 끄면 그 블록들이 평문 불릿으로 남는다
   --ppt-make        ppt-maker 오케스트레이션으로 완성 덱까지 (앞단·lane A·뒷단·보고)
                     --pptx 를 포함한다. lane 은 자동 선택하지 않는다(항상 lane A)
   --ig              --ppt-make 에 인포그래픽 게이트 추가 (ig-selector 선별·비용만.
@@ -309,6 +311,7 @@ GENERATE_EPUB=false
 GENERATE_PDF=false
 GENERATE_PPTX=false
 PPTX_NO_VERIFY=false
+PPTX_NO_LANE_B=false
 PPT_ORCHESTRATE=false
 PPT_IG=false
 PPT_IG_PAGES=""
@@ -335,6 +338,12 @@ for arg in "$@"; do
       # **의도적으로** 넘길 때만 쓴다 — 산출물이 규격을 지킨다는 뜻이 아니다.
       GENERATE_PPTX=true
       PPTX_NO_VERIFY=true
+      ;;
+    --pptx-no-lane-b)
+      # Issue331 — 정형 블록(cards·process·compare)의 네이티브 도형 렌더를 끈다.
+      #   기본은 켜져 있다. 이 플래그는 회귀를 가를 때("lane B 탓인가") 쓴다.
+      GENERATE_PPTX=true
+      PPTX_NO_LANE_B=true
       ;;
     --ppt-make)
       # Issue332 — 앞단(ppt-init) · lane A · 뒷단(ppt-check) · 보고를 한 호출로 잇는다.
@@ -586,6 +595,7 @@ if [ "$GENERATE_PPTX" = true ]; then
   #   --pptx 는 옵트인 경로라 기본 빌드(`./m2slide.sh <P>`)에는 영향이 없다.
   PPTX_ARGS=()
   [ "$PPTX_NO_VERIFY" = true ] && PPTX_ARGS+=(--no-verify)
+  [ "$PPTX_NO_LANE_B" = true ] && PPTX_ARGS+=(--no-lane-b)
 
   # Issue332 — `--ppt-make` 면 오케스트레이터를 거친다. 그 안에서도 lane A 는 결국
   #   같은 build-pptx.sh 라, 산출물은 두 경로가 동일하다. 오케스트레이터가 더하는 것은

@@ -312,6 +312,19 @@ file:///<abs_path>/Projects/{Name}/slide/{chapter}.html?fwd=1#/N
 > python3 ~/.claude/skills/ppt-check/scripts/check-conform.py <out.pptx> --lane a
 > ```
 
+## 4.8 lane B 회귀 검증 (Issue331)
+
+`::: cards`·정형 htmlart 를 네이티브 도형으로 그리는 **lane B** 는 `--pptx` 에 **기본 포함**돼 있다(끄려면 `--pptx-no-lane-b`). 다음을 건드렸으면 전용 러너를 돌린다:
+
+```bash
+./z_test/ig-ppt/4.laneb.sh aTest      # cards·process·compare·lane C 이월이 모두 있는 픽스처
+./z_test/ig-ppt/3.parity.sh igTest    # 구조 파리티는 여기 — 7/7 유지 확인
+```
+
+* 트리거: [`lib/pptx/lane-b.py`](../../lib/pptx/lane-b.py) · [`build-source.py`](../../lib/pptx/build-source.py) ⑫(lane B 표시) · [`build-pptx.sh`](../../lib/pptx/build-pptx.sh) ③-b2 배선 수정
+* 단언 6종 — 사이드카 · 글자 있는 네이티브 도형 존재 · **그림 0** · 평문 불릿 제거 · **lane C 이월 미개입** · `check-conform --lane a`
+* ⚠️ lane B 는 **덧칠**이라 실패해도 빌드를 죽이지 않는다. 그래서 *"빌드가 rc0 이니 됐다"* 는 판정이 성립하지 않는다 — 러너로 재거나 stderr 의 `⚠️ lane B` 줄을 읽어야 한다
+
 > lint subcommand 전체 목록: `--lint-deployment`(§4.5) · `--lint-license`(§4.6) · `--lint-data`([`data-access-rules.md`](data-access-rules.md)) · `--lint-config`·`--lint-layouts`([`../../_doc_arch/theme_layout.md`](../../_doc_arch/theme_layout.md)). PPTX 규격 검증(§4.7)은 subcommand 가 아니라 `--pptx` 빌드 내장이다.
 
 ## 5. 결과 보고

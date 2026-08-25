@@ -268,6 +268,9 @@ node generate-epub.js Projects/[ProjectName]
 
 # 단독 실행 (부분 변환 가능)
 ./lib/pptx/build-pptx.sh Projects/[ProjectName] out.pptx [--pages 1-3]
+
+# lane B(정형 블록 → 네이티브 도형)를 끄고 짓는다 — 회귀를 가를 때만 (Issue331)
+./m2slide.sh [ProjectName] --pptx-no-lane-b
 ```
 
 산출 경로는 `Projects/<Name>/slide/<Name>.pptx` 이며 `index.html` 에 다운로드 버튼이 붙는다.
@@ -285,6 +288,29 @@ node generate-epub.js Projects/[ProjectName]
 **검증은 빌드에 내장돼 있고 FAIL 은 빌드를 실패시킨다** (Issue317). `md2pptx.py` 가 산출 직후 `check-conform`(`--lane a`) + `check-xml-order` 를 돌린다. WARN 은 통과, FAIL 은 `exit 1`. 의도적으로 넘기려면 `--pptx-no-verify`.
 
 ⚠️ 손으로 재검할 때 **`--lane a` 를 빠뜨리지 말 것**. 기본값 `b`(인포그래픽)는 본문 이미지를 위반으로 보므로, mermaid 렌더 이미지가 정상 콘텐츠인 m2slide 덱을 오판한다 — 같은 pptx 가 `--lane a` rc0 / 미지정 rc1 (실측).
+
+#### lane B — 정형 블록을 네이티브 도형으로 (Issue331)
+
+pptx 에는 "카드 그리드" 라는 어휘가 없어 `::: cards` 와 htmlart 가 **평문 불릿으로 눕는다**. 그 자리를 글로벌 [`ppt-info`](file:///Users/nowage/.claude/skills/ppt-info/SKILL.md) 블록 렌더러로 다시 그리는 것이 lane B 다 — **그림이 아니라 도형**이라 문구를 그대로 고칠 수 있다.
+
+| 단계 | 무엇이 | 어디서 |
+| :-- | :--- | :--- |
+| 표시 | cards·정형 htmlart 를 골라 `_pipeline/pptx/lane-b.json` 에 적는다 | [build-source.py](lib/pptx/build-source.py) ⑫ |
+| 렌더 | `pptx-info` 펜스 → `info-build.py` → 한 장짜리 pptx | 글로벌 ppt-info (**무수정 호출**) |
+| 병합 | 본문 문단을 대조해 걷어내고 그 자리에 도형을 끼운다 | [lane-b.py](lib/pptx/lane-b.py) |
+
+**카탈로그 (lane B 로 그리는 것)** — 여기 없는 것은 lane C(`ig-maker`) 대상이고 **비슷한 블록으로 근사하지 않는다**:
+
+| m2slide 블록 | ppt-info 블록 |
+| :--- | :--- |
+| `::: cards` · `::: htmlart numbered` | `cards` (좌측 액센트 바) |
+| `::: htmlart process` | `cards` + `flow_arrow` (네이티브 커넥터 — 도형을 옮겨도 따라온다) |
+| `::: htmlart compare` | `compare` |
+
+* **기본 on** 이다. lane C 의 승인 게이트는 **토큰 비용**(장당 33만) 때문에 있는데 lane B 는 초 단위·토큰 0 이다. 끄려면 `--pptx-no-lane-b`
+* **lane A 를 깨지 않는다** — 자산 부재·렌더 실패·본문 대조 불일치 어느 쪽이든 그 장을 건너뛰고 평문 불릿을 남긴다. 그래서 `lane-b.py` 는 rc0 으로 끝나는 것이 기본이고 실패는 stderr 로 크게 알린다
+* ⚠️ 배선 자리는 **③-b 다음 · ③-c 앞**이다. 앞이면 bold 색 교정이 카드 글자를 덮고, 뒤면 도형 서체가 `retheme` 을 놓쳐 `3.parity.sh` ⑥(테마 밖 폰트 0)이 깨진다
+* 회귀 러너: `./z_test/ig-ppt/4.laneb.sh [프로젝트]` (단언 6종 — 도형 존재·그림 0·평문 불릿 제거·lane C 미개입·conform)
 
 #### `--ppt-make` — ppt-maker 오케스트레이션 (Issue332)
 
