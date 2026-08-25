@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 332
+* Issue HWM: 333
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -30,19 +30,39 @@
 
 # 📗 선택
 
-## Issue331: lane B — cards·htmlart 를 네이티브 도형으로 (등록: 2026-08-18)
-* depends: Issue328, Issue329
-* 목적: 파리티 3축 중 **표현 등가**를 올린다. `::: cards` 7항목이 평문 불릿으로, htmlart 는 통째로 사라진 상태(실측)를 정형 도형 렌더로 메운다.
+## Issue333: lane B 카탈로그 확장 — 순차형 htmlart 와 남은 대응 (등록: 2026-08-25)
+* depends: Issue331
+* 목적: Issue331 이 깐 lane B 배선 위에서 **카탈로그를 넓힌다.** 지금 4종(`cards`·`numbered`·`process`·`compare`)만 도형으로 그리고 나머지 htmlart 는 전부 lane C 이월이라 평문 불릿으로 남는다.
 * 상세:
-    - 수단은 글로벌 `ppt-info` 블록 렌더러(네이티브 도형) — prj82 `lib/blocks.py`·`ppt_kit.py` 의 졸업본이다. **사본을 m2slide 에 두지 않는다**
-    - lane B 와 lane C(ig-maker)의 경계는 *"패턴 카탈로그에 있는가"* — 있으면 B(값싸고 재현 가능), 없으면 C(판단 필요·장당 33만 토큰)
-    - ⚠️ 구조(lane A)가 먼저다. 제목이 없는 덱을 도형으로 예쁘게 만드는 것은 순서가 거꾸로다 — 그래서 우선순위 📗
+    - 넓힐 수 있는 것 — `timeline`·`chevron`·`step`·`funnel` 은 **순차형**이라 `process` 매핑(`cards` + `flow_arrow`)을 그대로 늘리면 된다. m2slide 쪽 표만 고치면 되고 글로벌 수정이 필요 없다
+    - 넓힐 수 **없는** 것 — `pie`·`matrix`·`venn`·`pyramid`·`hierarchy`·`radial`·`gear`·`target` 은 ppt-info 에 대응 블록이 없다. 블록 신설은 **글로벌 소관**이므로 `~/.claude/Issue.md` 등록 후 별도 세션이다. 여기서 비슷한 블록으로 근사하지 않는다(원본과 다른 도해가 조용히 나간다)
+    - 블록 **뒤에 본문이 더 있는 장**도 지금은 이월한다 — 지울 자리가 문단 목록의 끝이 아니게 되고 도형 자리도 정해지지 않는다(실측 8건 전부 블록이 장 끝이라 현재 발생 0건이지만, 카탈로그를 넓히면 부딪힌다)
 * 구현 명세:
-    - cards → `ppt-info` 카드 블록 · 정형 프로세스 → 흐름 블록 매핑
-    - 원고 생성기가 대상 장을 표시하고, 렌더는 글로벌 호출로 수행
-    - 검증: 해당 장이 그림 0·편집 가능한 도형 텍스트로 존재 (`check-conform --lane a`)
+    - [`build-source.py`](lib/pptx/build-source.py) `LANE_B_CATALOG` 에 순차형 4종 추가 → [`lane-b.py`](lib/pptx/lane-b.py) `build_page` 는 `process` 분기를 그대로 탄다
+    - 픽스처는 `Projects/z_done/aTest_v1`(htmlArt 전 타입 보존)에서 필요한 장만 추려 온다
+    - 검증: [`4.laneb.sh`](z_test/ig-ppt/4.laneb.sh) 단언 6종 통과 + [`3.parity.sh`](z_test/ig-ppt/3.parity.sh) 7/7 유지
 
 # ✅ 완료
+
+## Issue331: lane B — cards·htmlart 를 네이티브 도형으로 (등록: 2026-08-18, 해결: 2026-08-25, commit: 24b8b09) ✅
+* depends: Issue328, Issue329 (둘 다 완료)
+* 완료 실측 (2026-08-25, commit 24b8b09): 배선 3단 신설 — [`build-source.py`](lib/pptx/build-source.py) ⑫ 가 대상 장을 `_pipeline/pptx/lane-b.json` 에 **표시**하고, [`lane-b.py`](lib/pptx/lane-b.py) 가 글로벌 [`ppt-info/info-build.py`](file:///Users/nowage/.claude/skills/ppt-info/SKILL.md) 를 **무수정 호출**해 받은 도형을 본문 자리에 **병합**한다. [`build-pptx.sh`](lib/pptx/build-pptx.sh) ③-b2 가 그 자리다
+* 📊 **착수 전 실측** — 이슈 본문의 *"htmlart 는 통째로 사라졌다"* 는 2026-08-25 시점에는 **사실이 아니었다.** `md2pptx` 가 펜스 껍데기만 벗기고 내용은 남기므로 사라지는 것이 아니라 **평문으로 눕는다**. 격차의 성격은 같고(표현 등가 상실) 정도만 다르다
+    - igTest 41장 — `::: cards` 3블록(장 6·9·37), 카드 8항목이 전부 본문 placeholder 안의 평문 불릿. 도형 0 · 그림 0. htmlart 는 이 덱에 **0건**
+    - aTest 41장 — `::: cards` 2블록(장 2·12) + htmlart 5블록(장 19 pie · 21 process · 22 matrix · 23 compare · 40 pie). 전부 평문 불릿. 도형 0 · 그림 0
+* 🔑 **원고를 바꾸지 않고 사이드카에만 표시한다.** lane B 가 어떤 이유로 빠져도(자산 부재·pyyaml 부재·렌더 실패·본문 대조 불일치) 평문 불릿이 그대로 남는다 — 원고에서 블록을 들어내 버리면 그 안전망이 사라진다. *"구조(lane A)가 먼저다"* 를 배선으로 굳힌 것이고, 그래서 `lane-b.py` 는 **rc0 으로 끝나는 것이 기본**이며 실패는 stderr 로 크게 알린다
+* 🔑 **어느 문단을 지울지 셈으로 맞히지 않는다.** 사이드카가 적어 둔 `flat`(블록이 만들어 낼 문단 문자열)이 실제 본문 문단의 **끝과 정확히 일치할 때만** 지운다. 원고·평탄화 규칙이 달라지면 대조가 깨지고, 그때는 지우지 않고 건너뛴다 — 조용한 오배치보다 낫다
+* 🔑 **카탈로그 밖은 근사하지 않는다.** lane B/C 경계는 *"패턴 카탈로그에 있는가"* 하나다. 카탈로그: `cards`·`htmlart numbered` → ppt-info `cards`(좌측 액센트 바) · `htmlart process` → `cards` + `flow_arrow`(`p:cxnSp` 네이티브 커넥터 — 도형을 옮겨도 따라온다) · `htmlart compare` → `compare`. 나머지는 lane C 이월로 **적고 손대지 않는다**(도형 배치 자체가 판단이라 근사하면 원본과 다른 도해가 나간다)
+* 🔑 **테마는 실측 `theme.yml` 을 그대로 쓴다** — 색·캔버스가 lane A 와 같아야 같은 덱으로 보인다. 고치는 것은 둘뿐이다: `margin` 을 **대상 장 본문 placeholder 기하로** 덮고(테마 기본 전폭 10.2~328.5mm vs pandoc 제목·본문 12.7~241.3mm — 전폭으로 그리면 도형만 제목보다 넓어진다), `font.body` 를 카드용으로 낮춘다(카드는 밀집 표현이다)
+* 🔑 **배선 자리가 ③-b 다음·③-c 앞인 것은 실측 근거가 있다.** 앞이면 ③-b 의 bold 색 교정이 카드 글자를 강조색으로 덮어 계단색이 사라지고, 뒤면 도형 서체가 ③-c `retheme` 을 놓쳐 `3.parity.sh` ⑥(테마 밖 폰트 0)이 깨진다
+* ✅ **검증** — igTest `cards` 3장 **3/3 도형 렌더**(장 6: 도형 6 · 장 9: 4 · 장 37: 6, 전부 `AUTO_SHAPE` + 글자) · **그림 0** · `check-conform --lane a` **FAIL 0 · WARN 0**. aTest `cards` 2 + `process` 1 + `compare` 1 → **4/4**, lane C 이월 3건(`pie`×2 · `matrix`) **미개입**
+    - [`3.parity.sh`](z_test/ig-ppt/3.parity.sh) **rc0 · 7/7 유지** (회귀 0). aTest 는 `--no-lane-b` 기준선과 **판정 완전 동일**(4/7 — single mode 라 러너의 챕터 전제가 안 맞는 기존 상태이며 lane B 무관)
+    - `--pptx` · `--ppt-make` **양쪽 경로 모두** lane B 3/3 적용 확인. `1.infographic.sh`·`2.deck.sh` rc0
+    - 회귀 러너 신설 [`4.laneb.sh`](z_test/ig-ppt/4.laneb.sh) — 단언 6종(사이드카 · 글자 있는 네이티브 도형 · 그림 0 · 평문 불릿 제거 · lane C 미개입 · conform). igTest·aTest **6/6**
+* 🐞 **곁다리로 잡은 결함 2건** — ① `build-source.py` 심벌 제거(⑥)가 `[ \t]{2,} → " "` 를 줄 전체에 걸어 **선두 들여쓰기까지 뭉갰다**. `  - :fa-check: 완료` 의 2칸이 1칸이 되어 중첩 레벨이 통째로 사라진다(실측: aTest 심벌 카드 2장이 최상위 10항목으로 펴짐). ② python-pptx 로 **상속** placeholder 의 `height` 만 쓰면 `a:ext` 가 새로 생기며 `cx` 가 0 이 된다 — 본문이 폭 0 으로 사라진다. 네 값을 전부 적는다
+* ⚙️ **기본 on 으로 두고 `--pptx-no-lane-b` 로 끈다.** 설계 3레인 표는 lane B 를 "옵트인" 으로 적었지만 그 게이트가 지키려던 위험은 **lane C 의 토큰 비용**(장당 33만)이다. lane B 는 초 단위·토큰 0 이고 결정적이며 실패해도 lane A 를 남기는 덧칠이라 그 위험이 없다 — 위험 없는 곳에 게이트를 두면 기능이 그냥 안 쓰인다. 끄는 스위치는 남겼다(회귀를 가를 때 *"lane B 탓인가"* 를 1초에 답해야 한다)
+* 📌 남은 것은 **Issue333**(lane B 카탈로그 확장)으로 분리 등록. 순차형 4종은 m2slide 표만 고치면 되고, `pie`·`matrix` 류는 ppt-info 에 대응 블록이 없어 **글로벌 신설**이 선행이다
+* 📎 설계 SSOT [`_doc_arch/pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) "lane B 구현" 절을 함께 갱신했으나, 이 repo 는 `_doc_arch/` 를 gitignore 하므로([repo-tracking-rules](.claude/rules/repo-tracking-rules.md)) **로컬 파일로만 남는다**
 
 ## Issue332: ppt-maker 오케스트레이션 도입 — 원본 하나로 완성 덱까지 (등록: 2026-08-18, 해결: 2026-08-25, commit: 62f1cb4) ✅
 * 완료 실측 (2026-08-25, commit 62f1cb4): 진입점 [`m2slide.sh --ppt-make`](m2slide.sh) 신설 — ①입력 판정 ②앞단 `ppt-init` ③lane A ④뒷단 `ppt-check` ⑤인포그래픽 게이트 ⑥보고. 구현은 [`lib/pptx/ppt-make.sh`](lib/pptx/ppt-make.sh) 이고 **하는 일은 글로벌 호출과 결과 회수뿐**이다. [`3.parity.sh`](z_test/ig-ppt/3.parity.sh) **rc0 · 7/7 유지**(회귀 0). 새 경로 산출물로 `--no-build` 재판정도 7/7. 신·구 경로 pptx 는 **전 XML 파트·미디어 3개 바이트 동일**(차이는 tempdir 이름·docProps 시각뿐 — 비결정 요소). `2.deck.sh` rc0 · `--lint-deployment` 위반 0
