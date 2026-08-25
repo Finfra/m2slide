@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""build-source.py — m2slide 원고 → **pptx 전용 중간 원고** (Issue327)
+"""build-source.py — m2slide 원고 → **pptx 전용 중간 원고** (Issue327·328·329)
 
 왜 이 단계가 있나
 -----------------
@@ -29,6 +29,10 @@ pptx 변환기(`ppt-deck/md2pptx.py`)는 **마크다운만** 본다. 그런데 m
     ⑤ 슬롯 구분자 제거          ::right::  (좌우 분할 신호. 내용은 남긴다)
     ⑥ 심벌 마커 제거            :fa-rocket:  (pptx 에 Font Awesome 이 없다)
     ⑦ 이미지 경로 절대화        ★ 필수 — 아래 참조
+    ⑧ 챕터 진입부 정규화        H1 단독 + 챕터 TOC 분리     (Issue329)
+    ⑨ 구조 슬라이드 주입        표지(메타) · 목차           (Issue328)
+    ⑩ 무거운 블록 후치          표·이미지를 장 끝으로       (Issue329)
+    ⑪ 컴포넌트 펜스 평탄화      ```wordart → 평문, ```chart 류 → 제거
 
 ⑦이 필수인 이유
 ---------------
@@ -36,11 +40,22 @@ pptx 변환기(`ppt-deck/md2pptx.py`)는 **마크다운만** 본다. 그런데 m
 푼다. 중간 원고는 `_pipeline/pptx/source/` 에 놓이므로 `./img/x.png` 가 거기서 풀려
 전부 "파일없음" 이 된다. 절대경로면 `fix_images` 가 그대로 통과시킨다(실측 확인).
 
+⑧⑩ 이 필요한 이유 — **pandoc 은 남는 블록을 제목 없는 장으로 흘린다**
+---------------------------------------------------------------------
+실측(2026-08-19, `igTest`):
+
+* `# H1` 뒤에 본문(`::: part` 의 "Chapter 1.")이 있으면 pandoc 은 `Section Header`
+  한 장을 만들고 **그 본문을 제목 없는 다음 장으로** 흘린다. 챕터 5개 × 1장 = 무제목 5장
+* `Content with Caption` 은 [텍스트…] + [표·그림 **하나**] 까지만 담는다. 표 **뒤에**
+  글이 더 있으면 그 글이 **제목 없는 장**이 된다 (강점 1 장에서 실제 발생)
+
+둘 다 pandoc 의 정상 동작이다. 고칠 곳은 변환기가 아니라 **원고의 모양**이다.
+
 ⚠️ 내용을 새로 쓰지 않는다
 --------------------------
 문구는 원본 그대로 옮기고 **구조만** 만든다. 넘으면 HTML 덱과 pptx 가 서로 다른 말을
-하기 시작한다. 구조 슬라이드 주입은 Issue328, layout 유도는 Issue329 로 분리돼 있다 —
-한 커밋에 몰면 회귀가 났을 때 원인을 못 가른다.
+하기 시작한다. ⑧⑨⑩ 도 이 선을 지킨다 — 순서를 바꾸고 자리를 옮길 뿐, 문장을 짓지
+않는다(유일한 예외가 목차 장의 라벨 "목차" 이며, 그것은 제목이 아니라 구조 표식이다).
 
 사용
 ----
@@ -67,10 +82,21 @@ SLOT_RIGHT = re.compile(r"^[ \t]*::right::[ \t]*$", re.M)
 SYMBOL = re.compile(r":fa-[\w-]+:")
 IMG = re.compile(r"(!\[[^\]]*\]\()([^)\s]+)(\s+\"[^\"]*\")?(\))")
 FENCE = re.compile(r"^[ \t]*```")
+HR = re.compile(r"^[ \t]*-{3,}[ \t]*$")
+H1 = re.compile(r"^#[ \t]+(.+?)[ \t]*$")
+H2 = re.compile(r"^##[ \t]+(.+?)[ \t]*$")
+LAYOUT_LINE = re.compile(r"^[ \t]*#_?[a-z][a-z0-9-]*[ \t]*$")
+
+# ⑪ 컴포넌트 펜스 — HTML 에서만 살아 있는 것들.
+#    wordart 는 **글자가 내용**이라 태그만 벗겨 남기고, 나머지는 설정·코드라 지운다.
+#    (남기면 JSON·JS 원문이 슬라이드에 그대로 찍힌다 — 실측: 45번 장에 `<h1 class=…>` 노출)
+FENCE_UNWRAP = {"wordart"}
+FENCE_DROP = {"chart", "d3", "p5", "map", "model3d", "react"}
+TAG = re.compile(r"<[^>]+>")
 
 
 def split_code(text):
-    """(코드밖, 코드안) 조각을 순서대로 내는 제너레이터.
+    """(줄, 코드안인가) 쌍을 순서대로 낸다.
 
     코드펜스 안의 `{.foo}`·`:fa-x:` 는 **본문 예시**일 수 있으므로 건드리면 안 된다.
     md-m2slide-rules 가 그 보호를 명시한다(인라인 attribute 절).
@@ -83,6 +109,30 @@ def split_code(text):
             continue
         out.append((line, in_code))
     return out
+
+
+def strip_frontmatter(text):
+    """맨 앞 YAML 블록 제거 — 슬라이드 분할 전에 걷어내야 `---` 가 경계로 오인되지 않는다."""
+    if not text.startswith("---\n"):
+        return text
+    end = text.find("\n---", 3)
+    if end == -1:
+        return text
+    nl = text.find("\n", end + 1)
+    return text[nl + 1:] if nl != -1 else ""
+
+
+def split_slides(text):
+    """`---` 단독 줄(코드펜스 밖)로 슬라이드 블록을 가른다. m2slide 파서와 같은 규칙."""
+    blocks, cur = [], []
+    for line, in_code in split_code(text):
+        if not in_code and HR.match(line):
+            blocks.append("\n".join(cur))
+            cur = []
+            continue
+        cur.append(line)
+    blocks.append("\n".join(cur))
+    return blocks
 
 
 def resolve_image(path, srcdir, proj, stat):
@@ -111,14 +161,170 @@ def resolve_image(path, srcdir, proj, stat):
     return os.path.normpath(near)
 
 
-def clean(text, srcdir, proj, stat):
-    lines = []
-    for line, protected in split_code(text):
-        if protected:
-            lines.append(line)
+def flatten_fences(text, stat):
+    """⑪ 컴포넌트 펜스 처리 — wordart 는 평문화, 설정·코드 계열은 제거."""
+    lines = text.split("\n")
+    out, i = [], 0
+    while i < len(lines):
+        m = re.match(r"^[ \t]*```([a-zA-Z][\w-]*)[ \t]*$", lines[i])
+        kind = m.group(1).lower() if m else None
+        if kind not in FENCE_UNWRAP and kind not in FENCE_DROP:
+            out.append(lines[i])
+            i += 1
             continue
-        lines.append(line)
-    text = "\n".join(lines)
+        j, body = i + 1, []
+        while j < len(lines) and not FENCE.match(lines[j]):
+            body.append(lines[j])
+            j += 1
+        if kind in FENCE_UNWRAP:
+            # 태그만 벗기고 글자는 남긴다 — 이 블록은 **글자가 내용**이다
+            for b in body:
+                t = TAG.sub("", b).strip()
+                if t:
+                    out.append(t)
+                    out.append("")
+            stat["fence_flat"] += 1
+        else:
+            stat["fence_drop"] += 1             # 설정·코드 — 슬라이드 내용이 아니다
+        i = j + 1
+    return "\n".join(out)
+
+
+def _groups(body_lines):
+    """블록 그룹으로 자른다. (그룹, 무거운가) — 무거움 = 표 · 단독 이미지 · mermaid.
+
+    ⚠️ mermaid 펜스는 **그림이 된다**(md2pptx 가 렌더해 `![](…)` 로 바꾼다). 코드로 보고
+    지나치면 그 뒤의 글이 제목 없는 장으로 흘러 나간다 — 실측(aTest 26번 장)에서 그랬다.
+    일반 코드펜스는 텍스트 취급이라 그대로 둔다.
+    """
+    groups, cur = [], []
+
+    def flush():
+        if cur:
+            groups.append((list(cur), None))
+            cur.clear()
+
+    i = 0
+    while i < len(body_lines):
+        ln = body_lines[i]
+        m = re.match(r"^[ \t]*```([a-zA-Z][\w-]*)?[ \t]*$", ln)
+        if m:                                   # 펜스는 통째로 한 그룹
+            flush()
+            j, blk = i + 1, [ln]
+            while j < len(body_lines) and not FENCE.match(body_lines[j]):
+                blk.append(body_lines[j])
+                j += 1
+            if j < len(body_lines):
+                blk.append(body_lines[j])
+            groups.append((blk, (m.group(1) or "").lower() == "mermaid"))
+            i = j + 1
+            continue
+        if ln.strip():
+            cur.append(ln)
+        else:
+            flush()
+        i += 1
+    flush()
+
+    out = []
+    for g, forced in groups:
+        if forced is not None:
+            out.append((g, forced))
+            continue
+        heavy = all(l.lstrip().startswith("|") for l in g) or (
+            len(g) == 1 and re.match(r"^!\[[^\]]*\]\([^)]*\)\s*$", g[0].strip()) is not None)
+        out.append((g, heavy))
+    return out
+
+
+def defer_heavy(block, stat):
+    """⑩ 표·그림이 장 중간에 있고 뒤에 글이 남으면 그 표·그림을 **맨 끝**으로 옮긴다.
+
+    pandoc 의 `Content with Caption` 은 [텍스트…] + [표·그림 하나] 까지만 담는다.
+    뒤에 남은 글은 **제목 없는 다음 장**이 된다(실측). 순서만 바꾸면 한 장에 수렴한다.
+    """
+    lines = block.split("\n")
+    head = 0
+    while head < len(lines) and not lines[head].strip():
+        head += 1
+    if head >= len(lines) or not lines[head].lstrip().startswith("#"):
+        return block
+    title, body = lines[:head + 1], lines[head + 1:]
+    gs = _groups(body)
+    idx = [i for i, (_, h) in enumerate(gs) if h]
+    if len(idx) != 1 or idx[0] == len(gs) - 1:  # 무거운 게 없거나·둘 이상·이미 끝이면 그대로
+        return block
+    heavy = gs.pop(idx[0])
+    gs.append(heavy)
+    stat["defer"] += 1
+    rebuilt = []
+    for g, _ in gs:
+        rebuilt += g + [""]
+    return "\n".join(title + [""] + rebuilt).rstrip() + "\n"
+
+
+def bullet_text(t):
+    """번호로 시작하는 제목을 불릿에 넣을 때 마침표를 이스케이프한다.
+
+    ⚠️ `* 01. m2slide란?` 는 **중첩 순서 목록**으로 파싱된다 — 항목 본문이 `01.` 로
+    시작하기 때문이다(마크다운 규격). 실측: 목차 장이 `1. 2. 3.` 자동번호로 렌더되고
+    원래의 `01.`·`02.` 가 사라졌다. `\\.` 로 막으면 글자 그대로 남는다.
+    """
+    return re.sub(r"^(\d+)([.)])", r"\1\\\2", t)
+
+
+def normalize_chapter(blocks, chapter_title, stat):
+    """⑧ 챕터 진입부를 **H1 단독 + 챕터 TOC** 두 장으로 정규화한다.
+
+    원본(HTML)에서 챕터 진입 장 하나가 담던 것 — 큰 제목(H1)·part 라벨·부제(H2) — 을
+    pandoc 이 소화할 수 있는 모양으로 옮긴다:
+
+        # 01. m2slide란?          → Section Header (제목만)
+        ## 정체성 한 줄 정의      → Title and Content (부제 + 그 챕터 H2 목록)
+                                    = HTML 의 챕터 TOC 장에 대응
+
+    part 라벨("Chapter 1.")은 **버린다** — 제목의 번호("01.")와 같은 말이고, 남기면
+    pandoc 이 제목 없는 장으로 흘린다(무제목 5장의 정체가 이것이었다).
+    """
+    if not blocks:
+        return blocks
+    first = blocks[0]
+    h1 = None
+    for ln in first.split("\n"):
+        m = H1.match(ln)
+        if m:
+            h1 = m.group(1)
+            break
+    if h1 is None:
+        return blocks
+
+    # 진입 블록에서 부제 H2 를 찾는다 (없으면 AGENDA 의 챕터명으로 대신한다)
+    subtitle = None
+    for ln in first.split("\n"):
+        m = H2.match(ln)
+        if m:
+            subtitle = m.group(1)
+            break
+    if subtitle is None:
+        subtitle = chapter_title or h1
+
+    # 챕터 TOC — 나머지 블록의 H2 목록 (본문 장들이 곧 목차 항목이다)
+    toc = []
+    for b in blocks[1:]:
+        for ln in b.split("\n"):
+            m = H2.match(ln)
+            if m:
+                toc.append(m.group(1))
+                break
+
+    stat["chapter"] += 1
+    entry = "# %s\n" % h1
+    tocslide = "## %s\n\n" % subtitle + "".join("* %s\n" % bullet_text(t) for t in toc)
+    return [entry, tocslide] + list(blocks[1:])
+
+
+def clean(text, srcdir, proj, stat, chapter_title=None):
+    text = strip_frontmatter(text)
 
     # 줄 단위 제거 — 코드 안에 이 형태가 올 일은 없다(줄 전체가 지시자여야 매칭)
     for pat, key in ((ID_LINE, "id"), (ANIM_LINE, "anim"), (SLOT_RIGHT, "slot")):
@@ -143,6 +349,8 @@ def clean(text, srcdir, proj, stat):
         rebuilt.append(line)
     text = "\n".join(rebuilt)
 
+    text = flatten_fences(text, stat)
+
     # ⑦ 이미지 절대경로화 — 원고 위치가 바뀌므로 필수
     def abspath(m):
         head, path, title, tail = m.groups()
@@ -153,6 +361,12 @@ def clean(text, srcdir, proj, stat):
 
     text = IMG.sub(abspath, text)
 
+    # ⑧⑩ 구조 정리 — 슬라이드 블록 단위
+    blocks = split_slides(text)
+    blocks = normalize_chapter(blocks, chapter_title, stat)
+    blocks = [defer_heavy(b, stat) for b in blocks]
+
+    text = "\n\n---\n\n".join(b.strip() for b in blocks if b.strip())
     text = re.sub(r"\n{3,}", "\n\n", text)
     return text
 
@@ -171,6 +385,68 @@ def sources(project_dir):
         return [cand]
     return sorted(f for f in glob.glob(os.path.join(project_dir, "*.md"))
                   if os.path.basename(f) != "AGENDA.md")
+
+
+def read_frontmatter(path):
+    """맨 앞 YAML 블록을 **얕게** 읽는다 — pyyaml 의존을 만들지 않기 위해 1단 키만."""
+    out = {}
+    if not os.path.isfile(path):
+        return out
+    text = open(path, encoding="utf-8").read()
+    if not text.startswith("---\n"):
+        return out
+    end = text.find("\n---", 3)
+    if end == -1:
+        return out
+    for line in text[4:end].split("\n"):
+        m = re.match(r"^([a-zA-Z_][\w-]*):\s*(.*)$", line)
+        if m and m.group(2).strip():
+            out[m.group(1)] = m.group(2).strip().strip("\"'")
+    return out
+
+
+def agenda_chapters(path):
+    """AGENDA.md 의 `## [제목](./파일.md)` 목록 → [(제목, 파일basename)]."""
+    out = []
+    if not os.path.isfile(path):
+        return out
+    for line in open(path, encoding="utf-8"):
+        m = re.match(r"^##[ \t]+\[(.+?)\]\((?:\./)?([^)]+)\)", line)
+        if m:
+            out.append((m.group(1), os.path.basename(m.group(2))))
+    return out
+
+
+def config_flag(project_dir, key):
+    """프로젝트 `_config.yml` 의 1단 키를 읽는다 (없으면 None)."""
+    p = os.path.join(project_dir, "_config.yml")
+    if not os.path.isfile(p):
+        return None
+    for line in open(p, encoding="utf-8"):
+        m = re.match(r"^%s:\s*(.*)$" % re.escape(key), line)
+        if m:
+            return re.sub(r"\s+#.*$", "", m.group(1)).strip().strip("\"'")
+    return None
+
+
+def cover_source(project_dir, meta, chapters):
+    """⑨ 표지·목차 원고.
+
+    표지는 **pandoc 메타데이터**로 적는다 — pandoc 은 그때만 `Title Slide` 레이아웃을
+    쓴다(실측). 맨 앞 빈 줄이 필요하다: `md2pptx.strip_frontmatter()` 가 파일이
+    `---` 로 *시작할 때만* 걷어내므로, 한 줄 밀어두면 병합 원고 최상단에 살아 남는다.
+    """
+    title = meta.get("title") or os.path.basename(os.path.normpath(project_dir))
+    sub = TAG.sub("", meta.get("subtitle", "")).strip()
+    parts = ["\n---",
+             'title: "%s"' % title.replace('"', "'")]
+    if sub:
+        parts.append('subtitle: "%s"' % sub.replace('"', "'"))
+    parts.append("---\n")
+    body = "\n".join(parts)
+    if len(chapters) >= 2:
+        body += "\n## 목차\n\n" + "".join("* %s\n" % bullet_text(t) for t, _ in chapters)
+    return body
 
 
 def main():
@@ -194,12 +470,28 @@ def main():
     for stale in glob.glob(os.path.join(outdir, "*.md")):
         os.remove(stale)                        # 지난 실행의 잔재가 섞이면 순서가 깨진다
 
+    agenda_path = os.path.join(proj, "markdown", "AGENDA.md")
+    meta = read_frontmatter(agenda_path)
+    chapters = agenda_chapters(agenda_path)
+    chapter_of = {f: t for t, f in chapters}
+
     stat = {k: 0 for k in ("attr", "element", "id", "anim", "slot", "symbol",
-                           "img_abs", "img_proj", "img_missing")}
+                           "img_abs", "img_proj", "img_missing",
+                           "chapter", "defer", "fence_flat", "fence_drop")}
     made = []
+
+    # ⑨ 표지 — `cover_enabled: false` 면 주입하지 않는다 (설정을 존중)
+    cover_on = (config_flag(proj, "cover_enabled") or "").lower() not in ("false", "no", "0")
+    if cover_on:
+        dst = os.path.join(outdir, "00-cover.md")
+        with open(dst, "w", encoding="utf-8") as fp:
+            fp.write(cover_source(proj, meta, chapters))
+        made.append(dst)
+
     for i, f in enumerate(srcs, 1):
         text = open(f, encoding="utf-8").read()
-        text = clean(text, os.path.dirname(os.path.abspath(f)), proj, stat)
+        text = clean(text, os.path.dirname(os.path.abspath(f)), proj, stat,
+                     chapter_title=chapter_of.get(os.path.basename(f)))
         dst = os.path.join(outdir, "%02d-%s" % (i, os.path.basename(f)))
         with open(dst, "w", encoding="utf-8") as fp:
             fp.write(text)
@@ -212,6 +504,11 @@ def main():
               "· 심벌 %d · 이미지절대화 %d(루트에서 %d)"
               % (stat["attr"], stat["element"], stat["id"], stat["anim"],
                  stat["slot"], stat["symbol"], stat["img_abs"], stat["img_proj"]),
+              file=sys.stderr)
+        print("  구조 — 표지 %s · 목차 %d항목 · 챕터 진입 정규화 %d · 무거운 블록 후치 %d "
+              "· 펜스 평문화 %d · 펜스 제거 %d"
+              % ("주입" if cover_on else "생략", len(chapters), stat["chapter"],
+                 stat["defer"], stat["fence_flat"], stat["fence_drop"]),
               file=sys.stderr)
         if stat["img_missing"]:
             # 조용히 넘기지 않는다 — 그림이 빠진 채로 "성공" 하는 것이 이 파이프의 고질이다

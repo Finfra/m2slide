@@ -83,6 +83,60 @@ python3 "$SPEC" "$PROJECT_DIR" "${SPEC_ARGS[@]}" >/dev/null
 # ── ② theme.yml → reference.pptx
 python3 "$T2R" "$THEME_YML" --out "$REF" --adapt >/dev/null
 
+# ── ②-b 제목 색 교정 — **CSS 가 정본이다** (Issue329)
+#   `theme2reference.title_color()` 는 accent 중 가장 어두운 것(L*≤65)을 제목색으로 고른다.
+#   조직 템플릿이 없어 제목색을 *알 수 없을 때* 쓰는 합리적 추정이지만, m2slide 는 그것을
+#   **실측할 수 있다** — 모든 theme 이 제목을 `var(--kn-text)` 로 칠한다(default·default_lec
+#   양쪽 확인). 실측(2026-08-19): 추정값 #977A0E(어두운 금색) vs 실제 #111111(먹) — 같은
+#   덱을 HTML 과 나란히 놓으면 제목만 색이 다르다.
+#
+#   ⚠️ Issue323 의 교훈("같은 판정을 두 곳에서 하지 마라")과 어긋나지 않는다. 저기서
+#      걷어낸 것은 글로벌과 **같은 입력으로 같은 판정**을 반복한 사본이었다. 여기서는
+#      글로벌이 갖지 못한 입력(빌드 산출 CSS)을 근거로 **덮어쓴다** — 알 수 없는 쪽의
+#      추정보다 알 수 있는 쪽의 실측이 이긴다.
+CSSVAR="$SCRIPT_DIR/css-var.py"
+TITLE_COL="$(python3 "$CSSVAR" "$PROJECT_DIR" --kn-text --m2-text 2>/dev/null || true)"
+if [ -z "$TITLE_COL" ]; then
+  echo "  ⚠️ 제목 색 교정 생략 — 빌드 CSS 에서 --kn-text 를 못 찾음" >&2
+else
+python3 - "$TITLE_COL" "$REF" <<'PY' || echo "  ⚠️ 제목 색 교정 생략(계속 진행)" >&2
+import sys
+col, ref = sys.argv[1], sys.argv[2]
+
+from pptx import Presentation
+from pptx.oxml.ns import qn
+from pptx.enum.shapes import PP_PLACEHOLDER
+from pptx.enum.text import MSO_AUTO_SIZE
+prs = Presentation(ref)
+n = 0
+for h in [prs.slide_master] + list(prs.slide_master.slide_layouts):
+    for ph in h.placeholders:
+        try:
+            if ph.placeholder_format.type not in (PP_PLACEHOLDER.TITLE,
+                                                  PP_PLACEHOLDER.CENTER_TITLE):
+                continue
+        except Exception:
+            continue
+        tx = ph._element.find(qn("p:txBody"))
+        if tx is None:
+            continue
+        for lst in tx.findall(qn("a:lstStyle")):
+            for clr in lst.iter(qn("a:srgbClr")):
+                clr.set("val", col)
+                n += 1
+        # 제목 넘침 방지 — `Content with Caption` 의 제목칸은 8.4cm 밖에 안 된다(실측).
+        # 27pt 한글 제목이 4줄이 되면 칸 밖으로 흘러 **위쪽이 잘린다**. 자동 축소를 켜
+        # 잘림 대신 작아지게 한다(기하는 건드리지 않는다 — 그쪽은 글로벌 템플릿 소관).
+        try:
+            ph.text_frame.word_wrap = True
+            ph.text_frame.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
+        except Exception:
+            pass
+prs.save(ref)
+print("  제목 색 교정 — CSS 실측 #%s 로 placeholder %d개 갱신" % (col, n))
+PY
+fi
+
 # ── ③ 원고 → pptx (+ 산출 직후 검증 — md2pptx 가 check-conform 을 내장 호출한다)
 #
 #   ⚠️ check-conform 은 **`--lane a` 가 필수**다. 기본값은 `b`(인포그래픽)라서
@@ -119,9 +173,96 @@ while IFS= read -r line; do [ -n "$line" ] && SRC_FILES+=("$line"); done \
 # 생성 0건은 조용히 넘기지 않는다 — 빈 덱이 "성공" 으로 나오는 실패 모양을 막는다
 [ "${#SRC_FILES[@]}" -gt 0 ] || { echo "  ❌ 중간 원고 생성 0건" >&2; exit 1; }
 
+#   ⚠️ `--pages` 부분 변환에서는 **표지 파일을 뺀다** (Issue328).
+#      표지는 pandoc 메타데이터(`---` 로 둘러싼 YAML)로 적어야 `Title Slide` 가 잡히는데,
+#      `md2pptx.slice_pages()` 는 `---` 줄을 **슬라이드 경계로** 보고 자른다. 그 순간
+#      YAML 의 여닫이가 경계가 되어 `title: "…"` 이 **본문 블록**으로 승격되고, 슬라이드에
+#      글자 그대로 찍힌다 — 실측(2026-08-19): `--pages 1-3` 산출 1번 장 전체가
+#      `title: "m2Slide란?" subtitle: "…"` 이었다. 리터럴 누출 0(Issue327)을 깨는 형태다.
+#      부분 변환은 특정 장을 들여다보는 디버그 경로이므로 표지 없이도 성립한다.
+for arg in "$@"; do
+  case "$arg" in
+    --pages|--pages=*)
+      KEEP=()
+      for f in "${SRC_FILES[@]}"; do
+        [ "$(basename "$f")" = "00-cover.md" ] && continue
+        KEEP+=("$f")
+      done
+      [ "${#KEEP[@]}" -gt 0 ] && SRC_FILES=("${KEEP[@]}")
+      break
+      ;;
+  esac
+done
+
 rc=0
 python3 "$MD2P" "${SRC_FILES[@]}" --reference "$REF" -o "$OUT" --slide-level 2 "$@" || rc=$?
-[ "$rc" = "0" ] && exit 0
+
+# ── ③-b 강조(**bold**) 색 — reference 로는 전달할 수 없다 (Issue329)
+#   m2slide 는 `strong` 을 accent 로 칠한다(`--m2-accent-5`, theme/*/slide.css). 그런데 그것은
+#   **run 단위 색**이라 placeholder 기본 서식(reference-doc)으로는 표현할 방법이 없다 —
+#   pandoc 은 굵게만 넣고 색은 넣지 않는다. 그래서 산출 뒤에 칠한다.
+#   실측(2026-08-19): 본문 bold 52 run · 표 0 — 표 헤더에는 안 묻는다(HTML 도 th 는 strong 이 아니다)
+#   ⚠️ 반드시 python-pptx API(`font.color.rgb`)로 넣는다. `a:rPr` 의 자식 순서가 스키마로
+#      정해져 있어 XML 을 손으로 끼우면 `check-xml-order` 가 잡는 위반이 된다.
+if [ "$rc" = "0" ]; then
+  #   강조 변수 이름은 CSS 가 정한다 — `section strong { color: var(--…) }` 를 읽어 그 변수를 푼다
+  STRONG_VAR="$(python3 - "$PROJECT_DIR/slide/css/custom.css" <<'PY' 2>/dev/null || true
+import re, sys
+try:
+    t = open(sys.argv[1], encoding="utf-8").read()
+except OSError:
+    raise SystemExit(1)
+m = re.search(r"section strong\s*\{[^}]*?color:\s*var\(\s*(--[\w-]+)", t, re.S)
+print(m.group(1) if m else "", end="")
+PY
+)"
+  STRONG_COL=""
+  [ -n "$STRONG_VAR" ] && STRONG_COL="$(python3 "$SCRIPT_DIR/css-var.py" "$PROJECT_DIR" "$STRONG_VAR" 2>/dev/null || true)"
+  if [ -z "$STRONG_COL" ]; then
+    echo "  ⚠️ 강조 색 교정 생략 — CSS 에서 strong 색을 못 찾음" >&2
+  else
+  python3 - "$STRONG_COL" "$OUT" <<'PY' || echo "  ⚠️ 강조 색 교정 생략(계속 진행)" >&2
+import sys
+col, out = sys.argv[1], sys.argv[2]
+
+from pptx import Presentation
+from pptx.dml.color import RGBColor
+from pptx.enum.shapes import PP_PLACEHOLDER
+from pptx.enum.text import MSO_AUTO_SIZE
+prs, n, fit = Presentation(out), 0, 0
+for s in prs.slides:
+    for sh in s.shapes:
+        if not sh.has_text_frame:
+            continue
+        try:                                    # 제목은 제외 — 제목색은 ②-b 가 이미 정했다
+            if sh.placeholder_format.type in (PP_PLACEHOLDER.TITLE,
+                                              PP_PLACEHOLDER.CENTER_TITLE):
+                # ⚠️ 자동 축소는 **장 쪽에도** 걸어야 한다. pandoc 이 슬라이드마다
+                #    빈 `<a:bodyPr/>` 를 적어 넣어 레이아웃의 autofit 설정을 덮는다
+                #    (실측: 레이아웃에만 걸었더니 긴 제목이 그대로 잘렸다).
+                sh.text_frame.word_wrap = True
+                sh.text_frame.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
+                fit += 1
+                continue
+        except Exception:
+            pass
+        for para in sh.text_frame.paragraphs:
+            for run in para.runs:
+                if run.font.bold:
+                    run.font.color.rgb = RGBColor.from_string(col)
+                    n += 1
+prs.save(out)
+print("  강조 색 교정 — CSS 실측 #%s 로 bold run %d개 갱신 · 제목 자동축소 %d장" % (col, n, fit))
+PY
+  fi
+  #   교정 뒤 상태로 다시 잰다 — 검증이 최종 파일을 설명하지 못하면 fail-loud 가 무의미하다
+  CK="${M2SLIDE_PPT_CHECK:-$HOME/.claude/skills/ppt-check/scripts}"
+  if [ -f "$CK/check-xml-order.py" ]; then
+    python3 "$CK/check-xml-order.py" "$OUT" >/dev/null || {
+      echo "  ❌ 교정 후 XML 순서 위반 — 교정 로직을 의심하라" >&2; exit 2; }
+  fi
+  exit 0
+fi
 
 AFTER_MTIME=""
 [ -f "$OUT" ] && AFTER_MTIME="$(stat -f %m "$OUT" 2>/dev/null || stat -c %Y "$OUT" 2>/dev/null || echo "")"
