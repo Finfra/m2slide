@@ -26,18 +26,6 @@
 
 # 📕 중요
 
-## Issue328: 구조 슬라이드 주입 — cover·agenda·챕터 TOC 12장 복원 (등록: 2026-08-18)
-* depends: Issue327
-* 목적: 원본 39장 중 **12장(cover 1 · agenda 1 · 챕터 TOC 10)이 pptx 에 통째로 없다.** 이 장들은 원고 md 에 존재하지 않고 m2slide 빌드가 주입하므로, 원고 생성기가 같은 일을 pptx 원고에도 해야 한다.
-* 상세:
-    - 원본 layout 분포 실측(2026-08-18): `_contents` 29 · `_toc` 10 · `chapter` 5 · `_cover` 1 · `_agenda` 1
-    - cover 메타 출처는 `markdown/AGENDA.md` frontmatter(instructor·version·lecture_date 등) + `_config.yml` `cover_enabled`·`cover_layout` — [`meta-yml.md`](_doc_arch/meta-yml.md) 규약 준수
-    - 챕터 TOC 는 각 챕터의 H2 목록에서 생성 (`toc_card_mode` 는 HTML 전용 표현이므로 pptx 에서는 불릿 목록으로 등가 처리)
-* 구현 명세:
-    - 원고 생성기가 cover(문서 최상단 제목·부제 메타) · agenda(H2+불릿) · 챕터 TOC(각 챕터 진입부) 를 md 로 생성
-    - `cover_enabled: false` 프로젝트에서는 주입하지 않는다 — 설정을 존중
-    - 검증: 산출 장수가 원본 `<section>` 수와 대응 · cover/agenda/TOC 각 1장 이상 실존
-
 # 📙 일반
 
 ## Issue329: 테마 일치 완성 — layout 유도 매핑 + 코드 폰트 이탈 제거 (등록: 2026-08-18)
@@ -48,6 +36,8 @@
     - pandoc 은 레이아웃을 이름으로 고르지 않고 **슬라이드 구조로 자동 선택**한다 → 매핑표는 [`pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) "layout 매핑" 절
     - G6: `Courier` 15회(코드블록). 출처가 reference 테마인지 pandoc 하드코딩인지 **미판정** — 전자면 글로벌(prj3) 위임, 후자면 원고에서 코드블록 표현 교체
     - 🔑 **챕터 진입 장이 3장으로 쪼개진다** (Issue326 실측 2026-08-18): 원본 `chapter` layout 1장이 pptx 에서 `Section Header`(H1) + 제목 없는 장("Chapter 1.") + `Title and Content`(부제) **3장**이 된다. 이것이 제목 보유율이 87% 에서 100% 로 못 가는 직접 원인(45장 중 6장 무제목 = 챕터 5개 × 1 + α). 원고에서 챕터 진입부를 **H1 단독**으로 만들면 1장으로 수렴한다
+* 🟢 부분 완료 (2026-08-19, commit: 53169cb): ① 챕터 진입 3장 → **2장**(Section Header + 챕터 TOC) 수렴 ② 무제목 장 **6 → 0**(igTest 41/41 제목 보유) — 원인이 둘이었다: H1 뒤 본문이 흘러나가는 것과 `Content with Caption` 넘침(표·그림 **뒤**의 글). 후자는 무거운 블록을 장 끝으로 옮겨 막았고, mermaid 펜스도 **그림이므로** 무거운 블록에 넣었다 ③ 제목색·강조색을 **CSS 실측값으로 교정**([`css-var.py`](lib/pptx/css-var.py)) — 글로벌 `title_color()` 는 accent 중 가장 어두운 색(#977A0E)을 고르는 추정이라 실제(#111111)와 달랐다 ④ 좁은 제목칸의 긴 한글 제목 잘림 → 자동 축소(레이아웃뿐 아니라 **장 쪽에도** 걸어야 듣는다. pandoc 이 빈 `<a:bodyPr/>` 로 상속을 덮는다)
+* ⏳ 남은 것: G6 코드 폰트 `Courier` WARN 1 (출처 미판정) · 본문 글자 크기(실측 9.5pt = 폭의 1.0%, HTML 은 1.9%) · 중첩 `::: {.column}` 누출(aTest 2×2 장)
 * 구현 명세:
     - 원고 생성기에 layout 유도 규칙 구현 (`chapter`→H1 단독 / 도해 장→이미지+캡션 / 2분할→`::: columns`)
     - 코드 폰트 출처 판정 후 분기 — 위임이면 `~/.claude/Issue.md` 등록(*-maker·ppt-* 무수정 원칙)
@@ -90,6 +80,21 @@
     - 검증: 해당 장이 그림 0·편집 가능한 도형 텍스트로 존재 (`check-conform --lane a`)
 
 # ✅ 완료
+
+## Issue328: 구조 슬라이드 주입 — cover·agenda·챕터 TOC 12장 복원 (등록: 2026-08-18, 해결: 2026-08-25, commit: 53169cb) ✅
+* depends: Issue327
+* 완료 실측 (2026-08-25 재현): igTest — **45장/무제목 6 → 41장/무제목 0(제목 보유 100%)** · 구조 슬라이드 **0 → 7**(표지 1 · 목차 1 · 챕터 TOC 5). 원본 HTML `<section>` 40 과 대응. `cover_enabled: false` 에서 표지 미주입 확인(`00-cover.md` 생성 0). single mode 회귀 없음 — aTest 42장 · 제목 보유 90% → 93% · FAIL 0. `check-conform --lane a` FAIL 0 · WARN 1(기존 `Courier` — Issue329 잔여). [`2.deck.sh`](z_test/ig-ppt/2.deck.sh) 5단언 통과
+* 🔑 검증 중 발견·해소 — `--pages` 부분 변환에서 **표지 YAML 이 글자 그대로 슬라이드에 찍혔다**. `md2pptx.slice_pages()` 가 `---` 를 슬라이드 경계로 보므로 메타데이터의 여닫이가 경계가 되고 그 사이가 본문 블록으로 승격된다(실측: 1번 장 전체가 `title: "m2Slide란?" subtitle: "…"`). 리터럴 누출 0(Issue327)을 깨는 형태라 [`build-pptx.sh`](lib/pptx/build-pptx.sh) 가 `--pages` 동반 시 표지 파일을 빼도록 **원인 쪽을 막았다** — 그 전까지 `2.deck.sh` 가 빨간 상태였다
+* 목적: 원본 39장 중 **12장(cover 1 · agenda 1 · 챕터 TOC 10)이 pptx 에 통째로 없다.** 이 장들은 원고 md 에 존재하지 않고 m2slide 빌드가 주입하므로, 원고 생성기가 같은 일을 pptx 원고에도 해야 한다.
+* 상세:
+    - 원본 layout 분포 실측(2026-08-18): `_contents` 29 · `_toc` 10 · `chapter` 5 · `_cover` 1 · `_agenda` 1
+    - cover 메타 출처는 `markdown/AGENDA.md` frontmatter(instructor·version·lecture_date 등) + `_config.yml` `cover_enabled`·`cover_layout` — [`meta-yml.md`](_doc_arch/meta-yml.md) 규약 준수
+    - 챕터 TOC 는 각 챕터의 H2 목록에서 생성 (`toc_card_mode` 는 HTML 전용 표현이므로 pptx 에서는 불릿 목록으로 등가 처리)
+* 구현: [`build-source.py`](lib/pptx/build-source.py) 가 표지·목차·챕터 TOC 를 주입한다. 표지는 **pandoc 메타데이터**로 적어야 `Title Slide` 레이아웃이 잡힌다(실측) — 파일 첫 줄을 비워 `md2pptx.strip_frontmatter()`(파일이 `---` 로 *시작할 때만* 걷어냄)를 통과시킨다. 챕터 TOC 는 챕터 진입부의 부제 H2 를 제목으로 삼아 합쳤다(장수 팽창 없이 원본 2장 ↔ 산출 2장). 실측은 아래 완료 실측 참조
+* 구현 명세:
+    - 원고 생성기가 cover(문서 최상단 제목·부제 메타) · agenda(H2+불릿) · 챕터 TOC(각 챕터 진입부) 를 md 로 생성
+    - `cover_enabled: false` 프로젝트에서는 주입하지 않는다 — 설정을 존중
+    - 검증: 산출 장수가 원본 `<section>` 수와 대응 · cover/agenda/TOC 각 1장 이상 실존
 
 ## Issue327: pptx 원고 생성기 골격 — `lib/pptx/build-source.py` 신설 (등록: 2026-08-18, 해결: 2026-08-18, commit: 0338cc3) ✅
 * 완료 실측 (2026-08-18): [`build-source.py`](lib/pptx/build-source.py) 신설 + [`build-pptx.sh`](lib/pptx/build-pptx.sh) 를 `--m2slide` 자동수집 → **중간 원고 전달**로 교체. igTest — 산출 pptx 리터럴 누출 **0건**(`{.`·`:::`·`#layout-`·`#id-`·주석), 45장·Title 39(87%)·FAIL 0 유지. single mode 회귀 없음(aTest 42장 FAIL 0, 정리 attr 10·`#id` 31·심벌 8·애니 3)
