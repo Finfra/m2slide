@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 336
+* Issue HWM: 337
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -43,6 +43,20 @@
     - 검증: [`4.laneb.sh`](z_test/ig-ppt/4.laneb.sh) 단언 6종 통과 + [`3.parity.sh`](z_test/ig-ppt/3.parity.sh) 7/7 유지
 
 # ✅ 완료
+
+## Issue337: (!) n3shIntro 덱 업데이트 — 추가 장표 인포그래픽화(ig-maker 핀봇) + 덱 반영 (등록: 2026-08-31, 해결: 2026-08-31) ✅
+* 목적: Issue335·336 으로 검증된 레이아웃 준수 파이프라인(v2)을 n3shIntro 나머지 장표에 적용한다. 사용자 지시 — "n3shIntro 업데이트 진행(ig-maker 핀봇 활용)"
+* depends: Issue336
+* 상세:
+    - 대상 선별(fit 게이트 판정) → 캡처 → _source/N 배치 → ig-maker 병렬 완주 → 발행 svg 를 원고에 반영 → 재빌드 → VERSION 1.1
+    - 슬라이드 6(커리큘럼)은 검증분 curriculum-3.svg(레이아웃 준수판) 반영
+* 결과 (Walkthrough):
+    - 선별: 다이어그램 중심 2장(슬라이드 2 개념도·슬라이드 4 모디파이어 층) + 기검증분(슬라이드 6)
+    - `fbot-igmaker-issue337` 배치(prj=42) → **봇 2개 병렬 완주**(ig-4-b4f7·ig-5-4d25) — 폴더·로그 충돌 0, 둘 다 `content` 자가 판정·content_box 준수·게이트 전부 통과
+    - **레이아웃 계약의 부산물 활용** — 5.svg(타이틀 없는 콘텐츠판)를 `img/curriculum-{3,4,5}-content.svg` 로 복사해 슬라이드에 임베드. 테마 h2 밴드와 이중 타이틀 없이 전폭 렌더
+    - 원고 3 슬라이드(2·4·6): 불릿+mermaid → 인포그래픽 단독(내용 중복 제거). VERSION 1.0→1.1, 재빌드·렌더 육안 검증 2장
+    - 1차 반영은 불릿 병기로 시도 → 우측 반폭 축소로 텍스트 불가독 실측 → 단독 배치로 교정
+
 
 ## Issue336: 테마 레이아웃 카탈로그 선언 — ig-maker 가 선택할 layouts 절 + curriculum 테마 정본 (등록: 2026-08-31, 해결: 2026-08-31, commit: `bab8424`) ✅
 * 목적: Issue335 after 에서 ig-maker 가 전체 캔버스를 재작화한 원인의 절반은 **선택할 레이아웃 카탈로그가 프로젝트에 없었기** 때문이다(theme/curriculum/theme.yml 자체가 부재 — 내장 기본 테마로 조립). 테마 정본을 세우고 layouts 카탈로그를 선언해 prj3#Issue484(ig-maker 구조 개정)의 판정 재료를 공급한다
