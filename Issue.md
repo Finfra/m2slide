@@ -45,7 +45,7 @@
 # ✅ 완료
 
 ## Issue336: 테마 레이아웃 카탈로그 선언 — ig-maker 가 선택할 layouts 절 + curriculum 테마 정본 (등록: 2026-08-31, 해결: 2026-08-31, commit: `bab8424`) ✅
-* 목적: Issue335 after 에서 ig-maker 가 전체 캔버스를 재작화한 원인의 절반은 **선택할 레이아웃 카탈로그가 프로젝트에 없었기** 때문이다(theme/curriculum/theme.yml 자체가 부재 — 내장 기본 테마로 조립). 테마 정본을 세우고 layouts 카탈로그를 선언해 prj3#Issue483(ig-maker 구조 개정)의 판정 재료를 공급한다
+* 목적: Issue335 after 에서 ig-maker 가 전체 캔버스를 재작화한 원인의 절반은 **선택할 레이아웃 카탈로그가 프로젝트에 없었기** 때문이다(theme/curriculum/theme.yml 자체가 부재 — 내장 기본 테마로 조립). 테마 정본을 세우고 layouts 카탈로그를 선언해 prj3#Issue484(ig-maker 구조 개정)의 판정 재료를 공급한다
 * 상세:
     - `_asset_ppt/theme/curriculum/theme.yml` 신설 — canvas·margin·palette(원본 실측 hex)·**layouts 카탈로그**
     - layouts 스키마는 prj3 `_doc_arch/ig-maker-design.md` §레이아웃 계약이 SSOT — 여기는 **값**만 선언
@@ -57,6 +57,13 @@
     - `_source/3` 재생성 실증: 봇이 `content` 자가 판정(`4.layout.yml` 기록, 애매성 없음) → viewBox 를 content_box 비율로 고정해 구조적 침범 불가 → 타이틀은 테마 골드 밴드로 조립. 게이트 전부 통과(문구 16/16·커넥터 5/5)
     - 색이 팔레트 **슬롯명**(band/green/purple) 참조로 바뀜 — hex 인라인 0건. ⚠️ 로더가 `gold` 슬롯 키를 병합하지 않아 band 로 대체(로더 허용 키 확장은 후속 판단)
     - 리포트 갱신: `_doc_work/report/ig-maker-before-after_report.md` "after v2" 절
+* ✅ **§12 계약 적합성 사후 실측** (2026-08-31, 선행 prj3#Issue484 `fcb5bf4` 확정 후 재검):
+    - **스키마 일치** — `layouts:` 절이 §12-2 최소셋(`content`·`canvas`)을 그대로 갖고 키도 `title_band`·`footer`·`content_box` 3종뿐이다. 여기는 **값만** 선언한다는 경계가 지켜졌다(스키마 조항을 복제하지 않음)
+    - **전사 무결** — `theme.yml layouts.content.content_box`(x10.0 y28.0 w318.67 h150.0) 와 `4.layout.yml` 기록값이 **완전 일치**. `layout: content` · `reason` 기재 → §12-3 "기록 없는 선택은 게이트 위반" 충족
+    - **영역 침범 0** — 4·5.svg 의 viewBox 종횡비 2.1250 이 content_box 비율 2.1245 와 일치(오차 0.02%)하여 좌표계 자체가 콘텐츠 영역이다. 두 파일 좌표 **488개 전수 검사 결과 viewBox 이탈 0건**(x 최대 1265/1275 · y 최대 570/600)
+    - **금지 문법 미사용** — `content` 선택 시 금지인 [타이틀 계층]·[한 줄 정리 밴드] 없음. 4.svg 의 골드(`#F5C518`) 3회는 전부 **카드 액센트**(테두리·번호 배지·별 아이콘)이고 상단 전폭 밴드가 아니다. 타이틀 밴드는 조립본 7.svg(16:9 전체 캔버스 1355×762)에만 존재 → §12-4 "7단계는 테마 값으로 조립" 충족
+* 🔧 **낡은 참조 정리** — 선행 이슈가 483 → 484 로 재번호되며 본문·산출물에 구 번호가 남아 있었다. `Issue.md` 목적 · `4.layout.yml` 헤더 · `0.origin.yml` notes **3곳 갱신**(잔존 0건 확인). 덤으로 `7.md` 머리말이 슬롯명을 `gold` 로 적어 놓고 데이터는 `band` 를 쓰던 불일치도 바로잡았다 — 재현자가 없는 슬롯을 찾게 만드는 줄이었다
+* 📎 산출물(`Projects/n3shIntro/**`)과 리포트(`_doc_work/**`)는 [repo-tracking-rules](.claude/rules/repo-tracking-rules.md) 로 **gitignore** 대상이라 커밋에 담기지 않는다 — 로컬 파일로만 남는다(커밋되는 것은 `Issue.md` 뿐)
 
 ## Issue335: n3sh 소개 프로젝트(n3shIntro·Info 분류) 생성 + ig-maker before·after 실증 (등록: 2026-08-31, 해결: 2026-08-31, commit: `e300215`, `bab8424`) ✅
 * 목적: prj58 n3sh(세벌식 390 속기 확장, 최근 pqrs 공개)를 소개하는 프로젝트를 **Info 분류**(도구 소개 — 강연자료 아님, graphify 선례)로 생성하고, 그 장표를 재료로 ig-maker 파이프라인의 **before·after 개선 실증**을 수행한다. Issue334(샘플 4장 분석 기반 개선)의 실작업 본체
