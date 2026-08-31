@@ -28,44 +28,6 @@
 
 # 📙 일반
 
-## Issue336: 테마 레이아웃 카탈로그 선언 — ig-maker 가 선택할 layouts 절 + curriculum 테마 정본 (등록: 2026-08-31, 해결: 2026-08-31)
-* 목적: Issue335 after 에서 ig-maker 가 전체 캔버스를 재작화한 원인의 절반은 **선택할 레이아웃 카탈로그가 프로젝트에 없었기** 때문이다(theme/curriculum/theme.yml 자체가 부재 — 내장 기본 테마로 조립). 테마 정본을 세우고 layouts 카탈로그를 선언해 prj3#Issue483(ig-maker 구조 개정)의 판정 재료를 공급한다
-* 상세:
-    - `_asset_ppt/theme/curriculum/theme.yml` 신설 — canvas·margin·palette(원본 실측 hex)·**layouts 카탈로그**
-    - layouts 스키마는 prj3 `_doc_arch/ig-maker-design.md` §레이아웃 계약이 SSOT — 여기는 **값**만 선언
-    - 초기 2종: `content`(테마 타이틀 밴드+본문 영역 — 덱 장표 표준) · `canvas`(전면 — 독립 인포그래픽용)
-* 구현 명세:
-    - 검증: prj3 개정(Issue484 로 재번호) 후 `_source/3` 재생성이 이 카탈로그를 읽어 `content` 를 선택하고 본문 영역만 작화하는지 확인
-* 결과 (Walkthrough):
-    - `theme/curriculum/theme.yml` 신설 — canvas·margin·palette(실측 hex 5슬롯)·layouts 2종(content·canvas). 스키마 SSOT 는 prj3 `ig-maker-design.md` §12
-    - `_source/3` 재생성 실증: 봇이 `content` 자가 판정(`4.layout.yml` 기록, 애매성 없음) → viewBox 를 content_box 비율로 고정해 구조적 침범 불가 → 타이틀은 테마 골드 밴드로 조립. 게이트 전부 통과(문구 16/16·커넥터 5/5)
-    - 색이 팔레트 **슬롯명**(band/green/purple) 참조로 바뀜 — hex 인라인 0건. ⚠️ 로더가 `gold` 슬롯 키를 병합하지 않아 band 로 대체(로더 허용 키 확장은 후속 판단)
-    - 리포트 갱신: `_doc_work/report/ig-maker-before-after_report.md` "after v2" 절
-
-## Issue335: n3sh 소개 프로젝트(n3shIntro·Info 분류) 생성 + ig-maker before·after 실증 (등록: 2026-08-31, 해결: 2026-08-31)
-* 목적: prj58 n3sh(세벌식 390 속기 확장, 최근 pqrs 공개)를 소개하는 프로젝트를 **Info 분류**(도구 소개 — 강연자료 아님, graphify 선례)로 생성하고, 그 장표를 재료로 ig-maker 파이프라인의 **before·after 개선 실증**을 수행한다. Issue334(샘플 4장 분석 기반 개선)의 실작업 본체
-* depends: Issue334
-* 상세:
-    - 산출: `Projects/n3shIntro/` — 상세 원고(`n3shIntro.ppt.md`)·`_config.yml`·`VERSION`·`Info.md`
-    - before: 현행 ig-maker 로 대표 장표 도형화 → `ppt/` 산출 + `~/Desktop` 백업
-    - upgrade: `~/Desktop/sample/ig` 4장 실측 분석 → ig-maker 개선
-    - after: 동일 장표 재생성 → 수치·시각 비교 리포트(`_doc_work/report/`)
-    - 담당: fbot-igmaker (prj3 카탈로그 2026-08-31 신설 직능)
-* 결과 (Walkthrough):
-    - n3shIntro 생성(Info 분류·원고 9장·Projects.md 등재) → 슬라이드 6 캡처(1300×650) → before 완주(도형 24·게이트 전부 통과) → 샘플 4장 문법 7종 추출 → prj3 `agents/ig-maker.md` 4단계 프롬프트 개정 → after 완주(도형 30·게이트 전부 통과)
-    - **벤치마크 문법 1/7 → 7/7** · 문구 무결(13/13→18/18)·플로우 논리 보존(커넥터 5=5). 상세: `_doc_work/report/ig-maker-before-after_report.md`
-    - 백업: `~/Desktop/n3sh-ig-backup/{before,after}/`
-    - 수행: fbot-igmaker-issue335 (before `ig-1-e7f7` · after `ig-2-c8f9`) — 재시도 루프 0
-
-## Issue334: (!) 인포그래픽 개선 — ~/Desktop/sample/ig 샘플 4장 분석 기반 ig-maker 성능 개선 (등록: 2026-08-31)
-* 목적: 사용자 제공 샘플(`~/Desktop/sample/ig/IMG_0211~0214.JPG` 4장)을 분석해 개선 방향을 기획하고, 기존 ig-maker 파이프라인을 활용해 인포그래픽 품질·성능을 개선한다. **prj3 핀봇 조직의 첫 리크루팅 E2E 실증**(prj3#Issue482)의 실작업 대상 이슈이기도 하다
-* 상세:
-    - 트리거(사용자, 2026-08-31): "~/Desktop/sample/ig 의 내용 prj42 의 인포그래픽 개선작업 진행해줘"
-    - 담당: `fbot-igmaker-issue334` (igmaker 직능 — prj3 카탈로그 2026-08-31 신설, agents/ig-maker.md 승격)
-    - (!) 약식 등록 — 표준 시나리오 1 의 1단계. 정식 승격(plan/task)은 착수 시 작업핀봇이 수행
-* 구현 명세:
-    - ① 샘플 4장 실측 분석(구성·도형화 난도) → ② 개선 방향 기획 → ③ ig-maker 파이프라인으로 변환·개선 → ④ 전후 비교
-
 # 📗 선택
 
 ## Issue333: lane B 카탈로그 확장 — 순차형 htmlart 와 남은 대응 (등록: 2026-08-25)
@@ -81,6 +43,45 @@
     - 검증: [`4.laneb.sh`](z_test/ig-ppt/4.laneb.sh) 단언 6종 통과 + [`3.parity.sh`](z_test/ig-ppt/3.parity.sh) 7/7 유지
 
 # ✅ 완료
+
+## Issue336: 테마 레이아웃 카탈로그 선언 — ig-maker 가 선택할 layouts 절 + curriculum 테마 정본 (등록: 2026-08-31, 해결: 2026-08-31, commit: `bab8424`) ✅
+* 목적: Issue335 after 에서 ig-maker 가 전체 캔버스를 재작화한 원인의 절반은 **선택할 레이아웃 카탈로그가 프로젝트에 없었기** 때문이다(theme/curriculum/theme.yml 자체가 부재 — 내장 기본 테마로 조립). 테마 정본을 세우고 layouts 카탈로그를 선언해 prj3#Issue483(ig-maker 구조 개정)의 판정 재료를 공급한다
+* 상세:
+    - `_asset_ppt/theme/curriculum/theme.yml` 신설 — canvas·margin·palette(원본 실측 hex)·**layouts 카탈로그**
+    - layouts 스키마는 prj3 `_doc_arch/ig-maker-design.md` §레이아웃 계약이 SSOT — 여기는 **값**만 선언
+    - 초기 2종: `content`(테마 타이틀 밴드+본문 영역 — 덱 장표 표준) · `canvas`(전면 — 독립 인포그래픽용)
+* 구현 명세:
+    - 검증: prj3 개정(Issue484 로 재번호) 후 `_source/3` 재생성이 이 카탈로그를 읽어 `content` 를 선택하고 본문 영역만 작화하는지 확인
+* 결과 (Walkthrough):
+    - `theme/curriculum/theme.yml` 신설 — canvas·margin·palette(실측 hex 5슬롯)·layouts 2종(content·canvas). 스키마 SSOT 는 prj3 `ig-maker-design.md` §12
+    - `_source/3` 재생성 실증: 봇이 `content` 자가 판정(`4.layout.yml` 기록, 애매성 없음) → viewBox 를 content_box 비율로 고정해 구조적 침범 불가 → 타이틀은 테마 골드 밴드로 조립. 게이트 전부 통과(문구 16/16·커넥터 5/5)
+    - 색이 팔레트 **슬롯명**(band/green/purple) 참조로 바뀜 — hex 인라인 0건. ⚠️ 로더가 `gold` 슬롯 키를 병합하지 않아 band 로 대체(로더 허용 키 확장은 후속 판단)
+    - 리포트 갱신: `_doc_work/report/ig-maker-before-after_report.md` "after v2" 절
+
+## Issue335: n3sh 소개 프로젝트(n3shIntro·Info 분류) 생성 + ig-maker before·after 실증 (등록: 2026-08-31, 해결: 2026-08-31, commit: `e300215`, `bab8424`) ✅
+* 목적: prj58 n3sh(세벌식 390 속기 확장, 최근 pqrs 공개)를 소개하는 프로젝트를 **Info 분류**(도구 소개 — 강연자료 아님, graphify 선례)로 생성하고, 그 장표를 재료로 ig-maker 파이프라인의 **before·after 개선 실증**을 수행한다. Issue334(샘플 4장 분석 기반 개선)의 실작업 본체
+* depends: Issue334
+* 상세:
+    - 산출: `Projects/n3shIntro/` — 상세 원고(`n3shIntro.ppt.md`)·`_config.yml`·`VERSION`·`Info.md`
+    - before: 현행 ig-maker 로 대표 장표 도형화 → `ppt/` 산출 + `~/Desktop` 백업
+    - upgrade: `~/Desktop/sample/ig` 4장 실측 분석 → ig-maker 개선
+    - after: 동일 장표 재생성 → 수치·시각 비교 리포트(`_doc_work/report/`)
+    - 담당: fbot-igmaker (prj3 카탈로그 2026-08-31 신설 직능)
+* 결과 (Walkthrough):
+    - n3shIntro 생성(Info 분류·원고 9장·Projects.md 등재) → 슬라이드 6 캡처(1300×650) → before 완주(도형 24·게이트 전부 통과) → 샘플 4장 문법 7종 추출 → prj3 `agents/ig-maker.md` 4단계 프롬프트 개정 → after 완주(도형 30·게이트 전부 통과)
+    - **벤치마크 문법 1/7 → 7/7** · 문구 무결(13/13→18/18)·플로우 논리 보존(커넥터 5=5). 상세: `_doc_work/report/ig-maker-before-after_report.md`
+    - 백업: `~/Desktop/n3sh-ig-backup/{before,after}/`
+    - 수행: fbot-igmaker-issue335 (before `ig-1-e7f7` · after `ig-2-c8f9`) — 재시도 루프 0
+
+## Issue334: (!) 인포그래픽 개선 — ~/Desktop/sample/ig 샘플 4장 분석 기반 ig-maker 성능 개선 (등록: 2026-08-31, 해결: 2026-08-31, commit: `e300215`) ✅
+* 목적: 사용자 제공 샘플(`~/Desktop/sample/ig/IMG_0211~0214.JPG` 4장)을 분석해 개선 방향을 기획하고, 기존 ig-maker 파이프라인을 활용해 인포그래픽 품질·성능을 개선한다. **prj3 핀봇 조직의 첫 리크루팅 E2E 실증**(prj3#Issue482)의 실작업 대상 이슈이기도 하다
+* 상세:
+    - 트리거(사용자, 2026-08-31): "~/Desktop/sample/ig 의 내용 prj42 의 인포그래픽 개선작업 진행해줘"
+    - 담당: `fbot-igmaker-issue334` (igmaker 직능 — prj3 카탈로그 2026-08-31 신설, agents/ig-maker.md 승격)
+    - (!) 약식 등록 — 표준 시나리오 1 의 1단계. 정식 승격(plan/task)은 착수 시 작업핀봇이 수행
+* 구현 명세:
+    - ① 샘플 4장 실측 분석(구성·도형화 난도) → ② 개선 방향 기획 → ③ ig-maker 파이프라인으로 변환·개선 → ④ 전후 비교
+
 
 ## Issue331: lane B — cards·htmlart 를 네이티브 도형으로 (등록: 2026-08-18, 해결: 2026-08-25, commit: 24b8b09) ✅
 * depends: Issue328, Issue329 (둘 다 완료)
