@@ -47,7 +47,7 @@
     - `LANE_B_CATALOG` 에 순차형 4종(`htmlart timeline`·`chevron`·`step`·`funnel`) → `process` 매핑 추가. **코드 변경은 표 4줄뿐** — 사이드카 `kind` 가 `process` 로 적히므로 `lane-b.py` `build_page` 의 기존 분기(카드 + `flow_arrow` 커넥터)를 무수정으로 탄다. HTML 의 시각 변주(연대축·갈매기·계단·깔때기)는 근사하지 않는다 — 살아남는 것은 순서와 연결이고 그것이 flow_arrow 가 그리는 것
     - 픽스처: `z_done/aTest_v1/markdown/17-htmlart-catalog.md` 에서 4장(timeline·chevron·step·funnel)을 추려 `Projects/aTest/aTest.md` compare 뒤에 추가(제목·#id·설명 불릿 형식은 기존 htmlArt 장과 통일, release_date 갱신). ⚠️ aTest 는 [repo-tracking-rules](.claude/rules/repo-tracking-rules.md) 로 **gitignore** 대상이라 픽스처 확장분은 로컬 파일로만 남는다(Issue331 산출물과 동일 패턴)
     - 검증: [`4.laneb.sh`](z_test/ig-ppt/4.laneb.sh) aTest **6/6 통과** — 사이드카 lane B **4→8장**(신규 4장 전부 `kind: process` 기록), 대상 8장 전부 글자 있는 네이티브 도형·그림 0·평문 불릿 제거, **lane C 이월 3건(pie×2·matrix) 미개입**, `check-conform --lane a` FAIL 0. [`3.parity.sh`](z_test/ig-ppt/3.parity.sh) igTest **7/7 유지**(회귀 0)
-    - 📌 남은 대응(이슈 상세 그대로): `pie`·`matrix`·`venn` 류는 ppt-info 블록 신설이 선행 — **글로벌 소관**이라 `~/.claude/Issue.md` 등록 후 별도 세션(타 repo 수정이므로 사용자 승인 대기). "블록 뒤 본문" 케이스는 이번 확장 후에도 실측 발생 0건이라 현행 이월 유지
+    - 📌 남은 대응: `pie`·`matrix`·`venn` 류는 ppt-info 블록 신설이 선행 — 사용자 승인(폼 회수)을 받아 **글로벌 `~/.claude/Issue.md` Issue491 로 등록 완료**(별도 세션 처리 예정). 신설 후 m2slide 쪽은 `LANE_B_CATALOG` 매핑 1줄씩 추가하는 후속 이슈만 남는다. "블록 뒤 본문" 케이스는 이번 확장 후에도 실측 발생 0건이라 현행 이월 유지
 
 ## Issue337: (!) n3shIntro 덱 업데이트 — 추가 장표 인포그래픽화(ig-maker 핀봇) + 덱 반영 (등록: 2026-08-31, 해결: 2026-08-31, commit: `a2f39fe`) ✅
 * 목적: Issue335·336 으로 검증된 레이아웃 준수 파이프라인(v2)을 n3shIntro 나머지 장표에 적용한다. 사용자 지시 — "n3shIntro 업데이트 진행(ig-maker 핀봇 활용)"
