@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 333
+* Issue HWM: 335
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -22,11 +22,35 @@
 
 # 🌱 이슈후보
 
-# 🔥 진행 중
+# 🚧 진행중
 
 # 📕 중요
 
 # 📙 일반
+
+## Issue335: n3sh 소개 프로젝트(n3shIntro·Info 분류) 생성 + ig-maker before·after 실증 (등록: 2026-08-31, 해결: 2026-08-31)
+* 목적: prj58 n3sh(세벌식 390 속기 확장, 최근 pqrs 공개)를 소개하는 프로젝트를 **Info 분류**(도구 소개 — 강연자료 아님, graphify 선례)로 생성하고, 그 장표를 재료로 ig-maker 파이프라인의 **before·after 개선 실증**을 수행한다. Issue334(샘플 4장 분석 기반 개선)의 실작업 본체
+* depends: Issue334
+* 상세:
+    - 산출: `Projects/n3shIntro/` — 상세 원고(`n3shIntro.ppt.md`)·`_config.yml`·`VERSION`·`Info.md`
+    - before: 현행 ig-maker 로 대표 장표 도형화 → `ppt/` 산출 + `~/Desktop` 백업
+    - upgrade: `~/Desktop/sample/ig` 4장 실측 분석 → ig-maker 개선
+    - after: 동일 장표 재생성 → 수치·시각 비교 리포트(`_doc_work/report/`)
+    - 담당: fbot-igmaker (prj3 카탈로그 2026-08-31 신설 직능)
+* 결과 (Walkthrough):
+    - n3shIntro 생성(Info 분류·원고 9장·Projects.md 등재) → 슬라이드 6 캡처(1300×650) → before 완주(도형 24·게이트 전부 통과) → 샘플 4장 문법 7종 추출 → prj3 `agents/ig-maker.md` 4단계 프롬프트 개정 → after 완주(도형 30·게이트 전부 통과)
+    - **벤치마크 문법 1/7 → 7/7** · 문구 무결(13/13→18/18)·플로우 논리 보존(커넥터 5=5). 상세: `_doc_work/report/ig-maker-before-after_report.md`
+    - 백업: `~/Desktop/n3sh-ig-backup/{before,after}/`
+    - 수행: fbot-igmaker-issue335 (before `ig-1-e7f7` · after `ig-2-c8f9`) — 재시도 루프 0
+
+## Issue334: (!) 인포그래픽 개선 — ~/Desktop/sample/ig 샘플 4장 분석 기반 ig-maker 성능 개선 (등록: 2026-08-31)
+* 목적: 사용자 제공 샘플(`~/Desktop/sample/ig/IMG_0211~0214.JPG` 4장)을 분석해 개선 방향을 기획하고, 기존 ig-maker 파이프라인을 활용해 인포그래픽 품질·성능을 개선한다. **prj3 핀봇 조직의 첫 리크루팅 E2E 실증**(prj3#Issue482)의 실작업 대상 이슈이기도 하다
+* 상세:
+    - 트리거(사용자, 2026-08-31): "~/Desktop/sample/ig 의 내용 prj42 의 인포그래픽 개선작업 진행해줘"
+    - 담당: `fbot-igmaker-issue334` (igmaker 직능 — prj3 카탈로그 2026-08-31 신설, agents/ig-maker.md 승격)
+    - (!) 약식 등록 — 표준 시나리오 1 의 1단계. 정식 승격(plan/task)은 착수 시 작업핀봇이 수행
+* 구현 명세:
+    - ① 샘플 4장 실측 분석(구성·도형화 난도) → ② 개선 방향 기획 → ③ ig-maker 파이프라인으로 변환·개선 → ④ 전후 비교
 
 # 📗 선택
 

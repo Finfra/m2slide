@@ -33,15 +33,42 @@ _dev_server_port_in_use() {
   fi
 }
 
+# pid alive만으로는 실제 서비스 여부를 보증하지 않는다 — process는 남아 있는데
+# HTTP 포트는 죽은 좀비 상태(2026-08-31 실측: pid alive, curl connection refused)가
+# 존재한다. healthy = alive AND 포트가 실제로 LISTEN 중.
+_dev_server_healthy() {
+  local pid="$1"
+  _dev_server_alive "$pid" && _dev_server_port_in_use
+}
+
+_dev_server_kill_pid() {
+  local pid="$1"
+  kill "$pid" 2>/dev/null
+  local i=0
+  while [ $i -lt 20 ] && _dev_server_alive "$pid"; do
+    sleep 0.1
+    i=$((i + 1))
+  done
+  if _dev_server_alive "$pid"; then
+    kill -9 "$pid" 2>/dev/null
+  fi
+}
+
 dev_server_start() {
   mkdir -p "$(dirname "$DEV_SERVER_PID_FILE")"
 
   local pid
   pid=$(_dev_server_read_pid)
 
-  if _dev_server_alive "$pid"; then
+  if _dev_server_healthy "$pid"; then
     echo "  ℹ️  dev-server already running (pid $pid) — http://$DEV_SERVER_BIND:$DEV_SERVER_PORT/"
     return 0
+  fi
+
+  # pid는 살아 있는데 포트가 죽은 좀비 — 정리 후 재기동으로 자동 치유
+  if _dev_server_alive "$pid"; then
+    echo "  ⚠️  dev-server pid $pid alive but not listening on $DEV_SERVER_PORT (zombie). Killing and restarting."
+    _dev_server_kill_pid "$pid"
   fi
 
   # Stale pid — clean up
@@ -87,17 +114,7 @@ dev_server_stop() {
     return 0
   fi
 
-  kill "$pid" 2>/dev/null
-  # Wait up to 2 seconds for graceful shutdown
-  local i=0
-  while [ $i -lt 20 ] && _dev_server_alive "$pid"; do
-    sleep 0.1
-    i=$((i + 1))
-  done
-
-  if _dev_server_alive "$pid"; then
-    kill -9 "$pid" 2>/dev/null
-  fi
+  _dev_server_kill_pid "$pid"
 
   rm -f "$DEV_SERVER_PID_FILE"
   echo "  ✅ dev-server stopped (pid $pid)"
@@ -107,9 +124,14 @@ dev_server_status() {
   local pid
   pid=$(_dev_server_read_pid)
 
-  if _dev_server_alive "$pid"; then
+  if _dev_server_healthy "$pid"; then
     echo "  ✅ dev-server running (pid $pid) — http://$DEV_SERVER_BIND:$DEV_SERVER_PORT/"
     return 0
+  fi
+
+  if _dev_server_alive "$pid"; then
+    echo "  ⚠️  dev-server pid $pid alive but NOT responding on port $DEV_SERVER_PORT (zombie) — run '--serve restart'" >&2
+    return 2
   fi
 
   if [ -n "$pid" ]; then
