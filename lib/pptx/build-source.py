@@ -353,6 +353,13 @@ LANE_B_CATALOG = {
     "htmlart numbered": "cards",     # 번호 카드        → 같은 블록(번호는 우리가 매긴다)
     "htmlart process":  "process",   # 순차 단계        → `cards` + `flow_arrow` 네이티브 커넥터
     "htmlart compare":  "compare",   # 좌우 동등 비교   → `compare` (1:1 대응)
+    # 순차형 4종 (Issue333) — 진행 순서가 내용의 전부라 `process` 매핑을 그대로 탄다.
+    # HTML 의 시각 변주(연대축·갈매기·계단·깔때기)는 pptx 에서 근사하지 않는다 —
+    # 살아남는 것은 **순서와 연결**이고 그것이 flow_arrow 가 그리는 것이다.
+    "htmlart timeline": "process",   # 타임라인         → 순차 카드 + 커넥터
+    "htmlart chevron":  "process",   # 갈매기형 체인    → 순차 카드 + 커넥터
+    "htmlart step":     "process",   # 계단형 단계      → 순차 카드 + 커넥터
+    "htmlart funnel":   "process",   # 깔때기           → 순차 카드 + 커넥터 (단계 축소 = 순서)
 }
 FENCE_DIV_OPEN = re.compile(r"^[ \t]*:::+[ \t]*(cards|htmlart[ \t]+[a-z][a-z0-9-]*)"
                             r"(?:[ \t]+\{[^}]*\})?[ \t]*$")
