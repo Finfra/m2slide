@@ -1418,7 +1418,7 @@ class DevHandler(SimpleHTTPRequestHandler):
     _CATEGORY_SECTIONS = [
         ('m2',    '🧩', 'm2Slide',   '마크다운 → 프레젠테이션 도구: 소개·기능·예제'),
         ('lec',   '🎓', '강연 자료', 'AI·LLM 강의용 프레젠테이션'),
-        ('pr',    '📢', '프레임워크', 'Claude Code 다중 프로젝트 자동화'),
+        ('app',   '📱', '앱',       '앱·CLI 도구·프레임워크 소개'),
         ('info',  'ℹ️', '소개',      '도구·개념 소개 자료'),
         ('test',  '🧪', '테스트',    '개발·검증용 프로젝트'),
         ('other', '📁', '그 외',     '미분류 프로젝트'),

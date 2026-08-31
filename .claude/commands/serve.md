@@ -40,6 +40,7 @@ dev-server는 `/p/` 프로젝트 목록·설정 GUI(⚙️ 모달)·슬라이드
 ## 주의
 
 * dev-server는 `127.0.0.1` 로만 bind (외부 노출 없음). `--bind` 는 `m2slide.sh` 기본값 사용.
+* **tailnet 접근 (2026-08-31)**: loopback 단독 bind라 `http://<host>.ts.net:9877/` 은 기본적으로 안 열린다(hub 9876과 비대칭 — 그쪽은 tailscale IP도 리스닝). `tailscale serve --bg --http=9877 http://127.0.0.1:9877` 로 tailnet 에만 프록시해 해결하며, 이 설정은 tailscaled 에 영속된다(해제: `tailscale serve --http=9877 off`). 판정·실측표: [`_doc_arch/dev-server.md`](../../_doc_arch/dev-server.md) "bind 주소와 tailnet 접근".
 * 빌드가 자동 시동하므로 대부분 수동 호출 불필요 — 캐시·stale 프로세스 의심 시에만 `restart`.
 * **좀비 pid 자동 치유 (2026-08-31)**: pid는 살아있는데 포트가 죽어 `/p/...` URL 이 connection refused 로 응답 안 될 때(`status`가 "running"이라 보고해도 실제 접속 불가한 상태), `start`/`restart` 한 번으로 자동 정리된다 — 별도 진단 스크립트 불필요.
 * 서버 lifecycle SSOT: [`_doc_arch/dev-server.md`](../../_doc_arch/dev-server.md) (Issue235).

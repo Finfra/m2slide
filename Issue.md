@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 335
+* Issue HWM: 336
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -27,6 +27,20 @@
 # 📕 중요
 
 # 📙 일반
+
+## Issue336: 테마 레이아웃 카탈로그 선언 — ig-maker 가 선택할 layouts 절 + curriculum 테마 정본 (등록: 2026-08-31, 해결: 2026-08-31)
+* 목적: Issue335 after 에서 ig-maker 가 전체 캔버스를 재작화한 원인의 절반은 **선택할 레이아웃 카탈로그가 프로젝트에 없었기** 때문이다(theme/curriculum/theme.yml 자체가 부재 — 내장 기본 테마로 조립). 테마 정본을 세우고 layouts 카탈로그를 선언해 prj3#Issue483(ig-maker 구조 개정)의 판정 재료를 공급한다
+* 상세:
+    - `_asset_ppt/theme/curriculum/theme.yml` 신설 — canvas·margin·palette(원본 실측 hex)·**layouts 카탈로그**
+    - layouts 스키마는 prj3 `_doc_arch/ig-maker-design.md` §레이아웃 계약이 SSOT — 여기는 **값**만 선언
+    - 초기 2종: `content`(테마 타이틀 밴드+본문 영역 — 덱 장표 표준) · `canvas`(전면 — 독립 인포그래픽용)
+* 구현 명세:
+    - 검증: prj3 개정(Issue484 로 재번호) 후 `_source/3` 재생성이 이 카탈로그를 읽어 `content` 를 선택하고 본문 영역만 작화하는지 확인
+* 결과 (Walkthrough):
+    - `theme/curriculum/theme.yml` 신설 — canvas·margin·palette(실측 hex 5슬롯)·layouts 2종(content·canvas). 스키마 SSOT 는 prj3 `ig-maker-design.md` §12
+    - `_source/3` 재생성 실증: 봇이 `content` 자가 판정(`4.layout.yml` 기록, 애매성 없음) → viewBox 를 content_box 비율로 고정해 구조적 침범 불가 → 타이틀은 테마 골드 밴드로 조립. 게이트 전부 통과(문구 16/16·커넥터 5/5)
+    - 색이 팔레트 **슬롯명**(band/green/purple) 참조로 바뀜 — hex 인라인 0건. ⚠️ 로더가 `gold` 슬롯 키를 병합하지 않아 band 로 대체(로더 허용 키 확장은 후속 판단)
+    - 리포트 갱신: `_doc_work/report/ig-maker-before-after_report.md` "after v2" 절
 
 ## Issue335: n3sh 소개 프로젝트(n3shIntro·Info 분류) 생성 + ig-maker before·after 실증 (등록: 2026-08-31, 해결: 2026-08-31)
 * 목적: prj58 n3sh(세벌식 390 속기 확장, 최근 pqrs 공개)를 소개하는 프로젝트를 **Info 분류**(도구 소개 — 강연자료 아님, graphify 선례)로 생성하고, 그 장표를 재료로 ig-maker 파이프라인의 **before·after 개선 실증**을 수행한다. Issue334(샘플 4장 분석 기반 개선)의 실작업 본체
