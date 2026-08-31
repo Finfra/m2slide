@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1355 762" font-family="'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif">
+  <!-- 7단계: 발행 svg — 7.pptx(조립기 산출)와 문구 일치. 전체 슬라이드(338.67x190.5mm = 1355x762, 4px/mm).
+       타이틀 밴드는 테마(content 레이아웃) 소관을 svg 로 재현. 콘텐츠는 content_box(40,112,1275,600). -->
+  <defs>
+    <filter id="sh" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#8a8a8a" flood-opacity="0.35"/>
+    </filter>
+    <marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#444444"/>
+    </marker>
+    <marker id="arwG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2ECC71"/>
+    </marker>
+  </defs>
+  <rect width="1355" height="762" fill="#ffffff"/>
+
+  <!-- ── 타이틀 (테마 content 레이아웃 — 골드 밴드) ── -->
+  <rect x="40" y="18" width="1275" height="5" fill="#F5C518"/>
+  <text x="677" y="62" font-size="34" font-weight="bold" fill="#111111" text-anchor="middle">자모 2개 → 완성형 한 글자</text>
+  <text x="677" y="92" font-size="18" fill="#8a6d00" text-anchor="middle">n3sh 란 무엇인가</text>
+  <rect x="40" y="102" width="1275" height="3" fill="#F5C518"/>
+
+  <!-- ── 카드 4개 (d1~d4) ── -->
+  <!-- d1 (band) -->
+  <g filter="url(#sh)">
+    <rect x="40" y="128" width="303" height="128" rx="10" fill="#ffffff" stroke="#e3e3e3"/>
+    <rect x="40" y="128" width="8" height="128" rx="4" fill="#F5C518"/>
+  </g>
+  <circle cx="76" cy="158" r="15" fill="#F5C518"/>
+  <text x="76" y="164" font-size="16" font-weight="bold" fill="#ffffff" text-anchor="middle">1</text>
+  <text x="100" y="164" font-size="19" font-weight="bold" fill="#222222">n3sh 란</text>
+  <text x="64" y="200" font-size="15" fill="#444444">Nowage Shorthand</text>
+  <text x="64" y="226" font-size="15" fill="#444444">for 3set 390</text>
+
+  <!-- d2 (green) -->
+  <g filter="url(#sh)">
+    <rect x="364" y="128" width="303" height="128" rx="10" fill="#ffffff" stroke="#e3e3e3"/>
+    <rect x="364" y="128" width="8" height="128" rx="4" fill="#2ECC71"/>
+  </g>
+  <circle cx="400" cy="158" r="15" fill="#2ECC71"/>
+  <text x="400" y="164" font-size="16" font-weight="bold" fill="#ffffff" text-anchor="middle">2</text>
+  <text x="424" y="164" font-size="19" font-weight="bold" fill="#222222">동시타 원리</text>
+  <text x="388" y="200" font-size="15" fill="#444444">자모 2개를 동시에 누르면</text>
+  <text x="388" y="226" font-size="15" fill="#444444">완성형 한 글자가 한 번에 나온다</text>
+
+  <!-- d3 (purple) -->
+  <g filter="url(#sh)">
+    <rect x="688" y="128" width="303" height="128" rx="10" fill="#ffffff" stroke="#e3e3e3"/>
+    <rect x="688" y="128" width="8" height="128" rx="4" fill="#B9A3E9"/>
+  </g>
+  <circle cx="724" cy="158" r="15" fill="#B9A3E9"/>
+  <text x="724" y="164" font-size="16" font-weight="bold" fill="#ffffff" text-anchor="middle">3</text>
+  <text x="748" y="164" font-size="19" font-weight="bold" fill="#222222">254개 규칙</text>
+  <text x="712" y="200" font-size="15" fill="#444444">자주 나오는 글자를 2타로</text>
+  <text x="712" y="226" font-size="15" fill="#444444">줄이는 254개 규칙</text>
+
+  <!-- d4 (band) -->
+  <g filter="url(#sh)">
+    <rect x="1012" y="128" width="303" height="128" rx="10" fill="#ffffff" stroke="#e3e3e3"/>
+    <rect x="1012" y="128" width="8" height="128" rx="4" fill="#F5C518"/>
+  </g>
+  <circle cx="1048" cy="158" r="15" fill="#F5C518"/>
+  <text x="1048" y="164" font-size="16" font-weight="bold" fill="#ffffff" text-anchor="middle">4</text>
+  <text x="1072" y="164" font-size="19" font-weight="bold" fill="#222222">macOS 확장</text>
+  <text x="1036" y="200" font-size="15" fill="#444444">Karabiner-Elements 기반 —</text>
+  <text x="1036" y="226" font-size="15" fill="#444444">2026-08-30 pqrs 커뮤니티 카탈로그 공개</text>
+
+  <!-- 카드 스토리 화살표 d1→d2→d3→d4 -->
+  <line x1="343" y1="192" x2="360" y2="192" stroke="#444444" stroke-width="2.5" marker-end="url(#arw)"/>
+  <line x1="667" y1="192" x2="684" y2="192" stroke="#444444" stroke-width="2.5" marker-end="url(#arw)"/>
+  <line x1="991" y1="192" x2="1008" y2="192" stroke="#444444" stroke-width="2.5" marker-end="url(#arw)"/>
+
+  <!-- ── n3sh 레인 (이득=green) ── -->
+  <rect x="40" y="286" width="920" height="180" rx="10" fill="#f2fcf6" stroke="#2ECC71" stroke-width="1.5"/>
+  <text x="60" y="318" font-size="17" font-weight="bold" fill="#127a41">n3sh 경로 · 1타</text>
+  <g filter="url(#sh)"><rect x="140" y="342" width="210" height="96" rx="8" fill="#ffffff" stroke="#2ECC71"/></g>
+  <path d="M 172 362 h 24 v 16 h -24 z M 204 362 h 24 v 16 h -24 z" fill="none" stroke="#2ECC71" stroke-width="2"/>
+  <text x="245" y="412" font-size="18" font-weight="bold" fill="#222222" text-anchor="middle">j + h 동시에 누름</text>
+  <line x1="350" y1="390" x2="414" y2="390" stroke="#2ECC71" stroke-width="2.5" marker-end="url(#arwG)"/>
+  <text x="382" y="378" font-size="13" fill="#127a41" text-anchor="middle">동시타</text>
+  <path d="M 472 348 L 520 390 L 472 432 L 424 390 Z" fill="#ffffff" stroke="#2ECC71" stroke-width="2" filter="url(#sh)"/>
+  <text x="472" y="388" font-size="16" font-weight="bold" fill="#127a41" text-anchor="middle">n3sh</text>
+  <line x1="520" y1="390" x2="584" y2="390" stroke="#2ECC71" stroke-width="2.5" marker-end="url(#arwG)"/>
+  <text x="552" y="378" font-size="13" fill="#127a41" text-anchor="middle">변환</text>
+  <g filter="url(#sh)"><rect x="592" y="342" width="250" height="96" rx="8" fill="#d9f6e5" stroke="#2ECC71"/></g>
+  <text x="717" y="382" font-size="19" font-weight="bold" fill="#127a41" text-anchor="middle">'을 ' 완성</text>
+  <text x="717" y="412" font-size="15" fill="#127a41" text-anchor="middle">공백 포함 · 1타</text>
+
+  <!-- ── 일반 타건 레인 ── -->
+  <rect x="40" y="486" width="920" height="180" rx="10" fill="#f7f7f7" stroke="#bbbbbb" stroke-width="1.5"/>
+  <text x="60" y="518" font-size="17" font-weight="bold" fill="#555555">일반 타건 경로 · 4타</text>
+  <g filter="url(#sh)"><rect x="140" y="542" width="210" height="96" rx="8" fill="#ffffff" stroke="#bbbbbb"/></g>
+  <path d="M 172 562 h 24 v 16 h -24 z" fill="none" stroke="#888888" stroke-width="2"/>
+  <text x="245" y="612" font-size="18" font-weight="bold" fill="#222222" text-anchor="middle">한 타씩 순차 입력</text>
+  <line x1="350" y1="590" x2="584" y2="590" stroke="#888888" stroke-width="2.5" marker-end="url(#arw)"/>
+  <text x="467" y="578" font-size="13" fill="#666666" text-anchor="middle">순차 입력</text>
+  <g filter="url(#sh)"><rect x="592" y="542" width="250" height="96" rx="8" fill="#ffffff" stroke="#bbbbbb"/></g>
+  <text x="717" y="582" font-size="19" font-weight="bold" fill="#444444" text-anchor="middle">ㅇ → ㅡ → ㄹ → ␣</text>
+  <text x="717" y="612" font-size="15" fill="#666666" text-anchor="middle">4타</text>
+
+  <!-- 등가 점선 c→f + 라벨 (결론) -->
+  <line x1="842" y1="390" x2="1010" y2="448" stroke="#2ECC71" stroke-width="2" stroke-dasharray="5,5"/>
+  <line x1="842" y1="590" x2="1010" y2="530" stroke="#2ECC71" stroke-width="2" stroke-dasharray="5,5"/>
+  <g filter="url(#sh)"><rect x="1000" y="428" width="315" height="120" rx="10" fill="#d9f6e5" stroke="#2ECC71" stroke-width="2"/></g>
+  <text x="1157" y="480" font-size="20" font-weight="bold" fill="#127a41" text-anchor="middle">같은 결과,</text>
+  <text x="1157" y="512" font-size="20" font-weight="bold" fill="#127a41" text-anchor="middle">절반 이하 타수</text>
+</svg>

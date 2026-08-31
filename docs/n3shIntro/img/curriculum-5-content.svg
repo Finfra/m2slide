@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1275 637" font-family="'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif">
+  <!-- 5단계: 내용 재구성 — 원본 ex) 문장부호 예시를 갈래 라벨에 통합(무수식=. · ⇧=?). content_box 한정 동일 -->
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#000000" flood-opacity="0.13"/>
+    </filter>
+  </defs>
+
+  <!-- ── 카드 그리드 2x2 (불릿 4개 재조직) ── -->
+  <!-- 카드 1: 동시타(모아치기) — green -->
+  <g filter="url(#shadow)">
+    <rect x="8" y="8" width="614" height="140" rx="12" fill="#ffffff" stroke="#e3e8ee"/>
+    <rect x="8" y="8" width="8" height="140" rx="4" fill="#2ECC71"/>
+  </g>
+  <circle cx="46" cy="42" r="17" fill="#2ECC71"/>
+  <text x="46" y="49" text-anchor="middle" font-size="19" font-weight="bold" fill="#ffffff">1</text>
+  <text x="76" y="50" font-size="23" font-weight="bold" fill="#1a9e54">동시타(모아치기)</text>
+  <text x="76" y="90" font-size="20" fill="#222222">순서 무관.</text>
+  <text x="76" y="122" font-size="20" fill="#222222">j+h 든 h+j 든 같은 글자</text>
+
+  <!-- 카드 2: 모디파이어 층 — purple -->
+  <g filter="url(#shadow)">
+    <rect x="653" y="8" width="614" height="140" rx="12" fill="#ffffff" stroke="#e3e8ee"/>
+    <rect x="653" y="8" width="8" height="140" rx="4" fill="#B9A3E9"/>
+  </g>
+  <circle cx="691" cy="42" r="17" fill="#B9A3E9"/>
+  <text x="691" y="49" text-anchor="middle" font-size="19" font-weight="bold" fill="#ffffff">2</text>
+  <text x="721" y="50" font-size="23" font-weight="bold" fill="#7a5fc0">모디파이어 층</text>
+  <text x="721" y="90" font-size="20" fill="#222222">같은 두 키에 ⇧·⌘·⌥ 를 얹어 다른 글자를 배정</text>
+  <text x="721" y="122" font-size="18" fill="#555555">ex) 어미 끝 문장부호: 무수식 = . · ⇧ = ? · ⇧⌘ = !</text>
+
+  <!-- 카드 3: 한 글자 = 속기 — gold -->
+  <g filter="url(#shadow)">
+    <rect x="8" y="168" width="614" height="140" rx="12" fill="#ffffff" stroke="#e3e8ee"/>
+    <rect x="8" y="168" width="8" height="140" rx="4" fill="#F6D32D"/>
+  </g>
+  <circle cx="46" cy="202" r="17" fill="#F6D32D"/>
+  <text x="46" y="209" text-anchor="middle" font-size="19" font-weight="bold" fill="#333333">3</text>
+  <text x="76" y="210" font-size="23" font-weight="bold" fill="#a8891a">나오는 것은 대부분 한 글자</text>
+  <text x="76" y="250" font-size="20" fill="#222222">단어 확장기가 아니라 <tspan font-weight="bold" fill="#1a9e54">속기</tspan>다</text>
+
+  <!-- 카드 4: 한글 입력 상태에서만 — band gold -->
+  <g filter="url(#shadow)">
+    <rect x="653" y="168" width="614" height="140" rx="12" fill="#ffffff" stroke="#e3e8ee"/>
+    <rect x="653" y="168" width="8" height="140" rx="4" fill="#F5C518"/>
+  </g>
+  <circle cx="691" cy="202" r="17" fill="#F5C518"/>
+  <text x="691" y="209" text-anchor="middle" font-size="19" font-weight="bold" fill="#333333">4</text>
+  <text x="721" y="210" font-size="23" font-weight="bold" fill="#a8891a">한글 입력 상태에서만 발동</text>
+  <text x="721" y="250" font-size="20" fill="#222222">영문 모드에는 간섭하지 않는다</text>
+
+  <!-- ── 플로우: 같은 두 키 → 모디파이어 4갈래 ── -->
+  <text x="637" y="352" text-anchor="middle" font-size="19" font-weight="bold" fill="#555555">같은 두 키</text>
+
+  <!-- c1+c2 카드 (픽토그램: 키 두 개) -->
+  <g filter="url(#shadow)">
+    <rect x="547" y="364" width="180" height="62" rx="10" fill="#f4effc" stroke="#B9A3E9" stroke-width="2"/>
+  </g>
+  <rect x="565" y="380" width="28" height="28" rx="6" fill="#ffffff" stroke="#7a5fc0" stroke-width="2"/>
+  <rect x="583" y="388" width="28" height="28" rx="6" fill="#ffffff" stroke="#7a5fc0" stroke-width="2"/>
+  <text x="672" y="404" text-anchor="middle" font-size="22" font-weight="bold" fill="#333333">c1 + c2</text>
+
+  <!-- 갈래 화살표 4개 + 모디파이어 배지 -->
+  <path d="M 590 426 C 420 460, 260 470, 175 496" fill="none" stroke="#8f79c9" stroke-width="2.5"/>
+  <path d="M 615 426 C 570 460, 510 472, 475 496" fill="none" stroke="#8f79c9" stroke-width="2.5"/>
+  <path d="M 660 426 C 705 460, 765 472, 800 496" fill="none" stroke="#8f79c9" stroke-width="2.5"/>
+  <path d="M 685 426 C 855 460, 1015 470, 1100 496" fill="none" stroke="#8f79c9" stroke-width="2.5"/>
+  <path d="M 168 490 L 178 502 L 184 487 Z" fill="#8f79c9"/>
+  <path d="M 468 490 L 478 502 L 484 487 Z" fill="#8f79c9"/>
+  <path d="M 791 487 L 797 502 L 807 490 Z" fill="#8f79c9"/>
+  <path d="M 1091 487 L 1097 502 L 1107 490 Z" fill="#8f79c9"/>
+
+  <rect x="290" y="438" width="118" height="32" rx="16" fill="#eafaf1" stroke="#2ECC71" stroke-width="1.5"/>
+  <text x="349" y="460" text-anchor="middle" font-size="17" fill="#1a9e54">무수식 = .</text>
+  <rect x="510" y="443" width="68" height="32" rx="8" fill="#f4effc" stroke="#B9A3E9" stroke-width="1.5"/>
+  <text x="544" y="466" text-anchor="middle" font-size="17" fill="#7a5fc0">⇧ = ?</text>
+  <rect x="712" y="443" width="40" height="32" rx="8" fill="#f4effc" stroke="#B9A3E9" stroke-width="1.5"/>
+  <text x="732" y="466" text-anchor="middle" font-size="18" fill="#7a5fc0">⌘</text>
+  <rect x="890" y="438" width="40" height="32" rx="8" fill="#f4effc" stroke="#B9A3E9" stroke-width="1.5"/>
+  <text x="910" y="461" text-anchor="middle" font-size="18" fill="#7a5fc0">⌥</text>
+
+  <!-- 결과 카드 4개 — 기본 글자는 green 강조(무수식 기본 경로) -->
+  <g filter="url(#shadow)">
+    <rect x="65" y="508" width="220" height="62" rx="10" fill="#eafaf1" stroke="#2ECC71" stroke-width="2.5"/>
+  </g>
+  <text x="175" y="547" text-anchor="middle" font-size="21" font-weight="bold" fill="#1a9e54">기본 글자</text>
+  <g filter="url(#shadow)">
+    <rect x="368" y="508" width="220" height="62" rx="10" fill="#ffffff" stroke="#B9A3E9" stroke-width="2"/>
+  </g>
+  <text x="478" y="547" text-anchor="middle" font-size="21" fill="#333333">변형 1</text>
+  <g filter="url(#shadow)">
+    <rect x="690" y="508" width="220" height="62" rx="10" fill="#ffffff" stroke="#B9A3E9" stroke-width="2"/>
+  </g>
+  <text x="800" y="547" text-anchor="middle" font-size="21" fill="#333333">변형 2</text>
+  <g filter="url(#shadow)">
+    <rect x="990" y="508" width="220" height="62" rx="10" fill="#ffffff" stroke="#B9A3E9" stroke-width="2"/>
+  </g>
+  <text x="1100" y="547" text-anchor="middle" font-size="21" fill="#333333">변형 3</text>
+</svg>

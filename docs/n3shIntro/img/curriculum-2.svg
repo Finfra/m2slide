@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 650" font-family="'Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif">
+  <!-- 7단계: 발행본 — 7.pptx 문구 기준으로 5.svg 를 맞춘 것 — 플로우를 "기본기(여기까지만 해도 이득)" / "확장 드릴" 2그룹으로 재편.
+       단계별 대표색·화살표 라벨·결과 카드(실전 투입, ✓ 아이콘+텍스트 병기) 부여 -->
+  <defs>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#1e293b" flood-opacity="0.13"/>
+    </filter>
+    <marker id="arrD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2ecc71"/>
+    </marker>
+  </defs>
+  <rect width="1300" height="650" fill="#f6f8fb"/>
+
+  <!-- [타이틀 계층] -->
+  <text x="650" y="52" font-size="34" font-weight="bold" fill="#111111" text-anchor="middle">예비 + 6단계 드릴</text>
+  <line x1="520" y1="74" x2="580" y2="74" stroke="#f6d32d" stroke-width="3"/>
+  <text x="650" y="80" font-size="16" font-weight="bold" fill="#b8860b" text-anchor="middle">학습 커리큘럼</text>
+  <line x1="720" y1="74" x2="780" y2="74" stroke="#f6d32d" stroke-width="3"/>
+
+  <!-- [카드 그리드] -->
+  <g filter="url(#cardShadow)">
+    <rect x="55" y="100" width="386" height="170" rx="10" fill="#ffffff"/>
+  </g>
+  <rect x="55" y="100" width="6" height="170" rx="3" fill="#f6d32d"/>
+  <circle cx="92" cy="132" r="16" fill="#f6d32d"/>
+  <text x="92" y="138" font-size="17" font-weight="bold" fill="#111111" text-anchor="middle">1</text>
+  <text x="120" y="138" font-size="18" font-weight="bold" fill="#111111">254개 규칙을 가성비 순서로 재배열</text>
+  <rect x="80" y="206" width="336" height="42" rx="6" fill="#fdf6d8"/>
+  <text x="248" y="232" font-size="14.5" font-weight="bold" fill="#7a5c00" text-anchor="middle">몰라도 손해가 없고, 아는 만큼 이득</text>
+
+  <g filter="url(#cardShadow)">
+    <rect x="457" y="100" width="386" height="170" rx="10" fill="#ffffff"/>
+  </g>
+  <rect x="457" y="100" width="6" height="170" rx="3" fill="#2ecc71"/>
+  <circle cx="494" cy="132" r="16" fill="#2ecc71"/>
+  <text x="494" y="138" font-size="17" font-weight="bold" fill="#ffffff" text-anchor="middle">2</text>
+  <text x="522" y="138" font-size="18" font-weight="bold" fill="#111111">판정 4축</text>
+  <rect x="482" y="158" width="336" height="90" rx="6" fill="#e9faf1"/>
+  <text x="650" y="208" font-size="12.5" font-weight="bold" fill="#1b7943" text-anchor="middle">모디파이어 없음 · 니모닉 강함 · 규칙 재사용성 · 문법적 필수성</text>
+
+  <g filter="url(#cardShadow)">
+    <rect x="859" y="100" width="386" height="170" rx="10" fill="#ffffff"/>
+  </g>
+  <rect x="859" y="100" width="6" height="170" rx="3" fill="#b9a3e9"/>
+  <circle cx="896" cy="132" r="16" fill="#b9a3e9"/>
+  <text x="896" y="138" font-size="17" font-weight="bold" fill="#ffffff" text-anchor="middle">3</text>
+  <text x="924" y="138" font-size="18" font-weight="bold" fill="#111111">2단계(조사·어미)까지만 익혀도</text>
+  <rect x="884" y="206" width="336" height="42" rx="6" fill="#e9faf1"/>
+  <text x="1052" y="232" font-size="14.5" font-weight="bold" fill="#1b7943" text-anchor="middle">일상 타이핑에서 이득이 난다</text>
+
+  <!-- [그룹 A] 기본기 — 여기까지만 해도 이득 (그린 존) -->
+  <rect x="55" y="308" width="700" height="180" rx="12" fill="#e9faf1" stroke="#2ecc71" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <circle cx="92" cy="331" r="11" fill="#2ecc71"/>
+  <text x="92" y="336" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">A</text>
+  <text x="112" y="336" font-size="15" font-weight="bold" fill="#1b7943">기본기 — 여기까지만 해도 이득</text>
+
+  <!-- 예비 (그레이) -->
+  <g filter="url(#cardShadow)"><rect x="85" y="352" width="188" height="108" rx="10" fill="#ffffff"/></g>
+  <rect x="85" y="352" width="188" height="6" rx="3" fill="#94a3b8"/>
+  <circle cx="179" cy="384" r="15" fill="#eef2f7" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="179" y="389" font-size="13" font-weight="bold" fill="#475569" text-anchor="middle">예</text>
+  <text x="179" y="422" font-size="17" font-weight="bold" fill="#111111" text-anchor="middle">예비</text>
+  <text x="179" y="445" font-size="14" fill="#475569" text-anchor="middle">자모 대응</text>
+
+  <!-- 1단계 (블루그레이) -->
+  <g filter="url(#cardShadow)"><rect x="305" y="352" width="188" height="108" rx="10" fill="#ffffff"/></g>
+  <rect x="305" y="352" width="188" height="6" rx="3" fill="#64748b"/>
+  <circle cx="399" cy="384" r="15" fill="#eef2f7" stroke="#64748b" stroke-width="1.5"/>
+  <text x="399" y="389" font-size="13" font-weight="bold" fill="#334155" text-anchor="middle">1</text>
+  <text x="399" y="422" font-size="17" font-weight="bold" fill="#111111" text-anchor="middle">1단계</text>
+  <text x="399" y="445" font-size="14" fill="#475569" text-anchor="middle">쌍자음·이중모음</text>
+
+  <!-- 2단계 ★ (옐로우 강조) -->
+  <g filter="url(#cardShadow)"><rect x="525" y="346" width="196" height="120" rx="10" fill="#fdf6d8" stroke="#f6d32d" stroke-width="2.5"/></g>
+  <path d="M623,360 l5.2,10.6 11.7,1.7 -8.5,8.2 2,11.6 -10.4,-5.5 -10.4,5.5 2,-11.6 -8.5,-8.2 11.7,-1.7 z" fill="#f6d32d"/>
+  <text x="623" y="424" font-size="17" font-weight="bold" fill="#111111" text-anchor="middle">2단계 ★</text>
+  <text x="623" y="447" font-size="14" fill="#475569" text-anchor="middle">조사·어미</text>
+
+  <!-- [그룹 B] 확장 드릴 (퍼플 존) -->
+  <rect x="785" y="308" width="460" height="180" rx="12" fill="#f2edfc" stroke="#b9a3e9" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <circle cx="822" cy="331" r="11" fill="#b9a3e9"/>
+  <text x="822" y="336" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">B</text>
+  <text x="842" y="336" font-size="15" font-weight="bold" fill="#6b46c1">확장 드릴</text>
+
+  <!-- 3~4단계 (퍼플) -->
+  <g filter="url(#cardShadow)"><rect x="810" y="352" width="196" height="108" rx="10" fill="#ffffff"/></g>
+  <rect x="810" y="352" width="196" height="6" rx="3" fill="#b9a3e9"/>
+  <circle cx="908" cy="384" r="15" fill="#f2edfc" stroke="#b9a3e9" stroke-width="1.5"/>
+  <text x="908" y="389" font-size="11.5" font-weight="bold" fill="#6b46c1" text-anchor="middle">3~4</text>
+  <text x="908" y="422" font-size="17" font-weight="bold" fill="#111111" text-anchor="middle">3~4단계</text>
+  <text x="908" y="445" font-size="14" fill="#475569" text-anchor="middle">고빈도 글자</text>
+
+  <!-- 5~6단계 (딥퍼플) -->
+  <g filter="url(#cardShadow)"><rect x="1026" y="352" width="196" height="108" rx="10" fill="#ffffff"/></g>
+  <rect x="1026" y="352" width="196" height="6" rx="3" fill="#8b6fd8"/>
+  <circle cx="1124" cy="384" r="15" fill="#f2edfc" stroke="#8b6fd8" stroke-width="1.5"/>
+  <text x="1124" y="389" font-size="11.5" font-weight="bold" fill="#6b46c1" text-anchor="middle">5~6</text>
+  <text x="1124" y="422" font-size="17" font-weight="bold" fill="#111111" text-anchor="middle">5~6단계</text>
+  <text x="1124" y="445" font-size="14" fill="#475569" text-anchor="middle">받침 계열</text>
+
+  <!-- 결과 카드: 실전 투입 (✓ 아이콘 + 텍스트 병기) -->
+  <g filter="url(#cardShadow)"><rect x="305" y="516" width="200" height="66" rx="10" fill="#ffffff" stroke="#2ecc71" stroke-width="2"/></g>
+  <circle cx="345" cy="549" r="15" fill="#2ecc71"/>
+  <path d="M338,549 l5,5 10,-11" stroke="#ffffff" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="425" y="556" font-size="18" font-weight="bold" fill="#1b7943" text-anchor="middle">실전 투입</text>
+
+  <!-- 화살표 (라벨 병기) -->
+  <g stroke="#64748b" stroke-width="2" fill="none">
+    <line x1="273" y1="406" x2="301" y2="406" marker-end="url(#arrD)"/>
+    <line x1="493" y1="406" x2="521" y2="406" marker-end="url(#arrD)"/>
+    <line x1="939" y1="406" x2="967" y2="406" stroke-opacity="0"/>
+    <line x1="1006" y1="406" x2="1022" y2="406" marker-end="url(#arrD)"/>
+  </g>
+  <line x1="721" y1="406" x2="806" y2="406" stroke="#64748b" stroke-width="2" marker-end="url(#arrD)"/>
+  <rect x="726" y="384" width="76" height="18" rx="4" fill="#f6f8fb"/>
+  <text x="764" y="397" font-size="12.5" font-weight="bold" fill="#475569" text-anchor="middle">계속 학습</text>
+
+  <path d="M600,466 C 560,500 520,516 509,540" stroke="#2ecc71" stroke-width="2.5" stroke-dasharray="5,4" fill="none" marker-end="url(#arrG)"/>
+  <rect x="518" y="490" width="176" height="20" rx="4" fill="#e9faf1"/>
+  <!-- lint-ignore collision -->
+  <text x="606" y="505" font-size="13.5" font-weight="bold" fill="#1b7943" text-anchor="middle">여기까지만 해도이득 발생</text>
+
+  <!-- [한 줄 정리 밴드] -->
+  <rect x="0" y="596" width="1300" height="54" fill="#fdf6d8"/>
+  <rect x="0" y="596" width="1300" height="3" fill="#f6d32d"/>
+  <text x="650" y="629" font-size="17" font-weight="bold" fill="#5c4a00" text-anchor="middle">문서 사이트가 설치 → 치트시트 → 6단계 드릴 → 전체 규칙표 순으로 안내</text>
+</svg>
