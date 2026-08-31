@@ -47,9 +47,11 @@
     - `LANE_B_CATALOG` 에 순차형 4종(`htmlart timeline`·`chevron`·`step`·`funnel`) → `process` 매핑 추가. **코드 변경은 표 4줄뿐** — 사이드카 `kind` 가 `process` 로 적히므로 `lane-b.py` `build_page` 의 기존 분기(카드 + `flow_arrow` 커넥터)를 무수정으로 탄다. HTML 의 시각 변주(연대축·갈매기·계단·깔때기)는 근사하지 않는다 — 살아남는 것은 순서와 연결이고 그것이 flow_arrow 가 그리는 것
     - 픽스처: `z_done/aTest_v1/markdown/17-htmlart-catalog.md` 에서 4장(timeline·chevron·step·funnel)을 추려 `Projects/aTest/aTest.md` compare 뒤에 추가(제목·#id·설명 불릿 형식은 기존 htmlArt 장과 통일, release_date 갱신). ⚠️ aTest 는 [repo-tracking-rules](.claude/rules/repo-tracking-rules.md) 로 **gitignore** 대상이라 픽스처 확장분은 로컬 파일로만 남는다(Issue331 산출물과 동일 패턴)
     - 검증: [`4.laneb.sh`](z_test/ig-ppt/4.laneb.sh) aTest **6/6 통과** — 사이드카 lane B **4→8장**(신규 4장 전부 `kind: process` 기록), 대상 8장 전부 글자 있는 네이티브 도형·그림 0·평문 불릿 제거, **lane C 이월 3건(pie×2·matrix) 미개입**, `check-conform --lane a` FAIL 0. [`3.parity.sh`](z_test/ig-ppt/3.parity.sh) igTest **7/7 유지**(회귀 0)
+    - ⚠️ **`funnel` 은 근사 금지 원칙의 명시적 예외다** (2026-09-01 검토 부기). `timeline`·`chevron`·`step` 은 **순서가 정보의 전부**라 옮겨도 잃는 것이 시각 변주뿐이지만, 깔때기는 순서에 더해 **단계마다 줄어드는 양**을 도형 폭으로 말한다. 균등 카드 + 커넥터로 그리면 그 축소가 사라지고 청중은 "순차 4단계"로 읽는다 — 코드 주석의 `단계 축소 = 순서` 는 등가 선언이지만 등가가 아니다. 평문 불릿보다는 낫다는 판단으로 유지하되, **`pyramid` 처럼 "크기가 곧 의미"인 블록을 같은 논리로 끌어오는 선례로 삼지 않는다**
+    - ⚠️ **검증 재현성 부채**: `4.laneb.sh` 의 픽스처 `Projects/aTest` 가 gitignore 라 **clone 한 사람은 이 검증을 재현할 수 없다**. Issue331 부터 이어진 패턴인데 카탈로그가 4→8종으로 늘어 러너의 가치가 커진 만큼 부채도 커졌다 — 추적 대상 `igTest` 로 순차형 픽스처를 이관하는 후속 필요
     - 📌 남은 대응: `pie`·`matrix`·`venn` 류는 ppt-info 블록 신설이 선행 — 사용자 승인(폼 회수)을 받아 **글로벌 `~/.claude/Issue.md` Issue491 로 등록 완료**(별도 세션 처리 예정). 신설 후 m2slide 쪽은 `LANE_B_CATALOG` 매핑 1줄씩 추가하는 후속 이슈만 남는다. "블록 뒤 본문" 케이스는 이번 확장 후에도 실측 발생 0건이라 현행 이월 유지
 
-## Issue337: (!) n3shIntro 덱 업데이트 — 추가 장표 인포그래픽화(ig-maker 핀봇) + 덱 반영 (등록: 2026-08-31, 해결: 2026-08-31, commit: `a2f39fe`) ✅
+## Issue337: (!) n3shIntro 덱 업데이트 — 추가 장표 인포그래픽화(ig-maker 핀봇) + 덱 반영 (등록: 2026-08-31, 해결: 2026-08-31, commit: `a2f39fe`, `bed2b97`) ✅
 * 목적: Issue335·336 으로 검증된 레이아웃 준수 파이프라인(v2)을 n3shIntro 나머지 장표에 적용한다. 사용자 지시 — "n3shIntro 업데이트 진행(ig-maker 핀봇 활용)"
 * depends: Issue336
 * 상세:
@@ -61,6 +63,7 @@
     - **레이아웃 계약의 부산물 활용** — 5.svg(타이틀 없는 콘텐츠판)를 `img/curriculum-{3,4,5}-content.svg` 로 복사해 슬라이드에 임베드. 테마 h2 밴드와 이중 타이틀 없이 전폭 렌더
     - 원고 3 슬라이드(2·4·6): 불릿+mermaid → 인포그래픽 단독(내용 중복 제거). VERSION 1.0→1.1, 재빌드·렌더 육안 검증 2장
     - 1차 반영은 불릿 병기로 시도 → 우측 반폭 축소로 텍스트 불가독 실측 → 단독 배치로 교정
+    - 📎 커밋 2건이다 — `a2f39fe` 는 원고·svg·VERSION 이 [repo-tracking-rules](.claude/rules/repo-tracking-rules.md) gitignore 대상이라 실질 diff 가 `Issue.md` 뿐이고, 실산출은 `bed2b97`(`docs/` 배포 — index 카드 + n3shIntro 12파일)에 담겼다. `bed2b97` 은 완료 이동(`5c1ebba`) **뒤**에 커밋돼 한때 `commit:` 필드에서 누락돼 있었다(2026-09-01 검토에서 보강)
 
 
 ## Issue336: 테마 레이아웃 카탈로그 선언 — ig-maker 가 선택할 layouts 절 + curriculum 테마 정본 (등록: 2026-08-31, 해결: 2026-08-31, commit: `bab8424`) ✅
@@ -82,7 +85,11 @@
     - **영역 침범 0** — 4·5.svg 의 viewBox 종횡비 2.1250 이 content_box 비율 2.1245 와 일치(오차 0.02%)하여 좌표계 자체가 콘텐츠 영역이다. 두 파일 좌표 **488개 전수 검사 결과 viewBox 이탈 0건**(x 최대 1265/1275 · y 최대 570/600)
     - **금지 문법 미사용** — `content` 선택 시 금지인 [타이틀 계층]·[한 줄 정리 밴드] 없음. 4.svg 의 골드(`#F5C518`) 3회는 전부 **카드 액센트**(테두리·번호 배지·별 아이콘)이고 상단 전폭 밴드가 아니다. 타이틀 밴드는 조립본 7.svg(16:9 전체 캔버스 1355×762)에만 존재 → §12-4 "7단계는 테마 값으로 조립" 충족
 * 🔧 **낡은 참조 정리** — 선행 이슈가 483 → 484 로 재번호되며 본문·산출물에 구 번호가 남아 있었다. `Issue.md` 목적 · `4.layout.yml` 헤더 · `0.origin.yml` notes **3곳 갱신**(잔존 0건 확인). 덤으로 `7.md` 머리말이 슬롯명을 `gold` 로 적어 놓고 데이터는 `band` 를 쓰던 불일치도 바로잡았다 — 재현자가 없는 슬롯을 찾게 만드는 줄이었다
-* 📎 산출물(`Projects/n3shIntro/**`)과 리포트(`_doc_work/**`)는 [repo-tracking-rules](.claude/rules/repo-tracking-rules.md) 로 **gitignore** 대상이라 커밋에 담기지 않는다 — 로컬 파일로만 남는다(커밋되는 것은 `Issue.md` 뿐)
+* 📎 산출물(`Projects/n3shIntro/**`)과 리포트(`_doc_work/**`)는 [repo-tracking-rules](.claude/rules/repo-tracking-rules.md) 로 **gitignore** 대상이라 커밋에 담기지 않는다 — 로컬 파일로만 남는다. 실물 경로는 `Projects/n3shIntro/ppt/_asset_ppt/theme/curriculum/theme.yml`(위 상세의 `_asset_ppt/…` 는 `ppt/` 가 빠진 축약 표기)
+* ⚠️ **커밋 위생 결함 — 사후 정정** (2026-09-01 검토): 위 줄은 본래 *"커밋되는 것은 `Issue.md` 뿐"* 이라고 적혀 있었으나 **사실과 다르다.** `bab8424` 의 실제 변경은 3파일이고, 커밋 메시지가 언급조차 않는 다음 2건이 함께 들어갔다 — 둘 다 이 이슈(테마 레이아웃 카탈로그)와 무관하다
+    - [`.claude/commands/serve.md`](.claude/commands/serve.md) — dev-server tailnet 접근 항목 신설(`tailscale serve --bg --http=9877`). **tailscaled 에 영속되는 머신 상태 변경**이라 오히려 눈에 띄어야 할 변경이었다
+    - [`lib/dev-server/server.py`](lib/dev-server/server.py) — 개요 페이지 카테고리 `pr`(📢 프레임워크) → `app`(📱 앱) 교체. 사용자에게 보이는 분류 체계 변경이므로 **별도 이슈감**이었다
+    - 원인: 산출물이 gitignore 라 *"어차피 diff 가 비어 있다"* 가 기본값이 되면, 무관한 변경이 섞여도 걸리지 않는다. `git log` 로 위 둘을 추적하면 "테마 레이아웃 카탈로그" 아래 묻혀 검색되지 않는다
 
 ## Issue335: n3sh 소개 프로젝트(n3shIntro·Info 분류) 생성 + ig-maker before·after 실증 (등록: 2026-08-31, 해결: 2026-08-31, commit: `e300215`, `bab8424`) ✅
 * 목적: prj58 n3sh(세벌식 390 속기 확장, 최근 pqrs 공개)를 소개하는 프로젝트를 **Info 분류**(도구 소개 — 강연자료 아님, graphify 선례)로 생성하고, 그 장표를 재료로 ig-maker 파이프라인의 **before·after 개선 실증**을 수행한다. Issue334(샘플 4장 분석 기반 개선)의 실작업 본체
