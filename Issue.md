@@ -11,14 +11,16 @@
     - **v0.5.0 (2026-05-03)** — release: 71건 완료 이슈 z_old 아카이브, CHANGELOG.md 신규 (Issue70까지 포함)
     
 # 🤔 결정사항
-* _meta.yml파일 사용 안함 : AGENDA.md나 {프로젝트명}.md파일의 yaml front matter에 추가하기로 함. 
-* 현재 프로젝트가 contents 생성에 치중함에 따라 m2slide모듈은 분리되어야하나 지금은 생성되는 컨텐츠와 slide생성이 밀접하고 scar부분에 한정되어 있어서 한동안 함께 진행 후 분리하고 push예정.
-* 배포를 위해 가급적 scar는 프로젝트 폴더에 배치함. 
-## img 폴더 이중 복사 유지
-* 소스 `img/` + 빌드 `slide/img/` 이중 복사(`fs.cpSync`) 유지 — `slide/` 통째 재생성 빌드 패턴 대응. 영상 등 기타 리소스 동일.
 
-## 개별 에니메이션 지원
-* 로우·값 단위 개별 애니메이션 지원(VideoMaker 영상 플레이용). Issue149 완료 — reveal.js `<!-- .element: class="..." -->` + Pandoc `{.fragment}` 병존.
+결정은 **각 정본 문서**에 산다 — 여기 사본을 두지 않는다(2026.09.01 정리).
+
+| 결정 | 정본 |
+| :--- | :--- |
+| 별도 `_meta.yml` 파일 미사용 — `AGENDA.md`·`{프로젝트명}.md` frontmatter 에 넣는다 | [meta-yml.md](_doc_arch/meta-yml.md) "별도 `_meta.yml` 파일은 쓰지 않는다" |
+| m2slide 모듈 분리는 나중에 — 지금은 상위 프로젝트와 함께 | [decisions.md](_doc_arch/decisions.md) "m2slide 모듈 분리는 나중에" |
+| SCAR 는 가급적 프로젝트 폴더에 배치 (배포용 자족) | [scar-portability.md](_doc_arch/scar-portability.md) "SSOT 경계" |
+| `img/` 소스·빌드 이중 복사 유지 | [decisions.md](_doc_arch/decisions.md) "`img/` 이중 복사를 유지한다" |
+| 로우·값 단위 개별 애니메이션 지원 (Issue149 완료) | [animation.md](_doc_arch/animation.md) "3. m2slide syntax 설계" |
 
 # 🌱 이슈후보
 
