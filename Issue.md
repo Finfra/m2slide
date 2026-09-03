@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 337
+* Issue HWM: 338
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -29,6 +29,22 @@
 # 📕 중요
 
 # 📙 일반
+
+## Issue338: 아이덴티티 L2 문서 신설 — 불변 조항 (등록: 2026-09-03)
+* 목적: 이 프로젝트가 **무엇이고 무엇이 아닌가**를 판정에 쓸 수 있는 형태로 남긴다. 새 기능을 붙일 때 *"이게 이 제품의 일부인가"* 를 매번 주관으로 다투지 않기 위해서다
+* depends: prj1#Issue472
+* 상세:
+    - [CLAUDE.md](CLAUDE.md) frontmatter 에 **L1 은 이미 기재됨**(prj1#Issue472_3 팬아웃). 본 이슈는 그 위의 **L2 불변 조항 문서**다
+    - 한 줄 정체성: 마크다운 → 웹 슬라이드 변환기
+    - 형식은 prj1 `fpm-identity.md` → prj6 `architect-identity.md` → prj5 `common-identity.md` 로 **세 번 검증된 것**을 준용한다
+* 구현 명세:
+    - `_doc_arch/m2slide-identity.md` 신설. 절 구성: 개요(왜 필요해졌나 — 구체 사건) / 무엇인가(한 줄 + 축) / 무엇이 아닌가(표) / 불변 조항(번호 고정) / 현행 준수 실측 / 미해결
+    - **조항은 *"지키면 좋은 것"* 이 아니라 *"어기면 그 기능이 이 제품의 일부가 아닌 것"* 으로 쓴다.** 기능 목록을 나열하는 문서가 아니다
+    - 이 프로젝트에서 다룰 후보: 원고가 SSOT 이고 슬라이드가 생성물이라는 경계 · 외부 의존 0 원칙
+    - 재료: `_doc_base/promotion_0.initial.md`(있으면 포지셔닝·타깃) · 기존 `_doc_arch/` 설계 문서 · 실제로 혼동이 일어났던 이슈
+    - ⚠️ 근거 없는 조항을 발명하지 말 것 — **실제로 헷갈렸던 사건**이 있는 것부터 적는다. 없으면 조항 1개로 시작해도 된다
+    - 스키마·형식 정본: prj6 [project-identity-scheme.md](~/_git/___architect/_doc_arch/project-identity-scheme.md)
+
 
 # 📗 선택
 
