@@ -1,3 +1,20 @@
+---
+name: CLAUDE
+description: "Claude Code 가 이 저장소에서 작업할 때 참고하는 가이드"
+date: 2026.09.03
+
+# ── L1 아이덴티티 (Issue472) ──────────────────────────────────────────
+# 스키마 정본: prj6 ~/_git/___architect/_doc_arch/project-identity-scheme.md
+# ⚠️ 빈 필드는 추측으로 채우지 말 것 — 틀린 값은 빈 값보다 나쁘다
+prj: 42
+identity: 마크다운 원고를 Reveal.js 웹 슬라이드로 바꾸는 변환기 (외부 의존 없는 순수 Node.js)
+not: 프레젠테이션 편집기가 아니다 — 원고가 SSOT 이고 슬라이드는 생성물이다
+goal_parent: 빠른_강의_자료_생성
+lifetime: perpetual
+outcome: 강의 자료 한 벌을 원고에서 슬라이드까지 손대지 않고 뽑는가
+status: active
+---
+
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
