@@ -382,6 +382,25 @@ PY
     echo "  ⚠️ 코드 폰트 교정 생략 — retheme.py 없음: $RETHEME" >&2
   fi
 
+  # ── ③-b3 lane M — 마커 자리에 **네이티브 수식(OMML)** 을 되돌린다 (Issue339)
+  #
+  #   pandoc 3.10 pptx writer 는 Math 를 만나면 그 장의 콘텐츠 shape 을 아예 만들지 않는다.
+  #   그래서 `build-source.py` ⑬ 가 수식을 평문 마커로 바꿔 통과시키고, 여기서 되메운다.
+  #   변환기는 pandoc 자신이다(`-o docx` → OMML) — 추가 의존 0, 편집 가능한 네이티브 수식.
+  #
+  #   ⚠️ **자리는 ③-c 다음**이다. retheme 은 비-`+` typeface 를 훑어 바꾸므로, OMML 을
+  #      먼저 심으면 그 순회가 수식 내부를 지나게 된다. 마커는 평문이라 retheme 이
+  #      그냥 지나치므로, 심는 것은 폰트 교정이 끝난 뒤가 안전하다. 바로 아래 XML 순서
+  #      검증이 방금 심은 OMML 을 즉시 재는 이점도 있다.
+  #
+  #   ⚠️ 실패해도 빌드를 죽이지 않는다 — 그 수식만 평문 LaTeX 로 남고 lane A 는 온전하다.
+  LANEM="$SCRIPT_DIR/lane-m.py"
+  LANEM_SIDECAR="$PROJECT_DIR/_pipeline/pptx/lane-m.json"
+  if [ -f "$LANEM" ] && [ -f "$LANEM_SIDECAR" ]; then
+    python3 "$LANEM" "$OUT" --sidecar "$LANEM_SIDECAR" \
+      || echo "  ⚠️ lane M 생략(계속 진행) — 수식이 평문 마커로 남는다" >&2
+  fi
+
   #   교정 뒤 상태로 다시 잰다 — 검증이 최종 파일을 설명하지 못하면 fail-loud 가 무의미하다
   CK="${M2SLIDE_PPT_CHECK:-$HOME/.claude/skills/ppt-check/scripts}"
   if [ -f "$CK/check-xml-order.py" ]; then
@@ -394,6 +413,20 @@ PY
   if [ -f "$CK/check-conform.py" ]; then
     python3 "$CK/check-conform.py" "$OUT" --lane a --template "$REF" 2>/dev/null \
       | tail -1 | sed 's/^/  최종 /' || true
+  fi
+
+  # ── ③-c2 본문 0 장 — **성공으로 위장한 손실**을 여기서 잡는다 (Issue339)
+  #
+  #   `check-conform` 은 규격 위반을 재고, 이 검사는 **내용 유무**를 잰다. 둘은 다른 축이다.
+  #   제목만 남은 장은 규격상 완전하므로 conform 을 통과한다 — 그래서 별도 검사가 필요하다.
+  #   면제는 표지와 챕터 진입 장(`Section Header`)뿐이다.
+  #
+  #   ⚠️ **경고이지 차단이 아니다.** 진짜로 제목만 두고 싶은 장(사이 간지)이 있을 수 있고,
+  #      lane C 이월처럼 사람이 뒤에서 채울 자리도 있다. 차단하면 그 정당한 덱이 못 나온다.
+  #      대신 판정 줄을 크게 남겨 배포 전에 사람이 보게 한다.
+  EMPTY="$SCRIPT_DIR/check-empty.py"
+  if [ -f "$EMPTY" ]; then
+    python3 "$EMPTY" "$OUT" || echo "  ⚠️ 위 장은 원고에 있던 내용이 pptx 로 옮겨지지 않은 자리다 — 배포 전 확인" >&2
   fi
 
   # ── ③-d 실측값 기록 (Issue332) — 뒷단([`ppt-make.sh`](ppt-make.sh))이 읽는다.

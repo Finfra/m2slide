@@ -34,12 +34,27 @@ pptx 변환기(`ppt-deck/md2pptx.py`)는 **마크다운만** 본다. 그런데 m
     ⑩ 무거운 블록 후치          표·이미지를 장 끝으로       (Issue329)
     ⑪ 컴포넌트 펜스 평탄화      ```wordart → 평문, ```chart 류 → 제거
     ⑫ lane B 대상 표시          cards·정형 htmlart 를 사이드카에 적는다  (Issue331)
+    ⑬ lane M 수식 추출          $$…$$ · $…$ · 소괄호 escape → 마커 치환 + 사이드카 (Issue339)
 
 ⑦이 필수인 이유
 ---------------
 `md2pptx.fix_images()` 는 이미지 상대경로를 **그 원고 파일이 있는 디렉토리** 기준으로
 푼다. 중간 원고는 `_pipeline/pptx/source/` 에 놓이므로 `./img/x.png` 가 거기서 풀려
 전부 "파일없음" 이 된다. 절대경로면 `fix_images` 가 그대로 통과시킨다(실측 확인).
+
+⑬ 이 필수인 이유 — **수식 하나가 그 장의 본문을 다 끌고 나간다**
+------------------------------------------------------------------
+pandoc 3.10 pptx writer 는 Math 인라인을 만나면 그 슬라이드의 **콘텐츠 shape 자체를
+만들지 않는다**. reference-doc 유무와 무관하고 경고도 없다 (실측 2026-09-09):
+
+* 코드블록만 → 정상 · 불릿만 → 정상
+* `$$E = mc^2$$` 단독 → 본문 소실 · `$E=mc^2$` 단독 → 본문 소실
+* 불릿 + `$$…$$` → **불릿까지 함께 소실** · 코드블록 + `$$…$$` → **코드까지 함께 소실**
+* escape 소괄호 형태는 소실은 면하지만 백슬래시만 벗겨진 리터럴 `(E=mc^2)` 로 노출된다
+
+그래서 고칠 곳은 pandoc 이 아니라 **pandoc 에 무엇을 주는가**다. 수식을 평문 마커로
+바꿔 두면 같은 장의 불릿·코드가 살아남고, 수식 자체는 `lane-m.py` 가 pptx 에 네이티브
+OMML 로 되돌린다 — lane B 와 같은 철학(그림이 아니라 편집 가능한 요소).
 
 ⑧⑩ 이 필요한 이유 — **pandoc 은 남는 블록을 제목 없는 장으로 흘린다**
 ---------------------------------------------------------------------
@@ -102,7 +117,72 @@ LAYOUT_LINE = re.compile(r"^[ \t]*#_?[a-z][a-z0-9-]*[ \t]*$")
 #    (남기면 JSON·JS 원문이 슬라이드에 그대로 찍힌다 — 실측: 45번 장에 `<h1 class=…>` 노출)
 FENCE_UNWRAP = {"wordart"}
 FENCE_DROP = {"chart", "d3", "p5", "map", "model3d", "react"}
+#    지우는 것은 맞지만 **그 자리를 비워 두면 제목만 남은 백지 장이 배포된다**
+#    (실측 2026-09-09, aTest p18 chart · p19 p5 — 검증도 FAIL 0 으로 통과했다).
+#    그래서 무엇이 있던 자리인지 한 줄로 남긴다. 이것은 내용 창작이 아니라
+#    ⑨ 목차 라벨과 같은 **구조 표식**이다 — 원고의 문장을 짓지 않는다.
+FENCE_DROP_LABEL = {
+    "chart": "차트",
+    "d3": "인포그래픽(d3)",
+    "p5": "시뮬레이션(p5.js)",
+    "map": "지도",
+    "model3d": "3D 모델",
+    "react": "인터랙티브 컴포넌트(React)",
+}
+FENCE_DROP_NOTE = "· %s — 웹 슬라이드에서 동작하는 요소입니다"
 TAG = re.compile(r"<[^>]+>")
+
+# ── ⑬ lane M — 수식. pandoc 에 Math 를 주면 그 장의 본문이 통째로 사라진다(위 설명).
+#    마커는 **pandoc 이 손대지 않는 평문**이어야 하고, 본문에 우연히 나타날 수 없어야 한다.
+#    유니코드 화이트 브래킷을 쓰는 이유가 그것이다 — 마크다운 문법도, 코드 어휘도 아니다.
+MATH_MARKER = "\u27e6m2math:%04d\u27e7"
+MATH_MARKER_RE = re.compile(r"\u27e6m2math:(\d{4})\u27e7")
+#    네 형태를 **한 패스**로 본다. 종류별로 나눠 돌리면 `$$…$$` 를 `$…$` 로 읽어
+#    가운데가 빈 수식 둘이 되거나, 마커 번호가 문서 순서와 어긋나 디버깅이 어렵다.
+#    대안(`|`) 순서가 곧 우선순위다 — display 가 먼저다.
+#    인라인 `$…$` 는 통화·셸 변수와 충돌하므로 m2slide 문법에는 없지만
+#    (md-m2slide-rules "단일 `$` 미지원"), pandoc 이 수식으로 읽어 본문을 날리므로
+#    **탐지는 한다** — 손실을 막는 것이 목적이다.
+MATH_ANY = re.compile(
+    r"(?P<dd>\$\$(?P<dd_t>.+?)\$\$)"
+    r"|(?P<br>\\\[(?P<br_t>.+?)\\\])"
+    r"|(?P<pa>\\\((?P<pa_t>.+?)\\\))"
+    r"|(?P<si>(?<![\w$])\$(?!\s)(?P<si_t>[^$\n]+?)(?<!\s)\$(?![\w$]))", re.S)
+#    display 인가 — `$$…$$` 와 `\[…\]` 만 그렇다(pptx 에서 가운데 정렬 문단이 된다)
+MATH_DISPLAY_KEYS = ("dd", "br")
+
+
+def extract_math(text, stat, lane_m, src_label):
+    """⑬ 수식을 마커로 바꾸고 사이드카 목록에 적는다. 코드펜스 안은 건드리지 않는다.
+
+    줄 단위가 아니라 **구간 단위**로 치환한다 — `$$…$$` 는 여러 줄에 걸칠 수 있어
+    줄 하나만 보면 여는 `$$` 와 닫는 `$$` 가 서로 다른 줄에 남는다.
+    """
+    segs, buf, inside = [], [], False
+    for line, protected in split_code(text):
+        if protected != inside:
+            segs.append((inside, buf))
+            buf, inside = [], protected
+        buf.append(line)
+    segs.append((inside, buf))
+
+    def sub_all(chunk):
+        def repl(m):
+            key = next(k for k in ("dd", "br", "pa", "si") if m.group(k))
+            latex = (m.group(key + "_t") or "").strip()
+            if not latex:
+                return m.group(0)               # 빈 수식은 수식이 아니다
+            idx = len(lane_m)
+            lane_m.append({"src": src_label, "id": idx, "latex": latex,
+                           "display": key in MATH_DISPLAY_KEYS})
+            stat["math"] += 1
+            return MATH_MARKER % idx
+        return MATH_ANY.sub(repl, chunk)
+
+    #   구간을 "\n" 으로 다시 이어야 경계의 줄바꿈이 살아남는다
+    return "\n".join(
+        "\n".join(lines) if protected else sub_all("\n".join(lines))
+        for protected, lines in segs if lines)
 
 
 def split_code(text):
@@ -196,6 +276,9 @@ def flatten_fences(text, stat):
             stat["fence_flat"] += 1
         else:
             stat["fence_drop"] += 1             # 설정·코드 — 슬라이드 내용이 아니다
+            #   자리 표식 — 백지 장을 만들지 않는다(위 FENCE_DROP_LABEL 주석)
+            out.append(FENCE_DROP_NOTE % FENCE_DROP_LABEL.get(kind, kind))
+            out.append("")
         i = j + 1
     return "\n".join(out)
 
@@ -491,7 +574,7 @@ def scan_lane_b(blocks, src_label, seen, out, stat):
 
 
 def clean(text, srcdir, proj, stat, chapter_title=None,
-          lane_b=None, lane_b_seen=None, src_label=""):
+          lane_b=None, lane_b_seen=None, src_label="", lane_m=None):
     text = strip_frontmatter(text)
 
     # 줄 단위 제거 — 코드 안에 이 형태가 올 일은 없다(줄 전체가 지시자여야 매칭)
@@ -527,6 +610,11 @@ def clean(text, srcdir, proj, stat, chapter_title=None,
     text = "\n".join(rebuilt)
 
     text = flatten_fences(text, stat)
+
+    # ⑬ lane M — 수식을 마커로. **flatten_fences 다음**이다: 드롭 대상 펜스(chart 등) 안의
+    #   `$` 를 수식으로 오독하지 않으려면 그 펜스가 먼저 사라져 있어야 한다.
+    if lane_m is not None:
+        text = extract_math(text, stat, lane_m, src_label)
 
     # ⑦ 이미지 절대경로화 — 원고 위치가 바뀌므로 필수
     def abspath(m):
@@ -659,11 +747,12 @@ def main():
     stat = {k: 0 for k in ("attr", "element", "id", "anim", "slot", "symbol",
                            "img_abs", "img_proj", "img_missing",
                            "chapter", "defer", "fence_flat", "fence_drop",
-                           "laneb", "laneb_defer")}
+                           "laneb", "laneb_defer", "math")}
     made = []
     #   제목 순번은 **덱 전체** 기준이다 — 병합은 pptx 한 벌에서 장을 찾으므로,
     #   파일마다 0 부터 세면 동명 제목이 두 원고에 있을 때 서로를 가리킨다
     lane_b, lane_b_seen = [], {}
+    lane_m = []
 
     # ⑨ 표지 — `cover_enabled: false` 면 주입하지 않는다 (설정을 존중)
     cover_on = (config_flag(proj, "cover_enabled") or "").lower() not in ("false", "no", "0")
@@ -678,7 +767,7 @@ def main():
         text = clean(text, os.path.dirname(os.path.abspath(f)), proj, stat,
                      chapter_title=chapter_of.get(os.path.basename(f)),
                      lane_b=lane_b, lane_b_seen=lane_b_seen,
-                     src_label=os.path.basename(f))
+                     src_label=os.path.basename(f), lane_m=lane_m)
         dst = os.path.join(outdir, "%02d-%s" % (i, os.path.basename(f)))
         with open(dst, "w", encoding="utf-8") as fp:
             fp.write(text)
@@ -692,6 +781,12 @@ def main():
     with open(sidecar, "w", encoding="utf-8") as fp:
         json.dump({"project": os.path.basename(proj), "targets": lane_b}, fp,
                   ensure_ascii=False, indent=2)
+
+    # ⑬ lane M 사이드카 — 같은 이유로 원고 폴더 옆. 0건이어도 쓴다.
+    sidecar_m = os.path.join(os.path.dirname(outdir), "lane-m.json")
+    with open(sidecar_m, "w", encoding="utf-8") as fp:
+        json.dump({"project": os.path.basename(proj), "marker": MATH_MARKER,
+                   "items": lane_m}, fp, ensure_ascii=False, indent=2)
 
     if not a.quiet:
         print("  원고 %d편 → %s" % (len(made), os.path.relpath(outdir, os.getcwd())),
@@ -709,6 +804,9 @@ def main():
         print("  lane B 표시 — 대상 %d장 · lane C 이월 %d건 (%s)"
               % (stat["laneb"], stat["laneb_defer"],
                  os.path.relpath(sidecar, os.getcwd())), file=sys.stderr)
+        print("  lane M 표시 — 수식 %d건 → 마커 치환 (%s)"
+              % (stat["math"], os.path.relpath(sidecar_m, os.getcwd())),
+              file=sys.stderr)
         if stat["img_missing"]:
             # 조용히 넘기지 않는다 — 그림이 빠진 채로 "성공" 하는 것이 이 파이프의 고질이다
             print("  ⚠️ 실물을 못 찾은 이미지 %d건 — md2pptx 가 '파일없음' 으로 다시 보고한다"

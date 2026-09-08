@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 338
+* Issue HWM: 339
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -25,6 +25,30 @@
 # 🌱 이슈후보
 
 # 🚧 진행중
+
+## Issue339: m2slide → pptx 조용한 내용 손실 3종 (등록: 2026-09-09)
+* 목적: `ppt(pdf) → m2slide → ppt` 왕복에서 **되돌아온 ppt 가 원고보다 적은 것**을 막는다. 지금은 `--pptx` 가 rc0 · FAIL 0 으로 끝나면서 슬라이드 본문이 통째로 비어 나온다 — 실패가 아니라 **성공으로 위장한 손실**이라 배포까지 간다
+* 상세:
+    - 실측 픽스처: `Projects/aTest`(패턴당 1장으로 축소한 21장 데크). `./m2slide.sh aTest --pptx` → rc0 · FAIL 0 · WARN 1 인데 아래 3종이 사라진다
+    - **① 수식이 같은 슬라이드의 본문을 함께 끌고 사라진다 (가장 심각)** — pandoc 3.10 pptx writer 는 Math 인라인을 만나면 그 슬라이드의 콘텐츠 shape 을 **아예 만들지 않는다**. 최소 재현(reference-doc 유무 무관):
+        - 코드블록만 → 정상 · 불릿만 → 정상
+        - `$$E = mc^2$$` 단독 → 본문 소실 · `$E=mc^2$` 단독 → 본문 소실
+        - 불릿 + `$$…$$` → **불릿까지 함께 소실** · 코드블록 + `$$…$$` → **코드까지 함께 소실**
+        - `\(…\)` 는 소실은 면하지만 백슬래시만 벗겨진 **리터럴 `(E=mc^2)`** 로 노출
+        - aTest p05(코드블록 + 수식) 실측 = 제목 1개만 남은 백지
+    - **② 컴포넌트 펜스 드롭이 백지를 남긴다** — [build-source.py](lib/pptx/build-source.py) `FENCE_DROP = {chart, d3, p5, map, model3d, react}` 는 설정·코드 원문 노출을 막는 옳은 판단이지만, **그 자리에 아무것도 놓지 않는다**. aTest p18(chart)·p19(p5) 는 제목만 있는 빈 장으로 배포된다
+    - **③ 검증이 이 손실을 보지 못한다** — `check-conform --lane a` 는 본문 0 장을 위반으로 보지 않아 FAIL 0. Issue317 이 세운 차단 게이트가 **가장 흔한 손실 유형에는 열려 있다**
+* 구현 명세:
+    - **① lane M — 수식을 네이티브 OMML 로 복원**. pandoc 에 Math 를 주지 않는 것이 원인 제거다
+        - `build-source.py` 에 ⑬ 단계: `$$…$$` · `$…$` · `\(…\)` 를 코드펜스 밖에서 탐지 → 사이드카 `_pipeline/pptx/lane-m.json` 에 (원고·슬라이드 인덱스·LaTeX·display 여부) 기록 → 원고에는 **마커 문단**으로 치환. 마커는 평문이라 같은 슬라이드의 불릿·코드가 살아남는다
+        - 후처리 `lib/pptx/lane-m.py`: 각 LaTeX 를 `pandoc -o x.docx` 로 변환 → `word/document.xml` 의 `<m:oMath>` 를 추출 → pptx 의 마커 문단을 그 OMML 로 교체. **추가 의존 0** (pandoc 은 이미 필수). 실현성 실측 완료 — `$$E = mc^2$$` → `<m:sSup>` 포함 정상 OMML
+        - lane B 와 같은 철학: 그림이 아니라 **편집 가능한 네이티브 요소**
+        - 배선은 lane B 렌더 **다음**. 실패 시 그 수식만 평문 fallback 으로 남기고 rc0 (lane A 를 깨지 않는다)
+    - **② 드롭 자리에 대체 문단** — `FENCE_DROP` 제거 시 그 종류를 밝히는 한 줄을 남긴다. 문구는 구조 표식이며 내용 창작이 아니다(⑨ 목차 라벨과 같은 예외). 캡처 이미지 치환은 후속 후보
+    - **③ 본문 0 장 검출** — 제목만 있고 도형·그림·표가 0 인 장을 세어 보고한다. 챕터 진입 장(H1 단독)·표지는 정상이므로 제외한다
+    - 회귀 러너: `z_test/ig-ppt/5.lanem.sh` 신설 — 수식 장의 OMML 존재 · 같은 장의 코드·불릿 생존 · 백지 장 0 을 단언
+* Checkpoints:
+
 
 # 📕 중요
 

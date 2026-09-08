@@ -325,6 +325,18 @@ file:///<abs_path>/Projects/{Name}/slide/{chapter}.html?fwd=1#/N
 * 단언 6종 — 사이드카 · 글자 있는 네이티브 도형 존재 · **그림 0** · 평문 불릿 제거 · **lane C 이월 미개입** · `check-conform --lane a`
 * ⚠️ lane B 는 **덧칠**이라 실패해도 빌드를 죽이지 않는다. 그래서 *"빌드가 rc0 이니 됐다"* 는 판정이 성립하지 않는다 — 러너로 재거나 stderr 의 `⚠️ lane B` 줄을 읽어야 한다
 
+## 4.9 lane M · 백지 장 회귀 검증 (Issue339)
+
+수식이 든 덱, 또는 [lane-m.py](../../lib/pptx/lane-m.py) · [check-empty.py](../../lib/pptx/check-empty.py) · [build-source.py](../../lib/pptx/build-source.py) ⑬ 를 건드렸으면 전용 러너를 돌린다:
+
+```bash
+./z_test/ig-ppt/5.lanem.sh aTest      # 수식·코드 동거 장 + 컴포넌트 장이 있는 픽스처
+```
+
+* 단언 6종 — 사이드카 · **마커 잔존 0** · OMML 존재 · **수식 장의 동거 본문 생존** · 백지 장 0 · 코드 안 `$` 오탐 0
+* 수식 0건 덱은 ①③④⑥ 을 skip 하고 백지 장만 잰다 — 러너가 덱 작성 방식을 강제하지 않는다
+* ⚠️ **`--pptx` 가 rc0 이어도 손실은 있을 수 있다.** pandoc 은 Math 를 만나면 그 장의 본문을 조용히 버리며 conform 은 그것을 위반으로 보지 않는다. *"빌드가 통과했으니 됐다"* 는 이 축에서 성립하지 않는다 — 빌드 로그의 `lane M 수식 복원` · `본문 0 장` 두 줄을 읽는다
+
 > lint subcommand 전체 목록: `--lint-deployment`(§4.5) · `--lint-license`(§4.6) · `--lint-data`([`data-access-rules.md`](data-access-rules.md)) · `--lint-config`·`--lint-layouts`([`../../_doc_arch/theme_layout.md`](../../_doc_arch/theme_layout.md)). PPTX 규격 검증(§4.7)은 subcommand 가 아니라 `--pptx` 빌드 내장이다.
 
 ## 5. 결과 보고
