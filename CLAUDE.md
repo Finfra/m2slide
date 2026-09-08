@@ -21,6 +21,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 프로젝트 개요
 
+> 🧭 **아이덴티티 L2 — 불변 조항**: [`_doc_arch/m2slide-identity.md`](_doc_arch/m2slide-identity.md) (Issue338).
+> *"이 기능이 이 제품의 일부인가"* 를 다투게 되면 그 문서의 조항 4개로 판정한다 — 원고 SSOT · 파일 하나 배포 · 외부 의존 0 · 파생 형식이 웹을 좁히지 않음.
+
+
 마크다운 기반 프레젠테이션 자료 생성 도구. 프로젝트별 독립 폴더 구조로 여러 강연 자료를 관리하며, Reveal.js와 Markmap을 활용한 인터랙티브 HTML 프레젠테이션을 자동 생성합니다.
 
 **현재 프로젝트**: LLM 툴 진화와 바이브 코딩 세대 구분 (30분 강연 자료)

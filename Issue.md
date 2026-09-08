@@ -26,7 +26,17 @@
 
 # 🚧 진행중
 
-## Issue339: m2slide → pptx 조용한 내용 손실 3종 (등록: 2026-09-09)
+
+# 📕 중요
+
+# 📙 일반
+
+
+# 📗 선택
+
+# ✅ 완료
+
+## Issue339: m2slide → pptx 조용한 내용 손실 3종 (등록: 2026-09-09, 해결: 2026-09-09, commit: `f4c36eb`) ✅
 * 목적: `ppt(pdf) → m2slide → ppt` 왕복에서 **되돌아온 ppt 가 원고보다 적은 것**을 막는다. 지금은 `--pptx` 가 rc0 · FAIL 0 으로 끝나면서 슬라이드 본문이 통째로 비어 나온다 — 실패가 아니라 **성공으로 위장한 손실**이라 배포까지 간다
 * 상세:
     - 실측 픽스처: `Projects/aTest`(패턴당 1장으로 축소한 21장 데크). `./m2slide.sh aTest --pptx` → rc0 · FAIL 0 · WARN 1 인데 아래 3종이 사라진다
@@ -48,13 +58,16 @@
     - **③ 본문 0 장 검출** — 제목만 있고 도형·그림·표가 0 인 장을 세어 보고한다. 챕터 진입 장(H1 단독)·표지는 정상이므로 제외한다
     - 회귀 러너: `z_test/ig-ppt/5.lanem.sh` 신설 — 수식 장의 OMML 존재 · 같은 장의 코드·불릿 생존 · 백지 장 0 을 단언
 * Checkpoints:
+* 결과:
+    - **lane M 신설** — [build-source.py](lib/pptx/build-source.py) ⑬ 이 수식을 평문 마커(`⟦m2math:NNNN⟧`)로 치환하고 [lane-m.py](lib/pptx/lane-m.py) 가 산출 뒤 네이티브 OMML 을 심는다. 변환기는 pandoc 자신(`-o docx` → `<m:oMath>`)이라 **추가 의존 0**. `mc:Fallback` 에 평문 LaTeX 를 남겨 수식 미지원 뷰어에서도 글자가 보인다
+    - **컴포넌트 드롭 자리에 구조 표식** — `FENCE_DROP` 이 지운 자리에 종류를 밝히는 한 줄. 백지 장을 만들지 않는다
+    - **[check-empty.py](lib/pptx/check-empty.py) 신설** — 본문 0 장 보고. 경고이지 차단이 아니다(간지 장·lane C 이월처럼 정당하게 비는 자리가 있다)
+    - 회귀 러너 `z_test/ig-ppt/5.lanem.sh` 단언 6종 통과 · 기존 러너 무회귀(4.laneb aTest 6/6 · 3.parity igTest 7/7) · 최종 FAIL 0 · WARN 0
+    - 픽스처: `Projects/aTest` 를 패턴당 1장(21장 · 14.9KB→3.5KB)으로 축소. 원본은 `Projects/aTest.bak.20260909` 백업
+    - 진단 기록: `_doc_work/debug_TECH.md` (오진 2건 — 표를 못 읽은 계측 함정 · 검사기 layout 부분일치로 검사 무력화)
 
 
-# 📕 중요
-
-# 📙 일반
-
-## Issue338: 아이덴티티 L2 문서 신설 — 불변 조항 (등록: 2026-09-03)
+## Issue338: 아이덴티티 L2 문서 신설 — 불변 조항 (등록: 2026-09-03, 해결: 2026-09-09) ✅
 * 목적: 이 프로젝트가 **무엇이고 무엇이 아닌가**를 판정에 쓸 수 있는 형태로 남긴다. 새 기능을 붙일 때 *"이게 이 제품의 일부인가"* 를 매번 주관으로 다투지 않기 위해서다
 * depends: prj1#Issue472
 * 상세:
@@ -68,11 +81,12 @@
     - 재료: `_doc_base/promotion_0.initial.md`(있으면 포지셔닝·타깃) · 기존 `_doc_arch/` 설계 문서 · 실제로 혼동이 일어났던 이슈
     - ⚠️ 근거 없는 조항을 발명하지 말 것 — **실제로 헷갈렸던 사건**이 있는 것부터 적는다. 없으면 조항 1개로 시작해도 된다
     - 스키마·형식 정본: prj6 [project-identity-scheme.md](~/_git/___architect/_doc_arch/project-identity-scheme.md)
+* 결과:
+    - `_doc_arch/m2slide-identity.md` 신설 (98줄). 절 구성은 명세대로 — 개요(구체 사건 3건) / 무엇인가 / 무엇이 아닌가(표 5행) / 불변 조항 4개 / 현행 준수 실측 / 미해결 3건
+    - **조항은 실제로 헷갈렸던 사건이 있는 것만 썼다** — ① 원고 SSOT(산출물 직접 수정이 룰 예외 조항으로 존재) ② 파일 하나 배포(dev-server 도입이 `file-deployment-rules` 신설을 불렀다) ③ 외부 의존 0(Issue339 lane M 이 새 렌더러 대신 pandoc 재사용을 택한 근거) ④ 파생 형식이 웹을 좁히지 않음(Issue339 에서 컴포넌트를 웹에서 빼지 않고 pptx 에 표식만 남긴 판정)
+    - 근거 없는 조항은 쓰지 않고 **미해결로 남겼다** — 저작 파이프라인이 정체성의 일부인지(비대칭) · `ppt2m2slide` 확대 시 "PowerPoint 대체가 아니다" 재판정
+    - [CLAUDE.md](CLAUDE.md) 프로젝트 개요 머리에 L2 진입 링크 추가
 
-
-# 📗 선택
-
-# ✅ 완료
 
 ## Issue333: lane B 카탈로그 확장 — 순차형 htmlart 와 남은 대응 (등록: 2026-08-25, 해결: 2026-09-01, commit: `7d74658`) ✅
 * depends: Issue331
