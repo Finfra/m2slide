@@ -395,7 +395,7 @@ def bullet_text(t):
     return re.sub(r"^(\d+)([.)])", r"\1\\\2", t)
 
 
-def normalize_chapter(blocks, chapter_title, stat):
+def normalize_chapter(blocks, chapter_title, stat, cards_ph=True, toc_ph=True):
     """⑧ 챕터 진입부를 **H1 단독 + 챕터 TOC** 두 장으로 정규화한다.
 
     원본(HTML)에서 챕터 진입 장 하나가 담던 것 — 큰 제목(H1)·part 라벨·부제(H2) — 을
@@ -439,10 +439,22 @@ def normalize_chapter(blocks, chapter_title, stat):
                 toc.append(m.group(1))
                 break
 
+    #   ⚠️ **HTML 이 만드는 장 수와 같아야 한다** (Issue348).
+    #      `cards_placeholder: false` 면 HTML 은 H1 슬라이드를 **deck 에서 지우고**,
+    #      `toc_placeholder` 는 chapter mode 에서만 TOC 장을 넣는다. 이 둘을 읽지
+    #      않던 탓에 같은 원고가 HTML 8장 · pptx 10장으로 갈렸다(실측 2026-09-10).
+    #      계약이 `h1_chapter: lossless` 라고 선언한 것도 **원고 기준**이었지
+    #      산출물 기준이 아니었다 — 두 축이 다른 정본을 보고 있었다.
     stat["chapter"] += 1
-    entry = "# %s\n" % h1
-    tocslide = "## %s\n\n" % subtitle + "".join("* %s\n" % bullet_text(t) for t in toc)
-    return [entry, tocslide] + list(blocks[1:])
+    out = []
+    if cards_ph:
+        out.append("# %s\n" % h1)
+    if toc_ph and toc:
+        out.append("## %s\n\n" % subtitle
+                   + "".join("* %s\n" % bullet_text(t) for t in toc))
+    if not out:
+        stat["chapter_dropped"] += 1
+    return out + list(blocks[1:])
 
 
 # ── ⑫ lane B 표시 — 정형 블록을 **네이티브 도형**으로 다시 그릴 장을 골라 적는다 (Issue331)
@@ -691,7 +703,7 @@ def scan_signals(text, src_label, seen, out):
 
 def clean(text, srcdir, proj, stat, chapter_title=None,
           lane_b=None, lane_b_seen=None, src_label="", lane_m=None,
-          lane_s=None, lane_s_seen=None):
+          lane_s=None, lane_s_seen=None, cards_ph=True, toc_ph=True):
     text = strip_frontmatter(text)
 
     # ⑭ lane S — **지우기 전에** 신호를 적는다. 뒤로 가면 대상이 이미 없다
@@ -749,7 +761,7 @@ def clean(text, srcdir, proj, stat, chapter_title=None,
 
     # ⑧⑩ 구조 정리 — 슬라이드 블록 단위
     blocks = split_slides(text)
-    blocks = normalize_chapter(blocks, chapter_title, stat)
+    blocks = normalize_chapter(blocks, chapter_title, stat, cards_ph, toc_ph)
     blocks = [defer_heavy(b, stat) for b in blocks]
 
     # ⑫ lane B 표시 — **원고를 바꾸지 않고** 사이드카에만 적는다
@@ -796,12 +808,17 @@ def read_frontmatter(path):
 
 
 def agenda_chapters(path):
-    """AGENDA.md 의 `## [제목](./파일.md)` 목록 → [(제목, 파일basename)]."""
+    """AGENDA.md 의 `# [제목](./파일.md)` 목록 → [(제목, 파일basename)].
+
+    ⚠️ **H1 도 받는다.** 문서는 메인 섹션을 `## [제목]` 으로 적으라 하지만 실제
+       프로젝트가 `# [제목]` 을 쓴다(m2Slide_chapter_mode 7챕터). H2 만 찾던 탓에
+       이 함수는 그 덱에서 **늘 0건**을 반환했다(실측 2026-09-10).
+    """
     out = []
     if not os.path.isfile(path):
         return out
     for line in open(path, encoding="utf-8"):
-        m = re.match(r"^##[ \t]+\[(.+?)\]\((?:\./)?([^)]+)\)", line)
+        m = re.match(r"^#{1,2}[ \t]+\[(.+?)\]\((?:\./)?([^)]+)\)", line)
         if m:
             out.append((m.group(1), os.path.basename(m.group(2))))
     return out
@@ -867,7 +884,7 @@ def main():
 
     stat = {k: 0 for k in ("attr", "element", "id", "anim", "slot", "symbol",
                            "img_abs", "img_proj", "img_missing",
-                           "chapter", "defer", "fence_flat", "fence_drop",
+                           "chapter", "chapter_dropped", "defer", "fence_flat", "fence_drop",
                            "laneb", "laneb_defer", "math")}
     made = []
     #   제목 순번은 **덱 전체** 기준이다 — 병합은 pptx 한 벌에서 장을 찾으므로,
@@ -877,7 +894,23 @@ def main():
     lane_s, lane_s_seen = [], {}      # ⑭ 복원 신호
 
     # ⑨ 표지 — `cover_enabled: false` 면 주입하지 않는다 (설정을 존중)
-    cover_on = (config_flag(proj, "cover_enabled") or "").lower() not in ("false", "no", "0")
+    def flag(key, default=True):
+        v = (config_flag(proj, key) or "").strip().lower()
+        if v in ("false", "no", "0"):
+            return False
+        if v in ("true", "yes", "1"):
+            return True
+        return default
+
+    cover_on = flag("cover_enabled", True)
+    #   HTML 과 같은 장을 만들기 위한 두 설정 (Issue348)
+    cards_ph = flag("cards_placeholder", False)
+    #   `toc_placeholder` 는 **chapter mode 전용**이다(_config.org.yml 주석).
+    #   single mode 에서 켜면 HTML 에 없는 목차 장이 pptx 에만 생긴다
+    #   chapter mode 판정은 **`markdown/` 디렉토리**로 한다 — AGENDA 파싱 결과에
+    #   기대면 그 파서가 틀렸을 때 장 구성까지 함께 어긋난다(실제로 그랬다)
+    is_chapter = os.path.isdir(os.path.join(proj, "markdown"))
+    toc_ph = flag("toc_placeholder", True) and is_chapter
     if cover_on:
         dst = os.path.join(outdir, "00-cover.md")
         with open(dst, "w", encoding="utf-8") as fp:
@@ -890,7 +923,8 @@ def main():
                      chapter_title=chapter_of.get(os.path.basename(f)),
                      lane_b=lane_b, lane_b_seen=lane_b_seen,
                      src_label=os.path.basename(f), lane_m=lane_m,
-                     lane_s=lane_s, lane_s_seen=lane_s_seen)
+                     lane_s=lane_s, lane_s_seen=lane_s_seen,
+                     cards_ph=cards_ph, toc_ph=toc_ph)
         dst = os.path.join(outdir, "%02d-%s" % (i, os.path.basename(f)))
         with open(dst, "w", encoding="utf-8") as fp:
             fp.write(text)
@@ -938,6 +972,10 @@ def main():
               "· 펜스 평문화 %d · 펜스 제거 %d"
               % ("주입" if cover_on else "생략", len(chapters), stat["chapter"],
                  stat["defer"], stat["fence_flat"], stat["fence_drop"]),
+              file=sys.stderr)
+        print("  장 구성 — H1 진입 %s · 챕터 목차 %s (진입 장 생략 %d)"
+              % ("유지" if cards_ph else "생략(cards_placeholder=false)",
+                 "유지" if toc_ph else "생략", stat["chapter_dropped"]),
               file=sys.stderr)
         print("  lane B 표시 — 대상 %d장 · lane C 이월 %d건 (%s)"
               % (stat["laneb"], stat["laneb_defer"],

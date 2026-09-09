@@ -109,7 +109,16 @@ for t in b:
              and sh.has_text_frame and sh.text_frame.text.strip()]
     if not drawn:
         bad_shape.append("%s (글자 있는 도형 0)" % t["title"][:24])
-    if any(sh.shape_type == MSO_SHAPE_TYPE.PICTURE for sh in s.shapes):
+    #   ⚠️ **테마 장식은 세지 않는다** (Issue345·347). 이 단언의 취지는 lane B 가
+    #      그린 것이 *그림이 아니라 도형* 이어야 한다는 것인데, lane T 가 넣는
+    #      가로선·마스코트까지 세면 무관한 이유로 빨간불이 된다(실측 2026-09-10).
+    #      lane T 는 자기 그림에 `m2slide:ornament/…` 표식을 단다.
+    PNS = "http://schemas.openxmlformats.org/presentationml/2006/main"
+    def _ornament(sh):
+        el = sh._element.find(".//{%s}cNvPr" % PNS)
+        return el is not None and (el.get("descr") or "").startswith("m2slide:ornament")
+    if any(sh.shape_type == MSO_SHAPE_TYPE.PICTURE and not _ornament(sh)
+           for sh in s.shapes):
         bad_pic.append(t["title"][:24])
     # 평문 불릿 잔존 — placeholder 안에 블록 문구가 그대로 있으면 이중 표시다
     ph_text = ""

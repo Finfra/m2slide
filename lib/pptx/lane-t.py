@@ -96,6 +96,7 @@ G = load_geometry()
 COVER = load_section("cover_geometry")
 HEAD = load_section("head_geometry")
 MASCOT = load_section("contents_mascot")
+CARD = load_section("card_geometry")
 
 #   표지·머리말 글자는 **빌드된 HTML 이 정본**이다. frontmatter·config 를 다시 조합하면
 #   HTML 과 어긋날 수 있고, 대조기(check-parity.py)도 HTML 을 보므로 출처를 하나로 둔다.
@@ -260,6 +261,106 @@ def add_outline(shapes, spec, px2emu, accent="F5C518"):
 #   ⚠️ lane T 가 심는 **글자**에도 표식이 필요하다. 없으면 왕복 역변환이 머리말 바·
 #      라이선스 뱃지를 **본문 불릿으로** 읽는다(실측 2026-09-10: 왕복본에 +7줄).
 #      그림(add_rule)에 이미 같은 표식을 쓰고 있다.
+def redraw_cards(slide, px2emu, L, W):
+    """lane B 가 그린 `cards` 를 **m2slide 카드**로 다시 그린다 (Issue349).
+
+    lane B 는 글로벌 ppt-info 의 `cards`(좌측 액센트 바 + 회색 본문)를 쓴다.
+    m2slide 카드는 **상단 노란 제목 밴드 + 본문**이라 다른 물건이고, 세로 위치도
+    lane B 는 본문 영역 중앙에·HTML 은 상단에 놓는다(실측 2026-09-10: t 595 vs 253).
+
+    ⚠️ `process` 는 건드리지 않는다 — 커넥터가 있는 순차 블록이고 HTML 쪽 디자인도
+       달라 별도 판단이 필요하다. 여기서 **비슷하게 근사하지 않는다**.
+    """
+    from pptx.enum.shapes import MSO_SHAPE
+    from pptx.dml.color import RGBColor
+    if not CARD:
+        return 0
+    shapes = [sh for sh in slide.shapes
+              if str(sh.shape_type or "").startswith("AUTO_SHAPE")]
+    conns = [sh for sh in slide.shapes if str(sh.shape_type or "").startswith("LINE")]
+    if not shapes or conns:
+        return 0
+    #   글자가 있는 도형이 카드다. 액센트 바(글자 없는 얇은 사각형)는 버린다
+    cards = []
+    for sh in sorted(shapes, key=lambda x: (x.top or 0, x.left or 0)):
+        if not sh.has_text_frame:
+            continue
+        lines = [p.text.strip() for p in sh.text_frame.paragraphs if p.text.strip()]
+        if lines:
+            cards.append(lines)
+    if not cards:
+        return 0
+    for sh in list(shapes):
+        sh._element.getparent().remove(sh._element)
+
+    n = len(cards)
+    gap = CARD["gap"]
+    cw = (W / px2emu - (n - 1) * gap) / n
+    top = CARD["top"]
+    body_max = max(len(c) - 1 for c in cards)
+    ch = CARD["band_h"] + body_max * CARD["body_line_h"] + CARD["pad_bottom"]
+
+    def emu(v):
+        return Emu(int(v * px2emu))
+
+    for i, lines in enumerate(cards):
+        x = L / px2emu + i * (cw + gap)
+        #   ① 카드 바탕 — 흰 바탕 위 옅은 회색 + 옅은 테두리
+        base = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
+                                      emu(x), emu(top), emu(cw), emu(ch))
+        base.fill.solid()
+        base.fill.fore_color.rgb = RGBColor.from_string(CARD["card_bg"])
+        base.line.color.rgb = RGBColor.from_string(CARD["border"])
+        base.line.width = Emu(int(1 * px2emu))
+        base.shadow.inherit = False
+        try:
+            base.adjustments[0] = CARD.get("radius_pct", 8) / 100.0
+        except Exception:
+            pass
+        base.text_frame.text = ""
+
+        #   ② 제목 밴드 — 카드 상단 전체 폭, `--kn-accent`
+        band = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE,
+                                      emu(x + 1), emu(top + 1),
+                                      emu(cw - 2), emu(CARD["band_h"]))
+        band.fill.solid()
+        band.fill.fore_color.rgb = RGBColor.from_string(CARD["band_bg"])
+        band.line.fill.background()
+        band.shadow.inherit = False
+        tf = band.text_frame
+        tf.word_wrap = True
+        tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
+        try:
+            tf.vertical_anchor = MSO_ANCHOR.MIDDLE
+        except Exception:
+            pass
+        p0 = tf.paragraphs[0]
+        p0.alignment = PP_ALIGN.CENTER
+        r0 = p0.add_run()
+        r0.text = lines[0]
+        r0.font.bold = True
+        r0.font.size = Pt(round(CARD["band_fs"] * px2emu / 12700, 1))
+        r0.font.color.rgb = RGBColor.from_string(CARD["fg"])
+
+        #   ③ 본문 — 밴드 아래, 좌측 정렬
+        if len(lines) > 1:
+            bx = slide.shapes.add_textbox(
+                emu(x + CARD["body_pad_x"]), emu(top + CARD["band_h"] + 12),
+                emu(cw - 2 * CARD["body_pad_x"]),
+                emu(len(lines[1:]) * CARD["body_line_h"]))
+            btf = bx.text_frame
+            btf.word_wrap = True
+            btf.margin_left = btf.margin_right = btf.margin_top = btf.margin_bottom = 0
+            for j, t in enumerate(lines[1:]):
+                para = btf.paragraphs[0] if j == 0 else btf.add_paragraph()
+                para.alignment = PP_ALIGN.LEFT
+                r = para.add_run()
+                r.text = t
+                r.font.size = Pt(round(CARD["body_fs"] * px2emu / 12700, 1))
+                r.font.color.rgb = RGBColor.from_string(CARD["fg"])
+    return n
+
+
 ALIGN = {"left": PP_ALIGN.LEFT, "center": PP_ALIGN.CENTER, "right": PP_ALIGN.RIGHT}
 
 
@@ -322,7 +423,7 @@ def main():
     W = prs.slide_width - 2 * L
     T = int((PX["line_top"] + PX["line_h"]) * px2emu)
     H = int((PX["line_bottom"] - PX["line_top"] - PX["line_h"]) * px2emu)
-    log = {"ph": 0, "rule": 0, "layout": 0, "cover": 0, "head": 0}
+    log = {"ph": 0, "rule": 0, "layout": 0, "cover": 0, "head": 0, "card": 0}
 
     lh = int(PX["line_h"] * px2emu)
 
@@ -410,6 +511,10 @@ def main():
                     log["cover"] += 1
 
         elif lay in BODY_LAYOUTS and ttl is not None:
+            #   lane B 가 그린 cards 를 m2slide 카드로 다시 그린다.
+            #   신호를 읽지 않아도 된다 — `redraw_cards` 가 **커넥터 유무**로 가른다
+            #   (커넥터가 있으면 순차 블록이라 손대지 않는다)
+            log["card"] += redraw_cards(slide, px2emu, L, W)
             #   제목 옆 마스코트 — `.layout-_contents > .title` 의 배경이라
             #   `<img>` 로는 보이지 않는다(전수 대조가 자산 해시로 잡아냈다)
             mp = os.path.join(a.themeimg, MASCOT.get("asset", ""))
@@ -431,8 +536,9 @@ def main():
                 log["cover"] += 1
 
     prs.save(a.pptx)
-    print("  lane T 장식 — 가로선·밑줄 %d · 표지 %d · 머리말 %d (장 %d)"
-          % (log["rule"], log["cover"], log["head"], len(slides)), file=sys.stderr)
+    print("  lane T 장식 — 가로선·밑줄 %d · 표지 %d · 머리말 %d · 카드 %d (장 %d)"
+          % (log["rule"], log["cover"], log["head"], log["card"], len(slides)),
+          file=sys.stderr)
     return 0
 
 

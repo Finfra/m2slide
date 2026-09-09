@@ -304,7 +304,12 @@ def main():
     print("=" * 76)
     print("내용 전수 대조 — %s" % proj)
     print("=" * 76)
-    print("장    HTML %d · pptx %d" % (len(hs), len(ps)))
+    #   ⚠️ **장 수 불일치는 실패다** (Issue348). 전에는 출력만 하고 세지 않아
+    #      같은 원고가 HTML 8장 · pptx 10장인데도 초록불이었다 — `cards_placeholder`
+    #      를 pptx 경로가 읽지 않아 H1 진입 장과 목차 장이 pptx 에만 생겼다.
+    slide_gap = len(ps) - len(hs)
+    print("장    HTML %d · pptx %d%s"
+          % (len(hs), len(ps), ("  ⚠️ %+d" % slide_gap) if slide_gap else ""))
     print("글자  HTML %d종(%d개) · pptx %d종(%d개) · **모자란 것 %d종**"
           % (len(h_text), sum(h_text.values()),
              len(p_text), sum(p_text.values()), len(missing)))
@@ -330,6 +335,12 @@ def main():
     print("⚠️ 이 검사는 **열거하지 않는다** — 계약에 없는 빠짐도 여기서 드러난다.")
     print("   빠진 것이 의도된 것이라면 fidelity.yml 에 선언하고, 아니면 변환을 고쳐야 한다.")
 
+    if slide_gap:
+        print("❌ 장 수가 다르다 (%+d) — 같은 원고가 두 산출물에서 다른 장 수로 나온다"
+              % slide_gap)
+        print("   의도된 차이면 fidelity.yml 에 `synthesized` 로 선언하고, 아니면")
+        print("   build-source 가 읽는 설정(cards_placeholder·toc_placeholder)을 보라")
+
     if asset_missing:
         print("❌ pptx 에 없는 테마 자산 %d종 — %s"
               % (len(asset_missing), ", ".join(sorted(asset_missing))))
@@ -339,7 +350,7 @@ def main():
         json.dump({"missing": missing, "extra": extra,
                    "h_img": h_img, "p_img": p_img},
                   open(a.json, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
-    return 1 if (missing or asset_missing) else 0
+    return 1 if (missing or asset_missing or slide_gap) else 0
 
 
 if __name__ == "__main__":

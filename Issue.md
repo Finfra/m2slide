@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 345
+* Issue HWM: 349
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -48,6 +48,26 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue348: 장 구성이 HTML 과 pptx 에서 갈렸다 — 읽는 설정이 달랐다 (등록: 2026-09-10, 해결: 2026-09-10) ✅
+* 목적: 같은 원고가 HTML 8장 · pptx 10장으로 나왔다. 세 검사가 모두 통과하는데도 그랬다
+* depends: Issue347
+* 상세:
+    - **읽는 설정 집합이 다르다** — HTML([`config.js`](lib/config.js))은 `cards_placeholder`·`toc_placeholder` 를 읽는데 [`build-source.py`](lib/pptx/build-source.py) 는 `cover_enabled` **하나만** 읽었다. 그래서 `cards_placeholder: false`(H1 슬라이드 제거)를 pptx 가 무시하고 H1 진입 장 + 자동 목차 장을 만들었다
+    - **계약이 원고만 봤다** — `h1_chapter: lossless` 는 원고 기준이고 산출물 기준이 아니었다. 원고 축과 시각 축이 다른 정본을 보던 자리
+    - **`agenda_chapters` 가 늘 0건이었다** — `## [제목]` 만 찾는데 실제 AGENDA 는 `# [제목]`(H1). m2Slide_chapter_mode 7챕터를 한 번도 인식하지 못했다(기존 결함)
+    - **전수 대조가 장 수를 실패로 세지 않았다** — 출력만 했다
+* 구현 명세: build-source 가 두 설정을 읽는다 · chapter mode 판정은 `markdown/` 디렉토리로(AGENDA 파싱 결과에 기대지 않는다) · `agenda_chapters` 가 H1 도 받는다 · check-parity 가 장 수 불일치를 실패로 든다
+* 결과: aTest HTML 8 = pptx 8. m2Slide_chapter_mode 는 HTML 31 · pptx 35 로 **+4 남음**(원인 미확인 — pandoc 이 장을 더 나누는 축으로 보이나 확인하지 않았다)
+
+## Issue349: pptx 카드가 m2slide 카드와 다른 디자인이었다 (등록: 2026-09-10, 해결: 2026-09-10) ✅
+* 목적: lane B 가 글로벌 ppt-info 의 `cards`(좌측 액센트 바 + 회색 본문)를 쓰는데 m2slide 카드는 **상단 노란 제목 밴드 + 본문**이다. 세로 위치도 달랐다(lane B 중앙 · HTML 상단)
+* depends: Issue348
+* 상세:
+    - 실측(ego-browser) — HTML 카드 `l 56 · t 253 · w 593 · h 237` · 밴드 `h 130 · bg #F5C518` · 본문 `fs 40`. pptx 는 `t 595` · 전체 `F2F5FA` + 좌측 10px 액센트 바(3색 순환)
+    - 전수 대조가 **글자만** 보므로 이 차이를 못 잡았다
+* 구현 명세: [`lane-t.py`](lib/pptx/lane-t.py) `redraw_cards` 가 lane B 도형에서 글자를 회수해 m2slide 카드로 다시 그린다. **커넥터가 있으면 손대지 않는다**(순차 블록은 별도 판단)
+* 결과: aTest 카드 3개 재작성 · lane B 회귀 6/6(단언 ③ 을 테마 장식 제외로 갱신) · 왕복·시각·전수 대조 전부 통과
 
 ## Issue345: pptx 에 m2slide 테마의 **꼴** 이식 — lane T (등록: 2026-09-10, 해결: 2026-09-10) ✅
 * 목적: Issue344 가 색·판형을 맞췄지만 pptx 를 PowerPoint 로 열면 여전히 민 흰 바탕이었다. *"뭐가 같냐"* 는 지적의 실체가 여기 있었다
