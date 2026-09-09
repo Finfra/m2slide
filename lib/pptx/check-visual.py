@@ -37,6 +37,18 @@ except ImportError:
 A = "http://schemas.openxmlformats.org/drawingml/2006/main"
 HERE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_CONTRACT = os.path.join(HERE, "..", "..", "data", "m2slide2ppt", "fidelity.yml")
+TRANSFORM = os.path.join(HERE, "..", "..", "data", "m2slide2ppt", "transform.yml")
+P = "http://schemas.openxmlformats.org/presentationml/2006/main"
+ORNAMENT_TAG = "m2slide:ornament"
+
+
+def geometry():
+    """테마 꼴 좌표 — `lane-t.py` 가 이식에 쓰는 **같은 값**을 검증에도 쓴다."""
+    try:
+        with open(os.path.normpath(TRANSFORM), encoding="utf-8") as fp:
+            return (yaml.safe_load(fp) or {}).get("theme_geometry") or {}
+    except Exception:
+        return {}
 
 
 def cfg(project_dir, key):
@@ -146,7 +158,8 @@ def de76(a, b):
 def pptx_facts(path):
     from pptx import Presentation
     prs = Presentation(path)
-    out = {"ratio": prs.slide_width / prs.slide_height}
+    out = {"ratio": prs.slide_width / prs.slide_height,
+           "slide_w": prs.slide_width, "prs": prs}
     with zipfile.ZipFile(path) as z:
         th = [n for n in z.namelist() if n.startswith("ppt/theme/")]
         if th:
@@ -219,8 +232,50 @@ def main():
     cf = css_body_font(proj, css)
     add("body_font", cf or "?", pf.get("minorFont", "?"), cf == pf.get("minorFont"))
 
-    # ⑥ 레이아웃 꼴 — 기계로 잴 수 없다. 선언만 보고한다
-    add("layout_ornament", "theme CSS 의 꼴", "(미이식)", False)
+    # ⑥ 콘텐츠 박스 — placeholder 가 HTML 콘텐츠 폭을 채우는가
+    g = geometry()
+    prs = pf["prs"]
+    px = pf["slide_w"] / float(g.get("canvas_w") or 1920)
+    want_l, want_w = g.get("margin", 56), (g.get("canvas_w", 1920) - 2 * g.get("margin", 56))
+    lay = next((l for l in prs.slide_master.slide_layouts
+                if l.name == "Title and Content"), None)
+    ttl = next((p for p in lay.placeholders if p.name.startswith("Title")), None) if lay else None
+    if ttl is None:
+        add("content_box", "%d..%dpx" % (want_l, want_l + want_w), "(레이아웃 없음)", False)
+    else:
+        got_l, got_w = round(ttl.left / px), round(ttl.width / px)
+        add("content_box", "left %d · w %d" % (want_l, want_w),
+            "left %d · w %d" % (got_l, got_w),
+            abs(got_l - want_l) <= 2 and abs(got_w - want_w) <= 4)
+
+    # ⑦⑧ 테마 장식 — 가로선과 제목 밑줄이 실제로 들어갔는가
+    rules = 0
+    slides = list(prs.slides)
+    for sl in slides:
+        for sh in sl.shapes:
+            el = sh._element.find(".//{%s}cNvPr" % P)
+            if el is not None and (el.get("descr") or "") == ORNAMENT_TAG:
+                rules += 1
+    n = len(slides) or 1
+    add("theme_rule", "장마다 상·하단 2줄", "%d개 / %d장" % (rules, n), rules >= 2 * n)
+    #   ⚠️ **제목이 빈 장은 세지 않는다.** HTML 도 제목 요소가 없으면 `::after` 가
+    #      없고, lane T 도 그 장은 건너뛴다. 레이아웃만 보고 세면 그 장들이
+    #      "밑줄 누락" 으로 잡힌다(실측: m2Slide_chapter_mode 33 vs 29).
+    BODY = ("Title and Content", "Two Content", "Content with Caption",
+            "Title Only", "Comparison", "Blank")
+    body_n = 0
+    for sl in slides:
+        if sl.slide_layout.name not in BODY:
+            continue
+        t = next((sh for sh in sl.shapes
+                  if sh.has_text_frame and sh.name.startswith("Title")), None)
+        if t is not None and t.text_frame.text.strip():
+            body_n += 1
+    add("title_underline", "제목 있는 본문 장 %d개" % body_n,
+        "%d개" % max(0, rules - 2 * n), rules - 2 * n == body_n)
+
+    # ⑨ 남은 꼴 — 카드 밴드·자간 등 기계로 잴 수 없는 것
+    add("layout_ornament", "theme CSS 의 세부 꼴", "(부분 이식)", False)
 
     w = max(len(r[0]) for r in rows) + 2
     print("=" * 76)

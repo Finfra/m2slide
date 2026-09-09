@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 344
+* Issue HWM: 345
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -48,6 +48,24 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue345: pptx 에 m2slide 테마의 **꼴** 이식 — lane T (등록: 2026-09-10, 해결: 2026-09-10) ✅
+* 목적: Issue344 가 색·판형을 맞췄지만 pptx 를 PowerPoint 로 열면 여전히 민 흰 바탕이었다. *"뭐가 같냐"* 는 지적의 실체가 여기 있었다
+* depends: Issue344
+* 상세:
+    - **placeholder 가 슬라이드 폭을 안 채운다** — `theme2reference --adapt` 는 슬라이드 **크기만** theme.yml canvas 로 키우고 placeholder 좌표는 pandoc 기본(10×7.5in)으로 둔다. 13.33in 판에 9.5in 상자가 앉아 **우측 3.8in 가 빈 채로** 배포됐다. 눈에 가장 크게 띄는 차이였다
+    - **테마 장식이 없다** — m2slide 는 상·하단 노랑 가로선과 제목 밑줄(`hr.png`)로 판을 짜는데 pptx 에는 그 어휘가 없었다
+* 구현 명세:
+    - [`lane-t.py`](lib/pptx/lane-t.py) 신설 — `--mode layout`(reference placeholder 재배치) · `--mode ornament`(최종 pptx 에 가로선·밑줄). python-pptx 가 마스터에 그림을 넣지 못해 두 걸음이다
+    - 좌표는 **HTML 덱을 실제로 렌더해 잰 값** — CSS 선언만으로는 flex 최종 위치가 정해지지 않는다. [`transform.yml`](data/m2slide2ppt/transform.yml) `theme_geometry` 가 소유하고 이식·검증이 **같은 값**을 읽는다
+    - `hr.png` 는 손으로 그은 붓 자국이라 **도형으로 근사하지 않고** 이미지를 그대로 넣는다
+    - 시각 계약에 `content_box`·`theme_rule`·`title_underline` 3축 추가 (must_match)
+* 결과:
+    - aTest·m2Slide_chapter_mode 둘 다 시각 축 `must_match` 7/7 일치. 판·가로선·밑줄이 HTML 실측과 정확히 같다
+    - 장식 그림에 `m2slide:ornament` alt-text 표식 — 없으면 왕복이 본문 이미지로 읽는다(실측: 10장에 21개 오염 → 표식 후 1=1)
+    - 남은 `known_gap` 2종 — 본문 서체(Windows 폰트 선택)·**세부 꼴**(카드 밴드 모서리·자간·줄간). 세부까지는 CSS→pptx 번역기가 필요하다
+* 미해결 🚧:
+    - `theme_geometry` 는 `default` theme 기준 실측이다. **다른 theme 을 쓰면 다시 재야 한다** — 자동 측정 경로가 없다
 
 ## Issue344: pptx 판형·테마 색이 HTML 덱과 달랐다 — 시각 축 계약 신설 (등록: 2026-09-10, 해결: 2026-09-10) ✅
 * 목적: Issue342 가 만든 왕복 계약은 **원고 축만** 잰다. 그 사이 `slide_ratio: "3:2"` 인 덱이 16:9 pptx 로 나가는 동안 왕복 검사는 초록불이었다 — Issue342 가 지적한 것("규격만 재고 충실을 안 잰다")과 **같은 종류의 사각지대**를 새로 만든 셈이다

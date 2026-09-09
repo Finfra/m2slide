@@ -207,6 +207,33 @@ PYRATIO
 # ── ② theme.yml → reference.pptx
 python3 "$T2R" "$THEME_YML" --out "$REF" --adapt >/dev/null
 
+# ── ②-a lane T — m2slide 테마의 **꼴**을 reference 에 입힌다 (Issue345)
+#
+#   `theme-from-css.py` 는 스스로 적어 둔 대로 **색·서체만** 옮긴다. 그래서 pptx 는
+#   팔레트만 같고 생김새는 pandoc 기본이었다. 실측(2026-09-10)에서 둘이 드러났다:
+#     ① `theme2reference --adapt` 가 슬라이드 크기만 키우고 placeholder 는 4:3
+#        기본 좌표(10×7.5in)로 두어 13.33in 판에 9.5in 상자가 앉는다 (우측 3.8in 공백)
+#     ② 상·하단 노랑 가로선·제목 밑줄(`hr.png`)이 없다
+#
+#   좌표는 **HTML 덱을 실제로 렌더해 잰 값**이다 — flex 최종 위치는 CSS 선언만으로
+#   정해지지 않는다. 자세한 값은 lane-t.py 머리말.
+#
+#   ⚠️ 자리는 ② 다음이다 — reference 가 만들어진 뒤에 손봐야 한다.
+LANET="$SCRIPT_DIR/lane-t.py"
+THEMEIMG="$PROJECT_DIR/slide/theme-img"
+if [ -f "$LANET" ] && [ -d "$THEMEIMG" ]; then
+  CANVAS_PX="$(python3 - "$RATIO" <<'PYCV'
+import re, sys
+m = re.match(r"^\s*(\d+(?:\.\d+)?)\s*[:x/]\s*(\d+(?:\.\d+)?)\s*$",
+             sys.argv[1].strip().strip('"').strip("'"))
+w = 1920
+print("%dx%d" % (w, round(w * float(m.group(2)) / float(m.group(1)))) if m else "1920x1080")
+PYCV
+)"
+  python3 "$LANET" "$REF" "$THEMEIMG" --mode layout --canvas-px "$CANVAS_PX" \
+    || echo "  ⚠️ lane T 배치 생략(계속 진행) — pandoc 기본 좌표로 나간다" >&2
+fi
+
 # ── ②-b 제목 색 교정 — **CSS 가 정본이다** (Issue329)
 #   `theme2reference.title_color()` 는 accent 중 가장 어두운 것(L*≤65)을 제목색으로 고른다.
 #   조직 템플릿이 없어 제목색을 *알 수 없을 때* 쓰는 합리적 추정이지만, m2slide 는 그것을
@@ -456,6 +483,15 @@ PY
   if [ -f "$LANEM" ] && [ -f "$LANEM_SIDECAR" ]; then
     python3 "$LANEM" "$OUT" --sidecar "$LANEM_SIDECAR" \
       || echo "  ⚠️ lane M 생략(계속 진행) — 수식이 평문 마커로 남는다" >&2
+  fi
+
+  # ── ③-b3b lane T 장식 — 최종 pptx 의 각 장에 가로선·제목 밑줄 (Issue345)
+  #   ②-a 는 마스터·레이아웃 **좌표**만 고쳤다. python-pptx 는 마스터에 그림을 넣지
+  #   못하므로(`MasterShapes` 에 `add_picture` 없음) 장식은 여기서 장마다 넣는다.
+  #   이미지 자체는 패키지에서 공유되므로 장 수만큼 커지지 않는다.
+  if [ -f "$LANET" ] && [ -d "$THEMEIMG" ]; then
+    python3 "$LANET" "$OUT" "$THEMEIMG" --mode ornament --canvas-px "$CANVAS_PX" \
+      || echo "  ⚠️ lane T 장식 생략(계속 진행) — 테마 가로선 없이 나간다" >&2
   fi
 
   # ── ③-b4 lane S — **왕복 복원 신호**를 pptx 안에 심는다 (Issue342)

@@ -46,6 +46,7 @@ except ImportError:
 MC = "http://schemas.openxmlformats.org/markup-compatibility/2006"
 P = "http://schemas.openxmlformats.org/presentationml/2006/main"
 SIG_PREFIX = "m2slide:"
+ORNAMENT_TAG = "m2slide:ornament"
 #   컴포넌트 펜스는 config 가 pptx 진입 전에 삭제되므로 종류만 알아도
 #   되살릴 수 없다 — 코드블록 언어와 섞이지 않게 여기서 가른다
 COMPONENT_FENCES = {"chart", "d3", "p5", "map", "model3d", "react"}
@@ -313,6 +314,12 @@ def convert(pptx_path, outdir, name):
                 body += [""] + md_table(sh.table)
                 continue
             if st.startswith("PICTURE"):
+                #   테마 장식(가로선·제목 밑줄)은 원고의 일부가 아니다 — lane T 가
+                #   alt-text 에 표식을 달아 둔다. 거르지 않으면 왕복본에 원고에 없던
+                #   이미지가 장마다 셋씩 생긴다(실측 2026-09-10: 10장에 21개).
+                el = sh._element.find(".//{%s}cNvPr" % P)
+                if el is not None and (el.get("descr") or "") == ORNAMENT_TAG:
+                    continue
                 body.append(("__PIC__", sh))
                 continue
             if sh.has_text_frame:
