@@ -99,3 +99,38 @@ theme_geometry:
   body_top: 205
   body_h: 1019
   asset: hr.png             # theme-img/ 안의 가로선 이미지. 도형으로 근사하지 않는다
+
+# ── 표지·머리말 좌표 (Issue347) ────────────────────────────────
+# 같은 이유로 **HTML 을 실제로 렌더해 잰 값**이다(ego-browser, 캔버스 1920×1280).
+# pandoc 의 `Title Slide` 는 title·subtitle·author·date 넷밖에 모르므로 표지는
+# lane T 가 직접 짓는다 — 로고는 section 의 background-image 라 `<img>` 로도 안 잡힌다.
+cover_geometry:
+  logo:        { l: 94,   t: 151,  w: 346, h: 204, asset: finfraPuffer1.png }
+  title:       { l: 56,   t: 426,  w: 1808, h: 158, fs: 138, align: center, bold: true }
+  subtitle:    { l: 56,   t: 616,  w: 1808, h: 40,  fs: 40,  align: center }
+  # 강사 정보는 **테두리 상자 + 이름 + 연락처** 셋이다. 하나로 합치면 HTML 의 두
+  # 요소가 pptx 에서 한 글자 덩어리가 되어 대조가 어긋난다(실측 2026-09-10)
+  instructor_box:     { l: 1233, t: 798, w: 631, h: 79, outline: true }
+  # ⚠️ 폭은 HTML 실측(255·245)보다 **넉넉히** 준다. pptx 서체가 웹 서체보다 넓어
+  #    실측 폭 그대로 두면 `남중구 ( 핀프 라 )` 처럼 접힌다(실측 2026-09-10).
+  #    `wrap="none"` 을 넣어도 뷰어에 따라 무시되므로 폭으로 막는 편이 안전하다.
+  instructor_name:    { l: 1258, t: 820, w: 296, h: 34, fs: 34, align: left }
+  instructor_contact: { l: 1556, t: 823, w: 300, h: 30, fs: 31, align: left }
+  corner_tl:   { l: 96,   t: 1,    w: 400, h: 16,  fs: 12,  align: left }
+  corner_br:   { l: 1424, t: 1263, w: 400, h: 16,  fs: 12,  align: right }
+  version:     { l: 1624, t: 0,    w: 200, h: 16,  fs: 14,  align: right }
+  license:     { l: 760,  t: 1262, w: 400, h: 16,  fs: 14,  align: center }
+
+# 본문 장 제목 옆 마스코트 — CSS `background-position: right 4% center` ·
+# `background-size: auto 119%` 를 제목 상자(56,80,1808,96) 기준으로 환산한 값
+contents_mascot:
+  l: 1672
+  t: 71
+  w: 125
+  h: 114
+  asset: finfraPuffer2s.png
+
+# 본문 장 머리말 바 — 상단 가로선과 제목 사이에 앉는다
+head_geometry:
+  left:  { l: 84,  t: 34, w: 868, h: 26, fs: 20, align: left }
+  right: { l: 968, t: 34, w: 868, h: 26, fs: 20, align: right }
