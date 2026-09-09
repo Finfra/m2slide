@@ -63,7 +63,10 @@
     - **컴포넌트 드롭 자리에 구조 표식** — `FENCE_DROP` 이 지운 자리에 종류를 밝히는 한 줄. 백지 장을 만들지 않는다
     - **[check-empty.py](lib/pptx/check-empty.py) 신설** — 본문 0 장 보고. 경고이지 차단이 아니다(간지 장·lane C 이월처럼 정당하게 비는 자리가 있다)
     - 회귀 러너 `z_test/ig-ppt/5.lanem.sh` 단언 6종 통과 · 기존 러너 무회귀(4.laneb aTest 6/6 · 3.parity igTest 7/7) · 최종 FAIL 0 · WARN 0
-    - 픽스처: `Projects/aTest` 를 패턴당 1장(21장 · 14.9KB→3.5KB)으로 축소. 원본은 `Projects/aTest.bak.20260909` 백업
+    - 픽스처: `Projects/aTest` 를 **10장**(1.9KB — 원본 42장 14.9KB)으로 축소. `--pptx` 6.9s → **2.7s**. 원본은 `Projects/aTest.bak.20260909` 백업
+        - 유지 축: lane A(표·불릿·이미지·코드) · lane B(cards·process) · lane C(pie 이월) · lane M(display + **인라인** 수식) · 컴포넌트 드롭 표식 · 면제 layout 2종(`Title Slide`·`Section Header`)
+        - 뺀 것: mermaid(mmdc·Chrome 기동이 첫 빌드 14s 의 주범) · 여분 이미지 3장 · compare · matrix · numbered · p5 · wordart · 컬럼. H1 챕터는 **1개만** — 하나가 2장(Section Header + 챕터 TOC)을 만든다
+        - ⚠️ **축소가 러너 버그를 드러냈다** — `5.lanem.sh` ③ 이 `"<m:oMath>"` 정확 일치로 세고 있었다. 인라인 수식은 그 요소가 ns 선언을 이고 나오므로(`<m:oMath xmlns:m="…">`) 조용히 0 으로 세어져 **없는 회귀를 보고했다**. display 만 있던 21장 픽스처에서는 안 걸렸다. 패턴을 `<m:oMath[ >]` 로 고쳤다
     - 진단 기록: `_doc_work/debug_TECH.md` (오진 2건 — 표를 못 읽은 계측 함정 · 검사기 layout 부분일치로 검사 무력화)
 
 

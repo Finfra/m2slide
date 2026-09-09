@@ -80,7 +80,13 @@ else:
     print("  ② marker-gone    잔존 0")
 
 # ── ③ omml — 수식이 있으면 OMML 도 있어야 한다
-n_omml = sum(x.count("<m:oMath>") for x in slide_xml.values())
+#    ⚠️ `"<m:oMath>"` 정확 일치로 세지 말 것. **인라인 수식은 그 요소가 ns 선언을 이고
+#       나온다** (`<m:oMath xmlns:m="…">`) — display 는 `oMathPara` 가 선언을 지므로
+#       내부 `<m:oMath>` 가 맨몸이고, 그 차이 때문에 인라인만 조용히 0 으로 세어진다
+#       (실측 2026-09-09: 삽입 2개인데 카운트 1개 → 없는 회귀를 보고했다).
+#       `<m:oMathPara` 는 `<m:oMath` 다음 글자가 `P` 라 아래 패턴에 걸리지 않는다.
+OMATH = re.compile(r"<m:oMath[ >]")
+n_omml = sum(len(OMATH.findall(x)) for x in slide_xml.values())
 if items:
     if n_omml < len(items):
         fails.append("③ omml — 수식 %d건인데 OMML %d개 (평문으로 떨어진 것이 있다)"
