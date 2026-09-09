@@ -78,6 +78,13 @@ class SectionText(html.parser.HTMLParser):
             return
         #   컴포넌트는 두 모양으로 나온다 — `<div data-component="chart">` 안에 설정
         #   원문이 그대로 있고(m2slide 렌더), 코드 펜스로 남는 경우도 있다
+        #   mermaid 는 `<div class="media-container mermaid">` 안에 원문이 남고
+        #   화면에는 렌더된 그림이 보인다. 계약이 `mermaid_fence: declared_drop`
+        #   으로 선언했으므로 원문을 빠짐으로 세면 안 된다
+        if tag == "div" and "mermaid" in (a.get("class") or "").split():
+            self._skip += 1
+            self._comp = tag
+            return
         if (a.get("data-component") in COMPONENT_KINDS
                 or (tag in ("code", "pre")
                     and COMPONENT_LANG.search(a.get("class") or ""))):
@@ -286,8 +293,10 @@ def main():
         print("❌ pptx 에 없는 글자 %d종 (긴 것부터 %d개)"
               % (len(missing), min(a.max_report, len(missing))))
         for t in missing[:a.max_report]:
-            n = miss_c[t]
-            print("   · %-58s %s" % (t[:58], ("×%d 모자람" % n) if n > 1 else ""))
+            #   1개 부족도 개수를 적는다 — 안 적으면 "pptx 에 아예 없다" 로 오해한다
+            #   (실측: 제목이 pptx 에 있는데 머리말 바 몫 1회가 모자란 경우)
+            print("   · %-56s %d회 모자람 (HTML %d · pptx %d)"
+                  % (t[:56], miss_c[t], h_text[t], p_text[t]))
     else:
         print("✅ HTML 의 글자가 pptx 에 전부 있다")
     if extra:
