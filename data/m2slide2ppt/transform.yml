@@ -134,3 +134,24 @@ contents_mascot:
 head_geometry:
   left:  { l: 84,  t: 34, w: 868, h: 26, fs: 20, align: left }
   right: { l: 968, t: 34, w: 868, h: 26, fs: 20, align: right }
+
+# ── 카드 좌표·색 (Issue349) ───────────────────────────────────
+# lane B 는 글로벌 ppt-info 의 `cards`(좌측 액센트 바 + 회색 본문)를 그린다. 그것은
+# **m2slide 카드와 다른 디자인**이다 — m2slide 는 **상단 노란 제목 밴드 + 본문**이다.
+# 아래는 HTML 을 실제로 렌더해 잰 값(ego-browser, 캔버스 1920×1280 · card_columns: 3).
+#
+# ⚠️ 세로 위치도 다르다 — lane B 는 본문 영역 **중앙**에, HTML 은 **상단**에 놓는다.
+card_geometry:
+  top: 253            # 본문 영역(205) 아래 48px
+  gap: 14             # 카드 사이 간격
+  band_h: 130         # 제목 밴드 높이
+  body_line_h: 69     # 본문 한 줄 높이
+  pad_bottom: 38      # 본문 아래 여백
+  body_pad_x: 23      # 본문 좌우 안쪽 여백
+  radius_pct: 8       # 모서리 둥글기 (카드 높이 대비 %) — HTML 20.24px ≈ 237×8.5%
+  card_bg: "F5F5F5"   # rgba(0,0,0,0.04) 를 흰 바탕 위에서 환산
+  band_bg: "F5C518"   # --kn-accent
+  fg: "111111"        # --kn-text
+  border: "E0E0E0"    # rgba(0,0,0,0.12) 환산
+  band_fs: 40
+  body_fs: 40

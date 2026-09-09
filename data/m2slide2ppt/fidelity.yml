@@ -172,18 +172,29 @@ elements:
     evidence: "aTest 11 필드 왕복 일치 — 2026-09-09 (승격 전 −10)"
   - id: h1_chapter
     m2slide: "`# H1` 챕터 제목"
-    pptx: "Section Header 레이아웃 한 장"
-    grade: lossless
-    evidence: "aTest p2 '1. 변환 경로 커버리지' — 2026-09-09"
+    pptx: "`cards_placeholder` 설정에 달렸다 — 아래"
+    grade: declared_drop
+    reason: |
+      **설정이 정하는 항목이다.** `cards_placeholder: false` 면 HTML 이 H1 슬라이드를
+      **deck 에서 지우므로**(_config.org.yml 주석) pptx 도 만들지 않는다 — 원고의 H1 은
+      구조 정보로만 남고 장이 되지 않는다. `true` 면 양쪽 모두 장을 만든다.
+    caveat: |
+      ⚠️ 이 항목이 `lossless` 였던 것은 계약이 **원고만** 보고 산출물을 보지 않았기
+      때문이다. 그 탓에 같은 원고가 HTML 8장 · pptx 10장으로 갈렸는데도 초록불이었다
+      (실측 2026-09-10). 원고 축과 시각 축이 **다른 정본을 보던** 자리다.
+    recover: |
+      lane S 신호에 H1 글자를 담으면 역변환이 되살릴 수 있다 — 다만 그 장이 pptx 에
+      없으므로 **어느 장의 신호에 붙일지**를 먼저 정해야 한다(첫 본문 장이 후보).
+    evidence: "aTest `cards_placeholder: false` — HTML·pptx 둘 다 H1 장 없음 (2026-09-10)"
 
   - id: chapter_toc_slide
-    m2slide: "(없음)"
-    pptx: "H1 다음에 자동 삽입되는 챕터 목차 장 (부제 + 그 챕터 H2 목록)"
+    m2slide: "chapter mode 에서 `toc_placeholder: true` 면 HTML 에도 있다"
+    pptx: "같은 조건에서 자동 삽입되는 챕터 목차 장"
     grade: synthesized
     reason: |
-      build-source.py `normalize_chapter` ⑧ 이 만든다. HTML 덱의 챕터 TOC 장에
-      대응시키려는 의도이고 원고를 바꾸지는 않지만, **pptx 에는 원본에 없는 장이
-      한 개 더 있게 된다**.
+      build-source.py `normalize_chapter` ⑧ 이 만든다. **`toc_placeholder` 는
+      chapter mode 전용**이라(_config.org.yml 주석) single mode 에서는 양쪽 모두
+      만들지 않는다 — 그것을 읽지 않던 탓에 single 덱에 pptx 에만 목차 장이 생겼다.
     reverse_action: drop
     detect: |
       Section Header 바로 다음 장이면서, 본문 불릿이 이후 장들의 제목 목록과 일치한다.
