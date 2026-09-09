@@ -147,6 +147,63 @@ print("  본문 크기 교정 — CSS 실측 %gpx / 캔버스 %gpx = 폭의 %.2f
       % (fs_px, rv_w, fs_px / rv_w * 100, body, old.group(1) if old else "?"))
 PY
 
+# ── ①-c theme.yml 교정 — **CSS 가 정본이다** (Issue344)
+#
+#   판형과 먹색 둘을 고친다. 산출된 theme.yml 을 덮는 자리가 하나여야
+#   *"어디서 정해지는가"* 를 한 곳에서 답할 수 있다.
+#
+#   ⚠️ 아래 ②-b(제목 색 교정)와 **겹치지 않는다** — 저기는 템플릿 placeholder 에
+#      색이 `srgbClr` 로 **직기입된** 경우를 고치고, 여기는 **테마 색(dk1)** 을 고친다.
+#      우리 reference 는 제목이 테마를 상속하므로(실측: run 에 색 없음) ②-b 는
+#      바꿀 것을 못 찾고 지나간다. 조직 템플릿을 쓰는 덱에서는 반대가 된다.
+#
+#   글로벌 `theme-from-css.py` 의 `--canvas` 는 `16:9|4:3|a4` 셋뿐이라 m2slide 의
+#   `slide_ratio: "3:2"` 를 표현할 어휘가 없고, build-pptx 는 그 인자를 넘기지도
+#   않아 **언제나 16:9 로 굳는다**. 그래서 `slide_ratio: "3:2"` 인 덱은 HTML 이
+#   3:2, pptx 가 16:9 로 나온다 — 같은 원고인데 판형이 다르다
+#   (실측 2026-09-10, aTest: 설정 3:2 vs pptx 1.778).
+#
+#   고칠 곳이 글로벌 스킬이라 여기서는 **산출된 theme.yml 의 canvas 를 덮는다**.
+#   폭은 그대로 두고 높이만 비율에 맞춘다 — 폭을 바꾸면 바로 위 ①-b 의 본문 크기
+#   교정(폭 기준)이 어긋난다.
+RATIO="$(cfg_get slide_ratio)"; RATIO="${RATIO:-16:9}"
+INK="$(python3 "$SCRIPT_DIR/css-var.py" "$PROJECT_DIR" --kn-text --m2-text 2>/dev/null || true)"
+python3 - "$THEME_YML" "$RATIO" "$INK" <<'PYRATIO'
+import re, sys
+yml, ratio = sys.argv[1], sys.argv[2].strip().strip('"').strip("'")
+ink = (sys.argv[3] if len(sys.argv) > 3 else "").strip().lstrip("#").upper()
+
+# 먹색 — 제목 run 은 색을 직접 갖지 않고 테마 dk1 을 상속한다. 그래서 dk1 이
+# 곧 화면의 제목색이고, CSS `--kn-text` 가 그 정본이다.
+# 실측(2026-09-10, aTest): CSS #111111 vs theme.yml ink #1A1A1A — ΔE 15.6
+if re.fullmatch(r"[0-9A-F]{6}", ink or ""):
+    src0 = open(yml, encoding="utf-8").read()
+    mi = re.search(r'(^\s*ink:\s*")([0-9A-Fa-f#]+)(")', src0, re.M)
+    if mi and mi.group(2).lstrip("#").upper() != ink:
+        src0 = src0[:mi.start(2)] + "#" + ink + src0[mi.end(2):]
+        open(yml, "w", encoding="utf-8").write(src0)
+        print("  \uba39\uc0c9 \uad50\uc815 \u2014 CSS \uc2e4\uce21 #%s (\uae30\uc874 %s)" % (ink, mi.group(2)))
+m = re.match(r"^\s*(\d+(?:\.\d+)?)\s*[:x/]\s*(\d+(?:\.\d+)?)\s*$", ratio)
+if not m:
+    print("  \u26a0\ufe0f slide_ratio \ub97c \ubabb \uc77d\uc5c8\ub2e4(%r) \u2014 \ud310\ud615 \uad50\uc815 \uc0dd\ub7b5" % ratio)
+    raise SystemExit
+rw, rh = float(m.group(1)), float(m.group(2))
+src = open(yml, encoding="utf-8").read()
+mw = re.search(r"(^canvas:.*?^\s*w:\s*)([\d.]+)", src, re.S | re.M)
+mh = re.search(r"(^canvas:.*?^\s*h:\s*)([\d.]+)", src, re.S | re.M)
+if not (mw and mh):
+    print("  \u26a0\ufe0f theme.yml canvas \ub97c \ubabb \uc77d\uc5c8\ub2e4 \u2014 \ud310\ud615 \uad50\uc815 \uc0dd\ub7b5")
+    raise SystemExit
+w = float(mw.group(2)); want = round(w * rh / rw, 2); have = float(mh.group(2))
+if abs(want - have) < 0.01:
+    print("  \ud310\ud615 %s \u2014 \uc774\ubbf8 \ub9de\uc74c (%.2f \u00d7 %.2f mm)" % (ratio, w, have))
+    raise SystemExit
+src = src[:mh.start(2)] + ("%g" % want) + src[mh.end(2):]
+open(yml, "w", encoding="utf-8").write(src)
+print("  \ud310\ud615 \uad50\uc815 \u2014 slide_ratio %s \u2192 %.2f \u00d7 %.2f mm (\uae30\uc874 \ub192\uc774 %.2f)"
+      % (ratio, w, want, have))
+PYRATIO
+
 # ── ② theme.yml → reference.pptx
 python3 "$T2R" "$THEME_YML" --out "$REF" --adapt >/dev/null
 

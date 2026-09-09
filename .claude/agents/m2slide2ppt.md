@@ -22,7 +22,9 @@ color: cyan
 
 # 데이터 로드 (데이터-주도 SCAR)
 
-* [`data/m2slide2ppt/fidelity.yml`](../../data/m2slide2ppt/fidelity.yml) — 요소별 pptx 표현과 **복원 등급**. 판정의 기준입니다
+* [`data/m2slide2ppt/fidelity.yml`](../../data/m2slide2ppt/fidelity.yml) — 판정의 기준. 두 절로 나뉩니다
+    - `elements:` — **원고 왕복** 축. 요소별 pptx 표현과 복원 등급
+    - `visual:` — **시각** 축. HTML 덱과 pptx 를 나란히 놓고 재는 항목(판형·강조색·배경·제목색·서체·꼴)
 * [`data/m2slide2ppt/transform.yml`](../../data/m2slide2ppt/transform.yml) — 컴포넌트 드롭 카탈로그·lane B 대상·제거 디렉티브. `build-source.py` 가 실제로 읽습니다
 
 두 파일 모두 `kind: policy/stage` 라 **본 agent 전용**입니다([data-access-rules](../rules/data-access-rules.md)).
@@ -33,8 +35,9 @@ color: cyan
 | :--- | :--- |
 | 정방향 빌드 | `./m2slide.sh <P> --pptx` |
 | 왕복 역변환 (결정론적·무과금) | [`lib/pptx/pptx2source.py`](../../lib/pptx/pptx2source.py) |
-| 계약 대조 | [`lib/pptx/check-roundtrip.py`](../../lib/pptx/check-roundtrip.py) |
-| 회귀 러너 (셋을 한 번에) | `./z_test/ig-ppt/6.roundtrip.sh <P>` |
+| 계약 대조 (원고 축) | [`lib/pptx/check-roundtrip.py`](../../lib/pptx/check-roundtrip.py) |
+| 계약 대조 (시각 축) | [`lib/pptx/check-visual.py`](../../lib/pptx/check-visual.py) |
+| 회귀 러너 (다섯을 한 번에) | `./z_test/ig-ppt/6.roundtrip.sh <P>` |
 
 ⚠️ `pptx2source.py` 는 **사이드카(`lane-b.json`·`lane-m.json`)를 읽지 않습니다.** 거기엔 원본이 그대로 적혀 있어 읽으면 늘 만점이 나옵니다 — 커닝이지 검증이 아닙니다. 러너 ④ 가 이 규칙을 기계로 지킵니다.
 
@@ -50,7 +53,12 @@ color: cyan
 
 `./m2slide.sh <P> --pptx`. 내장 검증(`check-conform`·`check-xml-order`)의 FAIL 은 여기서 빌드를 죽입니다 — 그 게이트는 그대로 둡니다.
 
-## 3. 빌드 후 — 왕복 검사
+## 3. 빌드 후 — 왕복 검사와 시각 검사
+
+⚠️ **두 축은 서로를 대신하지 않습니다.** 원고가 온전히 돌아와도 판형·색이 다르면
+같은 덱이 아닙니다 — 실측(2026-09-10)에서 `slide_ratio: "3:2"` 인 덱이 16:9 pptx 로
+나가는 동안 왕복 검사는 초록불이었습니다.
+
 
 `./z_test/ig-ppt/6.roundtrip.sh <P>`. 결과는 세 갈래입니다:
 

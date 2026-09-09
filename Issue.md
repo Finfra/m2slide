@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 343
+* Issue HWM: 344
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -48,6 +48,23 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue344: pptx 판형·테마 색이 HTML 덱과 달랐다 — 시각 축 계약 신설 (등록: 2026-09-10, 해결: 2026-09-10) ✅
+* 목적: Issue342 가 만든 왕복 계약은 **원고 축만** 잰다. 그 사이 `slide_ratio: "3:2"` 인 덱이 16:9 pptx 로 나가는 동안 왕복 검사는 초록불이었다 — Issue342 가 지적한 것("규격만 재고 충실을 안 잰다")과 **같은 종류의 사각지대**를 새로 만든 셈이다
+* depends: Issue342
+* 상세:
+    - **판형 불일치**: 글로벌 [`theme-from-css.py`](file:///Users/nowage/.claude/skills/ppt-spec/scripts/theme-from-css.py) 의 `CANVAS` 에는 `16:9`·`4:3`·`a4` 뿐이라 m2slide 의 `3:2` 를 표현할 어휘가 없고, [`build-pptx.sh`](lib/pptx/build-pptx.sh) 는 `--canvas` 를 넘기지도 않아 **언제나 16:9 로 굳었다** (실측 aTest·m2Slide_chapter_mode 둘 다)
+    - **먹색 불일치**: 제목 run 은 색을 직접 갖지 않고 테마 `dk1` 을 상속하는데, 그 값이 `#1A1A1A` 였다. CSS 정본은 `--kn-text: #111111` (ΔE 15.6). 기존 ②-b 교정은 placeholder 에 `srgbClr` 이 **직기입된** 경우만 고치므로 테마 상속을 못 잡았다
+* 구현 명세:
+    - [`build-pptx.sh`](lib/pptx/build-pptx.sh) ①-c — 산출된 `theme.yml` 의 canvas 높이와 `palette.ink` 를 CSS 실측으로 덮는다. **글로벌 스킬은 건드리지 않았다**
+    - [`fidelity.yml`](data/m2slide2ppt/fidelity.yml) `visual:` 절 신설 — 판형·강조색·배경·제목색(`must_match`) · 서체·레이아웃 꼴(`known_gap`)
+    - [`check-visual.py`](lib/pptx/check-visual.py) 신설 + 러너 ⑤ 로 편입
+* 결과:
+    - aTest·m2Slide_chapter_mode 둘 다 `must_match` 전건 일치. 원고 왕복은 무영향(33=33 유지)
+    - 남은 `known_gap` 2종 — 본문 서체(pptx 가 CSS 체인에서 Windows 폰트 `Malgun Gothic` 을 고른다)·레이아웃 꼴(글로벌 스킬이 색·서체만 옮기도록 설계돼 있다)
+* 미해결 🚧:
+    - 근본 원인인 **글로벌 `theme-from-css.py` 에 `3:2` 부재**는 그대로다. 로컬에서 덮고 있을 뿐이라 다른 프로젝트가 같은 함정을 밟는다 — `~/.claude/Issue.md` 이슈 등록 대상(타 repo 수정이라 사용자 승인 필요)
+    - 레이아웃 꼴 이식은 pptx 레이아웃 마스터를 m2slide theme 에서 생성하는 별도 규모의 일
 
 ## Issue342: m2slide → pptx 에 변환 정책이 없다 — round-trip 계약 신설 + agent 화 (등록: 2026-09-09, 해결: 2026-09-10, commit: 3835de0, bb837c5) ✅
 * 목적: 역방향(`pptx → m2slide`)은 [`data/ppt2m2slide/`](data/ppt2m2slide/) 3종 yml 로 데이터-주도인데, **정방향(`m2slide → pptx`)은 정책이 전부 코드 상수·정규식에 박혀 있다**. 그래서 *"이 변환에서 무엇이 어떻게 손실되는가"* 를 선언할 자리도, 검증할 장치도, 학습할 경로도 없다. 이 비대칭이 pptx 산출 품질 회귀가 조용히 통과하는 근본 원인이다
