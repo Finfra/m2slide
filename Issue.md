@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 341
+* Issue HWM: 342
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -25,6 +25,18 @@
 # 🌱 이슈후보
 
 # 🚧 진행중
+
+## Issue342: m2slide → pptx 에 변환 정책이 없다 — round-trip 계약 신설 + agent 화 (등록: 2026-09-09)
+* 목적: 역방향(`pptx → m2slide`)은 [`data/ppt2m2slide/`](data/ppt2m2slide/) 3종 yml 로 데이터-주도인데, **정방향(`m2slide → pptx`)은 정책이 전부 코드 상수·정규식에 박혀 있다**. 그래서 *"이 변환에서 무엇이 어떻게 손실되는가"* 를 선언할 자리도, 검증할 장치도, 학습할 경로도 없다. 이 비대칭이 pptx 산출 품질 회귀가 조용히 통과하는 근본 원인이다
+* 상세:
+    - 정책이 코드에 박힌 지점 — [`build-source.py`](lib/pptx/build-source.py): `FENCE_DROP`·`FENCE_DROP_LABEL`(컴포넌트 드롭 카탈로그) · `ID_LINE`·`ANIM_LINE`·`SLOT_RIGHT`(디렉티브 제거) · `ATTR`·`SYMBOL`·`ELEMENT_COMMENT`(인라인 제거) · `LANE_B_CATALOG`(도형 렌더 대상) · `normalize_chapter`(챕터 TOC **자동 생성**) · `defer_heavy`(표·그림 순서 변경)
+    - 현행 검증 3종(`check-conform`·`check-xml-order`·`check-empty`)은 **pptx 내부 규격**만 잰다. *"원고가 pptx 에 제대로 옮겨졌는가"* 는 아무도 재지 않는다
+    - 실측(aTest 10장 픽스처, 2026-09-09): 빌드 rc0 · FAIL 0 · WARN 0 인데도 frontmatter 전량 · `#id-*`·`#transition-*` 디렉티브 · `{.fragment}` · `::: htmlart pie`(lane C 이월) · ` ```chart ` 컴포넌트가 소실되고, 원본에 **없던** 챕터 TOC 장이 생성됨
+* 구현 명세:
+    - 신설 `data/m2slide2ppt/` (kind: policy/stage) — 요소별 pptx 표현과 **복원 등급**(lossless·lossy·declared-drop)을 선언하는 round-trip 충실도 계약
+    - 신설 round-trip 검증 — 원본 md ↔ 역변환 md 를 대조해 **계약에 선언되지 않은 손실**만 FAIL 로 든다. 선언된 손실은 통과(그것이 계약의 목적)
+    - 변환 기능을 agent 방식으로 전환 — 코드 상수를 정책 yml 로 외부화하고 판정을 agent 가 소유
+    - 수렴 판정: `aTest → pptx → aTest_rt` 왕복에서 **undeclared diff 0** 이 될 때까지 정책 갱신 반복
 
 
 # 📕 중요

@@ -43,6 +43,7 @@ date: 2026-05-26
 | 9    | `note-writer`       | `data/note-writer/`       | Issue257                                   |
 | 10   | `md2tts-txt`        | (없음)                    | 글로벌 tts-pronunciation-rules.md만 허용   |
 | rev  | `ppt2m2slide`       | `data/ppt2m2slide/`       | 역변환 파이프라인 전용                     |
+| fwd  | `m2slide2ppt`       | `data/m2slide2ppt/`       | 정방향(원고 → pptx) 판정·왕복 계약 전용     |
 
 ## 공유 허용 — **파일의 `kind` 선언으로 판정한다** (Issue340)
 

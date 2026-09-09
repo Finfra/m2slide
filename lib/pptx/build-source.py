@@ -115,13 +115,42 @@ LAYOUT_LINE = re.compile(r"^[ \t]*#_?[a-z][a-z0-9-]*[ \t]*$")
 # ⑪ 컴포넌트 펜스 — HTML 에서만 살아 있는 것들.
 #    wordart 는 **글자가 내용**이라 태그만 벗겨 남기고, 나머지는 설정·코드라 지운다.
 #    (남기면 JSON·JS 원문이 슬라이드에 그대로 찍힌다 — 실측: 45번 장에 `<h1 class=…>` 노출)
-FENCE_UNWRAP = {"wordart"}
-FENCE_DROP = {"chart", "d3", "p5", "map", "model3d", "react"}
+
+# ── 변환 카탈로그는 정책이 소유한다 (Issue342) ────────────────────────────────
+#    오래 이 파일의 **코드 상수**였다. 그래서 *"chart 를 왜 버리는가"* 를 바꾸려면
+#    코드를 고쳐야 했고 바뀐 이유를 남길 자리도 없었다 — 역방향(ppt2m2slide)이
+#    yml 로 데이터-주도인 것과 어긋나 있었다. 이제 어휘는
+#    [transform.yml](../../data/m2slide2ppt/transform.yml) 이 소유한다.
+#
+#    ⚠️ 정책을 읽지 못해도 **빌드는 계속 돈다**. 여기 적힌 값이 마지막 안전망이다 —
+#       빌드 핵심 경로에 새 의존(PyYAML·파일 존재)을 얹어 놓고 없으면 죽는 것은
+#       고칠 값어치보다 잃는 것이 크다. 정책이 안 읽히면 stderr 로 알린다.
+_POLICY = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                       "..", "..", "data", "m2slide2ppt", "transform.yml")
+
+
+def _load_policy():
+    try:
+        import yaml
+        with open(_POLICY, encoding="utf-8") as fp:
+            return yaml.safe_load(fp) or {}
+    except Exception as exc:                       # 없거나·깨졌거나·PyYAML 부재
+        print("⚠️  transform.yml 미적용 — 코드 기본값으로 진행 (%s)" % exc,
+              file=sys.stderr)
+        return {}
+
+
+_POL = _load_policy()
+_FENCES = _POL.get("fences") or {}
+
+FENCE_UNWRAP = set(_FENCES.get("unwrap") or ["wordart"])
+FENCE_DROP = set((_FENCES.get("drop") or {}).keys()) or {
+    "chart", "d3", "p5", "map", "model3d", "react"}
 #    지우는 것은 맞지만 **그 자리를 비워 두면 제목만 남은 백지 장이 배포된다**
 #    (실측 2026-09-09, aTest p18 chart · p19 p5 — 검증도 FAIL 0 으로 통과했다).
 #    그래서 무엇이 있던 자리인지 한 줄로 남긴다. 이것은 내용 창작이 아니라
 #    ⑨ 목차 라벨과 같은 **구조 표식**이다 — 원고의 문장을 짓지 않는다.
-FENCE_DROP_LABEL = {
+FENCE_DROP_LABEL = dict(_FENCES.get("drop") or {}) or {
     "chart": "차트",
     "d3": "인포그래픽(d3)",
     "p5": "시뮬레이션(p5.js)",
@@ -129,7 +158,7 @@ FENCE_DROP_LABEL = {
     "model3d": "3D 모델",
     "react": "인터랙티브 컴포넌트(React)",
 }
-FENCE_DROP_NOTE = "· %s — 웹 슬라이드에서 동작하는 요소입니다"
+FENCE_DROP_NOTE = _FENCES.get("drop_note") or "· %s — 웹 슬라이드에서 동작하는 요소입니다"
 TAG = re.compile(r"<[^>]+>")
 
 # ── ⑬ lane M — 수식. pandoc 에 Math 를 주면 그 장의 본문이 통째로 사라진다(위 설명).
@@ -431,18 +460,12 @@ def normalize_chapter(blocks, chapter_title, stat):
 #      카탈로그에 없는 htmlart(pie·matrix·venn…)는 도형 배치 자체가 판단이고, 그 판단은
 #      장당 33만 토큰짜리 `ig-maker`(lane C) 소관이다. 여기서 비슷한 블록으로
 #      **근사하지 않는다** — 근사하면 원본과 다른 도해가 조용히 나간다.
-LANE_B_CATALOG = {
-    "cards":            "cards",     # 카드 그리드      → ppt-info `cards`
-    "htmlart numbered": "cards",     # 번호 카드        → 같은 블록(번호는 우리가 매긴다)
-    "htmlart process":  "process",   # 순차 단계        → `cards` + `flow_arrow` 네이티브 커넥터
-    "htmlart compare":  "compare",   # 좌우 동등 비교   → `compare` (1:1 대응)
-    # 순차형 4종 (Issue333) — 진행 순서가 내용의 전부라 `process` 매핑을 그대로 탄다.
-    # HTML 의 시각 변주(연대축·갈매기·계단·깔때기)는 pptx 에서 근사하지 않는다 —
-    # 살아남는 것은 **순서와 연결**이고 그것이 flow_arrow 가 그리는 것이다.
-    "htmlart timeline": "process",   # 타임라인         → 순차 카드 + 커넥터
-    "htmlart chevron":  "process",   # 갈매기형 체인    → 순차 카드 + 커넥터
-    "htmlart step":     "process",   # 계단형 단계      → 순차 카드 + 커넥터
-    "htmlart funnel":   "process",   # 깔때기           → 순차 카드 + 커넥터 (단계 축소 = 순서)
+LANE_B_CATALOG = dict(_POL.get("lane_b") or {}) or {
+    # 정책을 읽지 못했을 때의 안전망 — 근거·전체 목록은 transform.yml `lane_b`
+    "cards": "cards", "htmlart numbered": "cards", "htmlart process": "process",
+    "htmlart compare": "compare", "htmlart timeline": "process",
+    "htmlart chevron": "process", "htmlart step": "process",
+    "htmlart funnel": "process",
 }
 FENCE_DIV_OPEN = re.compile(r"^[ \t]*:::+[ \t]*(cards|htmlart[ \t]+[a-z][a-z0-9-]*)"
                             r"(?:[ \t]+\{[^}]*\})?[ \t]*$")
