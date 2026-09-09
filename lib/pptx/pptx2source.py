@@ -318,11 +318,16 @@ def convert(pptx_path, outdir, name):
                 #   alt-text 에 표식을 달아 둔다. 거르지 않으면 왕복본에 원고에 없던
                 #   이미지가 장마다 셋씩 생긴다(실측 2026-09-10: 10장에 21개).
                 el = sh._element.find(".//{%s}cNvPr" % P)
-                if el is not None and (el.get("descr") or "") == ORNAMENT_TAG:
+                if (el.get("descr") or "").startswith(ORNAMENT_TAG) if el is not None else False:
                     continue
                 body.append(("__PIC__", sh))
                 continue
             if sh.has_text_frame:
+                #   lane T 가 심은 테마 글자(머리말 바·라이선스 뱃지·표지 슬롯)는
+                #   원고가 아니다 — 표식으로 거른다
+                el = sh._element.find(".//{%s}cNvPr" % P)
+                if (el.get("descr") or "").startswith(ORNAMENT_TAG) if el is not None else False:
+                    continue
                 if sh.name.startswith("TextBox") and any(
                         isinstance(x, tuple) and x[0] == "__PIC__" for x in body):
                     cap = sh.text_frame.text.strip()

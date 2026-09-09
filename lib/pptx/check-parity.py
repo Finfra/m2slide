@@ -188,7 +188,7 @@ def pptx_slides(path):
                         rec["text"].append(c.text_frame.text)
             if str(sh.shape_type or "").startswith("PICTURE"):
                 el = sh._element.find(".//{%s}cNvPr" % P)
-                if el is not None and (el.get("descr") or "") == ORNAMENT_TAG:
+                if el is not None and (el.get("descr") or "").startswith(ORNAMENT_TAG):
                     continue        # 테마 장식 — 그림 수에 넣지 않는다
                 rec["img"].append("pic")
         out.append(rec)
@@ -202,12 +202,35 @@ def css_theme_assets(project_dir):
     tdir = os.path.join(project_dir, "slide", "theme-img")
     if not (os.path.isfile(css) and os.path.isdir(tdir)):
         return {}
-    txt = open(css, encoding="utf-8").read()
+    txt = re.sub(r"/\*.*?\*/", "", open(css, encoding="utf-8").read(), flags=re.S)
+
+    #   ⚠️ **CSS 참조 전부를 요구하면 과하다.** theme 은 쓰지도 않는 layout
+    #      (`_chapter`·`_toc`·`_closing`·`_exercise`)의 마스코트까지 선언해 둔다.
+    #      이 덱이 **실제로 쓰는 layout** 의 배경만 대상이다 (실측 2026-09-10:
+    #      aTest 는 `_cover`·`_contents` 둘뿐인데 자산 5종을 요구했다).
+    #   ⚠️ HTML 전체에서 `layout-` 을 긁으면 안 된다 — 스크립트·markmap 데이터에도
+    #      그 문자열이 있어 **쓰지 않는 layout 까지 "사용 중"** 이 된다(실측: aTest 가
+    #      exercise·closing 을 쓴다고 나왔다). `<section class>` 만 본다.
+    html = " ".join(open(f, encoding="utf-8").read()
+                    for f in glob.glob(os.path.join(project_dir, "slide", "*.html")))
+    used_layouts = set()
+    for cls in re.findall(r"<section[^>]*\sclass=\"([^\"]*)\"", html):
+        used_layouts |= set(re.findall(r"layout-(_?[a-z0-9-]+)", cls))
+
     out = {}
-    for n in set(re.findall(r"url\([\'\"]?\.\./theme-img/([^\'\")]+)", txt)):
-        p = os.path.join(tdir, n)
-        if os.path.isfile(p):
-            out[n] = hashlib.md5(open(p, "rb").read()).hexdigest()
+    for m in re.finditer(r"([^{}]+)\{([^{}]*)\}", txt):
+        sel, body = m.group(1), m.group(2)
+        names = re.findall(r"url\([\'\"]?\.\./theme-img/([^\'\")]+)", body)
+        if not names:
+            continue
+        want = set(re.findall(r"layout-(_?[a-z0-9-]+)", sel))
+        #   layout 을 특정하지 않은 규칙(전역 배경 등)은 늘 대상이다
+        if want and not (want & used_layouts):
+            continue
+        for n in names:
+            fp = os.path.join(tdir, n)
+            if os.path.isfile(fp):
+                out[n] = hashlib.md5(open(fp, "rb").read()).hexdigest()
     return out
 
 

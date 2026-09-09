@@ -23,6 +23,7 @@
     rc 2  입력 문제
 """
 import argparse
+import collections
 import os
 import re
 import sys
@@ -249,13 +250,16 @@ def main():
             abs(got_l - want_l) <= 2 and abs(got_w - want_w) <= 4)
 
     # ⑦⑧ 테마 장식 — 가로선과 제목 밑줄이 실제로 들어갔는가
-    rules = 0
+    #   ⚠️ 종류별로 센다. 합쳐 세면 로고·마스코트·표지 밑줄이 늘 때마다 계산이 깨진다
+    kinds = collections.Counter()
     slides = list(prs.slides)
     for sl in slides:
         for sh in sl.shapes:
             el = sh._element.find(".//{%s}cNvPr" % P)
-            if el is not None and (el.get("descr") or "") == ORNAMENT_TAG:
-                rules += 1
+            d = (el.get("descr") or "") if el is not None else ""
+            if d.startswith(ORNAMENT_TAG):
+                kinds[d.split("/", 1)[1] if "/" in d else "rule"] += 1
+    rules = kinds["rule"]
     n = len(slides) or 1
     add("theme_rule", "장마다 상·하단 2줄", "%d개 / %d장" % (rules, n), rules >= 2 * n)
     #   ⚠️ **제목이 빈 장은 세지 않는다.** HTML 도 제목 요소가 없으면 `::after` 가
@@ -271,8 +275,9 @@ def main():
                   if sh.has_text_frame and sh.name.startswith("Title")), None)
         if t is not None and t.text_frame.text.strip():
             body_n += 1
-    add("title_underline", "제목 있는 본문 장 %d개" % body_n,
-        "%d개" % max(0, rules - 2 * n), rules - 2 * n == body_n)
+    #   표지 제목에도 밑줄이 있다(HTML `.cover-title::after`) — 본문 장 + 표지
+    add("title_underline", "제목 있는 본문 장 %d개(+표지)" % body_n,
+        "%d개" % kinds["underline"], kinds["underline"] >= body_n)
 
     # ⑨ 남은 꼴 — 카드 밴드·자간 등 기계로 잴 수 없는 것
     add("layout_ornament", "theme CSS 의 세부 꼴", "(부분 이식)", False)
