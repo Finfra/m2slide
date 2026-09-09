@@ -76,3 +76,26 @@ strip_directives:
   - id: slot_right
     pattern: '^[ \t]*::right::[ \t]*$'
     note: "Slidev 호환 2분할. `Two Content` 레이아웃 매핑이 승격 경로"
+
+# ── 테마 꼴 좌표 (Issue345) ───────────────────────────────────
+# 글로벌 `theme-from-css.py` 는 **색·서체만** 옮긴다. 그래서 pptx 는 팔레트만 같고
+# 생김새는 pandoc 기본이었다 — placeholder 가 4:3 기본 좌표(10×7.5in)로 남아
+# 13.33in 판에 9.5in 상자가 앉고(우측 3.8in 공백), 테마 가로선도 없었다.
+#
+# 아래 값은 **HTML 덱을 실제로 렌더해 잰 것**이다(캔버스 1920×1280 px). CSS 를 읽어
+# 계산하지 않은 이유는 flex 최종 위치가 선언만으로 정해지지 않기 때문이다.
+# `lane-t.py`(이식)와 `check-visual.py`(검증)가 **같은 이 값을** 읽는다 — 두 곳에
+# 따로 적으면 어긋난 채로 서로를 통과시킨다.
+#
+# ⚠️ theme 을 바꾸면 이 값도 다시 재야 한다. 지금 값은 `default` 기준이다.
+theme_geometry:
+  canvas_w: 1920            # reveal 캔버스 폭(px). 높이는 slide_ratio 로 정해진다
+  margin: 56                # 좌우 여백 — CSS section padding
+  rule_h: 10                # 가로선 두께 (hr.png 높이)
+  rule_top: 22              # 상단 가로선 top
+  rule_bottom: 1248         # 하단 가로선 top (= 캔버스높이 − 22 − 10)
+  title_top: 80
+  title_h: 96               # 밑줄은 이 상자의 **맨 아래** 10px (CSS `::after{bottom:0}`)
+  body_top: 205
+  body_h: 1019
+  asset: hr.png             # theme-img/ 안의 가로선 이미지. 도형으로 근사하지 않는다

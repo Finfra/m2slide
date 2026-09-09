@@ -86,6 +86,43 @@ visual:
       곧 화면의 제목색이다.
     evidence: "aTest·m2Slide_chapter_mode — 교정 후 양쪽 #111111 (ΔE 0.0) · 2026-09-10"
 
+  - id: content_box
+    html: "CSS section padding (좌우 56px) — 캔버스 1920px 기준"
+    pptx: "`Title and Content` 레이아웃의 Title placeholder `left`·`width`"
+    grade: must_match
+    tolerance_px: 4
+    reason: |
+      `theme2reference --adapt` 는 슬라이드 **크기만** theme.yml canvas 로 키우고
+      placeholder 좌표는 pandoc 기본(10×7.5in)으로 둔다. 그래서 13.33in 판에 9.5in
+      상자가 앉아 **우측 3.8in 가 빈 채로** 배포됐다 — 눈에 가장 크게 띄는 차이였다.
+      lane T(`--mode layout`)가 콘텐츠 박스 매핑으로 재배치한다(단순 비례가 아니다 —
+      비례로 늘리면 여백까지 늘어난다).
+    evidence: "aTest — 교정 전 left 0.5in·w 9in / 교정 후 56px·1808px · 2026-09-10"
+
+  - id: theme_rule
+    html: "`section[class*=layout-]::before/::after` — hr.png 상·하단 가로선"
+    pptx: "장마다 삽입된 그림 2개 (alt-text `m2slide:ornament`)"
+    grade: must_match
+    reason: |
+      m2slide 는 이 두 줄로 판을 짠다. pptx 에 대응 어휘가 없어 **이미지를 그대로**
+      넣는다 — `hr.png` 는 손으로 그은 듯한 붓 자국이라 직사각형 도형으로 바꾸면
+      다른 물건이 된다.
+    caveat: |
+      python-pptx 는 마스터에 그림을 넣지 못해(`MasterShapes` 에 `add_picture` 없음)
+      장마다 넣는다. 이미지 자체는 패키지에서 공유되므로 파일이 장 수만큼 커지지 않는다.
+      ⚠️ alt-text 표식이 없으면 왕복 역변환이 이것을 **본문 이미지로 읽는다**
+      (실측: 10장 덱에 원고에 없던 이미지 21개가 왕복본에 생겼다).
+    evidence: "aTest 28개 / 10장 — 2026-09-10"
+
+  - id: title_underline
+    html: "제목 `::after` — 제목 상자 맨 아래 10px hr.png"
+    pptx: "본문 레이아웃 장의 제목 아래 그림 1개"
+    grade: must_match
+    reason: |
+      표지·섹션 진입 장에는 넣지 않는다 — 그쪽 제목은 세로 가운데라 밑줄이 글자
+      한복판을 지난다.
+    evidence: "aTest 본문 8장 전부 — 2026-09-10"
+
   - id: body_font
     html: "CSS 본문 `font-family` 체인의 첫 항목"
     pptx: "테마 `minorFont`"
@@ -102,17 +139,17 @@ visual:
       빨간불이 될 수 없어 **자기 계측이 틀린 것을 자기가 잡지 못한다**(agent 실증에서 검출).
 
   - id: layout_ornament
-    html: "제목 밑줄·카드 밴드·여백 등 theme CSS 의 꼴"
-    pptx: "(없음)"
+    html: "카드 밴드 스타일·자간·줄간 등 theme CSS 의 **세부** 꼴"
+    pptx: "(부분 이식)"
     grade: known_gap
     reason: |
-      글로벌 `theme-from-css.py` 가 스스로 적어 둔 한계다 —
-      *"CSS 와 pptx 는 표현 수단이 다르다. **색·서체만** 옮겼고 레이아웃·간격은
-      옮기지 않았다."* 팔레트는 같아지지만 **꼴은 같아지지 않는다**.
-    caveat: |
-      🚧 꼴까지 맞추려면 pptx 레이아웃 마스터를 m2slide theme 에서 생성해야 하고,
-      그것은 글로벌 스킬 설계 변경을 동반한다 — Issue342·344 와 다른 크기의 일이다.
-    evidence: "aTest pptx 를 PowerPoint 로 열면 흰 배경·민 제목 — 2026-09-10"
+      판(`content_box`)·가로선(`theme_rule`)·제목 밑줄(`title_underline`)은 lane T 가
+      옮겼다. 남은 것은 **기계로 재기 어려운 세부**다 — 카드 제목 밴드의 모서리 처리,
+      자간(`letter-spacing: -0.01em`), 줄간, 불릿 글리프 모양 같은 것들.
+      글로벌 `theme-from-css.py` 는 여전히 색·서체만 옮기고, lane T 는 그 위에
+      **실측 좌표로 판을 다시 짜는** 것이지 CSS 를 통째로 번역하지 않는다.
+    caveat: "🚧 세부까지 맞추려면 CSS→pptx 번역기가 필요하다 — 다른 크기의 일이다"
+    evidence: "aTest — 판·가로선·밑줄은 일치, 카드 밴드 세부는 다름 · 2026-09-10"
 
 elements:
 
