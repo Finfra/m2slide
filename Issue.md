@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 342
+* Issue HWM: 343
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -26,17 +26,18 @@
 
 # 🚧 진행중
 
-## Issue342: m2slide → pptx 에 변환 정책이 없다 — round-trip 계약 신설 + agent 화 (등록: 2026-09-09)
-* 목적: 역방향(`pptx → m2slide`)은 [`data/ppt2m2slide/`](data/ppt2m2slide/) 3종 yml 로 데이터-주도인데, **정방향(`m2slide → pptx`)은 정책이 전부 코드 상수·정규식에 박혀 있다**. 그래서 *"이 변환에서 무엇이 어떻게 손실되는가"* 를 선언할 자리도, 검증할 장치도, 학습할 경로도 없다. 이 비대칭이 pptx 산출 품질 회귀가 조용히 통과하는 근본 원인이다
+## Issue343: m2slide 파서와 pandoc 이 같은 원고를 다르게 읽는다 — HTML 덱과 pptx 가 갈린다 (등록: 2026-09-10)
+* 목적: Issue342 왕복 검증 중에 드러난 것. **왕복 문제가 아니라 산출물 불일치**다 — 같은 원고가 HTML 덱과 pptx 에서 다른 모양으로 렌더된다
+* depends: Issue342
 * 상세:
-    - 정책이 코드에 박힌 지점 — [`build-source.py`](lib/pptx/build-source.py): `FENCE_DROP`·`FENCE_DROP_LABEL`(컴포넌트 드롭 카탈로그) · `ID_LINE`·`ANIM_LINE`·`SLOT_RIGHT`(디렉티브 제거) · `ATTR`·`SYMBOL`·`ELEMENT_COMMENT`(인라인 제거) · `LANE_B_CATALOG`(도형 렌더 대상) · `normalize_chapter`(챕터 TOC **자동 생성**) · `defer_heavy`(표·그림 순서 변경)
-    - 현행 검증 3종(`check-conform`·`check-xml-order`·`check-empty`)은 **pptx 내부 규격**만 잰다. *"원고가 pptx 에 제대로 옮겨졌는가"* 는 아무도 재지 않는다
-    - 실측(aTest 10장 픽스처, 2026-09-09): 빌드 rc0 · FAIL 0 · WARN 0 인데도 frontmatter 전량 · `#id-*`·`#transition-*` 디렉티브 · `{.fragment}` · `::: htmlart pie`(lane C 이월) · ` ```chart ` 컴포넌트가 소실되고, 원본에 **없던** 챕터 TOC 장이 생성됨
+    - **중첩 깊이**: m2slide 파서는 2칸을 1레벨로 읽고([md-m2slide-rules](.claude/rules/md-m2slide-rules.md) "카드 본문 2칸 기준"), pandoc 은 CommonMark(부모 마커 + 공백) 기준이다. `    - 레벨 2`(4칸)를 m2slide 는 레벨 2 로, pandoc 은 레벨 1 로 읽는다
+    - **비표준 불릿 표기**: `  -HTML DIV 태그를 사용하여` 처럼 **하이픈 뒤 공백이 없는** 줄을 m2slide 는 산문으로, pandoc 은 앞 리스트 항목의 연속으로 읽는다 (m2Slide_chapter_mode `05-layout-examples.md` 에 실재)
+    - 실측(2026-09-10): `./z_test/ig-ppt/6.roundtrip.sh m2Slide_chapter_mode` — `bullet_nesting` −2/+2 · `bullets` −3/+3
 * 구현 명세:
-    - 신설 `data/m2slide2ppt/` (kind: policy/stage) — 요소별 pptx 표현과 **복원 등급**(lossless·lossy·declared-drop)을 선언하는 round-trip 충실도 계약
-    - 신설 round-trip 검증 — 원본 md ↔ 역변환 md 를 대조해 **계약에 선언되지 않은 손실**만 FAIL 로 든다. 선언된 손실은 통과(그것이 계약의 목적)
-    - 변환 기능을 agent 방식으로 전환 — 코드 상수를 정책 yml 로 외부화하고 판정을 agent 가 소유
-    - 수렴 판정: `aTest → pptx → aTest_rt` 왕복에서 **undeclared diff 0** 이 될 때까지 정책 갱신 반복
+    - 고칠 곳이 **변환기인지 원고인지 먼저 가른다**. 비표준 표기는 원고 쪽이 맞고, 중첩 깊이는 두 파서 중 어느 쪽을 정본으로 볼지 결정이 필요하다
+    - ⚠️ 원고 수정은 사용자 콘텐츠라 임의로 하지 않는다 — 확인 후 진행
+    - 결정 후 `data/m2slide2ppt/fidelity.yml` 의 `bullet_nesting`·`paragraph` 등급을 재조정
+
 
 
 # 📕 중요
@@ -47,6 +48,29 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue342: m2slide → pptx 에 변환 정책이 없다 — round-trip 계약 신설 + agent 화 (등록: 2026-09-09, 해결: 2026-09-10, commit: 3835de0, bb837c5) ✅
+* 목적: 역방향(`pptx → m2slide`)은 [`data/ppt2m2slide/`](data/ppt2m2slide/) 3종 yml 로 데이터-주도인데, **정방향(`m2slide → pptx`)은 정책이 전부 코드 상수·정규식에 박혀 있다**. 그래서 *"이 변환에서 무엇이 어떻게 손실되는가"* 를 선언할 자리도, 검증할 장치도, 학습할 경로도 없다. 이 비대칭이 pptx 산출 품질 회귀가 조용히 통과하는 근본 원인이다
+* 상세:
+    - 정책이 코드에 박힌 지점 — [`build-source.py`](lib/pptx/build-source.py): `FENCE_DROP`·`FENCE_DROP_LABEL`(컴포넌트 드롭 카탈로그) · `ID_LINE`·`ANIM_LINE`·`SLOT_RIGHT`(디렉티브 제거) · `ATTR`·`SYMBOL`·`ELEMENT_COMMENT`(인라인 제거) · `LANE_B_CATALOG`(도형 렌더 대상) · `normalize_chapter`(챕터 TOC **자동 생성**) · `defer_heavy`(표·그림 순서 변경)
+    - 현행 검증 3종(`check-conform`·`check-xml-order`·`check-empty`)은 **pptx 내부 규격**만 잰다. *"원고가 pptx 에 제대로 옮겨졌는가"* 는 아무도 재지 않는다
+    - 실측(aTest 10장 픽스처, 2026-09-09): 빌드 rc0 · FAIL 0 · WARN 0 인데도 frontmatter 전량 · `#id-*`·`#transition-*` 디렉티브 · `{.fragment}` · `::: htmlart pie`(lane C 이월) · ` ```chart ` 컴포넌트가 소실되고, 원본에 **없던** 챕터 TOC 장이 생성됨
+* 구현 명세:
+    - 신설 `data/m2slide2ppt/` (kind: policy/stage) — 요소별 pptx 표현과 **복원 등급**(lossless·lossy·declared-drop)을 선언하는 round-trip 충실도 계약
+    - 신설 round-trip 검증 — 원본 md ↔ 역변환 md 를 대조해 **계약에 선언되지 않은 손실**만 FAIL 로 든다. 선언된 손실은 통과(그것이 계약의 목적)
+    - 변환 기능을 agent 방식으로 전환 — 코드 상수를 정책 yml 로 외부화하고 판정을 agent 가 소유
+    - 수렴 판정: `aTest → pptx → aTest_rt` 왕복에서 **undeclared diff 0** 이 될 때까지 정책 갱신 반복
+* 결과:
+    - 계약 요소 32종 — lossless 15 · lossy 9 · declared_drop 6 · synthesized 2
+    - **aTest 왕복 수렴**: 슬라이드 8=8 · 불릿 21=21 · frontmatter 11 필드 · `#id-*` 7건 ·
+      `#transition-zoom` · `::: htmlart pie` · `{.fragment}` · 코드 언어 전부 복원.
+      남은 손실은 컴포넌트 config 1건(lane A 진입 전 삭제되어 원리적으로 복원 불가)
+    - lane S 신설 — 도형 alt-text + `docProps/custom.xml` 에 복원 신호. 둘 다 pptx
+      표준 필드라 화면에 안 보이고 PowerPoint 편집·재저장에 살아남는다
+    - m2Slide_chapter_mode 일반화 검증에서 계약 밖 차이 5건 → 1건. 남은 1건은
+      **원고의 비표준 표기**가 원인이라 Issue343 으로 분리(원고는 건드리지 않았다)
+    - 회귀 4.laneb 6/6 · 5.lanem 통과 · lint-data 통과
+
 
 ## Issue341: policy 미해결 3종 처리 — 승격 심사·축 2 소비·리스트 치환 (등록: 2026-09-09, 해결: 2026-09-09) ✅
 * 목적: Issue340 이 남긴 미해결 셋을 닫는다. 셋 다 **장치는 있는데 작동하지 않는** 상태다 — 승격은 사람이 기억해야 일어나고, 덱 목적(축 2)은 소비하는 룰이 0건이며, 가장 위험한 병합 함정에는 검사가 없다

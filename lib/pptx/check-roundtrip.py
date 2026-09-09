@@ -59,15 +59,22 @@ LANE_B_DIVS = {
 RE_FM = re.compile(r"\A\s*---\n(.*?)\n---\n", re.S)
 RE_H1 = re.compile(r"^#[ \t]+(.+?)[ \t]*$")
 RE_H2 = re.compile(r"^##[ \t]+(.+?)[ \t]*$")
+RE_H3 = re.compile(r"^(#{3,6})[ \t]+(.+?)[ \t]*$")
 RE_ID = re.compile(r"^[ \t]*#id-([a-z][a-z0-9-]*)[ \t]*$")
 RE_ANIM = re.compile(
     r"^[ \t]*#((?:transition|background|autoslide)-[\w.#-]+|auto-animate)[ \t]*$")
 RE_LAYOUT = re.compile(r"^[ \t]*#(?:layout-)?(_?[a-z][a-z0-9-]*)[ \t]*$")
 RE_FENCE = re.compile(r"^[ \t]*```([\w-]*)[ \t]*$")
-RE_DIV_OPEN = re.compile(r"^[ \t]*:::+[ \t]*([^:{]+?)[ \t]*(?:\{[^}]*\})?[ \t]*$")
+#   ⚠️ `::::: {.column width="48%"}` 처럼 **이름 없이 attribute 만** 있는 fence 가
+#      m2slide 멀티컬럼의 절반이다. 이름을 필수로 두면 그 줄들이 통째로
+#      산문으로 새어 `paragraph` 손실 40건이 된다(실측 2026-09-09).
+RE_DIV_OPEN = re.compile(
+    r"^[ \t]*:::+[ \t]*(?:([^:{\s][^:{]*?)[ \t]*)?(\{[^}]*\})?[ \t]*$")
 RE_DIV_CLOSE = re.compile(r"^[ \t]*:::+[ \t]*$")
 RE_IMG = re.compile(r"!\[([^\]]*)\]\(([^)\s]+)")
 RE_BULLET = re.compile(r"^([ \t]*)[*+-][ \t]+(.+?)[ \t]*$")
+RE_ORDERED = re.compile(r"^([ \t]*)\d+[.)][ \t]+(.+?)[ \t]*$")
+RE_QUOTE = re.compile(r"^[ \t]*>[ \t]?(.*?)[ \t]*$")
 RE_TABLE = re.compile(r"^[ \t]*\|.*\|[ \t]*$")
 RE_ATTR = re.compile(r"\{\.[a-zA-Z][\w .-]*\}")
 RE_SYMBOL = re.compile(r":fa-[\w-]+:")
@@ -80,9 +87,25 @@ RE_DROP_NOTE = re.compile(r"^[ \t]*·\s*(.+?)\s*—\s*웹 슬라이드에서 동
 def norm(s):
     """비교용 정규화 — 문장부호·공백 요동으로 갈리지 않게 한다."""
     s = re.sub(r"\*\*|__|`", "", s)          # 강조·인라인코드 마크업
+    s = re.sub(r"(?<!\w)[*_](?=\S)|(?<=\S)[*_](?!\w)", "", s)   # 한 겹 이탤릭
     s = re.sub(r"\\([.)])", r"\1", s)        # bullet_text 가 넣은 이스케이프
     s = re.sub(r"\s+", " ", s)
     return s.strip()
+
+
+def meta_source(project_dir):
+    """운영 메타(frontmatter)가 사는 파일.
+
+    ⚠️ chapter mode 의 메타 출처는 **`markdown/AGENDA.md`** 이고 single mode 는
+       슬라이드 소스 자신이다([md-m2slide-rules](../../.claude/rules/md-m2slide-rules.md)).
+       이것을 모르면 chapter mode 원본의 frontmatter 가 0 으로 잡혀, 왕복이
+       복원해 낸 필드가 통째로 **"원본에 없던 생성물"** 로 오판된다(실측).
+    """
+    ag = os.path.join(project_dir, "markdown", "AGENDA.md")
+    if os.path.isfile(ag):
+        return ag
+    srcs = sources(project_dir)
+    return srcs[0] if srcs else None
 
 
 def sources(project_dir):
@@ -143,7 +166,9 @@ def scan(lines):
         if in_fence:
             if RE_FENCE.match(ln):
                 body = norm(" ".join(x.strip() for x in fence_buf if x.strip()))
-                if fence_lang in COMPONENT_FENCES:
+                if fence_lang == "mermaid":
+                    e["mermaid_fence"].append(body[:60])
+                elif fence_lang in COMPONENT_FENCES:
                     e["component_fence"].append(fence_lang)
                 elif fence_lang in WORDART_FENCES:
                     e["wordart_fence"].append(body[:80])
@@ -158,8 +183,8 @@ def scan(lines):
             div_stack.pop()
             continue
         md = RE_DIV_OPEN.match(ln)
-        if md:
-            raw = re.sub(r"[ \t]+", " ", md.group(1)).strip()
+        if md and (md.group(1) or md.group(2)):
+            raw = re.sub(r"[ \t]+", " ", md.group(1) or md.group(2) or "").strip()
             div_stack.append(raw)
             if raw == "cards":
                 e["cards"].append(raw)
@@ -190,6 +215,10 @@ def scan(lines):
         if m:
             e["h2_slide_title"].append(norm(m.group(1)))
             continue
+        m = RE_H3.match(ln)
+        if m:
+            e["subheading"].append(norm(m.group(2)))
+            continue
         if ln.startswith("#") and RE_LAYOUT.match(ln):
             e["directive_layout"].append(RE_LAYOUT.match(ln).group(1))
             continue
@@ -216,12 +245,27 @@ def scan(lines):
             e["component_drop_note"].append(norm(mdrop.group(1)))
             continue
 
+        mo = RE_ORDERED.match(ln)
+        if mo:
+            lvl = len(mo.group(1).replace("\t", "  ")) // 2
+            e["ordered_list"].append(norm(RE_ATTR.sub("", mo.group(2))))
+            e["bullet_nesting"].append(str(lvl))
+            continue
+        mq = RE_QUOTE.match(ln)
+        if mq:
+            e["blockquote"].append(norm(mq.group(1)))
+            continue
+
         mb = RE_BULLET.match(ln)
         if mb:
             body = RE_ATTR.sub("", mb.group(2))
             body = RE_SYMBOL.sub("", body)
             lvl = len(mb.group(1).replace("\t", "  ")) // 2
-            e["bullets"].append("%d:%s" % (lvl, norm(body)))
+            #   깊이를 글자에 붙여 세면 **중첩이 한 칸 어긋난 것**과 **문장이 사라진 것**이
+            #   같은 실패로 보인다. m2slide(2칸=1레벨)와 pandoc(CommonMark)의 해석이
+            #   실제로 갈리므로(실측) 둘을 나눠 재야 원인이 드러난다
+            e["bullets"].append(norm(body))
+            e["bullet_nesting"].append(str(lvl))
             continue
 
         if ln.strip() and not ln.strip().startswith("!["):
@@ -241,6 +285,9 @@ def collect(project_dir):
     if not srcs:
         return None, None, []
     fm_all, slides = {}, []
+    ms = meta_source(project_dir)
+    if ms:
+        fm_all, _ = parse(ms)
     for p in srcs:
         fm, sl = parse(p)
         if fm and not fm_all:
@@ -314,8 +361,12 @@ def main():
         o_agg["frontmatter_title"] = [norm(str(o_fm["title"]))]
     if r_fm.get("title"):
         r_agg["frontmatter_title"] = [norm(str(r_fm["title"]))]
-    o_agg["frontmatter_meta"] = sorted(k for k in o_fm if k != "title")
-    r_agg["frontmatter_meta"] = sorted(k for k in r_fm if k != "title")
+    #   값이 빈 키는 담을 정보가 없다 — `description:` 처럼 자리만 있는 필드를
+    #   손실로 세면 계약이 고칠 수 없는 것을 계속 빨간불로 든다
+    o_agg["frontmatter_meta"] = sorted(k for k, v in o_fm.items()
+                                       if k != "title" and v not in (None, ""))
+    r_agg["frontmatter_meta"] = sorted(k for k, v in r_fm.items()
+                                       if k != "title" and v not in (None, ""))
 
     keys = sorted(set(o_agg) | set(r_agg))
     rows, fails, undeclared = [], [], []

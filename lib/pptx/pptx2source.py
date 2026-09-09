@@ -31,6 +31,7 @@ pptx 에서 읽는 신호
 """
 import argparse
 import collections
+import json
 import os
 import re
 import sys
@@ -43,6 +44,11 @@ except ImportError:
     sys.exit(2)
 
 MC = "http://schemas.openxmlformats.org/markup-compatibility/2006"
+P = "http://schemas.openxmlformats.org/presentationml/2006/main"
+SIG_PREFIX = "m2slide:"
+#   컴포넌트 펜스는 config 가 pptx 진입 전에 삭제되므로 종류만 알아도
+#   되살릴 수 없다 — 코드블록 언어와 섞이지 않게 여기서 가른다
+COMPONENT_FENCES = {"chart", "d3", "p5", "map", "model3d", "react"}
 A = "http://schemas.openxmlformats.org/drawingml/2006/main"
 
 DROP_NOTE = re.compile(r"^\s*·\s*.+?\s*—\s*웹 슬라이드에서 동작하는 요소입니다\s*$")
@@ -66,7 +72,33 @@ def para_math(para):
     return out
 
 
-def text_with_math(para):
+def run_markup(child, emphasis):
+    """run 하나를 글자로. `b`/`i` 속성을 마크다운 강조로 되돌린다.
+
+    ⚠️ **코드블록에서는 하지 않는다.** 문법 하이라이트가 키워드를 bold 로 칠하므로
+       그대로 옮기면 코드 안에 `**def**` 가 박힌다(실측: pandoc skylighting 이
+       `def`·`return` 을 bold+색으로 낸다).
+    """
+    t = "".join(x.text or "" for x in child.iter("{%s}t" % A))
+    if not emphasis or not t.strip():
+        return t
+    pr = child.find("{%s}rPr" % A)
+    if pr is None:
+        return t
+    b, i = pr.get("b") == "1", pr.get("i") == "1"
+    lead = t[:len(t) - len(t.lstrip())]
+    tail = t[len(t.rstrip()):]
+    core = t.strip()
+    if b and i:
+        core = "***%s***" % core
+    elif b:
+        core = "**%s**" % core
+    elif i:
+        core = "*%s*" % core
+    return lead + core + tail
+
+
+def text_with_math(para, emphasis=False):
     """문단 텍스트를 수식 자리 표시와 함께 되살린다.
 
     python-pptx 의 `para.text` 는 AlternateContent 를 건너뛰므로 수식이 **사라진
@@ -77,8 +109,7 @@ def text_with_math(para):
     for child in para._p:
         tag = child.tag.split("}")[-1]
         if tag == "r":
-            t = "".join(x.text or "" for x in child.iter("{%s}t" % A))
-            parts.append(("t", t))
+            parts.append(("t", run_markup(child, emphasis)))
         elif tag == "br":
             parts.append(("t", "\n"))
         elif tag == "AlternateContent":
@@ -100,6 +131,55 @@ def text_with_math(para):
     return buf, [("inline", m) for m in maths]
 
 
+def norm_txt(s):
+    """비교용 정규화 — 강조 마크업·공백 요동으로 갈리지 않게 한다."""
+    s = re.sub(r"\*\*\*|\*\*|__|`", "", s or "")
+    s = re.sub(r"(?<!\w)[*_](?=\S)|(?<=\S)[*_](?!\w)", "", s)
+    return re.sub(r"\s+", " ", s).strip()
+
+
+def read_doc_signals(path):
+    """`docProps/custom.xml` 에서 frontmatter 를 되찾는다 (lane S 가 심은 것).
+
+    ⚠️ 이것은 커닝이 아니다 — **pptx 안에** 있는 표준 필드를 읽는 것이고,
+       PowerPoint 로 편집·재저장한 파일에서도 똑같이 읽힌다. 사이드카
+       (`lane-*.json`)와 다른 점이 그것이다.
+    """
+    import zipfile
+    try:
+        with zipfile.ZipFile(path) as z:
+            if "docProps/custom.xml" not in z.namelist():
+                return {}
+            x = z.read("docProps/custom.xml").decode("utf-8")
+    except Exception:
+        return {}
+    parts = re.findall(
+        r'name="m2slide:frontmatter\.(\d+)"[^>]*>\s*<[^>]*lpwstr>(.*?)</',
+        x, re.S)
+    if not parts:
+        return {}
+    blob = "".join(v for _, v in sorted(parts, key=lambda t: int(t[0])))
+    try:
+        return json.loads(blob)
+    except Exception:
+        return {}
+
+
+def read_slide_signals(slide):
+    """제목 도형 alt-text 의 `m2slide:{…}` 를 읽는다."""
+    for sh in slide.shapes:
+        if not (sh.has_text_frame and sh.name.startswith("Title")):
+            continue
+        el = sh._element.find(".//{%s}cNvPr" % P)
+        d = el.get("descr") if el is not None else None
+        if d and d.startswith(SIG_PREFIX):
+            try:
+                return json.loads(d[len(SIG_PREFIX):])
+            except Exception:
+                return {}
+    return {}
+
+
 def para_kind(para):
     """문단이 불릿인가·산문인가·코드인가 — pptx 에 남은 신호로 가른다.
 
@@ -118,6 +198,8 @@ def para_kind(para):
     fonts.discard(None)
     if "buNone" in tags:
         return "code" if fonts else "para"
+    if "buAutoNum" in tags:
+        return "ordered"          # pptx 가 자동 번호를 그대로 갖고 있다 — 신호가 불필요하다
     return "bullet"
 
 
@@ -142,7 +224,8 @@ def shape_lines(sh):
     """텍스트 도형 → (본문 줄, 수식 목록)."""
     lines, maths = [], []
     for para in sh.text_frame.paragraphs:
-        text, m = text_with_math(para)
+        kind0 = para_kind(para)
+        text, m = text_with_math(para, emphasis=(kind0 != "code"))
         maths += m
         if m and m[0][0] == "display":
             lines.append(("math_display", m[0][1], 0))
@@ -152,7 +235,7 @@ def shape_lines(sh):
         if DROP_NOTE.match(text):
             lines.append(("dropnote", text.strip(), 0))
             continue
-        lines.append((para_kind(para), text.rstrip(), para.level))
+        lines.append((kind0, text.rstrip(), para.level))
     return lines, maths
 
 
@@ -211,8 +294,13 @@ def convert(pptx_path, outdir, name):
 
         if autoshapes:
             items = group_boxes(autoshapes)
-            # 커넥터가 카드 사이를 잇고 있으면 순차 블록이다 — 그것이 유일한 구분 신호다
-            kind = "htmlart process" if connectors else "cards"
+            # 커넥터가 카드 사이를 잇고 있으면 순차 블록이다 — 도형만 보면 이것이
+            # 유일한 구분 신호이고, `cards` 와 `htmlart numbered` 는 같은 블록으로
+            # 렌더되므로 **원리적으로 갈리지 않는다**. lane S 신호가 있으면 그것이 답이다.
+            sig0 = read_slide_signals(slide)
+            blocks_sig = list(sig0.get("block", []))
+            kind = blocks_sig.pop(0) if blocks_sig else (
+                "htmlart process" if connectors else "cards")
             body += render_div(kind, items)
 
         for sh in slide.shapes:
@@ -237,7 +325,7 @@ def convert(pptx_path, outdir, name):
                 lines, m = shape_lines(sh)
                 maths += m
                 body.append(("__TXT__", lines))
-        raw.append(("slide", (title, body, captions)))
+        raw.append(("slide", (title, body, captions, read_slide_signals(slide))))
 
     # ── 자동 목차 장 제거 — Section Header 직후 + 불릿이 이후 제목 집합에 포함
     drop = set()
@@ -254,7 +342,14 @@ def convert(pptx_path, outdir, name):
 
     # ── 원고 조립
     cover = next((p for k, p in raw if k == "cover"), name)
-    doc = ["---", "title: %s" % cover, "type: ppt", "---", ""]
+    fm = read_doc_signals(pptx_path)
+    doc = ["---"]
+    doc.append("title: %s" % (fm.get("title") or cover))
+    for k, v in fm.items():
+        if k == "title":
+            continue
+        doc.append("%s: %s" % (k, v))
+    doc += ["---", ""]
     blocks = []
     for i, (k, p) in enumerate(raw):
         if k == "cover" or i in drop:
@@ -262,9 +357,20 @@ def convert(pptx_path, outdir, name):
         if k == "chapter":
             blocks.append("# %s" % p)
             continue
-        title, body, captions = p
+        title, body, captions, sig = p
         cap_i = [0]
-        out = ["## %s" % title, ""]
+        bullet_n = [0]
+        onum = {}
+        quotes = {norm_txt(x.split("|", 1)[1]): x.split("|", 1)[0]
+                  for x in sig.get("quote", []) if "|" in x}
+        heads = {norm_txt(x.split(":", 1)[1]): int(x.split(":", 1)[0])
+                 for x in sig.get("head", []) if ":" in x}
+        out = ["## %s" % title]
+        #   디렉티브 — lane S 가 심어 둔 것을 제목 바로 아래에 되돌린다
+        for d in sig.get("id", []) + sig.get("anim", []) + \
+                ["layout-" + x for x in sig.get("layout", [])]:
+            out.append("#" + d)
+        out.append("")
         for item in body:
             if isinstance(item, tuple) and item[0] == "__PIC__":
                 sh = item[1]
@@ -282,14 +388,46 @@ def convert(pptx_path, outdir, name):
                     if kind == "math_display":
                         out += ["", "$$%s$$" % t]
                     elif kind == "code":
-                        out += ["", "```", *t.split("\n"), "```"]
+                        langs = [x for x in sig.get("fence", [])
+                                 if x not in COMPONENT_FENCES]
+                        out += ["", "```" + (langs[0] if langs else ""),
+                                *t.split("\n"), "```"]
                     elif kind == "para":
-                        out += ["", t]
+                        if norm_txt(t) in heads:
+                            out += ["", "%s %s" % ("#" * heads[norm_txt(t)], t)]
+                        else:
+                            out += ["", t]
+                    elif kind == "ordered":
+                        onum[lvl] = onum.get(lvl, 0) + 1
+                        for deeper in [k for k in onum if k > lvl]:
+                            onum[deeper] = 0
+                        out.append("%s%d. %s" % ("  " * lvl, onum[lvl], t))
+                    elif norm_txt(t) in heads:
+                        out += ["", "%s %s" % ("#" * heads[norm_txt(t)], t)]
+                    elif norm_txt(t) in quotes:
+                        #   접두까지 되돌린다 — `* > …` 와 `> …` 는 다른 원고다
+                        out.append(("* > %s" if quotes[norm_txt(t)] == "b" else "> %s") % t)
                     else:
                         mark = "*" if lvl == 0 else "-"
-                        out.append("%s%s %s" % ("  " * lvl, mark, t))
+                        frag = [x.split(":", 1)[1] for x in sig.get("frag", [])
+                                if x.split(":", 1)[0] == str(bullet_n[0])]
+                        bullet_n[0] += 1
+                        out.append("%s%s %s%s" % (
+                            "  " * lvl, mark, t,
+                            "".join(" {.%s}" % f for f in frag)))
             else:
                 out.append(item)
+        #   lane C 이월 — pptx 에는 평문 불릿만 남았지만 신호가 종류를 안다.
+        #   도형이 없는 장에서만 한다(도형이 있으면 ④ 가 이미 처리했다).
+        if sig.get("block") and not any(x.startswith("::: ") for x in out):
+            kind = sig["block"][0]
+            first = next((j for j, x in enumerate(out)
+                          if re.match(r"^\s*[*-] ", x)), None)
+            if first is not None:
+                last = max(j for j, x in enumerate(out)
+                           if re.match(r"^\s*[*-] ", x))
+                out = out[:first] + ["::: %s" % kind] + out[first:last + 1] + \
+                    [":::"] + out[last + 1:]
         blocks.append("\n".join(x for x in out).strip())
 
     doc.append("\n\n---\n\n".join(blocks))

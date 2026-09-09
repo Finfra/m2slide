@@ -401,6 +401,26 @@ PY
       || echo "  ⚠️ lane M 생략(계속 진행) — 수식이 평문 마커로 남는다" >&2
   fi
 
+  # ── ③-b4 lane S — **왕복 복원 신호**를 pptx 안에 심는다 (Issue342)
+  #
+  #   `::: htmlart pie`·`#id-*`·`{.fragment}`·frontmatter 는 pptx 에 대응 어휘가 없어
+  #   변환 중에 사라진다. 실측(aTest, 2026-09-09) 왕복에서 종류 없는 평문 불릿과 빈
+  #   frontmatter 로 돌아왔고 검증 3종은 그것을 보지 않았다.
+  #
+  #   심는 자리는 pptx **표준 필드** 둘 — 도형 alt-text(`p:cNvPr/@descr`)와
+  #   `docProps/custom.xml`. 화면에 보이지 않고, PowerPoint 편집·재저장에 살아남고,
+  #   도형과 함께 이동한다. 발표자 노트를 쓰지 않은 것은 그 자리가 **사람의 글**이라서다.
+  #
+  #   ⚠️ **검증 앞**이다 — 검증은 최종 파일을 재야 한다. 속성 추가라 XML 요소 순서를
+  #      건드리지 않지만, 패키지를 다시 묶으므로 그 뒤 상태로 재는 것이 맞다.
+  #   ⚠️ 실패해도 빌드를 죽이지 않는다 — 신호는 덧칠이고 덱 자체는 온전하다.
+  LANES="$SCRIPT_DIR/lane-s.py"
+  LANES_SIDECAR="$PROJECT_DIR/_pipeline/pptx/lane-s.json"
+  if [ -f "$LANES" ] && [ -f "$LANES_SIDECAR" ]; then
+    python3 "$LANES" "$OUT" "$LANES_SIDECAR" \
+      || echo "  ⚠️ lane S 생략(계속 진행) — 왕복 복원 신호가 없다" >&2
+  fi
+
   #   교정 뒤 상태로 다시 잰다 — 검증이 최종 파일을 설명하지 못하면 fail-loud 가 무의미하다
   CK="${M2SLIDE_PPT_CHECK:-$HOME/.claude/skills/ppt-check/scripts}"
   if [ -f "$CK/check-xml-order.py" ]; then

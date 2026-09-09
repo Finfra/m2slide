@@ -596,9 +596,107 @@ def scan_lane_b(blocks, src_label, seen, out, stat):
         stat["laneb"] += 1
 
 
+
+# ── ⑭ lane S — **복원 신호**. pptx 안에 남겨 왕복을 되살린다 (Issue342)
+#
+#    ⑪⑬ 과 clean() 의 줄 단위 제거가 지우는 것들 — 디렉티브·fragment·코드 언어·
+#    블록 종류·frontmatter — 은 pptx 에 대응 어휘가 없어 **그냥 사라졌다**.
+#    실측(aTest, 2026-09-09): 왕복하면 `::: htmlart pie` 가 종류 없는 평문 불릿이
+#    되고 `#id-*` 7건이 통째로 없어졌다. 검증 3종은 그것을 보지 않는다.
+#
+#    여기서 하는 일은 *"무엇이 있었는지"* 를 사이드카에 적는 것뿐이다.
+#    실제로 심는 것은 [lane-s.py](lane-s.py) 이고, 심는 자리는 둘이다:
+#
+#        도형 alt-text (`descr`)     슬라이드 단위 신호 — 도형과 함께 이동한다
+#        docProps/custom.xml         문서 단위 신호 (frontmatter)
+#
+#    둘 다 **pptx 표준 필드**라 화면에 보이지 않고 PowerPoint 편집·재저장에도
+#    살아남는다. 발표자 노트를 쓰지 않는 이유는 그 자리가 **사람의 글**이기
+#    때문이다 — 기계 표식을 섞으면 발표 중에 보인다.
+FRAG_ATTR = re.compile(r"\{\.([a-zA-Z][\w .-]*)\}")
+
+
+def scan_signals(text, src_label, seen, out):
+    """정리 **전**의 원고에서 복원 신호를 슬라이드 단위로 적는다.
+
+    ⚠️ clean() 의 맨 앞에서 부른다. 뒤로 가면 지우려는 대상이 이미 없다.
+    """
+    for blk in split_slides(text):
+        lines = blk.split("\n")
+        title = None
+        for ln in lines:
+            m = H2.match(ln)
+            if m:
+                title = strip_inline(m.group(1))
+                break
+        if title is None:
+            continue
+        ordinal = seen.get(title, 0)
+        seen[title] = ordinal + 1
+
+        sig = {}
+        in_fence, lang = False, None
+        bullet_i = 0
+        for ln in lines:
+            mf = re.match(r"^[ \t]*```([\w-]*)", ln)
+            if mf and not in_fence:
+                in_fence, lang = True, mf.group(1) or ""
+                if lang:
+                    sig.setdefault("fence", []).append(lang)
+                continue
+            if in_fence:
+                if re.match(r"^[ \t]*```", ln):
+                    in_fence = False
+                continue
+            m = ID_LINE.match(ln + "\n") if ln.strip().startswith("#id-") else None
+            if m:
+                sig.setdefault("id", []).append(ln.strip()[1:])
+                continue
+            if ln.strip().startswith("#") and ANIM_LINE.match(ln + "\n"):
+                sig.setdefault("anim", []).append(ln.strip()[1:])
+                continue
+            if ln.strip().startswith("#layout-"):
+                sig.setdefault("layout", []).append(ln.strip()[len("#layout-"):])
+                continue
+            md = FENCE_DIV_OPEN.match(ln)
+            if md:
+                sig.setdefault("block", []).append(
+                    re.sub(r"[ \t]+", " ", md.group(1)).strip())
+                continue
+            mh = re.match(r"^(#{3,6})[ \t]+(.+?)[ \t]*$", ln)
+            if mh:
+                #   H3 이하는 pptx 에 대응 어휘가 없어 평문단이 된다 —
+                #   되돌릴 수 있게 깊이와 글자를 적는다
+                sig.setdefault("head", []).append(
+                    "%d:%s" % (len(mh.group(1)), strip_inline(mh.group(2)).strip()))
+                continue
+            mq = re.match(r"^[ \t]*([*+-][ \t]+)?>[ \t]?(.+)$", ln)
+            if mq:
+                #   pptx 에 인용 어휘가 없어 pandoc 이 평범한 문단으로 낸다.
+                #   위치가 아니라 **글자**로 표시한다 — 원고가 조금 바뀌어도
+                #   엉뚱한 줄이 인용문이 되지 않는다
+                #   `* > 인용문` 은 pandoc 이 **불릿 안의 blockquote** 로 읽어 `>` 를
+                #   지운다. 접두까지 적어야 원형으로 되돌아간다
+                sig.setdefault("quote", []).append(
+                    ("b|" if mq.group(1) else "p|") + strip_inline(mq.group(2)).strip())
+                continue
+            mb = re.match(r"^([ \t]*)[*+-][ \t]+(.+)$", ln)
+            if mb:
+                for fm in FRAG_ATTR.finditer(mb.group(2)):
+                    sig.setdefault("frag", []).append("%d:%s" % (bullet_i, fm.group(1)))
+                bullet_i += 1
+        if sig:
+            sig.update({"src": src_label, "title": title, "ord": ordinal})
+            out.append(sig)
+
 def clean(text, srcdir, proj, stat, chapter_title=None,
-          lane_b=None, lane_b_seen=None, src_label="", lane_m=None):
+          lane_b=None, lane_b_seen=None, src_label="", lane_m=None,
+          lane_s=None, lane_s_seen=None):
     text = strip_frontmatter(text)
+
+    # ⑭ lane S — **지우기 전에** 신호를 적는다. 뒤로 가면 대상이 이미 없다
+    if lane_s is not None:
+        scan_signals(text, src_label, lane_s_seen, lane_s)
 
     # 줄 단위 제거 — 코드 안에 이 형태가 올 일은 없다(줄 전체가 지시자여야 매칭)
     for pat, key in ((ID_LINE, "id"), (ANIM_LINE, "anim"), (SLOT_RIGHT, "slot")):
@@ -776,6 +874,7 @@ def main():
     #   파일마다 0 부터 세면 동명 제목이 두 원고에 있을 때 서로를 가리킨다
     lane_b, lane_b_seen = [], {}
     lane_m = []
+    lane_s, lane_s_seen = [], {}      # ⑭ 복원 신호
 
     # ⑨ 표지 — `cover_enabled: false` 면 주입하지 않는다 (설정을 존중)
     cover_on = (config_flag(proj, "cover_enabled") or "").lower() not in ("false", "no", "0")
@@ -790,7 +889,8 @@ def main():
         text = clean(text, os.path.dirname(os.path.abspath(f)), proj, stat,
                      chapter_title=chapter_of.get(os.path.basename(f)),
                      lane_b=lane_b, lane_b_seen=lane_b_seen,
-                     src_label=os.path.basename(f), lane_m=lane_m)
+                     src_label=os.path.basename(f), lane_m=lane_m,
+                     lane_s=lane_s, lane_s_seen=lane_s_seen)
         dst = os.path.join(outdir, "%02d-%s" % (i, os.path.basename(f)))
         with open(dst, "w", encoding="utf-8") as fp:
             fp.write(text)
@@ -811,6 +911,21 @@ def main():
         json.dump({"project": os.path.basename(proj), "marker": MATH_MARKER,
                    "items": lane_m}, fp, ensure_ascii=False, indent=2)
 
+    # ⑭ lane S 사이드카 — 원고의 frontmatter 와 슬라이드별 복원 신호.
+    #   `lane-s.py` 가 이것을 읽어 **pptx 안에** 심는다. 사이드카 자체는 왕복
+    #   검증이 읽지 않는다 — 읽으면 늘 만점이 나오기 때문이다(커닝).
+    fm_src = None
+    for f in srcs:
+        fm = read_frontmatter(f)
+        if fm:
+            fm_src = fm
+            break
+    sidecar_s = os.path.join(os.path.dirname(outdir), "lane-s.json")
+    with open(sidecar_s, "w", encoding="utf-8") as fp:
+        json.dump({"project": os.path.basename(proj),
+                   "frontmatter": fm_src or meta or {},
+                   "slides": lane_s}, fp, ensure_ascii=False, indent=2)
+
     if not a.quiet:
         print("  원고 %d편 → %s" % (len(made), os.path.relpath(outdir, os.getcwd())),
               file=sys.stderr)
@@ -829,6 +944,10 @@ def main():
                  os.path.relpath(sidecar, os.getcwd())), file=sys.stderr)
         print("  lane M 표시 — 수식 %d건 → 마커 치환 (%s)"
               % (stat["math"], os.path.relpath(sidecar_m, os.getcwd())),
+              file=sys.stderr)
+        nsig = sum(len(v) for d in lane_s for k, v in d.items() if isinstance(v, list))
+        print("  lane S 표시 — 신호 %d건 · 장 %d (%s)"
+              % (nsig, len(lane_s), os.path.relpath(sidecar_s, os.getcwd())),
               file=sys.stderr)
         if stat["img_missing"]:
             # 조용히 넘기지 않는다 — 그림이 빠진 채로 "성공" 하는 것이 이 파이프의 고질이다
