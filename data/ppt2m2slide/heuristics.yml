@@ -62,6 +62,21 @@ conversion_mode:
         min_pixel_width: 800              # 아이콘·썸네일 오검출 방지 하한
         require_sibling_text: true        # 같은 슬라이드에 재구성 텍스트가 존재 = 재구성 성공 = 래스터 불필요
         empty_alt_is_signal: true         # alt 빈 이미지는 의미 전달 목적이 아닌 페이지 캡처일 가능성 높음
+      # ── 축 2: 덱 목적별 적용 범위 (Issue341_2) ─────────────────────
+      # 이 룰이 축 2 를 소비하는 **첫 사례**다. 그 전까지 applies_to_purpose·relax_when 을
+      # 쓰는 룰이 0건이라, 런타임 게이트(lint-policy-artifacts.purpose_gates_out)와
+      # lint 검사 10·11 이 준비만 된 채 아무것도 게이팅하지 않았다.
+      #
+      # 왜 이 룰이 첫 사례인가 — policy-goal-schema.md 가 `promo` 를 "광고·홍보,
+      # 비주얼 우선 · 완화(통짜 비주얼 허용)" 로 정의하는데, 이 룰은 정확히 그
+      # 반대편(통짜 래스터 제거)이다. 홍보 덱에서 전면 비주얼은 결함이 아니라
+      # **의도된 선택**이고, `archive` 는 원본 충실 보존이 목적이라 재구성 강제가
+      # 성립하지 않는다. 스키마 문서의 예시가 이 룰을 그대로 들고 있다.
+      #
+      # ⚠️ 완화는 화이트리스트다 — 여기 나열되지 않은 목적에서는 완화되지 않는다.
+      #    purpose 미기재 덱은 lecture 로 간주되므로 **현행 동작 그대로**다(회귀 0).
+      applies_to_purpose: [lecture, info, handout]
+      relax_when: [promo, archive]
       detect_hints:                       # 후보 축소용 힌트 — 단독 판정 금지 (여기 없어도 goal_check 가 잡음)
         - '!\[[^\]]*\]\((\./)?img/pdf-p\d+\.png\)'          # PDF 페이지 캡처 관례 네이밍
         - '!\[[^\]]*\]\((\./)?img/s\d+_i\d+\.(png|jpg|jpeg)\)'  # PPT 슬라이드 추출 네이밍 (사례 A 누락분)
