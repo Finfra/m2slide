@@ -70,20 +70,53 @@ def css_bg(css):
 
 
 def css_body_font(project_dir, css):
-    """본문 서체 체인의 첫 항목. 코드용 monospace 는 제외한다."""
+    """본문 서체 체인의 첫 항목.
+
+    ⚠️ 함정 둘을 피해야 한다 (실측 2026-09-10, 첫 판이 둘 다 밟았다):
+
+        `@font-face { font-family: 'GmarketSansBold' }`
+            이것은 **폰트 자원의 이름**이지 본문 서체가 아니다. 블록째 걷어낸다.
+        `font-family: var(--global-font-family, …)`
+            `var(` 를 건너뛰면 진짜 본문 체인에 **영원히 도달하지 못한다**.
+            변수 정의를 역참조하고, 없으면 그 자리의 fallback 을 쓴다.
+
+    이 결함이 러너에 안 잡힌 이유가 중요하다 — `body_font` 는 `known_gap` 이라
+    **구조적으로 빨간불이 될 수 없는 축**이라서, 재는 값이 틀려도 rc0 이 유지된다.
+    """
     root = os.path.dirname(os.path.dirname(os.path.abspath(project_dir)))
     texts = [css]
     base = os.path.join(root, "lib", "css", "base.css")
     if os.path.isfile(base):
         texts.append(open(base, encoding="utf-8").read())
+    def first_of(chain, scope):
+        chain = chain.strip()
+        mv = re.match(r"var\(\s*(--[\w-]+)\s*(?:,\s*(.+))?\)\s*$", chain, re.S)
+        if mv:
+            dm = re.search(r"%s:\s*([^;]+);" % re.escape(mv.group(1)), scope)
+            chain = (dm.group(1) if dm else (mv.group(2) or "")).strip()
+        if not chain or re.search(r"mono|coding|inherit", chain, re.I):
+            return None
+        f = chain.split(",")[0].strip().strip("'\"")
+        return f or None
+
     for t in texts:
-        for m in re.finditer(r"font-family:\s*([^;!}]+)", t):
-            chain = m.group(1)
-            if re.search(r"mono|coding|inherit|var\(", chain, re.I):
-                continue
-            first = chain.split(",")[0].strip().strip("'\"")
-            if first:
-                return first
+        scope = re.sub(r"@font-face\s*\{[^}]*\}", "", t, flags=re.S)
+        #   ⚠️ **첫 매치를 쓰면 안 된다.** custom.css 는 제목 서체
+        #      (`--main-title-font-family: 'GmarketSansBold'`)를 먼저 선언하고,
+        #      그것이 본문으로 보고된다(실측: 두 번째 판이 이 함정을 밟았다).
+        #      본문은 **선택자로 특정**해야 한다.
+        m = re.search(r"--global-font-family:\s*([^;]+);", scope)
+        if m:
+            f = first_of(m.group(1), scope)
+            if f:
+                return f
+        for sel in (r"\.reveal\s*\{", r"\bbody\s*\{"):
+            for mb in re.finditer(sel + r"([^}]*)\}", scope, re.S):
+                mf = re.search(r"font-family:\s*([^;!}]+)", mb.group(1))
+                if mf:
+                    f = first_of(mf.group(1), scope)
+                    if f:
+                        return f
     return None
 
 
