@@ -89,6 +89,31 @@ conversion_mode:
         - { project: GenContentProd_v1.1, date: 2026-05-27, count: all_slides, note: "전 슬라이드 PNG 풀스크린 — 검색·복사·접근성 손상" }
         - { project: AgenticCoding, date: 2026-07-06, count: 8, note: "sNN_i1.png bleed — 구 정규식(pdf-p) 미검출" }
 
+    # ── 승격 룰 (Issue341 · promotion-1779899438-text_diff) ─────────
+    # 원본의 목록이 평문 문단으로 떨어지는 것을 막는다.
+    #
+    # 승격 근거 — slide-tuner GenContentProd_v1.1 round-1(2026-05-28)의 text_diff
+    # 7건 중 6건이 같은 형태였다: `plain text → * bullet`. 사람이 "내용을 더 썼다" 가
+    # 아니라 **역변환이 잃은 형식을 되돌린 것**이다(round 파일 실측 문구:
+    # "Zero-shot / Few-shot / Chain of Thought: plain text → `*` bullet").
+    #
+    # ⚠️ 제안서(promotion-*.md)가 추정한 대상 yml 은 `data/md-builder/styles.yml`
+    #    이었으나 **여기가 맞다**. 그 덱은 `_pipeline/` 보유 = ppt2m2slide 역변환
+    #    산출물이고, md 생성 스타일이 아니라 **역변환의 구조 보존** 문제다.
+    #    추정을 그대로 믿었다면 엉뚱한 정책에 룰이 들어갔을 것이다.
+    #
+    # goal_check 를 두지 않는 이유 — 목록이었어야 할 평문인지는 **원본 pptx 와
+    # 대조해야** 알 수 있고 md 만으로는 판정이 성립하지 않는다. confidence 가
+    # enforce(high)가 아니라 goal_check 는 필수가 아니다(검사 5). 판정 가능한
+    # 술어가 생기면 그때 붙인다.
+    preserve_list_structure:
+      enabled: true
+      goal_type: fidelity
+      goal: "원본 슬라이드에서 목록이던 항목은 md 에서도 목록으로 남는다 — 평문 문단으로 떨어지지 않는다"
+      confidence: medium
+      evidence:
+        - { project: GenContentProd_v1.1, date: 2026-05-28, count: 6, note: "round-1 text_diff 7건 중 6건이 plain text → * bullet 복원 — 목록 구조 소실" }
+
 # ── layout 자동 판정 휴리스틱 ─────────────────────────────────
 # PPT 슬라이드의 제목 위치·이미지 비율·텍스트 양을 기준으로
 # m2slide layout(_cover / _blank / _contents_no_title / _contents) 판정.
