@@ -1,3 +1,4 @@
+# kind: policy/stage — 파이프라인 단계 정책. 읽기는 그 단계 SCAR 만 (Issue340)
 # data/ppt2m2slide/mappings.yml
 # PPT 요소 → m2slide 카탈로그 항목 매핑 사전.
 #

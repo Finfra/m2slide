@@ -1,3 +1,4 @@
+# kind: policy/stage — 파이프라인 단계 정책. 읽기는 그 단계 SCAR 만 (Issue340)
 # info-filler v2 SSOT — 인터뷰 질문·옵션·의존성·검증 규칙.
 # 사용자가 본 파일을 수정하면 SCAR 본문 변경 없이 즉시 반영됨 (agent가 호출 시점에 매번 Read).
 # 스키마는 _doc_arch/info.md 표준 양식과 1:1 매핑.

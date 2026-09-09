@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 339
+* Issue HWM: 340
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -35,6 +35,39 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue340: data/ 범주 경계 정리 — 허용 목록의 구멍과 L1/L2 용어 충돌 (등록: 2026-09-09, 해결: 2026-09-09) ✅
+* 목적: `data/` 아래 파일이 **정책인지 카탈로그인지**, 그리고 **어느 축의 L1/L2 인지**를 판정할 수 있게 한다. 지금은 둘 다 위치로만 추정해야 하고, 그래서 규칙이 현실과 어긋난 채 방치돼 있다
+* 상세:
+    - **① 허용 목록의 구멍 — `slot-designer` 는 지금 문서상 위반이다.** [data-access-rules](.claude/rules/data-access-rules.md) 는 공유 허용 파일을 **하드코딩 5개**(`component-libraries`·`visual-elements`·`symbol-usage`·`emoji-usage`·`Info.template.md`)로 못박았는데, 실제 `data/` 에는 목록 밖 카탈로그가 **8개** 더 있다:
+        - `slot_meta.yml`·`slot_pandoc.yml`·`slot_animation.yml`·`slot_user.yml` — **slot-designer agent 본문이 4종 모두 참조**(실측)
+        - `htmlart/types.yml`·`htmlart/smartart-catalog.yml`·`palettes/catalog.yml`·`_meta.yml`·`_meta_lec.yml`
+        - 실제로는 정당한 사용이고 **규칙 쪽이 낡았다**. 방치하면 *"어차피 안 맞는 규칙"* 이 되어 진짜 위반도 안 잡힌다
+        - 원인은 구조다 — **허용 목록을 사람이 손으로 유지**하므로 카탈로그가 늘 때마다 갱신을 기억해야 하고, 잊으면 조용히 어긋난다
+    - **② L1/L2 가 두 축에서 충돌한다.** `data/promo-cartoon/policy.yml` 첫 줄은 자기를 *"(L2, m2slide)"* 라 부르고 글로벌 `~/.claude/data/promo-cartoon/policy.yml` 을 L1 이라 한다. 그런데 [pipeline-policy-cascade.md](_doc_arch/pipeline-policy-cascade.md) 정의표는 `data/<단계>/*.yml` 을 **L1** 으로 못박는다 — **같은 파일이 축에 따라 L1 이자 L2** 다
+        - 모순이 아니라 **축이 둘인데 이름이 하나**인 것이다 (축 A: m2slide↔프로젝트 / 축 B: 글로벌 SCAR↔m2slide)
+    - **③ cascade 문서의 범위가 현실보다 좁다** — 열거된 "단계" 는 8종인데 `data/` 에는 `ppt2m2slide`·`slide-tuner`·`promo-cartoon` 이 더 있다. 이들이 축 A 밖이라는 명시가 없다
+    - ⚠️ 앞선 조사에서 *"헷갈리는 경계"* 로 함께 꼽았던 `_config.yml` vs policy · `rules/*.md` vs policy 는 **이미 정본이 있다**([config-sync-rules](.claude/rules/config-sync-rules.md) · 글로벌 `global-scar-change-detail`). 본 이슈 범위 밖이다
+* 구현 명세:
+    - **1단계 — 파일이 스스로 범주를 말한다.** `data/` 하위 모든 yml 첫 줄에 `# kind:` 1줄 선언. 이미 전 파일이 첫 줄 자기설명 주석을 갖고 있으므로(실측) **형식을 고정하는 것**이다
+        - `policy/stage` — 파이프라인 단계 정책(`data/<stage>/`). 접근은 **자기 단계만**
+        - `policy/upstream` — 글로벌 SCAR 정책에 얹는 m2slide 측 값(`promo-cartoon` 류). 그 벤더만
+        - `catalog` — 어휘·인벤토리(`slot_*`·`htmlart/`·`palettes/`·`component-libraries` …). **전 단계 허용**
+        - 판정 근거가 **위치에서 선언으로** 옮겨가므로 폴더가 늘거나 파일이 옮겨져도 규칙이 안 깨진다
+    - **2단계 — 허용 목록을 선언 기반으로 교체.** `data-access-rules` 의 하드코딩 5개 목록을 *"`kind: catalog` 인 파일은 전 단계에서 읽을 수 있다"* 한 줄로 대체 → **구멍 8개 즉시 폐쇄** + 유지보수 부담 제거. `--lint-data` 에 `kind` 부재·오값 검사(검사 6번) 추가로 집행
+    - **3단계 — 축 B 에서 `L2` 라는 말을 쓰지 않는다.** `L1/L2` 는 축 A 전용으로 고정하고 축 B 는 `upstream` → `local override`. `data/promo-cartoon/policy.yml` 헤더 1줄 + cascade 문서 "범위" 절에 축 A 전용 명시 + 비단계 폴더 3종 취급 한 줄
+    - **하지 않을 것**: `Glossary.md` 에 큰 절 신설 금지 — 21KB 문서에 이 경계가 없다는 사실이 *"거기 써도 안 읽힌다"* 는 증거다(포인터 1행이면 충분). 새 룰 파일 신설 금지 — 고칠 곳은 기존 2개와 각 yml 첫 줄뿐이다. `identity vs policy` 경계는 **혼동 사건이 없어** 조항으로 쓰지 않는다
+* Checkpoints:
+* 결과:
+    - **1단계** — `data/` 하위 yml **26개 전건**에 `# kind:` 첫 줄 선언(`policy/stage` 12 · `catalog` 13 · `policy/upstream` 1). 이미 전 파일이 첫 줄 자기설명을 갖고 있어 형식을 고정하는 작업이었다
+    - **2단계** — [data-access-rules](.claude/rules/data-access-rules.md) 의 하드코딩 5개 목록을 *"`kind: catalog` 인 파일은 모든 단계에서 읽을 수 있다"* 로 교체. **구멍 8개 폐쇄** — `slot-designer` 의 문서상 위반 상태가 해소됐다(읽는 `slot_*.yml` 4종이 모두 `catalog` 로 판정)
+    - **3단계** — 축 B 에서 `L2` 표기 제거. `data/promo-cartoon/policy.yml` 헤더를 `upstream → local override` 로 고치고, [pipeline-policy-cascade.md](_doc_arch/pipeline-policy-cascade.md) 에 *「이 문서의 L1·L2 는 이 축 전용」* 절 + **비단계 폴더 4종 취급 표** 추가
+    - **집행** — [lint-policy-kind.py](lib/lint-policy-kind.py) 신설, `--lint-data` **검사 6번**으로 배선. 선언 누락·오값·위치 불일치(카탈로그 자리에 policy 자칭 = 격리 우회) 3종을 차단. 알려진 실패 3종으로 역검증해 전건 검출 확인
+    - `_doc_arch/Glossary.md` 에는 큰 절 대신 **포인터 2행**만 추가 (그 문서에 이 경계가 없었다는 사실 자체가 "거기 써도 안 읽힌다" 는 증거)
+    - 검증: `--lint-data` 6/6 통과 · aTest 빌드 무회귀 · 문서 상대경로 링크 4건 유효
+* 미해결:
+    - 🚧 `data/_meta.yml`·`_meta_lec.yml` 은 **코드 소비처 0건**이고 [Glossary](_doc_arch/Glossary.md) 가 *"구 `_meta.yml` — Issue79부터 폐기"* 라 적고 있다. 폐기 잔재로 보이나 삭제는 별도 판단이라 `kind: catalog` 만 붙여 두었다
+
 
 ## Issue339: m2slide → pptx 조용한 내용 손실 3종 (등록: 2026-09-09, 해결: 2026-09-09, commit: `f4c36eb`) ✅
 * 목적: `ppt(pdf) → m2slide → ppt` 왕복에서 **되돌아온 ppt 가 원고보다 적은 것**을 막는다. 지금은 `--pptx` 가 rc0 · FAIL 0 으로 끝나면서 슬라이드 본문이 통째로 비어 나온다 — 실패가 아니라 **성공으로 위장한 손실**이라 배포까지 간다

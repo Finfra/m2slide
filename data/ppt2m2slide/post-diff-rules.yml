@@ -1,3 +1,4 @@
+# kind: policy/stage — 파이프라인 단계 정책. 읽기는 그 단계 SCAR 만 (Issue340)
 # post-diff-rules.yml — ppt2m2slide 사후 diff 분류 정책 (Issue246 Phase C)
 #
 # ppt-post-diff.py가 두 markdown 폴더(변환 직후 스냅샷 vs 현재 사용자 수정본)를

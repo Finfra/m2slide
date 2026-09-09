@@ -44,15 +44,30 @@ date: 2026-05-26
 | 10   | `md2tts-txt`        | (없음)                    | 글로벌 tts-pronunciation-rules.md만 허용   |
 | rev  | `ppt2m2slide`       | `data/ppt2m2slide/`       | 역변환 파이프라인 전용                     |
 
-## 공유 허용 파일 (data/ 루트 직속, 전 단계 허용)
+## 공유 허용 — **파일의 `kind` 선언으로 판정한다** (Issue340)
 
-다음 파일은 모든 단계에서 읽기 허용 — 단계 종속이 아닌 범용 카탈로그이기 때문:
+> **`kind: catalog` 인 파일은 모든 단계에서 읽을 수 있다.**
 
-* `data/component-libraries.yml` — 시각화 라이브러리 메타 SSOT
-* `data/visual-elements.yml` — 시각 구성요소 인벤토리 SSOT (요소 존재·범주·문법·백엔드 라우팅)
-* `data/symbol-usage.yml` — 심벌(Font Awesome) 상황별 사용 가이드
-* `data/emoji-usage.yml` — 이모지 상황별 사용 가이드
-* `data/Info.template.md` — Info.md 템플릿 (info-filler 외 안내용)
+`data/` 하위 모든 yml 은 첫 줄에 범주를 스스로 선언한다. 판정 근거는 **위치가 아니라 그 선언**이다.
+
+| `kind` | 무엇 | 읽기 |
+| :--- | :--- | :--- |
+| `policy/stage` | 파이프라인 단계 정책 (`data/<stage>/`) | **그 단계 SCAR 만** |
+| `policy/upstream` | 글로벌 SCAR 정책에 얹는 m2slide 측 local override (`promo-cartoon` 류) | 그 벤더 경로만 |
+| `catalog` | 단계 종속이 아닌 공유 어휘·인벤토리 | **전 단계 허용** |
+
+* 파일을 열면 첫 줄에 있으므로 **판정이 필요한 순간에 보인다**. 목록을 찾아 대조할 필요가 없다
+* 집행: `./m2slide.sh --lint-data` 검사 6번([lint-policy-kind.py](../../lib/lint-policy-kind.py)) — 선언 누락·오값·위치 불일치를 차단
+* `data/Info.template.md` 는 yml 이 아니지만 같은 취지의 공유 자산이라 전 단계 읽기를 허용한다
+
+### 왜 하드코딩 목록을 버렸나
+
+구 규정은 공유 허용 파일을 **5개 목록으로 못박아** 뒀다. 그런데 카탈로그는 계속 늘었고 목록은 따라가지 못해, 실측(2026-09-09) 시점에 **8개가 목록 밖**이었다:
+
+* `slot_meta.yml`·`slot_pandoc.yml`·`slot_animation.yml`·`slot_user.yml` — **slot-designer agent 본문이 4종 모두 참조**
+* `htmlart/types.yml`·`htmlart/smartart-catalog.yml`·`palettes/catalog.yml`·`_meta.yml`·`_meta_lec.yml`
+
+즉 **`slot-designer` 는 실행할 때마다 문서상 위반**이었다. 실제로는 정당한 사용이고 규칙 쪽이 낡은 것인데, 이 상태를 방치하면 *"어차피 안 맞는 규칙"* 이 되어 **진짜 위반도 안 잡힌다**. 원인은 개별 누락이 아니라 **사람이 목록을 유지하는 구조**였으므로, 목록을 없애고 파일이 스스로 말하게 했다.
 
 # 금지 패턴 (크로스-단계 읽기)
 
@@ -66,8 +81,10 @@ Read("data/agenda-designer/patterns.yml")  ← refs-collector SCAR 내부에서
 # ✅ 허용 — slot-designer가 자신의 폴더 읽기
 Read("data/slot-designer/patterns.yml")
 
-# ✅ 허용 — 모든 단계에서 공유 파일 읽기
+# ✅ 허용 — kind: catalog 는 어느 단계에서든 읽는다 (첫 줄 선언으로 확인)
 Read("data/component-libraries.yml")
+Read("data/slot_meta.yml")        ← slot-designer 가 읽는다. 구 하드코딩 목록에는 없었다
+Read("data/htmlart/types.yml")    ← 하위 폴더여도 kind 가 catalog 면 허용
 ```
 
 필요한 타 단계 정책이 있다면 **자신의 data 파일에 복제·요약**하거나, 해당 정책을 공유 파일로 승격하는 이슈를 등록할 것.

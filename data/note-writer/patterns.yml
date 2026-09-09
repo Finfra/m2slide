@@ -1,3 +1,4 @@
+# kind: policy/stage — 파이프라인 단계 정책. 읽기는 그 단계 SCAR 만 (Issue340)
 # note-writer v1 SSOT — slide-id 부여 규칙·톤 프리셋·노트 길이 가이드·검증·체크포인트.
 # 사용자가 본 파일을 수정하면 SCAR 본문 변경 없이 즉시 반영됨 (agent가 호출 시점에 매번 Read).
 # Issue257 (Issue256의 note.md 빌드 병합 메커니즘 위에 자동 초안 생성 agent를 얹음).

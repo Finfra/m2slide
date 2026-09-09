@@ -1,3 +1,4 @@
+# kind: catalog — 단계 종속이 아닌 공유 어휘·인벤토리. 전 단계 읽기 허용 (Issue340)
 # data/emoji-usage.yml — 이모지 사용 정의 SSOT
 #
 # m2slide "이모지" 구성요소 = 유니코드 그림문자 (라이브러리·CDN 불필요, 브라우저 네이티브 렌더).

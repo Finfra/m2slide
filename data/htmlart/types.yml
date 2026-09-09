@@ -1,3 +1,4 @@
+# kind: catalog — 단계 종속이 아닌 공유 어휘·인벤토리. 전 단계 읽기 허용 (Issue340)
 # data/htmlart/types.yml
 # htmlArt 타입 정의 + 콘텐츠 신호 → 타입 결정표 (에이전트 fast-path SSOT).
 #

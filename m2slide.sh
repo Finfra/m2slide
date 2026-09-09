@@ -253,6 +253,18 @@ PY
     echo "ℹ️ lib/lint-policy-artifacts.py 없음 — skip"
   fi
 
+  # 6. 범주 선언 검사 — 접근 격리의 판정 근거가 빠짐없이 붙어 있는가 (Issue340)
+  #    허용 목록을 사람이 손으로 유지하던 방식이 실제로 어긋났다(slot-designer 가
+  #    읽는 slot_*.yml 4종이 목록 밖 → 그 agent 는 매 실행이 문서상 위반이었다).
+  #    판정 근거를 위치에서 파일 자신의 `# kind:` 선언으로 옮기고 여기서 집행한다.
+  echo ""
+  echo "── 6. data/ 범주 선언 (kind: policy/stage · policy/upstream · catalog) ──"
+  if [ -f "$SCRIPT_DIR/lib/lint-policy-kind.py" ]; then
+    python3 "$SCRIPT_DIR/lib/lint-policy-kind.py" "$SCRIPT_DIR" || FAIL=1
+  else
+    echo "ℹ️ lib/lint-policy-kind.py 없음 — skip"
+  fi
+
   echo ""
   if [ "$FAIL" -ne 0 ]; then
     echo "❌ lint-data 실패 — 위 위반 항목 수정 필요" >&2

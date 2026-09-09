@@ -1,3 +1,4 @@
+# kind: catalog — 단계 종속이 아닌 공유 어휘·인벤토리. 전 단계 읽기 허용 (Issue340)
 # component-libraries.yml — 시각화 라이브러리 메타 SSOT (Issue180 Phase 0)
 # 스키마·디스패처 contract: _doc_arch/component-libraries.md
 # component-slide.md 라이브러리 표는 본 파일 status를 참조 (이중 SSOT 금지).

@@ -1,3 +1,4 @@
+# kind: policy/stage — 파이프라인 단계 정책. 읽기는 그 단계 SCAR 만 (Issue340)
 # data/ppt2m2slide/heuristics.yml
 # ppt2m2slide agent의 layout 판정 임계값 + mode 판정 + palette 매칭 임계값.
 #

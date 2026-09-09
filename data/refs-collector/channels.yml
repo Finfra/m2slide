@@ -1,3 +1,4 @@
+# kind: policy/stage — 파이프라인 단계 정책. 읽기는 그 단계 SCAR 만 (Issue340)
 # refs-collector가 자료를 수집하는 채널 목록.
 # 사용자는 본 파일을 수정하여 새 채널 추가 / 우선순위 변경 / 비활성화 가능.
 # 각 채널은 type(html/pdf/image/video) + handler(어떤 도구로 가져올지) 명시.
