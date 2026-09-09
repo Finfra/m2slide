@@ -288,6 +288,101 @@ def _rules_by_path(cfg):
     return {path: rule for path, rule in walk_rules(cfg)}
 
 
+def _walk_lists(node, path=()):
+    """dict 를 훑어 (경로, 리스트) 를 낸다. 리스트 **안쪽**은 들어가지 않는다 —
+    deep-merge 가 리스트를 통째로 치환하므로 비교 단위도 리스트 전체다."""
+    if not isinstance(node, dict):
+        return
+    for k, v in node.items():
+        if isinstance(v, list):
+            yield path + (k,), v
+        elif isinstance(v, dict):
+            yield from _walk_lists(v, path + (k,))
+
+
+def _item_key(x):
+    """리스트 원소의 동일성 키. dict 면 id·name 류를, 아니면 값 자체를 쓴다."""
+    if isinstance(x, dict):
+        for k in ("id", "name", "key", "slug"):
+            if k in x:
+                return str(x[k])
+        return repr(sorted(x.items(), key=lambda kv: kv[0]))
+    return repr(x)
+
+
+def _get_path(node, path):
+    for k in path:
+        if not isinstance(node, dict) or k not in node:
+            return None
+        node = node[k]
+    return node
+
+
+def lint_l2_list_shrink(root: Path):
+    """L2 가 L1 의 리스트를 **축소**했는지 본다 (Issue341_3).
+
+    왜 필요한가 — deep-merge 는 dict 만 재귀하고 **리스트는 L2 값으로 통째 치환**한다
+    (결정성 우선). 그런데 primary yml 의 최상위 컬렉션은 대부분 리스트라, L2 에 신규
+    항목 하나만 적으면 L1 의 기존 항목이 전부 사라진다 — *"추가"* 를 의도했는데 결과는
+    *"대체"* 다(Issue308 파일럿 실측). 지금까지 방어는 설계 문서의 경고 문단 하나뿐이라
+    **사람이 그것을 읽었는지에 걸려 있었다.**
+
+    ⚠️ 경고이지 실패가 아니다 — 의도적 축소는 정당하다. 다만 *"몰라서 잃은 것"* 과
+       *"알고 줄인 것"* 을 가르라고 사라진 항목을 이름으로 나열한다.
+
+    반환: (warnings, checked_lists)
+    """
+    warnings = []
+    checked = 0
+
+    for l2_path in sorted(root.glob("Projects/*/_pipeline/policy/*.yml")):
+        stage = l2_path.stem
+        l1_dir = root / "data" / stage
+        if not l1_dir.is_dir():
+            continue
+
+        l1_cfg = {}
+        for l1_yml in sorted(l1_dir.glob("*.yml")):
+            if "_backup" in l1_yml.parts:
+                continue
+            try:
+                part = yaml.safe_load(l1_yml.read_text()) or {}
+            except Exception:
+                continue
+            if isinstance(part, dict):
+                l1_cfg = deep_merge(l1_cfg, part)
+        try:
+            l2_cfg = yaml.safe_load(l2_path.read_text()) or {}
+        except Exception:
+            continue
+        if not isinstance(l2_cfg, dict) or not l1_cfg:
+            continue
+
+        merged = deep_merge(l1_cfg, l2_cfg)
+        rel = l2_path.relative_to(root)
+
+        for path, l1_list in _walk_lists(l1_cfg):
+            #   L2 가 그 경로를 건드리지 않았으면 볼 것이 없다
+            if _get_path(l2_cfg, path) is None:
+                continue
+            merged_list = _get_path(merged, path)
+            if not isinstance(merged_list, list):
+                continue
+            checked += 1
+            have = {_item_key(x) for x in merged_list}
+            lost = [x for x in l1_list if _item_key(x) not in have]
+            if lost:
+                names = ", ".join(_item_key(x) for x in lost[:6])
+                more = " …외 %d개" % (len(lost) - 6) if len(lost) > 6 else ""
+                warnings.append(
+                    "%s:%s — L1 항목 %d개가 병합 결과에서 사라졌다 (%s%s). "
+                    "deep-merge 는 리스트를 치환한다 — 추가하려면 L1 기존 항목을 함께 적어야 한다"
+                    % (rel, ".".join(path), len(lost), names, more)
+                )
+
+    return warnings, checked
+
+
 def lint_l2_overrides(root: Path):
     """Projects/*/_pipeline/policy/<stage>.yml 이 L1 goal 룰을 덮을 때 정합성 검사.
 
@@ -413,6 +508,13 @@ def main():
     all_errors.extend(l2_errors)
     if l2_checked:
         print(f"ℹ️ L2 override 병합 검사 — goal 룰 {l2_checked}쌍 대조")
+
+    # L2 리스트 축소 검사 (Issue341_3) — 실패가 아니라 경고다
+    shrink_warns, shrink_checked = lint_l2_list_shrink(root)
+    if shrink_checked:
+        print(f"ℹ️ L2 리스트 치환 검사 — L2 가 건드린 리스트 {shrink_checked}개 대조")
+    for w in shrink_warns:
+        print(f"⚠️ {w}", file=sys.stderr)
 
     if all_errors:
         for err in all_errors:

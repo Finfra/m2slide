@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 340
+* Issue HWM: 341
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -35,6 +35,52 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue341: policy 미해결 3종 처리 — 승격 심사·축 2 소비·리스트 치환 (등록: 2026-09-09, 해결: 2026-09-09) ✅
+* 목적: Issue340 이 남긴 미해결 셋을 닫는다. 셋 다 **장치는 있는데 작동하지 않는** 상태다 — 승격은 사람이 기억해야 일어나고, 덱 목적(축 2)은 소비하는 룰이 0건이며, 가장 위험한 병합 함정에는 검사가 없다
+* depends: Issue340
+
+### Issue341_1: 커밋 시 승격 심사 환기
+* 상세:
+    - 승격 4단계(관측 → `aggregate-feedback.py` → `_proposals/promotion-*.md` → 사람 판단)의 **3번이 사람 기억에 의존**한다. 실측: `pending` 3건이 이 세션의 커밋 4회 동안 한 번도 환기되지 않았다
+    - 그중 `promotion-1779899438-text_diff.md` 는 `count 7 · threshold 3` 으로 [`_suggest_confidence()`](lib/tuner/promote-to-data.py) 기준 **`medium` 제안 대상**이다. 즉 심사받아야 할 후보가 실제로 대기 중인데 아무도 모른다
+* 구현 명세:
+    - [check-policy-commit.sh](lib/hooks/check-policy-commit.sh) 와 같은 자리(pre-commit)에서 `data/_proposals/promotion-*.md` 의 `status: pending` 을 세어 **심사 대상만** 알린다
+    - 심사 대상 판정은 `_suggest_confidence()` 와 **같은 규칙**을 쓴다(`count >= max(threshold, 2)` → medium). 규칙을 두 벌 두면 갈라진다 — 파이썬 헬퍼를 훅이 호출하는 형태
+    - ⚠️ **자동 승격 금지.** 승격이 사람 승인인 것은 설계의 핵심이다(프로젝트 하나의 사정이 전 프로젝트 기본값을 조용히 바꾸면 안 된다). 훅은 **차단도 하지 않는다** — 알리기만 한다
+    - `count <= 1` 인 low 후보는 소음이므로 요약 한 줄로만 센다
+
+### Issue341_2: 축 2(덱 목적)를 실제로 소비하는 첫 룰
+* 상세:
+    - ⚠️ **원인 정정**: 앞선 보고에서 *"Info.md 15개 purpose 미기재라 완화 경로가 비어 있다"* 고 적었으나 실측 결과 **`applies_to_purpose`·`relax_when` 을 쓰는 룰이 0건**이다. purpose 를 15개 다 채워도 **완화 효과는 0**이다 — 미기재는 증상이 아니라 무해한 상태(미기재 = `lecture` 간주 = 현행 동작 = 회귀 0)
+    - 진짜 공백은 **축 2를 소비하는 룰이 하나도 없다**는 것이다. lint 는 그 필드의 유효성을 검사할 준비만 돼 있다(검사 10·11)
+* 구현 명세:
+    - 근거 있는 첫 소비처 하나만 붙인다 — [policy-goal-schema.md](_doc_arch/policy-goal-schema.md) 가 `promo` 를 *"광고·홍보, 비주얼 우선 · 완화(통짜 비주얼 허용)"* 로 정의하고, `drop_redundant_page_screenshot`(통짜 페이지 래스터 제거)이 정확히 그 반대편 규칙이다. 홍보 덱에서는 통짜 비주얼이 **정당한 선택**이므로 이 룰에 `applies_to_purpose` 를 단다
+    - ⚠️ **`purpose` 값을 덱에 임의로 채우지 않는다.** 어느 덱이 홍보용인지는 콘텐츠 판단이라 사용자 확인 사항이다([identifier-meta-rules](.claude/rules/identifier-meta-rules.md) 와 같은 취지). 룰 쪽 배선만 먼저 하고, 실제 `purpose: promo` 기재는 사용자가 지목한 덱에만 넣는다
+    - `--lint-data` 검사 10 이 이 필드를 이미 검사하므로 배선만으로 집행이 붙는다
+
+### Issue341_3: 리스트 치환 함정 lint
+* 상세:
+    - deep-merge 는 dict 만 재귀하고 **리스트는 L2 값으로 통째 치환**한다(결정성 우선). 그런데 primary yml 의 최상위 컬렉션은 대부분 리스트라, L2 에 신규 항목 1개만 적으면 **L1 의 기존 항목이 전부 사라진다** — *"추가"* 를 의도했는데 결과는 *"대체"* 다(Issue308 파일럿 실측)
+    - 현재 방어는 [pipeline-policy-cascade.md](_doc_arch/pipeline-policy-cascade.md) 의 ⚠️ 문단 **하나뿐**이고 검사가 없다. 사람이 그 문단을 읽었는지에 걸려 있다
+* 구현 명세:
+    - [lint-policy-schema.py](lib/lint-policy-schema.py) `lint_l2_overrides()` 계열에 검사 추가 — L2 가 L1 의 리스트를 **축소**했으면(병합 결과 길이 < L1 길이, 또는 L1 항목이 결과에서 사라졌으면) 보고한다
+    - ⚠️ **의도적 축소는 정당하다** — 그래서 FAIL 이 아니라 **경고**다. 다만 *"몰라서 잃은 것"* 과 *"알고 줄인 것"* 을 가르기 위해 사라진 항목을 이름으로 나열한다
+    - 판정은 항목 id·name 키가 있으면 그것으로, 없으면 원소 자체로 비교한다
+* Checkpoints:
+* 결과:
+    - **341_1 승격 심사 환기 ✅** — [promote-to-data.py](lib/tuner/promote-to-data.py) 에 `--review` 추가(심사 대상만 출력, rc 1 = 대상 있음). 판정은 `_suggest_confidence()` 를 **그대로 재사용**한다(규칙을 두 벌 두면 갈라진다). [check-promotion-due.sh](lib/hooks/check-promotion-due.sh) 신설 + [install-hooks.sh](lib/hooks/install-hooks.sh) 를 훅 2종 설치로 일반화. **정책 yml 유무와 무관하게 매 커밋 동작**한다(승격은 다른 축)
+        - 구현 중 발견: `Proposal` 에 `threshold` property 가 없어 `--review` 가 즉시 죽었다. 누락 시 1 로 두되 `max(threshold, 2)` 계산이 보수적이라 **모르는 값이 승격을 앞당기지 않는다**
+        - **실측 동작 확인** — 직후 정책 커밋에서 심사 대상 1건이 실제로 환기됐다
+    - **341_2 축 2 첫 소비 ✅** — `drop_redundant_page_screenshot` 에 `applies_to_purpose: [lecture, info, handout]` · `relax_when: [promo, archive]` 부여 (commit `2f05a4e`)
+        - ⚠️ **원인 재정정**: 런타임 게이트 `purpose_gates_out()` 는 **이미 구현돼 있었다**(Issue307). 빠진 것은 그것을 쓰는 룰이었다 — 필드를 붙이자 즉시 작동했다(실측: lecture·info·handout=False / promo·archive=True)
+        - `purpose` 값을 덱에 임의로 채우지 않았다 — 어느 덱이 홍보용인지는 콘텐츠 판단이라 사용자 확인 사항이다. 미기재 = `lecture` 간주 = 회귀 0
+    - **341_3 리스트 치환 lint ✅** — [lint-policy-schema.py](lib/lint-policy-schema.py) 에 `lint_l2_list_shrink()` 신설. L2 가 건드린 리스트만 대조해 **사라진 L1 항목을 이름으로** 나열한다. 의도적 축소가 정당하므로 **경고이지 실패가 아니다**
+        - 역검증: 최상위(`tone_presets` 4→0)·중첩(`nested.items` 2 소실) 둘 다 검출. 현 실 프로젝트 위반 0건
+* 미해결:
+    - 🚧 축 2 를 소비하는 룰이 아직 **1개**다. 나머지 룰은 여전히 전 목적 무차별 적용이며, 확장은 근거가 생길 때마다 개별 판단한다
+    - 🚧 `purpose` 기재 자체는 **사용자 판단 대기** — 15개 덱 중 어느 것이 `promo`·`archive` 인지 지목되면 그때 기재한다
+
 
 ## Issue340: data/ 범주 경계 정리 — 허용 목록의 구멍과 L1/L2 용어 충돌 (등록: 2026-09-09, 해결: 2026-09-09) ✅
 * 목적: `data/` 아래 파일이 **정책인지 카탈로그인지**, 그리고 **어느 축의 L1/L2 인지**를 판정할 수 있게 한다. 지금은 둘 다 위치로만 추정해야 하고, 그래서 규칙이 현실과 어긋난 채 방치돼 있다

@@ -72,6 +72,16 @@ class Proposal:
         except (TypeError, ValueError):
             return 0
 
+    @property
+    def threshold(self) -> int:
+        """승격 임계. aggregate-feedback 이 frontmatter 에 적는다.
+        누락 시 1 — 임계를 모르면 `_suggest_confidence` 가 max(threshold, 2) 로
+        보수적으로 계산하므로, 모르는 값이 승격을 앞당기지는 않는다."""
+        try:
+            return int(self.frontmatter.get("threshold", 1))
+        except (TypeError, ValueError):
+            return 1
+
 
 _FRONTMATTER_RE = re.compile(r"^---\n(.*?)\n---\n(.*)$", re.DOTALL)
 _FM_LINE_RE = re.compile(r"^([A-Za-z_][\w-]*)\s*:\s*(.*)$")
@@ -182,6 +192,51 @@ def cmd_list(repo_root: Path, status: str) -> int:
         print(f"  [{p.status}] {p.category}  count={p.count}  round_ts={p.round_ts}")
         print(f"        {rel}")
     return 0
+
+
+def cmd_review(repo_root: Path) -> int:
+    """심사 대상만 골라 낸다 — pre-commit 훅이 부르는 진입점 (Issue341_1).
+
+    왜 필요한가 — 승격 4단계 중 *"사람이 읽고 판단"* 이 **사람 기억에 의존**했다.
+    실측(2026-09-09): pending 3건이 커밋 4회 동안 한 번도 환기되지 않았고, 그중
+    하나는 `count 7 · threshold 3` 으로 이미 medium 제안 대상이었다.
+
+    ⚠️ **자동 승격은 하지 않는다.** 승격이 사람 승인인 것은 설계의 핵심이다 —
+       프로젝트 하나의 사정이 전 프로젝트 기본값을 조용히 바꾸면 안 된다.
+       이 명령은 *"지금 심사할 것이 있다"* 만 알린다.
+
+    판정은 `_suggest_confidence()` 를 **그대로 재사용**한다. 규칙을 두 벌 두면
+    갈라지고, 갈라진 규칙은 어느 쪽이 정답인지 아무도 모르게 된다.
+
+    rc: 심사 대상 있음 1 · 없음 0 (훅이 rc 로 분기할 수 있게)
+    """
+    props = list_proposals(repo_root, "pending")
+    if not props:
+        return 0
+
+    due, low = [], 0
+    for p in props:
+        if _suggest_confidence(p.count, p.threshold) == "low":
+            low += 1
+        else:
+            due.append(p)
+
+    if not due:
+        #   low 만 있으면 소음이므로 한 줄로만 센다
+        print(f"  ℹ️ 승격 후보 {low}건 대기 (근거 부족 — 아직 심사 대상 아님)")
+        return 0
+
+    print(f"  📋 승격 심사 대상 {len(due)}건 — 근거가 임계를 넘었습니다")
+    for p in due:
+        rel = p.path.resolve().relative_to(repo_root)
+        print(f"     [{p.category}] count={p.count} ≥ threshold={p.threshold} "
+              f"→ confidence {_suggest_confidence(p.count, p.threshold)} 제안")
+        print(f"        {rel}")
+    if low:
+        print(f"     (그 밖에 근거 부족 {low}건은 생략)")
+    print("     심사:  python3 lib/tuner/promote-to-data.py --show <위 경로>")
+    print("     승격:  python3 lib/tuner/promote-to-data.py --action merge <위 경로>")
+    return 1
 
 
 def cmd_show(repo_root: Path, proposal_path: Path) -> int:
@@ -343,6 +398,8 @@ def _maybe_backup_target_yml(repo_root: Path, target_yml_text: str) -> None:
 def main(argv: List[str]) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--list", action="store_true", help="promotion 후보 목록 조회")
+    p.add_argument("--review", action="store_true",
+                   help="심사 대상(근거가 임계를 넘은 pending)만 출력. rc 1 = 대상 있음")
     p.add_argument("--show", metavar="PROPOSAL_MD", help="후보 1건 요약")
     p.add_argument("--action", choices=sorted(VALID_ACTIONS), help="후보 status 갱신")
     p.add_argument("proposal", nargs="?", help="--action 대상 proposal md 경로")
@@ -354,6 +411,8 @@ def main(argv: List[str]) -> int:
     cwd = Path.cwd()
     repo_root = Path(args.repo_root).resolve() if args.repo_root else find_repo_root(cwd)
 
+    if args.review:
+        return cmd_review(repo_root)
     if args.list:
         return cmd_list(repo_root, args.status)
     if args.show:
