@@ -137,6 +137,8 @@ Temporary Items
 !/data/slot-designer/**
 !/data/ppt2m2slide/
 !/data/ppt2m2slide/**
+!/data/m2slide2ppt/
+!/data/m2slide2ppt/**
 !/data/info-filler/
 !/data/info-filler/**
 !/data/agenda-designer/

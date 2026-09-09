@@ -1,0 +1,78 @@
+# kind: policy/stage — 파이프라인 단계 정책. 읽기는 그 단계 SCAR 만 (Issue340)
+# data/m2slide2ppt/transform.yml
+# m2slide → pptx 변환 카탈로그 (Issue342)
+#
+# 왜 이 파일이 있나
+# -----------------
+# 이 카탈로그들은 오래 [build-source.py](../../lib/pptx/build-source.py) 의 **코드 상수**
+# 였다. 그래서 *"chart 를 왜 버리는가"*, *"pie 는 왜 도형이 안 되는가"* 를 바꾸려면
+# 코드를 고쳐야 했고, 바뀐 이유를 남길 자리도 없었다. 역방향(ppt2m2slide)이 yml 로
+# 데이터-주도인 것과 어긋나 있었다.
+#
+# 이 파일은 **판정의 어휘**를 소유한다. 무엇을 어떻게 옮기는가(구현)는 여전히
+# build-source.py 가 하고, 그 결과가 계약대로인지는
+# [fidelity.yml](fidelity.yml) 이 잰다. 셋의 역할이 다르다:
+#
+#     transform.yml   무엇을 어느 갈래로 보낼 것인가   (이 파일)
+#     build-source.py 실제로 어떻게 옮기는가           (구현)
+#     fidelity.yml    왕복하면 돌아오는가              (계약·검증)
+#
+# ⚠️ 이 파일을 고치면 **산출 pptx 가 달라진다**. 근거(`evidence`) 없이 바꾸지 않는다.
+---
+schema_version: 1
+
+# ── 컴포넌트 펜스 처리 ────────────────────────────────────────
+# HTML 에서만 살아 있는 것들. 남기면 JSON·JS 원문이 슬라이드에 그대로 찍힌다
+# (실측: 45번 장에 `<h1 class=…>` 노출).
+fences:
+  # 태그만 벗기고 글자는 남긴다 — 글자가 곧 내용인 것들
+  unwrap: [wordart]
+
+  # 통째로 걷어낸다. 다만 **자리를 비우지 않는다** — 제목만 남은 백지 장이
+  # 배포되는 것을 실측했다(2026-09-09 aTest p18 chart·p19 p5, 검증 FAIL 0 통과).
+  # 무엇이 있던 자리인지 한 줄 표식을 남기는 것은 목차 라벨과 같은 **구조 표식**이며
+  # 원고의 문장을 짓는 것이 아니다.
+  drop:
+    chart:    "차트"
+    d3:       "인포그래픽(d3)"
+    p5:       "시뮬레이션(p5.js)"
+    map:      "지도"
+    model3d:  "3D 모델"
+    react:    "인터랙티브 컴포넌트(React)"
+  drop_note: "· %s — 웹 슬라이드에서 동작하는 요소입니다"
+
+# ── lane B — 정형 블록을 네이티브 도형으로 ────────────────────
+# pptx 에는 "카드 그리드" 라는 어휘가 없어 그냥 두면 평문 불릿으로 눕는다.
+# 그 자리를 글로벌 ppt-info 블록 렌더러로 다시 그린다 — **그림이 아니라 도형**이라
+# 문구를 그대로 고칠 수 있다.
+#
+# ⚠️ **lane B 와 lane C 의 경계는 "여기 있는가" 하나다.** 여기 없는 htmlart
+#    (pie·matrix·venn…)는 도형 배치 자체가 판단이고, 그 판단은 장당 33만 토큰짜리
+#    ig-maker(lane C) 소관이다. **비슷한 블록으로 근사하지 않는다** —
+#    근사하면 원본과 다른 도해가 조용히 나간다.
+lane_b:
+  cards:              cards      # 카드 그리드    → ppt-info `cards`
+  htmlart numbered:   cards      # 번호 카드      → 같은 블록(번호는 우리가 매긴다)
+  htmlart process:    process    # 순차 단계      → `cards` + `flow_arrow` 네이티브 커넥터
+  htmlart compare:    compare    # 좌우 동등 비교 → `compare` (1:1 대응)
+  # 순차형 4종 — 진행 순서가 내용의 전부라 `process` 매핑을 그대로 탄다.
+  # HTML 의 시각 변주(연대축·갈매기·계단·깔때기)는 pptx 에서 근사하지 않는다 —
+  # 살아남는 것은 **순서와 연결**이고 그것이 flow_arrow 가 그리는 것이다.
+  htmlart timeline:   process
+  htmlart chevron:    process
+  htmlart step:       process
+  htmlart funnel:     process
+
+# ── 줄 단위로 지우는 디렉티브 ─────────────────────────────────
+# pptx 에 대응 어휘가 없는 m2slide 고유 지시자. 각 항목의 손실 등급과 승격 경로는
+# fidelity.yml 의 같은 이름 요소가 소유한다 — 여기는 *"지운다"* 는 사실만 적는다.
+strip_directives:
+  - id: directive_id
+    pattern: '^[ \t]*#id-[a-z][a-z0-9-]*[ \t]*$'
+    note: "발표자 노트 식별자. 노트로 승격 가능(fidelity.recover)"
+  - id: directive_animation
+    pattern: '^[ \t]*#(?:transition-[\w-]+|background-[\w.#-]+|background-(?:image|size|transition)-\S+|auto-animate|autoslide-\d+)[ \t]*$'
+    note: "reveal.js 애니메이션. pptx 전환과 1:1 이 아니라 근사가 된다"
+  - id: slot_right
+    pattern: '^[ \t]*::right::[ \t]*$'
+    note: "Slidev 호환 2분할. `Two Content` 레이아웃 매핑이 승격 경로"

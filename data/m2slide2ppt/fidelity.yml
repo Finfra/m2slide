@@ -1,0 +1,247 @@
+# kind: policy/stage — 파이프라인 단계 정책. 읽기는 그 단계 SCAR 만 (Issue340)
+# data/m2slide2ppt/fidelity.yml
+# m2slide → pptx 라운드트립 충실도 계약 (Issue342)
+#
+# 왜 이 파일이 있나
+# -----------------
+# 역방향(`pptx → m2slide`)은 data/ppt2m2slide/ 3종 yml 로 데이터-주도인데,
+# 정방향은 정책이 전부 build-source.py 의 코드 상수·정규식에 박혀 있었다.
+# 그래서 *"이 변환에서 무엇이 어떻게 손실되는가"* 를 선언할 자리가 없었고,
+# 검증 3종(check-conform·check-xml-order·check-empty)은 **pptx 내부 규격**만 재느라
+# 원고가 제대로 옮겨졌는지는 아무도 보지 않았다.
+#
+# 실측(aTest 10장, 2026-09-09): 빌드 rc0 · FAIL 0 · WARN 0 인데도 frontmatter 전량 ·
+# `#id-*`·`#transition-*` · `{.fragment}` · `::: htmlart pie` · ```chart 가 소실되고,
+# 원본에 **없던** 챕터 TOC 장이 생겨 있었다. 통과가 곧 충실을 뜻하지 않는다.
+#
+# 이 파일이 하는 일
+# -----------------
+# 요소마다 *"pptx 에서 무엇이 되는가"* 와 *"왕복하면 돌아오는가"* 를 **선언**한다.
+# check-roundtrip.py 가 원본 md ↔ 역변환 md 를 대조해 이 선언과 맞추고,
+# **선언되지 않은 손실만** FAIL 로 든다. 선언된 손실은 통과한다 — 그것이 계약의 목적이다.
+#
+# 등급을 낮추는 것(lossless → drop)은 **품질 후퇴를 명문화하는 행위**다.
+# 실측 근거(`evidence`) 없이 낮추지 않는다. 반대로 등급을 올리려면 복원 경로를
+# 실제로 구현해야 한다 — 선언만 바꾸는 것은 위반이다.
+---
+schema_version: 1
+
+# ── 등급 정의 ────────────────────────────────────────────────
+# lossless      왕복 후 원본과 같아야 한다. 다르면 FAIL
+# lossy         형태는 바뀌지만 **내용(문구·순서)** 은 남는다. 내용이 사라지면 FAIL
+# declared_drop 복원되지 않음이 선언됐다. 없어도 통과 — 단 `recover` 로 승격 경로를 남긴다
+# synthesized   원본에 **없는데** pptx 에 생긴다. 역변환이 이것을 지워야 원본에 수렴한다
+grades: [lossless, lossy, declared_drop, synthesized]
+
+# 수렴 판정 — 이 셋이 0 이면 왕복이 계약대로 돈 것이다
+convergence:
+  undeclared_loss: 0      # 계약에 없는 손실
+  undeclared_gain: 0      # 계약에 없는 생성물
+  grade_violation: 0      # lossless 인데 달라짐 · lossy 인데 내용이 사라짐
+
+elements:
+
+  # ── 문서 메타 ──────────────────────────────────────────────
+  - id: frontmatter_title
+    m2slide: "frontmatter `title:`"
+    pptx: "cover 슬라이드(p1) 제목"
+    grade: lossless
+    evidence: "aTest p1 'aTest' — 2026-09-09"
+
+  - id: frontmatter_meta
+    m2slide: "frontmatter 나머지 필드 (subtitle·instructor_*·version·release_date·tags·type…)"
+    pptx: "(없음)"
+    grade: declared_drop
+    reason: |
+      build-source.py `strip_frontmatter` 가 통째로 제거한다. pptx 에는 이 메타를
+      담을 자리가 정해져 있지 않고, cover 템플릿이 소비하는 것은 title 뿐이다.
+    recover: |
+      pptx `docProps/core.xml`(author·subject) + 사이드카로 승격 가능.
+      운영 메타는 매 빌드 갱신되므로 왕복 대상에서 빼는 선택도 정당하다.
+
+  # ── 구조 ──────────────────────────────────────────────────
+  - id: h1_chapter
+    m2slide: "`# H1` 챕터 제목"
+    pptx: "Section Header 레이아웃 한 장"
+    grade: lossless
+    evidence: "aTest p2 '1. 변환 경로 커버리지' — 2026-09-09"
+
+  - id: chapter_toc_slide
+    m2slide: "(없음)"
+    pptx: "H1 다음에 자동 삽입되는 챕터 목차 장 (부제 + 그 챕터 H2 목록)"
+    grade: synthesized
+    reason: |
+      build-source.py `normalize_chapter` ⑧ 이 만든다. HTML 덱의 챕터 TOC 장에
+      대응시키려는 의도이고 원고를 바꾸지는 않지만, **pptx 에는 원본에 없는 장이
+      한 개 더 있게 된다**.
+    reverse_action: drop
+    detect: |
+      Section Header 바로 다음 장이면서, 본문 불릿이 이후 장들의 제목 목록과 일치한다.
+    evidence: "aTest p3 — 본문 7항목이 p4~p10 제목과 정확히 일치 (2026-09-09)"
+
+  - id: h2_slide_title
+    m2slide: "`## H2` 슬라이드 제목"
+    pptx: "각 장의 Title placeholder"
+    grade: lossless
+    evidence: "aTest p4~p10 전부 일치 — 2026-09-09"
+
+  - id: slide_order
+    m2slide: "`---` 로 나뉜 슬라이드 순서"
+    pptx: "장 순서"
+    grade: lossless
+
+  # ── 본문 요소 ──────────────────────────────────────────────
+  - id: bullets
+    m2slide: "불릿 리스트 (중첩 포함)"
+    pptx: "Content placeholder 문단 (들여쓰기 레벨 보존)"
+    grade: lossless
+
+  - id: paragraph
+    m2slide: "일반 문단 (불릿이 아닌 산문 줄)"
+    pptx: "Content placeholder 문단"
+    grade: lossless
+
+  - id: table
+    m2slide: "마크다운 표"
+    pptx: "네이티브 표"
+    grade: lossy
+    reason: "정렬 지시자(`:---`)는 pptx 표에 대응 어휘가 없어 소실된다. 셀 내용·행열은 보존."
+    evidence: "aTest p6 표 3행 보존 · 정렬 소실 — 2026-09-09"
+
+  - id: code_block
+    m2slide: "` ``` ` 코드 펜스"
+    pptx: "고정폭 서체 문단"
+    grade: lossy
+    reason: "언어 지정(```python)은 pptx 에 담을 자리가 없다. 코드 본문·줄바꿈은 보존."
+    evidence: "aTest p5 'def build(md): return pptx(md)' — 2026-09-09"
+
+  - id: image
+    m2slide: "`![alt](경로)`"
+    pptx: "Picture + 캡션 텍스트박스"
+    grade: lossy
+    reason: |
+      원고 위치가 바뀌므로 build-source.py ⑦ 이 절대경로로 바꾼다. 역변환은 파일을
+      다시 꺼내 `img/` 에 두므로 **파일명이 원본과 달라질 수 있다**. alt 는 캡션으로 보존.
+    evidence: "aTest p7 Picture + 'Chart' 캡션 — 2026-09-09"
+
+  - id: math_display
+    m2slide: "`$$…$$` · `\\[…\\]` 블록 수식"
+    pptx: "네이티브 OMML (lane M)"
+    grade: lossless
+    evidence: "aTest p5 E = mc^2 OMML — lane M 사이드카 2건 (2026-09-09)"
+
+  - id: math_inline
+    m2slide: "`\\(…\\)` 인라인 수식"
+    pptx: "문장 안 네이티브 OMML"
+    grade: lossless
+    evidence: "aTest p6 '에너지 등가식은 … 이다' — 2026-09-09"
+
+  # ── 정형 블록 (lane B/C) ───────────────────────────────────
+  - id: cards
+    m2slide: "`::: cards`"
+    pptx: "네이티브 도형 (좌측 액센트 바 + 제목 밴드 + 본문)"
+    grade: lossy
+    reason: |
+      도형에는 *"이것이 cards 였다"* 를 적어 둔 자리가 없다. 역변환은 도형 배치로
+      추정해야 하고, process 와 모양이 겹치면 갈린다(구분 신호는 커넥터 유무뿐).
+    recover: "도형 `name` 또는 alt-text 에 출처 표식을 심으면 lossless 로 승격 가능"
+    evidence: "aTest p4 Rounded Rectangle ×3 + Rectangle ×3 · 커넥터 없음 — 2026-09-09"
+
+  - id: htmlart_lane_b
+    m2slide: "`::: htmlart process` · `numbered` · `compare` (lane B 카탈로그)"
+    pptx: "네이티브 도형 + 커넥터"
+    grade: lossy
+    reason: "cards 와 같은 이유. process 는 커넥터가 있어 cards 와 구분된다."
+    evidence: "aTest p8 Rounded Rectangle ×3 + Connector ×2 · 항목에 '01.' 번호 — 2026-09-09"
+
+  - id: htmlart_lane_c
+    m2slide: "`::: htmlart pie` 등 lane B 카탈로그 **밖** 종류"
+    pptx: "평문 불릿 (lane C 이월 — 도형으로 그리지 않음)"
+    grade: declared_drop
+    reason: |
+      카탈로그 밖 htmlart 는 도형 배치 자체가 판단이라 lane C(ig-maker, 장당 33만 토큰)
+      소관이고, 비슷한 블록으로 **근사하지 않는다**(근사하면 원본과 다른 도해가 나간다).
+      그 결과 pptx 에는 종류 정보 없이 불릿만 남는다.
+    recover: "lane C 를 실제로 돌리거나, 이월 사실을 발표자 노트에 표식으로 남기면 승격"
+    evidence: "aTest p9 '모바일 45% / iOS·Android / …' 평문 — 이월 1건 (2026-09-09)"
+
+  # ── 웹 전용 (컴포넌트) ─────────────────────────────────────
+  - id: component_fence
+    m2slide: "` ```chart `·`d3`·`p5`·`map`·`model3d`·`react` 컴포넌트 펜스"
+    pptx: "구조 표식 한 줄 (`· 차트 — 웹 슬라이드에서 동작하는 요소입니다`)"
+    grade: declared_drop
+    reason: |
+      JSON·JS 설정이라 남기면 원문이 슬라이드에 그대로 찍힌다. 지우는 것은 맞지만
+      자리를 비우면 제목만 남은 백지 장이 배포되므로 표식 한 줄을 남긴다(build-source ⑪).
+    recover: "캡처 이미지·정지 도해로 미리 바꿔 두면 image 요소로 lossless 화"
+    evidence: "aTest p10 '· 차트 — 웹 슬라이드에서 동작하는 요소입니다' — 2026-09-09"
+
+  - id: component_drop_note
+    m2slide: "(없음)"
+    pptx: "컴포넌트를 걷어낸 자리에 남기는 구조 표식 한 줄"
+    grade: synthesized
+    reason: |
+      컴포넌트 펜스를 지우고 자리를 비우면 제목만 남은 백지 장이 배포된다
+      (실측 2026-09-09, aTest p18 chart·p19 p5 — 검증도 FAIL 0 으로 통과했다).
+      무엇이 있던 자리인지 한 줄로 남기는 것은 내용 창작이 아니라 목차 라벨과 같은
+      **구조 표식**이다.
+    reverse_action: drop
+    detect: "`· <라벨> — 웹 슬라이드에서 동작하는 요소입니다` 한 줄"
+    evidence: "aTest p10 '· 차트 — …' — 2026-09-09"
+
+  - id: wordart_fence
+    m2slide: "` ```wordart `"
+    pptx: "태그를 벗긴 평문"
+    grade: lossy
+    reason: "글자가 내용이라 텍스트는 남기고 장식 마크업만 버린다 (build-source ⑪)."
+
+  # ── 디렉티브·인라인 장식 ───────────────────────────────────
+  - id: directive_id
+    m2slide: "`#id-<slug>` 발표자 노트 식별자"
+    pptx: "(없음)"
+    grade: declared_drop
+    reason: "build-source.py `ID_LINE` 이 줄째 지운다. pptx 에 대응 어휘가 없다."
+    recover: |
+      **발표자 노트로 승격 가능** — pptx 는 노트를 정식으로 갖고 있고, 편집해도
+      살아남으며 화면에 보이지 않는다. m2slide 도 이미 `_note.md` 를 쓰므로
+      노트 왕복은 사이드카가 아니라 **정당한 대응 관계**다.
+    evidence: "aTest 7개 슬라이드 전부 소실 — 2026-09-09"
+
+  - id: directive_animation
+    m2slide: "`#transition-*`·`#background-*`·`#auto-animate`·`#autoslide-*`"
+    pptx: "(없음)"
+    grade: declared_drop
+    reason: |
+      build-source.py `ANIM_LINE` 이 지운다. pptx 전환 효과로 옮길 여지는 있으나
+      reveal.js 어휘와 1:1 대응하지 않아 근사가 된다.
+    recover: "노트 표식 또는 pptx 전환 속성 매핑표 신설"
+    evidence: "aTest `#transition-zoom` 1건 소실 — 2026-09-09"
+
+  - id: directive_layout
+    m2slide: "`#layout-<name>`"
+    pptx: "pandoc 레이아웃 선택에 간접 반영"
+    grade: declared_drop
+    reason: "m2slide layout 과 pptx 레이아웃은 이름·개수가 다르다. 직접 대응이 없다."
+    recover: "layout ↔ pptx 레이아웃 매핑표 신설 (역변환 heuristics 와 짝을 맞춰야 함)"
+
+  - id: inline_fragment
+    m2slide: "`{.fragment}` 등 pandoc attribute · `<!-- .element -->`"
+    pptx: "(없음)"
+    grade: declared_drop
+    reason: "단계 등장은 pptx 애니메이션 어휘이나 m2slide 파서 쪽 등급과 1:1 이 아니다."
+    recover: "노트 표식 또는 pptx 애니메이션 시퀀스 생성"
+    evidence: "aTest '단계 등장 {.fragment}' → '단계 등장' — 2026-09-09"
+
+  - id: inline_symbol
+    m2slide: "`:fa-*:` Font Awesome 심벌"
+    pptx: "(제거 — 뒤따르는 공백도 정리)"
+    grade: declared_drop
+    reason: "웹폰트 글리프라 pptx 에 옮기면 두부(tofu)가 된다."
+    recover: "심벌 → 유니코드 이모지 치환표"
+
+  - id: slot_right
+    m2slide: "`::right::` Slidev 호환 2분할"
+    pptx: "(제거 — 좌우 구분 없이 이어짐)"
+    grade: declared_drop
+    reason: "build-source.py `SLOT_RIGHT` 가 지운다."
+    recover: "`Two Content` 레이아웃 매핑"
