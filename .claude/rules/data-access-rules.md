@@ -65,7 +65,7 @@ date: 2026-05-26
 구 규정은 공유 허용 파일을 **5개 목록으로 못박아** 뒀다. 그런데 카탈로그는 계속 늘었고 목록은 따라가지 못해, 실측(2026-09-09) 시점에 **8개가 목록 밖**이었다:
 
 * `slot_meta.yml`·`slot_pandoc.yml`·`slot_animation.yml`·`slot_user.yml` — **slot-designer agent 본문이 4종 모두 참조**
-* `htmlart/types.yml`·`htmlart/smartart-catalog.yml`·`palettes/catalog.yml`·`_meta.yml`·`_meta_lec.yml`
+* `htmlart/types.yml`·`htmlart/smartart-catalog.yml`·`palettes/catalog.yml` (그 밖에 `_meta.yml`·`_meta_lec.yml` 도 목록 밖이었으나, 소비처 0건인 Issue79 폐기 잔재로 확인되어 **삭제**했다)
 
 즉 **`slot-designer` 는 실행할 때마다 문서상 위반**이었다. 실제로는 정당한 사용이고 규칙 쪽이 낡은 것인데, 이 상태를 방치하면 *"어차피 안 맞는 규칙"* 이 되어 **진짜 위반도 안 잡힌다**. 원인은 개별 누락이 아니라 **사람이 목록을 유지하는 구조**였으므로, 목록을 없애고 파일이 스스로 말하게 했다.
 

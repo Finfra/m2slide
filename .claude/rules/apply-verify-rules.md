@@ -11,7 +11,7 @@ m2slide 저장소(`lib/m2slide/`) 내 다음 파일을 수정한 직후 자동 �
 * `generate-slides.js`, `generate-epub.js`, `lib/**/*.js` (코어 변환 로직)
 * `theme/**/*.html` (layout 템플릿)
 * `theme/**/*.css`, `lib/css/*.css` (스타일)
-* `Projects/{Name}/**/*.md`, `Projects/{Name}/_config.yml`, `Projects/{Name}/_meta.yml` (프로젝트 콘텐츠·설정)
+* `Projects/{Name}/**/*.md`, `Projects/{Name}/_config.yml` (프로젝트 콘텐츠·설정. 구 `_meta.yml` 은 Issue79 에서 폐기 — 메타는 슬라이드 소스 frontmatter 소유)
 * `m2slide.sh`, `run.sh` 등 빌드 스크립트
 
 위 변경이 한 건이라도 발생하면 사용자에게 별도 확인 없이 검증 절차를 즉시 수행함.
