@@ -187,6 +187,21 @@ elements:
       없으므로 **어느 장의 신호에 붙일지**를 먼저 정해야 한다(첫 본문 장이 후보).
     evidence: "aTest `cards_placeholder: false` — HTML·pptx 둘 다 H1 장 없음 (2026-09-10)"
 
+  - id: agenda_slide
+    m2slide: "`agenda.html` — HTML 이 **별도 페이지로 항상** 내는 목차"
+    pptx: "표지 다음 한 장 (제목 `Agenda` + 항목 목록)"
+    grade: synthesized
+    slides: 1
+    reason: |
+      HTML 쪽 내용은 **JS(markmap)가 그린다** — 정적 HTML 에는 글자가 없어
+      전수 대조가 볼 수 없다. 그래서 pptx 장을 "원고에 없는 장" 으로 오판하지 않도록
+      여기서 선언한다. 제목은 `Agenda` 로 고정한다(HTML `.toc-page-title` 과 같다).
+    caveat: |
+      🚧 **꼴은 아직 옮기지 않았다.** HTML `layout-_agenda` 는 노란 테두리 박스와
+      고양이 마스코트를 두는데 pptx 장에는 글자만 있다. 좌표는 실측해 뒀다
+      (프레임 기준 제목 `l 111 · t 90 · fs 51` · markmap 영역 `l 81 · t 261 · 1757×936`).
+    evidence: "aTest — HTML agenda.html 1장 · pptx 1장 (2026-09-11)"
+
   - id: chapter_toc_slide
     m2slide: "chapter mode 에서 `toc_placeholder: true` 면 HTML 에도 있다"
     pptx: "같은 조건에서 자동 삽입되는 챕터 목차 장"

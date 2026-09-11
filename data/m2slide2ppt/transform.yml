@@ -155,3 +155,28 @@ card_geometry:
   border: "E0E0E0"    # rgba(0,0,0,0.12) 환산
   band_fs: 40
   body_fs: 40
+
+# ── 서체 (Issue350) ──────────────────────────────────────────
+# 글로벌 `theme-from-css.py` 는 CSS 체인에서 **Windows 폰트**(`Malgun Gothic`)를
+# 골랐다. macOS 에서 열면 그 서체가 없어 대체 렌더되므로 같은 파일이 기계마다 다르게
+# 보인다. 아래는 HTML 을 실제로 렌더해 잰 **computed 서체**다(ego-browser).
+#
+#   제목  `--title-font-family` 첫 항목                → GmarketSansBold
+#   본문  `.contents-body` computed 첫 항목            → Nanum Gothic Coding
+#
+# ⚠️ 둘 다 **설치돼 있어야** pptx 가 HTML 과 같아 보인다(실측 2026-09-11, jm4: 둘 다 있음).
+#    없는 기계에서는 pptx 가 대체 서체로 렌더된다 — 그것은 pptx 의 한계이고
+#    웹폰트처럼 내려받게 할 방법이 없다.
+font:
+  title: "GmarketSansBold"
+  body: "Nanum Gothic Coding"
+
+# ── Agenda 장 꼴 (Issue351) ──────────────────────────────────
+# HTML `layout-_agenda` 실측(ego-browser). 그 페이지는 reveal 덱이 아니라 별도
+# 프레임(`.agenda-frame` 896×597)이라 **프레임 기준 좌표를 캔버스 1920 으로 환산**했다.
+#   제목  frame(464,52) → (111,90) · fs 24 → 51 · **좌측 정렬**
+#   본문  markmap SVG frame(450,132,820×437) → (81,261,1757×936)
+agenda_geometry:
+  title:  { l: 111, t: 90,  w: 600, h: 64, fs: 51, align: left, bold: true }
+  frame:  { l: 81,  t: 261, w: 1757, h: 936 }   # 노란 테두리 박스
+  mascot: { l: 1560, t: 60, w: 250, h: 180, asset: finfraCat.png }
