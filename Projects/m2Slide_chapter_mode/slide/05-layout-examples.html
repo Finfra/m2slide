@@ -1388,52 +1388,12 @@ html.ratio-fill .agenda-frame {
   text-decoration: none;
 }
 
-/* =========================================================================
-   Mobile Navigation Arrows (Issue301)
-   ========================================================================= */
-.m2-nav-arrows {
-  display: none;
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
-  gap: 12px;
-  z-index: 10;
-}
-
-.m2-nav-arrows button {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: none;
-  background: rgba(128, 128, 128, 0.3);
-  color: rgba(128, 128, 128, 0.8);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s, color 0.2s;
-  padding: 0;
-  font-size: 20px;
-}
-
-.m2-nav-arrows button:hover {
-  background: rgba(128, 128, 128, 0.5);
-  color: rgba(128, 128, 128, 1);
-}
-
-.m2-nav-arrows button:active {
-  transform: scale(0.95);
-}
-
-.m2-nav-arrows {
-  display: flex;
-}
-
   </style>
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1784783129418">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"/>
+  <link rel="stylesheet" href="css/custom.css?v=1789136606548">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1481,7 +1441,7 @@ html.ratio-fill .agenda-frame {
       color: inherit;
     }
     #toc-mindmap text {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif !important;
+      font-family: 'Nanum Gothic Coding', 'D2Coding', -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif !important;
       font-size: 16px !important;
       font-weight: 700;
     }
@@ -1515,6 +1475,30 @@ html.ratio-fill .agenda-frame {
     }
     .reveal .controls .navigate-up.m2-enabled:hover,
     .reveal .controls .navigate-down.m2-enabled:hover {
+      opacity: 0.7;
+    }
+    /* Issue301: ←/→ 도 ↑/↓ 처럼 항상 회색 노출 (reveal 기본은 마지막/첫 슬라이드에서 .enabled 제거 → 숨김).
+       챕터 마지막 페이지에서 → 를 숨기지 않고 회색으로 남겨 "다음 챕터로 갈 수 있음"을 표시.
+       reveal 의 .enabled 클래스가 붙으면(이동 가능) opacity 1, 아니면 0.25 회색. page-indicator 모드는
+       body[data-nav-indicator="page"] 규칙(더 높은 specificity)이 여전히 display:none 으로 숨김. */
+    .reveal .controls .navigate-left,
+    .reveal .controls .navigate-right {
+      display: block !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+      opacity: 0.25;
+      transition: opacity 0.2s;
+      /* Issue301: reveal 기본은 비활성 ←/→에 translateX(±10px)를 남겨(마름모 밖으로 밀림),
+         .enabled 일 때만 transform:none 으로 제자리 복귀시킴. 회색(비활성) 상태에도 항상 노출하므로
+         transform:none 을 강제해 활성/비활성 무관하게 마름모 정위치를 유지(우측 → 삐져나옴 방지). */
+      transform: none !important;
+    }
+    .reveal .controls .navigate-left.enabled,
+    .reveal .controls .navigate-right.enabled {
+      opacity: 1;
+    }
+    .reveal .controls .navigate-left:hover,
+    .reveal .controls .navigate-right:hover {
       opacity: 0.7;
     }
     /* 마름모(↑/↓) + 좌우(←/→) 화살표 색 — 페이지번호와 동일 체인.
@@ -1610,10 +1594,9 @@ html.ratio-fill .agenda-frame {
     @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
   </style>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.6.0/css/all.min.css">
 </head>
 <body class=" guide-line-mode media-enlarge-fit" data-nav-indicator="both" style="
-  --global-font-family: Pretendard, sans-serif;
+  --global-font-family: 'Nanum Gothic Coding', 'D2Coding', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
   --title-font-family: GmarketSansBold;
   --title-font-weight: 50;
   --title-font-size: 1.5em;
@@ -1678,10 +1661,6 @@ html.ratio-fill .agenda-frame {
 <li class="chapter-card"><a href="#/7">2분할 레이아웃 (좌: 텍스트 / 우: 이미지) - dev</a></li>
 <li class="chapter-card"><a href="#/8">3분할 레이아웃 (카드 형태) - div</a></li>
 </ul></div>
-  <div class="m2-nav-arrows">
-    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
-    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
-  </div>
 </section>
 
 
@@ -1703,10 +1682,6 @@ html.ratio-fill .agenda-frame {
 <div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
 </div>
 </div></div>
-  <div class="m2-nav-arrows">
-    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
-    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
-  </div>
 </section>
 
 <section data-slide-hash="#/3" class="layout-_contents">
@@ -1728,10 +1703,6 @@ html.ratio-fill .agenda-frame {
 </ul>
 </div>
 </div></div>
-  <div class="m2-nav-arrows">
-    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
-    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
-  </div>
 </section>
 
 <section data-slide-hash="#/4" class="layout-_contents">
@@ -1751,10 +1722,6 @@ html.ratio-fill .agenda-frame {
 <div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
 </div>
 </div></div>
-  <div class="m2-nav-arrows">
-    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
-    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
-  </div>
 </section>
 
 <section data-slide-hash="#/5" class="layout-_contents">
@@ -1781,10 +1748,6 @@ html.ratio-fill .agenda-frame {
 <div class="media-container"><img src="./img/chart.png" alt="Chart"></div>
 </div>
 </div></div>
-  <div class="m2-nav-arrows">
-    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
-    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
-  </div>
 </section>
 
 <section data-slide-hash="#/6" class="layout-_contents">
@@ -1814,10 +1777,6 @@ html.ratio-fill .agenda-frame {
 <div class="media-container"><img src="./img/scenery.png" alt="Chart"></div>
 </div>
 </div></div>
-  <div class="m2-nav-arrows">
-    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
-    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
-  </div>
 </section>
 
 <section data-slide-hash="#/7" class="layout-_contents">
@@ -1841,10 +1800,6 @@ html.ratio-fill .agenda-frame {
 <p>    <img src="./img/chart.png" alt="Chart" style="width: 100%; border-radius: 10px;"></p>
   </div>
 </div></div>
-  <div class="m2-nav-arrows">
-    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
-    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
-  </div>
 </section>
 
 <section data-slide-hash="#/8" class="layout-_contents">
@@ -1869,10 +1824,6 @@ html.ratio-fill .agenda-frame {
 <p>    <p>세 번째 카드의 내용입니다.</p></p>
   </div>
 </div></div>
-  <div class="m2-nav-arrows">
-    <button class="m2-nav-prev" aria-label="Previous slide"><i class="fa-solid fa-chevron-left"></i></button>
-    <button class="m2-nav-next" aria-label="Next slide"><i class="fa-solid fa-chevron-right"></i></button>
-  </div>
 </section>
 
     </div>
@@ -2034,7 +1985,7 @@ html.ratio-fill .agenda-frame {
 
 
     // Inject configuration
-    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"head_left":"d1","head_right":"now","head_breadcum":true,"cardColumns":"auto-fit","style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":[]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
+    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"head_left":"d1","head_right":"now","head_breadcum":true,"cardColumns":"auto-fit","style":{"global":{"fontFamily":"'Nanum Gothic Coding', 'D2Coding', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif","fontImport":["https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
 
     // Dynamic Styling and Resizing Script
     let observer; // Define observer at top level
@@ -2616,6 +2567,13 @@ html.ratio-fill .agenda-frame {
       upBtn.classList.toggle('m2-enabled', !isCoverSlide(cur));
       // ↓ : leaf fall-through 가능 여부 + Cover/TOC/Anchor 항상 활성
       downBtn.classList.toggle('m2-enabled', m2EvalDownEnabled());
+      // Issue301: reveal 이 끝단(첫/마지막 슬라이드)에서 ←/→ 버튼에 disabled 속성을 붙이면
+      //   disabled 버튼은 click 이벤트를 발화하지 않아 클릭 위임이 무력화된다. 매 slidechanged 마다
+      //   disabled 를 제거해 챕터 경계에서도 ←/→ 클릭이 키 네비게이션(다음/이전 챕터)으로 위임되게 한다.
+      var leftC = document.querySelector('.reveal .controls .navigate-left');
+      var rightC = document.querySelector('.reveal .controls .navigate-right');
+      if (leftC) leftC.removeAttribute('disabled');
+      if (rightC) rightC.removeAttribute('disabled');
     }
     Reveal.on('ready', function() {
       var upBtn = document.querySelector('.reveal .controls .navigate-up');
@@ -2634,6 +2592,25 @@ html.ratio-fill .agenda-frame {
           e.stopImmediatePropagation();
           if (!downBtn.classList.contains('m2-enabled')) return;
           m2DispatchKey('ArrowDown', 40);
+        }, true);
+      }
+      // Issue301: ←/→ 클릭을 키보드 ArrowLeft/ArrowRight 로 위임 → 키 네비게이션 매트릭스 재사용.
+      //   마지막 슬라이드 → 는 안내 메시지 후 다음 챕터(?fwd=1), 첫 슬라이드 ← 는 이전 챕터/agenda 로 이동.
+      //   capture + stopImmediatePropagation 으로 reveal 기본 click(단순 next/prev, 끝단에서 no-op) 차단.
+      var leftBtn = document.querySelector('.reveal .controls .navigate-left');
+      var rightBtn = document.querySelector('.reveal .controls .navigate-right');
+      if (leftBtn) {
+        leftBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          m2DispatchKey('ArrowLeft', 37);
+        }, true);
+      }
+      if (rightBtn) {
+        rightBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          m2DispatchKey('ArrowRight', 39);
         }, true);
       }
       m2UpdateNavControls();

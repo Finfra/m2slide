@@ -58,6 +58,11 @@ animation:
 # - 자주 바꾸는 키(font_size, font_family)는 주석으로 가이드만 표시 (필요 시 주석 해제 후 값 변경).
 # - font_import[]는 base.css @import에 추가 로드되는 legacy 호환 (필요 시 추가).
 style:
+  # global:
+  #   font_family: "'Nanum Gothic Coding', 'D2Coding', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif"
+  #     # 기본값 — 전역 폰트. I/l 판별 가능한 코딩 폰트 우선 (구 기본 Pretendard 는 웹폰트 미로드 죽은 참조라 교체)
+  #   font_import:
+  #     - 'https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap'   # 기본 로드 (vendor 매니페스트 등재)
   theContents:
     # font_family: 'Nanum Gothic Coding'   # 기본값 (override 시 주석 해제)
     # font_size: 1em                       # 기본값 (override 시 주석 해제)

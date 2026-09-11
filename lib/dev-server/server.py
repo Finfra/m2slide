@@ -162,8 +162,9 @@ def wrap_text_html(file_path: str, n: int, total: int, section_html: str,
         '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">'
         f'<title>m2slide text — {file_path}#{n}</title>'
         f'{head_links}'
+        '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap">'
         '<style>'
-        'body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;'
+        "body{font-family:'Nanum Gothic Coding','D2Coding',-apple-system,BlinkMacSystemFont,sans-serif;"
         'max-width:1024px;margin:0 auto;padding:50px 24px 60px;line-height:1.6;background:#fafafa;color:#222}'
         '.text-section{background:#fff;padding:24px;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.08)}'
         '.text-section h1,.text-section h2,.text-section h3{margin-top:0.8em}'
@@ -1117,9 +1118,10 @@ class DevHandler(SimpleHTTPRequestHandler):
 
     def _common_styles(self):
         return (
+            '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap">'
             '<style>'
             ':root{color-scheme:light dark}'
-            'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;'
+            "body{font-family:'Nanum Gothic Coding','D2Coding',-apple-system,BlinkMacSystemFont,\"Segoe UI\",sans-serif;"
             'max-width:1100px;margin:0 auto;padding:24px;line-height:1.6;background:#fafafa;color:#1a1a1a}'
             'header{background:hsl(191,60%,45%);color:#fff;padding:16px 24px;margin:-24px -24px 24px;'
             'border-radius:0 0 6px 6px;display:flex;justify-content:space-between;align-items:center}'
