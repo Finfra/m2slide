@@ -48,7 +48,7 @@
 
 # ✅ 완료
 
-## Issue357: `htmlart process` 가 pptx 에서 SmartArt 가 아니었다 — lane G 신설 (등록: 2026-09-11, 해결: 2026-09-11, commit: `4e904c4`, `__IMPL__`) ✅
+## Issue357: `htmlart process` 가 pptx 에서 SmartArt 가 아니었다 — lane G 신설 (등록: 2026-09-11, 해결: 2026-09-11, commit: `4e904c4`, `a0621e9`) ✅
 * 목적: 사용자 지적 — htmlArt 는 애초에 PowerPoint SmartArt 를 본뜬 것인데 pptx 는 ppt-info 도형 근사(lane B `cards`+`flow_arrow`)로 나와 HTML 과 꼴이 다르고 SmartArt 로 편집도 안 됐다
 * depends: Issue355
 * 상세:
