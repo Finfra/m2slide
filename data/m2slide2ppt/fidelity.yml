@@ -123,20 +123,43 @@ visual:
       한복판을 지난다.
     evidence: "aTest 본문 8장 전부 — 2026-09-10"
 
-  - id: body_font
-    html: "CSS 본문 `font-family` 체인의 첫 항목"
-    pptx: "테마 `minorFont`"
-    grade: known_gap
+  - id: title_font
+    html: "CSS `--title-font-family` 첫 항목 → OS family (transform.yml `font.css_alias`)"
+    pptx: "테마 `majorFont` **latin·ea·script 전부** + 마스터/레이아웃 제목 placeholder 가 `+mj-*` 참조 + 제목 run `b=1`"
+    grade: must_match
     reason: |
-      pptx 는 CSS 체인에서 **Windows 폰트**(`Malgun Gothic`)를 고른다. macOS 에서
-      열면 그 서체가 없어 대체 렌더되므로 **같은 파일이 기계마다 다르게 보인다**.
-      CSS 는 `Pretendard`·`Apple SD Gothic Neo` 를 앞에 둔다.
-    caveat: "🚧 어느 서체를 정본으로 삼을지는 배포 대상(Windows/macOS)에 달렸다 — 별도 결정"
-    evidence: |
-      aTest — CSS `Pretendard` / pptx `Malgun Gothic` · 2026-09-10.
-      ⚠️ 첫 계측은 이 값을 `GmarketSansBold` 로 잘못 읽었다 — `@font-face` 의 폰트
-      **자원 이름**과 제목 서체 선언을 본문으로 오인했다. `known_gap` 축은 구조상
-      빨간불이 될 수 없어 **자기 계측이 틀린 것을 자기가 잡지 못한다**(agent 실증에서 검출).
+      CSS 는 @font-face 별칭(`GmarketSansBold`)을 쓰고 macOS 는 `Gmarket Sans`(Bold face)로
+      등록한다. pptx 에 CSS 이름을 넣으면 PowerPoint 가 못 찾아 대체 서체로 떨어진다 —
+      "폰트 안 맞음" 의 뿌리였다(2026-09-11 system_profiler 실측).
+      ⚠️ majorFont 의 latin 만 맞아도 **아무것도 안 바뀐다** (2026-09-11 실측 두 겹):
+      ① `retheme --font-only` 가 마스터·레이아웃 제목 placeholder 에 본문 서체를
+      리터럴로 적어 `+mj-lt` 참조가 끊긴다 ② 한글 제목은 ea·`script="Hang"` 서체로
+      그려진다. 검사는 셋을 다 본다. OS family 는 PowerPoint 서체 캐시
+      (`FontCache/systemfontmetadata.json` fa)와 LibreOffice A/B 렌더로 `Gmarket Sans` 확정 —
+      name ID1 `Gmarket Sans Bold` 는 한글(ea) 매칭이 깨진다.
+    evidence: "aTest major `Gmarket Sans` · 제목 run b=1 — 2026-09-11"
+
+  - id: body_font
+    html: "CSS 본문 서체 → OS family (transform.yml `font.body`)"
+    pptx: "테마 `minorFont`"
+    grade: must_match
+    reason: |
+      `Nanum Gothic Coding`(CSS) 의 OS family 는 **`NanumGothicCoding`**(공백 없음)이다.
+      전에는 known_gap 이었으나 이름을 OS 기준으로 바꾸면 같은 서체가 뜨므로 must_match 다.
+    caveat: "설치되지 않은 기계에서는 대체 렌더된다 — pptx 의 한계다"
+    evidence: "aTest minor `NanumGothicCoding` — 2026-09-11"
+
+  - id: caption_layout
+    html: "`.m2-cols` 2분할(868/868, gap 72) — 리스트+이미지만 · 문단+표는 위아래(표 내용 폭·가운데·회색 머리행) · 캡션 없음"
+    pptx: "`Content with Caption` 장을 lane T `relayout_caption` 이 같은 규칙으로 재배치 · alt 는 그림 `descr`"
+    grade: must_match
+    tolerance_px: 4
+    reason: |
+      pandoc 은 글+표/그림을 언제나 `Content with Caption`(글 좁게 좌 · 내용 우 · alt 를
+      캡션으로)으로 낸다. HTML 은 그렇게 그리지 않는다 — 분할은 리스트+이미지 휴리스틱
+      한 가지뿐이고 표는 문단 아래 가운데, alt 는 `img[alt]` 로만 남는다. 좌표·서식은
+      transform.yml `split_geometry`·`table_geometry`(1920×1280 실측).
+    evidence: "aTest p5(표)·p6(그림) — 재배치 후 LibreOffice 렌더가 HTML 과 일치 · 2026-09-11"
 
   - id: layout_ornament
     html: "카드 밴드 스타일·자간·줄간 등 theme CSS 의 **세부** 꼴"
@@ -339,6 +362,8 @@ elements:
       pptx 는 하이라이트 **결과 색**만 갖고 언어명은 어디에도 없다. lane S 가
       제목 도형 alt-text 에 언어를 적어 되돌린다. 등급을 lossy 로 두는 것은
       **탭·후행 공백 같은 미세 서식**이 pptx 문단을 거치며 정규화되기 때문이다.
+      시각은 lane T `restyle_code` 가 HTML(github.css) 실측대로 상자(#F6F8FA·radius 6)·
+      글자색(#24292E)·키워드(#D73A49)·Menlo·줄간 1.45 를 입힌다(Issue352).
     evidence: "aTest ```python 언어 왕복 일치 — 2026-09-09"
 
   - id: image
@@ -391,15 +416,15 @@ elements:
 
   - id: htmlart_lane_c
     m2slide: "`::: htmlart pie` 등 lane B 카탈로그 **밖** 종류"
-    pptx: "평문 불릿 + 제목 도형 alt-text 의 종류 표식 (lane S)"
+    pptx: "**네이티브 파이 차트**(`p:graphicFrame`, lane T `native_charts`) — 그 밖의 종류는 평문 불릿 + alt-text 표식"
     grade: lossless
     reason: |
-      카탈로그 밖 htmlart 는 도형 배치 자체가 판단이라 lane C(ig-maker) 소관이고,
-      비슷한 블록으로 **근사하지 않는다**. 그래서 pptx 에서 *보이는 것*은 여전히
-      평문 불릿이다 — 그러나 **원고 왕복**은 무손실이다. 종류가 alt-text 에 남아
-      역변환이 블록을 그대로 되감는다.
-    caveat: "시각 표현은 lossy 다. 도해가 필요하면 lane C 를 실제로 돌려야 한다"
-    evidence: "aTest `::: htmlart pie` 4항목+중첩 1 왕복 일치 — 2026-09-09 (승격 전 −1)"
+      lane C 원칙("근사하지 않는다")은 *도형 배치가 판단인 것* 에 대한 것이다. 파이는
+      pptx 가 **자기 어휘로 가진 차트**라 근사가 아니고, 편집 가능한 네이티브 객체로
+      그린다(Issue353). 원고 왕복은 차트 범주 + 서브라벨 표식으로 되감는다.
+      카탈로그·차트 어느 쪽에도 없는 htmlart(matrix·venn…)는 종전대로 평문 불릿이다.
+    evidence: "aTest `::: htmlart pie` 4항목+중첩 1 — 차트 4범주 + pie-sub 1 (2026-09-11)"
+
   - id: component_fence
     m2slide: "` ```chart `·`d3`·`p5`·`map`·`model3d`·`react` 컴포넌트 펜스"
     pptx: "구조 표식 한 줄 (`· 차트 — 웹 슬라이드에서 동작하는 요소입니다`)"

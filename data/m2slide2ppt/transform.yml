@@ -92,8 +92,16 @@ theme_geometry:
   canvas_w: 1920            # reveal 캔버스 폭(px). 높이는 slide_ratio 로 정해진다
   margin: 56                # 좌우 여백 — CSS section padding
   rule_h: 10                # 가로선 두께 (hr.png 높이)
-  rule_top: 22              # 상단 가로선 top
+  rule_top: 22              # 상단 가로선 top — **표지**(머리말 바가 없는 장)
+  # ⚠️ 본문 장은 다르다. CSS `::before` 는 22 라고 말하지만 **렌더된 픽셀은 y≈71** 이다
+  #    (2026-09-11 ego 캡처 픽셀 스캔: 노란 띠 71~74 · 22 에는 없음). 머리말 바(28~62) 아래에
+  #    선이 앉는다. 사용자가 PowerPoint 에서 손으로 66 으로 옮긴 값과 일치한다.
+  #    CSS 선언이 아니라 **픽셀을 정본**으로 삼는다.
+  rule_top_content: 66
   rule_bottom: 1248         # 하단 가로선 top (= 캔버스높이 − 22 − 10)
+  # 제목 밑줄 — CSS 상자(80+96)로 계산하면 166 인데 픽셀은 180~184(띠 중심 182 → 줄 top 177).
+  # 상자 높이를 건드리지 않고 밑줄만 아래로 내린다
+  underline_dy: 9
   title_top: 80
   title_h: 96               # 밑줄은 이 상자의 **맨 아래** 10px (CSS `::after{bottom:0}`)
   body_top: 205
@@ -106,11 +114,11 @@ theme_geometry:
 # lane T 가 직접 짓는다 — 로고는 section 의 background-image 라 `<img>` 로도 안 잡힌다.
 cover_geometry:
   logo:        { l: 94,   t: 151,  w: 346, h: 204, asset: finfraPuffer1.png }
-  title:       { l: 56,   t: 426,  w: 1808, h: 158, fs: 138, align: center, bold: true }
+  title:       { l: 56,   t: 426,  w: 1808, h: 158, fs: 155, align: center, bold: true }
   subtitle:    { l: 56,   t: 616,  w: 1808, h: 40,  fs: 40,  align: center }
   # 강사 정보는 **테두리 상자 + 이름 + 연락처** 셋이다. 하나로 합치면 HTML 의 두
   # 요소가 pptx 에서 한 글자 덩어리가 되어 대조가 어긋난다(실측 2026-09-10)
-  instructor_box:     { l: 1233, t: 798, w: 631, h: 79, outline: true }
+  instructor_box:     { l: 1233, t: 798, w: 631, h: 79, outline: true, border_px: 2, color: "FFD700", radius_px: 6 }
   # ⚠️ 폭은 HTML 실측(255·245)보다 **넉넉히** 준다. pptx 서체가 웹 서체보다 넓어
   #    실측 폭 그대로 두면 `남중구 ( 핀프 라 )` 처럼 접힌다(실측 2026-09-10).
   #    `wrap="none"` 을 넣어도 뷰어에 따라 무시되므로 폭으로 막는 편이 안전하다.
@@ -167,16 +175,97 @@ card_geometry:
 # ⚠️ 둘 다 **설치돼 있어야** pptx 가 HTML 과 같아 보인다(실측 2026-09-11, jm4: 둘 다 있음).
 #    없는 기계에서는 pptx 가 대체 서체로 렌더된다 — 그것은 pptx 의 한계이고
 #    웹폰트처럼 내려받게 할 방법이 없다.
+# ⚠️ **CSS 이름 ≠ OS family 이름** (2026-09-11 system_profiler 실측). CSS 는 @font-face 별칭
+#    (`GmarketSansBold`·`Nanum Gothic Coding`)을 쓰지만 macOS 가 등록한 family 는
+#    `Gmarket Sans`(Style Bold) · `NanumGothicCoding`(공백 없음)이다. pptx 에 CSS 이름을
+#    넣으면 PowerPoint 가 못 찾아 **대체 서체로 떨어진다** — "폰트 안 맞음" 의 뿌리였다.
+#    pptx 는 family + bold 속성으로 face 를 고르므로 제목은 `Gmarket Sans` + b=1 이다.
 font:
-  title: "GmarketSansBold"
-  body: "Nanum Gothic Coding"
+  title: "Gmarket Sans"          # CSS `GmarketSansBold` — OS family(PowerPoint 서체 캐시 fa·LibreOffice 매칭 모두 "Gmarket Sans"). "Gmarket Sans Bold"(name ID1) 는 한글(ea) 매칭이 깨진다 (실측 2026-09-11 A/B)
+  title_bold: true               # family + b=1 로 Bold face 를 고른다 (face 는 Light/Medium/Bold 뿐)
+  body: "NanumGothicCoding"      # CSS `Nanum Gothic Coding` — OS family 는 공백 없음
+  code: "Menlo"                  # CSS `"SF Mono", Monaco, Menlo…` — 어느 macOS 에나 있는 것
+  css_alias:                     # 검증이 CSS 쪽 이름을 보고 헷갈리지 않도록 대응표
+    GmarketSansBold: "Gmarket Sans"
+    "Nanum Gothic Coding": "NanumGothicCoding"
 
 # ── Agenda 장 꼴 (Issue351) ──────────────────────────────────
-# HTML `layout-_agenda` 실측(ego-browser). 그 페이지는 reveal 덱이 아니라 별도
-# 프레임(`.agenda-frame` 896×597)이라 **프레임 기준 좌표를 캔버스 1920 으로 환산**했다.
-#   제목  frame(464,52) → (111,90) · fs 24 → 51 · **좌측 정렬**
-#   본문  markmap SVG frame(450,132,820×437) → (81,261,1757×936)
+# HTML `layout-_agenda` 는 reveal 덱이 아니라 **고정 px 여백을 쓰는 별도 프레임**이라
+# 뷰포트에 따라 캔버스 환산값이 달라진다(896 폭 실측과 1920 폭 실측이 ~50px 어긋났다 —
+# 2026-09-11). **1920 뷰포트를 정본**으로 삼는다.
+#   제목   `.toc-page-title`  (59,66,218×67) fs 51 · GmarketSansBold · 좌측
+#   박스   `.toc-markmap`     (27,209,1865×1043) border 2px #F5C518 · radius 8
+#   상단선 `::before` hr.png   right 24 · top 12 → (27,14,1866×10)
+#   고양이 `::after` finfraCat  contain · 우상단 33.8px 여백 → (1640,38,242×253)
+#   하단선 **없음** — 픽셀 1250 의 노랑은 박스의 아래 테두리다
 agenda_geometry:
-  title:  { l: 111, t: 90,  w: 600, h: 64, fs: 51, align: left, bold: true }
-  frame:  { l: 81,  t: 261, w: 1757, h: 936 }   # 노란 테두리 박스
-  mascot: { l: 1560, t: 60, w: 250, h: 180, asset: finfraCat.png }
+  title:  { l: 59,   t: 66,  w: 600,  h: 67,   fs: 51, align: left, bold: true }
+  frame:  { l: 27,   t: 209, w: 1865, h: 1043, border_px: 2, radius_px: 8 }
+  rule:   { l: 27,   t: 14,  w: 1866, h: 10 }
+  mascot: { l: 1640, t: 38,  w: 242,  h: 253,  asset: finfraCat.png, fit: contain, anchor: top-right }
+  bottom_rule: false
+  body_pad: 40
+
+# ── 코드블록 (Issue352) ─────────────────────────────────────
+# HTML `pre`(github.css) 실측 (2026-09-11, 캔버스 1920×1280):
+#   상자 (56,245,1808×155) · bg #F6F8FA · radius 6 · padding 27.2px 34px
+#   글자 34px · line-height 49.3px(=1.45) · 색 #24292E · 키워드 #D73A49 (굵게 아님)
+#   다음 요소(수식)는 상자 아래 60px 에 앉는다
+# pandoc 은 코드를 **본문 placeholder 안의 문단**으로 내므로(줄바꿈은 `<a:br>`), 상자는
+# placeholder **뒤에** 깐 도형이고 글자 스타일은 그 문단의 run 을 고친다.
+# ⚠️ ③-b 강조 색 교정이 키워드(bold run)를 `--kn-strong` 초록으로 칠하던 것을 코드 문단은
+#    건너뛰게 했다 — 코드의 bold 는 강조가 아니라 하이라이트다.
+code_geometry:
+  top_gap: 40            # 본문 영역 상단(205)에서 상자까지
+  pad_y: 27
+  pad_x: 34
+  fs: 38.6
+  line_h: 49.3
+  gap_after: 60          # 상자 아래 다음 요소까지
+  bg: "F6F8FA"
+  fg: "24292E"
+  keyword: "D73A49"
+  radius_px: 6
+
+# ── 네이티브 차트 (Issue353) ─────────────────────────────────
+# lane B 카탈로그 밖(pie)은 lane C(ig-maker) 소관이었고 "근사하지 않는다" 가 원칙이다.
+# 그러나 **pptx 가 자기 어휘로 가진 것**(차트)은 근사가 아니다 — 편집 가능한 네이티브
+# 차트를 그린다. 원칙은 그대로다: 도형 배치가 *판단* 인 것만 lane C 로 보낸다.
+native_charts:
+  "htmlart pie": pie
+
+# HTML `.htmlart-pie` 실측 (1920×1280): 컨테이너 (56,245,1808×939) ·
+#   파이 중심 (675,715) 반지름 407 · 조각 라벨 24px 흰색 ·
+#   범례 열 x 1210~1651, 행 pitch 203 (첫 행 top 308) · 스와치 41×41 at x 1151 ·
+#   라벨 20px 700 · 서브라벨 15px 400 · 색 = --m2-accent-1..6 순환
+pie_geometry:
+  container: { l: 56, t: 245, w: 1808, h: 939 }
+  plot:      { l: 268, t: 308, w: 814, h: 814 }
+  legend:    { l: 1151, t: 308, w: 500, row_h: 203, swatch: 41, swatch_dy: 36, label_dy: 69, label_dy_nosub: 83, label_h: 38, sub_dy: 111, sub_h: 23 }
+  label_fs: 31.3         # viewBox 20px × 1.565 (svg 축척, 1920×1280 뷰포트 실측)
+  sub_fs: 23.5           # viewBox 15px × 1.565
+  pct_fs: 37.6           # viewBox 24px × 1.565 — 조각 안 백분율
+  colors: ["F5C518", "4ABDAC", "FC4A1A", "7B68EE", "2B8A9D", "C49D13"]
+
+# ── `Content with Caption` 장 재배치 (Issue355) ─────────────────────────
+# pandoc 은 "글 + 표/그림" 을 Content with Caption(글 좌 · 내용 우 · 캡션) 으로 낸다.
+# HTML 은 **리스트+이미지만** 좌우로 가르고(`.m2-cols` 868/868, 실측 1920×1280),
+# 문단+표는 위아래로 쌓는다(표는 내용 폭·가운데, `implicit_figures` 캡션은 없다 —
+# alt 는 화면에 안 보이고 `img[alt]` 로만 남는다 → pptx 도 그림 alt-text 로 옮긴다).
+split_geometry:
+  top: 245
+  h: 939
+  col_w: 868
+  gap: 72
+table_geometry:
+  gap_before: 40         # 앞 문단 아래에서 표까지 (HTML p 245+61 → table 346)
+  para_line_h: 61        # 본문 문단 한 줄 높이 (45.4px 글자)
+  fs: 45.4
+  pad_x: 40
+  pad_y: 10              # HTML 16 이나 pptx 줄높이(1.2em)가 커서 행 74 를 맞추려면 10
+  row_h: 74
+  head_bg: "F0F0F0"      # th rgba(0,0,0,.06) on white
+  border: "CCCCCC"       # td border-bottom 1px rgba(0,0,0,.2)
+  border_px: 1
+  fg: "111111"
+  head_bold: true
