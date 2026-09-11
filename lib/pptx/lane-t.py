@@ -50,10 +50,12 @@ import os
 import re
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 try:
     from pptx import Presentation
     from pptx.util import Emu, Pt
-    from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+    from pptx.enum.text import PP_ALIGN, MSO_ANCHOR, MSO_AUTO_SIZE
+    from pptxutil import iter_shapes, set_descr, descr as shape_descr, ORNAMENT_TAG as _OT
 except ImportError:
     print("python-pptx 필요", file=sys.stderr)
     sys.exit(2)
@@ -99,6 +101,11 @@ MASCOT = load_section("contents_mascot")
 CARD = load_section("card_geometry")
 FONT = load_section("font")
 AGENDA = load_section("agenda_geometry")
+CODE = load_section("code_geometry")
+PIE = load_section("pie_geometry")
+NATIVE = load_section("native_charts")
+SPLIT = load_section("split_geometry")
+TABLE = load_section("table_geometry")
 
 #   표지·머리말 글자는 **빌드된 HTML 이 정본**이다. frontmatter·config 를 다시 조합하면
 #   HTML 과 어긋날 수 있고, 대조기(check-parity.py)도 HTML 을 보므로 출처를 하나로 둔다.
@@ -206,7 +213,8 @@ def fix_placeholders(container, name, L, W, T, H, px2emu, log):
         log["ph"] += 1
 
 
-ORNAMENT_TAG = "m2slide:ornament"
+ORNAMENT_TAG = _OT
+CONTENT_TAG = "m2slide:content"
 
 
 def add_rule(shapes, img, left, top, width, height, kind="rule"):
@@ -247,45 +255,88 @@ def text_width_px(text, fs):
 
 
 def add_outline(shapes, spec, px2emu, accent="F5C518", width_px=1.5):
-    """글자 없는 **틀**. 강사 상자·Agenda 프레임이 쓴다."""
+    """글자 없는 **틀**. 강사 상자·Agenda 프레임이 쓴다.
+
+    명세에 `color`·`border_px`·`radius_px` 가 있으면 그것이 인자보다 앞선다 —
+    HTML 실측(`border: 2px solid #FFD700; border-radius: 6px`)을 정책이 그대로 적는다.
+    """
     from pptx.enum.shapes import MSO_SHAPE
     from pptx.dml.color import RGBColor
-    sh = shapes.add_shape(MSO_SHAPE.RECTANGLE,
+    radius = spec.get("radius_px")
+    sh = shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE if radius else MSO_SHAPE.RECTANGLE,
                           Emu(int(spec["l"] * px2emu)), Emu(int(spec["t"] * px2emu)),
                           Emu(int(spec["w"] * px2emu)), Emu(int(spec["h"] * px2emu)))
     sh.fill.background()
-    sh.line.color.rgb = RGBColor.from_string(accent)
-    sh.line.width = Emu(int(width_px * px2emu))
+    sh.line.color.rgb = RGBColor.from_string(spec.get("color", accent))
+    sh.line.width = Emu(int(spec.get("border_px", width_px) * px2emu))
     sh.shadow.inherit = False
+    if radius:
+        try:
+            sh.adjustments[0] = radius / float(min(spec["w"], spec["h"]))
+        except Exception:
+            pass
     return sh
 
 
 #   ⚠️ lane T 가 심는 **글자**에도 표식이 필요하다. 없으면 왕복 역변환이 머리말 바·
 #      라이선스 뱃지를 **본문 불릿으로** 읽는다(실측 2026-09-10: 왕복본에 +7줄).
 #      그림(add_rule)에 이미 같은 표식을 쓰고 있다.
-def set_major_font(path, name, log):
-    """테마 `majorFont`(제목 서체)를 바꾼다 — 패키지를 직접 손본다.
+def set_major_font(path, name, log, bold=None):
+    """제목 서체를 **테마 majorFont + 마스터·레이아웃 제목 placeholder** 양쪽에 심는다.
 
-    python-pptx 는 테마 서체를 노출하지 않는다. 제목 placeholder 의 run 이
-    `+mj-lt`(major latin)를 참조하므로 테마만 고치면 전부 따라온다.
+    python-pptx 는 테마 서체를 노출하지 않으므로 패키지를 직접 손본다.
+
+    ⚠️ majorFont 의 latin 하나만 바꾸면 **아무것도 안 바뀐다** (실측 2026-09-11, 두 겹):
+      ① `theme2reference`·`retheme --font-only` 가 마스터/레이아웃 제목 placeholder 의
+         lstStyle 에 `<a:latin typeface="NanumGothicCoding"/>` 를 **리터럴로** 적어 두어
+         `+mj-lt` 참조가 끊겨 있다 → 참조(`+mj-lt`/`+mj-ea`/`+mj-cs`)로 되돌린다
+      ② 한글 제목은 latin 이 아니라 **ea·`script="Hang"`** 항목의 서체로 그려진다 →
+         majorFont 의 latin·ea·cs·script 전부를 같은 이름으로 맞춘다 (HTML 도 한글
+         제목에 GmarketSansBold 하나를 쓴다)
+    `bold` 가 주어지면 제목 placeholder 의 defRPr `b` 도 정책대로 맞춘다.
     """
     import re as _re
     import shutil as _sh
     import zipfile as _zip
     tmp = path + ".fnt"
     changed = 0
+
+    def fix_theme(x):
+        def repl(m):
+            blk = m.group(0)
+            blk, n1 = _re.subn(r'(<a:(?:latin|ea|cs) typeface=")[^"]*(")', r"\g<1>%s\g<2>" % name, blk)
+            blk, n2 = _re.subn(r'(<a:font script="[^"]*" typeface=")[^"]*(")', r"\g<1>%s\g<2>" % name, blk)
+            return blk
+        return _re.subn(r"<a:majorFont>.*?</a:majorFont>", repl, x, count=1, flags=_re.S)
+
+    def fix_title_ph(x):
+        #   제목 placeholder(`type="title"`·`"ctrTitle"`) 의 리터럴 서체 → 테마 참조
+        def repl(m):
+            blk = m.group(0)
+            if not _re.search(r'<p:ph[^>]*type="(?:title|ctrTitle)"', blk):
+                return blk
+            blk = _re.sub(r'<a:latin typeface="[^"+][^"]*"', '<a:latin typeface="+mj-lt"', blk)
+            blk = _re.sub(r'<a:ea typeface="[^"+][^"]*"', '<a:ea typeface="+mj-ea"', blk)
+            blk = _re.sub(r'<a:cs typeface="[^"+][^"]*"', '<a:cs typeface="+mj-cs"', blk)
+            if bold is not None:
+                blk = _re.sub(r'(<a:defRPr\b[^>]*?)\sb="\d"', r"\1", blk)
+                blk = _re.sub(r"<a:defRPr\b", '<a:defRPr b="%d"' % (1 if bold else 0), blk)
+            return blk
+        return _re.subn(r"<p:sp>.*?</p:sp>", repl, x, flags=_re.S)
+
     with _zip.ZipFile(path) as zin, \
             _zip.ZipFile(tmp, "w", _zip.ZIP_DEFLATED) as zout:
         for item in zin.infolist():
             data = zin.read(item.filename)
-            if item.filename.startswith("ppt/theme/"):
-                x = data.decode("utf-8")
-                new, n = _re.subn(
-                    r'(<a:majorFont>\s*<a:latin typeface=")[^"]*(")',
-                    r"\g<1>%s\g<2>" % name, x, count=1)
+            fn = item.filename
+            if fn.startswith("ppt/theme/"):
+                new, n = fix_theme(data.decode("utf-8"))
                 if n:
-                    data = new.encode("utf-8")
-                    changed += n
+                    data = new.encode("utf-8"); changed += n
+            elif fn.startswith("ppt/slideMasters/") or fn.startswith("ppt/slideLayouts/"):
+                new, n = fix_title_ph(data.decode("utf-8"))
+                if new != data.decode("utf-8"):
+                    data = new.encode("utf-8"); changed += 1
             zout.writestr(item, data)
     _sh.move(tmp, path)
     if changed:
@@ -393,6 +444,424 @@ def redraw_cards(slide, px2emu, L, W):
     return n
 
 
+def load_signals(proj):
+    """lane S 사이드카를 **정방향에서** 읽는다 — 역방향의 커닝 금지와 무관하다.
+
+    lane T ornament 는 lane S 가 alt-text 를 심기 **전**에 돌므로 pptx 안의 신호를
+    읽을 수 없다. 어느 장이 `htmlart pie` 였는지는 여기서 안다.
+    """
+    import json as _j
+    p = os.path.join(proj, "_pipeline", "pptx", "lane-s.json")
+    if not os.path.isfile(p):
+        return {}
+    by = {}
+    for sig in (_j.load(open(p, encoding="utf-8")).get("slides") or []):
+        by.setdefault(norm_title(sig.get("title", "")), []).append(sig)
+    return by
+
+
+def norm_title(t):
+    t = re.sub(r"\*\*|__|`", "", t or "")
+    return re.sub(r"\s+", " ", t).strip()
+
+
+def body_placeholder(slide):
+    for sh in iter_shapes(slide):
+        if sh.is_placeholder and sh.has_text_frame and not sh.name.startswith("Title"):
+            return sh
+    return None
+
+
+def is_code_para(para):
+    from pptx.oxml.ns import qn
+    pPr = para._p.find(qn("a:pPr"))
+    if pPr is None or pPr.find(qn("a:buNone")) is None:
+        return False
+    return any(r._r.find(qn("a:rPr")) is not None
+               and r._r.find(qn("a:rPr")).find(qn("a:latin")) is not None
+               for r in para.runs)
+
+
+def send_to_back(slide, shape):
+    tree = slide.shapes._spTree
+    el = shape._element
+    tree.remove(el)
+    tree.insert(2, el)          # nvGrpSpPr · grpSpPr 다음 = 맨 뒤
+
+
+def restyle_code(slide, px2emu, L, W, log):
+    """코드 문단을 HTML `pre`(github.css) 꼴로 (Issue352).
+
+    pandoc 은 코드를 본문 placeholder **안의 문단**으로 낸다(줄바꿈은 `<a:br>`). 그래서
+    상자는 placeholder 뒤에 깐 도형이고, 글자는 그 문단의 run 을 고친다.
+    첫 문단이 코드인 흔한 경우는 자리를 정확히 맞추고(placeholder 를 상자 안으로 옮긴다),
+    코드가 중간에 오면 앞 문단 높이를 **어림**해 상자를 깐다.
+    """
+    from pptx.enum.shapes import MSO_SHAPE
+    from pptx.dml.color import RGBColor
+    from pptx.oxml.ns import qn
+    ph = body_placeholder(slide)
+    if ph is None or not CODE:
+        return 0
+    paras = list(ph.text_frame.paragraphs)
+    idx = [i for i, p_ in enumerate(paras) if is_code_para(p_)]
+    if not idx:
+        return 0
+
+    def lines_of(p_):
+        return 1 + len(p_._p.findall(qn("a:br")))
+
+    def emu(v):
+        return Emu(int(v * px2emu))
+
+    fs_pt = round(CODE["fs"] * px2emu / 12700, 1)
+    # 문단을 연속 코드 구간으로 묶는다
+    groups, cur = [], []
+    for i in idx:
+        if cur and i == cur[-1] + 1:
+            cur.append(i)
+        else:
+            if cur:
+                groups.append(cur)
+            cur = [i]
+    groups.append(cur)
+
+    body_top = PX["body_top"]
+    y = body_top + CODE["top_gap"]
+    # placeholder 를 첫 상자 글자 자리로 옮긴다 (첫 문단이 코드일 때만 정확하다)
+    first_is_code = groups[0][0] == 0
+    tIns = 45720 / px2emu                     # python-pptx 기본 tIns (EMU) → px
+    if first_is_code:
+        ph.top = emu(y + CODE["pad_y"] - tIns)
+        ph.left = emu(L / px2emu)
+        ph.width = emu(W / px2emu)
+        #   ⚠️ 높이를 **반드시** 준다 — placeholder 는 자리를 레이아웃에서 물려받는데
+        #      `top` 만 쓰면 python-pptx 가 ext 0×0 의 xfrm 을 만들어 높이가 0 이 되고,
+        #      뷰어의 `normAutofit` 이 글자를 0 높이에 맞춰 **점처럼** 줄인다
+        #      (실측 2026-09-11: LibreOffice 렌더에서 코드가 5px 로 보였다)
+        ph.height = emu(PX["body_top"] + PX["body_h"] - (y + CODE["pad_y"] - tIns))
+        ph.text_frame.auto_size = MSO_AUTO_SIZE.NONE
+        ph.text_frame.margin_left = emu(CODE["pad_x"])
+        ph.text_frame.margin_right = emu(CODE["pad_x"])
+    boxes = 0
+    est_y = y
+    for g in groups:
+        if not (first_is_code and g is groups[0]):
+            # 앞 문단 높이 어림 — 정확하지 않다. 코드가 중간에 오는 원고는 드물다
+            for j in range(0, g[0]):
+                if j in idx:
+                    continue
+                sz = next((r.font.size.pt for r in paras[j].runs if r.font.size), 20)
+                est_y += lines_of(paras[j]) * sz * (12700 / px2emu) * 1.4 + 6
+        n_lines = sum(lines_of(paras[i]) for i in g)
+        h = 2 * CODE["pad_y"] + n_lines * CODE["line_h"]
+        box = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
+                                     emu(L / px2emu), emu(est_y), emu(W / px2emu), emu(h))
+        box.fill.solid()
+        box.fill.fore_color.rgb = RGBColor.from_string(CODE["bg"])
+        box.line.fill.background()
+        box.shadow.inherit = False
+        try:
+            box.adjustments[0] = CODE.get("radius_px", 6) / float(h)
+        except Exception:
+            pass
+        set_descr(box, ORNAMENT_TAG + "/codebox")
+        send_to_back(slide, box)
+        boxes += 1
+        for i in g:
+            p_ = paras[i]
+            p_.line_spacing = CODE["line_h"] / CODE["fs"]
+            for r in p_.runs:
+                r.font.name = FONT.get("code") or "Menlo"
+                r.font.size = Pt(fs_pt)
+                r.font.color.rgb = RGBColor.from_string(
+                    CODE["keyword"] if r.font.bold else CODE["fg"])
+                r.font.bold = False
+        # 상자 아래 여백 — 다음 요소가 HTML 처럼 gap_after 만큼 떨어지게
+        paras[g[-1]].space_after = Pt(round((CODE["pad_y"] + CODE["gap_after"]) * px2emu / 12700, 1))
+        est_y += h + CODE["gap_after"]
+    log["code"] = log.get("code", 0) + boxes
+    return boxes
+
+
+def render_pie(slide, px2emu, log):
+    """`htmlart pie` 를 **네이티브 파이 차트**로 (Issue353).
+
+    lane C 원칙("근사하지 않는다")은 도형 배치가 판단인 것에 대한 것이다. 파이는 pptx 가
+    자기 어휘로 가진 차트라 근사가 아니다. 값은 HTML 렌더러와 같은 규칙 — 라벨 끝
+    `N%`(또는 ` N`)을 비율로, 아무 항목에도 값이 없으면 균등 — 으로 읽는다.
+    범례·조각 라벨·색·자리는 HTML 실측(pie_geometry)이다.
+    """
+    from pptx.chart.data import CategoryChartData
+    from pptx.enum.chart import XL_CHART_TYPE, XL_LABEL_POSITION
+    from pptx.dml.color import RGBColor
+    from pptx.oxml import parse_xml
+    from pptx.oxml.ns import nsdecls, qn
+    ph = body_placeholder(slide)
+    if ph is None or not PIE:
+        return 0
+    items = []
+    for p_ in ph.text_frame.paragraphs:
+        t = p_.text.strip()
+        if not t or is_code_para(p_):
+            continue
+        if p_.level == 0:
+            items.append({"label": t, "subs": []})
+        elif items:
+            items[-1]["subs"].append(t)
+    if len(items) < 2:
+        return 0
+    vals, names = [], []
+    for it in items:
+        m = re.match(r"^(.*?)\s+([0-9]+(?:\.[0-9]+)?)%?\s*$", it["label"])
+        vals.append(float(m.group(2)) if m else None)
+        names.append(m.group(1).strip() if m else it["label"])
+    if not any(v is not None for v in vals):
+        vals = [1.0] * len(items)
+    else:
+        vals = [v if v is not None else 0.0 for v in vals]
+
+    def emu(v):
+        return Emu(int(v * px2emu))
+    c = PIE["container"]
+    cd = CategoryChartData()
+    cd.categories = [it["label"] for it in items]
+    cd.add_series("share", vals)
+    gf = slide.shapes.add_chart(XL_CHART_TYPE.PIE, emu(c["l"]), emu(c["t"]),
+                                emu(c["w"]), emu(c["h"]), cd)
+    set_descr(gf, CONTENT_TAG + "/pie")
+    ch = gf.chart
+    ch.has_title = False
+    #   범례는 차트 내장이 아니라 **도형**으로 그린다(아래). 내장 범례의 manualLayout 은
+    #   뷰어마다 다르게 풀리고(실측 2026-09-11: LibreOffice 는 한 줄로 눕힌다), HTML 의
+    #   라벨 꼴 `이름 (N%)`·서브라벨·색 칩 모서리도 담을 수 없다
+    ch.has_legend = False
+    plot = ch.plots[0]
+    plot.has_data_labels = True
+    dl = plot.data_labels
+    dl.show_percentage = True
+    dl.show_value = False
+    dl.show_category_name = False
+    dl.number_format = "0%"
+    dl.number_format_is_linked = False
+    dl.position = XL_LABEL_POSITION.CENTER
+    dl.font.size = Pt(round(PIE["pct_fs"] * px2emu / 12700, 1))
+    dl.font.color.rgb = RGBColor(0xFF, 0xFF, 0xFF)
+    cols = PIE["colors"]
+    for i, pt in enumerate(plot.series[0].points):
+        pt.format.fill.solid()
+        pt.format.fill.fore_color.rgb = RGBColor.from_string(cols[i % len(cols)])
+        pt.format.line.fill.background()
+    # 수동 배치 — 파이와 범례 자리를 HTML 실측대로
+    pa = PIE["plot"]; lg = PIE["legend"]
+    def frac(v, base, size):
+        return (v - base) / float(size)
+    plot_layout = parse_xml(
+        '<c:layout %s><c:manualLayout><c:layoutTarget val="inner"/>'
+        '<c:xMode val="edge"/><c:yMode val="edge"/>'
+        '<c:x val="%.4f"/><c:y val="%.4f"/><c:w val="%.4f"/><c:h val="%.4f"/>'
+        '</c:manualLayout></c:layout>' % (nsdecls("c"),
+            frac(pa["l"], c["l"], c["w"]), frac(pa["t"], c["t"], c["h"]),
+            pa["w"] / float(c["w"]), pa["h"] / float(c["h"])))
+    plotArea = ch._chartSpace.chart.plotArea
+    old = plotArea.find(qn("c:layout"))
+    if old is not None:
+        plotArea.remove(old)
+    plotArea.insert(0, plot_layout)
+    # ── 범례 — 색 칩 + `이름 (N%)` + 서브라벨, 좌표·서체는 HTML 실측(1920×1280 뷰포트).
+    #    HTML 은 svg viewBox(964×600) 안 foreignObject 라 글자 크기가 viewBox 단위다 —
+    #    캔버스 축척 1.565 를 곱한 값이 정책의 label_fs·sub_fs 다.
+    #    역변환이 되감을 수 있게 전부 **내용 표식**(CONTENT_TAG)을 단다 — 차트 범주가
+    #    원고 라벨을 이미 지니므로 범례 글자는 역변환에서 **걷어내는** 쪽이다.
+    from pptx.enum.shapes import MSO_SHAPE
+    total = sum(vals) or 1.0
+    lab_l = lg["l"] + lg["swatch"] + 18
+    lab_w = lg["w"] - lg["swatch"] - 18
+    for i, it in enumerate(items):
+        row_t = lg["t"] + i * lg["row_h"]
+        sw = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
+                                    emu(lg["l"]), emu(row_t + lg.get("swatch_dy", 36)),
+                                    emu(lg["swatch"]), emu(lg["swatch"]))
+        sw.fill.solid()
+        sw.fill.fore_color.rgb = RGBColor.from_string(cols[i % len(cols)])
+        sw.line.fill.background()
+        sw.shadow.inherit = False
+        try:
+            sw.adjustments[0] = lg.get("swatch_radius", 8) / float(lg["swatch"])
+        except Exception:
+            pass
+        set_descr(sw, "%s/pie-swatch/%d" % (CONTENT_TAG, i))
+        #   HTML 렌더러와 같은 서식 — `이름 (N%)`, 값 0 이면 이름만 (renderPie 의 lbl)
+        pct = round(vals[i] / total * 1000) / 10.0
+        pct_s = ("%d" % pct) if pct == int(pct) else ("%.1f" % pct)
+        lbl = names[i] + ((" (%s%%)" % pct_s) if vals[i] > 0 else "")
+        has_sub = bool(it["subs"])
+        lspec = {"l": lab_l, "w": lab_w, "h": lg.get("label_h", 38),
+                 "t": row_t + (lg["label_dy"] if has_sub else lg.get("label_dy_nosub", lg["label_dy"])),
+                 "fs": PIE["label_fs"], "align": "center", "bold": True}
+        add_text(slide.shapes, lspec, lbl, px2emu, tag="%s/pie-legend/%d" % (CONTENT_TAG, i))
+        for j, sub in enumerate(it["subs"]):
+            spec = {"l": lab_l, "w": lab_w, "h": lg.get("sub_h", 23),
+                    "t": row_t + lg["sub_dy"] + j * lg.get("sub_h", 23),
+                    "fs": PIE["sub_fs"], "align": "center"}
+            add_text(slide.shapes, spec, sub, px2emu, tag="%s/pie-sub/%d" % (CONTENT_TAG, i))
+    ph._element.getparent().remove(ph._element)
+    log["pie"] = log.get("pie", 0) + 1
+    return 1
+
+
+def _tw(text, fs):
+    """모노스페이스(NanumGothicCoding) 폭 어림 — 한글 1em · 그 외 0.5em."""
+    w = 0.0
+    for ch in text or "":
+        o = ord(ch)
+        w += 1.0 if (0xAC00 <= o <= 0xD7A3 or 0x3131 <= o <= 0x318E or 0x4E00 <= o <= 0x9FFF
+                     or 0x3000 <= o <= 0x303F or 0xFF00 <= o <= 0xFFEF) else 0.5
+    return w * fs
+
+
+def has_bullets(ph):
+    """placeholder 에 불릿 문단이 있는가 — pandoc 은 평문 문단에만 `<a:buNone/>` 을 적는다."""
+    from pptx.oxml.ns import qn
+    if ph is None:
+        return False
+    for p_ in ph.text_frame.paragraphs:
+        if not p_.text.strip():
+            continue
+        pPr = p_._p.find(qn("a:pPr"))
+        if pPr is None or pPr.find(qn("a:buNone")) is None:
+            return True
+    return False
+
+
+def relayout_caption(slide, px2emu, L, W, log):
+    """pandoc `Content with Caption` 장(글 + 표/그림)을 HTML 규칙대로 다시 놓는다 (Issue355).
+
+    pandoc 은 글을 좁은 좌측 placeholder 에, 표/그림을 우측에 두고 그림 alt 를 캡션으로
+    낸다. HTML 은 다르다 — **리스트+이미지만** 좌우 2분할(`.m2-cols`), 문단+표는 위아래로
+    쌓고 표는 내용 폭으로 가운데. 캡션은 없다(alt 는 `img[alt]` 로만 남는다).
+    """
+    from pptx.oxml.ns import qn
+    from pptx.oxml import parse_xml
+    from pptx.oxml.ns import nsdecls
+    from pptx.dml.color import RGBColor
+    if slide.slide_layout.name != "Content with Caption" or not (SPLIT and TABLE):
+        return 0
+    shapes = list(iter_shapes(slide))
+    text_ph = next((sh for sh in shapes if sh.has_text_frame and sh.name.startswith("Text")
+                    and not sh.name.startswith("TextBox")), None)
+    tbl = next((sh for sh in shapes if sh.has_table), None)
+    pic = next((sh for sh in shapes if str(sh.shape_type).startswith("PICTURE")
+                and not shape_descr(sh).startswith(ORNAMENT_TAG)), None)
+    cap = next((sh for sh in shapes if sh.has_text_frame and sh.name.startswith("TextBox")
+                and sh.is_placeholder), None)
+
+    def emu(v):
+        return Emu(int(v * px2emu))
+
+    if tbl is not None:
+        T = TABLE
+        fs = T["fs"]
+        n_para = len([p_ for p_ in text_ph.text_frame.paragraphs if p_.text.strip()]) if text_ph else 0
+        text_h = max(n_para, 1) * T["para_line_h"]
+        if text_ph is not None:
+            text_ph.left, text_ph.width = L, W
+            text_ph.top = emu(SPLIT["top"])
+            text_ph.height = emu(text_h)
+            text_ph.text_frame.auto_size = MSO_AUTO_SIZE.NONE
+            for p_ in text_ph.text_frame.paragraphs:
+                p_.alignment = PP_ALIGN.CENTER
+        t = tbl.table
+        ncol, nrow = len(t.columns), len(t.rows)
+        col_w = []
+        for c in range(ncol):
+            col_w.append(max(_tw(t.cell(r, c).text, fs) for r in range(nrow)) + 2 * T["pad_x"])
+        tw = min(sum(col_w), W / px2emu)
+        tbl.left = emu(L / px2emu + (W / px2emu - tw) / 2.0)
+        tbl.top = emu(SPLIT["top"] + text_h + T["gap_before"])
+        tbl.width = emu(tw)
+        tbl.height = emu(nrow * T["row_h"])
+        for c in range(ncol):
+            t.columns[c].width = emu(col_w[c])
+        for r in range(nrow):
+            t.rows[r].height = emu(T["row_h"])
+        #   pandoc 의 표 스타일(테마 강조색 머리행·줄무늬)을 끈다 — HTML 표는 회색 머리행 + 밑선뿐
+        tblPr = t._tbl.tblPr
+        tblPr.set("firstRow", "0"); tblPr.set("bandRow", "0")
+        sid = tblPr.find(qn("a:tableStyleId"))
+        if sid is not None:
+            tblPr.remove(sid)
+        fs_pt = Pt(round(fs * px2emu / 12700, 1))
+        for r in range(nrow):
+            for c in range(ncol):
+                cell = t.cell(r, c)
+                cell.margin_left = cell.margin_right = emu(T["pad_x"])
+                cell.margin_top = cell.margin_bottom = emu(T["pad_y"])
+                cell.vertical_anchor = MSO_ANCHOR.MIDDLE
+                for p_ in cell.text_frame.paragraphs:
+                    for r_ in p_.runs:
+                        r_.font.size = fs_pt
+                        r_.font.bold = bool(r == 0 and T.get("head_bold"))
+                        r_.font.color.rgb = RGBColor.from_string(T["fg"])
+                if r == 0:
+                    cell.fill.solid(); cell.fill.fore_color.rgb = RGBColor.from_string(T["head_bg"])
+                else:
+                    cell.fill.background()
+                tcPr = cell._tc.get_or_add_tcPr()
+                for tag in ("a:lnL", "a:lnR", "a:lnT", "a:lnB"):
+                    old = tcPr.find(qn(tag))
+                    if old is not None:
+                        tcPr.remove(old)
+                lns = [parse_xml('<%s %s w="0"><a:noFill/></%s>' % (tag, nsdecls("a"), tag))
+                       for tag in ("a:lnL", "a:lnR", "a:lnT")]
+                lns.append(parse_xml('<a:lnB %s w="%d"><a:solidFill><a:srgbClr val="%s"/></a:solidFill></a:lnB>'
+                                     % (nsdecls("a"), int(T["border_px"] * px2emu), T["border"])))
+                for i, ln in enumerate(lns):
+                    tcPr.insert(i, ln)
+        log["table"] = log.get("table", 0) + 1
+        return 1
+
+    if pic is not None:
+        #   캡션(= alt) 은 화면에 없다 — 그림의 alt-text(`descr`)로 옮기고 상자는 없앤다
+        if cap is not None:
+            alt = cap.text_frame.text.strip()
+            if alt:
+                set_descr(pic, alt)
+            cap._element.getparent().remove(cap._element)
+        #   좌우 2분할은 HTML 휴리스틱 그대로 **리스트+이미지** 일 때만이다. 문단+이미지·
+        #   이미지 단독 장의 HTML 배치는 다른 규칙(세로 흐름·`_blank`)이라 여기서 근사하지
+        #   않는다 — 그 장들은 pandoc 자리 그대로 두고 Issue343 에서 다룬다
+        if not has_bullets(text_ph):
+            log["caption_alt"] = log.get("caption_alt", 0) + 1
+            return 1
+        if text_ph is not None:
+            text_ph.left, text_ph.width = L, emu(SPLIT["col_w"])
+            text_ph.top, text_ph.height = emu(SPLIT["top"]), emu(SPLIT["h"])
+        bx_l = L / px2emu + SPLIT["col_w"] + SPLIT["gap"]
+        iw, ih = pic.width, pic.height
+        sc = min(SPLIT["col_w"] * px2emu / float(iw), SPLIT["h"] * px2emu / float(ih))
+        w, h = int(iw * sc), int(ih * sc)
+        pic.width, pic.height = w, h
+        pic.left = int(bx_l * px2emu + (SPLIT["col_w"] * px2emu - w) / 2)
+        pic.top = int(SPLIT["top"] * px2emu + (SPLIT["h"] * px2emu - h) / 2)
+        log["split"] = log.get("split", 0) + 1
+        return 1
+    return 0
+
+
+def add_picture_fit(shapes, img, spec, px2emu, kind="mascot"):
+    """`background-size: contain` 흉내 — 상자 안에 비율 유지, 우상단 정렬."""
+    from PIL import Image
+    iw, ih = Image.open(img).size
+    bw, bh = spec["w"], spec["h"]
+    sc = min(bw / iw, bh / ih)
+    w, h = iw * sc, ih * sc
+    l = spec["l"] + (bw - w) if "right" in spec.get("anchor", "") else spec["l"]
+    t = spec["t"]
+    return add_rule(shapes, img, int(l * px2emu), int(t * px2emu),
+                    int(w * px2emu), int(h * px2emu), kind=kind)
+
+
 ALIGN = {"left": PP_ALIGN.LEFT, "center": PP_ALIGN.CENTER, "right": PP_ALIGN.RIGHT}
 
 
@@ -422,10 +891,7 @@ def add_text(shapes, spec, text, px2emu, tag=ORNAMENT_TAG + "/text"):
     if spec.get("bold"):
         run.font.bold = True
     if tag:
-        try:
-            box._element._nvXxPr.cNvPr.set("descr", tag)
-        except Exception:
-            pass
+        set_descr(box, tag)
     return box
 
 
@@ -471,7 +937,7 @@ def main():
         #   major/minor 를 같은 값으로 넣는다. HTML 은 제목만 다른 서체를 쓴다
         #   (`--title-font-family: GmarketSansBold`).
         if FONT.get("title"):
-            set_major_font(a.pptx, FONT["title"], log)
+            set_major_font(a.pptx, FONT["title"], log, bold=bool(FONT.get("title_bold")))
         print("  lane T 배치 — placeholder %d개 재배치 · 레이아웃 %d%s"
               % (log["ph"], log["layout"],
                  (" · 제목 서체 %s" % log["font"]) if log.get("font") else ""),
@@ -490,21 +956,52 @@ def main():
     slides = list(prs.slides)
     logo_path = os.path.join(a.themeimg, (COVER.get("logo") or {}).get("asset", ""))
 
+    signals = load_signals(proj)
+    seen_titles = {}
     for i, slide in enumerate(slides):
-        add_rule(slide.shapes, hr, L, int(PX["line_top"] * px2emu), W, lh)
-        add_rule(slide.shapes, hr, L, int(PX["line_bottom"] * px2emu), W, lh)
-        log["rule"] += 2
         lay = slide.slide_layout.name
+        ttl0 = next((sh for sh in iter_shapes(slide)
+                     if sh.has_text_frame and sh.name.startswith("Title")), None)
+        title_txt = norm_title(ttl0.text_frame.text) if ttl0 is not None else ""
+        is_agenda = bool(AGENDA) and title_txt.lower() == "agenda"
+        #   상단선 — 표지 22 · Agenda 는 자기 자리 · 본문 장 66 (머리말 바 아래, 픽셀 실측)
+        if is_agenda and AGENDA.get("rule"):
+            r_ = AGENDA["rule"]
+            add_rule(slide.shapes, hr, int(r_["l"] * px2emu), int(r_["t"] * px2emu),
+                     int(r_["w"] * px2emu), lh)
+            log["rule"] += 1
+        else:
+            top = PX["line_top"] if lay == "Title Slide" else G.get("rule_top_content", PX["line_top"])
+            add_rule(slide.shapes, hr, L, int(top * px2emu), W, lh)
+            log["rule"] += 1
+        if not (is_agenda and AGENDA.get("bottom_rule") is False):
+            add_rule(slide.shapes, hr, L, int(PX["line_bottom"] * px2emu), W, lh)
+            log["rule"] += 1
+        #   제목 서체 — HTML 제목은 900 굵기. pptx 는 family + b=1 로 face 를 고른다
+        #   레이아웃이 b=1 을 물려주므로 False 도 run 에 b=0 으로 **적어야** face 굵기에
+        #   가짜 굵기가 겹치지 않는다(Gmarket Sans Bold 는 face 자체가 Bold 다)
+        if ttl0 is not None:
+            for p_ in ttl0.text_frame.paragraphs:
+                for r_ in p_.runs:
+                    r_.font.bold = bool(FONT.get("title_bold"))
+        #   이 장의 lane S 신호 (제목 + 동명 순번)
+        o_ = seen_titles.get(title_txt, 0); seen_titles[title_txt] = o_ + 1
+        cands = signals.get(title_txt, [])
+        sig = cands[o_] if o_ < len(cands) else {}
+        blocks = sig.get("block") or []
 
+        #   글+표/그림 장(`Content with Caption`) 재배치 — 제목이 없는 장도 해당한다
+        #   (실측 2026-09-11 m2Slide_chapter_mode p18·p19·p22: 무제 이미지 장이 빠졌다)
+        if lay in BODY_LAYOUTS and not is_agenda:
+            relayout_caption(slide, px2emu, L, W, log)
         #   제목 밑줄은 **그 장의 제목 상자 맨 아래**다(CSS `::after { bottom: 0 }`).
         #   섹션 진입은 제목이 세로 가운데라 밑줄이 글자 한복판을 지나므로 뺀다.
         ttl = next((sh for sh in slide.shapes
                     if sh.has_text_frame and sh.name.startswith("Title")), None)
-        is_agenda = (ttl is not None
-                     and ttl.text_frame.text.strip().lower() == "agenda" and bool(AGENDA))
         if (lay in BODY_LAYOUTS and ttl is not None and ttl.text_frame.text.strip()
                 and not is_agenda):
-            add_rule(slide.shapes, hr, ttl.left, ttl.top + ttl.height - lh,
+            add_rule(slide.shapes, hr, ttl.left,
+                     ttl.top + ttl.height - lh + int(G.get("underline_dy", 0) * px2emu),
                      ttl.width, lh, kind="underline")
             log["rule"] += 1
 
@@ -519,7 +1016,12 @@ def main():
                     p_.alignment = ALIGN.get(spec.get("align", "center"))
                     for r_ in p_.runs:
                         r_.font.size = Pt(round(spec["fs"] * px2emu / 12700, 1))
-                        r_.font.bold = True
+                        r_.font.bold = bool(FONT.get("title_bold"))
+                #   ⚠️ 자동 맞춤을 끈다 — 상자 높이가 글자 높이와 같아(HTML 실측) 뷰어가
+                #      `normAutofit` 을 다시 계산하면 제목이 줄어든다(LibreOffice 즉시·
+                #      PowerPoint 는 편집 시). 크기는 우리가 실측으로 정한 값이다
+                ttl.text_frame.auto_size = MSO_AUTO_SIZE.NONE
+                ttl.text_frame.word_wrap = False
             #   부제 placeholder 는 pandoc 이 비워 둔 채 남긴다 — 우리 상자와 겹치므로 없앤다
             for sh in list(slide.shapes):
                 if (sh.has_text_frame and sh.name.startswith("Subtitle")
@@ -543,7 +1045,7 @@ def main():
             #   요소가 pptx 에서 한 덩어리가 되어 대조가 어긋난다(실측 2026-09-10)
             bx = COVER.get("instructor_box")
             if bx and (cover.get("iname") or cover.get("icontact")):
-                add_outline(slide.shapes, bx, px2emu, accent="F5C518")
+                add_outline(slide.shapes, bx, px2emu, accent=CARD.get("band_bg", "F5C518"))
                 log["cover"] += 1
             for text, spec_key in ((cover.get("subtitle"), "subtitle"),
                                    (cover.get("iname"), "instructor_name"),
@@ -566,18 +1068,25 @@ def main():
                     p_.alignment = ALIGN.get(spec.get("align", "left"))
                     for r_ in p_.runs:
                         r_.font.size = Pt(round(spec["fs"] * px2emu / 12700, 1))
-                        r_.font.bold = True
+                        r_.font.bold = bool(FONT.get("title_bold"))
+                ttl.text_frame.auto_size = MSO_AUTO_SIZE.NONE
+                ttl.text_frame.word_wrap = False
             fr = AGENDA.get("frame")
             if fr:
-                add_outline(slide.shapes, fr, px2emu,
-                            accent=CARD.get("band_bg", "F5C518"), width_px=3)
+                ol = add_outline(slide.shapes, fr, px2emu,
+                                 accent=CARD.get("band_bg", "F5C518"),
+                                 width_px=fr.get("border_px", 2))
+                try:
+                    from pptx.enum.shapes import MSO_SHAPE as _MS
+                    ol._element.spPr.prstGeom.set("prst", "roundRect")
+                    ol.adjustments[0] = fr.get("radius_px", 8) / float(fr["h"])
+                except Exception:
+                    pass
                 log["cover"] += 1
                 #   항목은 **박스 안**에 있어야 한다 — 본문 placeholder 를 옮긴다
-                body = next((sh for sh in slide.shapes
-                             if sh.has_text_frame and not sh.name.startswith("Title")
-                             and sh.is_placeholder), None)
+                body = body_placeholder(slide)
                 if body is not None:
-                    pad = 40
+                    pad = AGENDA.get("body_pad", 40)
                     body.left = int((fr["l"] + pad) * px2emu)
                     body.top = int((fr["t"] + pad) * px2emu)
                     body.width = int((fr["w"] - 2 * pad) * px2emu)
@@ -585,11 +1094,15 @@ def main():
             mc = AGENDA.get("mascot") or {}
             mp2 = os.path.join(a.themeimg, mc.get("asset", ""))
             if mc and os.path.isfile(mp2):
-                add_rule(slide.shapes, mp2, int(mc["l"] * px2emu), int(mc["t"] * px2emu),
-                         int(mc["w"] * px2emu), int(mc["h"] * px2emu), kind="mascot")
+                add_picture_fit(slide.shapes, mp2, mc, px2emu, kind="mascot")
                 log["cover"] += 1
 
         elif lay in BODY_LAYOUTS and ttl is not None:
+            #   네이티브 차트 — 정책 `native_charts` 에 있는 블록만
+            if any(NATIVE.get(b) == "pie" for b in blocks):
+                render_pie(slide, px2emu, log)
+            #   코드 상자 — github.css 꼴
+            restyle_code(slide, px2emu, L, W, log)
             #   lane B 가 그린 cards 를 m2slide 카드로 다시 그린다.
             #   신호를 읽지 않아도 된다 — `redraw_cards` 가 **커넥터 유무**로 가른다
             #   (커넥터가 있으면 순차 블록이라 손대지 않는다)
@@ -620,9 +1133,11 @@ def main():
     #      majorFont 가 되돌려진다(실측 2026-09-11: reference 는 GmarketSansBold 인데
     #      최종 pptx 는 Nanum Gothic Coding). ornament 는 retheme 뒤 단계다.
     if FONT.get("title"):
-        set_major_font(a.pptx, FONT["title"], log)
-    print("  lane T 장식 — 가로선·밑줄 %d · 표지 %d · 머리말 %d · 카드 %d (장 %d)%s"
-          % (log["rule"], log["cover"], log["head"], log["card"], len(slides),
+        set_major_font(a.pptx, FONT["title"], log, bold=bool(FONT.get("title_bold")))
+    print("  lane T 장식 — 가로선·밑줄 %d · 표지 %d · 머리말 %d · 카드 %d · 코드 %d · 파이 %d · 표 %d · 2분할 %d · 캡션→alt %d (장 %d)%s"
+          % (log["rule"], log["cover"], log["head"], log["card"], log.get("code", 0),
+             log.get("pie", 0), log.get("table", 0), log.get("split", 0), log.get("caption_alt", 0),
+             len(slides),
              (" · 제목 서체 %s" % log["font"]) if log.get("font") else ""),
           file=sys.stderr)
     return 0

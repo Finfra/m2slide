@@ -36,9 +36,11 @@ import os
 import re
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 try:
     from pptx import Presentation
     from pptx.util import Emu
+    from pptxutil import iter_shapes, descr as shape_descr, ORNAMENT_TAG as _OT
 except ImportError:
     print("python-pptx 필요", file=sys.stderr)
     sys.exit(2)
@@ -46,7 +48,8 @@ except ImportError:
 MC = "http://schemas.openxmlformats.org/markup-compatibility/2006"
 P = "http://schemas.openxmlformats.org/presentationml/2006/main"
 SIG_PREFIX = "m2slide:"
-ORNAMENT_TAG = "m2slide:ornament"
+ORNAMENT_TAG = _OT
+CONTENT_TAG = "m2slide:content"
 #   컴포넌트 펜스는 config 가 pptx 진입 전에 삭제되므로 종류만 알아도
 #   되살릴 수 없다 — 코드블록 언어와 섞이지 않게 여기서 가른다
 COMPONENT_FENCES = {"chart", "d3", "p5", "map", "model3d", "react"}
@@ -168,7 +171,7 @@ def read_doc_signals(path):
 
 def read_slide_signals(slide):
     """제목 도형 alt-text 의 `m2slide:{…}` 를 읽는다."""
-    for sh in slide.shapes:
+    for sh in iter_shapes(slide):
         if not (sh.has_text_frame and sh.name.startswith("Title")):
             continue
         el = sh._element.find(".//{%s}cNvPr" % P)
@@ -277,7 +280,8 @@ def convert(pptx_path, outdir, name):
     for slide in prs.slides:
         lay = slide.slide_layout.name
         title = ""
-        for sh in slide.shapes:
+        shapes_all = list(iter_shapes(slide))
+        for sh in shapes_all:
             if sh.has_text_frame and sh.name.startswith("Title"):
                 title = sh.text_frame.text.strip()
                 break
@@ -289,9 +293,30 @@ def convert(pptx_path, outdir, name):
             continue
 
         body, maths, captions = [], [], []
-        autoshapes = [sh for sh in slide.shapes if sh.shape_type is not None
-                      and str(sh.shape_type).startswith("AUTO_SHAPE")]
-        connectors = [sh for sh in slide.shapes if str(sh.shape_type).startswith("LINE")]
+        #   테마 장식(ornament) 은 AUTO_SHAPE 판정에서 뺀다 — 코드 상자·Agenda 테두리
+        autoshapes = [sh for sh in shapes_all if sh.shape_type is not None
+                      and str(sh.shape_type).startswith("AUTO_SHAPE")
+                      and not shape_descr(sh).startswith(ORNAMENT_TAG)
+                      and not shape_descr(sh).startswith(CONTENT_TAG)]   # 파이 범례 색 칩
+        connectors = [sh for sh in shapes_all if str(sh.shape_type).startswith("LINE")]
+        #   네이티브 차트 → `::: htmlart pie` (Issue353). 서브라벨은 내용 표식으로 되찾는다
+        pie_subs = {}
+        for sh in shapes_all:
+            d = shape_descr(sh)
+            if d.startswith(CONTENT_TAG + "/pie-sub/") and sh.has_text_frame:
+                pie_subs.setdefault(int(d.rsplit("/", 1)[1]), []).append(sh.text_frame.text.strip())
+        for sh in shapes_all:
+            if getattr(sh, "has_chart", False) and sh.has_chart:
+                sig0 = read_slide_signals(slide)
+                kind = next((b for b in (sig0.get("block") or []) if b.startswith("htmlart")), "htmlart pie")
+                cats = list(sh.chart.plots[0].categories)
+                out_ = ["::: %s" % kind]
+                for ci, cat in enumerate(cats):
+                    out_.append("* %s" % cat)
+                    for sub in pie_subs.get(ci, []):
+                        out_.append("  - %s" % sub)
+                out_.append(":::")
+                body += out_
 
         if autoshapes:
             items = group_boxes(autoshapes)
@@ -304,10 +329,14 @@ def convert(pptx_path, outdir, name):
                 "htmlart process" if connectors else "cards")
             body += render_div(kind, items)
 
-        for sh in slide.shapes:
+        for sh in shapes_all:
             st = str(sh.shape_type or "")
             if st.startswith("AUTO_SHAPE") or st.startswith("LINE"):
                 continue
+            if getattr(sh, "has_chart", False) and sh.has_chart:
+                continue
+            if shape_descr(sh).startswith(CONTENT_TAG):
+                continue                              # 차트 서브라벨 — 위에서 이미 썼다
             if sh.name.startswith("Title"):
                 continue
             if sh.has_table:
@@ -393,7 +422,13 @@ def convert(pptx_path, outdir, name):
         for item in body:
             if isinstance(item, tuple) and item[0] == "__PIC__":
                 sh = item[1]
-                alt = captions[cap_i[0]] if cap_i[0] < len(captions) else title
+                #   alt 는 그림의 alt-text(`descr`)가 정본이다 — lane T 가 캡션을 거기로
+                #   옮긴다. pandoc 원형(descr = 파일 경로)이면 캡션 → 제목 순으로 되돌린다
+                d_ = shape_descr(sh)
+                if d_ and not d_.startswith("m2slide:") and not d_.startswith("/") and "\\" not in d_:
+                    alt = d_
+                else:
+                    alt = captions[cap_i[0]] if cap_i[0] < len(captions) else title
                 cap_i[0] += 1
                 fn = "%s.%s" % (re.sub(r"\W+", "_", alt).strip("_").lower() or "img",
                                 sh.image.ext)

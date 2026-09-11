@@ -147,6 +147,8 @@ else:
     ok("④", "평문 불릿 치워짐 (이중 표시 없음)")
 
 # ── ⑤ lane-c-intact — 카탈로그 밖은 손대지 않는다
+#   ⚠️ 단 **네이티브 차트**(pie → `p:graphicFrame`, Issue353)는 근사가 아니라 pptx 의
+#      자기 어휘이므로 허용한다. 이 단언은 글자 있는 AUTO_SHAPE 만 보므로 그대로 통과한다.
 bad_c = []
 for t in c:
     s = find(t)

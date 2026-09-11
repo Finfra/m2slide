@@ -45,6 +45,8 @@ except ImportError:
     yaml = None
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from pptxutil import iter_shapes, descr as shape_descr   # noqa: E402
 CONTRACT = os.path.join(HERE, "..", "..", "data", "m2slide2ppt", "fidelity.yml")
 P = "http://schemas.openxmlformats.org/presentationml/2006/main"
 ORNAMENT_TAG = "m2slide:ornament"
@@ -183,7 +185,18 @@ def pptx_slides(path):
     out = []
     for s in prs.slides:
         rec = {"text": [], "img": []}
-        for sh in s.shapes:
+        #   ⚠️ `slide.shapes` 가 아니라 iter_shapes — PowerPoint 로 저장한 파일은 수식이
+        #      든 본문을 mc:AlternateContent 로 감싸 python-pptx 가 못 본다(실측 2026-09-11)
+        for sh in iter_shapes(s):
+            if getattr(sh, "has_chart", False) and sh.has_chart:
+                #   네이티브 차트의 범주 라벨은 화면에 보이는 글자다
+                try:
+                    rec["text"] += [str(c) for c in sh.chart.plots[0].categories]
+                except Exception:
+                    pass
+                continue
+            if shape_descr(sh).startswith("m2slide:content/pie-legend"):
+                continue        # 파이 범례 라벨 — 차트 범주(원고 라벨)의 파생물이라 세지 않는다
             if sh.has_text_frame:
                 rec["text"].append(sh.text_frame.text)
             if sh.has_table:
@@ -191,10 +204,12 @@ def pptx_slides(path):
                     for c in r.cells:
                         rec["text"].append(c.text_frame.text)
             if str(sh.shape_type or "").startswith("PICTURE"):
-                el = sh._element.find(".//{%s}cNvPr" % P)
-                if el is not None and (el.get("descr") or "").startswith(ORNAMENT_TAG):
+                d_ = shape_descr(sh)
+                if d_.startswith(ORNAMENT_TAG):
                     continue        # 테마 장식 — 그림 수에 넣지 않는다
                 rec["img"].append("pic")
+                if d_ and not d_.startswith("m2slide:") and not d_.startswith("/"):
+                    rec["text"].append(d_)      # 그림 alt-text — HTML `img[alt]` 와 짝
         out.append(rec)
     return out
 

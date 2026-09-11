@@ -37,10 +37,23 @@ except ImportError:
 
 A = "http://schemas.openxmlformats.org/drawingml/2006/main"
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+from pptxutil import iter_shapes, descr as shape_descr   # noqa: E402
 DEFAULT_CONTRACT = os.path.join(HERE, "..", "..", "data", "m2slide2ppt", "fidelity.yml")
 TRANSFORM = os.path.join(HERE, "..", "..", "data", "m2slide2ppt", "transform.yml")
 P = "http://schemas.openxmlformats.org/presentationml/2006/main"
 ORNAMENT_TAG = "m2slide:ornament"
+
+
+def policy_section(name):
+    """transform.yml 의 한 절 — 없으면 {}."""
+    try:
+        import yaml
+        here = os.path.dirname(os.path.abspath(__file__))
+        pth = os.path.join(here, "..", "..", "data", "m2slide2ppt", "transform.yml")
+        return (yaml.safe_load(open(pth, encoding="utf-8")) or {}).get(name) or {}
+    except Exception:
+        return {}
 
 
 def geometry():
@@ -107,7 +120,10 @@ def css_body_font(project_dir, css):
         if mv:
             dm = re.search(r"%s:\s*([^;]+);" % re.escape(mv.group(1)), scope)
             chain = (dm.group(1) if dm else (mv.group(2) or "")).strip()
-        if not chain or re.search(r"mono|coding|inherit", chain, re.I):
+        #   ⚠️ `mono|coding` 을 걸러내면 안 된다 — default_lec 의 본문 서체가
+        #      **'Nanum Gothic Coding'** 이라 그 휴리스틱이 본문을 버리고 base.css 의
+        #      Pretendard 를 보고했다(실측 2026-09-11). 선택자로 이미 본문을 특정했다
+        if not chain or re.search(r"\binherit\b", chain, re.I):
             return None
         f = chain.split(",")[0].strip().strip("'\"")
         return f or None
@@ -156,6 +172,13 @@ def de76(a, b):
     return sum((x - y) ** 2 for x, y in zip(pa, pb)) ** 0.5
 
 
+def prs_titles(prs):
+    for sl in prs.slides:
+        for sh in iter_shapes(sl):
+            if sh.has_text_frame and sh.name.startswith("Title") and sh.text_frame.text.strip():
+                yield sh
+
+
 def pptx_facts(path):
     from pptx import Presentation
     prs = Presentation(path)
@@ -172,6 +195,26 @@ def pptx_facts(path):
             m = re.search(r'<a:minorFont>\s*<a:latin typeface="([^"]*)"', x, re.S)
             if m:
                 out["minorFont"] = m.group(1)
+            m = re.search(r'<a:majorFont>\s*<a:latin typeface="([^"]*)"', x, re.S)
+            if m:
+                out["majorFont"] = m.group(1)
+            #   한글 제목은 ea·script="Hang" 서체로 그려진다 — latin 만 맞아도 안 맞는다
+            mj = re.search(r"<a:majorFont>.*?</a:majorFont>", x, re.S)
+            if mj:
+                others = set(re.findall(r'<a:(?:ea|font script="Hang") typeface="([^"]*)"', mj.group(0)))
+                out["majorFont_ea"] = sorted(others)
+            #   마스터·레이아웃의 제목 placeholder 가 서체를 **리터럴로** 적으면 테마
+            #   majorFont 는 무시된다 (실측 2026-09-11: retheme 이 `NanumGothicCoding` 을
+            #   적어 두어 제목 서체가 통째로 안 먹었다 — majorFont 만 보면 초록불이었다)
+            lit = set()
+            for n_ in z.namelist():
+                if n_.startswith("ppt/slideMasters/") or n_.startswith("ppt/slideLayouts/"):
+                    xx = z.read(n_).decode("utf-8")
+                    for mm in re.finditer(r"<p:sp>.*?</p:sp>", xx, re.S):
+                        b_ = mm.group(0)
+                        if re.search(r'<p:ph[^>]*type="(?:title|ctrTitle)"', b_):
+                            lit |= set(re.findall(r'<a:(?:latin|ea) typeface="([^"+][^"]*)"', b_))
+            out["title_ph_literal"] = sorted(lit)
     return out
 
 
@@ -229,9 +272,44 @@ def main():
     add("title_color", ct or "?", dt or "?", ok,
         "ΔE(sRGB) %.1f / 허용 %.1f" % (de, tol_de) if de is not None else "")
 
-    # ⑤ 본문 서체 — known_gap
+    # ⑤ 서체 — CSS 이름을 그대로 대조하면 안 된다. CSS 는 @font-face 별칭이고 OS family 는
+    #    다르다(`GmarketSansBold`→`Gmarket Sans`·`Nanum Gothic Coding`→`NanumGothicCoding`).
+    #    정책 `font.*` 가 OS 이름을 소유하므로 그것과 대조하고, CSS 이름은 참고로 보인다
+    fpol = {}
+    try:
+        fpol = (yaml.safe_load(open(os.path.normpath(TRANSFORM), encoding="utf-8")) or {}).get("font") or {}
+    except Exception:
+        pass
     cf = css_body_font(proj, css)
-    add("body_font", cf or "?", pf.get("minorFont", "?"), cf == pf.get("minorFont"))
+    want_b = fpol.get("body") or cf
+    add("body_font", "%s → %s" % (cf or "?", want_b), pf.get("minorFont", "?"),
+        pf.get("minorFont") == want_b)
+    ctf = None
+    root = os.path.dirname(os.path.dirname(os.path.abspath(proj)))
+    base = os.path.join(root, "lib", "css", "base.css")
+    for t in (css, open(base, encoding="utf-8").read() if os.path.isfile(base) else ""):
+        mt = re.search(r"--title-font-family:\s*'?([^',;]+)", t)
+        if mt:
+            ctf = mt.group(1).strip()
+            break
+    want_t = fpol.get("title") or ctf
+    bold_ok = True
+    if fpol.get("title_bold"):
+        for sl in prs_titles(pf["prs"]):
+            for p_ in sl.text_frame.paragraphs:
+                for r_ in p_.runs:
+                    if r_.font.bold is not True:
+                        bold_ok = False
+    ea_bad = [e for e in pf.get("majorFont_ea", []) if e != want_t]
+    lit = pf.get("title_ph_literal", [])
+    note_t = ""
+    if ea_bad:
+        note_t += " ea/Hang=%s" % ",".join(ea_bad)
+    if lit:
+        note_t += " placeholder 리터럴=%s" % ",".join(lit)
+    add("title_font", "%s → %s%s" % (ctf or "?", want_t, " +bold" if fpol.get("title_bold") else ""),
+        "%s%s" % (pf.get("majorFont", "?"), "" if bold_ok else " (bold 아님)"),
+        pf.get("majorFont") == want_t and bold_ok and not ea_bad and not lit, note_t.strip())
 
     # ⑥ 콘텐츠 박스 — placeholder 가 HTML 콘텐츠 폭을 채우는가
     g = geometry()
@@ -253,15 +331,21 @@ def main():
     #   ⚠️ 종류별로 센다. 합쳐 세면 로고·마스코트·표지 밑줄이 늘 때마다 계산이 깨진다
     kinds = collections.Counter()
     slides = list(prs.slides)
+    expect_rules = 0
     for sl in slides:
-        for sh in sl.shapes:
-            el = sh._element.find(".//{%s}cNvPr" % P)
-            d = (el.get("descr") or "") if el is not None else ""
+        ttl_txt = ""
+        for sh in iter_shapes(sl):
+            d = shape_descr(sh)
             if d.startswith(ORNAMENT_TAG):
                 kinds[d.split("/", 1)[1] if "/" in d else "rule"] += 1
+            if sh.has_text_frame and sh.name.startswith("Title"):
+                ttl_txt = sh.text_frame.text.strip().lower()
+        #   Agenda 는 HTML 에 하단선이 없다(픽셀 1250 의 노랑은 박스 테두리) → 1줄
+        expect_rules += 1 if ttl_txt == "agenda" else 2
     rules = kinds["rule"]
     n = len(slides) or 1
-    add("theme_rule", "장마다 상·하단 2줄", "%d개 / %d장" % (rules, n), rules >= 2 * n)
+    add("theme_rule", "장별 기대 %d줄" % expect_rules, "%d개 / %d장" % (rules, n),
+        rules >= expect_rules)
     #   ⚠️ **제목이 빈 장은 세지 않는다.** HTML 도 제목 요소가 없으면 `::after` 가
     #      없고, lane T 도 그 장은 건너뛴다. 레이아웃만 보고 세면 그 장들이
     #      "밑줄 누락" 으로 잡힌다(실측: m2Slide_chapter_mode 33 vs 29).
@@ -278,6 +362,58 @@ def main():
     #   표지 제목에도 밑줄이 있다(HTML `.cover-title::after`) — 본문 장 + 표지
     add("title_underline", "제목 있는 본문 장 %d개(+표지)" % body_n,
         "%d개" % kinds["underline"], kinds["underline"] >= body_n)
+
+    # ⑧-b `Content with Caption` 장 — HTML 규칙대로 놓였는가
+    #   pandoc 은 글+표/그림을 좌우(글 좁게·내용 우측·캡션)로 내지만 HTML 은
+    #   리스트+이미지만 2분할이고 문단+표는 위아래(표는 가운데·회색 머리행)다.
+    #   캡션(alt)은 화면에 없다. lane T `relayout_caption` 이 옮긴 결과를 잰다
+    sp = policy_section("split_geometry") or {}
+    tg = policy_section("table_geometry") or {}
+    cw = g.get("canvas_w", 1920)
+    cap_n, cap_bad = 0, []
+    for i_, sl in enumerate(slides, 1):
+        if sl.slide_layout.name != "Content with Caption" or not (sp and tg):
+            continue
+        cap_n += 1
+        shs = list(iter_shapes(sl))
+        tbl = next((sh for sh in shs if sh.has_table), None)
+        pic = next((sh for sh in shs if str(sh.shape_type).startswith("PICTURE")
+                    and not shape_descr(sh).startswith(ORNAMENT_TAG)), None)
+        cap = next((sh for sh in shs if sh.has_text_frame and sh.name.startswith("TextBox")
+                    and sh.is_placeholder and sh.text_frame.text.strip()), None)
+        why = []
+        if tbl is not None:
+            cx = (tbl.left + tbl.width / 2.0) / px
+            if abs(cx - cw / 2.0) > 4:
+                why.append("표 중심 %d≠%d" % (round(cx), cw // 2))
+            try:
+                rgb = str(tbl.table.cell(0, 0).fill.fore_color.rgb)
+            except Exception:
+                rgb = "?"
+            if rgb.upper() != str(tg.get("head_bg", "")).upper():
+                why.append("머리행 %s≠%s" % (rgb, tg.get("head_bg")))
+        if pic is not None:
+            #   2분할은 HTML 휴리스틱대로 **리스트+이미지** 장에만 요구한다. 문단+이미지·
+            #   이미지 단독 장은 pandoc 자리 그대로 두는 것이 현 계약이다(Issue343 로 이월)
+            from pptx.oxml.ns import qn as _qn
+            tph = next((sh for sh in shs if sh.has_text_frame and sh.name.startswith("Text")
+                        and not sh.name.startswith("TextBox")), None)
+            bullets = False
+            if tph is not None:
+                for p_ in tph.text_frame.paragraphs:
+                    if p_.text.strip():
+                        pPr = p_._p.find(_qn("a:pPr"))
+                        if pPr is None or pPr.find(_qn("a:buNone")) is None:
+                            bullets = True
+            l_ = g.get("margin", 56) + sp["col_w"] + sp["gap"]
+            if bullets and (pic.left / px < l_ - 2 or (pic.left + pic.width) / px > l_ + sp["col_w"] + 2):
+                why.append("그림이 우측 열(%d..%d) 밖" % (l_, l_ + sp["col_w"]))
+            if cap is not None:
+                why.append("캡션 상자 잔존 %r" % cap.text_frame.text.strip()[:12])
+        if why:
+            cap_bad.append("p%d %s" % (i_, "·".join(why)))
+    add("caption_layout", "표: 가운데·회색 머리행 / 그림: 우측 열·캡션 없음",
+        "%d장 · 위반 %d" % (cap_n, len(cap_bad)), not cap_bad, "; ".join(cap_bad))
 
     # ⑨ 남은 꼴 — 카드 밴드·자간 등 기계로 잴 수 없는 것
     add("layout_ornament", "theme CSS 의 세부 꼴", "(부분 이식)", False)

@@ -397,6 +397,7 @@ from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import PP_PLACEHOLDER
 from pptx.enum.text import MSO_AUTO_SIZE
+from pptx.oxml.ns import qn
 prs, n, fit, bfit = Presentation(out), 0, 0, 0
 for s in prs.slides:
     for sh in s.shapes:
@@ -425,6 +426,16 @@ for s in prs.slides:
         except Exception:
             pass
         for para in sh.text_frame.paragraphs:
+            #   ⚠️ 코드 문단은 건너뛴다 (Issue352). pandoc 의 문법 하이라이트는 키워드를
+            #      **bold 로** 내므로, bold = 강조로 보면 `def`·`return` 이 --kn-strong 초록이
+            #      된다(실측). 코드의 서식은 lane T `restyle_code` 가 HTML(github.css) 실측
+            #      색으로 따로 잡는다. 코드 문단 판정: `buNone` + 명시 latin 서체.
+            pPr = para._p.find(qn("a:pPr"))
+            if pPr is not None and pPr.find(qn("a:buNone")) is not None and any(
+                    r._r.find(qn("a:rPr")) is not None
+                    and r._r.find(qn("a:rPr")).find(qn("a:latin")) is not None
+                    for r in para.runs):
+                continue
             for run in para.runs:
                 if run.font.bold:
                     run.font.color.rgb = RGBColor.from_string(col)

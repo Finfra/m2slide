@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 351
+* Issue HWM: 356
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -48,7 +48,62 @@
 
 # ✅ 완료
 
-## Issue350: pptx 서체가 HTML 과 달랐다 — Windows 폰트를 고르고 있었다 (등록: 2026-09-11, 해결: 2026-09-11) ✅
+## Issue356: HTML `htmlart pie` 가 균등 분할됐다 — 정규식 이중 이스케이프 (등록: 2026-09-11, 해결: 2026-09-11, commit: `__IMPL__`) ✅
+* 목적: `::: htmlart pie` 의 `모바일 45%` 가 HTML 에서 25% 로 그려졌다(ego-browser 실측) — pptx 대조 중 HTML 쪽에서 발견
+* depends: Issue353
+* 상세:
+    - [htmlart_dispatch.client.js](lib/component-hooks/htmlart_dispatch.client.js) 정규식 3줄(996·1080·1152)의 `\\s` 가 문자열 안에서 `\s` 가 아니라 리터럴 `\\s` 가 되어 값 토큰(`N%`)이 안 잡혔다 → 전 항목 `value=null` → 균등 분할
+* 구현 명세: 3줄을 `\s` 로 교정. pie 외 balance 등 같은 패턴을 쓰는 렌더러도 같은 줄에서 고쳤다
+* 결과: 45/30/15/10 정상 · 범례 `모바일 (45%)` · pptx 네이티브 차트와 값 일치
+
+## Issue355: 글+표/그림 장(`Content with Caption`)의 배치가 HTML 과 달랐다 (등록: 2026-09-11, 해결: 2026-09-11, commit: `fd7567e`, `__IMPL__`) ✅
+* 목적: pandoc 은 글을 좁은 좌측에·표/그림을 우측에·alt 를 캡션으로 낸다. HTML 은 **리스트+이미지만** 2분할이고 문단+표는 위아래(표 내용 폭·가운데·회색 머리행), 캡션은 없다(alt 는 `img[alt]` 로만)
+* depends: Issue354
+* 상세:
+    - HTML 실측(ego-browser 1920×1280): `.m2-cols` 868/868 gap 72 · 표 th/td 45.4px pad 16/40 · th bg rgba(0,0,0,.06) · td 밑선 1px rgba(0,0,0,.2) · 문단 아래 40px
+    - 2분할은 **리스트+이미지** 일 때만(pandoc 은 평문 문단에만 `<a:buNone/>` 을 적어 구분된다). 문단+이미지·무제 이미지 장은 pandoc 자리 그대로 둔다 — HTML 배치가 다른 규칙(세로 흐름·`_blank`)이라 근사하지 않는다(Issue343 이월)
+    - 캡션은 항상 그림 `descr`(alt-text)로 옮기고 상자를 없앤다. 역변환은 `descr` 를 alt 로 되돌리고, 전수 대조는 `descr` 를 `img[alt]` 와 짝짓는다
+    - 표는 pandoc 표 스타일(`tableStyleId`·firstRow·bandRow)을 끄고 셀 여백·글자·머리행 채움·밑선을 직접 적는다. 열 폭은 모노스페이스 폭 어림(한글 1em·그 외 0.5em)+패딩
+    - 제목이 없는 장도 해당한다 — 처음엔 제목 유무 분기 안에 호출을 두어 m2Slide_chapter_mode p18·p19·p22 가 빠졌다
+* 구현 명세: [transform.yml](data/m2slide2ppt/transform.yml) `split_geometry`·`table_geometry` · [lane-t.py](lib/pptx/lane-t.py) `relayout_caption`/`has_bullets` · [pptx2source.py](lib/pptx/pptx2source.py) alt ← `descr` · [check-parity.py](lib/pptx/check-parity.py) · [check-visual.py](lib/pptx/check-visual.py) 시각 축 `caption_layout`(must_match) · [fidelity.yml](data/m2slide2ppt/fidelity.yml)
+* 결과: aTest p5(표)·p6(그림) LibreOffice 렌더가 HTML 과 일치 · m2Slide_chapter_mode `Content with Caption` 7장 위반 0
+
+## Issue354: 제목 서체가 안 먹었다 — 마스터 placeholder 리터럴 + 한글 ea + OS family (등록: 2026-09-11, 해결: 2026-09-11, commit: `fd7567e`, `__IMPL__`) ✅
+* 목적: Issue350 이 `majorFont` 를 바꿨는데도 PowerPoint·LibreOffice 에서 제목이 `NanumGothicCoding` 이었다 — 사용자 "폰트 안 맞음(모든 페이지)"
+* depends: Issue350
+* 상세 (겹이 셋이다):
+    - ① `theme2reference`·`retheme --font-only` 가 마스터/레이아웃 **제목 placeholder lstStyle 에 서체를 리터럴로** 적어 `+mj-lt` 참조가 끊겨 있었다 → `set_major_font` 가 `+mj-lt/+mj-ea/+mj-cs` 로 되돌리고 `defRPr b` 를 정책대로 맞춘다
+    - ② 한글 제목은 latin 이 아니라 **ea·`script="Hang"`** 서체로 그려진다 → majorFont 의 latin·ea·cs·script 전부를 같은 이름으로 (HTML 도 한글 제목에 GmarketSansBold 하나를 쓴다)
+    - ③ OS family — name 테이블 ID1 `Gmarket Sans Bold` 로 갔다가 되돌렸다(라틴만 맞고 한글 ea 매칭이 깨짐). PowerPoint 서체 캐시(`FontCache/systemfontmetadata.json` fa)와 LibreOffice A/B 렌더 모두 **`Gmarket Sans` + b=1** (face 가 Light/Medium/Bold 뿐이라 family + bold 가 Bold face)
+    - ④ [pptxutil.py](lib/pptx/pptxutil.py) 신설 — PowerPoint 저장본이 OMML 본문을 `mc:AlternateContent` 로 감싸 `slide.shapes` 가 못 보던 것을 `iter_shapes` 로 순회. 첫 판의 `id(child)` 중복 제거가 lxml 프록시 id 재사용으로 **도형을 건너뛰어** 러너가 가로선 17→12 오탐을 냈다(제거)
+    - 표지 제목 155px(computed) · 표지/Agenda 제목 `noAutofit`(상자 높이 = 글자 높이라 뷰어 재계산 시 줄어든다) · 강사 박스 2px FFD700 radius 6
+    - check-visual `title_font` 가 majorFont latin·ea/Hang·마스터 placeholder 리터럴 셋을 다 본다 — 이 부류를 초록불로 통과시키던 구멍. `css_body_font` 의 `mono|coding` 제외 휴리스틱도 제거(default_lec 본문이 'Nanum Gothic Coding')
+    - 진단 기록: [debug_TECH.md](_doc_work/debug_TECH.md) "2026-09-11 m2slide→pptx 제목 서체·도형 순회 오진"
+* 구현 명세: [transform.yml](data/m2slide2ppt/transform.yml) `font`·`cover_geometry` · [lane-t.py](lib/pptx/lane-t.py) `set_major_font(bold=)`·`add_outline(radius)` · [pptxutil.py](lib/pptx/pptxutil.py) · [check-visual.py](lib/pptx/check-visual.py)
+* 결과: 전 9장 제목 Gmarket Sans Bold(LibreOffice v8 렌더, 한글 포함) · 시각 축 must_match 전건 · 전수 대조 모자란 것 0
+
+## Issue353: `htmlart pie` 가 pptx 에 없었다 — 네이티브 파이 차트 + 도형 범례 (등록: 2026-09-11, 해결: 2026-09-11, commit: `fd7567e`, `__IMPL__`) ✅
+* 목적: lane B 카탈로그 밖(pie)은 lane C(ig-maker) 소관이라 pptx 에 평문 불릿만 남았다 — 사용자 "파이 그래프 안 들어감"
+* depends: Issue352
+* 상세:
+    - "근사하지 않는다" 원칙의 예외 — **차트는 pptx 가 자기 어휘로 가진 것**이라 근사가 아니다. python-pptx `add_chart(PIE)` + plotArea `manualLayout` 으로 HTML 실측 자리(중심 675,715 · r 407)
+    - 범례는 차트 내장이 아니라 **도형**(색 칩 roundRect + `이름 (N%)` + 서브라벨) — 내장 범례의 manualLayout 은 뷰어마다 다르게 풀리고(LibreOffice 는 한 줄로 눕힌다) 라벨 꼴·서브라벨을 못 담는다. 전부 `m2slide:content/pie-*` 표식
+    - HTML 범례 글자는 svg viewBox(964×600) 안 foreignObject 라 **viewBox 단위** — 캔버스 축척 1.565 를 곱해 label 31.3 · sub 23.5 · pct 37.6px. 첫 판(20/15/24)이 그대로 pt 로 가서 작았다
+    - 역변환: 차트 범주 → `* 모바일 45%` · `pie-sub` 표식 → `  - iOS·Android`. 전수 대조는 범례 글자를 범주의 파생물로 걷어내고, 카드 판정에서 색 칩을 뺀다
+* 구현 명세: [transform.yml](data/m2slide2ppt/transform.yml) `native_charts`·`pie_geometry` · [fidelity.yml](data/m2slide2ppt/fidelity.yml) `htmlart_lane_c: lossless` · [lane-t.py](lib/pptx/lane-t.py) `render_pie` · [pptx2source.py](lib/pptx/pptx2source.py) · [check-parity.py](lib/pptx/check-parity.py)
+* 결과: aTest p8 — 45/30/15/10 · 범례·서브라벨 HTML 과 일치 · 왕복 원고 동일(`htmlart_lane_c 1/1 lossless`)
+
+## Issue352: 코드 블록이 pptx 에서 HTML `pre` 꼴이 아니었다 + placeholder 높이 0 (등록: 2026-09-11, 해결: 2026-09-11, commit: `fd7567e`, `__IMPL__`) ✅
+* 목적: 사용자 실측(PowerPoint) — 코드가 상자 없이 본문 글자로 눕고 크기·색이 달랐다
+* depends: Issue351
+* 상세:
+    - HTML `pre` 실측(ego-browser 1920×1280): 56,245,1808×155 · pad 27/34 · fs 38.6px(첫 판 34 는 오측) · lh 49.3 · bg F6F8FA · radius 6 · 키워드 D73A49 · 아래 요소까지 60
+    - lane T `restyle_code` 가 placeholder 를 상자 안으로 옮길 때 `top` 만 써서 python-pptx 가 ext 0×0 xfrm 을 만들어 **높이 0** → 뷰어 `normAutofit` 이 글자를 점처럼 줄였다(LibreOffice 렌더 5px). 높이 부여 + `noAutofit`
+    - 코드 상자는 `m2slide:ornament/codebox` 표식 → 역변환·전수 대조가 걸러낸다. build-pptx ③-b 강조색 교정은 코드 문단(`buNone`+latin)을 건너뛴다
+* 구현 명세: [transform.yml](data/m2slide2ppt/transform.yml) `code_geometry` · [lane-t.py](lib/pptx/lane-t.py) `restyle_code`/`is_code_para` · [build-pptx.sh](lib/pptx/build-pptx.sh) ③-b
+* 결과: aTest p4 — LibreOffice 렌더가 HTML 과 일치(Menlo 19.3pt · 키워드 색 · 상자 · 수식은 상자 아래)
+
+## Issue350: pptx 서체가 HTML 과 달랐다 — Windows 폰트를 고르고 있었다 (등록: 2026-09-11, 해결: 2026-09-11, commit: `417bd04`, `f09a28b`) ✅
 * 목적: 글로벌 `theme-from-css.py` 가 CSS 체인에서 `Malgun Gothic`(Windows)을 골라 macOS 에서 대체 렌더됐다. 같은 파일이 기계마다 다르게 보인다
 * depends: Issue349
 * 상세:
@@ -58,7 +113,7 @@
 * 구현 명세: [`transform.yml`](data/m2slide2ppt/transform.yml) `font:` 가 실측 서체를 소유 · build-pptx ①-c 가 본문 서체를, lane T 가 제목 서체(`majorFont`)를 적용
 * 결과: major `GmarketSansBold` · minor `Nanum Gothic Coding` — HTML 실측과 일치
 
-## Issue351: Agenda 장이 pptx 에 없었다 + 목차 레이아웃 미적용 (등록: 2026-09-11, 해결: 2026-09-11) ✅
+## Issue351: Agenda 장이 pptx 에 없었다 + 목차 레이아웃 미적용 (등록: 2026-09-11, 해결: 2026-09-11, commit: `417bd04`, `f09a28b`) ✅
 * 목적: HTML 은 `agenda.html` 을 **별도 페이지로 항상** 내는데 pptx 에는 그 장이 없었다
 * depends: Issue350
 * 상세:
