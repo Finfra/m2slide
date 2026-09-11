@@ -856,6 +856,28 @@ def cover_source(project_dir, meta, chapters):
     return body
 
 
+def agenda_source(srcs, chapters):
+    """⑮ Agenda 장 — HTML 은 `agenda.html` 을 **별도 페이지로 항상** 낸다 (Issue351).
+
+    pptx 에는 그 장이 없어 배포물 구성이 갈렸다. 제목은 `Agenda` 로 고정하고
+    (HTML 템플릿이 그렇게 쓴다) 항목은 chapter mode 면 AGENDA 챕터, single mode 면
+    원고의 H1 목록이다 — HTML 이 보여주는 것과 같은 것이다.
+
+    ⚠️ 내용은 HTML 에서 JS(markmap)가 그리므로 **글자만 옮긴다**. 꼴은 lane T 소관.
+    """
+    items = [t for t, _ in chapters]
+    if not items:
+        for f in srcs:
+            for ln in open(f, encoding="utf-8"):
+                m = H1.match(ln)
+                if m and m.group(1).strip():
+                    items.append(m.group(1).strip())
+    if not items:
+        return ""
+    return ("## Agenda\n\n"
+            + "".join("* %s\n" % bullet_text(strip_inline(t)) for t in items))
+
+
 def main():
     ap = argparse.ArgumentParser(description="m2slide 원고 → pptx 전용 중간 원고")
     ap.add_argument("project_dir")
@@ -884,7 +906,7 @@ def main():
 
     stat = {k: 0 for k in ("attr", "element", "id", "anim", "slot", "symbol",
                            "img_abs", "img_proj", "img_missing",
-                           "chapter", "chapter_dropped", "defer", "fence_flat", "fence_drop",
+                           "chapter", "chapter_dropped", "agenda", "defer", "fence_flat", "fence_drop",
                            "laneb", "laneb_defer", "math")}
     made = []
     #   제목 순번은 **덱 전체** 기준이다 — 병합은 pptx 한 벌에서 장을 찾으므로,
@@ -916,6 +938,15 @@ def main():
         with open(dst, "w", encoding="utf-8") as fp:
             fp.write(cover_source(proj, meta, chapters))
         made.append(dst)
+
+    #   ⑮ Agenda — 표지 다음 한 장. HTML 이 `agenda.html` 로 늘 내는 장이다
+    agenda_md = agenda_source(srcs, chapters)
+    if agenda_md:
+        dst = os.path.join(outdir, "00b-agenda.md")
+        with open(dst, "w", encoding="utf-8") as fp:
+            fp.write(agenda_md)
+        made.append(dst)
+        stat["agenda"] = 1
 
     for i, f in enumerate(srcs, 1):
         text = open(f, encoding="utf-8").read()
@@ -973,8 +1004,9 @@ def main():
               % ("주입" if cover_on else "생략", len(chapters), stat["chapter"],
                  stat["defer"], stat["fence_flat"], stat["fence_drop"]),
               file=sys.stderr)
-        print("  장 구성 — H1 진입 %s · 챕터 목차 %s (진입 장 생략 %d)"
-              % ("유지" if cards_ph else "생략(cards_placeholder=false)",
+        print("  장 구성 — Agenda %s · H1 진입 %s · 챕터 목차 %s (진입 장 생략 %d)"
+              % ("주입" if stat["agenda"] else "생략",
+                 "유지" if cards_ph else "생략(cards_placeholder=false)",
                  "유지" if toc_ph else "생략", stat["chapter_dropped"]),
               file=sys.stderr)
         print("  lane B 표시 — 대상 %d장 · lane C 이월 %d건 (%s)"

@@ -162,9 +162,13 @@ def html_sections(project_dir):
     files = sorted(glob.glob(os.path.join(project_dir, "slide", "*.html")))
     #   index.html 이 single mode 의 본체다. chapter mode 는 챕터 파일들이 본체이고
     #   index 는 markmap 목차라 내용이 겹친다 — 챕터 파일이 있으면 그쪽을 쓴다
+    #   ⚠️ `agenda.html` 도 **배포물의 일부**다 (Issue351). 빼면 pptx 가 그 장을
+    #      만들었을 때 "원고에 없는 장" 으로 오판한다.
     chapters = [f for f in files
                 if os.path.basename(f) not in ("index.html", "agenda.html")]
     use = chapters or [f for f in files if os.path.basename(f) == "index.html"]
+    ag = [f for f in files if os.path.basename(f) == "agenda.html"]
+    use = use + ag
     out = []
     for f in use:
         p = SectionText()
@@ -335,6 +339,19 @@ def main():
     print("⚠️ 이 검사는 **열거하지 않는다** — 계약에 없는 빠짐도 여기서 드러난다.")
     print("   빠진 것이 의도된 것이라면 fidelity.yml 에 선언하고, 아니면 변환을 고쳐야 한다.")
 
+    #   계약이 `synthesized` 로 선언하며 `slides:` 를 적은 만큼은 허용한다 —
+    #   HTML 쪽이 JS 로 그려 정적 대조가 볼 수 없는 장(agenda)이 그것이다
+    budget = 0
+    try:
+        _c = yaml.safe_load(open(os.path.normpath(CONTRACT), encoding="utf-8")) or {}
+        budget = sum(e.get("slides", 0) for e in (_c.get("elements") or [])
+                     if e.get("grade") == "synthesized")
+    except Exception:
+        budget = 0
+    if 0 < slide_gap <= budget:
+        print("ℹ️  장 수 차이 %+d 는 계약이 선언한 생성물 예산(%d) 안이다"
+              % (slide_gap, budget))
+        slide_gap = 0
     if slide_gap:
         print("❌ 장 수가 다르다 (%+d) — 같은 원고가 두 산출물에서 다른 장 수로 나온다"
               % slide_gap)

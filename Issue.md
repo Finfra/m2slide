@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 349
+* Issue HWM: 351
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -14,13 +14,13 @@
 
 결정은 **각 정본 문서**에 산다 — 여기 사본을 두지 않는다(2026.09.02 정리).
 
-| 결정 | 정본 |
-| :--- | :--- |
+| 결정                                                                               | 정본                                                                       |
+| :--------------------------------------------------------------------------------- | :------------------------------------------------------------------------- |
 | 별도 `_meta.yml` 파일 미사용 — `AGENDA.md`·`{프로젝트명}.md` frontmatter 에 넣는다 | [meta-yml.md](_doc_arch/meta-yml.md) "별도 `_meta.yml` 파일은 쓰지 않는다" |
-| m2slide 모듈 분리는 나중에 — 지금은 상위 프로젝트와 함께 | [decisions.md](_doc_arch/decisions.md) "m2slide 모듈 분리는 나중에" |
-| SCAR 는 가급적 프로젝트 폴더에 배치 (배포용 자족) | [scar-portability.md](_doc_arch/scar-portability.md) "SSOT 경계" |
-| `img/` 소스·빌드 이중 복사 유지 | [decisions.md](_doc_arch/decisions.md) "`img/` 이중 복사를 유지한다" |
-| 로우·값 단위 개별 애니메이션 지원 (Issue149 완료) | [animation.md](_doc_arch/animation.md) "3. m2slide syntax 설계" |
+| m2slide 모듈 분리는 나중에 — 지금은 상위 프로젝트와 함께                           | [decisions.md](_doc_arch/decisions.md) "m2slide 모듈 분리는 나중에"        |
+| SCAR 는 가급적 프로젝트 폴더에 배치 (배포용 자족)                                  | [scar-portability.md](_doc_arch/scar-portability.md) "SSOT 경계"           |
+| `img/` 소스·빌드 이중 복사 유지                                                    | [decisions.md](_doc_arch/decisions.md) "`img/` 이중 복사를 유지한다"       |
+| 로우·값 단위 개별 애니메이션 지원 (Issue149 완료)                                  | [animation.md](_doc_arch/animation.md) "3. m2slide syntax 설계"            |
 
 # 🌱 이슈후보
 
@@ -44,10 +44,28 @@
 
 # 📙 일반
 
-
 # 📗 선택
 
 # ✅ 완료
+
+## Issue350: pptx 서체가 HTML 과 달랐다 — Windows 폰트를 고르고 있었다 (등록: 2026-09-11, 해결: 2026-09-11) ✅
+* 목적: 글로벌 `theme-from-css.py` 가 CSS 체인에서 `Malgun Gothic`(Windows)을 골라 macOS 에서 대체 렌더됐다. 같은 파일이 기계마다 다르게 보인다
+* depends: Issue349
+* 상세:
+    - HTML 실측(ego-browser) — 제목 `GmarketSansBold` · 본문 `Nanum Gothic Coding`. 둘 다 이 기계에 설치돼 있다
+    - theme.yml 에는 서체가 **하나뿐**이라 `theme2reference` 가 major/minor 를 같은 값으로 넣는다
+    - ⚠️ **두 번 되돌려졌다** — ① `set_major_font` 를 `prs.save()` **앞**에 부르면 메모리 내용이 덮어쓴다 ② `retheme.py --font-only`(③-c)가 theme.yml 서체로 pptx 전체를 덮는다. 그래서 최종 교정은 **retheme 뒤 단계**(lane T ornament)에서 한다
+* 구현 명세: [`transform.yml`](data/m2slide2ppt/transform.yml) `font:` 가 실측 서체를 소유 · build-pptx ①-c 가 본문 서체를, lane T 가 제목 서체(`majorFont`)를 적용
+* 결과: major `GmarketSansBold` · minor `Nanum Gothic Coding` — HTML 실측과 일치
+
+## Issue351: Agenda 장이 pptx 에 없었다 + 목차 레이아웃 미적용 (등록: 2026-09-11, 해결: 2026-09-11) ✅
+* 목적: HTML 은 `agenda.html` 을 **별도 페이지로 항상** 내는데 pptx 에는 그 장이 없었다
+* depends: Issue350
+* 상세:
+    - agenda.html 내용은 **JS(markmap)가 그린다** — 정적 HTML 에 글자가 없어 전수 대조가 볼 수 없다. 그래서 계약에 `synthesized` + `slides: 1` 로 선언하고 대조기가 그만큼 허용한다
+    - HTML `layout-_agenda` 는 reveal 덱이 아니라 별도 프레임(`.agenda-frame` 896×597)이라 **프레임 기준 좌표를 캔버스 1920 으로 환산**했다
+* 구현 명세: build-source ⑮ 가 표지 다음에 Agenda 장을 만든다(제목 고정 `Agenda`) · lane T 가 노란 테두리 박스·고양이 마스코트·좌측 제목을 입힌다 · 역변환이 그 장을 걸러낸다(원고에 없으므로)
+* 결과: aTest 9장(HTML 8 + agenda 1) · 왕복·시각·전수 대조 전부 통과 · lane B 6/6 · lane M · lint-data 통과
 
 ## Issue348: 장 구성이 HTML 과 pptx 에서 갈렸다 — 읽는 설정이 달랐다 (등록: 2026-09-10, 해결: 2026-09-10) ✅
 * 목적: 같은 원고가 HTML 8장 · pptx 10장으로 나왔다. 세 검사가 모두 통과하는데도 그랬다

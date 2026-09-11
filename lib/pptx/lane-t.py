@@ -97,6 +97,8 @@ COVER = load_section("cover_geometry")
 HEAD = load_section("head_geometry")
 MASCOT = load_section("contents_mascot")
 CARD = load_section("card_geometry")
+FONT = load_section("font")
+AGENDA = load_section("agenda_geometry")
 
 #   표지·머리말 글자는 **빌드된 HTML 이 정본**이다. frontmatter·config 를 다시 조합하면
 #   HTML 과 어긋날 수 있고, 대조기(check-parity.py)도 HTML 을 보므로 출처를 하나로 둔다.
@@ -244,8 +246,8 @@ def text_width_px(text, fs):
     return w * fs
 
 
-def add_outline(shapes, spec, px2emu, accent="F5C518"):
-    """강사 상자의 테두리 — 글자가 없는 **틀**이라 도형으로 그린다."""
+def add_outline(shapes, spec, px2emu, accent="F5C518", width_px=1.5):
+    """글자 없는 **틀**. 강사 상자·Agenda 프레임이 쓴다."""
     from pptx.enum.shapes import MSO_SHAPE
     from pptx.dml.color import RGBColor
     sh = shapes.add_shape(MSO_SHAPE.RECTANGLE,
@@ -253,7 +255,7 @@ def add_outline(shapes, spec, px2emu, accent="F5C518"):
                           Emu(int(spec["w"] * px2emu)), Emu(int(spec["h"] * px2emu)))
     sh.fill.background()
     sh.line.color.rgb = RGBColor.from_string(accent)
-    sh.line.width = Emu(int(1.5 * px2emu))
+    sh.line.width = Emu(int(width_px * px2emu))
     sh.shadow.inherit = False
     return sh
 
@@ -261,6 +263,36 @@ def add_outline(shapes, spec, px2emu, accent="F5C518"):
 #   ⚠️ lane T 가 심는 **글자**에도 표식이 필요하다. 없으면 왕복 역변환이 머리말 바·
 #      라이선스 뱃지를 **본문 불릿으로** 읽는다(실측 2026-09-10: 왕복본에 +7줄).
 #      그림(add_rule)에 이미 같은 표식을 쓰고 있다.
+def set_major_font(path, name, log):
+    """테마 `majorFont`(제목 서체)를 바꾼다 — 패키지를 직접 손본다.
+
+    python-pptx 는 테마 서체를 노출하지 않는다. 제목 placeholder 의 run 이
+    `+mj-lt`(major latin)를 참조하므로 테마만 고치면 전부 따라온다.
+    """
+    import re as _re
+    import shutil as _sh
+    import zipfile as _zip
+    tmp = path + ".fnt"
+    changed = 0
+    with _zip.ZipFile(path) as zin, \
+            _zip.ZipFile(tmp, "w", _zip.ZIP_DEFLATED) as zout:
+        for item in zin.infolist():
+            data = zin.read(item.filename)
+            if item.filename.startswith("ppt/theme/"):
+                x = data.decode("utf-8")
+                new, n = _re.subn(
+                    r'(<a:majorFont>\s*<a:latin typeface=")[^"]*(")',
+                    r"\g<1>%s\g<2>" % name, x, count=1)
+                if n:
+                    data = new.encode("utf-8")
+                    changed += n
+            zout.writestr(item, data)
+    _sh.move(tmp, path)
+    if changed:
+        log["font"] = name
+    return changed
+
+
 def redraw_cards(slide, px2emu, L, W):
     """lane B 가 그린 `cards` 를 **m2slide 카드**로 다시 그린다 (Issue349).
 
@@ -423,7 +455,7 @@ def main():
     W = prs.slide_width - 2 * L
     T = int((PX["line_top"] + PX["line_h"]) * px2emu)
     H = int((PX["line_bottom"] - PX["line_top"] - PX["line_h"]) * px2emu)
-    log = {"ph": 0, "rule": 0, "layout": 0, "cover": 0, "head": 0, "card": 0}
+    log = {"ph": 0, "rule": 0, "layout": 0, "cover": 0, "head": 0, "card": 0, "font": ""}
 
     lh = int(PX["line_h"] * px2emu)
 
@@ -433,8 +465,17 @@ def main():
             fix_placeholders(lay, lay.name, L, W, T, H, px2emu, log)
             log["layout"] += 1
         prs.save(a.pptx)
-        print("  lane T 배치 — placeholder %d개 재배치 · 레이아웃 %d"
-              % (log["ph"], log["layout"]), file=sys.stderr)
+        #   ⚠️ **저장 뒤에** 고친다 — 패키지를 직접 손보는 작업이라 먼저 하면
+        #      `prs.save()` 가 메모리의 예전 내용으로 덮어쓴다(실측 2026-09-11).
+        #   제목 서체: theme.yml 에는 서체가 하나뿐이라 `theme2reference` 가
+        #   major/minor 를 같은 값으로 넣는다. HTML 은 제목만 다른 서체를 쓴다
+        #   (`--title-font-family: GmarketSansBold`).
+        if FONT.get("title"):
+            set_major_font(a.pptx, FONT["title"], log)
+        print("  lane T 배치 — placeholder %d개 재배치 · 레이아웃 %d%s"
+              % (log["ph"], log["layout"],
+                 (" · 제목 서체 %s" % log["font"]) if log.get("font") else ""),
+              file=sys.stderr)
         return 0
 
     #   ── ornament — 가로선·제목 밑줄 + **표지 구성·머리말 바·라이선스 뱃지**
@@ -459,7 +500,10 @@ def main():
         #   섹션 진입은 제목이 세로 가운데라 밑줄이 글자 한복판을 지나므로 뺀다.
         ttl = next((sh for sh in slide.shapes
                     if sh.has_text_frame and sh.name.startswith("Title")), None)
-        if lay in BODY_LAYOUTS and ttl is not None and ttl.text_frame.text.strip():
+        is_agenda = (ttl is not None
+                     and ttl.text_frame.text.strip().lower() == "agenda" and bool(AGENDA))
+        if (lay in BODY_LAYOUTS and ttl is not None and ttl.text_frame.text.strip()
+                and not is_agenda):
             add_rule(slide.shapes, hr, ttl.left, ttl.top + ttl.height - lh,
                      ttl.width, lh, kind="underline")
             log["rule"] += 1
@@ -510,6 +554,41 @@ def main():
                 if add_text(slide.shapes, COVER.get(spec_key), text, px2emu):
                     log["cover"] += 1
 
+        elif (lay in BODY_LAYOUTS and ttl is not None
+              and ttl.text_frame.text.strip().lower() == "agenda" and AGENDA):
+            #   Agenda 장 — HTML `layout-_agenda` 는 **노란 테두리 박스 + 고양이**다.
+            #   제목도 가운데가 아니라 **좌측**이고 밑줄이 없다.
+            spec = AGENDA.get("title") or {}
+            if spec:
+                ttl.left = int(spec["l"] * px2emu); ttl.top = int(spec["t"] * px2emu)
+                ttl.width = int(spec["w"] * px2emu); ttl.height = int(spec["h"] * px2emu)
+                for p_ in ttl.text_frame.paragraphs:
+                    p_.alignment = ALIGN.get(spec.get("align", "left"))
+                    for r_ in p_.runs:
+                        r_.font.size = Pt(round(spec["fs"] * px2emu / 12700, 1))
+                        r_.font.bold = True
+            fr = AGENDA.get("frame")
+            if fr:
+                add_outline(slide.shapes, fr, px2emu,
+                            accent=CARD.get("band_bg", "F5C518"), width_px=3)
+                log["cover"] += 1
+                #   항목은 **박스 안**에 있어야 한다 — 본문 placeholder 를 옮긴다
+                body = next((sh for sh in slide.shapes
+                             if sh.has_text_frame and not sh.name.startswith("Title")
+                             and sh.is_placeholder), None)
+                if body is not None:
+                    pad = 40
+                    body.left = int((fr["l"] + pad) * px2emu)
+                    body.top = int((fr["t"] + pad) * px2emu)
+                    body.width = int((fr["w"] - 2 * pad) * px2emu)
+                    body.height = int((fr["h"] - 2 * pad) * px2emu)
+            mc = AGENDA.get("mascot") or {}
+            mp2 = os.path.join(a.themeimg, mc.get("asset", ""))
+            if mc and os.path.isfile(mp2):
+                add_rule(slide.shapes, mp2, int(mc["l"] * px2emu), int(mc["t"] * px2emu),
+                         int(mc["w"] * px2emu), int(mc["h"] * px2emu), kind="mascot")
+                log["cover"] += 1
+
         elif lay in BODY_LAYOUTS and ttl is not None:
             #   lane B 가 그린 cards 를 m2slide 카드로 다시 그린다.
             #   신호를 읽지 않아도 된다 — `redraw_cards` 가 **커넥터 유무**로 가른다
@@ -536,8 +615,15 @@ def main():
                 log["cover"] += 1
 
     prs.save(a.pptx)
-    print("  lane T 장식 — 가로선·밑줄 %d · 표지 %d · 머리말 %d · 카드 %d (장 %d)"
-          % (log["rule"], log["cover"], log["head"], log["card"], len(slides)),
+    #   ⚠️ **제목 서체를 여기서 다시 잡는다.** ③-c `retheme.py --font-only` 가
+    #      theme.yml 의 서체(본문)로 pptx 전체를 덮어, layout 모드에서 고친
+    #      majorFont 가 되돌려진다(실측 2026-09-11: reference 는 GmarketSansBold 인데
+    #      최종 pptx 는 Nanum Gothic Coding). ornament 는 retheme 뒤 단계다.
+    if FONT.get("title"):
+        set_major_font(a.pptx, FONT["title"], log)
+    print("  lane T 장식 — 가로선·밑줄 %d · 표지 %d · 머리말 %d · 카드 %d (장 %d)%s"
+          % (log["rule"], log["cover"], log["head"], log["card"], len(slides),
+             (" · 제목 서체 %s" % log["font"]) if log.get("font") else ""),
           file=sys.stderr)
     return 0
 

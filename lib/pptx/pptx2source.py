@@ -339,8 +339,15 @@ def convert(pptx_path, outdir, name):
                 body.append(("__TXT__", lines))
         raw.append(("slide", (title, body, captions, read_slide_signals(slide))))
 
-    # ── 자동 목차 장 제거 — Section Header 직후 + 불릿이 이후 제목 집합에 포함
+    # ── 자동 생성 장 제거
     drop = set()
+    #   Agenda — HTML 이 `agenda.html` 로 따로 내는 장이라 원고에는 없다(Issue351).
+    #   표지 다음 장이고 제목이 `Agenda` 면 그것이다.
+    for i, (k, p) in enumerate(raw):
+        if k != "slide" or i == 0:
+            continue
+        if raw[i - 1][0] == "cover" and norm_txt(p[0]).lower() == "agenda":
+            drop.add(i)
     for i, (k, p) in enumerate(raw):
         if k != "slide" or i == 0 or raw[i - 1][0] != "chapter":
             continue

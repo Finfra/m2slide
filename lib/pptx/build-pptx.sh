@@ -169,9 +169,26 @@ PY
 RATIO="$(cfg_get slide_ratio)"; RATIO="${RATIO:-16:9}"
 INK="$(python3 "$SCRIPT_DIR/css-var.py" "$PROJECT_DIR" --kn-text --m2-text 2>/dev/null || true)"
 python3 - "$THEME_YML" "$RATIO" "$INK" <<'PYRATIO'
-import re, sys
+import os, re, sys
 yml, ratio = sys.argv[1], sys.argv[2].strip().strip('"').strip("'")
 ink = (sys.argv[3] if len(sys.argv) > 3 else "").strip().lstrip("#").upper()
+
+# 서체 — 글로벌 theme-from-css 는 CSS 체인에서 Windows 폰트(Malgun Gothic)를
+# 고른다. HTML 실측 서체로 바꾼다 (Issue350)
+try:
+    import yaml as _y
+    _pol = os.path.join(os.path.dirname(yml), "..", "..", "..", "..",
+                        "data", "m2slide2ppt", "transform.yml")
+    _f = (_y.safe_load(open(os.path.normpath(_pol), encoding="utf-8")) or {}).get("font") or {}
+except Exception:
+    _f = {}
+if _f.get("body"):
+    _src = open(yml, encoding="utf-8").read()
+    _m = re.search(r'(^\s*family:\s*")([^"]+)(")', _src, re.M)
+    if _m and _m.group(2) != _f["body"]:
+        _src = _src[:_m.start(2)] + _f["body"] + _src[_m.end(2):]
+        open(yml, "w", encoding="utf-8").write(_src)
+        print("  \uc11c\uccb4 \uad50\uc815 \u2014 \ubcf8\ubb38 %s (\uae30\uc874 %s)" % (_f["body"], _m.group(2)))
 
 # 먹색 — 제목 run 은 색을 직접 갖지 않고 테마 dk1 을 상속한다. 그래서 dk1 이
 # 곧 화면의 제목색이고, CSS `--kn-text` 가 그 정본이다.
