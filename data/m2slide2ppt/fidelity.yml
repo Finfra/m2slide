@@ -406,8 +406,19 @@ elements:
       step·funnel) 픽스처를 더한 뒤 재측정하고 판단한다.
     evidence: "aTest p4 alt-text `block:[cards]` 로 종류 복원 — 2026-09-10 (agent 실증)"
 
+  - id: htmlart_smartart
+    m2slide: "`::: htmlart process` (transform.yml `smartart.catalog`)"
+    pptx: "**SmartArt**(`p:graphicFrame` diagram, lane G) — 데이터 모델에 항목·하위·순서가 그대로 산다"
+    grade: lossless
+    reason: |
+      htmlArt 는 SmartArt 를 본뜬 어휘라 원형으로 되돌리는 것이 정본 대응이다. 역변환은
+      `dgm:dataModel` 의 parOf 연결을 읽어 `* 항목` / `  - 하위` 를 그대로 되찾고, 종류는
+      레이아웃 id(`process1`)와 lane S 신호 양쪽에서 온다. PowerPoint 앱 자원이 없는 기계는
+      lane B 로 되돌아가 `htmlart_lane_b` 등급(lossy)이 된다.
+    evidence: "aTest p7 `::: htmlart process` 3항목+하위 3 — SmartArt 왕복 동일 (2026-09-11)"
+
   - id: htmlart_lane_b
-    m2slide: "`::: htmlart process` · `numbered` · `compare` (lane B 카탈로그)"
+    m2slide: "`::: htmlart numbered` · `compare` · `timeline`·`chevron`·`step`·`funnel` (lane B 카탈로그 — process 는 lane G 로 이동)"
     pptx: "네이티브 도형 + 커넥터"
     grade: lossy
     reason: "cards 와 같다 — 종류는 lane S 신호로 복원되고, 남은 것은 중첩 깊이·표기 정규화다."

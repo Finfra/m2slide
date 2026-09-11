@@ -53,7 +53,8 @@ fences:
 lane_b:
   cards:              cards      # 카드 그리드    → ppt-info `cards`
   htmlart numbered:   cards      # 번호 카드      → 같은 블록(번호는 우리가 매긴다)
-  htmlart process:    process    # 순차 단계      → `cards` + `flow_arrow` 네이티브 커넥터
+  # htmlart process 는 lane G(SmartArt) 로 옮겼다 — 아래 `smartart` 카탈로그. 자원이 없는
+  # 기계에서는 lane G 가 `fallback: process` 로 되돌려 이 `cards`+`flow_arrow` 경로를 탄다
   htmlart compare:    compare    # 좌우 동등 비교 → `compare` (1:1 대응)
   # 순차형 4종 — 진행 순서가 내용의 전부라 `process` 매핑을 그대로 탄다.
   # HTML 의 시각 변주(연대축·갈매기·계단·깔때기)는 pptx 에서 근사하지 않는다 —
@@ -269,3 +270,30 @@ table_geometry:
   border_px: 1
   fg: "111111"
   head_bold: true
+
+# ── lane G — htmlArt 를 **SmartArt(다이어그램)** 로 (Issue357) ───────────────
+# htmlArt 는 애초에 PowerPoint SmartArt 를 본떠 만든 어휘다(data/htmlart/smartart-catalog.yml).
+# 그러므로 정방향의 정본 대응은 도형 근사(lane B)가 아니라 **SmartArt 그 자체**다 —
+# 역방향(data/ppt2m2slide/mappings.yml)이 "Basic Process" → process 로 읽는 것과 대칭이고,
+# PowerPoint 에서 SmartArt 로 편집된다. 레이아웃·색·스타일 정의는 PowerPoint 앱 자원에서
+# 읽는다(SmartArt 를 담은 모든 pptx 에 같은 XML 이 그대로 들어간다). 없으면 lane B 로 되돌린다.
+# 캐시 도형(편집 전까지 PowerPoint 가 그대로 보여 주는 것)은 HTML renderProcess 실측 기하다.
+smartart:
+  resources: "/Applications/Microsoft PowerPoint.app/Contents/Frameworks/SmartArt.framework/Versions/A/Resources"
+  catalog:
+    htmlart process: { layout: process1, colors: accent1_1, style: simple1, fallback: process }
+    #   process1 = Basic Process · accent1_1 = Colored Outline - Accent 1 (흰 면 + 강조색 테두리,
+    #   HTML 과 같은 꼴) · simple1 = Simple Fill. 나머지 htmlart 종류는 레이아웃별 캐시 기하를
+    #   실측해 넣을 때 여기에 추가한다 (역매핑 표: mappings.yml smartart_to_htmlart)
+  process_geometry:            # renderProcess 의 viewBox 단위 (client.js: boxW·boxH·arrowGap·padY)
+    art: { l: 56, t: 245, w: 1808, h: 939 }   # .htmlart-process 상자 — svg 가 비율 유지로 가운데
+    box_w: 196
+    box_h: 230
+    gap: 52
+    pad_y: 28
+    fill: "F4F4F5"             # --htmlart-surface
+    border_vb: 2               # 테두리 = 강조색(accent1)
+    radius_vb: 14
+    title_fs_max: 44           # titleFsFor: min(h×.30, w×.21, 44, 폭 상한) — 체인 전체 최솟값
+    sub_ratio: 0.66            # nodeBox: sub = round(title × .66)
+    arrow: { dx1: -13, dx2: 15, dy: 16, alpha: 45 }   # 삼각 화살표 (gx 기준 · 검정 45%)
