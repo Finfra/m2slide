@@ -104,7 +104,8 @@ def load_targets(work):
     with open(p, encoding="utf-8") as f:
         d = json.load(f)
     t = d.get("targets", [])
-    return [x for x in t if x.get("lane") == "b"], [x for x in t if x.get("lane") != "b"]
+    #   lane G(SmartArt) 대상은 이월이 아니다 — 이미 다른 lane 이 그렸다
+    return [x for x in t if x.get("lane") == "b"], [x for x in t if x.get("lane") not in ("b", "g")]
 
 
 def ensure_asset(work, theme_name):

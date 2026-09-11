@@ -41,6 +41,7 @@ try:
     from pptx import Presentation
     from pptx.util import Emu
     from pptxutil import iter_shapes, descr as shape_descr, ORNAMENT_TAG as _OT
+    import smartart
 except ImportError:
     print("python-pptx 필요", file=sys.stderr)
     sys.exit(2)
@@ -50,6 +51,16 @@ P = "http://schemas.openxmlformats.org/presentationml/2006/main"
 SIG_PREFIX = "m2slide:"
 ORNAMENT_TAG = _OT
 CONTENT_TAG = "m2slide:content"
+def _smartart_catalog():
+    try:
+        import yaml
+        pth = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "data", "m2slide2ppt", "transform.yml")
+        return dict(((yaml.safe_load(open(pth, encoding="utf-8")) or {}).get("smartart") or {}).get("catalog") or {})
+    except Exception:
+        return {}
+
+
+SMARTART_CATALOG = _smartart_catalog()
 #   컴포넌트 펜스는 config 가 pptx 진입 전에 삭제되므로 종류만 알아도
 #   되살릴 수 없다 — 코드블록 언어와 섞이지 않게 여기서 가른다
 COMPONENT_FENCES = {"chart", "d3", "p5", "map", "model3d", "react"}
@@ -305,6 +316,23 @@ def convert(pptx_path, outdir, name):
             d = shape_descr(sh)
             if d.startswith(CONTENT_TAG + "/pie-sub/") and sh.has_text_frame:
                 pie_subs.setdefault(int(d.rsplit("/", 1)[1]), []).append(sh.text_frame.text.strip())
+        #   SmartArt → `::: htmlart <종류>` (Issue357). 데이터 모델의 parOf 가 항목·하위·순서다
+        for sh in shapes_all:
+            dia = smartart.read_diagram(sh, slide) if str(sh._element.tag).endswith("}graphicFrame") else None
+            if dia is None:
+                continue
+            layout, items_ = dia
+            sig0 = read_slide_signals(slide)
+            kind = next((b for b in (sig0.get("block") or []) if b.startswith("htmlart")), None)
+            if kind is None:
+                kind = next((k for k, v in SMARTART_CATALOG.items() if v.get("layout") == layout), "htmlart process")
+            out_ = ["::: %s" % kind]
+            for it in items_:
+                out_.append("* %s" % it["title"])
+                for sub in it["subs"]:
+                    out_.append("  - %s" % sub)
+            out_.append(":::")
+            body += out_
         for sh in shapes_all:
             if getattr(sh, "has_chart", False) and sh.has_chart:
                 sig0 = read_slide_signals(slide)

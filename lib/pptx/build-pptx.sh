@@ -457,6 +457,12 @@ PY
   #
   #   ⚠️ 실패해도 빌드를 죽이지 않는다 — lane B 는 덧칠이고, 빠지면 lane A 의 평문 불릿이
   #      그대로 남는다. 구조(lane A)가 먼저라는 순서를 배선으로 굳힌 것이다.
+  #   lane G — htmlart 를 **SmartArt** 로 (Issue357). lane B **앞**이다: 자원이 없는
+  #   기계에서 lane G 가 사이드카를 `lane: b` 로 되돌리면 lane B 가 이어받는다
+  LANEG="$SCRIPT_DIR/lane-g.py"
+  if [ "$LANE_B" = 1 ] && [ -f "$LANEG" ]; then
+    python3 "$LANEG" "$PROJECT_DIR" "$OUT" --canvas-px "${CANVAS_PX:-1920x1280}" || echo "  ⚠️ lane G 실패 — 계속" >&2
+  fi
   LANEB="$SCRIPT_DIR/lane-b.py"
   if [ "$LANE_B" = 1 ] && [ -f "$LANEB" ]; then
     python3 "$LANEB" "$PROJECT_DIR" "$OUT" --theme-yml "$THEME_YML" \

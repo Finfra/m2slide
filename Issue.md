@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 356
+* Issue HWM: 357
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -47,6 +47,19 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue357: `htmlart process` 가 pptx 에서 SmartArt 가 아니었다 — lane G 신설 (등록: 2026-09-11, 해결: 2026-09-11, commit: `4e904c4`, `__IMPL__`) ✅
+* 목적: 사용자 지적 — htmlArt 는 애초에 PowerPoint SmartArt 를 본뜬 것인데 pptx 는 ppt-info 도형 근사(lane B `cards`+`flow_arrow`)로 나와 HTML 과 꼴이 다르고 SmartArt 로 편집도 안 됐다
+* depends: Issue355
+* 상세:
+    - 정본 대응은 **SmartArt 그 자체**(역방향 [mappings.yml](data/ppt2m2slide/mappings.yml) "Basic Process" → process 와 대칭). 파트 5종(data·layout·quickStyle·colors·drawing)을 직접 만든다 — python-pptx 에 다이어그램 API 가 없어 `pptx.opc` 로 파트·관계를 맺는다
+    - 레이아웃·색·스타일 정의는 PowerPoint 앱 자원(`SmartArt.framework/Resources` lo/cs/qs — `process1.glo`·`accent1_1.gcs`·`simple1.gqs`, 평문 XML)에서 읽는다. 자원이 없는 기계는 lane G 가 사이드카를 `lane: b` 로 되돌려 lane B 가 이어받는다(그래서 lane B **앞**에 돈다)
+    - 캐시(`dsp:drawing`)는 HTML `renderProcess` 실측 기하로 그린다(viewBox 196/230/52/28 · 강조색 테두리 2 · 모서리 14 · 제목 `titleFsFor` 체인 최솟값 · 하위 ×0.66 · 삼각 화살표 검정 45%) → 열자마자 HTML 과 같은 꼴, 편집하면 SmartArt 규칙(Basic Process 재배치)
+    - ⚠️ **`diagramDrawing` 관계는 슬라이드 rels** 에 있어야 한다(`dsp:dataModelExt@relId` = 슬라이드 rId). data 파트에 걸었더니 LibreOffice 가 빈 그룹으로 들여왔다 — 이식 실험(PowerPoint 저장본 파트를 우리 장에 통째로)으로 좁혀 잡았다. LibreOffice 는 캐시만 그리고 자기 레이아웃은 하지 않는다. 기록: [debug_TECH.md](_doc_work/debug_TECH.md)
+    - 역변환은 `dgm:dataModel` 의 parOf 로 항목·하위·순서를 그대로 되찾고 종류는 lane S 신호 → 레이아웃 id 순. 전수 대조는 데이터 모델 글자를 센다. 계약 `htmlart_smartart: lossless` 신설
+    - 이월: timeline·chevron·step·funnel 등은 lane B 그대로 — 레이아웃별 캐시 기하 실측이 필요해 `smartart.catalog` 에 더할 때 별도 이슈
+* 구현 명세: [smartart.py](lib/pptx/smartart.py)(신설) · [lane-g.py](lib/pptx/lane-g.py)(신설) · [build-source.py](lib/pptx/build-source.py) ⑫ `lane: g` · [build-pptx.sh](lib/pptx/build-pptx.sh) ③-b2 · [transform.yml](data/m2slide2ppt/transform.yml) `smartart` · [fidelity.yml](data/m2slide2ppt/fidelity.yml) · [pptx2source.py](lib/pptx/pptx2source.py)·[check-parity.py](lib/pptx/check-parity.py)·[check-roundtrip.py](lib/pptx/check-roundtrip.py) · [CLAUDE.md](CLAUDE.md) "lane G" 절
+* 결과: aTest p7 LibreOffice 렌더가 HTML 과 일치 · 왕복 원고 동일(`htmlart_smartart 1/1 lossless`) · 시각·전수 대조 전건 · 4.laneb 6/6 · conform WARN 0. ⚠️ PowerPoint 실물 확인은 사용자 몫 — 구조는 PowerPoint 저장본(pres 포인트·캐시·슬라이드 rels)과 같게 맞췄다
 
 ## Issue356: HTML `htmlart pie` 가 균등 분할됐다 — 정규식 이중 이스케이프 (등록: 2026-09-11, 해결: 2026-09-11, commit: `8ad540c`) ✅
 * 목적: `::: htmlart pie` 의 `모바일 45%` 가 HTML 에서 25% 로 그려졌다(ego-browser 실측) — pptx 대조 중 HTML 쪽에서 발견

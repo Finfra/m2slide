@@ -333,6 +333,23 @@ pptx 에는 "카드 그리드" 라는 어휘가 없어 `::: cards` 와 htmlart �
 * ⚠️ 배선 자리는 **③-b 다음 · ③-c 앞**이다. 앞이면 bold 색 교정이 카드 글자를 덮고, 뒤면 도형 서체가 `retheme` 을 놓쳐 `3.parity.sh` ⑥(테마 밖 폰트 0)이 깨진다
 * 회귀 러너: `./z_test/ig-ppt/4.laneb.sh [프로젝트]` (단언 6종 — 도형 존재·그림 0·평문 불릿 제거·lane C 미개입·conform)
 
+#### lane G — htmlArt 를 SmartArt 로 (Issue357)
+
+htmlArt 는 애초에 **PowerPoint SmartArt 를 본뜬 어휘**다([smartart-catalog.yml](data/htmlart/smartart-catalog.yml), 역방향 [mappings.yml](data/ppt2m2slide/mappings.yml) 은 "Basic Process" → `process` 로 읽는다). 그러므로 정방향의 정본 대응은 도형 근사(lane B)가 아니라 **SmartArt 그 자체**다 — PowerPoint 에서 SmartArt 로 편집되고, 역변환이 데이터 모델을 읽어 원고로 되돌린다.
+
+| 단계 | 무엇이 | 어디서 |
+| :-- | :--- | :--- |
+| 표시 | `smartart.catalog` 에 있는 htmlart 를 `lane: g` 로 적는다 | [build-source.py](lib/pptx/build-source.py) ⑫ |
+| 렌더 | 파트 5종(data·layout·quickStyle·colors·**drawing 캐시**)을 직접 만들어 심는다 | [smartart.py](lib/pptx/smartart.py) · [lane-g.py](lib/pptx/lane-g.py) |
+| 배선 | ③-b2 **lane B 앞** — 자원이 없으면 사이드카를 `lane: b` 로 되돌려 lane B 가 이어받는다 | [build-pptx.sh](lib/pptx/build-pptx.sh) |
+
+* 레이아웃·색·스타일 정의는 PowerPoint 앱 자원(`SmartArt.framework/Resources` `lo/*.glo`·`cs/*.gcs`·`qs/*.gqs`)에서 읽는다 — SmartArt 를 담은 모든 pptx 에 같은 XML 이 그대로 들어간다. 경로는 [transform.yml](data/m2slide2ppt/transform.yml) `smartart.resources`
+* **캐시는 HTML 실측 기하**로 그린다(`process_geometry` = `renderProcess` 의 viewBox 규칙). 그래서 열자마자 HTML 과 같은 꼴이고, 사용자가 손대는 순간부터 SmartArt 규칙(Basic Process 재배치)을 따른다
+* ⚠️ `diagramDrawing` 관계는 **슬라이드 rels** 에 둔다 — `dsp:dataModelExt@relId` 가 슬라이드 rId 다. data 파트에 걸면 LibreOffice 가 빈 그룹으로 들여온다(실측 2026-09-11). LibreOffice 는 캐시만 그리고 자기 레이아웃은 하지 않으므로 캐시 없는 SmartArt 는 LibreOffice 에서 백지다
+* 역변환([pptx2source.py](lib/pptx/pptx2source.py))은 `dgm:dataModel` 의 parOf 연결로 `* 항목` / `  - 하위` 를 그대로 되찾는다 — 계약 `htmlart_smartart: lossless`
+* 지금은 `htmlart process` 하나다. 나머지(timeline·chevron·step·funnel…)는 레이아웃별 캐시 기하를 실측해 `smartart.catalog` 에 더할 때까지 lane B 그대로다
+* 회귀: `./z_test/ig-ppt/6.roundtrip.sh aTest` 의 `htmlart_smartart` 행 · `4.laneb.sh` ① 이 lane G 장 수를 같이 보고한다
+
 #### lane M — 수식을 네이티브 OMML 로 (Issue339)
 
 pandoc 3.10 pptx writer 는 **Math 인라인을 만나면 그 슬라이드의 콘텐츠 shape 을 아예 만들지 않는다.** 경고도 rc 도 없다 — 수식 한 개가 같은 장의 불릿·코드까지 데리고 **조용히** 사라진다. 실측(2026-09-09, aTest p05: 코드블록 + `$$E = mc^2$$` → 제목만 남은 백지):

@@ -72,8 +72,9 @@ if not os.path.exists(side):
 with open(side, encoding="utf-8") as f:
     targets = json.load(f).get("targets", [])
 b = [t for t in targets if t.get("lane") == "b"]
-c = [t for t in targets if t.get("lane") != "b"]
-ok("①", "사이드카 — lane B %d장 · lane C 이월 %d건" % (len(b), len(c)))
+c = [t for t in targets if t.get("lane") == "c"]
+g = [t for t in targets if t.get("lane") == "g"]
+ok("①", "사이드카 — lane B %d장 · lane G(SmartArt) %d장 · lane C 이월 %d건" % (len(b), len(g), len(c)))
 if not b:
     print("\n[4.laneb] skip — lane B 대상이 없는 덱이다 (%s)" % PPTX)
     sys.exit(0)

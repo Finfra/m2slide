@@ -472,6 +472,8 @@ def normalize_chapter(blocks, chapter_title, stat, cards_ph=True, toc_ph=True):
 #      카탈로그에 없는 htmlart(pie·matrix·venn…)는 도형 배치 자체가 판단이고, 그 판단은
 #      장당 33만 토큰짜리 `ig-maker`(lane C) 소관이다. 여기서 비슷한 블록으로
 #      **근사하지 않는다** — 근사하면 원본과 다른 도해가 조용히 나간다.
+#   lane G — SmartArt 로 가는 htmlart (Issue357). lane B 보다 먼저 본다
+SMARTART_CATALOG = dict((_POL.get("smartart") or {}).get("catalog") or {})
 LANE_B_CATALOG = dict(_POL.get("lane_b") or {}) or {
     # 정책을 읽지 못했을 때의 안전망 — 근거·전체 목록은 transform.yml `lane_b`
     "cards": "cards", "htmlart numbered": "cards", "htmlart process": "process",
@@ -560,7 +562,8 @@ def scan_lane_b(blocks, src_label, seen, out, stat):
         ci = next((j for j in range(oi + 1, len(lines)) if FENCE_DIV_CLOSE.match(lines[j])), None)
         rec = {"src": src_label, "title": title, "ord": ordinal, "raw": raw}
 
-        kind = LANE_B_CATALOG.get(raw)
+        smart = SMARTART_CATALOG.get(raw)
+        kind = ("smartart" if smart else None) or LANE_B_CATALOG.get(raw)
         if kind is None:
             rec["lane"] = "c"
             rec["reason"] = "패턴 카탈로그 미등재"
@@ -602,7 +605,7 @@ def scan_lane_b(blocks, src_label, seen, out, stat):
             flat.append(t)
             flat += subs
             clean_items.append({"title": t, "subs": subs})
-        rec.update({"lane": "b", "kind": kind, "items": clean_items, "flat": flat,
+        rec.update({"lane": "g" if smart else "b", "kind": kind, "items": clean_items, "flat": flat,
                     "lead": sum(1 for l in lines[:oi] if l.strip() and not H2.match(l))})
         out.append(rec)
         stat["laneb"] += 1

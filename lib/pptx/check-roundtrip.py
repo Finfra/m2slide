@@ -51,8 +51,9 @@ DEFAULT_CONTRACT = os.path.join(os.path.dirname(HERE), "..", "data", "m2slide2pp
 # build-source.py 와 같은 어휘 — 어긋나면 판정이 갈리므로 여기서 한 번에 본다
 COMPONENT_FENCES = {"chart", "d3", "p5", "map", "model3d", "react"}
 WORDART_FENCES = {"wordart"}
+SMART_DIVS = {"htmlart process"}                 # lane G — transform.yml `smartart.catalog`
 LANE_B_DIVS = {
-    "cards", "htmlart numbered", "htmlart process", "htmlart compare",
+    "cards", "htmlart numbered", "htmlart compare",
     "htmlart timeline", "htmlart chevron", "htmlart step", "htmlart funnel",
 }
 
@@ -188,6 +189,8 @@ def scan(lines):
             div_stack.append(raw)
             if raw == "cards":
                 e["cards"].append(raw)
+            elif raw in SMART_DIVS:
+                e["htmlart_smartart"].append(raw)
             elif raw in LANE_B_DIVS:
                 e["htmlart_lane_b"].append(raw)
             elif raw.startswith("htmlart"):

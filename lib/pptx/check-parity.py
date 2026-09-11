@@ -47,6 +47,7 @@ except ImportError:
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from pptxutil import iter_shapes, descr as shape_descr   # noqa: E402
+import smartart   # noqa: E402
 CONTRACT = os.path.join(HERE, "..", "..", "data", "m2slide2ppt", "fidelity.yml")
 P = "http://schemas.openxmlformats.org/presentationml/2006/main"
 ORNAMENT_TAG = "m2slide:ornament"
@@ -188,6 +189,14 @@ def pptx_slides(path):
         #   ⚠️ `slide.shapes` 가 아니라 iter_shapes — PowerPoint 로 저장한 파일은 수식이
         #      든 본문을 mc:AlternateContent 로 감싸 python-pptx 가 못 본다(실측 2026-09-11)
         for sh in iter_shapes(s):
+            if str(sh._element.tag).endswith("}graphicFrame"):
+                dia = smartart.read_diagram(sh, s)
+                if dia is not None:
+                    #   SmartArt 의 글자는 데이터 모델에 있다 — 항목·하위 전부
+                    for it in dia[1]:
+                        rec["text"].append(it["title"])
+                        rec["text"] += it["subs"]
+                    continue
             if getattr(sh, "has_chart", False) and sh.has_chart:
                 #   네이티브 차트의 범주 라벨은 화면에 보이는 글자다
                 try:
