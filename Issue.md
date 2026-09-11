@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 357
+* Issue HWM: 358
 * Checkpoints:
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
@@ -26,7 +26,31 @@
 
 # 🚧 진행중
 
-## Issue343: m2slide 파서와 pandoc 이 같은 원고를 다르게 읽는다 — HTML 덱과 pptx 가 갈린다 (등록: 2026-09-10)
+## Issue358: m2slide → pptx 미세 조정 — HTML 실측 ↔ pptx 렌더 대조를 같은 방식으로 반복 (등록: 2026-09-11)
+* 목적: Issue342~357 로 변환 정책이 "대체로 맞는" 상태가 됐다. 남은 차이를 같은 방식 — HTML 실측(ego-browser, 1920×1280) ↔ LibreOffice 렌더 대조 → [transform.yml](data/m2slide2ppt/transform.yml)·[fidelity.yml](data/m2slide2ppt/fidelity.yml) 갱신 → 재빌드 → 6.roundtrip 러너 — 으로 좁혀 간다. 원고는 손대지 않는다
+* depends: Issue357
+* 상세 (알려진 잔여 — 발견 순):
+    - **PowerPoint 실물 확인 반영** — Issue354·357 은 LibreOffice 렌더 + PowerPoint 서체 캐시·저장본 구조 대조까지가 검증 한계였다. 사용자가 PowerPoint 에서 본 차이(서체·SmartArt 편집 가능 여부·수식)를 첫 입력으로 받는다
+    - **나머지 htmlart 를 lane G(SmartArt) 로** — timeline·chevron·step·funnel·numbered·compare 는 아직 lane B 도형 근사. 종류마다 HTML 렌더러 기하를 실측해 `smartart.catalog` + 캐시 기하를 더한다(레이아웃 자원: `SmartArt.framework` lo/cs/qs)
+    - **Issue343 이월** — 중첩 깊이(2칸 vs CommonMark)·하이픈 뒤 공백 없는 불릿의 정본 결정, 무제 이미지 장(`_blank`·문단+이미지)의 pptx 배치. m2Slide_chapter_mode 러너 FAIL 2건(장 +5·글자 25종)이 이 항목이다
+    - **표 폭** — 열 폭을 모노스페이스 어림(한글 1em·그 외 0.5em)으로 잡아 HTML 904 vs pptx 876. 실측 폭 또는 서체 메트릭으로
+    - **코드 상자 안 수식** — 코드 다음 문단의 OMML 은 PowerPoint 렌더를 봐야 한다(LibreOffice 는 fallback 평문)
+    - **cards 본문 여러 줄·2단계** — aTest 는 한 줄 카드뿐. 여러 줄·`-` 2단계 카드의 높이 규칙(`card_geometry.body_line_h`) 실측
+* 구현 명세:
+    - 한 항목마다 ① ego-browser 로 HTML 실측 ② `soffice --headless --convert-to pdf` + `pdftoppm` 렌더 ③ 나란히 대조 ④ 정책 갱신(backup 후, 단독 커밋) ⑤ 필요 시 lane T/G 코드 ⑥ `./z_test/ig-ppt/6.roundtrip.sh aTest` 전건 + `4.laneb`·`5.lanem`·`--lint-data`
+    - 정책이 소유해야 할 값(좌표·색·서체·기하)은 코드에 박지 않는다 — 검사기가 그 정책을 읽어 must_match 로 잰다
+    - 종료 조건: 위 잔여 항목이 전부 계약(fidelity.yml)에 선언되거나 해소되고, aTest·m2Slide_chapter_mode 러너가 FAIL 0
+
+
+# 📕 중요
+
+# 📙 일반
+
+# 📗 선택
+
+# ✅ 완료
+
+## Issue343: m2slide 파서와 pandoc 이 같은 원고를 다르게 읽는다 — HTML 덱과 pptx 가 갈린다 (등록: 2026-09-10, 해결: 2026-09-11, commit: `fd7567e`, `8ad540c`, `4e904c4`, `a0621e9`) ✅
 * 목적: Issue342 왕복 검증 중에 드러난 것. **왕복 문제가 아니라 산출물 불일치**다 — 같은 원고가 HTML 덱과 pptx 에서 다른 모양으로 렌더된다
 * depends: Issue342
 * 상세:
@@ -37,16 +61,7 @@
     - 고칠 곳이 **변환기인지 원고인지 먼저 가른다**. 비표준 표기는 원고 쪽이 맞고, 중첩 깊이는 두 파서 중 어느 쪽을 정본으로 볼지 결정이 필요하다
     - ⚠️ 원고 수정은 사용자 콘텐츠라 임의로 하지 않는다 — 확인 후 진행
     - 결정 후 `data/m2slide2ppt/fidelity.yml` 의 `bullet_nesting`·`paragraph` 등급을 재조정
-
-
-
-# 📕 중요
-
-# 📙 일반
-
-# 📗 선택
-
-# ✅ 완료
+* 결과: m2slide → pptx 변환 정책(transform.yml·fidelity.yml)을 실측으로 갱신해 aTest 왕복이 계약대로 전건 통과(원고 16종·시각 must_match 11·전수 대조 0). 사용자 판정 2026-09-11 "완벽하지는 않으나 대체적으로 맞음" 으로 종결. **이월**: 중첩 깊이·비표준 불릿의 정본 결정(m2Slide_chapter_mode +5장·글자 25종)과 무제 이미지 장 배치는 원고 수정 여부 결정이 필요해 [Issue358](#issue358) 미세 조정에서 같은 방식(실측 → 정책 → 러너)으로 이어 간다
 
 ## Issue357: `htmlart process` 가 pptx 에서 SmartArt 가 아니었다 — lane G 신설 (등록: 2026-09-11, 해결: 2026-09-11, commit: `4e904c4`, `a0621e9`) ✅
 * 목적: 사용자 지적 — htmlArt 는 애초에 PowerPoint SmartArt 를 본뜬 것인데 pptx 는 ppt-info 도형 근사(lane B `cards`+`flow_arrow`)로 나와 HTML 과 꼴이 다르고 SmartArt 로 편집도 안 됐다
