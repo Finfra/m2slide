@@ -98,7 +98,11 @@
     - 검증: prj60 `1.design_rnd` 의 `contents-split` 슬라이드에서 머리말·제목 띠 렌더를 육안 확인 + `./m2slide.sh` 기존 3덱 회귀 0(해당 layout 미사용이라 0 예상)
     - 종료 조건: `contents-split` 이 `contents`·`contents-full` 과 **머리말·제목 띠에서 같은 겉모습**을 내고, `theme/` 의 다른 테마 렌더 변화 0
 
-## Issue373: agenda markmap 이 챕터 안 계층을 버린다 — harvest 가 `h1`/`h2` 를 가르지 않고 평평하게 담는다 (등록: 2026-09-19)
+# 📗 선택
+
+# ✅ 완료
+
+## Issue373: agenda markmap 이 챕터 안 계층을 버린다 — harvest 가 `h1`/`h2` 를 가르지 않고 평평하게 담는다 (등록: 2026-09-19, 해결: 2026-09-19, commit: `9135be4`) ✅
 * 목적: 발주처 prj60 `__lec` 1일차 덱에서 [agenda.html](Projects/1.design_rnd/slide/agenda.html) markmap 이 **챕터 한 파일의 62 슬라이드를 전부 형제로** 낸다. 원고는 `#` 7 · `##` 54 로 2단인데 agenda 만 평평하다. 같은 원고에서 만드는 덱 안 목차(`#/toc-placeholder`)는 [html-builder.js:295-320](lib/html-builder.js#L295) `generateTOCFromFile` 이 `#`=가지 · `##`=잎으로 정상 중첩하므로, **한 원고에서 두 목차가 다른 구조로 나온다**
 * 상세 (실측 2026-09-19 — `Projects/1.design_rnd` 가 prj60 과 같은 원고):
     - **원인 확정** — [generate-slides.js:354-379](lib/generate-slides.js#L354) 의 agenda markmap 확장 보강 블록. `<section>` 을 훑으며 [:373](lib/generate-slides.js#L373) 에서 `/<h[12][^>]*>([\s\S]*?)<\/h[12]>/` 로 제목만 뽑고 [:376](lib/generate-slides.js#L376) 에서 `items.push(...)` 로 **레벨 구분 없이 평평하게** 담는다. [:378](lib/generate-slides.js#L378) 이 그 배열을 통째로 `node.children` 에 넣는다 → 발주처 1차 진단대로다
@@ -126,11 +130,15 @@
     - ⑤ **`agenda.js` 같은 파일 앵커 지원은 별개 해법이고, 권하지 않는다.** [agenda.js](lib/agenda.js) 에 `path.basename(m[2], '.md') + '.html'` 이 **12 곳** 있고([:119](lib/agenda.js#L119)~[:334](lib/agenda.js#L334)) 전부 *"엔트리 1 개 = 파일 1 개"* 를 전제한다. 앵커를 허용하면 [getChapterNumberMap:290-298](lib/agenda.js#L290) 의 `map[html]` 이 같은 키에 두 번 써져 챕터 번호가 덮이고, `getNextChapter`·`getParentPage`·`getNextSiblingChapter` 의 ⇤/⇥ 이동이 같은 파일을 서로 다른 챕터로 센다. **난이도 상** — 프래그먼트 분리 + 12 곳 + 네비게이션 4 종 재정의. ①~③ 이 같은 증상을 훨씬 싸게 없앤다
     - 검증: `Projects/1.design_rnd` 재빌드 후 agenda 의 `01-day1.html#/N` 가지 7 · 잎 54 · toc-placeholder 0 · 앵커 번호가 재빌드 전과 동일. 나머지 93 개 챕터는 **agenda 산출 diff 0**
     - 종료 조건: 위 검증 2 항 통과 + `data-heading-level` 대입 지점 확정 기록
-
-
-# 📗 선택
-
-# ✅ 완료
+* 결과 — **①②③ 전부**. [generateTOCFromFile](lib/html-builder.js#L295) 의 `currentSection` 처리와 같은 모양으로 맞춰 **두 목차의 판정을 한 규칙으로 합쳤다**:
+    - 🔑 **`data-heading-level` 대입 지점을 확정했다 — 그리고 못 찾았던 이유가 [Issue372](#issue372) 였다.** 대입은 [slide-parser.js:535-536·561](lib/slide-parser.js#L535) `s.headingLevel = level` 두 곳, 주입은 [html-builder.js:637](lib/html-builder.js#L637). 이슈가 *"grep 으로 찾지 못했다"* 고 적은 것은 **그 파일에 리터럴 NUL 이 박혀 grep 이 바이너리로 판정**했기 때문이고, Issue372 에서 sentinel 을 없앤 **직후** 정상적으로 잡혔다. 곧 이 항목은 Issue372 의 부수 효과로 자동 해소됐다
+    - **가르는 기준은 태그가 아니라 속성** — 이슈 경고대로 `h1`/`h2` 로 가르면 가짜 가지 19 개가 생긴다(레이아웃이 H2 제목도 `<h1>` 로 렌더). 그리고 `="2"` 는 **한 번도 나오지 않아**(H2 는 무속성) *"속성 1 = 가지, 무속성 = 그 가지의 잎"* 로 읽는다
+    - **toc-placeholder 제외 · `idx` 는 유지** — 건너뛴 만큼 당기면 뒤 앵커 전부가 1 씩 어긋난다. 실측으로 확인: 사라진 앵커는 `01-day1.html#/2`·`05-day5.html#/2` **둘뿐**이고 **새로 생긴 앵커 0** · 최대 앵커 62 그대로
+    - **`#` 1 개면 평면 유지** — 표의 77 개 덱을 지키는 가드다
+    - **검증** — `1.design_rnd/01-day1` 이 **level-1 7 개**(원고 `#` 7 과 1:1: 여는 절·1-1~1-4·닫는 절) · **`##` 잎 54** · toc-placeholder 0. 나머지 **16 덱 깊이 2 불변**(잎 감소분은 전부 toc-placeholder 제거분이며 챕터 수와 일치 — ex) LlmFlow 16 챕터 → 잎 −16)
+    - ④ `initialExpandLevel: 2` 이므로 3 단이 된 `##` 잎은 **기본 접힘**이다 — 원 요구인 *"클릭해서 펼치기"* 와 일치하므로 그대로 둔다(1 회 확인 완료)
+    - ⚠️ **종료 조건의 *"나머지 93 개 챕터 diff 0"* 은 문자 그대로는 성립하지 않는다** — ②(toc-placeholder 제외)가 **모든 덱에 의도적으로** 영향을 주기 때문이다(agenda 17 개 전부 diff, 내용은 중복 노드 1 개 제거뿐). 두 조항이 서로를 배제하므로 *"①③으로 인한 계층 변화가 대상 1 건 외에 없어야 한다"* 로 읽고 그것을 실측했다 — **계층이 바뀐 덱은 `1.design_rnd` 하나**
+    - ⑤ `agenda.js` 같은 파일 앵커 지원은 이슈 권고대로 **건드리지 않았다**
 
 ## Issue372: 레이아웃 슬롯 추출기가 fenced div 중첩을 추적하지 않는다 — 같은 파이프라인의 두 처리기가 문법이 다르다 (등록: 2026-09-19, 해결: 2026-09-19, commit: `433c807`) ✅
 * 목적: 슬롯 안에 htmlart 를 넣는 조합(`::: left` 안의 `::: htmlart`)이 **성립하지 않는다.** `:::` 로 쓰면 슬롯이 htmlart 의 닫는 줄을 먼저 먹어 남은 `:::` 가 본문에 `<p>:::</p>` 로 새고, Pandoc 관행대로 `::::` 로 피하면 **슬롯 이름 매칭 자체가 실패**해 좌우 내용이 전부 `{{content}}` 로 쏟아진다. 발주처 prj60 `__lec` 보고
