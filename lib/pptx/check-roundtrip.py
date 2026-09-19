@@ -73,6 +73,8 @@ RE_DIV_OPEN = re.compile(
     r"^[ \t]*:::+[ \t]*(?:([^:{\s][^:{]*?)[ \t]*)?(\{[^}]*\})?[ \t]*$")
 RE_DIV_CLOSE = re.compile(r"^[ \t]*:::+[ \t]*$")
 RE_IMG = re.compile(r"!\[([^\]]*)\]\(([^)\s]+)")
+#   표 셀 치환용 — 닫는 괄호까지 온전히 먹는다 (RE_IMG 는 경로 앞까지만 본다)
+RE_IMG_FULL = re.compile(r"!\[([^\]]*)\]\([^)]*\)")
 RE_BULLET = re.compile(r"^([ \t]*)[*+-][ \t]+(.+?)[ \t]*$")
 RE_ORDERED = re.compile(r"^([ \t]*)\d+[.)][ \t]+(.+?)[ \t]*$")
 RE_QUOTE = re.compile(r"^[ \t]*>[ \t]?(.*?)[ \t]*$")
@@ -153,13 +155,68 @@ def parse(path):
     return fm, out
 
 
+def fold_lazy(lines):
+    """느슨한 이어짐(lazy continuation)을 앞 리스트 항목에 합친다 (Issue358).
+
+    CommonMark 는 리스트 항목 다음에 오는 **새 블록이 아닌** 줄을 그 항목의
+    계속으로 읽는다. 그래서 하이픈 뒤 공백이 없는 `  -HTML DIV 태그를 사용하여` 는
+    리스트 마커가 아니라 **앞 항목에 이어 붙는 글자**다.
+
+    실측(m2Slide_chapter_mode 05-layout-examples, 2026-09-19): HTML 덱도 pptx 도
+    `왼쪽 텍스트 영역-HTML DIV 태그를 사용하여-…` 한 덩어리로 렌더한다 — **두 산출물이
+    일치한다**. 어긋난 것은 이 검사기뿐이었다. 원고를 줄 단위로 세느라 4줄을 불릿 1 +
+    산문 3 으로 갈라 놓고, 왕복본의 합쳐진 한 줄과 대조해 `bullets` 를 계약 밖 차이로
+    들었다(−3/+3).
+
+    ⚠️ 구 계약(`paragraph.reason`)은 이 현상을 *"m2slide 는 산문으로, pandoc 은 리스트
+    항목으로 읽는다 — 산출물 불일치"* 라고 적었는데 **오판이었다**. 양쪽 렌더를 실제로
+    재보면 같다. 계약이 추정으로 쓰였던 자리다.
+    """
+    out = []
+    in_fence = False
+    prev_is_item = False
+    for ln in lines:
+        if RE_FENCE.match(ln):
+            in_fence = not in_fence
+            out.append(ln)
+            prev_is_item = False
+            continue
+        if in_fence:
+            out.append(ln)
+            continue
+        if prev_is_item and ln.strip() and not _starts_block(ln):
+            out[-1] = out[-1].rstrip() + " " + ln.strip()
+            continue
+        out.append(ln)
+        prev_is_item = bool(RE_BULLET.match(ln) or RE_ORDERED.match(ln))
+    return out
+
+
+def _starts_block(ln):
+    """새 블록을 여는 줄인가 — 여기 걸리면 앞 항목에 합치지 않는다."""
+    if RE_BULLET.match(ln) or RE_ORDERED.match(ln) or RE_QUOTE.match(ln):
+        return True
+    if RE_H1.match(ln) or RE_H2.match(ln) or RE_H3.match(ln):
+        return True
+    if RE_TABLE.match(ln) or RE_DIV_OPEN.match(ln) or RE_DIV_CLOSE.match(ln):
+        return True
+    if RE_SLOT_RIGHT.match(ln) or RE_ID.match(ln) or RE_ANIM.match(ln):
+        return True
+    t = ln.strip()
+    if t.startswith("![") or t.startswith("<") or t.startswith("$$"):
+        return True
+    if t.startswith("#") and RE_LAYOUT.match(ln):
+        return True
+    return False
+
+
 def scan(lines):
     """슬라이드 한 장의 요소 추출."""
     e = collections.defaultdict(list)
     in_fence, fence_lang, fence_buf = False, None, []
     div_stack = []
 
-    for ln in lines:
+    for ln in fold_lazy(lines):
         mf = RE_FENCE.match(ln)
         if mf and not in_fence:
             in_fence, fence_lang, fence_buf = True, mf.group(1) or "", []
@@ -213,22 +270,37 @@ def scan(lines):
         m = RE_H1.match(ln)
         if m:
             e["h1_chapter"].append(norm(m.group(1)))
+            e.setdefault("__lv__", []).append(1)
             continue
         m = RE_H2.match(ln)
         if m:
             e["h2_slide_title"].append(norm(m.group(1)))
+            e.setdefault("__lv__", []).append(2)
             continue
         m = RE_H3.match(ln)
         if m:
             e["subheading"].append(norm(m.group(2)))
+            e.setdefault("__lv__", []).append(len(m.group(1)))
             continue
         if ln.startswith("#") and RE_LAYOUT.match(ln):
             e["directive_layout"].append(RE_LAYOUT.match(ln).group(1))
             continue
 
         if RE_TABLE.match(ln):
-            cells = [norm(c) for c in ln.strip().strip("|").split("|")]
+            raw_cells = ln.strip().strip("|").split("|")
+            cells = [norm(c) for c in raw_cells]
             if not all(re.fullmatch(r":?-{2,}:?", c.replace(" ", "")) for c in cells if c):
+                #   셀 안 그림은 **표와 다른 축**이다 (Issue358). pptx 네이티브 표의
+                #   셀(`a:tc`)은 `a:txBody` 만 담아 그림을 넣을 수 없고, pandoc 은 alt
+                #   텍스트로 대신한다 — HTML 은 `<img>`, pptx 는 글자 "Icon" (실측
+                #   m2Slide_chapter_mode p33 · 2026-09-19). 그림 손실을 `table` 에 섞어
+                #   재면 셀 글자·행열·정렬이 멀쩡한데도 표가 깨진 것처럼 보인다.
+                cells = []
+                for c in raw_cells:
+                    for mm in RE_IMG.finditer(c):
+                        e["table_cell_image"].append(
+                            norm(mm.group(1)) or os.path.basename(mm.group(2)))
+                    cells.append(norm(RE_IMG_FULL.sub(r"\1", c)))
                 e["table"].append(" | ".join(cells))
             continue
 
@@ -282,6 +354,48 @@ def scan(lines):
     return dict(e)
 
 
+def cards_placeholder_on(project_dir):
+    """`cards_placeholder` 설정 — build-source 와 **같은 기본값**(False)."""
+    cfg = os.path.join(project_dir, "_config.yml")
+    if not os.path.isfile(cfg):
+        return False
+    for ln in open(cfg, encoding="utf-8"):
+        m = re.match(r"^cards_placeholder[ \t]*:[ \t]*(\S+)", ln)
+        if m:
+            return m.group(1).strip().strip('"\'').lower() in ("true", "yes", "1")
+    return False
+
+
+def entry_slides(slides):
+    """자식 헤딩을 가진 H2 이하 **진입 장** — Cards Page 로 소비돼 덱에 남지 않는다.
+
+    판정은 셋이 같아야 한다 (Issue358):
+        slide-parser `autoToc`   HTML 이 `_cards` 로 바꾸고 `cards_placeholder:false` 면 뺀다
+        build-source `drop_auto_toc`  pptx 도 같은 장을 만들지 않는다
+        여기                       그래서 원고 쪽에서도 그 장을 세지 않는다
+
+    셋 중 하나만 어긋나도 같은 원고가 산출물마다 다른 장 수로 나온다.
+    """
+    lv = []
+    for s in slides:
+        l = s.get("__lv__") or []
+        lv.append(min(l) if l else None)
+    out = set()
+    for i, L in enumerate(lv):
+        if L is None or L < 2:
+            continue
+        for j in range(i + 1, len(lv)):
+            nl = lv[j]
+            if nl is None:
+                continue
+            if nl <= L:
+                break
+            if nl == L + 1:
+                out.add(i)
+                break
+    return out
+
+
 def collect(project_dir):
     """프로젝트 전체를 하나의 요소 집합으로."""
     srcs = sources(project_dir)
@@ -297,11 +411,17 @@ def collect(project_dir):
             fm_all = fm
         slides += sl
     synth = set(toc_slides(slides))
+    if not cards_placeholder_on(project_dir):
+        #   Cards Page 로 소비되는 진입 장 — HTML·pptx 둘 다 만들지 않으므로
+        #   원고 쪽에서도 세지 않는다. `cards_placeholder: true` 면 살아 있다
+        synth |= entry_slides(slides)
     agg = collections.defaultdict(list)
     for i, s in enumerate(slides):
         if i in synth:
             continue          # 자동 목차 장은 synthesized — 본문 요소로 세지 않는다
         for k, v in s.items():
+            if k == "__lv__":
+                continue      # 판정용 내부 표식 — 비교 대상이 아니다
             agg[k] += v
     return fm_all, dict(agg), slides
 

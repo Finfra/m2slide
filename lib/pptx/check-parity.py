@@ -169,8 +169,14 @@ def html_sections(project_dir):
     #      만들었을 때 "원고에 없는 장" 으로 오판한다.
     chapters = [f for f in files
                 if os.path.basename(f) not in ("index.html", "agenda.html")]
-    use = chapters or [f for f in files if os.path.basename(f) == "index.html"]
+    idx = [f for f in files if os.path.basename(f) == "index.html"]
     ag = [f for f in files if os.path.basename(f) == "agenda.html"]
+    #   ⚠️ chapter mode 에서도 **표지는 `index.html` 에 있다** (Issue358). index 를
+    #      통째로 빼면 그 표지까지 잃어 pptx 만 표지를 가진 것처럼 보인다(실측
+    #      m2Slide_chapter_mode: HTML 31 · pptx 34 중 +1 이 이것 · 2026-09-19).
+    #      index 의 나머지(markmap 목차)는 JS 가 그리므로 section 으로 세어지지 않아
+    #      `deck_toc_slide` 예산과 겹치지 않는다.
+    use = (chapters + idx) if chapters else idx
     use = use + ag
     out = []
     for f in use:

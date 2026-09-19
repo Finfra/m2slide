@@ -396,25 +396,46 @@ def convert(pptx_path, outdir, name):
                 body.append(("__TXT__", lines))
         raw.append(("slide", (title, body, captions, read_slide_signals(slide))))
 
-    # ── 자동 생성 장 제거
-    drop = set()
-    #   Agenda — HTML 이 `agenda.html` 로 따로 내는 장이라 원고에는 없다(Issue351).
-    #   표지 다음 장이고 제목이 `Agenda` 면 그것이다.
-    for i, (k, p) in enumerate(raw):
-        if k != "slide" or i == 0:
-            continue
-        if raw[i - 1][0] == "cover" and norm_txt(p[0]).lower() == "agenda":
-            drop.add(i)
-    for i, (k, p) in enumerate(raw):
-        if k != "slide" or i == 0 or raw[i - 1][0] != "chapter":
-            continue
+    # ── 자동 생성 장 제거 (Issue358)
+    #
+    #   정방향이 만든 장 — 덱 전체 목차 · Agenda · 챕터 TOC — 은 원고에 없다.
+    #   fidelity.yml 이 `synthesized` 로 선언한 것들이며 여기서 지워야 원고에 수렴한다.
+    #
+    #   판정은 **정방향이 심은 표식**(lane S `synth`)이 1순위다. 구 판정은 위치
+    #   휴리스틱뿐이었는데 그 전제가 산출물과 어긋나 **한 장도 걸러지지 않았다**
+    #   (실측 m2Slide_chapter_mode 2026-09-19: 36장 중 자동 생성물 0장 제거 →
+    #   h2 +9 · 불릿 +39 로 계약 밖 차이). 표식이 없는 pptx(사람이 PowerPoint 에서
+    #   만든 장 등)를 위해 휴리스틱은 **폴백으로 남긴다**.
+    def top_bullets(p):
         bl = []
         for item in p[1]:
             if isinstance(item, tuple) and item[0] == "__TXT__":
                 bl += [t for kind, t, lvl in item[1] if kind == "bullet" and lvl == 0]
-        later = set(q[0] for kk, q in raw[i + 1:] if kk == "slide")
-        if len(bl) >= 2 and later and set(bl) <= later:
+        return bl
+
+    drop = set()
+    #   ① 표식 — 정방향이 직접 적은 것이라 추측이 필요 없다
+    for i, (k, p) in enumerate(raw):
+        if k != "slide":
+            continue
+        if (p[3] or {}).get("synth"):
             drop.add(i)
+
+    #   ② 폴백 — 표식이 하나도 없을 때만. 표식이 있는데 일부만 걸린 pptx 에
+    #      휴리스틱을 덧대면 사람이 뒤에 붙인 목차 장까지 조용히 지운다
+    if not drop:
+        for i, (k, p) in enumerate(raw):
+            if k != "slide" or i == 0:
+                continue
+            prev_ok = raw[i - 1][0] in ("cover", "chapter") or (i - 1) in drop
+            if not prev_ok:
+                continue
+            bl = top_bullets(p)
+            later = set(q[0] for kk, q in raw[i + 1:] if kk == "slide")
+            if norm_txt(p[0]).lower() == "agenda":
+                drop.add(i)
+            elif len(bl) >= 2 and later and set(bl) <= later:
+                drop.add(i)
 
     # ── 원고 조립
     cover = next((p for k, p in raw if k == "cover"), name)
@@ -441,7 +462,11 @@ def convert(pptx_path, outdir, name):
                   for x in sig.get("quote", []) if "|" in x}
         heads = {norm_txt(x.split(":", 1)[1]): int(x.split(":", 1)[0])
                  for x in sig.get("head", []) if ":" in x}
-        out = ["## %s" % title]
+        #   제목이 없는 장은 `## ` 를 짓지 않는다 (Issue358). pandoc 은 `--slide-level=2`
+        #   라 `### H3` 로만 시작하는 슬라이드를 **제목 없는 장**으로 낸다(계약
+        #   `subheading` 의 caveat 이 적은 그 4건). 빈 제목을 `## ` 로 되돌리면
+        #   원고에 없던 H2 가 생겨 `h2_slide_title` 이 lossless 인데 늘어난다.
+        out = ["## %s" % title] if title else []
         #   디렉티브 — lane S 가 심어 둔 것을 제목 바로 아래에 되돌린다
         for d in sig.get("id", []) + sig.get("anim", []) + \
                 ["layout-" + x for x in sig.get("layout", [])]:

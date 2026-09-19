@@ -395,7 +395,62 @@ def bullet_text(t):
     return re.sub(r"^(\d+)([.)])", r"\1\\\2", t)
 
 
-def normalize_chapter(blocks, chapter_title, stat, cards_ph=True, toc_ph=True):
+# ── ⑧-b 자식을 가진 중간 진입 장 — HTML 이 지우면 pptx 도 지운다 (Issue358)
+#
+#   m2slide 파서는 *"뒤에 한 단계 깊은 헤딩 장이 따라오는"* 장을 **Cards Page**
+#   (`_cards` autoToc)로 바꾸고, `cards_placeholder: false` 면 그 장을 deck 에서
+#   **통째로 뺀다**(slide-parser `autoToc` → html-builder Issue144 가드).
+#
+#   그 판정은 H1 에만 걸리는 것이 아니다 — `## 4.1. 이미지` 처럼 뒤에 `### …` 이
+#   따라오는 **H2 진입 장**에도 걸린다. pptx 쪽은 H1 만(`normalize_chapter`) 보고
+#   있어서 그런 장이 pptx 에만 남았다(실측 m2Slide_chapter_mode 챕터4:
+#   HTML 6장 · pptx 8장 · 2026-09-19). 장 수가 갈리는 것은 배포물이 갈리는 것이다.
+#
+#   ⚠️ H1 은 여기서 건드리지 않는다 — `normalize_chapter` 가 그 자리에 챕터 TOC 장을
+#      만들어야 하므로, 먼저 지워 버리면 목차가 사라진다.
+def top_heading_level(block):
+    """블록의 첫 헤딩 레벨 — 코드펜스 안은 세지 않는다."""
+    in_fence = False
+    for ln in block.split("\n"):
+        if FENCE.match(ln):
+            in_fence = not in_fence
+            continue
+        if in_fence:
+            continue
+        m = re.match(r"^(#{1,6})[ \t]+\S", ln)
+        if m:
+            return len(m.group(1))
+    return None
+
+
+def drop_auto_toc(blocks, stat):
+    """자식 헤딩을 가진 H2 이하 진입 장을 뺀다 (slide-parser 와 **같은 규칙**)."""
+    lv = [top_heading_level(b) for b in blocks]
+    out = []
+    for i, b in enumerate(blocks):
+        L = lv[i]
+        if L is None or L < 2:
+            out.append(b)
+            continue
+        has_child = False
+        for j in range(i + 1, len(blocks)):
+            nl = lv[j]
+            if nl is None:
+                continue
+            if nl <= L:
+                break
+            if nl == L + 1:
+                has_child = True
+                break
+        if has_child:
+            stat["auto_toc_dropped"] += 1
+            continue
+        out.append(b)
+    return out
+
+
+def normalize_chapter(blocks, chapter_title, stat, cards_ph=True, toc_ph=True,
+                      lane_s=None, lane_s_seen=None, src_label=""):
     """⑧ 챕터 진입부를 **H1 단독 + 챕터 TOC** 두 장으로 정규화한다.
 
     원본(HTML)에서 챕터 진입 장 하나가 담던 것 — 큰 제목(H1)·part 라벨·부제(H2) — 을
@@ -422,10 +477,12 @@ def normalize_chapter(blocks, chapter_title, stat, cards_ph=True, toc_ph=True):
 
     # 진입 블록에서 부제 H2 를 찾는다 (없으면 AGENDA 의 챕터명으로 대신한다)
     subtitle = None
+    subtitle_from_h2 = False
     for ln in first.split("\n"):
         m = H2.match(ln)
         if m:
             subtitle = m.group(1)
+            subtitle_from_h2 = True
             break
     if subtitle is None:
         subtitle = chapter_title or h1
@@ -452,6 +509,8 @@ def normalize_chapter(blocks, chapter_title, stat, cards_ph=True, toc_ph=True):
     if toc_ph and toc:
         out.append("## %s\n\n" % subtitle
                    + "".join("* %s\n" % bullet_text(t) for t in toc))
+        mark_synth(lane_s, lane_s_seen, subtitle, "chapter_toc", src_label,
+                   reuse=subtitle_from_h2)
     if not out:
         stat["chapter_dropped"] += 1
     return out + list(blocks[1:])
@@ -631,6 +690,39 @@ def scan_lane_b(blocks, src_label, seen, out, stat):
 FRAG_ATTR = re.compile(r"\{\.([a-zA-Z][\w .-]*)\}")
 
 
+# ── ⑭-b 생성 장 표식 — **원고에 없는 장**임을 pptx 안에 남긴다 (Issue358)
+#
+#   목차·Agenda·챕터 TOC 는 정방향이 만든 장이고, fidelity.yml 이 `synthesized` 로
+#   선언한 것들이다. 그런데 역변환은 그것을 **휴리스틱으로 추측**하고 있었다 —
+#   "표지 바로 다음 + 제목이 Agenda", "직전 장이 Section Header". 그 전제가 실제
+#   산출물과 어긋나(덱 전체 목차가 표지와 Agenda 사이에 끼고, H1 진입 장이
+#   `cards_placeholder: false` 로 사라져 Section Header 가 아예 없다) **한 장도
+#   걸러지지 않았다**(실측 m2Slide_chapter_mode: 자동 생성물 0 장 제거 · 2026-09-19).
+#
+#   추측 대신 **정방향이 직접 표시**한다. 신호는 종류 한 낱말뿐이라 lane S 의
+#   "신호는 최소여야 한다" 는 원칙을 지킨다 — 문장·수치는 담지 않는다.
+def mark_synth(lane_s, seen, title, kind, src_label="", reuse=False):
+    """생성 장 하나를 lane S 신호 목록에 적는다.
+
+    ord 는 **pptx 장 순서 기준**이어야 한다(lane-s.py 가 그 순서로 동명 장을 가른다).
+    `reuse=True` 는 그 제목을 `scan_signals` 가 이미 셌다는 뜻이다 — 진입 블록의 H2 가
+    TOC 장 제목으로 **자리째 대체되는** 경우라, 새로 세면 한 칸 밀린다.
+    """
+    if lane_s is None or not title:
+        return
+    t = strip_inline(title).strip()
+    if not t:
+        return
+    if seen is None:
+        ordinal = 0
+    elif reuse:
+        ordinal = max(seen.get(t, 1) - 1, 0)
+    else:
+        ordinal = seen.get(t, 0)
+        seen[t] = ordinal + 1
+    lane_s.append({"synth": [kind], "src": src_label, "title": t, "ord": ordinal})
+
+
 def scan_signals(text, src_label, seen, out):
     """정리 **전**의 원고에서 복원 신호를 슬라이드 단위로 적는다.
 
@@ -764,7 +856,11 @@ def clean(text, srcdir, proj, stat, chapter_title=None,
 
     # ⑧⑩ 구조 정리 — 슬라이드 블록 단위
     blocks = split_slides(text)
-    blocks = normalize_chapter(blocks, chapter_title, stat, cards_ph, toc_ph)
+    #   ⑧-b HTML 이 Cards Page 로 바꿔 지우는 장을 먼저 뺀다 (H1 은 ⑧ 이 맡는다)
+    if not cards_ph:
+        blocks = drop_auto_toc(blocks, stat)
+    blocks = normalize_chapter(blocks, chapter_title, stat, cards_ph, toc_ph,
+                               lane_s, lane_s_seen, src_label)
     blocks = [defer_heavy(b, stat) for b in blocks]
 
     # ⑫ lane B 표시 — **원고를 바꾸지 않고** 사이드카에만 적는다
@@ -910,7 +1006,7 @@ def main():
     stat = {k: 0 for k in ("attr", "element", "id", "anim", "slot", "symbol",
                            "img_abs", "img_proj", "img_missing",
                            "chapter", "chapter_dropped", "agenda", "defer", "fence_flat", "fence_drop",
-                           "laneb", "laneb_defer", "math")}
+                           "laneb", "laneb_defer", "math", "auto_toc_dropped")}
     made = []
     #   제목 순번은 **덱 전체** 기준이다 — 병합은 pptx 한 벌에서 장을 찾으므로,
     #   파일마다 0 부터 세면 동명 제목이 두 원고에 있을 때 서로를 가리킨다
@@ -938,9 +1034,17 @@ def main():
     toc_ph = flag("toc_placeholder", True) and is_chapter
     if cover_on:
         dst = os.path.join(outdir, "00-cover.md")
+        cover_md = cover_source(proj, meta, chapters)
         with open(dst, "w", encoding="utf-8") as fp:
-            fp.write(cover_source(proj, meta, chapters))
+            fp.write(cover_md)
         made.append(dst)
+        #   ⑭-b 덱 전체 목차 — 표지 원고에 딸려 나오는 장이다. 낸 사실을
+        #   **원고를 다시 읽어** 확인한다(조건을 여기 복제하면 둘이 갈린다)
+        for ln in cover_md.split("\n"):
+            m = H2.match(ln)
+            if m:
+                mark_synth(lane_s, lane_s_seen, m.group(1), "deck_toc", "00-cover.md")
+                break
 
     #   ⑮ Agenda — 표지 다음 한 장. HTML 이 `agenda.html` 로 늘 내는 장이다
     agenda_md = agenda_source(srcs, chapters)
@@ -950,6 +1054,11 @@ def main():
             fp.write(agenda_md)
         made.append(dst)
         stat["agenda"] = 1
+        for ln in agenda_md.split("\n"):
+            m = H2.match(ln)
+            if m:
+                mark_synth(lane_s, lane_s_seen, m.group(1), "agenda", "00b-agenda.md")
+                break
 
     for i, f in enumerate(srcs, 1):
         text = open(f, encoding="utf-8").read()
@@ -1007,6 +1116,9 @@ def main():
               % ("주입" if cover_on else "생략", len(chapters), stat["chapter"],
                  stat["defer"], stat["fence_flat"], stat["fence_drop"]),
               file=sys.stderr)
+        if stat["auto_toc_dropped"]:
+            print("  Cards Page 생략 — 자식 헤딩을 가진 진입 장 %d개 (HTML 과 같은 판정)"
+                  % stat["auto_toc_dropped"], file=sys.stderr)
         print("  장 구성 — Agenda %s · H1 진입 %s · 챕터 목차 %s (진입 장 생략 %d)"
               % ("주입" if stat["agenda"] else "생략",
                  "유지" if cards_ph else "생략(cards_placeholder=false)",
