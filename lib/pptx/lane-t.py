@@ -98,6 +98,7 @@ G = load_geometry()
 COVER = load_section("cover_geometry")
 HEAD = load_section("head_geometry")
 MASCOT = load_section("contents_mascot")
+CHAPTER_MASCOT = load_section("chapter_mascot")   # Issue379 — 진입 장 배경
 CARD = load_section("card_geometry")
 FONT = load_section("font")
 AGENDA = load_section("agenda_geometry")
@@ -1172,11 +1173,18 @@ def main():
             log["card"] += redraw_cards(slide, px2emu, L, W)
             #   제목 옆 마스코트 — `.layout-_contents > .title` 의 배경이라
             #   `<img>` 로는 보이지 않는다(전수 대조가 자산 해시로 잡아냈다)
-            mp = os.path.join(a.themeimg, MASCOT.get("asset", ""))
-            if MASCOT and os.path.isfile(mp) and ttl.text_frame.text.strip():
-                add_rule(slide.shapes, mp, int(MASCOT["l"] * px2emu),
-                         int(MASCOT["t"] * px2emu), int(MASCOT["w"] * px2emu),
-                         int(MASCOT["h"] * px2emu), kind="mascot")
+            #   Issue379: 챕터 진입 장은 **다른 마스코트**를 쓴다 — HTML `.layout-chapter`
+            #     는 `finfraPuffer2.png` 를 배경으로 깔고, 본문 장은
+            #     `.layout-_contents > .title` 배경으로 `finfraPuffer2s.png` 를 제목 옆에
+            #     둔다. 진입 장이 pptx 에서 본문 장과 **같은 layout**(`Title and Content`)
+            #     으로 나오는 탓에 여기서 가를 근거가 없어 그 자산만 pptx 에 실리지
+            #     않았다(check-parity 의 자산 해시 대조가 잡아냈다). 판정은 lane S 표식.
+            _ms = CHAPTER_MASCOT if ("chapter" in (sig.get("layout") or []) and CHAPTER_MASCOT) else MASCOT
+            mp = os.path.join(a.themeimg, _ms.get("asset", ""))
+            if _ms and os.path.isfile(mp) and ttl.text_frame.text.strip():
+                add_rule(slide.shapes, mp, int(_ms["l"] * px2emu),
+                         int(_ms["t"] * px2emu), int(_ms["w"] * px2emu),
+                         int(_ms["h"] * px2emu), kind="mascot")
                 log["cover"] += 1
             #   머리말 바 — 그 장의 제목을 열쇠로 HTML 에서 찾는다
             hl, hrr = heads.get(ttl.text_frame.text.strip(), ("", ""))
