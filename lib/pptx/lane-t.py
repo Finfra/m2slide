@@ -734,6 +734,96 @@ def has_bullets(ph):
     return False
 
 
+def apply_table_style(tbl, T, px2emu, body_w, top_px=None, left_px=0):
+    """표 하나에 HTML 과 같은 꼴을 입힌다 — 열 폭·글자·머리행·밑선·여백 (Issue358).
+
+    두 경로가 공유한다:
+      · `Content with Caption` 장 — `relayout_caption` 이 문단 아래로 재배치하며 부른다
+      · 그 밖의 본문 장 — pandoc 이 놓은 자리를 지키고 서식만 입힌다(`top_px=None`)
+
+    왜 함수로 뽑았나 — 서식이 `relayout_caption` 안에만 있어서 **일반 `Title and Content`
+    장의 표는 pandoc 기본 그대로 남았다**. 실측(m2Slide_chapter_mode p32, 2026-09-19):
+    글자 8.5pt · 열 602px 균등 — 같은 덱 p33(재배치 경로)은 20pt·904px 이라 한 덱 안에서
+    표 두 개가 서로 다른 꼴이었다.
+
+    `top_px` 가 None 이면 세로 위치를 건드리지 않는다. 가로는 폭이 바뀌므로 항상 가운데로
+    다시 맞춘다 — 안 맞추면 폭 교정이 곧 좌측 쏠림이 된다.
+    """
+    from pptx.oxml.ns import qn, nsdecls
+    from pptx.oxml import parse_xml
+    from pptx.dml.color import RGBColor
+
+    def emu(v):
+        return Emu(int(v * px2emu))
+
+    t = tbl.table
+    fs = T["fs"]
+    ncol, nrow = len(t.columns), len(t.rows)
+    col_w = []
+    for c in range(ncol):
+        col_w.append(max(_tw(t.cell(r, c).text, fs) for r in range(nrow)) + 2 * T["pad_x"])
+
+    #   표 폭 — HTML 의 `table-layout: auto` + `min-width: 50%` · `max-width: 90%` 를
+    #   그대로 옮긴다 (Issue358). 콘텐츠 합만 쓰면 **여유가 0 이라 셀이 줄바꿈된다** —
+    #   실측: 'lane A' 68.1pt vs 가용 68.0pt, 0.1pt 초과로 두 줄이 됐다.
+    #   HTML 은 min-width 가 콘텐츠보다 커서 남는 폭을 열에 비례 배분하고, 그 여유가
+    #   곧 잘림 방지다. 안전 계수를 지어내지 않고 CSS 규칙을 옮기는 이유가 그것이다.
+    content_w = sum(col_w)
+    tw = content_w
+    if T.get("min_w_ratio"):
+        tw = max(tw, body_w * float(T["min_w_ratio"]))
+    tw = min(tw, body_w * float(T.get("max_w_ratio", 1.0)), body_w)
+    if content_w > 0 and tw > content_w:
+        k = tw / content_w                      # auto 레이아웃의 비례 배분
+        col_w = [w * k for w in col_w]
+    elif content_w > tw:
+        k = tw / content_w                      # max-width 상한에 걸린 경우
+        col_w = [w * k for w in col_w]
+    tbl.left = emu(left_px + (body_w - tw) / 2.0)
+    if top_px is not None:
+        tbl.top = emu(top_px)
+    tbl.width = emu(tw)
+    tbl.height = emu(nrow * T["row_h"])
+    for c in range(ncol):
+        t.columns[c].width = emu(col_w[c])
+    for r in range(nrow):
+        t.rows[r].height = emu(T["row_h"])
+    #   pandoc 의 표 스타일(테마 강조색 머리행·줄무늬)을 끈다 — HTML 표는 회색 머리행 + 밑선뿐
+    tblPr = t._tbl.tblPr
+    tblPr.set("firstRow", "0"); tblPr.set("bandRow", "0")
+    sid = tblPr.find(qn("a:tableStyleId"))
+    if sid is not None:
+        tblPr.remove(sid)
+    fs_pt = Pt(round(fs * px2emu / 12700, 1))
+    for r in range(nrow):
+        for c in range(ncol):
+            cell = t.cell(r, c)
+            cell.margin_left = cell.margin_right = emu(T["pad_x"])
+            cell.margin_top = cell.margin_bottom = emu(T["pad_y"])
+            cell.vertical_anchor = MSO_ANCHOR.MIDDLE
+            for p_ in cell.text_frame.paragraphs:
+                for r_ in p_.runs:
+                    r_.font.size = fs_pt
+                    r_.font.bold = bool(r == 0 and T.get("head_bold"))
+                    r_.font.color.rgb = RGBColor.from_string(T["fg"])
+            if r == 0:
+                cell.fill.solid(); cell.fill.fore_color.rgb = RGBColor.from_string(T["head_bg"])
+            else:
+                cell.fill.background()
+            tcPr = cell._tc.get_or_add_tcPr()
+            for tag in ("a:lnL", "a:lnR", "a:lnT", "a:lnB"):
+                old = tcPr.find(qn(tag))
+                if old is not None:
+                    tcPr.remove(old)
+            lns = [parse_xml('<%s %s w="0"><a:noFill/></%s>' % (tag, nsdecls("a"), tag))
+                   for tag in ("a:lnL", "a:lnR", "a:lnT")]
+            lns.append(parse_xml('<a:lnB %s w="%d"><a:solidFill><a:srgbClr val="%s"/></a:solidFill></a:lnB>'
+                                 % (nsdecls("a"), int(T["border_px"] * px2emu), T["border"])))
+            for i, ln in enumerate(lns):
+                tcPr.insert(i, ln)
+    return 1
+
+
 def relayout_caption(slide, px2emu, L, W, log):
     """pandoc `Content with Caption` 장(글 + 표/그림)을 HTML 규칙대로 다시 놓는다 (Issue355).
 
@@ -773,68 +863,9 @@ def relayout_caption(slide, px2emu, L, W, log):
                 p_.alignment = PP_ALIGN.CENTER
         t = tbl.table
         ncol, nrow = len(t.columns), len(t.rows)
-        col_w = []
-        for c in range(ncol):
-            col_w.append(max(_tw(t.cell(r, c).text, fs) for r in range(nrow)) + 2 * T["pad_x"])
-
-        #   표 폭 — HTML 의 `table-layout: auto` + `min-width: 50%` · `max-width: 90%` 를
-        #   그대로 옮긴다 (Issue358). 콘텐츠 합만 쓰면 **여유가 0 이라 셀이 줄바꿈된다** —
-        #   실측: 'lane A' 68.1pt vs 가용 68.0pt, 0.1pt 초과로 두 줄이 됐다.
-        #   HTML 은 min-width 가 콘텐츠보다 커서 남는 폭을 열에 비례 배분하고, 그 여유가
-        #   곧 잘림 방지다. 안전 계수를 지어내지 않고 CSS 규칙을 옮기는 이유가 그것이다.
-        body_w = W / px2emu
-        content_w = sum(col_w)
-        tw = content_w
-        if T.get("min_w_ratio"):
-            tw = max(tw, body_w * float(T["min_w_ratio"]))
-        tw = min(tw, body_w * float(T.get("max_w_ratio", 1.0)), body_w)
-        if content_w > 0 and tw > content_w:
-            k = tw / content_w                      # auto 레이아웃의 비례 배분
-            col_w = [w * k for w in col_w]
-        elif content_w > tw:
-            k = tw / content_w                      # max-width 상한에 걸린 경우
-            col_w = [w * k for w in col_w]
-        tbl.left = emu(L / px2emu + (W / px2emu - tw) / 2.0)
-        tbl.top = emu(SPLIT["top"] + text_h + T["gap_before"])
-        tbl.width = emu(tw)
-        tbl.height = emu(nrow * T["row_h"])
-        for c in range(ncol):
-            t.columns[c].width = emu(col_w[c])
-        for r in range(nrow):
-            t.rows[r].height = emu(T["row_h"])
-        #   pandoc 의 표 스타일(테마 강조색 머리행·줄무늬)을 끈다 — HTML 표는 회색 머리행 + 밑선뿐
-        tblPr = t._tbl.tblPr
-        tblPr.set("firstRow", "0"); tblPr.set("bandRow", "0")
-        sid = tblPr.find(qn("a:tableStyleId"))
-        if sid is not None:
-            tblPr.remove(sid)
-        fs_pt = Pt(round(fs * px2emu / 12700, 1))
-        for r in range(nrow):
-            for c in range(ncol):
-                cell = t.cell(r, c)
-                cell.margin_left = cell.margin_right = emu(T["pad_x"])
-                cell.margin_top = cell.margin_bottom = emu(T["pad_y"])
-                cell.vertical_anchor = MSO_ANCHOR.MIDDLE
-                for p_ in cell.text_frame.paragraphs:
-                    for r_ in p_.runs:
-                        r_.font.size = fs_pt
-                        r_.font.bold = bool(r == 0 and T.get("head_bold"))
-                        r_.font.color.rgb = RGBColor.from_string(T["fg"])
-                if r == 0:
-                    cell.fill.solid(); cell.fill.fore_color.rgb = RGBColor.from_string(T["head_bg"])
-                else:
-                    cell.fill.background()
-                tcPr = cell._tc.get_or_add_tcPr()
-                for tag in ("a:lnL", "a:lnR", "a:lnT", "a:lnB"):
-                    old = tcPr.find(qn(tag))
-                    if old is not None:
-                        tcPr.remove(old)
-                lns = [parse_xml('<%s %s w="0"><a:noFill/></%s>' % (tag, nsdecls("a"), tag))
-                       for tag in ("a:lnL", "a:lnR", "a:lnT")]
-                lns.append(parse_xml('<a:lnB %s w="%d"><a:solidFill><a:srgbClr val="%s"/></a:solidFill></a:lnB>'
-                                     % (nsdecls("a"), int(T["border_px"] * px2emu), T["border"])))
-                for i, ln in enumerate(lns):
-                    tcPr.insert(i, ln)
+        apply_table_style(tbl, TABLE, px2emu, W / px2emu,
+                          top_px=SPLIT["top"] + text_h + T["gap_before"],
+                          left_px=L / px2emu)
         log["table"] = log.get("table", 0) + 1
         return 1
 
@@ -1010,7 +1041,20 @@ def main():
         #   글+표/그림 장(`Content with Caption`) 재배치 — 제목이 없는 장도 해당한다
         #   (실측 2026-09-11 m2Slide_chapter_mode p18·p19·p22: 무제 이미지 장이 빠졌다)
         if lay in BODY_LAYOUTS and not is_agenda:
-            relayout_caption(slide, px2emu, L, W, log)
+            did = relayout_caption(slide, px2emu, L, W, log)
+            #   재배치 경로가 손대지 않은 표에도 같은 꼴을 입힌다 (Issue358).
+            #   서식이 `relayout_caption`(= `Content with Caption` 전용) 안에만 있던 탓에
+            #   일반 `Title and Content` 장의 표는 pandoc 기본 그대로였다 — 실측
+            #   m2Slide_chapter_mode p32 글자 8.5pt·열 602px 균등 vs 같은 덱 p33 20pt·904px.
+            #   한 덱 안에서 표 두 개가 서로 다른 꼴인 것은 어느 쪽이 맞든 결함이다.
+            #   ⚠️ 세로 위치는 건드리지 않는다(`top_px=None`) — 일반 장 표의 HTML 배치
+            #      규칙은 아직 실측하지 않았다. 여기서 옮기면 근거 없는 이동이 된다.
+            if not did and TABLE:
+                for sh_ in iter_shapes(slide):
+                    if sh_.has_table:
+                        apply_table_style(sh_, TABLE, px2emu, W / px2emu,
+                                          top_px=None, left_px=L / px2emu)
+                        log["table"] = log.get("table", 0) + 1
         #   제목 밑줄은 **그 장의 제목 상자 맨 아래**다(CSS `::after { bottom: 0 }`).
         #   섹션 진입은 제목이 세로 가운데라 밑줄이 글자 한복판을 지나므로 뺀다.
         ttl = next((sh for sh in slide.shapes
