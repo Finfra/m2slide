@@ -1259,6 +1259,8 @@ class DevHandler(SimpleHTTPRequestHandler):
             '.fb-actions .fb-send{cursor:pointer;padding:2px 10px;border:1px solid #aaa;'
             'border-radius:4px;background:#f0f8fa}'
             '.fb-actions .fb-send:hover{background:#dceef2}'
+            '.fb-kind{display:inline-flex;align-items:center;gap:3px;font-size:12px;color:#666;cursor:pointer}'
+            '.fb-kind input{margin:0}'
             '.fb-status{color:#0a6;font-size:12px}'
             '.fb-bulk-bar{position:sticky;bottom:0;margin-top:24px;padding:10px 16px;'
             'background:#f0f8fa;border:1px solid #cde;border-radius:6px;'
@@ -1275,6 +1277,7 @@ class DevHandler(SimpleHTTPRequestHandler):
             '.fb-cmd-copy{cursor:pointer;padding:2px 8px;border:1px solid #aaa;'
             'border-radius:4px;background:#fff;font-size:12px}'
             '.fb-cmd-copy:hover{background:#dceef2}'
+            '.fb-run-where{font-size:12px;color:#a65;white-space:nowrap;max-width:420px;overflow:hidden;text-overflow:ellipsis}'
             '.fb-pending{color:#c60;font-size:12px;white-space:nowrap}'
             '.fb-pending b{font-size:13px}'
             # config GUI (Issue275) — per-project _config.yml editor (gear button + modal)
@@ -1792,8 +1795,12 @@ class DevHandler(SimpleHTTPRequestHandler):
                     f'<td class="feedback-cell" data-chap="{chap_idx}" data-slide="{one}">'
                     f'<textarea class="fb-text" rows="2" placeholder="의견..."></textarea>'
                     f'<div class="fb-actions">'
-                    f'<label class="fb-policy-label">'
-                    f'<input type="checkbox" class="fb-policy"> policy</label>'
+                    # Issue368 — the choice IS the destination: 원고 → this deck,
+                    # 도구 → m2slide. Default 원고 (most remarks are about content).
+                    f'<label class="fb-kind"><input type="radio" '
+                    f'name="k{chap_idx}_{one}" class="fb-kind-c" checked> 원고</label>'
+                    f'<label class="fb-kind"><input type="radio" '
+                    f'name="k{chap_idx}_{one}" class="fb-kind-t"> 도구</label>'
                     f'<button type="button" class="fb-send">전송</button>'
                     f'<span class="fb-status"></span>'
                     f'</div></td></tr>'
@@ -1818,12 +1825,26 @@ class DevHandler(SimpleHTTPRequestHandler):
         # Issue264 — copy-paste command box (manual feedback processor entry).
         # Shown twice: next to top summary + inside bottom bulk bar.
         pending = self._pending_feedback_count(project)
+        # Issue368 — on a mounted deck the manuscript lives in another repo, so the
+        # command must be run by that project's session, not by m2slide's.
+        cmd_mount = self._mount_info(project)
+        if cmd_mount:
+            where = cmd_mount['real']
+            prj_txt = f'prj{cmd_mount["prj"]} · ' if cmd_mount['prj'] else ''
+            copy_title = f'커맨드 복사 — 이 덱을 소유한 세션({prj_txt}{where})에 붙여넣기'
+            run_hint = (f'<span class="fb-run-where" title="{self._esc_html(where)}">'
+                        f'▶ 실행 위치: {prj_txt}'
+                        f'<code>{self._esc_html(where)}</code></span>')
+        else:
+            copy_title = '커맨드 복사 — m2slide 폴더의 Claude Code 세션에 붙여넣기'
+            run_hint = ''
         cmd_box = (
             '<span class="fb-cmd-box">'
             f'<code class="fb-cmd">/feedback-process {project}</code>'
             '<button type="button" class="fb-cmd-copy" '
-            'title="커맨드 복사 — m2slide 폴더의 Claude Code 세션에 붙여넣기">'
+            f'title="{self._esc_html(copy_title)}">'
             '📋 복사</button>'
+            + run_hint +
             '<span class="fb-pending">미처리 <b class="fb-pending-n">'
             f'{pending}</b>건</span>'
             '</span>'
@@ -1837,7 +1858,7 @@ class DevHandler(SimpleHTTPRequestHandler):
             f'<p>{summary}{cmd_box}</p>'
             + '\n'.join(sections_html_blocks) +
             '<div class="fb-bulk-bar">'
-            '<label><input type="checkbox" id="fb-policy-all"> policy 일괄 적용</label>'
+            '<label><input type="checkbox" id="fb-kind-all"> 전부 도구 의견으로</label>'
             '<button type="button" id="fb-send-all">전체 전송</button>'
             '<span id="fb-bulk-status"></span>'
             + cmd_box + '</div>'
@@ -2657,9 +2678,15 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!overlay.hi
             return 0
 
     def _handle_feedback_post(self, project: str):
-        """POST /p/<P>/feedback — append opinions to _pipeline/feedback jsonl;
-        policy=true items additionally go to _pipeline/policy/_dev-feedback.yml
-        pending inbox (classification into stage ymls is a later processor's job).
+        """POST /p/<P>/feedback — route opinions by ownership (Issue367·368).
+
+        kind='content' → <that deck>/_pipeline/feedback/dev-feedback.jsonl
+        kind='tool'    → m2slide _doc_work/feedback/tool-inbox.jsonl (+ source)
+
+        The old `_pipeline/policy/_dev-feedback.yml` inbox is no longer written:
+        its only planned consumer was promotion into m2slide's own data/ ymls,
+        which is exactly what the tool inbox now carries — and on a mounted deck
+        that file would have settled in a repo that cannot promote it.
         """
         if '/' in project or os.sep in project or project.startswith('.'):
             self.send_error(404, f'project not found: {project}')
@@ -2703,41 +2730,58 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!overlay.hi
             except (TypeError, ValueError):
                 self.send_error(400, 'chap/slide must be integers')
                 return
+            # Issue368 — kind is the ownership boundary: 'content' stays with the
+            # deck, 'tool' belongs to m2slide. `policy: true` is the old wire
+            # format and reads as 'tool' (that inbox's only consumer was promotion).
+            kind = it.get('kind')
+            if kind not in ('content', 'tool'):
+                kind = 'tool' if bool(it.get('policy', False)) else 'content'
             records.append({
                 'ts': ts, 'chap': chap, 'slide': slide,
                 'title': str(it.get('title') or '').strip(),
                 'opinion': opinion,
-                'policy': bool(it.get('policy', False)),
+                'kind': kind,
             })
         if not records:
-            self._write_json({'status': 'ok', 'saved': 0, 'policy_saved': 0})
+            self._write_json(
+                {'status': 'ok', 'saved': 0, 'tool_saved': 0, 'policy_saved': 0})
             return
-        fb_dir = os.path.join(project_dir, '_pipeline', 'feedback')
-        os.makedirs(fb_dir, exist_ok=True)
-        with open(os.path.join(fb_dir, 'dev-feedback.jsonl'), 'a', encoding='utf-8') as fh:
-            for rec in records:
-                fh.write(json.dumps(rec, ensure_ascii=False) + '\n')
-        policy_recs = [r for r in records if r['policy']]
-        if policy_recs:
-            pol_dir = os.path.join(project_dir, '_pipeline', 'policy')
-            os.makedirs(pol_dir, exist_ok=True)
-            pol_path = os.path.join(pol_dir, '_dev-feedback.yml')
-            new_file = not os.path.isfile(pol_path)
-            with open(pol_path, 'a', encoding='utf-8') as fh:
-                if new_file:
-                    fh.write('# dev-server feedback policy inbox — pending 분류 전\n')
-                    fh.write('# SSOT: _doc_arch/dev-server-feedback.md\n')
-                    fh.write('pending:\n')
-                for r in policy_recs:
-                    # JSON string literals are valid YAML scalars (safe quoting)
-                    fh.write(f"  - ts: {r['ts']}\n")
-                    fh.write(f"    chap: {r['chap']}\n")
-                    fh.write(f"    slide: {r['slide']}\n")
-                    fh.write(f"    title: {json.dumps(r['title'], ensure_ascii=False)}\n")
-                    fh.write(f"    opinion: {json.dumps(r['opinion'], ensure_ascii=False)}\n")
-                    fh.write('    stage: null\n')
+        content_recs = [r for r in records if r['kind'] == 'content']
+        tool_recs = [r for r in records if r['kind'] == 'tool']
+        if content_recs:
+            fb_dir = os.path.join(project_dir, '_pipeline', 'feedback')
+            os.makedirs(fb_dir, exist_ok=True)
+            path = os.path.join(fb_dir, 'dev-feedback.jsonl')
+            with open(path, 'a', encoding='utf-8') as fh:
+                for rec in content_recs:
+                    fh.write(json.dumps(rec, ensure_ascii=False) + '\n')
+        if tool_recs:
+            self._append_tool_feedback(project, project_dir, tool_recs)
         self._write_json({
-            'status': 'ok', 'saved': len(records), 'policy_saved': len(policy_recs)})
+            'status': 'ok', 'saved': len(records),
+            'tool_saved': len(tool_recs),
+            'policy_saved': len(tool_recs)})   # legacy field name, same number
+
+    def _append_tool_feedback(self, project: str, project_dir: str, recs):
+        """Route tool feedback to m2slide's own inbox (Issue368).
+
+        A remark about the renderer belongs to prj42 wherever the deck lives —
+        if it were written next to the deck it would sit in a repo that owns
+        neither the fix nor the policy. The source is carried along so the
+        remark does not lose which deck provoked it.
+        """
+        mount = self._mount_info(project)
+        source = {
+            'project': project,
+            'real': os.path.realpath(project_dir),
+            'mount': mount['kind'] if mount else None,
+            'prj': (mount or {}).get('prj'),
+        }
+        out_dir = os.path.join(os.getcwd(), '_doc_work', 'feedback')
+        os.makedirs(out_dir, exist_ok=True)
+        with open(os.path.join(out_dir, 'tool-inbox.jsonl'), 'a', encoding='utf-8') as fh:
+            for rec in recs:
+                fh.write(json.dumps(dict(rec, source=source), ensure_ascii=False) + '\n')
 
     def _feedback_script(self, project: str) -> str:
         """Inline JS for overview feedback cells + bulk bar (Issue261)."""
@@ -2753,7 +2797,7 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!overlay.hi
             'return{chap:parseInt(cell.dataset.chap,10),'
             'slide:parseInt(cell.dataset.slide,10),'
             'title:a?a.textContent.trim():"",opinion:op,'
-            'policy:cell.querySelector(".fb-policy").checked};}'
+            'kind:cell.querySelector(".fb-kind-t").checked?"tool":"content"};}'
             'function post(items,onDone){'
             'fetch(EP,{method:"POST",'
             'headers:{"Content-Type":"application/json"},'
@@ -2774,21 +2818,21 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!overlay.hi
             'post([it],function(err,j){'
             'if(!err)bump(j.saved);'
             'st.textContent=err?("\\u2717 "+err.message):'
-            '("\\u2713 \\uc804\\uc1a1\\ub428"+(j.policy_saved?" (policy)":""));});});});'
+            '("\\u2713 \\uc804\\uc1a1\\ub428"+(j.tool_saved?" (\\ub3c4\\uad6c)":""));});});});'
             'var allBtn=document.getElementById("fb-send-all");'
             'if(allBtn)allBtn.addEventListener("click",function(){'
-            'var forceAll=document.getElementById("fb-policy-all").checked;'
+            'var forceAll=document.getElementById("fb-kind-all").checked;'
             'var items=[];'
             'document.querySelectorAll(".feedback-cell").forEach(function(cell){'
             'var it=itemOf(cell);'
-            'if(it){if(forceAll)it.policy=true;items.push(it);}});'
+            'if(it){if(forceAll)it.kind="tool";items.push(it);}});'
             'var st=document.getElementById("fb-bulk-status");'
             'if(!items.length){st.textContent="\\uc804\\uc1a1\\ud560 \\uc758\\uacac \\uc5c6\\uc74c";return;}'
             'st.textContent="...";'
             'post(items,function(err,j){'
             'if(!err)bump(j.saved);'
             'st.textContent=err?("\\u2717 "+err.message):'
-            '("\\u2713 "+j.saved+"\\uac74 \\uc800\\uc7a5, policy "+j.policy_saved+"\\uac74");});});'
+            '("\\u2713 "+j.saved+"\\uac74 \\uc800\\uc7a5, \\ub3c4\\uad6c "+j.tool_saved+"\\uac74");});});'
             # Issue264 — command copy buttons + pending counter live bump
             'function bump(n){document.querySelectorAll(".fb-pending-n")'
             '.forEach(function(el){el.textContent='

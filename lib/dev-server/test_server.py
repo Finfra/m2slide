@@ -369,6 +369,15 @@ class FeedbackPostTest(unittest.TestCase):
         with open(p, encoding='utf-8') as fh:
             return [_json.loads(ln) for ln in fh if ln.strip()]
 
+    def _read_tool_inbox(self):
+        """Issue368 — m2slide 자신의 도구 의견 인박스 (cwd = 임시 repo 루트)."""
+        import json as _json
+        p = os.path.join('_doc_work', 'feedback', 'tool-inbox.jsonl')
+        if not os.path.isfile(p):
+            return []
+        with open(p, encoding='utf-8') as fh:
+            return [_json.loads(ln) for ln in fh if ln.strip()]
+
     def _policy_yml(self):
         p = os.path.join('Projects', 'fbProj', '_pipeline', 'policy',
                          '_dev-feedback.yml')
@@ -387,24 +396,46 @@ class FeedbackPostTest(unittest.TestCase):
         recs = self._read_jsonl()
         self.assertEqual(len(recs), before + 1)
         self.assertEqual(recs[-1]['opinion'], '의견1')
-        self.assertFalse(recs[-1]['policy'])
+        # Issue368 — wire field is now `kind`; plain opinions stay with the deck.
+        self.assertEqual(recs[-1]['kind'], 'content')
         self.assertIn('ts', recs[-1])
 
-    def test_policy_true_appends_pending_yml(self):
+    def test_tool_kind_goes_to_m2slide_inbox_not_the_deck(self):
+        """Issue368 — 종류가 곧 전달처. 도구 의견은 덱 옆에 남지 않는다."""
         import json as _json
         body = _json.dumps({'items': [
-            {'chap': 2, 'slide': 1, 'opinion': '정책 의견', 'policy': True},
-            {'chap': 2, 'slide': 2, 'opinion': '일반 의견', 'policy': False},
+            {'chap': 2, 'slide': 1, 'opinion': '렌더 의견', 'kind': 'tool'},
+            {'chap': 2, 'slide': 2, 'opinion': '원고 의견', 'kind': 'content'},
         ]}).encode('utf-8')
+        before = len(self._read_jsonl())
         status, payload = self._post('fbProj', body)
         self.assertEqual(status, 200)
         self.assertEqual(payload['saved'], 2)
-        self.assertEqual(payload['policy_saved'], 1)
-        yml = self._policy_yml()
-        self.assertIn('pending:', yml)
-        self.assertIn('"정책 의견"', yml)
-        self.assertNotIn('"일반 의견"', yml)
-        self.assertIn('stage: null', yml)
+        self.assertEqual(payload['tool_saved'], 1)
+        # 덱 인박스에는 원고 의견만 늘어난다
+        recs = self._read_jsonl()
+        self.assertEqual(len(recs), before + 1)
+        self.assertEqual(recs[-1]['opinion'], '원고 의견')
+        # 도구 의견은 m2slide 인박스로, 출처를 달고 간다
+        tool = self._read_tool_inbox()
+        self.assertEqual(tool[-1]['opinion'], '렌더 의견')
+        self.assertEqual(tool[-1]['source']['project'], 'fbProj')
+        # 폐기된 policy yml 은 더는 쓰이지 않는다
+        self.assertEqual(self._policy_yml(), '')
+
+    def test_legacy_policy_true_reads_as_tool(self):
+        """구 wire format 호환 — policy:true 는 'tool' 로 읽힌다."""
+        import json as _json
+        body = _json.dumps({'items': [
+            {'chap': 3, 'slide': 1, 'opinion': '구 포맷', 'policy': True},
+        ]}).encode('utf-8')
+        before_deck = len(self._read_jsonl())
+        status, payload = self._post('fbProj', body)
+        self.assertEqual(status, 200)
+        self.assertEqual(payload['tool_saved'], 1)
+        self.assertEqual(payload['policy_saved'], 1)   # legacy field kept
+        self.assertEqual(len(self._read_jsonl()), before_deck)
+        self.assertEqual(self._read_tool_inbox()[-1]['kind'], 'tool')
 
     def test_empty_opinion_skipped(self):
         import json as _json

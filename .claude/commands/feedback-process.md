@@ -23,7 +23,7 @@ dev-server 개요 페이지(`/p/<P>`)의 [전송]으로 적재된 슬라이드 �
 | `Projects/<P>/_pipeline/feedback/dev-feedback.jsonl` | 미처리 인박스 (1줄 = 1건) |
 | `Projects/<P>/_pipeline/feedback/dev-feedback.done.jsonl` | 처리 완료 아카이브 (본 커맨드가 append) |
 
-레코드 스키마: `{"ts", "chap", "slide", "title", "opinion", "policy"}` — `chap`/`slide`는 dev-server short URL 좌표계(1-base), `title`은 렌더 시점 슬라이드 제목.
+레코드 스키마: `{"ts", "chap", "slide", "title", "opinion", "kind"}` (Issue368 — 구 `policy` bool 은 `kind` 로 대체) — `chap`/`slide`는 dev-server short URL 좌표계(1-base), `title`은 렌더 시점 슬라이드 제목.
 
 ## 처리 절차 (순서 고정)
 
@@ -37,9 +37,11 @@ dev-server 개요 페이지(`/p/<P>`)의 [전송]으로 적재된 슬라이드 �
 5. **아카이브**: 처리 성공 항목의 원본 줄을 `dev-feedback.done.jsonl`에 append(처리 시각 `done_ts` 필드 추가)한 뒤, 인박스 jsonl을 **미처리 항목(미특정·보류)만 남겨 재작성**. 전부 처리됐으면 빈 파일이 됨 — 개요 페이지 "미처리 N건" 카운트가 인박스 줄 수와 연동되므로 이 단계 생략 금지.
 6. **보고**: 처리/미특정/보류 건수 + 항목별 수정 내용 1줄 + 결과 링크(`http://127.0.0.1:9877/p/<P>/n/<chap>/<slide>`).
 
-## policy 인박스 (범위 밖)
+## 도구 의견은 범위 밖 (Issue368)
 
-`_pipeline/policy/_dev-feedback.yml`의 `pending:` 항목(policy 체크 전송분)은 본 커맨드가 건드리지 않음 — 단계 yml 분류·promotion은 slide-tuner 계열 처리기 담당 (`_doc_arch/dev-server-feedback.md` 🚧 TODO). 인박스에 pending 항목이 있으면 보고에 "policy 인박스 N건 별도 대기" 1줄 표기만.
+`kind: "tool"` 로 보낸 의견은 이 인박스에 없다 — m2slide 자신의 `_doc_work/feedback/tool-inbox.jsonl` 로 가며, 렌더·테마 결함이므로 m2slide 이슈로 처리한다. 본 커맨드는 **원고 의견만** 소비한다.
+
+⚠️ **실행 주체** — 이 커맨드는 *원고가 사는 프로젝트*의 세션에서 돈다. 마운트된 덱(`Projects/<P>` 가 심링크)이면 그 덱을 소유한 prj 세션이며, 개요 페이지가 실행 위치를 함께 표시한다. 글로벌 승격은 prj3#Issue637.
 
 ## 종료 조건·제약
 
