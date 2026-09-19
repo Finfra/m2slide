@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 369
+* Issue HWM: 372
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -147,6 +147,110 @@
     - 검증: `./m2slide.sh --lint-data` rc0 + 검사 4(goal-oriented 스키마)가 신규 술어를 계열 정합으로 받아들일 것
     - 종료 조건: ①~④ 가 문서·코드에 반영되고 `--lint-data` 가 통과하며, 신규 술어를 실제로 쓰는 룰이 최소 1건 등록된다
 * ⚠️ **본 이슈는 등록까지만 수행했다** (사용자 지시 2026-09-19 — "등록만 하고 구현은 하지 말 것"). 착수 전 ③ 의 설계 판정을 먼저 사용자와 확인한다
+
+## Issue370: htmlart annotate 라벨이 target 본문 글자 위로 올라탄다 — 라벨 x 가 상수라 거터 예약이 없다 (등록: 2026-09-19)
+* 목적: 발주처 prj60 `__lec` 에서 주해 라벨이 target 글자 위에 겹쳐 그려진다는 보고. 발주처가 문장을 3차에 걸쳐 줄였으나(44자 → 26자 → 22자) **22자에서도 양쪽 64px 씩 겹쳤다.** 진단 결과 원인은 문장 길이가 아니라 **라벨 x 좌표가 target 과 무관한 상수**이고 target 텍스트 박스가 viewBox 전폭을 쓰는 것이다. 본 이슈는 **진단·상한 산출까지** 하고 수정은 별도 결정으로 넘긴다
+* depends: Issue364
+* 상세:
+    - **① 라벨 x 에 클램프가 없다 — 상수다.** [client.js:1457](lib/component-hooks/htmlart_dispatch.client.js#L1457) `var labelX = side==='left' ? 30 : W - 30 - labelW;` · `labelW=300`([client.js:1384](lib/component-hooks/htmlart_dispatch.client.js#L1384)). 좌 라벨 `30~330`, 우 라벨 `1070~1370` 으로 **고정**이며, 실측 span 박스 `b.x` 를 참조하는 자리가 **한 군데도 없다**
+    - **target 텍스트 박스는 전폭이다.** [client.js:1406](lib/component-hooks/htmlart_dispatch.client.js#L1406) `.attr('x',0)…attr('width',W)` (`W=1400`, [client.js:1382](lib/component-hooks/htmlart_dispatch.client.js#L1382)) + 안쪽 div `width:100%` flex center, **max-width 없음**
+    - ⇒ 겹침이 산술로 결정된다: **한 줄 실폭 > `W − 2×(30+labelW)` = 740** 이면 반드시 겹친다. 문장을 줄여서 빠져나갈 수 있는 문제가 아니라 **임계를 넘었는지 아닌지**의 문제다
+    - **② `over`/`under` 는 라벨 y 를 옮기지 않는다 — 그리고 그것은 설계다.** [client.js:1448-1449](lib/component-hooks/htmlart_dispatch.client.js#L1448) 에서 `pos` 가 쓰이는 곳은 `lineY`(span 강조 줄 + 곡선 시작점) **뿐**이다. 라벨 y 는 [client.js:1458-1460](lib/component-hooks/htmlart_dispatch.client.js#L1458) 이 `cy`(=310) 기준으로만 계산한다 → 주해 1개면 `284~336` 으로 target 띠(`250~370`) 한가운데. [client.js:1437-1440](lib/component-hooks/htmlart_dispatch.client.js#L1437) 주석이 *좌/우 균형 분할·곡선 비교차*를 라벨 배치 목적으로 명시하므로 **라벨을 좌·우 거터에 두는 것이 의도**다. 누락된 것은 y 로직이 아니라 **그 거터를 target 이 침범하지 못하게 하는 제약**이다
+    - **③ "영문은 괜찮다"는 전제가 성립하지 않는다.** 저장소 자체 폭 모델([`charEm`](lib/component-hooks/htmlart_dispatch.client.js#L47) — 한글 1.0em / 그 외 0.58em)에 `targetFs=56`·`letter-spacing 0.02em` 을 적용한 계산:
+
+      | 케이스 | 자 | 추정 한 줄 폭 | 판정 |
+      | :--- | ---: | ---: | :--- |
+      | 쇼케이스(영문) `The quick brown fox…` | 43 | **1445px** | wrap 임계 1400 에 **3% 차로 걸침** |
+      | 발주처 1차 | 44 | 1996px | 접힘 → 세로 잘림([Issue364](#issue364)) |
+      | 발주처 2차 | 26 | 1304px | 한 줄, 편측 **282px** 침범 |
+      | 발주처 3차 | 22 | 984px | 한 줄, 편측 **122px** 침범 |
+
+    - 쇼케이스([05-htmlart-27.md:455](Projects/m2Slide_visual_component/markdown/05-htmlart-27.md#L455))는 한 줄이면 전폭 1400 을 채워 겹치고, 접히더라도 greedy wrap 이라 1행이 약 1315px 이라 **역시 겹친다.** 곧 *영문이라 안전한 것*이 아니라 **그 슬라이드를 아무도 들여다보지 않은 것**에 가깝다 (검증 필요 — 육안·`getBoundingClientRect` 실측 미실시. 모델 추정이 임계에 3% 차로 붙어 있어 판정이 뒤집힐 여지가 있다)
+    - ⚠️ **위험 구간이 한국어 문장의 자연 길이와 정확히 겹친다** — 한 줄 실폭 **740~1400px**, 곧 **한글 13~30자**. 그 아래면 안전, 그 위면 접혀 [Issue364](#issue364) 의 세로 잘림으로 넘어간다. **annotate 의 안전 창은 한글 12자(영문 22자) 이하 하나뿐이다**
+    - Issue364 와의 경계: Issue364 는 **세로 축**(줄수 × 줄높이 > 120), 본 이슈는 **가로 축**(한 줄 폭 > 740). annotate 는 두 결함을 동시에 갖는다 — Issue364 실측표의 `annotate 44자 🔴 +7px` 이 세로 축 쪽 근거다
+    - **실사용 영향도 — 현역 덱 0건.** `::: htmlart annotate` 원고는 4건인데 z_done 아카이브 2건(`Projects/z_done/aTest/markdown/04-htmlart.md:421`·`Projects/z_done/aTest_v1/markdown/08.4.ratio-compare-explain.md:98`), 쇼케이스 1건, 그 pptx 파이프라인 사본 1건이 전부다 → **회귀 위험이 사실상 없다**
+* 구현 명세:
+    - **해법 후보 A — target 텍스트 박스를 거터 안쪽으로 가둔다** *(권장)*
+        - [client.js:1406](lib/component-hooks/htmlart_dispatch.client.js#L1406) 의 foreignObject 를 `x = 30+labelW+gap`, `width = W − 2×(30+labelW+gap)` 로 좁힌다(gap=20 → `x=350, width=700`). target 이 거터 밖으로 **나갈 수 없게 되어 겹침이 구조적으로 불가능**해진다
+        - 대신 줄이 늘어나므로 **세로 축을 함께 풀어야 한다** — fo 높이 120 고정을 줄 수 기반으로 늘리고 라벨 기준 `cy`([client.js:1459](lib/component-hooks/htmlart_dispatch.client.js#L1459))를 target 실높이 중심으로 재계산. [Issue364](#issue364) 해법 후보 A(`volumeCap`)와 같은 성격이라 **한 이슈에서 함께 내는 편이 낫다**(그래서 `depends`)
+        - 영향도: 현역 덱 0건. 쇼케이스 1건은 700 폭에서 2~3줄로 접혀 **렌더가 바뀐다** — 다만 지금도 겹쳐 있으므로 개선 방향의 변화다 (검증 필요 — before/after 캡처)
+        - 한계: 700px 은 한글 **12자/줄**이라 긴 문장은 3줄 이상이 된다. 56px 고정 폰트를 유지하면 세로가 터지므로 폰트 축소가 반드시 동반된다
+    - **해법 후보 B — 라벨 x 를 target 실측으로 클램프하고 viewBox 를 넓힌다**
+        - `drawLines()` 는 이미 span 실측 박스를 갖고 있다([client.js:1424-1437](lib/component-hooks/htmlart_dispatch.client.js#L1424)). target 실측 좌우 끝으로 `labelX_left = min(30, minX − labelW − gap)` · `labelX_right = max(W−30−labelW, maxX + gap)` 로 **밀어낸다**. 음수·W 초과가 되므로 **viewBox 확장이 동반**된다
+        - **선례가 같은 파일 안에 있다** — callout 의 `wide` orientation 이 정확히 같은 기법이다([client.js:1505-1508](lib/component-hooks/htmlart_dispatch.client.js#L1505) 주석: *"viewBox 를 라벨 실좌표까지 넓혀 레터박스 여백 의존을 없앤 변형"*). 4:3 에서 orient 무관 자동 적용이라고 적혀 있어 **판형 대응까지 검증된 경로**다
+        - 영향도: viewBox 확장은 **도해 전체를 축소**시킨다 — [Issue363](#issue363) 이 정상 도해까지 15% 줄여 문제가 된 실패 모드와 같은 성격이다. 다만 annotate 는 **현역 덱 0건**이라 이 타입에 한해서는 그 리스크가 실질적으로 없다
+        - 한계: target 이 길수록 viewBox 가 계속 넓어져 글자가 무한정 작아진다. 확장 상한이 필요하고 상한에 걸리면 결국 후보 A 로 되돌아온다
+    - **판정 제안: A 를 기본, B 를 보완.** A 가 *"target 은 거터를 침범하지 않는다"* 는 불변식을 세우고, B 는 라벨 자리가 그래도 모자랄 때의 탈출구다. ⚠️ **A 를 단독으로 넣으면 안 된다** — 폭을 좁히면 줄이 늘어 Issue364 의 세로 잘림을 오히려 키운다
+    - ⚠️ **착수 전 ③ 의 육안 검증을 먼저 한다.** 쇼케이스가 실제로 겹쳐 있는지에 따라 *"회귀 0"* 인지 *"이미 깨진 것을 고치는 것"* 인지가 갈린다
+    - 종료 조건: 겹침 판정 산식이 소스와 일치하고(한 줄 폭 ≤ 안전 폭), 쇼케이스·prj60 3차 문장 양쪽에서 라벨 박스와 target 박스가 겹치지 않음을 `getBoundingClientRect` 로 실측 확인
+
+## Issue371: default_lec `contents-split` 이 반쪽이다 — divider 는 테마가 숨기고 머리말 슬롯은 템플릿에 없다 (등록: 2026-09-19)
+* 목적: 발주처 prj60 `__lec` 이 `2.3.contents-split` 을 쓰려다 **제목 아래가 빈 띠로 남고 머리말(`1일차 — …`)이 통째로 사라지는** 것을 보고. 진단 결과 템플릿·테마·엔진 셋 중 **템플릿만 있고 나머지 둘과의 배선이 안 됐다**. 본 이슈는 진단·해법 선택지까지 하고 수정은 별도 결정으로 넘긴다
+* 상세:
+    - **① `.split-divider` 규칙 — 답은 "없다"가 아니라 "테마가 적극적으로 숨긴다"이다**
+        - [default_lec/slide.css](theme/default_lec/slide.css) 안 `.split-divider` 선언 **0건** (보고와 일치)
+        - 단 [base.css:916](lib/css/base.css#L916) 에 `.reveal section.layout-split-image-text .split-divider { width:40%; margin:0.5em 0 0 0; }` 가 **있다.** 그러나 `border`·`background`·`height` 가 없어 `<div>` 로는 **애초에 보이지 않는다**(`<hr>` 였다면 기본 border 로 보였다 — 템플릿은 `<div>` 를 쓴다, [2.3.contents-split.html:30](theme/default_lec/layouts/2.3.contents-split.html#L30))
+        - 결정타는 [slide.css:167](theme/default_lec/slide.css#L167) — `.reveal section[class*="layout-"] [class$="-divider"]:not([class*="htmlart-"]) { display: none !important; }`. `split-divider` 는 `-divider` 로 끝나고 `htmlart-` 를 포함하지 않으니 **매칭 → 강제 숨김**. default_lec 는 divider 를 버리고 `hr.png` 브러시로 갈아탔다([slide.css:164](theme/default_lec/slide.css#L164) 주석)
+        - ⚠️ **그 대체 수단인 브러시도 split 에는 안 걸린다 — 제목 아래가 비는 진짜 이유가 이것이다.** 브러시는 [slide.css:141-152](theme/default_lec/slide.css#L142) 의 `::after` 셀렉터 목록으로 붙는데, 그중 `> .title::after` 는 **`section` 의 직계 자식** `.title` 만 노린다. split 템플릿은 `{{content}}` 를 `<div class="split-header">` 로 **한 겹 감싸므로**([2.3.contents-split.html:28-29](theme/default_lec/layouts/2.3.contents-split.html#L28)) `section > .title` 이 성립하지 않는다. divider 가 없어서가 아니라 **브러시가 선택자에서 빗나가서** 비는 것이다
+    - **② 머리말 — 다른 테마와 충돌하지 않는다. 엔진 수정도 필요 없다**
+        - `2.3.contents-split.html` 은 **`theme/default_lec/layouts/` 에만 있다**(`theme/` 전체에서 유일 — `default`·`default_dark` 에는 파일 자체가 없다) → 템플릿만 고치면 되고 **타 테마 영향 0**
+        - 엔진 측은 **이미 준비돼 있다** — [html-builder.js:567-568](lib/html-builder.js#L567) 이 `_hl`/`_hr` 을 계산해 [html-builder.js:577](lib/html-builder.js#L577) 에서 **모든 layout 의 vars 에 무조건 주입**한다. 템플릿이 `{{head_left}}` 를 **안 쓸 뿐**이다
+        - 선례: [_contents.html:26-28](theme/default_lec/layouts/_contents.html#L26) · [2.2.contents-full.html:23-25](theme/default_lec/layouts/2.2.contents-full.html#L23) 가 `.contents-head-bar` > `.contents-head-left`/`-right` 구조로 쓴다
+    - **③ 빈 div 를 제거하는 주체** — [layout.js:82](lib/layout.js#L82) `_stripEmptyWrappers`, 호출은 [layout.js:75](lib/layout.js#L75) `renderLayout` 말미. [layout.js:97](lib/layout.js#L97) 의 `/<(span|div)\b(?![^>]*contents-head)[^>]*>\s*<\/\1>/g` 를 **변화가 없을 때까지 반복** 적용한다. 예외는 클래스에 `contents-head` 를 포함하는 div 뿐이므로 `<div class="split-divider"></div>` 는 **제거된다** (보고와 일치). 다만 남아 있었어도 slide.css:167 이 `display:none` 이라 **결과는 같다**
+* 구현 명세:
+    - **ⓐ 머리말 복구** — 템플릿에 `.contents-head-bar` 블록을 `_contents.html:26-28` 과 **같은 클래스명으로** 넣고 `@meta slots` 에 `head_left`·`head_right` 를 추가한다
+        - ⚠️ **클래스명을 바꾸면 안 된다.** `_stripEmptyWrappers` 의 예외가 문자열 `contents-head` 에 걸려 있어([layout.js:87](lib/layout.js#L87) 주석) `split-head-bar` 같은 이름을 쓰면 **빈 head-bar 가 통째로 제거되고**, 그 순간 default_lec 의 `:has()` 기반 fallback(빈 head-bar collapse · 제목 위 브러시 복원)이 **매칭 대상을 잃어 무력화**된다
+    - **ⓑ 제목 아래 띠 복구** — 셋 중 택일 (사용자 판정 대상)
+        - ⒜ 템플릿에서 `{{content}}` 를 `.split-header` **밖으로 꺼내** `section > .title` 이 성립하게 한다 → 브러시가 자동으로 붙고 **CSS 수정 0**. 단 `.split-header { padding: 1.5em 0 }`([base.css:906](lib/css/base.css#L906))의 여백 역할을 대체해야 한다
+        - ⒝ [slide.css:142](theme/default_lec/slide.css#L142) 의 브러시 셀렉터 목록에 `.reveal section.layout-split-image-text .split-header > .title::after` 를 **추가**한다. 템플릿 불변, 테마 1파일만 수정
+        - ⒞ `.split-divider` 를 slide.css:167 숨김에서 예외 처리하고 직접 스타일을 준다. **비권장** — default_lec 가 divider 를 버리고 브러시로 간 방향에 역행하고, 브러시와 구분선이 **둘 다** 나올 위험이 있다
+        - **판정 제안: ⒝** — 영향 범위가 default_lec 한 파일이고, 다른 layout 의 브러시 규칙과 같은 자리에 살아 SSOT 가 갈리지 않는다
+    - **ⓒ** ⒝ 채택 시 `<div class="split-divider"></div>` 는 **템플릿에서 지운다** — 제거·숨김 양쪽에 걸려 있는 죽은 마크업이다
+    - 검증: prj60 `1.design_rnd` 의 `contents-split` 슬라이드에서 머리말·제목 띠 렌더를 육안 확인 + `./m2slide.sh` 기존 3덱 회귀 0(해당 layout 미사용이라 0 예상)
+    - 종료 조건: `contents-split` 이 `contents`·`contents-full` 과 **머리말·제목 띠에서 같은 겉모습**을 내고, `theme/` 의 다른 테마 렌더 변화 0
+
+## Issue372: 레이아웃 슬롯 추출기가 fenced div 중첩을 추적하지 않는다 — 같은 파이프라인의 두 처리기가 문법이 다르다 (등록: 2026-09-19)
+* 목적: 슬롯 안에 htmlart 를 넣는 조합(`::: left` 안의 `::: htmlart`)이 **성립하지 않는다.** `:::` 로 쓰면 슬롯이 htmlart 의 닫는 줄을 먼저 먹어 남은 `:::` 가 본문에 `<p>:::</p>` 로 새고, Pandoc 관행대로 `::::` 로 피하면 **슬롯 이름 매칭 자체가 실패**해 좌우 내용이 전부 `{{content}}` 로 쏟아진다. 발주처 prj60 `__lec` 보고
+* 상세:
+    - **⚠️ 먼저 — `extractSlots` 실체 경로와, 그것이 grep 에 안 잡힌 이유**
+        - 실체는 **[slide-parser.js:284](lib/slide-parser.js#L284)** 다. export 는 같은 파일 [541](lib/slide-parser.js#L541) 행이고 [html-builder.js:9](lib/html-builder.js#L9) 의 `require('./slide-parser')` 가 그대로 이 파일을 집는다 — **동명 파일도 다른 빌드 경로도 없다**
+        - 보고된 *"`grep extractSlots` 0건"* 은 **거짓 음성**이다. 원인: `lib/slide-parser.js` 에 **NUL 바이트(0x00) 4개**가 있어 grep 이 파일을 **바이너리로 판정**한다(`command grep` 결과 `Binary file lib/slide-parser.js matches`). Claude Code 셸의 `grep` 래퍼는 `-I`(바이너리 건너뜀)를 붙여 돌기 때문에 **아무 경고 없이 0건**을 돌려준다. `grep -a` 를 쓰면 정상적으로 잡힌다
+        - NUL 은 손상이 아니라 **의도된 sentinel** 이다 — [slide-parser.js:331](lib/slide-parser.js#L331) `splitSlidesRespectingFences` 가 코드펜스를 `\x00FENCE{n}\x00` 로 치환해 보호한다(337·341행)
+        - 🚧 **파급이 본 이슈보다 크다** — 이 파일은 **grep 기반 도구 전체에서 조용히 안 보인다.** 검색·감사·인덱싱이 `slide-parser.js` 를 통째로 빠뜨린 채 *"없다"* 고 답해 왔을 수 있다. sentinel 을 **비-NUL 제어문자**로 바꾸면 기능 변화 없이 해소된다 — 같은 저장소의 [htmlart_dispatch.client.js](lib/component-hooks/htmlart_dispatch.client.js) 가 이미 STX/ETX(`\x01`·`\x02`)를 sentinel 로 쓰면서도 텍스트로 판정된다(실측: NUL 0개, `\x01`×4·`\x02`×3). **별도 이슈로 승격할지 판단 필요**
+    - **두 처리기의 규칙 대조** — 같은 `:::` 문법을 같은 빌드 안에서 **다르게 읽는다**:
+
+      | 축 | 슬롯 추출기 `extractSlots` | 본문 전처리 `preprocessPandocDiv` |
+      | :--- | :--- | :--- |
+      | 위치 | [slide-parser.js:284](lib/slide-parser.js#L284) | [markdown.js:295](lib/markdown.js#L295) |
+      | 방식 | 정규식 1발 — [`:287`](lib/slide-parser.js#L287) | 줄 단위 순회 + `stack`([:297](lib/markdown.js#L297)) + `depth`([:324-325](lib/markdown.js#L324)) |
+      | 중첩 | **추적 안 함** — `[\s\S]*?` 가 lazy 라 **첫 `:::`** 를 닫는 줄로 본다 | 추적함 |
+      | 콜론 수 | **정확히 3개**(`^:::`) | **3개 이상**(`^:{3,}`, [:307-309](lib/markdown.js#L307)) |
+      | 실행 순서 | **먼저** — [html-builder.js:550](lib/html-builder.js#L550) 이 raw 마크다운에 적용 | **나중** — `convertMarkdownToHTML` → [markdown.js:579](lib/markdown.js#L579) |
+
+    - **실측 (2026-09-19 — 실제 export 를 node 로 직접 호출):**
+
+      ```
+      A) ::: 3콜론 중첩
+         slots keys  : ["left","right"]
+         slots.left  : "::: htmlart matrix\n* 노드\n* 노드2"   ← htmlart 가 닫히지 않은 채 슬롯에 들어감
+         잔여 content : ":::"                                  ← 본문으로 새어 <p>:::</p> 렌더
+
+      B) :::: 4콜론 회피
+         slots keys  : []                                      ← 슬롯 0개
+         잔여 content : 원문 전체                                ← 전부 {{content}} 로
+      ```
+
+      → 보고된 두 증상이 **소스 수준에서 그대로 재현된다**
+    - ⚠️ **기존 예약어 가드는 이 경우에 발동하지 않는다.** [`PANDOC_LAYOUT_RESERVED`](lib/slide-parser.js#L282) 가 `htmlart` 를 갖고 있지만, 가드는 **매치된 블록의 이름이 예약어일 때**만 걸린다. 정규식이 왼쪽부터 훑어 `left` 를 먼저 매치하므로 **안쪽 `htmlart` 는 가드가 볼 기회조차 없다** — 곧 현행 가드는 **top-level htmlart 만** 보호한다
+    - **왜 갈렸나** (추정, 검증 필요): `extractSlots` 는 [Issue93 주석](lib/slide-parser.js#L273)이 보여주듯 *"Pandoc 예약어를 슬롯으로 잘못 집지 않기"* 를 **예약어 집합으로 땜질**하며 자랐고 중첩은 애초 고려 대상이 아니었다. 반면 `preprocessPandocDiv` 는 `columns`/`rows` 중첩이 **기본 사용례**라 처음부터 stack 을 갖고 출발했다. **다른 시점에 다른 문제를 풀며 각자 자란 것**이지 설계 판단으로 갈린 흔적은 없다
+* 구현 명세:
+    - ① `extractSlots` 를 정규식 1발에서 **줄 단위 depth 추적**으로 바꾼다. `preprocessPandocDiv` 의 열기·닫기 판정([markdown.js:307-309](lib/markdown.js#L307))을 그대로 쓰면 두 처리기의 문법이 **한 지점으로 합쳐진다** — 본 이슈의 본체는 이 통일이다
+        - 열기 `^:{3,}\s+name` · 닫기 `^:{3,}\s*$` · `depth` 가 0 으로 돌아온 줄이 그 슬롯의 끝. 코드펜스 안은 세지 않는다(`preprocessPandocDiv` 의 `inCode` 처리 [markdown.js:300-304](lib/markdown.js#L300) 와 동일하게)
+        - 예약어 가드는 **top-level 에서만** 적용해 현행 의미를 유지한다. 중첩된 `htmlart` 는 슬롯 본문에 온전히 담긴 채 나중에 `preprocessPandocDiv` 가 처리한다
+    - ② 판정을 **공유 헬퍼로 뽑는 것이 정답**이다. `slide-parser.js:4` 가 이미 `markdown.js` 를 require 하는 **단방향 의존**이라, 헬퍼를 `markdown.js` 에 두고 export 하면 **순환 없이** 공유된다. 이 편이 *"두 처리기가 다시 갈리는"* 재발을 막는다
+    - ③ 회귀 범위 — `:::` 슬롯을 쓰는 **모든 덱**이 대상이나, 현행과 달라지는 것은 **슬롯 안에 다시 `:::` 가 있는 경우뿐**이고 그 경우는 지금 정상 렌더가 **불가능**하므로 정상 덱의 렌더는 바뀌지 않는다 (검증 필요 — 기존 덱 전수 빌드 diff 로 확인)
+    - 검증: 위 실측 A·B 가 각각 `slots={left,right}` + 본문 잔여 0 을 내고, `:::`·`::::` 가 **같은 결과**를 낼 것. `./m2slide.sh` 기존 덱 전수 빌드 후 산출 HTML diff 0
+    - 종료 조건: 슬롯 안 htmlart 가 정상 렌더되고, 콜론 3개·4개가 동일 결과를 내며, 기존 덱 산출 diff 0
 
 
 # 📗 선택
