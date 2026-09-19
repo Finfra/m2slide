@@ -27,37 +27,6 @@
 
 # 🚧 진행중
 
-## Issue369: `aTest-all` — 갈린 픽스처를 한 덱으로 합쳐 모든 축을 한 번에 잰다 (등록: 2026-09-19)
-* 목적: 왕복 계약을 재는 픽스처가 **aTest**(single·변환 경로 커버리지)·**igTest**(chapter·인포그래픽)·**m2Slide_chapter_mode**(chapter·레이아웃) 셋으로 갈려 있다. 갈린 픽스처는 **축이 빠진 것을 못 본다** — [Issue358](#issue358) 에서 표 정렬 오판(근거 덱이 전부 좌측 정렬이라 차이가 드러날 수 없었다)과 `font_outside_theme` 축 소실이 정확히 그 형태였다. igTest 내용을 합친 `aTest-all` 한 덱으로 **계약이 선언한 모든 요소를 한 번에** 왕복시킨다
-* depends: Issue358
-* 상세:
-    - **왜 합치나** — 계약([fidelity.yml](data/m2slide2ppt/fidelity.yml))은 요소 38종 + 시각 12축을 선언하는데, 어느 한 덱도 그 전부를 담지 않는다. 덱마다 통과해도 **어느 축이 아무 덱에도 없는지**는 아무도 세지 않는다
-    - **모드는 chapter** — single 이 못 가진 축(덱 전체 목차·Agenda·챕터 TOC·H1 진입 장·`cards_placeholder` 분기)을 담는다. single 전용 축은 기존 `aTest` 가 계속 맡는다
-    - **theme 은 `default`** — `transform.yml` 의 `theme_geometry` 실측값이 default 기준이라고 스스로 적고 있다. igTest 는 `default_lec` 이므로 옮기면서 꼴이 바뀌지만, 왕복 축은 테마 독립이고 시각 축은 그 프로젝트 CSS 를 실측해 대조하므로 문제되지 않는다
-    - **기존 픽스처는 남긴다** — aTest 는 single mode 회귀, igTest 는 인포그래픽 lane, m2Slide_chapter_mode 는 레이아웃 데모로 각자 역할이 있다. `aTest-all` 은 **커버리지 감사용**으로 더하는 것이지 대체가 아니다
-* 구현 명세:
-    - ① `Projects/aTest-all/` 생성 — chapter mode(`markdown/` + `AGENDA.md`), `_config.yml` 은 aTest 기준(theme `default` · `slide_ratio: "3:2"` · `cards_placeholder: false`)
-    - ② 원고 = aTest(`aTest.md`) + igTest(`markdown/*.md` 5챕터)를 챕터로 배치. **문구는 옮기기만 하고 새로 짓지 않는다**
-    - ③ 계약 요소 커버리지를 **세는 도구**를 만든다 — fidelity 의 요소·축 목록 ↔ 그 덱이 실제로 담은 것을 대조해 *"아무 덱에도 없는 축"* 을 보고. 이것이 이 이슈의 본체다(합본 자체는 수단)
-    - ④ `./z_test/ig-ppt/6.roundtrip.sh aTest-all` 전건 통과 + `4.laneb`·`5.lanem`·`--lint-data`
-    - ⑤ 기존 3덱 회귀 0
-    - 종료 조건: `aTest-all` 왕복 FAIL 0 + 커버리지 보고가 **미측정 축 0** 을 내거나, 남은 축을 이유와 함께 선언
-* 진행 (2026-09-19 · commit `af45902`, `0eb5ed7`):
-    - ✅ **`Projects/aTest-all/` 생성** — chapter mode 6챕터(aTest 1 + igTest 5) · HTML 47장. 이미지는 두 덱 것을 한 곳에 병합. 문구는 옮기기만 했고 챕터 번호만 AGENDA 에 맞췄다(구조 표식)
-    - ✅ **합치자마자 계약 밖 차이 8건이 나왔다** — 이것이 이 이슈의 근거다. 갈린 덱에서는 하나도 안 보이던 것들이다. ③ 계약 대조·⑤ 시각 축은 이제 **전건 통과**
-    - ✅ **① chapter mode 메타 출처가 갈려 있었다** — build-source 의 lane S 는 *첫 챕터* frontmatter 를, 검사기 `meta_source()` 는 AGENDA 를 봤다. **같은 규칙을 쓰게 맞췄다**
-    - ✅ **② 챕터 진입 장 안의 H2 부제·layout 디렉티브를 본문으로 셌다** — 그 장은 HTML 도 pptx 도 만들지 않는다(`cards_placeholder: false`). H1 은 계속 잰다
-    - ✅ **③ 하이퍼링크를 역변환이 읽지 않았다** — URL 은 pptx 에 `a:hlinkClick` 으로 **멀쩡히 있었다**. 본문·표 셀 양쪽에서 복원한다. *"복원 경로가 없는 것"* 과 *"실제로 잃는 것"* 은 다르다는 실증
-    - ✅ **④ 불릿 없는 인용(`> …`)은 복원 경로가 아예 없었다** — 기존 덱이 전부 `* > …` 라 드러나지 않았다
-    - ✅ **⑤ smart quotes** — pandoc 이 `"` → `“”`. 글자 전달을 묻는 축에서는 같게 본다
-    - ✅ **⑥ 링크를 2축으로** — `hyperlink`(본문·표, lossless) / `cards_hyperlink`(lane B 도형, declared_drop). `wordart_fence` 는 `lossy` → `declared_drop` 으로 정정(요소 종류가 바뀌는 경우를 `lossy` 정의가 담지 못했다)
-    - ✅ **⑴ 장 수 −3 원인 규명 완료** (2026-09-19 전면 재실행) — **한 뿌리**였다. TOC 장은 pptx 에 **있다**(p04 `01. 변환 경로 커버리지` · p12 `정체성 한 줄 정의`) — 제목이 다를 뿐이다(HTML 은 챕터명, pptx 는 `subtitle`). 실제로 빠진 것은 **챕터 진입 장 6개**이고, `48 − 6 + 구조 3 = 45` 로 정확히 맞는다
-        - 🔴 **그런데 그 블록이 깨끗이 지워지지 않는다.** ch02 중간 원고 머리에 H1 은 지워졌는데 **`#layout-chapter` 와 `::: part` 가 남아 있다**. `::: part` 는 비표준 fenced div 라 껍데기만 걷히고 내용(`Chapter 1.`)이 평문으로 남고, [normalize_chapter](lib/pptx/build-source.py) 가 스스로 경고한 *"part 라벨은 버린다 — 남기면 pandoc 이 제목 없는 장으로 흘린다(무제목 5장의 정체가 이것이었다)"* 가 그대로 재발했다
-        - 🔴 **`4.laneb aTest-all` 2/6 실패도 같은 뿌리다** — `직접 확인할 수 있음` 장의 pptx 본문 끝에 흘러든 `Chapter 2.`·`02. m2slide란?` 두 문단이 붙어, lane B 의 *"본문 끝이 사이드카와 일치할 때만 걷어낸다"* 안전장치가 작동해 그 장을 건너뛰었다(→ ② 도형 없음 · ④ 평문 불릿 잔존). **마크다운 링크가 원인이 아니었다** — `INLINE_MD` 는 링크를 이미 정규화하고 사이드카 값도 pptx 와 같다
-        - 다음 수정 지점: `normalize_chapter` 가 `cards_ph=False` 경로에서 **blocks[0] 을 통째로 교체하지 못하는** 조건을 찾는다(ch02 는 교체가 아예 안 일어난 것으로 보인다 — 챕터 인식 실패 의심). 고치면 장 수·lane B 가 함께 닫힌다
-    - ⏳ **남은 것** — ⑴ 위 수정 적용 ⑵ 구현 명세 ③ **커버리지 감사 도구**(이 이슈의 본체 — 아직 미착수) ⑶ `cards_hyperlink` 를 lossless 로 올리려면 글로벌 `ppt-info` 수정이 필요해 별도 이슈
-    - 📌 기존 3덱 회귀 0 (`6.roundtrip` aTest·m2Slide_chapter_mode · `--lint-data`)
-
 # 📕 중요
 
 ## Issue364: htmlart 노드 본문이 박스에서 조용히 잘린다 — 폭 축 auto-fit 만 있고 높이 축이 없다 (등록: 2026-09-19)
@@ -271,6 +240,44 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue369: `aTest-all` — 갈린 픽스처를 한 덱으로 합쳐 모든 축을 한 번에 잰다 (등록: 2026-09-19, 해결: 2026-09-19, commit: `74b52bc`, `af45902`, `0eb5ed7`, `da29927`, `ffb7182`) ✅
+* 목적: 왕복 계약을 재는 픽스처가 **aTest**(single·변환 경로 커버리지)·**igTest**(chapter·인포그래픽)·**m2Slide_chapter_mode**(chapter·레이아웃) 셋으로 갈려 있다. 갈린 픽스처는 **축이 빠진 것을 못 본다** — [Issue358](#issue358) 에서 표 정렬 오판(근거 덱이 전부 좌측 정렬이라 차이가 드러날 수 없었다)과 `font_outside_theme` 축 소실이 정확히 그 형태였다. igTest 내용을 합친 `aTest-all` 한 덱으로 **계약이 선언한 모든 요소를 한 번에** 왕복시킨다
+* depends: Issue358
+* 상세:
+    - **왜 합치나** — 계약([fidelity.yml](data/m2slide2ppt/fidelity.yml))은 요소 38종 + 시각 12축을 선언하는데, 어느 한 덱도 그 전부를 담지 않는다. 덱마다 통과해도 **어느 축이 아무 덱에도 없는지**는 아무도 세지 않는다
+    - **모드는 chapter** — single 이 못 가진 축(덱 전체 목차·Agenda·챕터 TOC·H1 진입 장·`cards_placeholder` 분기)을 담는다. single 전용 축은 기존 `aTest` 가 계속 맡는다
+    - **theme 은 `default`** — `transform.yml` 의 `theme_geometry` 실측값이 default 기준이라고 스스로 적고 있다. igTest 는 `default_lec` 이므로 옮기면서 꼴이 바뀌지만, 왕복 축은 테마 독립이고 시각 축은 그 프로젝트 CSS 를 실측해 대조하므로 문제되지 않는다
+    - **기존 픽스처는 남긴다** — aTest 는 single mode 회귀, igTest 는 인포그래픽 lane, m2Slide_chapter_mode 는 레이아웃 데모로 각자 역할이 있다. `aTest-all` 은 **커버리지 감사용**으로 더하는 것이지 대체가 아니다
+* 구현 명세:
+    - ① `Projects/aTest-all/` 생성 — chapter mode(`markdown/` + `AGENDA.md`), `_config.yml` 은 aTest 기준(theme `default` · `slide_ratio: "3:2"` · `cards_placeholder: false`)
+    - ② 원고 = aTest(`aTest.md`) + igTest(`markdown/*.md` 5챕터)를 챕터로 배치. **문구는 옮기기만 하고 새로 짓지 않는다**
+    - ③ 계약 요소 커버리지를 **세는 도구**를 만든다 — fidelity 의 요소·축 목록 ↔ 그 덱이 실제로 담은 것을 대조해 *"아무 덱에도 없는 축"* 을 보고. 이것이 이 이슈의 본체다(합본 자체는 수단)
+    - ④ `./z_test/ig-ppt/6.roundtrip.sh aTest-all` 전건 통과 + `4.laneb`·`5.lanem`·`--lint-data`
+    - ⑤ 기존 3덱 회귀 0
+    - 종료 조건: `aTest-all` 왕복 FAIL 0 + 커버리지 보고가 **미측정 축 0** 을 내거나, 남은 축을 이유와 함께 선언
+* 진행 (2026-09-19 · commit `af45902`, `0eb5ed7`):
+    - ✅ **`Projects/aTest-all/` 생성** — chapter mode 6챕터(aTest 1 + igTest 5) · HTML 47장. 이미지는 두 덱 것을 한 곳에 병합. 문구는 옮기기만 했고 챕터 번호만 AGENDA 에 맞췄다(구조 표식)
+    - ✅ **합치자마자 계약 밖 차이 8건이 나왔다** — 이것이 이 이슈의 근거다. 갈린 덱에서는 하나도 안 보이던 것들이다. ③ 계약 대조·⑤ 시각 축은 이제 **전건 통과**
+    - ✅ **① chapter mode 메타 출처가 갈려 있었다** — build-source 의 lane S 는 *첫 챕터* frontmatter 를, 검사기 `meta_source()` 는 AGENDA 를 봤다. **같은 규칙을 쓰게 맞췄다**
+    - ✅ **② 챕터 진입 장 안의 H2 부제·layout 디렉티브를 본문으로 셌다** — 그 장은 HTML 도 pptx 도 만들지 않는다(`cards_placeholder: false`). H1 은 계속 잰다
+    - ✅ **③ 하이퍼링크를 역변환이 읽지 않았다** — URL 은 pptx 에 `a:hlinkClick` 으로 **멀쩡히 있었다**. 본문·표 셀 양쪽에서 복원한다. *"복원 경로가 없는 것"* 과 *"실제로 잃는 것"* 은 다르다는 실증
+    - ✅ **④ 불릿 없는 인용(`> …`)은 복원 경로가 아예 없었다** — 기존 덱이 전부 `* > …` 라 드러나지 않았다
+    - ✅ **⑤ smart quotes** — pandoc 이 `"` → `“”`. 글자 전달을 묻는 축에서는 같게 본다
+    - ✅ **⑥ 링크를 2축으로** — `hyperlink`(본문·표, lossless) / `cards_hyperlink`(lane B 도형, declared_drop). `wordart_fence` 는 `lossy` → `declared_drop` 으로 정정(요소 종류가 바뀌는 경우를 `lossy` 정의가 담지 못했다)
+    - ✅ **⑴ 장 수 −3 원인 규명 완료** (2026-09-19 전면 재실행) — **한 뿌리**였다. TOC 장은 pptx 에 **있다**(p04 `01. 변환 경로 커버리지` · p12 `정체성 한 줄 정의`) — 제목이 다를 뿐이다(HTML 은 챕터명, pptx 는 `subtitle`). 실제로 빠진 것은 **챕터 진입 장 6개**이고, `48 − 6 + 구조 3 = 45` 로 정확히 맞는다
+        - 🔴 **그런데 그 블록이 깨끗이 지워지지 않는다.** ch02 중간 원고 머리에 H1 은 지워졌는데 **`#layout-chapter` 와 `::: part` 가 남아 있다**. `::: part` 는 비표준 fenced div 라 껍데기만 걷히고 내용(`Chapter 1.`)이 평문으로 남고, [normalize_chapter](lib/pptx/build-source.py) 가 스스로 경고한 *"part 라벨은 버린다 — 남기면 pandoc 이 제목 없는 장으로 흘린다(무제목 5장의 정체가 이것이었다)"* 가 그대로 재발했다
+        - 🔴 **`4.laneb aTest-all` 2/6 실패도 같은 뿌리다** — `직접 확인할 수 있음` 장의 pptx 본문 끝에 흘러든 `Chapter 2.`·`02. m2slide란?` 두 문단이 붙어, lane B 의 *"본문 끝이 사이드카와 일치할 때만 걷어낸다"* 안전장치가 작동해 그 장을 건너뛰었다(→ ② 도형 없음 · ④ 평문 불릿 잔존). **마크다운 링크가 원인이 아니었다** — `INLINE_MD` 는 링크를 이미 정규화하고 사이드카 값도 pptx 와 같다
+        - 다음 수정 지점: `normalize_chapter` 가 `cards_ph=False` 경로에서 **blocks[0] 을 통째로 교체하지 못하는** 조건을 찾는다(ch02 는 교체가 아예 안 일어난 것으로 보인다 — 챕터 인식 실패 의심). 고치면 장 수·lane B 가 함께 닫힌다
+    - ⏳ **남은 것** — ⑴ 위 수정 적용 ⑵ 구현 명세 ③ **커버리지 감사 도구**(이 이슈의 본체 — 아직 미착수) ⑶ `cards_hyperlink` 를 lossless 로 올리려면 글로벌 `ppt-info` 수정이 필요해 별도 이슈
+    - 📌 기존 3덱 회귀 0 (`6.roundtrip` aTest·m2Slide_chapter_mode · `--lint-data`)
+* 종결 (2026-09-19) — 종료 조건 둘을 모두 달성:
+    - ✅ **`aTest-all` 왕복 FAIL 0** — 합치자 계약 밖 차이 **8건**이 나왔고 전부 해소했다. 기존 3덱 회귀 0
+    - ✅ **커버리지 미측정 축 0** — [check-coverage.py](lib/pptx/check-coverage.py) + [7.coverage.sh](z_test/ig-ppt/7.coverage.sh) 신설. 첫 실행이 곧바로 4종을 찾았고 전부 해소했다
+    - **이 이슈가 실증한 것**: 갈린 픽스처에서는 *"차이 없음"* 과 *"차이를 못 봄"* 이 구분되지 않는다. 합치자 8건, 커버리지를 재자 4건 — 합쳐 12건이 **한 세션 만에** 드러났다. 그중 둘(`inline_emphasis`·`slide_order`)은 **계약에 선언돼 있는데 검사기가 아예 안 재던** 축으로, Issue358 의 `font_outside_theme` 과 같은 형태다
+    - **남은 경고(차단 아님)**: 한 덱에만 있는 축 6종(`table_cell_image`·`subheading`·`ordered_list`·`htmlart_lane_b`·`inline_symbol`·`slot_right`) — 그 덱을 고치면 축이 사라진다. 근거가 얇다는 알림이며 러너는 통과시킨다
+    - **이월** → 별도 이슈: `cards_hyperlink` 를 lossless 로 올리려면 **글로벌 SCAR(`ppt-info` 블록 렌더러)** 가 run 에 `a:hlinkClick` 을 붙여야 한다. [global-scar-change-rules](~/.claude/rules/global-scar-change-rules.md) 상 `~/.claude/Issue.md` 등록이 필요하고, 타 repo 편집이라 **사용자 승인 대기**
+
 
 ## Issue358: m2slide → pptx 미세 조정 — HTML 실측 ↔ pptx 렌더 대조를 같은 방식으로 반복 (등록: 2026-09-11, 해결: 2026-09-19, commit: `137acd5`, `45a644e`, `b77e86e`, `a7750f0`, `d75c05e`, `19f0677`, `02d3c86`, `7cfdeaa`, `85fa4bc`, `c0032d1`, `a20797f`, `52b4407`, `7e2123e`, `76799bd` 외 7건) ✅
 * 목적: Issue342~357 로 변환 정책이 "대체로 맞는" 상태가 됐다. 남은 차이를 같은 방식 — HTML 실측(ego-browser, 1920×1280) ↔ LibreOffice 렌더 대조 → [transform.yml](data/m2slide2ppt/transform.yml)·[fidelity.yml](data/m2slide2ppt/fidelity.yml) 갱신 → 재빌드 → 6.roundtrip 러너 — 으로 좁혀 간다. 원고는 손대지 않는다

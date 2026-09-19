@@ -22,11 +22,11 @@ m2slide 저장소(`lib/m2slide/`) 내 다음 파일을 수정한 직후 자동 �
 
 `/run` 커맨드와 동일한 우선순위 적용:
 
-| 순위 | 소스                  | 비고                                                                  |
-| :--- | :-------------------- | :-------------------------------------------------------------------- |
-| 1    | 사용자가 명시한 프로젝트명 | "MarkdownGraph 빌드해줘" 등 직접 지시                                |
-| 2    | 수정한 파일이 속한 프로젝트 | `Projects/{Name}/...` 경로에서 `{Name}` 추출                          |
-| 3    | IDE 컨텍스트          | `<ide_opened_file>` / `<ide_selection>`에서 `Projects/{Name}/` 캡처   |
+| 순위 | 소스                                                                              | 비고                                                                                  |
+| :--- | :-------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+| 1    | 사용자가 명시한 프로젝트명                                                        | "MarkdownGraph 빌드해줘" 등 직접 지시                                                 |
+| 2    | 수정한 파일이 속한 프로젝트                                                       | `Projects/{Name}/...` 경로에서 `{Name}` 추출                                          |
+| 3    | IDE 컨텍스트                                                                      | `<ide_opened_file>` / `<ide_selection>`에서 `Projects/{Name}/` 캡처                   |
 | 4    | 영향 범위가 글로벌(`generate-slides.js`, `theme/default/`, `lib/css/base.css` 등) | 대표 프로젝트 다수 빌드 — `m2Slide_single_mode`, `m2Slide_chapter_mode`, `layoutTest` |
 
 결정 근거를 한 줄로 사용자에게 알림.
@@ -37,12 +37,12 @@ m2slide 저장소(`lib/m2slide/`) 내 다음 파일을 수정한 직후 자동 �
 
 ### theme 결정 우선순위 (lib/config.js 레이어 — 나중이 이김)
 
-| 순위 | 소스 | 비고 |
-| :--- | :--- | :--- |
-| 1 | `_config.yml`의 `slide_css:` | 있으면 최우선 (theme 무시) |
-| 2 | `projectDir/_config.yml`의 `theme:` | 프로젝트 단위 override |
-| 3 | `ROOT/_config.yml`의 `theme:` | 전역 기본 |
-| 4 | `ROOT/_config.org.yml`의 `theme:` | 최후 fallback |
+| 순위 | 소스                                | 비고                       |
+| :--- | :---------------------------------- | :------------------------- |
+| 1    | `_config.yml`의 `slide_css:`        | 있으면 최우선 (theme 무시) |
+| 2    | `projectDir/_config.yml`의 `theme:` | 프로젝트 단위 override     |
+| 3    | `ROOT/_config.yml`의 `theme:`       | 전역 기본                  |
+| 4    | `ROOT/_config.org.yml`의 `theme:`   | 최후 fallback              |
 
 * **⚠️ AGENDA.md / 슬라이드 소스 `.md` frontmatter의 `theme:`는 theme 해석에 쓰이지 않음** (Issue79 — frontmatter는 instructor 등 *메타 전용*). frontmatter에 `theme:`이 있어도 무시되므로, 그 값을 보고 편집 대상 theme을 판단하면 안 됨.
 
@@ -75,13 +75,13 @@ grep -h '^theme:' Projects/<P>/_config.yml _config.yml _config.org.yml 2>/dev/nu
 
 빌드 성공 후 **반드시 결과 HTML 파일을 직접 Read하여** 다음을 확인:
 
-| 검증 항목                                | 확인 방법                                                                |
-| :--------------------------------------- | :----------------------------------------------------------------------- |
-| HTML 파일 생성 여부                      | `ls Projects/{Name}/slide/*.html`                                        |
-| 변경 의도가 산출물에 반영됐는지          | 수정 의도와 관련된 HTML 영역(섹션·class·data attribute 등) Read·Grep    |
-| 파서 오류 흔적                           | `undefined`, `{{...}}` 미치환 placeholder, 빈 `<section></section>` 등   |
-| 사용자 명시 layout/slot                  | `class="layout-*"`, `data-*` 속성, 슬롯 div 존재 여부                    |
-| Cover/agenda 자동 주입 (해당 시)         | 첫 슬라이드의 cover/agenda 마커 존재                                     |
+| 검증 항목                        | 확인 방법                                                              |
+| :------------------------------- | :--------------------------------------------------------------------- |
+| HTML 파일 생성 여부              | `ls Projects/{Name}/slide/*.html`                                      |
+| 변경 의도가 산출물에 반영됐는지  | 수정 의도와 관련된 HTML 영역(섹션·class·data attribute 등) Read·Grep   |
+| 파서 오류 흔적                   | `undefined`, `{{...}}` 미치환 placeholder, 빈 `<section></section>` 등 |
+| 사용자 명시 layout/slot          | `class="layout-*"`, `data-*` 속성, 슬롯 div 존재 여부                  |
+| Cover/agenda 자동 주입 (해당 시) | 첫 슬라이드의 cover/agenda 마커 존재                                   |
 
 검증 통과 기준은 **"수정 사항이 HTML에 의도대로 나타났는가"** — 단순 빌드 성공만으로 종료 금지.
 
@@ -89,11 +89,11 @@ grep -h '^theme:' Projects/<P>/_config.yml _config.yml _config.org.yml 2>/dev/nu
 
 검증 의도에 따라 두 채널 분기:
 
-| 채널            | URL                                                                       | 도구                 | 용도                              |
-| :-------------- | :------------------------------------------------------------------------ | :------------------- | :-------------------------------- |
-| 시각 (file://)  | `file:///abs/.../slide/X.html?fwd=1#/N`                                   | AppleScript Chrome   | 사용자 직접 확인, 배포 시뮬레이션 |
-| 헤드리스 — solo | `http://localhost:9877/p/<P>/s/<chap>/<slide>[?mode=text]`                | Playwright MCP, curl | 단일 슬라이드 design 검증         |
-| 헤드리스 — deck | `http://localhost:9877/p/<P>/n/<chap>/<slide_or_id>`                      | Playwright MCP, curl | 전체 deck navigation 검증         |
+| 채널            | URL                                                        | 도구                 | 용도                              |
+| :-------------- | :--------------------------------------------------------- | :------------------- | :-------------------------------- |
+| 시각 (file://)  | `file:///abs/.../slide/X.html?fwd=1#/N`                    | AppleScript Chrome   | 사용자 직접 확인, 배포 시뮬레이션 |
+| 헤드리스 — solo | `http://localhost:9877/p/<P>/s/<chap>/<slide>[?mode=text]` | Playwright MCP, curl | 단일 슬라이드 design 검증         |
+| 헤드리스 — deck | `http://localhost:9877/p/<P>/n/<chap>/<slide_or_id>`       | Playwright MCP, curl | 전체 deck navigation 검증         |
 
 > ⚠️ legacy `http://localhost:9877/Projects/<P>/slide/<X>.html` 직접 접근은 차단됨 (Issue236.11 — 404). 반드시 short form 사용.
 > chap·slide 는 1-base 인덱스 (m2slide hashOneBasedIndex 정합). chap=1 = sorted chapter files 첫 번째 (single mode 면 index.html).
@@ -336,6 +336,26 @@ file:///<abs_path>/Projects/{Name}/slide/{chapter}.html?fwd=1#/N
 * 단언 6종 — 사이드카 · **마커 잔존 0** · OMML 존재 · **수식 장의 동거 본문 생존** · 백지 장 0 · 코드 안 `$` 오탐 0
 * 수식 0건 덱은 ①③④⑥ 을 skip 하고 백지 장만 잰다 — 러너가 덱 작성 방식을 강제하지 않는다
 * ⚠️ **`--pptx` 가 rc0 이어도 손실은 있을 수 있다.** pandoc 은 Math 를 만나면 그 장의 본문을 조용히 버리며 conform 은 그것을 위반으로 보지 않는다. *"빌드가 통과했으니 됐다"* 는 이 축에서 성립하지 않는다 — 빌드 로그의 `lane M 수식 복원` · `본문 0 장` 두 줄을 읽는다
+
+## 4.10 커버리지 감사 — 아무도 재지 않는 축 (Issue369)
+
+**계약([fidelity.yml](../../data/m2slide2ppt/fidelity.yml))의 요소·등급을 건드렸거나 회귀 픽스처의 원고를 고쳤으면 돌린다.**
+
+```bash
+./z_test/ig-ppt/7.coverage.sh            # 기본 4덱 (aTest-all·aTest·chapter_mode·igTest)
+./z_test/ig-ppt/7.coverage.sh <프로젝트…>
+```
+
+왕복 러너는 *"이 덱이 계약대로 돌았는가"* 를 잰다. 이 러너는 **계약이 선언한 축을 아무도 재지 않고 있지 않은가** 를 잰다 — 덱이 갈려 있으면 각자 초록불이어도 *"어느 축이 어느 덱에도 없는지"* 는 아무도 세지 않는다.
+
+| 판정              | 뜻                                                                | 고칠 곳                        |
+| :---------------- | :---------------------------------------------------------------- | :----------------------------- |
+| 🔴 검사기가 안 잼 | `scan()` 에 그 요소를 만드는 코드가 없다 — 원고에 아무리 많아도 0 | **코드**                       |
+| ❌ 픽스처에 없음  | 검사기는 잴 줄 아는데 어느 원고에도 없다                          | **원고**                       |
+| ⚠️ 한 덱뿐         | 그 덱을 고치면 축이 사라진다                                      | 차단 아님 — 근거가 얇다는 알림 |
+
+* ⚠️ **이 러너가 없으면 "차이 없음" 과 "차이를 못 봄" 이 구분되지 않는다.** Issue358 에서 표 정렬을 `lossy` 로 오판한 것(근거 덱의 표가 전부 좌측 정렬)과 `font_outside_theme` 축이 러너를 옮기며 조용히 사라진 것이 그 형태였다
+* 계약에서 요소를 **거두는 것**도 정당한 해법이다 — 다만 그 판단은 사람이 한다
 
 > lint subcommand 전체 목록: `--lint-deployment`(§4.5) · `--lint-license`(§4.6) · `--lint-data`([`data-access-rules.md`](data-access-rules.md)) · `--lint-config`·`--lint-layouts`([`../../_doc_arch/theme_layout.md`](../../_doc_arch/theme_layout.md)). PPTX 규격 검증(§4.7)은 subcommand 가 아니라 `--pptx` 빌드 내장이다.
 
