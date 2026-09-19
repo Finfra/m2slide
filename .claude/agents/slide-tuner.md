@@ -304,6 +304,8 @@ for card in payload[1:]:
 
 ## Step 7. 재빌드 + 변경 슬라이드 재캡처
 
+> ⚠️ 아래 캡처가 Playwright 인 것은 **사람이 눈으로 대조할 PNG** 가 산출물이기 때문이다 ([apply-verify-rules](../rules/apply-verify-rules.md) §4.2 예외 — ego 캡처가 전 옵션 15초 타임아웃). **진입·구조 판정은 ego 가 기본**이므로 그 축까지 Playwright 로 끌고 가지 말 것.
+
 ```bash
 ./m2slide.sh <project>
 

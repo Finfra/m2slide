@@ -9,7 +9,8 @@ date: 2026-05-24
 m2slide 저장소(`lib/m2slide/`)에서 다음 동작 발생 시 자동 발동:
 
 * 스크린샷·캡처 파일(`.png`, `.jpg`, `.jpeg`, `.webp`) 신규 생성
-* Playwright MCP `mcp__playwright__browser_take_screenshot` 호출 (filename 지정 또는 default `page-{ts}.png`)
+* 브라우저 캡처 호출 — ego `page.screenshot({ path })` (기본) 또는 Playwright `mcp__playwright__browser_take_screenshot`
+    - ⚠️ 엔진 선택은 여기가 아니라 [apply-verify-rules](apply-verify-rules.md) §4.0·§4.2 가 정한다. 본 룰은 **어느 엔진이든 경로 의무**만 건다
 * `fcapture` / `capture-w` / `capture-m` 스킬 실행
 * AppleScript `screencapture` 직접 실행
 * 비교용 변종 캡처(`compare-*.png`, `v2-*.png`, `slide-*.png`, `htmlart-*.png` 등) 생성
@@ -32,8 +33,18 @@ m2slide 저장소(`lib/m2slide/`)에서 다음 동작 발생 시 자동 발동:
 
 캡처 도구 호출 시 **반드시** 출력 경로를 명시:
 
+```javascript
+// ✅ ego-browser — path 는 절대경로 권장 (heredoc 의 cwd 가 호출 위치와 다를 수 있음)
+await page.screenshot({
+  path: "/Users/nowage/_git/__all/videoMaker/lib/m2slide/_doc_work/capture/compare-slide-22.png",
+});
+
+// ❌ path 생략 → 임시 경로에 떨어져 회수 못 함
+await page.screenshot();
+```
+
 ```python
-## ✅ Playwright MCP — filename 인자에 _doc_work/capture/ 경로 명시
+## ✅ Playwright MCP (apply-verify-rules §4.2 예외 경로) — filename 에 _doc_work/capture/ 명시
 mcp__playwright__browser_take_screenshot(
     filename="_doc_work/capture/compare-slide-22.png"
 )

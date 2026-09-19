@@ -81,7 +81,9 @@ EOF
 
 `--viewport WxH` 명시 시 우선.
 
-## Step 5 — m2slide 슬라이드 캡처 (Playwright MCP)
+## Step 5 — m2slide 슬라이드 캡처 (Playwright MCP — §4.2 예외)
+
+> ⚠️ **여기만 Playwright 인 이유**: 본 스킬의 산출물이 *"사람이 눈으로 대조할 PNG"* 라서다. ego 캡처는 2026-09-19 실측에서 전 옵션 15초 타임아웃(6회 연속 실패)이라 [apply-verify-rules](../../rules/apply-verify-rules.md) §4.2 예외에 해당한다. **진입·구조 판정까지 Playwright 로 하지 말 것** — 그 축은 ego 가 기본이다. 예외가 풀리면 이 절도 ego 로 되돌린다.
 
 `Projects/<P>/markdown/AGENDA.md` 또는 `slide/*.html` 목록으로 chapter list 산출. 각 챕터의 슬라이드 수는 `http://localhost:9877/p/<P>/s/<chap>` JSON endpoint로 확인.
 

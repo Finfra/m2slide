@@ -87,13 +87,30 @@ grep -h '^theme:' Projects/<P>/_config.yml _config.yml _config.org.yml 2>/dev/nu
 
 ## 4. 브라우저·검증 채널 (Issue235 — 이중화)
 
+### 4.0 검증 엔진 — ego-browser 가 기본 (Issue377)
+
+헤드리스 검증의 기본 엔진은 **ego-browser** 다. 글로벌 [browser-engine-rules](~/.claude/rules/browser-engine-rules.md) 의 *"기본은 ego"* 가 m2slide 에도 그대로 적용된다. 본 룰이 과거 Playwright 를 지목하고 있어 세션이 그쪽을 집어 왔으나(2026-09-19 실사용 관측), **룰과 엔진 정책이 갈라져 있던 그 비대칭이 재발 지점이었다**.
+
+2026-09-19 실측 (aTest · dev-server 9877 · ego lite 0.5.0.32):
+
+| 축 | ego-browser | Playwright MCP |
+| :--- | :--- | :--- |
+| 진입 `goto()` | 172ms ✅ | MCP 왕복 |
+| 의미 트리 `snapshot()` | 12ms ✅ | ✅ |
+| DOM 실측 `evaluate()` | 1ms ✅ | `browser_evaluate` |
+| **`file://` 직접 진입** | **✅ 가능** | **❌ 차단(보안 기본값)** |
+| PNG 캡처 | ❌ 15초 타임아웃 (6회 연속) | ✅ |
+
+* **ego 는 `file://` 를 연다** — Playwright 가 못 하던 축이다. [file-deployment-rules](file-deployment-rules.md) 의 *"임의 단일 `.html` + `img/` 만으로 동작"* 계약을 **실제 배포 조건 그대로** 헤드리스 검증할 수 있게 됐다. dev-server 경유는 그 계약을 우회한 근사였다
+* **캡처(PNG)만 예외**다 — §4.2. 그 외 어떤 축도 Playwright 로 가지 않는다
+
 검증 의도에 따라 두 채널 분기:
 
 | 채널            | URL                                                        | 도구                 | 용도                              |
 | :-------------- | :--------------------------------------------------------- | :------------------- | :-------------------------------- |
 | 시각 (file://)  | `file:///abs/.../slide/X.html?fwd=1#/N`                    | AppleScript Chrome   | 사용자 직접 확인, 배포 시뮬레이션 |
-| 헤드리스 — solo | `http://localhost:9877/p/<P>/s/<chap>/<slide>[?mode=text]` | Playwright MCP, curl | 단일 슬라이드 design 검증         |
-| 헤드리스 — deck | `http://localhost:9877/p/<P>/n/<chap>/<slide_or_id>`       | Playwright MCP, curl | 전체 deck navigation 검증         |
+| 헤드리스 — solo | `http://localhost:9877/p/<P>/s/<chap>/<slide>[?mode=text]` | **ego-browser**, curl | 단일 슬라이드 design 검증         |
+| 헤드리스 — deck | `http://localhost:9877/p/<P>/n/<chap>/<slide_or_id>`       | **ego-browser**, curl | 전체 deck navigation 검증         |
 
 > ⚠️ legacy `http://localhost:9877/Projects/<P>/slide/<X>.html` 직접 접근은 차단됨 (Issue236.11 — 404). 반드시 short form 사용.
 > chap·slide 는 1-base 인덱스 (m2slide hashOneBasedIndex 정합). chap=1 = sorted chapter files 첫 번째 (single mode 면 index.html).
@@ -122,20 +139,35 @@ grep -h '^theme:' Projects/<P>/_config.yml _config.yml _config.org.yml 2>/dev/nu
 ./m2slide.sh --serve restart
 ```
 
-Playwright 사용 (short form 필수):
+ego-browser 사용 (short form 필수):
 
+```bash
+ego-browser nodejs <<'EOF'
+const task = await taskSpace("m2slide 슬라이드 검증");
+const page = task.page("p1");
+
+// 단일 슬라이드 design 검증 (/s/ path = solo)
+await page.goto("http://127.0.0.1:9877/p/aTest/s/8/6");
+await page.waitForLoadState();
+
+// 구조·텍스트 실측 — 검증의 1차 수단 (스크린샷보다 빠르고 판정 근거가 명시적)
+console.log(await page.evaluate(() => ({
+  sections: document.querySelectorAll("section").length,
+  title: document.querySelector("h1,h2")?.textContent?.trim(),
+  layout: document.querySelector("section")?.className,
+})));
+console.log(await page.snapshot());
+
+await task.finish({ keep: [] });
+EOF
 ```
-# 단일 슬라이드 design 검증 (/s/ path = solo)
-mcp__playwright__browser_navigate("http://localhost:9877/p/aTest_v1/s/8/6")
-mcp__playwright__browser_take_screenshot(filename="_doc_work/capture/verify-aTest_v1-chap8-slide6.png")
-mcp__playwright__browser_console_messages()
 
-# deck navigation 검증 (/n/ path — 좌우 키, agenda 링크, reveal.js nav UI)
-mcp__playwright__browser_navigate("http://localhost:9877/p/aTest_v1/n/8/6")
-
-# deck navigation with named section id (reveal.js auto-id)
-mcp__playwright__browser_navigate("http://localhost:9877/p/aTest_v1/n/1/toc-placeholder")
-```
+* **`evaluate()`·`snapshot()` 이 1차 수단**이다 — 실측 1ms·12ms. *"눈으로 봐야 안다"* 고 넘겨짚지 말고 판정 기준을 DOM 질의로 적는다
+* deck navigation 은 `/n/` path 로 goto — `http://127.0.0.1:9877/p/aTest/n/8/6` · named section id `…/n/1/toc-placeholder`
+* **`file://` 직접 검증**(배포 조건 그대로, Playwright 로는 불가): `await page.goto("file:///abs/.../slide/01-x.html?fwd=1#/3")`
+* task space 는 **목표당 하나**다. 다음 라운드는 출력된 `spaceId` 로 `taskSpace(<id>)` 재개하고, 끝나면 `finish({ keep: [] })` 로 닫는다
+* ⚠️ **ego API 는 Playwright 가 아니다** — `locator()`·`getByRole()`·`expect()`·`route()` 없음. 문서화된 Page API 와 `evaluate()`·`cdp()` 만 쓴다
+* console 오류 수집이 필요하면 goto **전에** `await page.cdp("Runtime.enable")`·`cdp("Log.enable")` 후 `await page.events()` 로 회수
 
 curl 사용:
 
@@ -225,11 +257,10 @@ curl -L http://localhost:9877/p/<P>/s/c   # → /n/c
     * `activate` Chrome 자체를 foreground로 끌어옴
     * `file://` URL 직접 지원
 
-2. **Playwright MCP (`mcp__playwright__browser_*`)** — 페이지 콘텐츠 자동 검증 필요 시
-    * `mcp__playwright__browser_navigate` / `browser_tabs new`
-    * **주의**: playwright MCP 는 `file://` **차단** (보안 기본값). m2slide dev-server(port 9877) 경유 short form URL 사용:
+2. **ego-browser** — 페이지 콘텐츠 자동 검증이 필요할 때 (기본 엔진, §4.0)
+    * **`file://` 를 직접 연다** — 배포 조건 그대로 재는 유일한 경로다 (Playwright 는 `file://` 차단이라 불가능했다). dev-server 경유 short form 도 그대로 쓴다:
         ```
-        http://localhost:9877/p/{Name}/s/{chap}/{slide}
+        http://127.0.0.1:9877/p/{Name}/s/{chap}/{slide}
         ```
         ```bash
         # dev-server idempotent 시동 (빌드 시 자동, 수동 가능)
@@ -237,8 +268,8 @@ curl -L http://localhost:9877/p/<P>/s/c   # → /n/c
         ```
         * legacy `http://localhost:9877/Projects/<P>/slide/<X>.html` 직접 진입은 차단됨 (Issue236.11 — 404)
         * 별도 `python3 -m http.server 8765` fallback 사용 금지 — dev-server 가 단일 진입점
-    * stale Chrome 인스턴스 lock 시 `pkill -f "user-data-dir=.*ms-playwright"` 후 재시도
-    * 페이지 snapshot·screenshot·console 캡처가 필요한 검증 단계에서만 사용 (단순 "열어보기"에는 과함)
+    * 판정은 `evaluate()`·`snapshot()` 으로 한다. 사람이 볼 PNG 가 필요한 경우에만 §4.2 예외
+    * 단순 "열어보기"에는 과하다 — 그 경우 1번 AppleScript
 
 3. **`open-slide` 스킬** (Issue223) — 임의 슬라이드 진입 자동화
     * 위 AppleScript 로직 + chapter prefix 매칭을 캡슐화한 프로젝트 로컬 스킬
@@ -257,9 +288,20 @@ file:///<abs_path>/Projects/{Name}/slide/{chapter}.html?fwd=1#/N
 * **이유**: m2slide는 `?fwd=1`/`?back=1`/`?last=1` 쿼리 시그널을 cross-page forward/back 애니메이션(fade-in)에 사용 (Issue110/122). 시그널 없으면 페이지 진입이 부자연스럽거나 Reveal.js hash 파싱 충돌로 cover 슬라이드로 떨어지는 회귀 가능 (Issue110 회귀 사례)
 * **순서 규칙**: `?fwd=1` 쿼리는 반드시 `#hash` 앞에 배치. `index.html#/2?fwd=1`처럼 hash 뒤에 두면 Reveal.js가 `?fwd=1`을 hash 일부로 해석하여 인덱싱 실패
 * **slide index**: `#/N` = N번째 horizontal 슬라이드 (0-base). cover 슬라이드는 #/0, 본문은 #/1부터
-* **AppleScript 또는 Playwright만 사용**: `open -a` shell 명령은 §4 정책으로 금지. AppleScript 사용 시 `URL:"..."` heredoc 내부 인용 자체로 `#` 안전, Playwright는 인수 직접 전달이라 인용 무관
+* **AppleScript 또는 ego-browser 만 사용**: `open -a` shell 명령은 §4 정책으로 금지. AppleScript 는 `URL:"..."` heredoc 내부 인용이라 `#` 안전, ego 는 `page.goto("…")` 인수 직접 전달이라 인용 무관
 * **chapter mode**: `{chapter}.html?fwd=1#/N` 형태 (예: `01-opening.html?fwd=1#/3`)
 * **single mode**: `index.html?fwd=1#/N`
+
+### 4.2 스크린샷 캡처 — 지금만 Playwright 예외 (Issue377)
+
+**PNG 캡처는 2026-09-19 시점 ego 에서 실패한다.** 그 한 축에 한해 Playwright MCP 를 쓴다.
+
+* 실측: `page.screenshot()` 과 `cdp("Page.captureScreenshot")` 이 **전 옵션에서 15초 CDP 타임아웃**. 3회 재시도(45초) · `fromSurface:false` · viewport override 유무를 갈라 **6회 연속 실패, 성공 0회**. ego lite 는 GUI 로 정상 실행 중이었으므로 **앱 부재가 원인이 아니다**
+* 근거 조항: 글로벌 [browser-engine-rules](~/.claude/rules/browser-engine-rules.md) 의 *"ego 재시도가 반복 실패해 실측으로 현저히 느릴 때"*. 속도 선호·습관이 아니라 **실측된 불가**라서 예외가 성립한다 — 게이트가 물으면 이 줄을 근거로 답한다
+* ⚠️ **잠정 우회이며 원인은 아직 규명되지 않았다.** 글로벌 ego 자산의 문제이므로 `~/.claude/Issue.md` 로 추적하고, 원인이 잡히면 캡처도 ego 로 되돌린다. *"캡처는 원래 Playwright"* 로 굳히지 말 것
+* **캡처가 아닌 축을 캡처로 대신하지 말 것** — 구조·텍스트·스타일 판정은 `evaluate()` 가 더 정확하고 빠르다. Playwright 로 넘어가는 유일한 사유는 *"사람이 볼 PNG 가 필요하다"* 뿐이다
+* 경로 의무는 그대로 [capture-output-rules](capture-output-rules.md) — `_doc_work/capture/` 하위
+* 재실측 절차(예외 해제 판정): 위 실측을 그대로 1회 돌려 `page.screenshot({path})` 가 1초 내 성공하면 예외를 거두고 본 절을 삭제한다
 
 ## 4.5 파일 단위 배포 검증 (Issue235)
 

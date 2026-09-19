@@ -115,10 +115,10 @@ end tell
 EOF
 ```
 
-Playwright 대안 (`--firefox` 없이 페이지 콘텐츠 자동 검증 필요 시):
-* `mcp__playwright__browser_navigate` 사용
-* **주의**: file:// 차단됨 — `--verify` 사용하여 dev-server 경유 (아래)
-* stale Chrome lock 시 `pkill -f "user-data-dir=.*ms-playwright"` 후 재시도
+ego-browser 대안 (`--firefox` 없이 페이지 콘텐츠 자동 검증이 필요할 때):
+* `ego-browser nodejs` heredoc 에서 `page.goto(...)` — 기본 엔진 ([apply-verify-rules](../../rules/apply-verify-rules.md) §4.0)
+* **`file://` 도 직접 연다** — dev-server 경유가 강제되지 않는다 (Playwright 는 `file://` 차단이라 `--verify` 가 필수였다)
+* 판정은 `evaluate()`·`snapshot()`. PNG 가 필요하면 §4.2 예외 경로
 
 ## 4-V. --verify 헤드리스 검증 모드 (Issue235)
 
@@ -129,20 +129,30 @@ Playwright 대안 (`--firefox` 없이 페이지 콘텐츠 자동 검증 필요 �
     "$REPO_ROOT/m2slide.sh" --serve start
     ```
 2. URL 조립: `http://localhost:9877/p/<project>/s/<chap>/<N>` (short form 필수 — legacy `/Projects/...` 형식 차단됨)
-3. Playwright MCP navigate:
+3. ego-browser 진입 + console 수집 (goto **전에** enable):
+    ```bash
+    ego-browser nodejs <<'EOF'
+    const task = await taskSpace("open-slide --verify");
+    const page = task.page("p1");
+    await page.cdp("Runtime.enable"); await page.cdp("Log.enable");
+    await page.goto("<URL>");
+    await page.waitForLoadState();
+    console.log(await page.evaluate(() => ({
+      title: document.querySelector("h1,h2")?.textContent?.trim(),
+      layout: document.querySelector("section")?.className,
+    })));
+    console.log(JSON.stringify(await page.events()));
+    await task.finish({ keep: [] });
+    EOF
     ```
-    mcp__playwright__browser_navigate("<URL>")
-    ```
-4. 스크린샷 저장:
+4. 스크린샷이 필요하면 — **현재만** Playwright 예외 ([apply-verify-rules](../../rules/apply-verify-rules.md) §4.2. ego 캡처가 15초 타임아웃):
     ```
     mcp__playwright__browser_take_screenshot(
         filename="_doc_work/capture/verify-<project>-<chapter_prefix>-<N>.png"
     )
     ```
-5. console 메시지 캡처:
-    ```
-    mcp__playwright__browser_console_messages()
-    ```
+    * 구조·텍스트 판정이 목적이면 캡처하지 말 것 — 3번 `evaluate()` 가 더 정확하고 빠르다
+5. console 이벤트에서 `Runtime.exceptionThrown`·`Log.entryAdded`(level=error/warning) 추출
 6. console에서 ERROR·WARN 추출하여 §5 결과 보고에 포함
 
 기존 시각 채널과 병행 가능 — `--verify` 후 같은 응답 내에서 §4 시각 채널도 호출 시 사용자에게 결과를 보여줄 수 있음.
