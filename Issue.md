@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 376
+* Issue HWM: 377
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -39,6 +39,20 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue377: 브라우저 검증 엔진을 Playwright → ego-browser 로 전환 (등록: 2026-09-19, 해결: 2026-09-19, commit: 7587d6f) ✅
+* 목적: 프로젝트 SCAR 가 Playwright 를 검증 표준으로 지목하고 있어 글로벌 *"기본은 ego"* 정책([browser-engine-rules](~/.claude/rules/browser-engine-rules.md))과 갈라져 있었다. 세션이 Playwright 를 집은 것은 판단 착오가 아니라 **룰을 따른 결과**였으므로, 룰 쪽을 고쳐 재발 지점을 없앤다
+* 상세:
+    - 관측(2026-09-19, 사용자 지적): 다른 세션이 슬라이드 확인에 ego 가 아닌 Playwright 사용
+    - 전수 조사: 프로젝트 SCAR 5종(`apply-verify-rules`·`capture-output-rules`·`open-slide`·`slide-compare`·`slide-tuner`)에 Playwright 명시 20여 곳, **ego 언급 0건**. 글로벌 룰은 상시 로드되지만 프로젝트 룰이 더 구체적이라 그쪽이 이겼다
+    - 실측(aTest · dev-server 9877 · ego lite 0.5.0.32): `goto` 172ms · `snapshot()` 12ms · `evaluate()` 1ms 로 검증 축 전부 동작. **`file://` 직접 진입 성공** — Playwright 가 차단하던 축이라 배포 계약 검증이 가능해진 순증
+    - 캡처만 불가: `page.screenshot()`·`cdp("Page.captureScreenshot")` 이 전 옵션에서 15초 타임아웃. 3회 재시도·`fromSurface:false`·viewport override 유무를 갈라 **6회 연속 실패·성공 0회**. ego lite 는 GUI 정상 실행 중이라 앱 부재가 아니다
+* 구현 명세:
+    - `apply-verify-rules` §4.0 신설(엔진 판정·실측 표) · 헤드리스 예시를 ego heredoc 으로 교체 · §4.2 신설(캡처 한정 Playwright 예외 + 해제 재실측 절차)
+    - `capture-output-rules` 트리거를 엔진 중립으로 일반화, ego `page.screenshot({path})` 예시 추가
+    - `open-slide` `--verify` 를 ego 진입 + CDP console 수집으로 교체, 캡처만 예외 표기
+    - `slide-compare` Step 5 · `slide-tuner` Step 7 은 산출물이 *"사람이 대조할 PNG"* 라 예외 유지하되 **근거와 해제 조건을 명시**
+    - ⚠️ 캡처 예외는 **잠정**이다 — 원인 미규명. 글로벌 ego 자산 문제이므로 `~/.claude/Issue.md` 추적 대상(별도 등록)
 
 ## Issue376: exercise 계열 레이아웃에 표가 있으면 제목이 슬롯에서 사라진다 (등록: 2026-09-19, 해결: 2026-09-19, commit: `dcd9338`) ✅
 * 목적: `layout-exercise`·`layout-exercise-small` 슬라이드에 표가 들어가면 `exercise-title` 슬롯이 비어 제목이 본문으로 밀리고, agenda TOC 에도 「슬라이드 N」 으로만 뜬다. 실습 장에서 제목은 수강생이 지금 무엇을 하는지 가리키는 신호라 비면 안 된다

@@ -147,7 +147,7 @@ const task = await taskSpace("m2slide 슬라이드 검증");
 const page = task.page("p1");
 
 // 단일 슬라이드 design 검증 (/s/ path = solo)
-await page.goto("http://127.0.0.1:9877/p/aTest/s/8/6");
+await page.goto("http://127.0.0.1:9877/p/aTest/s/1/1");   // chap·slide 는 1-base
 await page.waitForLoadState();
 
 // 구조·텍스트 실측 — 검증의 1차 수단 (스크린샷보다 빠르고 판정 근거가 명시적)
@@ -163,7 +163,8 @@ EOF
 ```
 
 * **`evaluate()`·`snapshot()` 이 1차 수단**이다 — 실측 1ms·12ms. *"눈으로 봐야 안다"* 고 넘겨짚지 말고 판정 기준을 DOM 질의로 적는다
-* deck navigation 은 `/n/` path 로 goto — `http://127.0.0.1:9877/p/aTest/n/8/6` · named section id `…/n/1/toc-placeholder`
+* deck navigation 은 `/n/` path 로 goto — `http://127.0.0.1:9877/p/aTest/n/1/1` · named section id `…/n/1/toc-placeholder`
+* ⚠️ **존재하지 않는 chap·slide 를 주면 dev-server 가 에러 페이지를 200 으로 돌려준다** — `evaluate()` 결과가 `title: "Error response"` 면 엔진 문제가 아니라 **인덱스가 틀린 것**이다. 프로젝트의 실제 챕터 수는 `curl http://127.0.0.1:9877/p/<P>` 로 먼저 확인한다
 * **`file://` 직접 검증**(배포 조건 그대로, Playwright 로는 불가): `await page.goto("file:///abs/.../slide/01-x.html?fwd=1#/3")`
 * task space 는 **목표당 하나**다. 다음 라운드는 출력된 `spaceId` 로 `taskSpace(<id>)` 재개하고, 끝나면 `finish({ keep: [] })` 로 닫는다
 * ⚠️ **ego API 는 Playwright 가 아니다** — `locator()`·`getByRole()`·`expect()`·`route()` 없음. 문서화된 Page API 와 `evaluate()`·`cdp()` 만 쓴다
