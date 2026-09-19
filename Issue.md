@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 381
+* Issue HWM: 384
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -33,9 +33,44 @@
 
 # 📙 일반
 
+## Issue382: pptx **패키지 조립 무결성** 검사 부재 — 글로벌 `check-assembly` 배선 (등록: 2026-09-20)
+* 목적: lane B/G/M/S/T 가 pptx 의 XML part·rel 을 **손으로 끼우는데**, 그 조립이 온전한지 재는 검사가 하나도 없다. 글로벌 [`check-assembly.py`](~/.claude/skills/ppt-check/scripts/check-assembly.py) 를 **배선만** 해서 그 축을 덮는다.
+* 카테고리: Build
+* 상세:
+    - 요청 출처: prj8 cg 위임 [`_doc_work/delegation_cg-crossfeed.md`](_doc_work/delegation_cg-crossfeed.md) A2. 대조표 정본은 prj8 `_doc_arch/ppt-parity-crossfeed.md`. **판정 = 채택**
+    - ⚠️ **요청서의 전제 일부는 사실과 다르다** — *"장 유실·순서"* 는 이미 덮여 있다: [`z_test/ig-ppt/3.parity.sh`](z_test/ig-ppt/3.parity.sh) ① slide-count(HTML 본문 장 + 구조 장 = pptx 장) · ③ title-parity(제목 문자열·순서) · ④ structure-slides. 실제로 빈 축은 **패키지 층**(zip 항목 중복·끊긴 rel·미선언 미디어 확장자)이고, parity 는 python-pptx **렌더 텍스트**로 판정하므로 그 층을 구조적으로 **볼 수 없다**
+    - 이 축의 실사고가 이미 있었다 — lane G 의 `diagramDrawing` 관계를 슬라이드 rels 가 아닌 data 파트에 걸었을 때 LibreOffice 가 빈 그룹으로 들여왔다(실측 2026-09-11, [`CLAUDE.md`](CLAUDE.md) "lane G" 절). 당시 **어떤 검사도 잡지 못했고** 사람이 눈으로 찾았다
+    - 실측(2026-09-20): 글로벌 `check-assembly.py` 를 기존 산출물에 **무개조로** 돌리니 그대로 동작한다. aTest-all(51장)·igTest(42장)·m2Slide_chapter_mode(34장) 전부 `FAIL 0 · SKIP 3 · 검사 8` rc0
+    - 즉 지금은 **깨끗하다** — 본 이슈는 결함 수정이 아니라 **회귀 가드 신설**이다. 손으로 XML 을 끼우는 lane 이 늘수록 이 축이 조용히 깨질 자리가 는다
+* 구현 명세:
+    - 배선 위치 1순위는 `z_test/ig-ppt/` 전용 단언. **`build-pptx.sh` 내장은 2순위** — 내장 검증(`check-conform`·`check-xml-order`·`check-empty`)은 FAIL 시 빌드를 죽이므로, 현재 FAIL 0 인 축을 차단 지점에 바로 넣으면 오탐 1건이 빌드를 막는다
+    - baseline 불요 5규칙만 켠다: `zip_entry_names_unique` · `dropped_slide_relationship_removed` · `reorder_key_is_stable_across_save` · `no_duplicate_or_missing_after_reorder` · `declared_extensions_cover_all_media`
+    - `--baseline` 필요 3규칙은 Issue383 소관 — 여기서는 SKIP 으로 두되 **SKIP 건수를 보고**한다. 숨기면 *"통과"* 와 *"축이 사라짐"* 이 구분되지 않는다([`check-coverage.py`](lib/pptx/check-coverage.py) 와 같은 취지)
+    - ⚠️ **`lib/pptx/` 에 새 스크립트를 만들지 않는다.** 글로벌 SCAR 를 호출한다 — 복사하면 prj8 이 경고한 2원 갈라짐이 그대로 재현된다
+    - 글로벌 도구가 없는 머신에서는 **SKIP 하고 그 사실을 보고**한다 (조용한 통과 금지)
+
+
 # 📗 선택
 
 # ✅ 완료
+
+## Issue384: prj8 cg crossfeed 접수 — 주입 2건 판정 + svg-direct·free-image 전역 자산 명시 (등록: 2026-09-20, 해결: 2026-09-20, commit: `f789ae7, 100308d`) ✅
+* 목적: prj8 이 `ppt-maker`(prj3) ↔ m2slide 축을 대조해 보낸 주입 후보 2건을 실측으로 판정하고, m2slide 소유이면서 전역에서 호출되는 자산 2종을 문서에 명시한다.
+* 카테고리: Build
+* 상세:
+    - 요청서: [`_doc_work/delegation_cg-crossfeed.md`](_doc_work/delegation_cg-crossfeed.md) (prj8 cg, 2026.09.20). 경계는 *"변환기를 고치면 prj42, 언제 그 경로로 갈지 정하면 prj8"* — 발의는 prj8, **채택 판단은 prj42**
+    - A2(조립 무결성) → **채택**, Issue382 로 등록. A1(기준선 대비) → **보류**, Issue383 으로 등록
+    - ⚠️ 핵심 발견: A1·A2 는 별개 기능이 아니라 **같은 글로벌 스크립트 하나**다. `--baseline` 은 `check-assembly.py` 의 플래그이므로 A2 를 배선하면 A1 은 구현 없이 따라온다. 따라서 남는 판단은 *"언제 쓰는가"* 뿐이다
+    - B(전역 자산 명시) → **반영**. `svg_direct`·`free_image` 는 m2slide 소유지만 글로벌 `visual-gen` 레지스트리에 `scope: prj42` 로 등재돼 m2slide 밖 세션이 `/vg` 로 고른다. 3개 지점에 1줄씩 명시:
+        - [`.claude/skills/free-image/SKILL.md`](.claude/skills/free-image/SKILL.md) 목적 절
+        - [`data/media-creater/tools.yml`](data/media-creater/tools.yml) `svg_direct`·`free_image` 항목 위 주석
+        - [`.claude/agents/media-creater.md`](.claude/agents/media-creater.md) 보조 도구 표 뒤
+    - 이관은 하지 않는다 — prj8 판정(ⓑ 연계만)에 동의. 판정 기준 *"누가 고치나"* 가 m2slide 본체와 같은 결론을 낸다
+* 검증:
+    - `check-assembly.py` 3개 덱 실측 rc0 (Issue382 근거)
+    - `data/media-creater/tools.yml` yaml 파싱 OK (tools 16개, `svg_direct`·`free_image` 보존)
+    - `--lint-data` 검사 6(data/ 범주 선언) 통과. ⚠️ 검사 5 는 **기존 실패 5건** 잔존(`Projects/1.design_rnd/DESIGN.md` 슬라이드 제목의 내부 추적 표기) — 본 변경과 무관하며 별건
+
 
 ## Issue381: htmlart callout **branch 라벨**이 3줄이면 6px 잘린다 (등록: 2026-09-19, 해결: 2026-09-20, commit: `5797733`) ✅
 * 목적: `m2Slide_visual_component` 5장 30번(원고 슬라이드 29 · `5.27b callout — horizontal`)의 branch 라벨 `**바이브 코딩으로 쉽고, 빠르게, 정확하게**` 가 박스를 6px 넘겨 잘린다. [Issue370](#issue370) 전덱 스캔에서 유일하게 남은 넘침이다
@@ -1793,6 +1828,23 @@
 * 검증: 대표 샘플(default/default_lec/default_dark × single/chapter) iframe 실시간 검토 페이지로 사용자 2회 시각 컨펌(위치·크기·색 조정 1회 반영 후 최종 승인) → 전체 소급 적용
 
 # ⏸️ 보류
+
+## Issue383: `check-assembly --baseline` — **원본 pptx 대비** 판정 (등록: 2026-09-20, 보류: 2026-09-20)
+* 목적: 절대 건수로 재면 원본이 원래 갖고 있던 특성을 **새 결함으로 오판**한다(prj61 실측: 산출 120건인데 원본이 156건). 그 함정을 m2slide 역변환 경로에 대비해 둔다.
+* 카테고리: Build
+* depends: Issue382
+* 보류 사유: **지금 잴 대상이 0건이다.**
+    - 정방향(원고 → pptx)의 기준선은 **HTML 덱**이고 m2slide 는 이미 그것을 쓴다 — [`3.parity.sh`](z_test/ig-ppt/3.parity.sh) 머리주석이 *"판정 기준은 원본 HTML 이다 — 그쪽이 정본"* 을 설계 원칙으로 못박고 ①③ 이 장수·제목을 그 기준으로 잰다. 즉 A1 의 **취지는 이미 구현돼 있고**, 원고 우선 도구에는 HTML 이 더 올바른 기준선이다
+    - pptx 기준선이 의미를 갖는 것은 **역변환 경로**(원본 pptx → 원고 → 재산출 pptx)뿐인데, 실측(2026-09-20) 원본을 보유한 프로젝트(`Projects/_ppt/` — BasicKnowledgeForAI_small·AgenticCoding·GenContentProd)는 **pptx 를 재산출하지 않는다**. 인자로 넘길 짝이 없다
+    - 구현 부담은 0 이다 — Issue382 가 같은 스크립트를 배선하므로 플래그가 따라온다. 그래서 *"만들 것인가"* 가 아니라 *"언제 쓸 것인가"* 의 문제이고, 쓸 자리가 생기기 전에 켜면 SKIP 3 줄만 는다
+* 재개 조건:
+    - 역변환 프로젝트(`Projects/_ppt/` 에 원본이 남은 것)를 **pptx 로 재산출**하는 작업이 생길 때
+    - 또는 ppt2m2slide 의 round-trip 검증에 **구조 축**을 더할 때 — 현재 그 단계는 `slide-compare`(캡처 기반 **시각** 대조)뿐이라 part·rel 층을 보지 않는다
+* 구현 명세 (재개 시):
+    - `check-assembly.py <재산출.pptx> --baseline Projects/_ppt/<원본>.pptx`
+    - 켜지는 3규칙: `every_source_title_present_in_output` · `slide_count_equals_declared_arithmetic` · `metric_compared_to_source_deck`
+    - ⚠️ 원본 pptx 가 **`Projects/_ppt/` 에 남아 있어야** 한다. [`repo-tracking-rules`](.claude/rules/repo-tracking-rules.md) 상 pptx 는 git 추적 대상이 아니므로, 재개 시점에 원본 존재부터 확인한다
+
 
 ## Issue145: Fragment 단계별 등장 + 색 강조 동시 적용 syntax 부재 (등록: 2026-05-10, 보류: 2026-05-10)
 * 목적: 한 요소에 두 개의 fragment-index를 거는 reveal.js 표준 패턴(등장 → 다음 단계에서 색 강조)을 m2slide 마크다운으로 자연스럽게 표현할 수 있게 함. 현재 인라인 attribute `{.fragment .highlight-red}`는 단일 class 세트만 li/p에 주입하므로 등장과 색 강조를 분리 적용할 수 없음.
