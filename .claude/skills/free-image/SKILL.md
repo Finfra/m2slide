@@ -10,6 +10,7 @@ date: 2026-07-12
 
 * 소스: [Openverse](https://openverse.org) — CC0/CC-BY/CC-BY-SA 이미지 aggregator (API 키 불요)
 * 산출: 대상 폴더에 이미지 파일 + `CREDITS.md` (출처·라이선스)
+* ⚠️ **전역 호출 대상 — m2slide 전용 자산이 아니다.** 글로벌 `visual-gen` 레지스트리([`~/.claude/data/visual-gen/registry.yml`](~/.claude/data/visual-gen/registry.yml))에 `scope: prj42` 로 등재돼 있어, m2slide 밖 세션도 `/vg` 를 거쳐 이 스킬을 고른다. **소유·수정은 prj42 지만 사용자는 전역**이므로 인자·산출 규약을 바꿀 때 m2slide 밖 호출자를 함께 고려한다 (prj8 crossfeed B, 2026-09-20)
 
 # 트리거
 
