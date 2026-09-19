@@ -31,6 +31,7 @@ types:
   process:
     tier: v1
     intent: "순차 단계·진행·워크플로"
+    max_chars: 13            # 노드 1개 권장 상한 (Issue364 실측 보수값 — 넘으면 폰트가 자동 축소된다)
     smartart_category: process
     input: "평면 리스트 — 최상위 항목 = 단계, 작성 순서 = 진행 순서"
     sublevel: "하위 들여쓰기 = 단계 내부 보조 설명 (선택)"
@@ -68,6 +69,7 @@ types:
   timeline:
     tier: v2
     intent: "시간순 이벤트·연표·일정·마일스톤"
+    max_chars: 40            # 노드 1개 권장 상한 (Issue364 실측 보수값 — 넘으면 폰트가 자동 축소된다)
     smartart_category: process
     input: "평면 리스트 — 최상위 항목 = 시점, 작성 순서 = 시간 순서"
     sublevel: "하위 들여쓰기 = 시점 보조 설명 (선택)"
@@ -86,6 +88,7 @@ types:
   matrix:
     tier: v2
     intent: "2차원 분류·사분면·부분과 전체 관계"
+    max_chars: 27            # 노드 1개 권장 상한 (Issue364 실측 보수값 — 넘으면 폰트가 자동 축소된다)
     smartart_category: matrix
     input: "평면 리스트 — 최상위 항목 = 사분면 (4개 권장)"
     sublevel: "하위 들여쓰기 = 사분면 보조 설명 (선택)"
@@ -158,6 +161,7 @@ types:
   numbered:
     tier: v3
     intent: "번호 있는 목록·순서 목록·체크리스트·랭킹"
+    max_chars: 31            # 노드 1개 권장 상한 (Issue364 실측 보수값 — 넘으면 폰트가 자동 축소된다)
     smartart_category: list
     input: "평면 리스트 — 최상위 항목 = 카드, 작성 순서 = 번호"
     sublevel: "하위 들여쓰기 = 카드 보조 설명 (선택)"
@@ -176,6 +180,7 @@ types:
   bracket:
     tier: v3
     intent: "그룹·하위 그룹 묶음 (괄호로 그룹 경계 강조)"
+    max_chars: 33            # 노드 1개 권장 상한 (Issue364 실측 보수값 — 넘으면 폰트가 자동 축소된다)
     smartart_category: list
     input: "2단 리스트 — 최상위 항목 = 그룹, 하위 들여쓰기 = 그룹 멤버"
     sublevel: "하위 들여쓰기 = 그룹 멤버 (필수 — 없으면 라벨만 렌더)"
@@ -260,6 +265,7 @@ types:
   annotate:
     tier: v6
     intent: "원문 안의 단어/문구를 색 윗줄·밑줄로 강조 + 좌·우 라벨로 설명 (주해·용어 풀이)"
+    max_chars: 44            # 노드 1개 권장 상한 (Issue364 실측 보수값 — 넘으면 폰트가 자동 축소된다)
     smartart_category: relationship
     input: |
       평면 리스트 — syntax B (over/under + 색 + span + label):
@@ -276,6 +282,7 @@ types:
   callout:
     tier: v7
     intent: "중앙 hub(아이콘 + 큰 타이틀) + 다방향 callout arrow + 박스 없는 라벨 (강조 카피 / 태그 그룹)"
+    max_chars: 23            # 노드 1개 권장 상한 (Issue364 실측 보수값 — 넘으면 폰트가 자동 축소된다)
     smartart_category: relationship
     input: |
       평면 리스트:
