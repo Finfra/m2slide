@@ -185,7 +185,14 @@ font:
   title: "Gmarket Sans"          # CSS `GmarketSansBold` — OS family(PowerPoint 서체 캐시 fa·LibreOffice 매칭 모두 "Gmarket Sans"). "Gmarket Sans Bold"(name ID1) 는 한글(ea) 매칭이 깨진다 (실측 2026-09-11 A/B)
   title_bold: true               # family + b=1 로 Bold face 를 고른다 (face 는 Light/Medium/Bold 뿐)
   body: "NanumGothicCoding"      # CSS `Nanum Gothic Coding` — OS family 는 공백 없음
-  code: "Menlo"                  # CSS `"SF Mono", Monaco, Menlo…` — 어느 macOS 에나 있는 것
+  # 코드 서체 — **템플릿이 들고 있는 서체**여야 한다 (Issue358, 사용자 결정 2026-09-19).
+  # 구 값 "Menlo" 는 CSS 체인("SF Mono", Monaco, Menlo, Consolas, "Courier New")에 실제로
+  # 있는 값이라 근거 없는 선택은 아니었다. 어긋난 것은 축이다 — **HTML 은 폴백 체인이 있고
+  # pptx 는 단일 지정**이다. 이 pptx 에는 임베드 폰트가 없으므로 Menlo 가 없는 머신
+  # (Windows 등)에서는 조용히 대체되어 배포본이 보는 사람마다 달라진다.
+  # NanumGothicCoding 은 테마 minor 서체이자 코딩용 모노스페이스 + 한글 지원이라 어느
+  # 머신에서든 같다. 코드·본문 구분은 코드 상자 배경과 키워드 색이 이미 맡는다.
+  code: "NanumGothicCoding"
   css_alias:                     # 검증이 CSS 쪽 이름을 보고 헷갈리지 않도록 대응표
     GmarketSansBold: "Gmarket Sans"
     "Nanum Gothic Coding": "NanumGothicCoding"
