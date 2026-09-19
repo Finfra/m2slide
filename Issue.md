@@ -47,6 +47,15 @@
     - 한 항목마다 ① ego-browser 로 HTML 실측 ② `soffice --headless --convert-to pdf` + `pdftoppm` 렌더 ③ 나란히 대조 ④ 정책 갱신(backup 후, 단독 커밋) ⑤ 필요 시 lane T/G 코드 ⑥ `./z_test/ig-ppt/6.roundtrip.sh aTest` 전건 + `4.laneb`·`5.lanem`·`--lint-data`
     - 정책이 소유해야 할 값(좌표·색·서체·기하)은 코드에 박지 않는다 — 검사기가 그 정책을 읽어 must_match 로 잰다
     - 종료 조건: 위 잔여 항목이 전부 계약(fidelity.yml)에 선언되거나 해소되고, aTest·m2Slide_chapter_mode 러너가 FAIL 0
+* 진행 (2026-09-19 · commit `137acd5`, `45a644e`, `b77e86e`, `a7750f0`):
+    - ✅ **러너 FAIL 0 달성** — `6.roundtrip` 이 aTest·m2Slide_chapter_mode 둘 다 통과. 후자는 FAIL 3건(bullets·h2_slide_title·table) + 장 수 +5 + 모자란 글자 25종이던 상태였다
+    - ✅ **표 폭** (잔여 4번) — `02d3c86`·`7cfdeaa`·`85fa4bc`·`c0032d1` 로 해소. 표 계약은 `lossy → lossless` 로 **정정**(정렬은 보존된다 — 구 판정의 근거 덱이 전부 좌측 정렬이라 차이가 드러날 수 없었다)
+    - ✅ **Issue343 이월 일부** (잔여 3번) — *하이픈 뒤 공백 없는 불릿*은 계약 서술이 **오판**임을 실측으로 밝혔다. HTML 도 pptx 도 CommonMark 느슨한 이어짐으로 **같게** 렌더하며, 어긋나 있던 것은 검사기였다. 무제 이미지 장은 빈 `## ` 생성 중단 + `head_bar_text` 선언으로 정리. **중첩 깊이(2칸 vs CommonMark)는 그대로 `bullet_nesting: lossy`** — 원고를 고치지 않고는 해소되지 않는다
+    - ✅ **생성 장 3종을 계약에 세웠다** — `deck_toc_slide` 신설(계약에 아예 없었다) · `agenda_slide`·`chapter_toc_slide` 판정을 위치 휴리스틱에서 lane S `synth` 표식으로. 역변환이 36장 중 **0장** 걸러내던 것이 9장 정상 제거
+    - ✅ **진입 장 판정을 세 곳에서 일치** — slide-parser(HTML `autoToc`) · build-source(`drop_auto_toc`) · check-roundtrip(`entry_slides`). 자식 헤딩을 가진 **H2 진입 장**을 pptx 만 만들던 것을 고쳤다(챕터4: HTML 6 · pptx 8 → 6)
+    - ✅ **표 셀 그림을 별도 축으로** — `table_cell_image` 신설. pptx 네이티브 표의 셀은 그림을 담을 수 없어(`a:tc` 는 txBody 만) alt 텍스트만 남는다. `table` 에 섞어 재면 셀 글자·행열·정렬이 멀쩡한데 표가 깨진 것처럼 보인다
+    - ⏳ **남은 것** — ① PowerPoint 실물 확인(사용자 입력 대기) ② lane G 확장(timeline·chevron·step·funnel·numbered·compare — 레이아웃별 캐시 기하 실측 필요) ③ 코드 상자 안 수식(PowerPoint 렌더 확인 필요) ④ cards 본문 여러 줄·2단계 높이 규칙(픽스처 필요)
+    - 📌 **선행 결함 발견 (별건)** — `3.parity.sh igTest` 가 4/7 실패한다(slide-count·title-parity·structure-slides·font-outside-theme). **본 작업 이전 커밋에서도 동일**함을 워크트리 대조로 확인했다. 원인은 `cards_placeholder` 기본값 false 로 H1 진입 장이 없어 Section Header 가 0개인 것이며, 러너 쪽 전제가 낡았다
 
 
 # 📕 중요
