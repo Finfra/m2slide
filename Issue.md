@@ -276,7 +276,7 @@
     - ✅ **커버리지 미측정 축 0** — [check-coverage.py](lib/pptx/check-coverage.py) + [7.coverage.sh](z_test/ig-ppt/7.coverage.sh) 신설. 첫 실행이 곧바로 4종을 찾았고 전부 해소했다
     - **이 이슈가 실증한 것**: 갈린 픽스처에서는 *"차이 없음"* 과 *"차이를 못 봄"* 이 구분되지 않는다. 합치자 8건, 커버리지를 재자 4건 — 합쳐 12건이 **한 세션 만에** 드러났다. 그중 둘(`inline_emphasis`·`slide_order`)은 **계약에 선언돼 있는데 검사기가 아예 안 재던** 축으로, Issue358 의 `font_outside_theme` 과 같은 형태다
     - **남은 경고(차단 아님)**: 한 덱에만 있는 축 6종(`table_cell_image`·`subheading`·`ordered_list`·`htmlart_lane_b`·`inline_symbol`·`slot_right`) — 그 덱을 고치면 축이 사라진다. 근거가 얇다는 알림이며 러너는 통과시킨다
-    - **이월** → 별도 이슈: `cards_hyperlink` 를 lossless 로 올리려면 **글로벌 SCAR(`ppt-info` 블록 렌더러)** 가 run 에 `a:hlinkClick` 을 붙여야 한다. [global-scar-change-rules](~/.claude/rules/global-scar-change-rules.md) 상 `~/.claude/Issue.md` 등록이 필요하고, 타 repo 편집이라 **사용자 승인 대기**
+    - **이월** → 별도 이슈: `cards_hyperlink` 를 lossless 로 올리려면 **글로벌 SCAR(`ppt-info` 블록 렌더러)** 가 run 에 `a:hlinkClick` 을 붙여야 한다. [global-scar-change-rules](~/.claude/rules/global-scar-change-rules.md) 상 `~/.claude/Issue.md` 등록이 필요하고, 타 repo 편집이라 승인을 물었고 **사용자 판정 2026-09-19 "지금은 두자"** — 계약이 `declared_drop` + `recover` 로 이미 선언하고 있어 손실이 기록되지 않는 상태는 아니다. 필요해지면 그때 등록한다
 
 
 ## Issue358: m2slide → pptx 미세 조정 — HTML 실측 ↔ pptx 렌더 대조를 같은 방식으로 반복 (등록: 2026-09-11, 해결: 2026-09-19, commit: `137acd5`, `45a644e`, `b77e86e`, `a7750f0`, `d75c05e`, `19f0677`, `02d3c86`, `7cfdeaa`, `85fa4bc`, `c0032d1`, `a20797f`, `52b4407`, `7e2123e`, `76799bd` 외 7건) ✅
