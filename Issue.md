@@ -25,40 +25,19 @@
 
 # 🌱 이슈후보
 
+1. `6.roundtrip igTest` — pptx 에 없는 글자 6종(`Chapter 1.`~`Chapter 5.` · `v0.8.0`). Issue379 로 테마 자산 축이 해소되니 드러난 **다음 실패**이며 그 수정 전 기준선에서도 같았다(stash 대조). `Chapter N.` 은 `::: part` 라벨 계열(Issue374 선행 수정 `bf3efa3` 과 같은 축)이고 `v0.8.0` 은 `version_badge` 다 — 계약에 선언할지 전달할지 판단 필요
+
 # 🚧 진행중
 
 # 📕 중요
 
 # 📙 일반
 
-## Issue379: 테마 배경 자산(CSS `background-image`)이 pptx 로 옮겨지지 않는다 (등록: 2026-09-19)
-* 목적: `6.roundtrip igTest` 가 **`finfraPuffer2.png` 1종**으로 실패한다. 원고의 `#layout-chapter` 5개가 요구하는 `.layout-chapter`·`.layout-chapter-toc` 배경인데 lane T 는 장식(가로선·표지·머리말·카드…)만 심고 **배경 자산은 다루지 않는다**. [Issue374](#issue374) 검증에서 드러났다
-* 상세:
-    - 검사 주체는 [check-parity.py](lib/pptx/check-parity.py) `css_theme_assets()` — 빌드 CSS 가 참조하는 `theme-img/` 자산을 긁고 `pptx_media_hashes()` 의 **패키지 이미지 바이트**와 대조한다. 태그만 세면 로고가 통째로 빠져도 1:1 이 맞기 때문에(실측 2026-09-10) CSS 참조를 본다
-    - 대상 판정은 **덱이 실제로 쓰는 layout** 의 배경만이다(HTML `<section class>` 에서 `layout-` 을 긁는다). igTest 는 `layout-chapter` 5장이 있어 `finfraPuffer2.png` 가 "사용 중" 으로 잡힌다
-    - ⚠️ **본 이슈는 Issue374 와 무관하게 이전부터 있었다** — 원고(`#layout-chapter` 5개)도 그 CSS 규칙([slide.css:431·456](theme/default_lec/slide.css#L431))도 최근 변경이 없다(`git show` 확인). Issue374 가 `3.parity` 를 고치며 함께 돌린 `6.roundtrip` 에서 **보였을 뿐**이다
-    - `fidelity.yml` 에 이 축의 선언이 없다 — 곧 지금은 `undeclared_gain` 의 반대편(선언 없는 **손실**)이라 계약이 판정하지 못한다
-* 구현 명세:
-    - 판정이 먼저다 — **계약을 고칠 것인가 변환을 고칠 것인가**
-        - ⒜ **`declared_drop` 으로 선언** — CSS 배경은 pptx 에서 `<p:bg>` 또는 배경 도형이 되어야 하는데, 그것은 장식이 아니라 **레이아웃 자산**이라 lane T 의 책임 범위를 넘는다. 선언하면 `6.roundtrip` 이 예산으로 흡수한다. 비용 최소
-        - ⒝ **lane T 확장** — `theme-img/` 를 슬라이드 배경으로 심는다. 정합성은 높으나 배치·크기(`background-position: 6% 10%` · `background-size: 16% auto`)를 EMU 로 옮겨야 하고, 그 값은 layout 마다 다르다
-    - ⚠️ 어느 쪽이든 **`7.coverage.sh` 의 판정과 맞물린다** — 계약에서 축을 거두면 그 러너가 *"아무도 재지 않는 축"* 으로 잡을 수 있다. 거두는 판단은 사람이 한다(apply-verify-rules §4.10)
-    - 검증: `6.roundtrip igTest` 통과 + `7.coverage.sh` 4덱에서 새 🔴/❌ 0
+# 📗 선택
 
-## Issue380: `3.parity` 가 single mode 덱의 본문을 대조하지 못한다 (등록: 2026-09-19)
-* 목적: 챕터 HTML 이 없고 본문이 `index.html` 안에 있는 single mode 덱에서 `html_body=0` 이 되어 기대값이 성립하지 않는다. [Issue374](#issue374) 가 ①③ 을 `skip` 으로 막아 **거짓 통과·거짓 실패를 없앴지만 검증 구멍은 남았다** — 실측 대상 `aTest` 는 지금 `통과 5/7 · 건너뜀 2` 다
-* depends: Issue374
-* 상세:
-    - 챕터 목록 구성은 [3.parity.sh](z_test/ig-ppt/3.parity.sh) 가 AGENDA.md 를 정본으로 읽고, 없으면 `index.html`·`agenda.html` **제외** 후 나머지 HTML 을 챕터로 삼는다. single mode 는 그 둘뿐이라 `chapters=[]` 가 된다
-    - ⚠️ single mode 의 `index.html` 은 **본문 + 표지 + (목차)** 가 한 파일에 섞여 있다. 그대로 본문으로 세면 구조 장이 이중 계수된다 — `has_cover` 판정이 이미 `index.html` 의 `layout-_cover` 를 보고 있으므로 그 장을 빼야 한다
-    - 실측(aTest): pptx 9장 · 본문 구간 7장 · 구조 2장(표지 1 + `agenda` 표식 1)
-* 구현 명세:
-    - `chapters` 가 비면 `index.html` 을 **유일 챕터**로 삼되, top-level `<section>` 중 **구조 장을 제외**하고 센다 — `layout-_cover`·`id="toc-placeholder"`·`layout-_agenda`
-    - 제외 판정은 [Issue373](#issue373) 이 harvest 에서 쓴 것과 **같은 규칙**을 쓴다(`id="toc-placeholder"` 제외). 판정이 또 갈리지 않게 한다
-    - ③ 제목 순차 대조는 그 유일 챕터에 대해 돌리고, 진입쌍(챕터명↔H1) 뒤집힘은 single mode 에 없으므로 `head=0` 으로 둔다
-    - 검증: `3.parity aTest` 가 **skip 0 으로 7/7** · igTest·aTest-all 7/7 불변 · `6.roundtrip` 3덱 불변
+# ✅ 완료
 
-## Issue381: htmlart callout **branch 라벨**이 3줄이면 6px 잘린다 (등록: 2026-09-19)
+## Issue381: htmlart callout **branch 라벨**이 3줄이면 6px 잘린다 (등록: 2026-09-19, 해결: 2026-09-20, commit: `5797733`) ✅
 * 목적: `m2Slide_visual_component` 5장 30번(원고 슬라이드 29 · `5.27b callout — horizontal`)의 branch 라벨 `**바이브 코딩으로 쉽고, 빠르게, 정확하게**` 가 박스를 6px 넘겨 잘린다. [Issue370](#issue370) 전덱 스캔에서 유일하게 남은 넘침이다
 * 상세 (실측 2026-09-19 — `scrollHeight` vs `clientHeight`):
     - ⚠️ **이슈후보 표현("허브 라벨")이 부정확했다 — 넘치는 것은 hub 가 아니라 branch 라벨이다.** hub(`HTML 대시보드 워크플로우` · fs **82px** · fo 920×210)는 넘침 0이고, branch 라벨(fs **44px** · fo 480×**150**)이 `scrollHeight 156 > clientHeight 150` 이다
@@ -71,11 +50,51 @@
     - **판정 제안: ⒜** — Issue364 가 이미 세운 축이고 배치 계약을 건드리지 않는다
     - ⚠️ **파일 경합** — 같은 `renderCallout` 의 hub stem 을 다른 세션이 미커밋(34줄)으로 손대는 중이다(2026-09-19 관측). 내 변경은 branch 라벨 영역이라 줄이 다르지만, **커밋에 남의 미완성 작업을 섞지 않도록** 그쪽 커밋 뒤에 착수한다
     - 검증: 해당 장 넘침 0 · callout 4종(horizontal·vertical·fan·wide) 전 슬라이드 넘침 0 · `m2Slide_visual_component` 전덱 노드 넘침 0(Issue370 기준 262 노드)
+* 결과 — **⒜ 폰트 축소**(판정 제안대로). 문제 장만 44 → 42, **정상 장은 불변**:
+    - 줄 수를 **렌더가 실제로 쓰는 값**으로 센다 — `padding: 0 14px` · `line-height: 1.22` · `labelH 150`. 토큰 라벨(` | ` 구분)은 구분자까지 넣어 재야 폭이 과소평가되지 않는다
+    - **형제 라벨은 같은 크기** — 하나만 작아지면 그것이 더 눈에 띈다. 가장 제약이 큰 라벨을 기준으로 전체를 함께 낮춘다
+    - ⒝(`labelH` 확대) 비채택 — 8방위 zone 이 **anchor 기준 배치**(`labelBox`)라 박스가 커지면 이웃 라벨과 겹칠 수 있고, 그 검증 비용이 폰트 축소보다 크다
+    - **검증** — 문제 장 fs 44 → **42 · 넘침 0**. 정상 장 3종(fan·vertical·wide)은 **fs 44 불변 · 넘침 0** — Issue364 와 같이 *넘치는 경우에만* 걸린다. 전덱 `m2Slide_visual_component` **262 노드** · `aTest-all` 28 노드 넘침 0(Issue370 기준과 동일)
+    - 🔑 **커밋 범위를 hunk 단위로 갈랐다** — 이 파일에는 다른 세션의 미커밋 작업 34줄(hub stem `hubTextH` · bracket `labelFs`)이 함께 있었다. `git add -p` 는 이 환경에서 대화형 플래그가 막혀 쓸 수 없고, `git checkout --` 는 **남의 작업을 워킹트리에서 지우는** 위험이 있어 쓰지 않았다. 대신 `git diff` 에서 내 hunk 2개만 골라 **`git apply --cached`** 로 인덱스에만 담았다 — 워킹트리 불변이라 남의 작업이 위험에 놓이지 않는다. 커밋 후 그 34줄이 그대로 남아 있음을 확인했다
 
+## Issue380: `3.parity` 가 single mode 덱의 본문을 대조하지 못한다 (등록: 2026-09-19, 해결: 2026-09-20, commit: `c9ff265`) ✅
+* 목적: 챕터 HTML 이 없고 본문이 `index.html` 안에 있는 single mode 덱에서 `html_body=0` 이 되어 기대값이 성립하지 않는다. [Issue374](#issue374) 가 ①③ 을 `skip` 으로 막아 **거짓 통과·거짓 실패를 없앴지만 검증 구멍은 남았다** — 실측 대상 `aTest` 는 지금 `통과 5/7 · 건너뜀 2` 다
+* depends: Issue374
+* 상세:
+    - 챕터 목록 구성은 [3.parity.sh](z_test/ig-ppt/3.parity.sh) 가 AGENDA.md 를 정본으로 읽고, 없으면 `index.html`·`agenda.html` **제외** 후 나머지 HTML 을 챕터로 삼는다. single mode 는 그 둘뿐이라 `chapters=[]` 가 된다
+    - ⚠️ single mode 의 `index.html` 은 **본문 + 표지 + (목차)** 가 한 파일에 섞여 있다. 그대로 본문으로 세면 구조 장이 이중 계수된다 — `has_cover` 판정이 이미 `index.html` 의 `layout-_cover` 를 보고 있으므로 그 장을 빼야 한다
+    - 실측(aTest): pptx 9장 · 본문 구간 7장 · 구조 2장(표지 1 + `agenda` 표식 1)
+* 구현 명세:
+    - `chapters` 가 비면 `index.html` 을 **유일 챕터**로 삼되, top-level `<section>` 중 **구조 장을 제외**하고 센다 — `layout-_cover`·`id="toc-placeholder"`·`layout-_agenda`
+    - 제외 판정은 [Issue373](#issue373) 이 harvest 에서 쓴 것과 **같은 규칙**을 쓴다(`id="toc-placeholder"` 제외). 판정이 또 갈리지 않게 한다
+    - ③ 제목 순차 대조는 그 유일 챕터에 대해 돌리고, 진입쌍(챕터명↔H1) 뒤집힘은 single mode 에 없으므로 `head=0` 으로 둔다
+    - 검증: `3.parity aTest` 가 **skip 0 으로 7/7** · igTest·aTest-all 7/7 불변 · `6.roundtrip` 3덱 불변
+* 결과 — `index.html` 을 유일 챕터로 삼고 **구조 장만 걷어낸다**. `aTest` 가 **건너뜀 0 으로 7/7**:
+    - 판정 규칙을 새로 만들지 않고 [Issue373](#issue373) 이 agenda harvest 에서 쓴 것을 그대로 썼다 — `id="toc-placeholder"` · `layout-_cover` · `layout-_agenda`. 같은 것을 두 곳에서 다르게 판정하는 일([Issue372](#issue372)·[Issue376](#issue376))을 되풀이하지 않는다
+    - ⚠️ `index.html` 을 **그대로** 본문으로 세면 구조 장이 `n_prologue` 와 **이중 계수**된다 — `has_cover` 판정이 이미 그 파일의 `layout-_cover` 를 보고 있다
+    - 진입쌍 집합 비교(HTML=[챕터 H1, 챕터 TOC] ↔ pptx=[챕터명, H1])는 single mode 에 챕터 진입 장이 없어 성립하지 않으므로 `head=0` 으로 껐다
+    - **검증** — `aTest`: ① 9장 = 본문 7 + 구조 2 · ③ 챕터 1 · 본문 7장 · ④ 표지 1 + `agenda`×1 + 진입 0 · **skip 0**. igTest·aTest-all 7/7 불변 · `6.roundtrip` 3덱 불변
 
-# 📗 선택
-
-# ✅ 완료
+## Issue379: 테마 배경 자산(CSS `background-image`)이 pptx 로 옮겨지지 않는다 (등록: 2026-09-19, 해결: 2026-09-20, commit: `81ae730`, `e2d2fe7`) ✅
+* 목적: `6.roundtrip igTest` 가 **`finfraPuffer2.png` 1종**으로 실패한다. 원고의 `#layout-chapter` 5개가 요구하는 `.layout-chapter`·`.layout-chapter-toc` 배경인데 lane T 는 장식(가로선·표지·머리말·카드…)만 심고 **배경 자산은 다루지 않는다**. [Issue374](#issue374) 검증에서 드러났다
+* 상세:
+    - 검사 주체는 [check-parity.py](lib/pptx/check-parity.py) `css_theme_assets()` — 빌드 CSS 가 참조하는 `theme-img/` 자산을 긁고 `pptx_media_hashes()` 의 **패키지 이미지 바이트**와 대조한다. 태그만 세면 로고가 통째로 빠져도 1:1 이 맞기 때문에(실측 2026-09-10) CSS 참조를 본다
+    - 대상 판정은 **덱이 실제로 쓰는 layout** 의 배경만이다(HTML `<section class>` 에서 `layout-` 을 긁는다). igTest 는 `layout-chapter` 5장이 있어 `finfraPuffer2.png` 가 "사용 중" 으로 잡힌다
+    - ⚠️ **본 이슈는 Issue374 와 무관하게 이전부터 있었다** — 원고(`#layout-chapter` 5개)도 그 CSS 규칙([slide.css:431·456](theme/default_lec/slide.css#L431))도 최근 변경이 없다(`git show` 확인). Issue374 가 `3.parity` 를 고치며 함께 돌린 `6.roundtrip` 에서 **보였을 뿐**이다
+    - `fidelity.yml` 에 이 축의 선언이 없다 — 곧 지금은 `undeclared_gain` 의 반대편(선언 없는 **손실**)이라 계약이 판정하지 못한다
+* 구현 명세:
+    - 판정이 먼저다 — **계약을 고칠 것인가 변환을 고칠 것인가**
+        - ⒜ **`declared_drop` 으로 선언** — CSS 배경은 pptx 에서 `<p:bg>` 또는 배경 도형이 되어야 하는데, 그것은 장식이 아니라 **레이아웃 자산**이라 lane T 의 책임 범위를 넘는다. 선언하면 `6.roundtrip` 이 예산으로 흡수한다. 비용 최소
+        - ⒝ **lane T 확장** — `theme-img/` 를 슬라이드 배경으로 심는다. 정합성은 높으나 배치·크기(`background-position: 6% 10%` · `background-size: 16% auto`)를 EMU 로 옮겨야 하고, 그 값은 layout 마다 다르다
+    - ⚠️ 어느 쪽이든 **`7.coverage.sh` 의 판정과 맞물린다** — 계약에서 축을 거두면 그 러너가 *"아무도 재지 않는 축"* 으로 잡을 수 있다. 거두는 판단은 사람이 한다(apply-verify-rules §4.10)
+    - 검증: `6.roundtrip igTest` 통과 + `7.coverage.sh` 4덱에서 새 🔴/❌ 0
+* 결과 — **⒝ lane T 확장**. 판정은 실측이 갈랐다:
+    - 🔑 **lane T 는 이미 마스코트를 심고 있었다 — 4종 중 3종이다.** pptx 미디어 해시 대조(igTest): `finfraPuffer1`(표지)·`finfraPuffer2s`(본문 제목 옆)·`finfraCat`(agenda) **✅ 실림** · `finfraPuffer2` **❌ 누락**. 같은 성격 자산의 3/4 를 옮기고 있으므로 이것은 **설계가 아니라 누락**이고, 그래서 ⒜(`declared_drop` 선언)는 *"다른 마스코트는 다 넣는데 챕터만 뺀다"* 는 계약이 되어 정당화되지 않는다
+    - **왜 그 하나만 빠졌나** — 챕터 진입 장이 pptx 에서 본문 장과 **같은 layout**(`Title and Content`)으로 나와(Issue374 확인) lane T 에 가를 근거가 없었다. 판정은 **lane S 표식**(`layout: chapter`)으로 세웠다 — lane T ornament 는 lane S 가 alt-text 를 심기 **전**에 돌아 pptx 안의 신호를 읽을 수 없으므로 사이드카를 읽는 기존 경로를 그대로 썼다
+    - **좌표는 ego-browser computed style 실측** — 먼저 section CSS 박스가 캔버스 전체 1920×1280 임을 확인했다(렌더 1720×1146.7 은 reveal `transform: scale(0.895833)` 적용 **후** 값이다 · 1720/0.895833 = 1920). 이미지 원본 392×358 에 `background-size: 16% auto` → 307.2×280.6 · `background-position: 0% 26%` → x 0 · y 0.26×(1280−280.6) = 259.8
+    - **검증** — `finfraPuffer2.png` ❌ → **✅**(igTest·aTest-all 양쪽). `6.roundtrip` aTest·aTest-all ✅ · `3.parity` 3덱 7/7 · `4.laneb` 6/6
+    - ⚠️ **`6.roundtrip igTest` 는 아직 실패한다** — 남은 것은 *"pptx 에 없는 글자 6종"*(`Chapter 1.`~`Chapter 5.` · `v0.8.0`)이고 **기준선(이 수정 전)에서도 같은 실패**임을 stash 대조로 확인했다. 자산 축이 해소되니 드러난 **다음 실패**이며 별건이라 이슈후보로 넘겼다
+    - 🚧 `.layout-chapter-toc`(같은 자산 · `6% 10%`)는 그 layout 을 쓰는 덱이 없어 좌표 실측이 불가능해 미등록으로 뒀다 — 추측으로 넣지 않는다
 
 ## Issue378: head-bar 슬롯의 일차 접두(`N-`)를 렌더에서만 떼는 `head_number` 옵션 (등록: 2026-09-19, 해결: 2026-09-19, commit: 92f3c9e) ✅
 * 목적: `head_left: d2` / `head_right: d1` 인 덱에서 좌측 `1-5. 닫는 절` 의 `1-` 과 우측 `1일차 — …` 가 **한 줄 안에서 같은 정보를 두 번** 표시한다. 원고의 절 번호(`## 1-5.`)는 타 문서가 참조하는 **공용 식별자**라 소스에서 뗄 수 없으므로 렌더 시점에만 줄인다
