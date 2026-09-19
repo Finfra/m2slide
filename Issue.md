@@ -73,7 +73,11 @@
     - 종료 조건: ①~④ 가 문서·코드에 반영되고 `--lint-data` 가 통과하며, 신규 술어를 실제로 쓰는 룰이 최소 1건 등록된다
 * ⚠️ **본 이슈는 등록까지만 수행했다** (사용자 지시 2026-09-19 — "등록만 하고 구현은 하지 말 것"). 착수 전 ③ 의 설계 판정을 먼저 사용자와 확인한다
 
-## Issue371: default_lec `contents-split` 이 반쪽이다 — divider 는 테마가 숨기고 머리말 슬롯은 템플릿에 없다 (등록: 2026-09-19)
+# 📗 선택
+
+# ✅ 완료
+
+## Issue371: default_lec `contents-split` 이 반쪽이다 — divider 는 테마가 숨기고 머리말 슬롯은 템플릿에 없다 (등록: 2026-09-19, 해결: 2026-09-19, commit: `7dc0644`) ✅
 * 목적: 발주처 prj60 `__lec` 이 `2.3.contents-split` 을 쓰려다 **제목 아래가 빈 띠로 남고 머리말(`1일차 — …`)이 통째로 사라지는** 것을 보고. 진단 결과 템플릿·테마·엔진 셋 중 **템플릿만 있고 나머지 둘과의 배선이 안 됐다**. 본 이슈는 진단·해법 선택지까지 하고 수정은 별도 결정으로 넘긴다
 * 상세:
     - **① `.split-divider` 규칙 — 답은 "없다"가 아니라 "테마가 적극적으로 숨긴다"이다**
@@ -97,10 +101,14 @@
     - **ⓒ** ⒝ 채택 시 `<div class="split-divider"></div>` 는 **템플릿에서 지운다** — 제거·숨김 양쪽에 걸려 있는 죽은 마크업이다
     - 검증: prj60 `1.design_rnd` 의 `contents-split` 슬라이드에서 머리말·제목 띠 렌더를 육안 확인 + `./m2slide.sh` 기존 3덱 회귀 0(해당 layout 미사용이라 0 예상)
     - 종료 조건: `contents-split` 이 `contents`·`contents-full` 과 **머리말·제목 띠에서 같은 겉모습**을 내고, `theme/` 의 다른 테마 렌더 변화 0
-
-# 📗 선택
-
-# ✅ 완료
+* 결과 — **ⓐ + ⓑ⒝ + ⓒ**(이슈의 판정 제안 그대로):
+    - ⚠️ **발주처 덱에는 이 layout 사용이 이미 0 건이었다** — `1.design_rnd` 에서 `layout-split-image-text` 는 **인라인 CSS 9 건뿐이고 실제 `<section>` 은 0 개**다. 깨져서 포기한 상태라 재현 픽스처(default_lec · `contents` / `contents-full` / `contents-split` 3 장 비교)를 만들어 증상부터 확정했다
+    - **ⓐ 머리말** — 엔진은 이미 준비돼 있었다(`_hl`/`_hr` 을 **모든 layout 의 vars 에 무조건** 주입). 템플릿이 `{{head_left}}` 를 안 쓴 것뿐이다. 🔑 **클래스명은 `contents-head-bar` 그대로** 써야 한다 — 이슈 경고대로 `contents-head` 문자열이 [`_stripEmptyWrappers`](lib/layout.js#L87) 의 유일한 예외이고 테마의 `:has()` fallback 도 그 이름에 걸려 있어, 다른 이름이면 **빈 바가 제거되고 fallback 이 매칭 대상을 잃는다**
+    - 🔑 **ⓑ 원인은 divider 부재가 아니라 브러시가 선택자에서 빗나간 것** — 브러시는 `section > .title::after` 인데 split 은 `{{content}}` 를 `.split-header` 로 한 겹 감싸 직계가 아니다. 실측이 이를 확정: `contents-full` 은 `brush:true · afterH 10px`, split 은 `brush:false · afterH auto`. ⒝(테마 1 파일에 셀렉터 추가)를 택했다 — ⒜는 [base.css](lib/css/base.css#L906) `.split-header{padding:1.5em 0}` 의 여백 역할을 대체해야 하고(그 파일은 수정 가드 대상), ⒞는 default_lec 가 divider 를 버리고 브러시로 간 방향에 역행한다
+    - 겉모습을 맞추려 **4 곳에 함께 편입**했다 — 제목 풀폭(브러시가 텍스트 폭에 머물지 않게) · 상단 `::before` 숨김 · `head-bar::after` 브러시 · 빈 head-bar 의 `:has()` fallback. 하나라도 빠지면 *"머리말은 나오는데 선이 어긋난다"* 가 된다
+    - **ⓒ** `<div class="split-divider"></div>` 제거 — `_stripEmptyWrappers` 가 지우고 `slide.css:167` 이 `display:none` 하는, **제거·숨김 양쪽에 걸린 죽은 마크업**이었다
+    - **검증**(ego-browser computed `::after`): split 이 `contents-full` 과 **제목브러시 10px · 제목폭 1620 · 머리말 2 항목 · 머리말브러시 10px · 상단선 none** 으로 전부 동일. 회귀 — split 사용 덱이 **0 건**이고 추가 셀렉터가 전부 `.layout-split-image-text` 한정이라 타 layout·타 테마 렌더 변화 0 · 대표 덱 빌드 오류 0 · `--lint-layouts`·`--lint-license` 통과
+    - ⚠️ `--lint-deployment` 가 `AgenticCoding` 에서 2 건을 잡지만 원고 본문의 정상 내용(`http://localhost:3000 열기` 예시 · `/Users/... vs ./...` 설명)을 문자열로 잡은 **기존 오탐**이다. 그 덱은 split 을 쓰지 않아 본 수정과 무관
 
 ## Issue373: agenda markmap 이 챕터 안 계층을 버린다 — harvest 가 `h1`/`h2` 를 가르지 않고 평평하게 담는다 (등록: 2026-09-19, 해결: 2026-09-19, commit: `9135be4`) ✅
 * 목적: 발주처 prj60 `__lec` 1일차 덱에서 [agenda.html](Projects/1.design_rnd/slide/agenda.html) markmap 이 **챕터 한 파일의 62 슬라이드를 전부 형제로** 낸다. 원고는 `#` 7 · `##` 54 로 2단인데 agenda 만 평평하다. 같은 원고에서 만드는 덱 안 목차(`#/toc-placeholder`)는 [html-builder.js:295-320](lib/html-builder.js#L295) `generateTOCFromFile` 이 `#`=가지 · `##`=잎으로 정상 중첩하므로, **한 원고에서 두 목차가 다른 구조로 나온다**
