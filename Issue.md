@@ -42,6 +42,17 @@
     - ④ `./z_test/ig-ppt/6.roundtrip.sh aTest-all` 전건 통과 + `4.laneb`·`5.lanem`·`--lint-data`
     - ⑤ 기존 3덱 회귀 0
     - 종료 조건: `aTest-all` 왕복 FAIL 0 + 커버리지 보고가 **미측정 축 0** 을 내거나, 남은 축을 이유와 함께 선언
+* 진행 (2026-09-19 · commit `af45902`, `0eb5ed7`):
+    - ✅ **`Projects/aTest-all/` 생성** — chapter mode 6챕터(aTest 1 + igTest 5) · HTML 47장. 이미지는 두 덱 것을 한 곳에 병합. 문구는 옮기기만 했고 챕터 번호만 AGENDA 에 맞췄다(구조 표식)
+    - ✅ **합치자마자 계약 밖 차이 8건이 나왔다** — 이것이 이 이슈의 근거다. 갈린 덱에서는 하나도 안 보이던 것들이다. ③ 계약 대조·⑤ 시각 축은 이제 **전건 통과**
+    - ✅ **① chapter mode 메타 출처가 갈려 있었다** — build-source 의 lane S 는 *첫 챕터* frontmatter 를, 검사기 `meta_source()` 는 AGENDA 를 봤다. **같은 규칙을 쓰게 맞췄다**
+    - ✅ **② 챕터 진입 장 안의 H2 부제·layout 디렉티브를 본문으로 셌다** — 그 장은 HTML 도 pptx 도 만들지 않는다(`cards_placeholder: false`). H1 은 계속 잰다
+    - ✅ **③ 하이퍼링크를 역변환이 읽지 않았다** — URL 은 pptx 에 `a:hlinkClick` 으로 **멀쩡히 있었다**. 본문·표 셀 양쪽에서 복원한다. *"복원 경로가 없는 것"* 과 *"실제로 잃는 것"* 은 다르다는 실증
+    - ✅ **④ 불릿 없는 인용(`> …`)은 복원 경로가 아예 없었다** — 기존 덱이 전부 `* > …` 라 드러나지 않았다
+    - ✅ **⑤ smart quotes** — pandoc 이 `"` → `“”`. 글자 전달을 묻는 축에서는 같게 본다
+    - ✅ **⑥ 링크를 2축으로** — `hyperlink`(본문·표, lossless) / `cards_hyperlink`(lane B 도형, declared_drop). `wordart_fence` 는 `lossy` → `declared_drop` 으로 정정(요소 종류가 바뀌는 경우를 `lossy` 정의가 담지 못했다)
+    - ⏳ **남은 것** — ⑴ ⑥ 전수 대조 **장 수 −3**(HTML 48 · pptx 45). 챕터 TOC 장의 제목이 두 산출물에서 다른 것이 얽혀 있어 원인 규명이 더 필요하다 ⑵ 구현 명세 ③ **커버리지 감사 도구**(이 이슈의 본체 — 아직 미착수) ⑶ `cards_hyperlink` 를 lossless 로 올리려면 글로벌 `ppt-info` 수정이 필요해 별도 이슈
+    - 📌 기존 3덱 회귀 0 (`6.roundtrip` aTest·m2Slide_chapter_mode · `--lint-data`)
 
 # 📕 중요
 
