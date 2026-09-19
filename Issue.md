@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 375
+* Issue HWM: 376
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -39,6 +39,30 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue376: exercise 계열 레이아웃에 표가 있으면 제목이 슬롯에서 사라진다 (등록: 2026-09-19, 해결: 2026-09-19, commit: `dcd9338`) ✅
+* 목적: `layout-exercise`·`layout-exercise-small` 슬라이드에 표가 들어가면 `exercise-title` 슬롯이 비어 제목이 본문으로 밀리고, agenda TOC 에도 「슬라이드 N」 으로만 뜬다. 실습 장에서 제목은 수강생이 지금 무엇을 하는지 가리키는 신호라 비면 안 된다
+* 상세:
+    - 재현: prj3(`__lec`) `Projects/1.design_rnd` 1일차 덱 슬라이드 11 (`## 🙋 실습 P1-0-4 — 10개 도메인 접속 점검표`, `#layout-exercise-small`, 본문에 2열 표)
+    - 산출 HTML: `<h1 class="exercise-title"></h1>` 이 빈 채로 남고, 제목은 `exercise-body` 안의 `<h2 class="title">` 로 들어감
+    - agenda.html `tocData` 는 슬롯 제목을 읽으므로 해당 항목이 「슬라이드 11」 로 표기됨
+    - 같은 절의 P1-0-1·P1-0-2(동일 `exercise-small`, 표 없음)는 정상이라 **표 유무가 갈림**
+* 구현 명세:
+    - 지점: [lib/slide-parser.js:438](lib/slide-parser.js#L438) — `isTable(textForSlide)` 경로가 `title: ''` 로 고정 반환
+    - 그 자리 주석(Issue94·Issue232·Issue243)대로 이는 **`_contents` 계열을 전제한 의도된 동작**이다. html-builder 의 hoist 가 본문 H1 을 `<h1 class="title">` 로 올려 상단 노랑 바까지 발화시킨다
+    - 누락된 것은 **exercise 계열**이다. 이 레이아웃은 제목을 `exercise-title` 슬롯에 넣는 구조라 hoist 대상이 아니고, 빈 슬롯이 그대로 남는다
+    - 수정안 A: `isTable` 분기에서 `layout` 이 exercise 계열이면 `extractFirstHeading` 결과를 `title` 로 넘긴다 (이미 `tableH1` 을 뽑아 두고 쓰지 않는 코드가 있음)
+    - 수정안 B: html-builder 의 hoist 대상에 `exercise-title` 슬롯을 추가한다
+    - 검증: 위 재현 덱을 다시 빌드해 ① `exercise-title` 이 채워지는가 ② agenda TOC 에 제목이 뜨는가 ③ 표 없는 exercise 장·표 있는 contents 장이 회귀하지 않는가
+* 결과 — **수정안 A 를 택했으나 이슈가 적은 형태로는 고쳐지지 않았다**:
+    - 🔑 **`tableH1` 을 title 로 넘기는 것만으로는 안 된다** — [`extractFirstH1`](lib/slide-parser.js#L186) 은 `^#\s+` 으로 **H1 만** 본다. 재현 케이스 제목은 `## 🙋 실습 P1-0-4 …` 즉 **H2** 라 그 값이 빈다. 이슈 본문이 *"`extractFirstHeading` 결과"* 라 적은 것이 정확했고, 코드에 놓여 있던 `tableH1` 은 애초에 쓸 수 없는 값이었다
+    - 🔑 **근본 원인은 판정이 두 곳에 있고 한쪽이 낡은 것** — 일반 경로는 *"contents 계열이 아니면 첫 heading 을 슬롯 제목으로 뽑는다"* 는 규칙을 갖고 있는데 `isTable` 경로가 그 규칙을 **타지 않고** 조기 반환했다. 그래서 개별 특례를 더하는 대신 판정 전체를 **`resolveSlideTitle` 하나로 뽑아 두 경로가 공유**하게 했다 — [Issue372](#issue372) 에서 겪은 *"두 처리기가 갈린다"* 와 같은 형태라 같은 방식으로 닫았다
+    - **수정안 B 는 비채택** — hoist 는 본문 H1 을 `<h1 class="title">` 로 올려 **상단 노랑 바까지 발화**시키는 장치(Issue232·Issue243)이고 exercise 계열은 `exercise-title` 슬롯 + divider 구조라 목적이 다르다. 게다가 재현 제목이 H2 라 H1 대상 hoist 로는 닿지 않는다. 무엇보다 **원인이 hoist 부재가 아니라 판정 미적용**이다
+    - ⚠️ **`layout` 이 없으면 지금처럼 `title: ''`** 을 돌려준다 — 그때는 `theme_default_layout`(contents 계열)이 적용되는 hoist 경로다. 여기서 제목을 뽑으면 **명시 layout 없는 기존 표 슬라이드 전부**의 렌더가 바뀐다
+    - 🔑 **부수로 같은 원인의 다른 증상을 잡았다 — 제목이 두 개 렌더되고 있었다.** `graphify` 덱의 `#layout-contents` 명시 + H1+H2 + 표 슬라이드 2장에서, 표 때문에 H1 이 본문에 남아 hoist 가 그것을 `.title` 로 올리고 H2 도 `.title` 을 받았다. **표 없는 같은 구조는 H1 을 지운다** — 곧 이것도 *"표 유무가 갈림"* 의 다른 얼굴이다. 픽스처(E 표 없음 / F 표 있음)로 이제 양쪽이 **제목 1개**로 같아지는 것을 확인했다
+    - **검증** — 재현 픽스처 6케이스: exercise·exercise-small 표 있음 2장 **슬롯 채워짐 · 본문 중복 0** · 표 없는 exercise 불변 · 표 있는 contents 불변 · H1+H2 contents 는 표 유무 무관 제목 1개 · agenda TOC 에 제목 전부 표기(「슬라이드 N」 0). 전 덱 **26개 재빌드 diff**: 171건 중 **168 캐시버스터** · 실질 3건 전부 위 의도된 변화
+    - 러너 불변 — `3.parity` igTest·aTest-all 7/7 · aTest 5/7+건너뜀 2 · `6.roundtrip` aTest·aTest-all ✅ · `4.laneb` 6/6 · `5.lanem` ✅
+    - ℹ️ `integration.test.js` 7건 실패와 `--lint-deployment` 30건은 **HEAD 에서도 동일한 기존 상태**다(후자는 원고 본문의 `http://localhost:11434` 안내·mermaid 라벨·docker 경로를 문자열로 잡은 오탐)
 
 ## Issue361: sreMsa v2.1.2 가독성 처방을 `legibility` goal 로 정책 스키마에 편입 (등록: 2026-09-19, 해결: 2026-09-19, commit: `d25edf7`) ✅
 * 목적: m2slide 의 `legibility` 계열은 **선언만 있고 비어 있다.** [lint-policy-schema.py](lib/lint-policy-schema.py) 가 술어 6종(`chars_max`·`items_max`·`font_size_min`·`box_overflow_max`·`lines_max`·`no_empty_bullet_li`)을 열거하지만 실제로 쓰는 룰은 [styles.yml](data/md-builder/styles.yml) 의 `backtick_marker_conflict_policy` 하나뿐이고, 그마저 `no_empty_bullet_li` 만 쓴다 — **나머지 5종은 소비처 0건**이다. 한편 prj61 sreMsa 는 v2.1.2 에서 그 5종을 실제로 기계 판정하는 검증기와 실측 근거를 이미 만들었다. 그 처방을 정책 스키마로 옮겨 빈 계열을 채운다
