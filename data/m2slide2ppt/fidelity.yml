@@ -180,6 +180,21 @@ visual:
       장의 머리말이 다 빠져도 조용히 지나간다.
     evidence: "m2Slide_chapter_mode — `4.1. 이미지`·`4.2. 리스트` 각 2회 (2026-09-19)"
 
+  - id: font_outside_theme
+    html: "CSS 가 쓰는 서체 — 본문·제목·코드 (transform.yml `font`)"
+    pptx: "run 에 박힌 서체가 그 목록 안인가"
+    grade: must_match
+    reason: |
+      템플릿에 없는 서체는 **그 폰트가 없는 머신에서 조용히 대체된다** — 배포본이 보는
+      사람마다 달라진다. 허용 목록은 정책 `transform.yml font.{title,body,code}` + pptx
+      테마의 major/minor 다. ⚠️ 화이트리스트로 덮지 말 것 — 늘려야 하면 **정책에 적고**
+      이 축이 그 값을 읽게 한다.
+    evidence: |
+      이 축은 한때 있다가 사라졌다. `3.parity.sh` ⑥ 이 Courier ×20 을 잡아 Issue329 가
+      retheme 을 배선했는데, 주 러너가 6.roundtrip 으로 옮겨 오며 **축이 따라오지 않았다**.
+      2026-09-19 순환 테스트 재실행에서 igTest `Menlo ×5` 로 발각 — 같은 결함이 aTest 에도
+      있었는데 이 러너는 통과시키고 있었다. 구 러너로 재지 않았다면 계속 안 보였을 것이다.
+
   - id: layout_ornament
     html: "카드 밴드 스타일·자간·줄간 등 theme CSS 의 **세부** 꼴"
     pptx: "(부분 이식)"
