@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 373
+* Issue HWM: 374
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -26,6 +26,23 @@
 # 🌱 이슈후보
 
 # 🚧 진행중
+
+## Issue374: 챕터 진입 장의 정본을 세우고 러너를 그것에 맞춘다 (등록: 2026-09-19)
+* 목적: `3.parity igTest` 가 3/7 로 남아 있는데, 원인 추적에서 **판정이 두 번 뒤집혔다**. 더 큰 사실은 그 과정에서 드러났다 — **장 구성 규칙이 어디에도 설계 문서로 없다.** 규칙은 [build-source.py](lib/pptx/build-source.py) 의 docstring·주석에만 있어 러너·설계 문서·코드가 서로 다른 전제를 든다
+* plan: `_doc_work/plan/chapter-entry-parity_plan.md`
+* depends: Issue369
+* 상세 — 한 세션 안에서 세 번 어긋났다:
+    - **코드 ↔ 코드**: `normalize_chapter` docstring 이 *"part 라벨은 버린다"* 고 정해 두었는데 `explicit_entry` 경로에만 빠져 있었다 → `Chapter N.` 이 직전 장으로 흘러 왕복 −3 · lane B 2/6 (commit `bf3efa3` 로 해소, igTest 37 → 42장)
+    - **설계 ↔ 실측**: [chapter-single-mode.md](_doc_arch/chapter-single-mode.md) 는 *"`cards_placeholder=false` 면 H1 챕터 타이틀을 deck 에서 제거"* 라 단언하는데 **명시 `#layout-*` 이 붙으면 살아남는다**(slide-parser 가 `s.layout` 이 있으면 autoToc 판정을 건너뛴다). 이 예외가 문서에 없다
+    - **러너 ↔ 정책**: `3.parity` 는 `html_body + n_prologue`(41)를 기대하는데 현행 pptx 는 거기에 **Agenda 장 1개**를 더 만든다(42). ③④ 는 `Section Header` 전제인데 현행 진입 장은 `## 부제 + 목록` 이라 `Title and Content` 로 나온다
+    - ⚠️ `6.roundtrip` 은 같은 덱에서 **통과**한다(생성물 예산 ±2 로 흡수). **두 러너가 같은 사실을 다르게 판정**하는 상태 자체가 정합 대상이다
+* 구현 명세:
+    - **① 문서 먼저** — 러너를 먼저 고치면 그 기대값이 또 다른 복제본이 되어 다음 변경 때 같은 자리에서 갈린다. `pptx-parity-design.md` 에 「장 구성 — 무엇이 몇 장이 되나」 절 신설(생성물 예산 정의 포함) + `chapter-single-mode.md` 에 명시 layout 예외 반영
+    - **② 러너는 참조하게** — `3.parity` 의 `want` 에 pptx 전용 생성 장을 반영하되 **숫자를 박지 말고 pptx 에서 세어 얻는다**. ③④ 의 `Section Header` 전제 제거 — 챕터 경계는 AGENDA 챕터명 + 제목 순서로 찾는다
+    - **③ 검증** — `3.parity igTest` 7/7 · 회귀 0(`6.roundtrip` 3덱 · `4.laneb` · `5.lanem` · `--lint-data` · `--coverage`) · **두 러너가 같은 덱에서 같은 판정**
+    - 열린 질문 3건은 plan `# 열린 질문` 절 참조 (Agenda 장의 계약상 지위 · 진입 장을 Section Header 로 낼 것인가 🚧 · 두 러너 일원화 여부)
+* Checkpoints:
+
 
 # 📕 중요
 
