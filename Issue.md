@@ -269,7 +269,10 @@
         - 🔴 **그런데 그 블록이 깨끗이 지워지지 않는다.** ch02 중간 원고 머리에 H1 은 지워졌는데 **`#layout-chapter` 와 `::: part` 가 남아 있다**. `::: part` 는 비표준 fenced div 라 껍데기만 걷히고 내용(`Chapter 1.`)이 평문으로 남고, [normalize_chapter](lib/pptx/build-source.py) 가 스스로 경고한 *"part 라벨은 버린다 — 남기면 pandoc 이 제목 없는 장으로 흘린다(무제목 5장의 정체가 이것이었다)"* 가 그대로 재발했다
         - 🔴 **`4.laneb aTest-all` 2/6 실패도 같은 뿌리다** — `직접 확인할 수 있음` 장의 pptx 본문 끝에 흘러든 `Chapter 2.`·`02. m2slide란?` 두 문단이 붙어, lane B 의 *"본문 끝이 사이드카와 일치할 때만 걷어낸다"* 안전장치가 작동해 그 장을 건너뛰었다(→ ② 도형 없음 · ④ 평문 불릿 잔존). **마크다운 링크가 원인이 아니었다** — `INLINE_MD` 는 링크를 이미 정규화하고 사이드카 값도 pptx 와 같다
         - 다음 수정 지점: `normalize_chapter` 가 `cards_ph=False` 경로에서 **blocks[0] 을 통째로 교체하지 못하는** 조건을 찾는다(ch02 는 교체가 아예 안 일어난 것으로 보인다 — 챕터 인식 실패 의심). 고치면 장 수·lane B 가 함께 닫힌다
-    - ⏳ **남은 것** — ⑴ 위 수정 적용 ⑵ 구현 명세 ③ **커버리지 감사 도구**(이 이슈의 본체 — 아직 미착수) ⑶ `cards_hyperlink` 를 lossless 로 올리려면 글로벌 `ppt-info` 수정이 필요해 별도 이슈
+    - ✅ **⑴ 수정 완료** (commit `bf3efa3`, 종결 후 후속) — 원인은 챕터 인식 실패가 아니라 **`explicit_entry` 경로의 누락**이었다. 그 경로는 H1 만 걷어내고 진입 블록을 장으로 남기는데, 그러면 `::: part` 의 `Chapter N.` 이 **제목보다 앞에** 남아 pandoc 이 직전 장 본문에 붙인다. `PART_BLOCK` 을 함께 제거해 제목이 맨 앞에 오게 했다 — docstring 이 이미 *"part 라벨은 버린다"* 고 정해 둔 것이 이 경로에만 빠져 있었다
+        - **두 러너가 한 수정으로 닫혔다**: `6.roundtrip aTest-all` **−3 → ✅ 통과**(장 수 +2, 예산 안 · 글자 누락 0) · `4.laneb aTest-all` **2/6 → ✅ 6/6**(도형 5장 전부 복원 — 흘러든 `Chapter 2.` 때문에 lane B 안전장치가 그 장을 건너뛰고 있었다)
+        - 회귀 0 — `6.roundtrip` aTest·m2Slide_chapter_mode · `4.laneb` aTest · `3.parity` igTest(3/7 기존 유지) · `--lint-data`
+    - ⏳ **남은 것** — ⑵ 구현 명세 ③ **커버리지 감사 도구**(이 이슈의 본체 — 아직 미착수) ⑶ `cards_hyperlink` 를 lossless 로 올리려면 글로벌 `ppt-info` 수정이 필요해 별도 이슈
     - 📌 기존 3덱 회귀 0 (`6.roundtrip` aTest·m2Slide_chapter_mode · `--lint-data`)
 * 종결 (2026-09-19) — 종료 조건 둘을 모두 달성:
     - ✅ **`aTest-all` 왕복 FAIL 0** — 합치자 계약 밖 차이 **8건**이 나왔고 전부 해소했다. 기존 3덱 회귀 0
