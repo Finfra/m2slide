@@ -47,21 +47,6 @@
 
 # 📙 일반
 
-## Issue363: htmlart `callout` 라벨이 viewBox 밖에 그려진다 — 4:3 에서 잘림으로 드러남 (등록: 2026-09-19) 🚧 보고만
-* 목적: Issue362 의 4:3 검증에서 드러난 **선행 결함**. 4:3 이 만든 문제가 아니라 4:3 이 **드러낸** 문제다
-* depends: Issue362
-* 상세 — 원인 사슬:
-    - [htmlart_dispatch.client.js:1548](lib/component-hooks/htmlart_dispatch.client.js#L1548) `renderCallout` 의 viewBox 는 `0 0 2000 1200` 고정인데, `W`/`E` zone 라벨 박스는 `labelBox()` 가 `x = -460` ~ `x = 2460` 에 배치한다 — **viewBox 밖 좌우 460 단위씩**
-    - SVG 는 `width:100%;height:100%` + 기본 `preserveAspectRatio="xMidYMid meet"` 이다. `meet` 레터박스 여백이 viewBox 밖 라벨을 우연히 보여주고 있었을 뿐이다
-    - htmlart 블록은 남는 세로 공간을 채우도록 자란다 → 4:3(슬라이드 1440) 에서 블록이 높아짐 → `meet` 스케일 상승(3:2 `0.7325` → 4:3 `0.8658`) → 레터박스 여백이 좁아짐(각 171 → 38 논리px) → viewBox 밖 라벨이 **슬라이드 경계 밖으로 밀려 잘린다**
-    - 실측(4:3, `m2Slide_visual_component` 5.27c vertical): `W` zone 라벨 "속도 2배 향상" 이 "도 2배 향상" 으로 좌측 잘림. 최우측 요소가 슬라이드 폭 1920 을 `+130.9` 초과
-    - 3:2 에서도 라벨 박스 자체는 이미 슬라이드 밖(`-109`)이다. 텍스트가 박스보다 좁아 **우연히** 안 잘렸을 뿐이라 원래부터 아슬아슬했다
-* 구현 명세 (제안 — 미적용):
-    - 정공법은 **viewBox 를 실제 콘텐츠 범위로 넓히는 것**: `viewBox="-460 0 2920 1200"`. 기존 좌표 계산을 하나도 안 건드리고 보이는 영역만 넓힌다. [mkSvg](lib/component-hooks/htmlart_dispatch.client.js#L482) 가 `'0 0 '+W+' '+H` 를 하드코딩하므로 min-x 를 받는 변형이 필요
-    - ⚠️ **부작용 범위가 이슈 밖이라 적용하지 않았다** — viewBox 를 넓히면 `meet` 스케일이 `0.7325 → 0.619` 로 떨어져 **기존 3:2·16:9 덱의 callout 도해가 약 15% 작아진다**. 라벨이 온전해지는 것은 개선이지만 기존 덱 외관이 바뀌므로 사용자 판단이 필요
-    - 회피책: 4:3 덱에서 `callout` 의 `W`/`E` zone 을 피한다 (branch 를 3개 이하로 두면 `H_p`/`V_p` 가 `N`·`NE`·`SE` 계열만 써서 안전)
-
-
 ## Issue360: layout `*-body` 명시도 충돌 전수 — base.css shorthand 가 theme 가로 padding 을 삼킨다 (등록: 2026-09-19)
 * 목적: [Issue359](#issue359) 로 `exercise`·`exercise-small` 을 고치면서 **같은 충돌이 살아 있는 layout 6종을 더 찾았다.** exercise 와 달리 이쪽은 실사용 덱이 전부 쓰는 layout 이라 고치는 순간 기존 덱의 렌더가 바뀐다 — 그래서 Issue359 에 묶지 않고 분리했다
 * depends: Issue359
@@ -104,6 +89,36 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue363: htmlart `callout` 라벨이 viewBox 밖에 그려진다 — `wide` orientation 신설 (등록: 2026-09-19, 해결: 2026-09-19, commit: `85fa4bc`) ✅
+* 목적: Issue362 의 4:3 검증에서 드러난 **선행 결함**. 4:3 이 만든 문제가 아니라 4:3 이 **드러낸** 문제다
+* depends: Issue362
+* 상세 — 원인 사슬:
+    - [htmlart_dispatch.client.js:1548](lib/component-hooks/htmlart_dispatch.client.js#L1548) `renderCallout` 의 viewBox 는 `0 0 2000 1200` 고정인데, `W`/`E` zone 라벨 박스는 `labelBox()` 가 `x = -460` ~ `x = 2460` 에 배치한다 — **viewBox 밖 좌우 460 단위씩**
+    - SVG 는 `width:100%;height:100%` + 기본 `preserveAspectRatio="xMidYMid meet"` 이다. `meet` 레터박스 여백이 viewBox 밖 라벨을 우연히 보여주고 있었을 뿐이다
+    - htmlart 블록은 남는 세로 공간을 채우도록 자란다 → 4:3(슬라이드 1440) 에서 블록이 높아짐 → `meet` 스케일 상승(3:2 `0.7325` → 4:3 `0.8658`) → 레터박스 여백이 좁아짐(각 171 → 38 논리px) → viewBox 밖 라벨이 **슬라이드 경계 밖으로 밀려 잘린다**
+    - 실측(4:3, `m2Slide_visual_component` 5.27c vertical): `W` zone 라벨 "속도 2배 향상" 이 "도 2배 향상" 으로 좌측 잘림. 최우측 요소가 슬라이드 폭 1920 을 `+130.9` 초과
+    - 3:2 에서도 라벨 박스 자체는 이미 슬라이드 밖(`-109`)이다. 텍스트가 박스보다 좁아 **우연히** 안 잘렸을 뿐이라 원래부터 아슬아슬했다
+* 구현 — 사용자 판정(2026-09-19): **기존 배치를 고치지 않고 레이아웃을 추가한다**
+    - 정공법(기존 viewBox 확장)은 `meet` 스케일이 `0.7325 → 0.619` 로 떨어져 **기존 덱의 callout 도해가 통째로 작아진다**. 라벨이 온전해지는 것은 개선이지만 기존 외관을 바꾸는 대가가 이슈 밖이라 택하지 않았다
+    - 대신 [renderCallout](lib/component-hooks/htmlart_dispatch.client.js#L1554) 에 `wide` 를 더했다 — `vertical` 과 **같은 좌우 배치(V_p)** 에 캔버스만 `2920×1200` 으로 넓힌 변형. `fan` 이 이미 `2200×1500` 별도 캔버스를 쓰므로 **orient 마다 캔버스를 달리하는 패턴은 이 코드에 이미 있었다**
+    - `2920` 은 임의 값이 아니다 — `hubW 920 + 좌우 각 (arm 520 + labelW 480)` 이라 **여백 없이 딱 맞는다**. 기존 좌표식을 하나도 안 건드리고 `cx` 만 따라 옮겨진다
+    - [markdown.js](lib/markdown.js#L347) 파서에 `{.w}`/`{.wide}` → `data-orientation="wide"`. ⚠️ 정규식 alternation 은 `wide` 를 `w` **앞**에 둔다 — 뒤에 두면 축약이 긴 이름을 가로챈다(회귀 가드 테스트 1건 추가)
+    - 카탈로그 [types.yml](data/htmlart/types.yml) `callout.orientation_note` 에 선택 기준을 적었다 — *"4:3 에서 좌우 분산이 필요하면 vertical 대신 wide"*
+* 검증 (ego-browser 실측, `Reveal.configure({transition:"none"})` — Issue362 의 트랜지션 오탐 교훈 적용):
+
+  | 판형 | `{.v}` | `{.w}` |
+  | :--- | :--- | :--- |
+  | 4:3 | 좌우 각 **117.2px 넘침** (잘림 재현) | **161.1px 여유** |
+  | 3:2 | 33.3px 여유 (무변경) | 202.6px 여유 |
+
+    - 대가는 크기다 — 4:3 에서 svg 높이 `930.7 → 769.5`. 폭 제한 스케일이 낮아지므로 도해가 작게 보인다. **그래서 기존 배치를 바꾸지 않고 선택지로 더한 것**이다
+    - 회귀 — 3:2 에서 `fan`(2200×1500) · `horizontal`(2000×1200) · `vertical`(2000×1200) viewBox·배치 전부 불변
+    - `node --test lib/__tests__/markdown.test.js` 66/66 (wide 3케이스 신규) · `--lint-data` · `--lint-deployment` rc0
+    - 데모 `m2Slide_visual_component` 에 5.27d 장 추가 (5.27c `{.v}` 와 나란히 대비)
+* ⚠️ **커밋이 Issue358 작업과 섞였다** — 같은 repo 에서 Issue358 세션이 **동시 진행 중**이었고, 본 이슈가 `git add` 해 둔 인덱스가 그 세션의 커밋에 실렸다. 그래서 본 이슈의 코드 변경은 독립 커밋이 아니라 `85fa4bc`(*"Policy(Issue358): 표 계약을 lossy → lossless 로 정정"*) 안에 있다
+    - 되돌리지 않는다 — [data-access-rules](.claude/rules/data-access-rules.md) *"이미 섞어 커밋했다면 되돌리지 말고 후속 커밋에서 분리 이력을 남긴다"*. 강제 히스토리 재작성은 협업자 재clone 을 요구한다
+    - 교훈: **한 repo 에 두 세션이 붙어 있으면 `git add` 로 인덱스를 점유한 채 다른 일을 하지 않는다.** 인덱스는 repo 단위 공유 자원이라 남의 `git commit` 이 그대로 집어간다. 경로를 지정하는 `git commit -- <path>` 가 안전하다
 
 ## Issue362: `slide_ratio: "4:3"` 지원 — 기존 강의 덱(4:3)과 한 파일로 합치기 위해 (등록: 2026-09-19, 해결: 2026-09-19, commit: `b81c1a1`) ✅
 * 목적: prj60(`__lec`) 대금지오웰 설계·R&D 교안을 m2slide 로 만드는데, 그 교안이 **기존 강의 덱과 한 파일로 합쳐져야 한다**. 그 덱들이 전부 4:3 이라 m2slide 가 4:3 을 못 내면 HTML 도 pptx 도 그 판형으로 못 간다
