@@ -565,9 +565,43 @@ elements:
 
   - id: wordart_fence
     m2slide: "` ```wordart `"
-    pptx: "태그를 벗긴 평문"
-    grade: lossy
-    reason: "글자가 내용이라 텍스트는 남기고 장식 마크업만 버린다 (build-source ⑪)."
+    pptx: "태그를 벗긴 평문 — **펜스는 남지 않는다**"
+    grade: declared_drop
+    reason: |
+      글자가 내용이라 텍스트는 남기고 장식 마크업만 버린다(build-source ⑪). 다만
+      **요소 종류가 바뀐다** — 왕복본에서 그 글자는 `paragraph` 이지 wordart 펜스가
+      아니다. `lossy` 는 *같은 요소 안에서 형태만 바뀌는* 것을 뜻하므로 이 경우를
+      담지 못했다(실측 aTest-all: 글자는 p45 에 온전한데 `내용이 통째로 사라짐` 판정).
+    recover: |
+      lane S 신호에 `wordart` 표식을 붙이면 되살릴 수 있다 — 인용문(`quote`)과 같은
+      방식이다. 장식 클래스(`wordart-gradient` 등)까지 담을지는 별도 결정.
+    evidence: "aTest-all p45 — `m2slide` + 부제가 본문 글자로 보존 (2026-09-19)"
+
+  - id: hyperlink
+    m2slide: "본문·표의 `[글자](URL)`"
+    pptx: "run 의 `a:hlinkClick` (외부 관계)"
+    grade: lossless
+    reason: |
+      pandoc 이 하이퍼링크를 표준 관계로 내므로 **URL 이 pptx 에 그대로 있다**.
+      역변환이 그것을 읽어 `[글자](URL)` 로 되돌린다.
+    caveat: |
+      ⚠️ 역변환이 이 관계를 **읽지 않던 때가 있었다** — URL 은 멀쩡한데 글자만 남아
+      `bullets`·`table`·`blockquote` 가 한꺼번에 계약 밖 차이로 잡혔다. 복원 경로가
+      없으면 손실처럼 보이지만 실제로는 **읽지 않은 것**이다(실측 2026-09-19).
+    evidence: "aTest-all — 본문 1 · 표 셀 4 전부 왕복 일치 (2026-09-19)"
+
+  - id: cards_hyperlink
+    m2slide: "`::: cards` 블록 안의 `[글자](URL)`"
+    pptx: "도형 글자 — **URL 은 들어가지 않는다**"
+    grade: declared_drop
+    reason: |
+      cards 는 lane B 가 네이티브 도형으로 다시 그리는데(글로벌 `ppt-info` 블록 렌더러)
+      그 도형의 글자에는 하이퍼링크가 붙지 않는다. 본문·표 링크(`hyperlink`)는 살아
+      돌아오므로 **한 축에 섞으면 멀쩡한 링크까지 같은 실패로 보인다** — 축을 나눴다.
+    recover: |
+      렌더러가 run 에 `a:hlinkClick` 을 붙이면 된다. 다만 그곳은 **글로벌 SCAR**
+      (`ppt-info`)라 m2slide 안에서 고칠 수 없다 — 별도 이슈로 올린다.
+    evidence: "aTest-all 02장 `::: cards` 2건 — 글자는 남고 URL 만 소실 (2026-09-19)"
 
   # ── 디렉티브·인라인 장식 ───────────────────────────────────
   - id: directive_id
