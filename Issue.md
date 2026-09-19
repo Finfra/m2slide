@@ -94,21 +94,6 @@
 
 # 📙 일반
 
-## Issue360: layout `*-body` 명시도 충돌 전수 — base.css shorthand 가 theme 가로 padding 을 삼킨다 (등록: 2026-09-19)
-* 목적: [Issue359](#issue359) 로 `exercise`·`exercise-small` 을 고치면서 **같은 충돌이 살아 있는 layout 6종을 더 찾았다.** exercise 와 달리 이쪽은 실사용 덱이 전부 쓰는 layout 이라 고치는 순간 기존 덱의 렌더가 바뀐다 — 그래서 Issue359 에 묶지 않고 분리했다
-* depends: Issue359
-* 상세 (실측 2026-09-19, ego-browser `getComputedStyle`, 1920 기준):
-    - 원인은 Issue359 와 같다 — [base.css](lib/css/base.css) `.reveal section[class*="layout-"] > div[class$="-body"]`(명시도 **0-3-2**, `padding: 1em 0`)가 theme 의 0-3-1 선언을 이긴다. theme 이 나중에 로드돼도 소용없다
-    - theme [default_lec](theme/default_lec/slide.css): `cover-body`(L722 `0.6em 5% 0.6em 0` → 실측 `30px 0`) · `summary-body`(L578 `0 6% 0 5%` → `42px 0`) · `chapter-toc-body`(L433 `1em 1.4em`) · `chapter-body`(L488 `0` → `40px 0`) · `_contents_no_title > .contents-body`(L405 `padding-top: 0` → `40px`)
-    - theme [default](theme/default/slide.css): `_toc > .toc-body`(L794 `1em 1.5em`) · `cover-body`(L689) · `chapter-toc-body`(L447) · `_contents_no_title`(L426). `_blank > .blank-body`(L531)는 `!important` 라 이미 이긴다
-    - **가장 눈에 띄는 것은 cover** — 강사명 박스가 `padding-right: 5%` 를 못 받아 우측 끝에 붙는다. 같은 슬라이드의 `cover-tr`·`cover-br` 은 `right: 5%` 라 **둘이 안 맞는다**
-    - 선례가 이미 있다: [default/slide.css](theme/default/slide.css) L1468 주석이 *"base.css §5 를 이기려고 `.slides` 를 넣었다"* 고 적고 `.reveal .slides section.layout-chapter .chapter-body`(0-4-1)로 올려 놨다. 같은 함정을 이미 한 번 밟았다는 뜻이다
-* 구현 명세:
-    - 고치는 방법은 Issue359 와 같다 — 선택자에 `> div` 를 넣어 0-3-2 동점을 만든다. base.css 는 건드리지 않는다
-    - ⚠️ **일괄 적용 전에 시각 확인이 필요하다.** 고치면 theme 작성자가 의도한 값이 비로소 먹으므로 기존 덱의 여백이 전부 바뀐다. layout 별 before/after 캡처를 붙여 사용자 승인 후 반영
-    - 근본 대안도 함께 검토: base.css L782 의 shorthand `padding: 1em 0` 을 `padding-block: 1em` 으로 바꾸면 좌우를 아예 건드리지 않아 theme 의 가로 선언이 자연히 산다. **base.css 수정이라 [CLAUDE.md](CLAUDE.md) "base.css 수정 가드" 의 사용자 컨펌 대상**
-    - 검증: `./m2slide.sh m2Slide_single_mode` · `m2Slide_chapter_mode` + 테스트 필수 4항목 + layout 별 `getComputedStyle` before/after
-
 ## Issue361: sreMsa v2.1.2 가독성 처방을 `legibility` goal 로 정책 스키마에 편입 (등록: 2026-09-19)
 * 목적: m2slide 의 `legibility` 계열은 **선언만 있고 비어 있다.** [lint-policy-schema.py](lib/lint-policy-schema.py) 가 술어 6종(`chars_max`·`items_max`·`font_size_min`·`box_overflow_max`·`lines_max`·`no_empty_bullet_li`)을 열거하지만 실제로 쓰는 룰은 [styles.yml](data/md-builder/styles.yml) 의 `backtick_marker_conflict_policy` 하나뿐이고, 그마저 `no_empty_bullet_li` 만 쓴다 — **나머지 5종은 소비처 0건**이다. 한편 prj61 sreMsa 는 v2.1.2 에서 그 5종을 실제로 기계 판정하는 검증기와 실측 근거를 이미 만들었다. 그 처방을 정책 스키마로 옮겨 빈 계열을 채운다
 * 상세 (근거 — prj61 sreMsa Issue18, 2026-09-19 종결, commit 960908b):
@@ -270,6 +255,28 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue360: layout `*-body` 명시도 충돌 전수 — base.css shorthand 가 theme 가로 padding 을 삼킨다 (등록: 2026-09-19, 해결: 2026-09-19, commit: `eb498e3`) ✅
+* 목적: [Issue359](#issue359) 로 `exercise`·`exercise-small` 을 고치면서 **같은 충돌이 살아 있는 layout 6종을 더 찾았다.** exercise 와 달리 이쪽은 실사용 덱이 전부 쓰는 layout 이라 고치는 순간 기존 덱의 렌더가 바뀐다 — 그래서 Issue359 에 묶지 않고 분리했다
+* depends: Issue359
+* 상세 (실측 2026-09-19, ego-browser `getComputedStyle`, 1920 기준):
+    - 원인은 Issue359 와 같다 — [base.css](lib/css/base.css) `.reveal section[class*="layout-"] > div[class$="-body"]`(명시도 **0-3-2**, `padding: 1em 0`)가 theme 의 0-3-1 선언을 이긴다. theme 이 나중에 로드돼도 소용없다
+    - theme [default_lec](theme/default_lec/slide.css): `cover-body`(L722 `0.6em 5% 0.6em 0` → 실측 `30px 0`) · `summary-body`(L578 `0 6% 0 5%` → `42px 0`) · `chapter-toc-body`(L433 `1em 1.4em`) · `chapter-body`(L488 `0` → `40px 0`) · `_contents_no_title > .contents-body`(L405 `padding-top: 0` → `40px`)
+    - theme [default](theme/default/slide.css): `_toc > .toc-body`(L794 `1em 1.5em`) · `cover-body`(L689) · `chapter-toc-body`(L447) · `_contents_no_title`(L426). `_blank > .blank-body`(L531)는 `!important` 라 이미 이긴다
+    - **가장 눈에 띄는 것은 cover** — 강사명 박스가 `padding-right: 5%` 를 못 받아 우측 끝에 붙는다. 같은 슬라이드의 `cover-tr`·`cover-br` 은 `right: 5%` 라 **둘이 안 맞는다**
+    - 선례가 이미 있다: [default/slide.css](theme/default/slide.css) L1468 주석이 *"base.css §5 를 이기려고 `.slides` 를 넣었다"* 고 적고 `.reveal .slides section.layout-chapter .chapter-body`(0-4-1)로 올려 놨다. 같은 함정을 이미 한 번 밟았다는 뜻이다
+* 구현 명세:
+    - 고치는 방법은 Issue359 와 같다 — 선택자에 `> div` 를 넣어 0-3-2 동점을 만든다. base.css 는 건드리지 않는다
+    - ⚠️ **일괄 적용 전에 시각 확인이 필요하다.** 고치면 theme 작성자가 의도한 값이 비로소 먹으므로 기존 덱의 여백이 전부 바뀐다. layout 별 before/after 캡처를 붙여 사용자 승인 후 반영
+    - 근본 대안도 함께 검토: base.css L782 의 shorthand `padding: 1em 0` 을 `padding-block: 1em` 으로 바꾸면 좌우를 아예 건드리지 않아 theme 의 가로 선언이 자연히 산다. **base.css 수정이라 [CLAUDE.md](CLAUDE.md) "base.css 수정 가드" 의 사용자 컨펌 대상**
+    - 검증: `./m2slide.sh m2Slide_single_mode` · `m2Slide_chapter_mode` + 테스트 필수 4항목 + layout 별 `getComputedStyle` before/after
+* 결과 (사용자 승인 2026-09-19 — base.css 수정 가드):
+    - **실측으로 문제가 한 겹 넓은 것이 드러났다** — 범용 규칙이 theme 뿐 아니라 **base 자신의 layout 별 규칙까지** 이기고 있었다. L854 등의 `1.5em` 은 한 번도 적용된 적 없고 실제 기준은 줄곧 `1em` 이었다(`_contents` 실측 40px)
+    - 채택: 범용 규칙의 padding 만 `:where(...) { padding-block: 1em }` 으로 분리(명시도 0 · 가로 미선언) + layout 별 7규칙을 `padding-block: 1em` 으로 정정. `flex-grow`·`overflow-y`·`min-height` 는 명시도를 그대로 뒀다 — 내리면 `closing-body` 의 `flex-grow: 0` 이 되살아나 배치가 바뀐다
+    - **미검증 값을 되살리지 않았다**: `1.5em` 을 살린 시험에서 세로 +20px 로 실제 한 장이 넘쳤다(m2Slide_visual_component). `:where` 기본값에만 맡긴 시험에서는 theme 의 `padding-top: 0`(0-0-4)이 기본값을 이겨 padding 이 0 으로 떨어졌다 — 두 실측이 지금 형태를 정했다
+    - 실측 변화: `_cover` `34 0 34 0` → `20.4 90.4 0 0`(가로 5% + theme 세로 의도) · `chapter`(default_lec) `40 0` → `0`(theme `padding: 0` 복원) · `_contents`·`_blank`·`chapter`(default) 변화 없음
+    - 회귀 검증: 4개 덱 **156장 넘침 3→3**(AgenticCoding 기존 3장) · 제목 표시 정상 · 뷰포트 1280/1920/1024 동일 · 캡처 [before](_doc_work/capture/i360-before-cover.png)·[after](_doc_work/capture/i360-final-cover.png)·[default_lec chapter](_doc_work/capture/i360-lec-chapter-after.png)
+    - theme 측 수정(A안)은 불필요해졌다 — 규칙 차원에서 풀려 열거하지 않은 layout(summary·chapter-toc·_contents_no_title 등)도 함께 산다
 
 ## Issue369: `aTest-all` — 갈린 픽스처를 한 덱으로 합쳐 모든 축을 한 번에 잰다 (등록: 2026-09-19, 해결: 2026-09-19, commit: `74b52bc`, `af45902`, `0eb5ed7`, `da29927`, `ffb7182`) ✅
 * 목적: 왕복 계약을 재는 픽스처가 **aTest**(single·변환 경로 커버리지)·**igTest**(chapter·인포그래픽)·**m2Slide_chapter_mode**(chapter·레이아웃) 셋으로 갈려 있다. 갈린 픽스처는 **축이 빠진 것을 못 본다** — [Issue358](#issue358) 에서 표 정렬 오판(근거 덱이 전부 좌측 정렬이라 차이가 드러날 수 없었다)과 `font_outside_theme` 축 소실이 정확히 그 형태였다. igTest 내용을 합친 `aTest-all` 한 덱으로 **계약이 선언한 모든 요소를 한 번에** 왕복시킨다
