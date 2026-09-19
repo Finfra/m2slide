@@ -111,6 +111,11 @@ HR = re.compile(r"^[ \t]*-{3,}[ \t]*$")
 H1 = re.compile(r"^#[ \t]+(.+?)[ \t]*$")
 H2 = re.compile(r"^##[ \t]+(.+?)[ \t]*$")
 LAYOUT_LINE = re.compile(r"^[ \t]*#_?[a-z][a-z0-9-]*[ \t]*$")
+#   `::: part` — 챕터 진입 블록의 "Chapter 1." 라벨. **제목보다 앞에 오는 본문**이라
+#   그대로 두면 pandoc 이 제목 없는 내용으로 보고 **직전 장으로 흘린다**
+#   (normalize_chapter docstring 의 "무제목 5장" 이 그것이다).
+PART_BLOCK = re.compile(r"^[ \t]*:::+[ \t]*part\b.*?^[ \t]*:::+[ \t]*$",
+                        re.M | re.S)
 
 # ⑪ 컴포넌트 펜스 — HTML 에서만 살아 있는 것들.
 #    wordart 는 **글자가 내용**이라 태그만 벗겨 남기고, 나머지는 설정·코드라 지운다.
@@ -515,7 +520,16 @@ def normalize_chapter(blocks, chapter_title, stat, cards_ph=True, toc_ph=True,
     if explicit_entry:
         #   H1 만 걷어내고 그대로 장으로 남긴다 — 제목(H2 부제)·본문은 원고의 것이다.
         #   TOC 장 제목은 위에서 **챕터명**으로 잡았으므로 둘이 겹치지 않는다
-        kept = "\n".join(ln for ln in first.split("\n") if not H1.match(ln))
+        #   ⚠️ H1 만 빼면 `::: part` 의 "Chapter N." 이 **제목보다 앞에** 남는다.
+        #      pandoc 은 그것을 제목 없는 내용으로 보고 직전 장 본문에 붙인다 —
+        #      실측(aTest-all 2026-09-19): ch02 마지막 장 `직접 확인할 수 있음` 의
+        #      본문 끝에 `Chapter 2.` 가 붙어 ⑴ 전수 대조 장 수가 어긋나고
+        #      ⑵ lane B 의 "본문 끝이 사이드카와 일치할 때만 걷어낸다" 안전장치가
+        #      그 장을 통째로 건너뛰었다(도형 없음 · 평문 불릿 잔존).
+        #      part 라벨은 제목의 번호("02.")와 같은 말이라 **버린다** — 이 함수
+        #      docstring 이 이미 그렇게 정해 두었는데 이 경로에만 빠져 있었다.
+        kept = PART_BLOCK.sub("", first)
+        kept = "\n".join(ln for ln in kept.split("\n") if not H1.match(ln))
         if kept.strip():
             out.append(kept.strip("\n") + "\n")
             stat["chapter_entry_kept"] += 1
