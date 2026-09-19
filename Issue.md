@@ -32,7 +32,11 @@
 
 # 📙 일반
 
-## Issue387: 폰트 family 지정이 vendor 미러 웹폰트로 사실상 한정된다 — 제한 완화 + 용량 가드레일 (등록: 2026-09-20)
+# 📗 선택
+
+# ✅ 완료
+
+## Issue387: 본문 폰트 family 지정 배선이 끊겨 있었다 — 제한 완화 + 용량 가드레일 (등록: 2026-09-20, 해결: 2026-09-20, commit: `1b1a8d9`) ✅
 * 목적: 사용자 지시(2026-09-20) — *"웹폰트로만 제한하지 말 것. 포털처럼 응답속도가 빠른 사이트가 아님. 단 너무 큰 폰트는 가드레일에서 걸를 것."* 지금은 쓸 수 있는 폰트가 `lib/vendor/` 에 미러된 구글폰트로 좁혀져 있다. 그 제한을 풀되 **과대 폰트 자산은 차단**한다
 * 카테고리: Asset
 * 상세:
@@ -45,11 +49,17 @@
     - ③ `font_outside_theme`·`3.parity` ⑥ 의 판정을 **재정의**한다. 열린 family 를 통과시키되 *"아무 폰트나 통과"* 가 되지 않는 경계를 세운다
     - ④ 문서 — `repo-tracking-rules.md` 의 *"woff2/woff만 보관(.ttf 제외)"* 조항 · `css.md`/`theme.md` 의 폰트 절 · `m2slide-identity.md` 의 *"외부 의존 0"* 과의 관계(시스템 폰트는 로컬 자원이라 외부 의존이 아니다)
     - 검증: 시스템 폰트 지정 덱이 빌드·렌더되고 · 상한 초과 자산이 가드레일에 걸리며 · `3.parity` ⑥ 과 `--lint-deployment` 가 기존 덱에서 불변
-
-
-# 📗 선택
-
-# ✅ 완료
+* 결과 — 🔑 **등록 시 적은 전제가 부분적으로 틀렸다.** family 지정은 **막혀 있지 않았다**:
+    - `style.theContents.font_family` 는 [config.js:563](lib/config.js#L563) 이 파싱하고 [html-builder.js:1276](lib/html-builder.js#L1276) 이 `--content-font-family` 로 산출한다 — 실측에서 `index.html` 에 지정값이 그대로 나갔다. 기본값 목록에도 시스템 폰트(`Apple SD Gothic Neo`·`Noto Sans KR`)가 이미 섞여 있다
+    - 🔑 **실제 결함은 그 변수를 쓰는 셀렉터가 하나뿐이었다는 것** — [base.css:322](lib/css/base.css#L322) 의 `.reveal .theContents`. 현행 layout 템플릿의 본문 컨테이너는 `contents-body`·`exercise-body`·`summary-body` … 이라 **변수가 아무 요소에도 닿지 않았다.** 그래서 파싱·산출이 정상인데 화면에서는 보이지 않았다(본문 `li` computed = `--global-font-family` 기본값)
+    - ① **theme 두 곳에 배선** — `.reveal section[class*="layout-"] > div[class$="-body"]` 가 그 변수를 쓴다. **base.css 는 건드리지 않았다**(수정 가드 준수 — theme 으로 우회 가능했다). 상속을 덮는 선언이라 명시도 다툼이 없고, 변수 미지정 시 `inherit` 이라 기존 덱 무변경
+    - ② **용량 가드레일** — 파일당 **5MB** · 총량 **24MB** 를 `fetch-vendor.js` 가 경고한다. 상한 근거(실측 폰트 142개 9.2MB): 중위 12KB · p90 19KB(구글폰트 subset 조각) · 최대 **2.0MB** `d2coding-bold-full.woff`(한글 전체 글리프) · 그 다음 615KB. 한글 전체 글리프가 2MB 대이므로 5MB 면 그런 폰트를 **두세 종 더** 받을 여유가 있고 **CJK 전체 세트(10~20MB)는 걸린다**. 총량은 현재의 2.6배
+    - 🔑 **받은 것을 버리지 않는다** — 경고만 하고 보존한다. 조용히 지우면 *"어떤 폰트가 없는지"* 가 비밀이 되고 그 덱은 오프라인에서 **이유 없이 대체 폰트로** 렌더된다. `.ttf` 삭제(구 정책)가 정확히 그 형태였다
+    - **오프라인 보장 범위는 지정 범위와 다르다** — vendor([asset-manifest.js](lib/asset-manifest.js))에 미러된 폰트만 오프라인에서 확실히 뜬다. 시스템 폰트는 기기에 있으면 뜨고 없으면 대체된다. 그것이 정상이며 [m2slide-identity](_doc_arch/m2slide-identity.md) 의 *"외부 의존 0"* 과 충돌하지 않는다(로컬 자원이지 네트워크 의존이 아니다)
+    - **검증** — 시스템 폰트 지정 픽스처에서 본문 `li`·`-body` computed 가 지정값으로 바뀜 · 기존 3덱 산출 diff **실질 0**(24건 전부 캐시버스터) · 가드레일이 현재 자산에서 초과 0
+    - 문서 — [css.md](_doc_arch/css.md) 「본문 폰트 family 지정」 신설 · [repo-tracking-rules](.claude/rules/repo-tracking-rules.md) vendor 행에 가드레일 반영
+    - ⚠️ `.ttf` 보존(포맷 축)은 **이번 범위 밖**이다 — 사용자가 family 축을 골랐다. 필요해지면 별건으로 등록한다
+    - ℹ️ 커밋 범위 — `theme/default_lec/slide.css` 에 다른 세션 미커밋 hunk 가 있어 `git apply --cached` 로 내 hunk 1개만 담았다(남의 변경 0줄 확인)
 
 ## Issue386: `6.roundtrip igTest` — pptx 에 없는 글자 6종. **part 라벨은 선언, `version_badge` 는 배선 누락** (등록: 2026-09-20, 해결: 2026-09-20, commit: `1abf08d`, `2207101`) ✅
 * 목적: 왕복 검사가 `Chapter 1.`~`Chapter 5.` · `v0.8.0` 을 *"pptx 에 없는 글자"* 로 잡는다. 실측으로 가르니 **성격이 둘로 갈린다** — 앞 5건은 의도된 드롭이라 계약에 선언할 일이고, `v0.8.0` 은 **표지 코너 슬롯 배선이 빠진 것**이라 고쳐야 한다
