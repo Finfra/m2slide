@@ -79,6 +79,15 @@ class SectionText(html.parser.HTMLParser):
         if tag == "aside" and "notes" in (a.get("class") or ""):
             self._aside += 1
             return
+        #   Issue386: `cover-version` — 테마가 **조건부로 숨기는 중복 표기**다.
+        #     slide.css 의 `:has(.cover-tr:not(:empty)) … .cover-version{display:none}` —
+        #     우상단 코너(`version_badge`)가 채워져 있으면 같은 버전이 두 번 보이므로
+        #     숨긴다. 화면에 없는 글자를 빠짐으로 세면 `aside notes` 와 같은 오판이다.
+        #     ⚠️ 코너가 비어 이것이 보이는 덱에서는 pptx 도 같은 자리에 이 값을 넣으므로
+        #        (lane T 의 `corner_tr or version`) 제외해도 빠짐이 생기지 않는다.
+        if "cover-version" in (a.get("class") or "").split():
+            self._skip += 1
+            return
         #   컴포넌트는 두 모양으로 나온다 — `<div data-component="chart">` 안에 설정
         #   원문이 그대로 있고(m2slide 렌더), 코드 펜스로 남는 경우도 있다
         #   mermaid 는 `<div class="media-container mermaid">` 안에 원문이 남고
@@ -239,8 +248,8 @@ def untitled_head_texts(project_dir):
 def declared_drop_texts(project_dir):
     """계약이 **버리기로 선언한** 것들의 글자 (Issue358).
 
-    `div_other`(raw HTML) · `mermaid_fence` · `component_fence` 는 fidelity.yml 이
-    `declared_drop` 으로 선언한 요소다 — pptx 에 없는 것이 계약대로다. 그런데 이
+    `div_other`(raw HTML) · `mermaid_fence` · `component_fence` · `part_label` 은
+    fidelity.yml 이 `declared_drop` 으로 선언한 요소다 — pptx 에 없는 것이 계약대로다. 그런데 이
     전수 대조는 HTML ↔ pptx 를 **직접** 비교하느라 계약을 보지 않아, 계약대로
     사라진 글자를 전부 실패로 들었다(실측 m2Slide_chapter_mode: raw HTML `<p>첫 번째
     카드의 내용입니다.</p>` 류 · 2026-09-19).
@@ -255,7 +264,17 @@ def declared_drop_texts(project_dir):
                 if os.path.basename(f) != "AGENDA.md"]
     out = set()
     tag = re.compile(r"<[^>]+>")
+    #   Issue386: `::: part` 라벨 — 계약 `part_label`(declared_drop). pptx 는 챕터 진입
+    #     장의 제목이 그 역할을 하므로 라벨을 옮기지 않는다. 블록 **안의 글자**를 모은다.
+    part_blk = re.compile(r"^[ \t]*:::+[ \t]*part\b.*?^[ \t]*:::+[ \t]*$",
+                          re.M | re.S)
     for f in srcs:
+        _src = open(f, encoding="utf-8").read()
+        for _m in part_blk.finditer(_src):
+            for _ln in _m.group(0).split("\n")[1:-1]:
+                _t = norm(_ln)
+                if len(_t) >= 2:
+                    out.add(_t)
         in_fence, keep = False, False
         for ln in open(f, encoding="utf-8"):
             m = re.match(r"^[ \t]*```([\w-]*)", ln)

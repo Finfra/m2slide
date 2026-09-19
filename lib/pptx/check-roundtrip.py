@@ -267,6 +267,11 @@ def scan(lines):
                 e["htmlart_lane_b"].append(raw)
             elif raw.startswith("htmlart"):
                 e["htmlart_lane_c"].append(raw)
+            elif raw == "part":
+                #   Issue386: `::: part` 는 계약 `part_label`(declared_drop) 의 축이다.
+                #     `div_other` 에 섞어 두면 *"raw HTML 이 빠졌다"* 와 구분되지 않고,
+                #     7.coverage 가 **계약은 선언했는데 검사기가 안 재는 축**으로 잡는다.
+                e["part_label"].append(raw)
             else:
                 e["div_other"].append(raw)
             continue

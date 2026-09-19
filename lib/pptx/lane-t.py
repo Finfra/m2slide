@@ -117,6 +117,11 @@ COVER_SEL = {
     "icontact": r'class="cover-instructor-contact"[^>]*>(.*?)</',
     "corner_tl": r'class="cover-corner cover-tl"[^>]*>(.*?)</',
     "corner_br": r'class="cover-corner cover-br"[^>]*>(.*?)</',
+    #   Issue386: 우상단 코너(`cover-tr` = `version_badge`)가 빠져 있었다. 그 결과 우상단
+    #     좌표(`cover_geometry.version`)를 **중앙 메타의 `version`** 이 차지했고,
+    #     HTML 이 실제로 우상단에 보여주는 `version_badge` 는 pptx 에서 사라졌다
+    #     (실측 2026-09-20 igTest: pptx 우상단 `1.0` ↔ HTML 우상단 `v0.8.0`).
+    "corner_tr": r'class="cover-corner cover-tr"[^>]*>(.*?)</',
     "version": r'class="cover-meta"[^>]*>(.*?)</',
     "license": r'class="m2-license-badge"[^>]*>(.*?)</',
 }
@@ -1116,7 +1121,12 @@ def main():
                                    (cover.get("icontact"), "instructor_contact"),
                                    (cover.get("corner_tl"), "corner_tl"),
                                    (cover.get("corner_br"), "corner_br"),
-                                   (cover.get("version"), "version")):
+                                   #   우상단 한 자리에 **둘 중 하나**가 온다. 테마가 이미
+                                   #     그렇게 정했다 — slide.css 의
+                                   #     `:has(.cover-tr:not(:empty)) … .cover-version { display:none }`
+                                   #     즉 `version_badge` 가 있으면 `version` 은 **중복이라 숨긴다.**
+                                   #     그 판정을 그대로 옮긴다(HTML 이 정본이므로 pptx 도 같아야 한다).
+                                   (cover.get("corner_tr") or cover.get("version"), "version")):
                 if add_text(slide.shapes, COVER.get(spec_key), text, px2emu):
                     log["cover"] += 1
 
