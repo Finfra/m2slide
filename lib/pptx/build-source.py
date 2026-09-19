@@ -476,14 +476,22 @@ def normalize_chapter(blocks, chapter_title, stat, cards_ph=True, toc_ph=True,
         return blocks
 
     # 진입 블록에서 부제 H2 를 찾는다 (없으면 AGENDA 의 챕터명으로 대신한다)
+    #   ⚠️ **명시 `#layout-*` 이 붙은 진입 블록은 HTML 이 장으로 남긴다.**
+    #      slide-parser 는 `s.layout` 이 있으면 autoToc 판정을 건너뛰므로
+    #      `cards_placeholder: false` 라도 그 장이 살아 있다(실측 aTest-all 챕터02:
+    #      HTML 은 `layout-chapter` 진입 장 + Map Slide **둘**, pptx 는 TOC 장 하나 —
+    #      챕터마다 1장씩 갈려 덱 전체가 5장 어긋났다 · 2026-09-19).
+    explicit_entry = (not cards_ph) and any(LAYOUT_LINE.match(ln)
+                                            for ln in first.split("\n"))
     subtitle = None
     subtitle_from_h2 = False
-    for ln in first.split("\n"):
-        m = H2.match(ln)
-        if m:
-            subtitle = m.group(1)
-            subtitle_from_h2 = True
-            break
+    if not explicit_entry:
+        for ln in first.split("\n"):
+            m = H2.match(ln)
+            if m:
+                subtitle = m.group(1)
+                subtitle_from_h2 = True
+                break
     if subtitle is None:
         subtitle = chapter_title or h1
 
@@ -504,6 +512,13 @@ def normalize_chapter(blocks, chapter_title, stat, cards_ph=True, toc_ph=True,
     #      산출물 기준이 아니었다 — 두 축이 다른 정본을 보고 있었다.
     stat["chapter"] += 1
     out = []
+    if explicit_entry:
+        #   H1 만 걷어내고 그대로 장으로 남긴다 — 제목(H2 부제)·본문은 원고의 것이다.
+        #   TOC 장 제목은 위에서 **챕터명**으로 잡았으므로 둘이 겹치지 않는다
+        kept = "\n".join(ln for ln in first.split("\n") if not H1.match(ln))
+        if kept.strip():
+            out.append(kept.strip("\n") + "\n")
+            stat["chapter_entry_kept"] += 1
     if cards_ph:
         out.append("# %s\n" % h1)
     if toc_ph and toc:
@@ -1006,7 +1021,7 @@ def main():
     stat = {k: 0 for k in ("attr", "element", "id", "anim", "slot", "symbol",
                            "img_abs", "img_proj", "img_missing",
                            "chapter", "chapter_dropped", "agenda", "defer", "fence_flat", "fence_drop",
-                           "laneb", "laneb_defer", "math", "auto_toc_dropped")}
+                           "laneb", "laneb_defer", "math", "auto_toc_dropped", "chapter_entry_kept")}
     made = []
     #   제목 순번은 **덱 전체** 기준이다 — 병합은 pptx 한 벌에서 장을 찾으므로,
     #   파일마다 0 부터 세면 동명 제목이 두 원고에 있을 때 서로를 가리킨다
@@ -1123,6 +1138,9 @@ def main():
               % ("주입" if cover_on else "생략", len(chapters), stat["chapter"],
                  stat["defer"], stat["fence_flat"], stat["fence_drop"]),
               file=sys.stderr)
+        if stat["chapter_entry_kept"]:
+            print("  챕터 진입 장 유지 — 명시 layout %d개 (HTML 과 같은 판정)"
+                  % stat["chapter_entry_kept"], file=sys.stderr)
         if stat["auto_toc_dropped"]:
             print("  Cards Page 생략 — 자식 헤딩을 가진 진입 장 %d개 (HTML 과 같은 판정)"
                   % stat["auto_toc_dropped"], file=sys.stderr)

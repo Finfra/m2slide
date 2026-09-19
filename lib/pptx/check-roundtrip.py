@@ -447,7 +447,11 @@ def collect(project_dir):
         #      본문 요소가 아니다. 세면 무손실 선언인데 사라진 것으로 잡힌다
         #      (실측 aTest-all: `h2_slide_title` −5 · `directive_layout` −5 · 2026-09-19).
         #      H1 자체는 `h1_chapter`(declared_drop)로 계속 잰다 — 축을 잃지 않는다
-        entry = (not cards_on) and s.get("__h1__")
+        #   ⚠️ **명시 `#layout-*` 이 붙은 진입 장은 살아남는다** — HTML 은 autoToc
+        #      판정을 건너뛰고(slide-parser `if s.layout: return`) pptx 도 그 장을
+        #      그대로 낸다(build-source `explicit_entry`). 그래서 그 장의 H2·디렉티브는
+        #      본문 요소가 맞다. 셋이 같은 조건을 봐야 한 원고가 같은 장 수로 나온다
+        entry = (not cards_on) and s.get("__h1__") and not s.get("directive_layout")
         for k, v in s.items():
             if k in ("__lv__", "__h1__"):
                 continue      # 판정용 내부 표식 — 비교 대상이 아니다
