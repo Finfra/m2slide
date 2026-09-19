@@ -19,7 +19,9 @@
 #
 # ⚠️ 이 파일을 고치면 **산출 pptx 가 달라진다**. 근거(`evidence`) 없이 바꾸지 않는다.
 ---
-schema_version: 1
+schema_version: 2   # Issue361 — goal-oriented 룰 도입(legibility 계열). 전환 단위는
+                    #   파일이 아니라 룰이라, 아래 `legibility:` 만 검사 대상이고 나머지
+                    #   카탈로그는 미전환 그대로 통과한다
 
 # ── 컴포넌트 펜스 처리 ────────────────────────────────────────
 # HTML 에서만 살아 있는 것들. 남기면 JSON·JS 원문이 슬라이드에 그대로 찍힌다
@@ -344,3 +346,64 @@ smartart:
     title_fs_max: 44           # titleFsFor: min(h×.30, w×.21, 44, 폭 상한) — 체인 전체 최솟값
     sub_ratio: 0.66            # nodeBox: sub = round(title × .66)
     arrow: { dx1: -13, dx2: 15, dy: 16, alpha: 45 }   # 삼각 화살표 (gx 기준 · 검정 45%)
+
+# ── legibility — 가독성 바닥선 (Issue361) ─────────────────────
+# 왜 여기인가: 굵기·바닥 글자 크기는 **pptx 산출 측 테마 값**이고 집행 지점도
+#   lane T / retheme 이다. 원고(md-builder)에는 pt 라는 개념이 없어 판정 근거를
+#   원고에서 얻을 수 없다 — 판정과 집행이 같은 단계에 있어야 갈리지 않는다.
+# 술어 정의·적용 범위 판정: _doc_arch/policy-goal-schema.md
+#   "`legibility` 계열 — 술어 정의와 적용 범위"
+legibility:
+  ig_legibility_floor:
+    goal_type: legibility
+    goal: |
+      인포그래픽 도형의 글자가 16pt 아래로 내려가지 않고, 본문 굵기가 강조를 흩뜨리지
+      않으며, 그 교정이 새 겹침·장식 침범을 만들지 않는다.
+    # `goal_check` 는 **판정 술어만** 담는다(닫힌 집합 — lint 가 계열 밖 키를 거부한다).
+    #   범위 조건과 교정 전술은 판정이 아니므로 아래 `scope`·`remedy` 로 분리했다.
+    #   섞어 두면 *"무엇을 재는가"* 와 *"어떻게 고치는가"* 가 한 자리에 엉킨다.
+    goal_check:
+      font_size_min: 16
+      box_overflow_max: 0
+      # 굵기를 유지해도 되는 조건 — 여기 없으면 bold 를 푼다. **목록이 정책의 본체**다.
+      emphasis_scope:
+        - larger_than_floor       # 바닥(16pt)보다 큰 글자
+        - white_on_dark_fill      # 진한 채움 위 흰 글자
+        - inside_accent_band      # 강조 배경 안 글자
+        - short_glyph_in_circle   # 원형 안 3자 이하 기호
+      # 교정이 **새로 만든** 충돌만 센다 — 원래 있던 것과 성격이 다르다. 기본 0.
+      overlap_count_max: 0
+      decoration_intrusion_max: 0
+    # 적용 범위는 **축이 아니라 룰 내부 조건**이다 — m2slide 정방향 pptx 는 모든 요소가
+    #   생성분이라 출처 축(`applies_to_origin`)을 세울 소비처가 없다(판정 2026-09-19).
+    scope:
+      target: run_with_explicit_size   # placeholder 가 아니고 run 에 크기가 명시된 것
+    # 글자를 키우면 도형을 넘친다 — 글자를 되돌리지 않고 아래 순서로 흡수한다.
+    #   **순서가 정책의 본체**다. 바꾸면 결과가 달라진다.
+    remedy:
+      absorb_order:
+        - widen_horizontally      # ⑴ 가로 확장
+        - zero_padding            # ⑵ 여백 0
+        - tighten_neighbor_label  # ⑶ 이웃 라벨 죔 — ⚠️ 전 장 일괄 적용 금지(아래 evidence)
+        - enlarge_shape           # ⑷ 도형 확대
+        - extend_rule_length      # ⑸ 괘선 길이
+        - move_label_outside      # ⑹ 라벨을 막대 밖으로 — fidelity 예외(아래)
+      # ⚠️ 값을 가진 도형은 **기하를 바꾸지 않는다** — 막대·파이를 키우면 그래프가
+      #   거짓말이 된다. legibility 와 fidelity 가 정면으로 부딪치는 지점이고,
+      #   그때는 ⑹(라벨만 밖으로)로 간다.
+      value_bearing_shapes: keep_geometry
+    # ⚠️ 단일 프로젝트 1회 관측이라 medium 이 상한이다 — 그래서 흡수는 넘치는 도형에만
+    #   걸고 전 장 일괄 적용을 하지 않는다(⑶ 이 회귀를 낸 실사례가 근거).
+    confidence: medium
+    evidence:
+      - project: sreMsa
+        date: 2026-09-19
+        note: |
+          v2.1.2 인포그래픽 run 887개 — 16pt 미만 769 → 0 · bold 393 → 213 ·
+          도형 밖 넘침 6 → 0 · 신규 겹침·장식 침범 0 · 장 수 보존(147·133).
+          ⑶ 이웃 라벨 죔은 전 장 일괄 적용 시 멀쩡한 카드 제목이 두 줄로 접혀
+          228건 → 필요분 4건으로 축소했다(part1 s22 실측).
+    description: |
+      m2slide 는 판정 기준만 가져온다 — 교정 스크립트는 옮기지 않았다. sreMsa 는
+      pptx 후처리이고 m2slide 는 원고 → 산출이라 구현체가 다르다. 🚧 집행체(lane T 에서
+      이 바닥선을 실제로 재고 흡수하는 코드)는 아직 없다 — 본 룰은 계약을 먼저 세운 것이다.

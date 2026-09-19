@@ -45,6 +45,14 @@ GOAL_CHECK_FAMILIES = {
         "chars_max", "items_max", "font_size_min", "box_overflow_max",
         "lines_max",
         "no_empty_bullet_li",          # 파서 충돌로 빈 <li> 가 생기지 않음
+        # Issue361 — prj61 sreMsa v2.1.2 가독성 처방 편입. 이 계열은 술어 6종을
+        #   열거하면서 실제 소비처가 1종뿐이었다(나머지 5종 0건). 아래 셋은 기존
+        #   술어로 표현할 수 없던 축이다: 굵기(크기와 별개) · 교정이 **새로 만든**
+        #   충돌(원래 있던 것과 성격이 다르다). 정의: policy-goal-schema.md
+        #   "`legibility` 계열 — 술어 정의와 적용 범위"
+        "emphasis_scope",              # 굵기를 유지해도 되는 조건 화이트리스트
+        "overlap_count_max",           # 교정이 새로 만든 글자 겹침 수 (기본 0)
+        "decoration_intrusion_max",    # 교정이 새로 만든 장식 영역 침범 수 (기본 0)
     },
     "attribution": {
         "require_badge", "require_credits_entry", "require_source_url",
