@@ -210,6 +210,22 @@ elements:
       없으므로 **어느 장의 신호에 붙일지**를 먼저 정해야 한다(첫 본문 장이 후보).
     evidence: "aTest `cards_placeholder: false` — HTML·pptx 둘 다 H1 장 없음 (2026-09-10)"
 
+  - id: deck_toc_slide
+    m2slide: "HTML `index.html` 의 markmap 목차 — 원고에는 없다"
+    pptx: "표지 다음 한 장 (제목 `목차` + 챕터 목록)"
+    grade: synthesized
+    slides: 1
+    reason: |
+      챕터가 둘 이상이면 표지 원고(`cover_source`)가 함께 낸다. HTML 쪽 목차는
+      markmap(JS)이 그리므로 정적 대조 대상이 아니고, pptx 에서는 글자 목록이 된다.
+      **계약에 이 장이 없었다** — 그래서 `synthesized` 예산에도 안 잡히고 역변환도
+      지우지 않아, 제목·불릿이 원고에 없던 요소로 되돌아왔다.
+    reverse_action: drop
+    detect: |
+      lane S 표식 `synth: deck_toc`. 폴백은 *"표지 직후 + 본문 불릿이 이후 장 제목의
+      부분집합"*.
+    evidence: "m2Slide_chapter_mode p2 — 7항목이 챕터 7개와 일치 (2026-09-19)"
+
   - id: agenda_slide
     m2slide: "`agenda.html` — HTML 이 **별도 페이지로 항상** 내는 목차"
     pptx: "표지 다음 한 장 (제목 `Agenda` + 항목 목록)"
@@ -223,7 +239,14 @@ elements:
       🚧 **꼴은 아직 옮기지 않았다.** HTML `layout-_agenda` 는 노란 테두리 박스와
       고양이 마스코트를 두는데 pptx 장에는 글자만 있다. 좌표는 실측해 뒀다
       (프레임 기준 제목 `l 111 · t 90 · fs 51` · markmap 영역 `l 81 · t 261 · 1757×936`).
-    evidence: "aTest — HTML agenda.html 1장 · pptx 1장 (2026-09-11)"
+    reverse_action: drop
+    detect: |
+      lane S 표식 `synth: agenda` — **정방향이 직접 적는다**. 구 판정은 *"표지 바로
+      다음 장이면서 제목이 Agenda"* 였는데, chapter mode 는 그 사이에 덱 전체 목차가
+      끼어 위치 전제가 깨진다. 표식이 없는 pptx 를 위해 그 휴리스틱은 폴백으로 남긴다.
+    evidence: |
+      aTest — HTML agenda.html 1장 · pptx 1장 (2026-09-11).
+      m2Slide_chapter_mode — 위치 전제가 깨져 **한 장도 안 걸렸다**(2026-09-19).
 
   - id: chapter_toc_slide
     m2slide: "chapter mode 에서 `toc_placeholder: true` 면 HTML 에도 있다"
@@ -235,8 +258,14 @@ elements:
       만들지 않는다 — 그것을 읽지 않던 탓에 single 덱에 pptx 에만 목차 장이 생겼다.
     reverse_action: drop
     detect: |
-      Section Header 바로 다음 장이면서, 본문 불릿이 이후 장들의 제목 목록과 일치한다.
-    evidence: "aTest p3 — 본문 7항목이 p4~p10 제목과 정확히 일치 (2026-09-09)"
+      lane S 표식 `synth: chapter_toc`. 구 판정은 *"Section Header 바로 다음 장"* 이었는데
+      **그 장이 아예 없을 수 있다** — `cards_placeholder: false` 면 H1 진입 장을 만들지
+      않으므로(위 `h1_chapter`) pptx 에 Section Header 레이아웃이 0개다. 전제가 산출물
+      설정에 달려 있었다. 표식이 없는 pptx 에서는 *"본문 불릿이 이후 장 제목의 부분집합"*
+      휴리스틱으로 폴백한다.
+    evidence: |
+      aTest p3 — 본문 7항목이 p4~p10 제목과 정확히 일치 (2026-09-09).
+      m2Slide_chapter_mode — Section Header 0개라 챕터 TOC 7장이 전부 미검출 (2026-09-19).
 
   - id: h2_slide_title
     m2slide: "`## H2` 슬라이드 제목"
@@ -260,12 +289,21 @@ elements:
     pptx: "Content placeholder 문단"
     grade: lossy
     reason: |
-      ⚠️ **m2slide 파서와 pandoc 이 같은 줄을 다르게 읽는 경우가 있다.** 실측
-      (m2Slide_chapter_mode): `  -HTML DIV 태그를 사용하여` 처럼 **하이픈 뒤 공백이
-      없는** 줄을 m2slide 는 산문으로, pandoc 은 리스트 항목으로 읽는다. raw HTML 줄도
-      마찬가지로 갈린다. 왕복 문제이기 전에 **HTML 덱과 pptx 가 서로 다르게 렌더되는**
-      산출물 불일치이고, 고칠 곳은 변환기가 아니라 원고의 표기다.
-    caveat: "🚧 비표준 표기를 쓰는 원고에서만 갈린다. 표준 표기 원고는 무손실이다"
+      산문 줄은 pptx 문단이 된다. 문구는 남고 원고에서의 줄 나눔은 남지 않는다.
+    caveat: |
+      ⚠️ **구 서술을 정정한다 (2026-09-19).** 구 판정은 `  -HTML DIV 태그를 사용하여`
+      처럼 **하이픈 뒤 공백이 없는** 줄을 두고 *"m2slide 는 산문으로, pandoc 은 리스트
+      항목으로 읽는다 — HTML 덱과 pptx 가 다르게 렌더되는 산출물 불일치"* 라고 적었는데
+      **오판이었다.** 양쪽 렌더를 실제로 재보면 같다:
+
+        HTML  `왼쪽 텍스트 영역-HTML DIV 태그를 사용하여-원하는 …`  (한 덩어리)
+        pptx  `왼쪽 텍스트 영역 -HTML DIV 태그를 사용하여 -원하는 …` (한 문단, lvl 0)
+
+      둘 다 CommonMark 의 **느슨한 이어짐**(lazy continuation)대로 앞 항목에 이어 붙인
+      것이다 — 하이픈 뒤 공백이 없으면 리스트 마커가 아니기 때문이다. 어긋나 있던 것은
+      **검사기**였고(원고를 줄 단위로 세어 불릿 1 + 산문 3 으로 갈랐다), `check-roundtrip`
+      의 `fold_lazy` 가 같은 규격으로 읽도록 고쳤다.
+      계약이 **렌더를 재지 않고 추정으로 쓰였던** 자리다.
 
   - id: table
     m2slide: "마크다운 표"
@@ -275,11 +313,32 @@ elements:
       셀 내용·행열에 더해 **정렬(좌·중·우)까지 보존**된다 — pandoc 이 `:---`·`:-:`·`---:` 를
       문단 정렬로 옮긴다. 글자·열 폭·머리행 꼴은 lane T 가 HTML 실측대로 입힌다
       (transform.yml `table_geometry`).
+      ⚠️ **셀 안 그림은 이 축이 아니다** — `table_cell_image` 가 따로 잰다. 여기서 세는
+      셀 글자는 그림을 alt 로 바꾼 뒤의 값이다.
     evidence: |
       m2Slide_chapter_mode p32 — 3열이 LEFT/CENTER/RIGHT 로 보존됨을 실측 · 2026-09-19.
       ⚠️ 구 판정은 `lossy`("정렬 소실")였는데 **오판이었다** — 근거 덱 aTest 의 표는 세 열이
       전부 `:---`(좌측)이라 정렬 차이가 드러날 수 없었다. 정렬이 섞인 덱으로 재보니 보존된다.
       계약의 근거 덱이 그 축을 담지 않으면 "차이 없음" 과 "차이를 못 봄" 이 구분되지 않는다.
+
+  - id: table_cell_image
+    m2slide: "표 셀 안의 `![alt](path)`"
+    pptx: "그 셀의 **alt 텍스트만** (그림은 들어가지 않는다)"
+    grade: declared_drop
+    reason: |
+      pptx 네이티브 표의 셀(`a:tc`)은 `a:txBody` 만 담는다 — DrawingML 에 셀 안 그림이라는
+      어휘가 없다. PowerPoint 에서 표 셀에 그림을 넣는 것도 실제로는 **셀 위에 떠 있는
+      별도 도형**이지 셀의 내용이 아니다. pandoc 은 alt 텍스트로 대신한다.
+    caveat: |
+      ⚠️ **산출물이 실제로 갈린다** — HTML 은 `<img src="./img/icon.png">`, pptx 는 글자
+      `Icon`. 왕복 문제가 아니라 배포물 차이이므로 아이콘 표를 쓰는 덱은 이 점을 알고
+      써야 한다. 이 손실을 `table` 축에 섞어 재면 셀 글자·행열·정렬이 멀쩡한데도 표가
+      깨진 것처럼 보이므로 **축을 나눴다**.
+    recover: |
+      셀 좌표에 그림 도형을 겹쳐 놓으면 보이기는 같아진다 — 다만 그것은 셀의 내용이
+      아니라서 행 높이·정렬 변경에 따라오지 않는다. lane T 가 할 수 있는 일이지만
+      "표를 고치면 그림이 따로 논다" 는 새 함정을 들인다.
+    evidence: "m2Slide_chapter_mode p33 — 3행 전부 alt `Icon` 만 남음 (2026-09-19)"
 
   - id: subheading
     m2slide: "`### H3` 이하 소제목"
