@@ -504,7 +504,11 @@
   background-size: 14% auto, 16% auto;
 }
 
-.reveal section.layout-exercise .exercise-body {
+/* Issue359: 선택자에 `> div` 를 반드시 유지할 것 — 장황해 보여도 필수다.
+   base.css §9 의 `.reveal section[class*="layout-"] > div[class$="-body"]`(명시도 0-3-2)가
+   shorthand `padding: 1em 0` 로 좌우 padding 을 0 으로 덮는다. theme 이 나중에 로드돼도
+   0-3-1 로는 못 이긴다. 자식 결합자 + 요소 선택자로 0-3-2 동점을 만들어야 후순위 로드가 이긴다. */
+.reveal section.layout-exercise > div.exercise-body {
   padding-left: 18%;
   padding-right: 4%;
 }
@@ -519,7 +523,8 @@
   background-size: 22% auto, 18% auto;
 }
 
-.reveal section.layout-exercise-small .exercise-body {
+/* Issue359: `> div` 필수 — 위 layout-exercise 와 같은 명시도 동점(0-3-2) 확보용. */
+.reveal section.layout-exercise-small > div.exercise-body {
   padding-left: 30%;
   padding-right: 4%;
 }
