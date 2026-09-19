@@ -34,7 +34,13 @@
     - **PowerPoint 실물 확인 반영** — Issue354·357 은 LibreOffice 렌더 + PowerPoint 서체 캐시·저장본 구조 대조까지가 검증 한계였다. 사용자가 PowerPoint 에서 본 차이(서체·SmartArt 편집 가능 여부·수식)를 첫 입력으로 받는다
     - **나머지 htmlart 를 lane G(SmartArt) 로** — timeline·chevron·step·funnel·numbered·compare 는 아직 lane B 도형 근사. 종류마다 HTML 렌더러 기하를 실측해 `smartart.catalog` + 캐시 기하를 더한다(레이아웃 자원: `SmartArt.framework` lo/cs/qs)
     - **Issue343 이월** — 중첩 깊이(2칸 vs CommonMark)·하이픈 뒤 공백 없는 불릿의 정본 결정, 무제 이미지 장(`_blank`·문단+이미지)의 pptx 배치. m2Slide_chapter_mode 러너 FAIL 2건(장 +5·글자 25종)이 이 항목이다
-    - **표 폭** — 열 폭을 모노스페이스 어림(한글 1em·그 외 0.5em)으로 잡아 HTML 904 vs pptx 876. 실측 폭 또는 서체 메트릭으로
+    - ~~**표 폭** — 열 폭을 모노스페이스 어림(한글 1em·그 외 0.5em)으로 잡아 HTML 904 vs pptx 876~~ ✅ **해결** (2026-09-19, commit `02d3c86`·`7cfdeaa`·`85fa4bc`·`c0032d1`)
+        - 원인은 어림 계수가 아니라 **두 가지**였다. ① `table_geometry.fs` 가 45.4 — 본문 문단 글자를 표에 그대로 쓴 값이고, HTML 의 `td`·`th` 는 실측 **40px** 이다(1920px = 13.333in 이라 1px = 정확히 0.5pt → 22.7pt vs 20pt, 13.5% 초과). ② 폭 계산에 **여유가 0** 이었다 — `'lane A'` 68.1pt vs 가용 68.0pt, **0.1pt 초과로 두 줄**이 됐다
+        - 계수(한글 1.0·라틴 0.5)는 **맞았다** — ego-browser Range 실측으로 확인(`'구분'` 80px=1.0em · `'lane A'` 120px=0.5em)
+        - 해법은 안전 계수를 지어내는 대신 **CSS 규칙을 옮긴 것**이다 — HTML 표는 `table-layout:auto` + `min-width:50%` · `max-width:90%` 이고, 본문 폭(1808)의 50% = **904px** 이 곧 Issue358 이 적어 둔 그 904 다. 남는 폭을 열에 비례 배분하면 여유가 생기고 그것이 잘림 방지다
+        - 결과: 표 폭 904px(HTML 904) · 열 226·293.8·384.2(HTML 226·293.5·383.5) · 글자 20pt(HTML 40px) · 잘림 0
+    - ~~**일반 장 표 미처리**~~ ✅ **해결** (같은 날, commit `c0032d1`) — 표 서식이 `relayout_caption`(= `Content with Caption` 전용) 안에만 있어 일반 `Title and Content` 표는 pandoc 기본 그대로였다. 실측 m2Slide_chapter_mode p32 **8.5pt**·열 602px 균등 vs 같은 덱 p33 20pt·904px — 한 덱 안에서 표 두 개가 서로 다른 꼴이었다. 서식을 `apply_table_style()` 로 추출해 두 경로가 공유한다. ⚠️ 세로 위치는 건드리지 않았다 — 일반 장 표의 HTML 배치 규칙은 아직 실측 전이다
+    - ~~**표 정렬 소실**~~ ✅ **계약 오판이었다** (commit `85fa4bc`) — `fidelity.yml` 이 `lossy`("정렬 지시자는 대응 어휘가 없어 소실")로 선언했으나 실측하면 LEFT/CENTER/RIGHT 가 **전부 보존**된다. 구 근거 덱 aTest 의 표는 세 열이 모두 `:---`(좌측)이라 **정렬 차이가 드러날 수 없었다**. `lossless` 로 정정. 교훈: 근거 덱이 그 축을 담지 않으면 *"차이 없음"* 과 *"차이를 못 봄"* 이 구분되지 않는다
     - **코드 상자 안 수식** — 코드 다음 문단의 OMML 은 PowerPoint 렌더를 봐야 한다(LibreOffice 는 fallback 평문)
     - **cards 본문 여러 줄·2단계** — aTest 는 한 줄 카드뿐. 여러 줄·`-` 2단계 카드의 높이 규칙(`card_geometry.body_line_h`) 실측
 * 구현 명세:
