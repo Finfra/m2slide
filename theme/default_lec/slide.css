@@ -1384,3 +1384,19 @@ body.agenda-page .agenda-frame {
   color: var(--m2-accent-5, #C82506);
   font-weight: 700;
 }
+
+/* ── 본문 폰트 family 지정 배선 (Issue387) ────────────────────────────────
+   `_config.yml` 의 `style.theContents.font_family` 는 파싱되어
+   `--content-font-family` 변수로 산출까지 나오는데, 그 변수를 쓰는 셀렉터가
+   base.css 의 `.reveal .theContents` **하나뿐**이었다. 현행 layout 템플릿의 본문
+   컨테이너는 `contents-body`·`exercise-body`·`summary-body` … 이므로 그 변수가
+   **아무 요소에도 닿지 않았다** — 사용자가 폰트를 지정해도 보이지 않는다
+   (실측 2026-09-20: `index.html` 에 `--content-font-family: 'Helvetica Neue'…` 가
+   나갔는데 본문 `li` 의 computed 는 `--global-font-family` 기본값).
+
+   ⚠️ 상속을 덮는 것이라 명시도 다툼이 없다 — `.reveal` 의 `--global-font-family` 는
+      자식에게 **상속**으로 내려오고, 자식에 직접 선언하면 그것이 이긴다.
+   ⚠️ 변수 미지정 시 `inherit` 이므로 기존 덱은 무변경이다(회귀 0). */
+.reveal section[class*="layout-"] > div[class$="-body"] {
+  font-family: var(--content-font-family, inherit);
+}

@@ -19,7 +19,7 @@ date: 2026-07-03
 | 영속 설계 문서 | `_doc_arch` | 로컬 전용 — 팀 공유 필요해지면 재검토(현재는 로컬 세션 산출물로 간주) |
 | nPTiR 작업 문서 | `_doc_work` | plan/task/report 포함 전체가 로컬 전용. `_doc_work/capture`(스크린샷)·`_doc_work/z_htm`(hub 렌더)도 동일 |
 | 사람 메모 | `noteForHuman.md`, `noteForHuman*.md` | AI 미사용, 로컬 전용 |
-| vendor 런타임 자산 | **`lib/vendor/` = 추적**(gitignore 안 함), `Projects/*/slide/vendor/` = 제외(`Projects/.gitignore /*`) | Issue270 오프라인 self-contained. `lib/vendor/`(~21M)는 배포 필수(clone→오프라인 즉시 작동)라 추적. 빌드 산출 `slide/vendor/`는 `lib/vendor/`에서 재복사되는 중간물이라 제외. woff2/woff만 보관(.ttf 제외)로 용량 절감. 재생성: `node lib/vendor/fetch-vendor.js` |
+| vendor 런타임 자산 | **`lib/vendor/` = 추적**(gitignore 안 함), `Projects/*/slide/vendor/` = 제외(`Projects/.gitignore /*`) | Issue270 오프라인 self-contained. `lib/vendor/`(~21M)는 배포 필수(clone→오프라인 즉시 작동)라 추적. 빌드 산출 `slide/vendor/`는 `lib/vendor/`에서 재복사되는 중간물이라 제외. woff2/woff만 보관(.ttf 제외)로 용량 절감. 재생성: `node lib/vendor/fetch-vendor.js`. **폰트 용량 가드레일(Issue387)**: 파일당 5MB · 폰트 총량 24MB 상한을 `fetch-vendor.js` 가 **경고**한다(받은 것을 버리지는 않는다 — 조용히 지우면 어떤 폰트가 없는지가 비밀이 되고 그 덱은 오프라인에서 이유 없이 대체 폰트로 렌더된다). 근거: 실측 2026-09-20 폰트 142개·9.2MB · 중위 12KB · 최대 2.0MB(d2coding 한글 전체 글리프) |
 
 # 신규 자산 추가 시 판정 절차
 
