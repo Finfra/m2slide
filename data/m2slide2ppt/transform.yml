@@ -304,9 +304,27 @@ smartart:
   resources: "/Applications/Microsoft PowerPoint.app/Contents/Frameworks/SmartArt.framework/Versions/A/Resources"
   catalog:
     htmlart process: { layout: process1, colors: accent1_1, style: simple1, fallback: process }
+    htmlart chevron: { layout: chevron1, colors: accent1_1, style: simple1, fallback: process,
+                       geometry: chevron_geometry, needs_flat: true }
+    #   chevron1 = Basic Chevron Process. ⚠️ `needs_flat` — 하위 항목이 있으면 lane B 로
+    #   되돌린다. chevron1 은 자식 유무로 layoutNode 갈래가 갈리는데(`parTxOnly` vs
+    #   `composite`+`parTx`+`desTx`) 후자는 캐시 도형과 데이터 모델이 1:1 이 아니게 된다.
+    #   실사용 원고는 전부 제목만 쓰므로(m2Slide_visual_component 5.12 · fPmIntro 01)
+    #   **검증할 수 있는 갈래만** 넣는다 — 근사하지 않는다
     #   process1 = Basic Process · accent1_1 = Colored Outline - Accent 1 (흰 면 + 강조색 테두리,
     #   HTML 과 같은 꼴) · simple1 = Simple Fill. 나머지 htmlart 종류는 레이아웃별 캐시 기하를
     #   실측해 넣을 때 여기에 추가한다 (역매핑 표: mappings.yml smartart_to_htmlart)
+  #   renderChevron 실측 (client.js L737~) — 맞물린 갈매기. tip 만큼 겹쳐 물린다
+  chevron_geometry:
+    art: { l: 56, t: 245, w: 1808, h: 939 }
+    ch_w: 290
+    ch_h: 204
+    tip_ratio: 0.4             # tip = ch_h × 0.4 — 화살촉 깊이
+    pad_x: 20
+    pad_y: 30
+    title_fs: 29               # centerLabel 인자
+    sub_fs: 19
+    opacity_base: 0.6          # fill-opacity = base + (1-base)×i/(N-1) — 진행에 따라 진해진다
   process_geometry:            # renderProcess 의 viewBox 단위 (client.js: boxW·boxH·arrowGap·padY)
     art: { l: 56, t: 245, w: 1808, h: 939 }   # .htmlart-process 상자 — svg 가 비율 유지로 가운데
     box_w: 196
