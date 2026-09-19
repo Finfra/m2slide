@@ -262,6 +262,17 @@ md-slide-rules의 `::: columns` 표준 외에 m2slide는 임의 슬롯명 지원
 ```
 
 * layout 템플릿(`theme/{name}/layouts/*.html`)의 `{{slotName}}` placeholder에 매핑
+* **콜론은 3개 이상이면 같다** — `::: left` 와 `:::: left` 가 동일하게 동작한다(Issue372). 슬롯 안에 다시 fenced div(`::: htmlart` 등)를 넣을 때는 Pandoc 관행대로 **바깥을 `::::` 로** 쓰는 편이 읽기 쉽다
+    ```markdown
+    :::: left
+    ::: htmlart matrix
+    * 노드
+    * 노드2
+    :::
+    ::::
+    ```
+    - 닫는 줄은 **depth 로** 찾으므로 중첩이 깨지지 않는다. 코드펜스(```` ``` ````) 안의 `:::` 는 세지 않는다 — 문서에 예시로 적은 슬롯이 실제 슬롯으로 빠져나가지 않는다
+    - ⚠️ 이전에는 `:::` 로 중첩하면 **잔여 `:::` 가 본문에 `<p>:::</p>` 로 샜고**, `::::` 로 피하면 **슬롯 매칭 자체가 실패**해 좌우가 `{{content}}` 로 쏟아졌다. 둘 다 해소됐다
 * 시스템 슬롯: `{{title}}`, `{{content}}`, `{{markmap}}` (`_toc` layout 전용)
 
 ## 3. Slidev 호환 슬롯
