@@ -27,6 +27,19 @@
 
 # 🚧 진행중
 
+## Issue378: head-bar 슬롯의 일차 접두(`N-`)를 렌더에서만 떼는 `head_number` 옵션 (등록: 2026-09-19)
+* 목적: `head_left: d2` / `head_right: d1` 인 덱에서 좌측 `1-5. 닫는 절` 의 `1-` 과 우측 `1일차 — …` 가 **한 줄 안에서 같은 정보를 두 번** 표시한다. 원고의 절 번호(`## 1-5.`)는 타 문서가 참조하는 **공용 식별자**라 소스에서 뗄 수 없으므로 렌더 시점에만 줄인다
+* 상세:
+    - 요청 출처: prj60 `__lec` 강의 덱(`202609_Rebuild/1.design_rnd`) — 그 프로젝트의 `AGENDA.md` 54곳·`PRACTICE.md` 4곳·`DESIGN.md` 2곳이 `N-M.` 번호를 참조한다. 소스에서 번호를 떼면 그 참조가 전부 끊긴다
+    - 적용 대상은 `head_left`·`head_right` 양쪽이고, `now` breadcrumb 은 **세그먼트마다 개별** 적용한다
+    - 슬롯을 쓰는 layout 은 `_contents` 계열에 더해 [Issue371](#issue371) 에서 `contents-split` 이 늘었다 — 해소는 `_resolveHeadSlot` 한 지점이라 layout 이 늘어도 자동 적용된다
+    - ⚠️ **하위호환이 요건이다** — 옵션 미지정 시 기존 출력과 완전히 동일해야 한다
+* 구현 명세:
+    - 순수 함수 `_stripHeadNumber(text, mode)` 를 [head-resolver.js](lib/_internal/head-resolver.js) 에 두고 `_resolveHeadSlot` 이 6번째 인자로 받는다
+    - **제거 조건은 `숫자-` 뒤에 숫자가 이어질 때 1회뿐**이다. 그래야 점 형식(`4.2.1.`)과 `1일차 —` 가 영향을 받지 않는다
+    - 설정 키 동기화 4곳([config-sync-rules](.claude/rules/config-sync-rules.md)): [config.js](lib/config.js) 파서 · [_config.org.yml](_config.org.yml) · [server.py](lib/dev-server/server.py) `_CONFIG_SCHEMA` · [config-gui.md](_doc_arch/config-gui.md)
+    - 검증: 단위 테스트(full/short × `1-5.`·`4.2.1.`·번호 없음·breadcrumb 다중) + **빌드 전후 diff 0** 실측
+
 # 📕 중요
 
 # 📙 일반

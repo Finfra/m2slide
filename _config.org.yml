@@ -15,6 +15,7 @@ chapter_markmap_depth: 3         # 챕터별 페이지 Markmap 펼침 깊이 (ma
 head_left: d1                    # Issue141: _contents head-bar 좌측: d1~d99 절대 depth | now (breadcrumb) | none (비표시)
 head_right: now                  # Issue141: _contents head-bar 우측: 동일 옵션. now는 다른 head 옵션 d{m}이면 d{m+1}부터 현재까지 ' > ' 연결
 head_breadcum: true              # Breadcum
+head_number: full                # Issue378: head 슬롯 일차 접두 표기. full=그대로 | short=선두 `N-` 제거 (`1-5. 닫는 절` → `5. 닫는 절`)
 title_contents_gap: 30           # title↔contents 갭 (title 높이의 %)
 auto_layout_detect: true         # false: 자동 감지 비활성화 (모든 슬라이드는 default layout 사용)
 

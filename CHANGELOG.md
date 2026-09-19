@@ -2,6 +2,12 @@
 
 All notable changes to this project. m2slide follows [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- `head_number` (`full`|`short`) — head-bar 슬롯 선두의 일차 접두(`N-`)를 렌더 시점에만 제거하는 옵션 (Issue378). `1-5. 닫는 절` → `5. 닫는 절`. 원고의 절 번호는 타 문서가 참조하는 공용 식별자라 소스에서 뗄 수 없는 경우를 위한 것. 점 형식(`4.2.1.`)과 `1-` 로 시작하지 않는 텍스트는 무변경이고, 미지정 시 기존 출력과 완전히 동일하다
+
 ## [v0.8.0] - 2026-07-13
 
 ### What's new
