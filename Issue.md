@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 361
+* Issue HWM: 363
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -47,6 +47,21 @@
 
 # 📙 일반
 
+## Issue363: htmlart `callout` 라벨이 viewBox 밖에 그려진다 — 4:3 에서 잘림으로 드러남 (등록: 2026-09-19) 🚧 보고만
+* 목적: Issue362 의 4:3 검증에서 드러난 **선행 결함**. 4:3 이 만든 문제가 아니라 4:3 이 **드러낸** 문제다
+* depends: Issue362
+* 상세 — 원인 사슬:
+    - [htmlart_dispatch.client.js:1548](lib/component-hooks/htmlart_dispatch.client.js#L1548) `renderCallout` 의 viewBox 는 `0 0 2000 1200` 고정인데, `W`/`E` zone 라벨 박스는 `labelBox()` 가 `x = -460` ~ `x = 2460` 에 배치한다 — **viewBox 밖 좌우 460 단위씩**
+    - SVG 는 `width:100%;height:100%` + 기본 `preserveAspectRatio="xMidYMid meet"` 이다. `meet` 레터박스 여백이 viewBox 밖 라벨을 우연히 보여주고 있었을 뿐이다
+    - htmlart 블록은 남는 세로 공간을 채우도록 자란다 → 4:3(슬라이드 1440) 에서 블록이 높아짐 → `meet` 스케일 상승(3:2 `0.7325` → 4:3 `0.8658`) → 레터박스 여백이 좁아짐(각 171 → 38 논리px) → viewBox 밖 라벨이 **슬라이드 경계 밖으로 밀려 잘린다**
+    - 실측(4:3, `m2Slide_visual_component` 5.27c vertical): `W` zone 라벨 "속도 2배 향상" 이 "도 2배 향상" 으로 좌측 잘림. 최우측 요소가 슬라이드 폭 1920 을 `+130.9` 초과
+    - 3:2 에서도 라벨 박스 자체는 이미 슬라이드 밖(`-109`)이다. 텍스트가 박스보다 좁아 **우연히** 안 잘렸을 뿐이라 원래부터 아슬아슬했다
+* 구현 명세 (제안 — 미적용):
+    - 정공법은 **viewBox 를 실제 콘텐츠 범위로 넓히는 것**: `viewBox="-460 0 2920 1200"`. 기존 좌표 계산을 하나도 안 건드리고 보이는 영역만 넓힌다. [mkSvg](lib/component-hooks/htmlart_dispatch.client.js#L482) 가 `'0 0 '+W+' '+H` 를 하드코딩하므로 min-x 를 받는 변형이 필요
+    - ⚠️ **부작용 범위가 이슈 밖이라 적용하지 않았다** — viewBox 를 넓히면 `meet` 스케일이 `0.7325 → 0.619` 로 떨어져 **기존 3:2·16:9 덱의 callout 도해가 약 15% 작아진다**. 라벨이 온전해지는 것은 개선이지만 기존 덱 외관이 바뀌므로 사용자 판단이 필요
+    - 회피책: 4:3 덱에서 `callout` 의 `W`/`E` zone 을 피한다 (branch 를 3개 이하로 두면 `H_p`/`V_p` 가 `N`·`NE`·`SE` 계열만 써서 안전)
+
+
 ## Issue360: layout `*-body` 명시도 충돌 전수 — base.css shorthand 가 theme 가로 padding 을 삼킨다 (등록: 2026-09-19)
 * 목적: [Issue359](#issue359) 로 `exercise`·`exercise-small` 을 고치면서 **같은 충돌이 살아 있는 layout 6종을 더 찾았다.** exercise 와 달리 이쪽은 실사용 덱이 전부 쓰는 layout 이라 고치는 순간 기존 덱의 렌더가 바뀐다 — 그래서 Issue359 에 묶지 않고 분리했다
 * depends: Issue359
@@ -89,6 +104,37 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue362: `slide_ratio: "4:3"` 지원 — 기존 강의 덱(4:3)과 한 파일로 합치기 위해 (등록: 2026-09-19, 해결: 2026-09-19, commit: `__HASH__`) ✅
+* 목적: prj60(`__lec`) 대금지오웰 설계·R&D 교안을 m2slide 로 만드는데, 그 교안이 **기존 강의 덱과 한 파일로 합쳐져야 한다**. 그 덱들이 전부 4:3 이라 m2slide 가 4:3 을 못 내면 HTML 도 pptx 도 그 판형으로 못 간다
+* triage: 중간 (화이트리스트 1줄이 아니라 JS·Python 3모듈 + 비율 소비 지점 전수 감사. 레이아웃 수정은 불필요했고, 대신 htmlart callout 선행 결함 1건을 별건으로 분리)
+* 요청 출처: prj60 `__lec` — `Project/202609_Rebuild/1.design_rnd`. 지금까지 `16:9` 로 우회해 둔 상태였다
+* 기존 덱 4:3 판형 실측값 (13004800 × 9753600 EMU = 1.3333):
+    - `~/work/sreMsa/ppt_withVm_3d/kubernetes_part1_v2.1.2.pptx` (147장)
+    - `~/work/sreMsa/ppt_withVm_3d/kubernetes_part2_v2.1.2.pptx` (133장)
+    - prj60 `Project/202609_Rebuild/1.design_rnd/build/base.pptx`
+* 상세 — 비율 소비 지점 전수 추적 결과:
+
+  | 위치 | 역할 | 4:3 대응 |
+  | :--- | :--- | :--- |
+  | [config.js:20](lib/config.js#L20) `VALID_SLIDE_RATIOS` | 화이트리스트 (hard error 게이트) | **수정** — `'4:3'` 추가 |
+  | [html-builder.js:197](lib/html-builder.js#L197) `resolveRevealDimensions` | Reveal width/height/ratioClass | **수정** — `1920×1440`·`ratio-4-3` 분기 추가 |
+  | [server.py:1875](lib/dev-server/server.py#L1875) 설정 GUI enum | dev-server 비율 드롭다운 | **수정** — 옵션 추가 |
+  | [config.js:771](lib/config.js#L771) `slideRatioNumeric` | CSS `--slide-ratio` 값 | 무수정 — 정규식 기반이라 `4:3 → 1.3333` 자동 |
+  | [build-pptx.sh:169](lib/pptx/build-pptx.sh#L169) 판형 교정 | theme.yml canvas | 무수정 — 정규식 기반. `338.67×254.00mm` 산출 확인 |
+  | [check-visual.py:243](lib/pptx/check-visual.py#L243) 판형 검증 | HTML↔pptx 대조 | 무수정 — 정규식 기반 |
+  | [detect-viewport.py:29](lib/tuner/detect-viewport.py#L29) `RATIO_MAP` | tuner 뷰포트 | 무수정 — **이미 `4:3 → 1920×1440` 을 갖고 있었다** |
+  | [base.css](lib/css/base.css) · theme `slide.css` | ratio 클래스 | 무수정 — `ratio-fill` 만 특례 처리하고 나머지는 `--slide-ratio` 변수로 일반화돼 있다. `ratio-4-3` 전용 CSS 불필요 |
+
+* 구현 명세 — 논리 폭은 **언제나 1920 고정**이고 높이만 늘린다 (`1920×1440`):
+    - theme CSS 의 `font-size`·`padding` 이 전부 **1920 논리폭 좌표계**에서 쓰였다. 폭을 줄이면(ex `1440×1080`) 가로 조판이 통째로 어긋난다
+    - 같은 원칙을 [build-pptx.sh](lib/pptx/build-pptx.sh) 가 이미 명문화해 뒀다 — *"폭은 그대로 두고 높이만 비율에 맞춘다"*. `3:2 → 1920×1280` 선례와도 일치
+* 검증 — `default_lec` layout 7종 · htmlart 27종 · cards · 표 전수 빌드 후 [ego-browser](~/.claude/skills/ego-browser/SKILL.md) 실측:
+    - **layout 7종 전부 정상** — `chapter`·`contents`·`contents-full`·`contents-split`·`exercise`·`exercise-small`·`summary`·`closing` 넘침 0. `cards`(3열·6장) · 7열 표 · 긴 셀 표 · 코드블록 도 정상
+    - htmlart 27종 중 **25종 정상**. `callout` 의 `horizontal`·`vertical` 2변형만 가로 넘침 (→ Issue363 분리)
+    - ⚠️ **넘침 측정은 `Reveal.configure({transition:"none"})` 로 트랜지션을 끄고 재야 한다.** `convex` 전환 중 `getBoundingClientRect` 가 회전 transform 을 포함해 **450ms 대기로는 오탐이 난다** — 최초 측정에서 exercise·summary·closing 이 넘치는 것으로 잡혔으나 전부 허위였다
+* 회귀 — `m2Slide_single_mode`(3:2) · `m2Slide_chapter_mode`(3:2) · `m2Slide_visual_component`(3:2) 변경 전후 빌드 산출 대조:
+    - 캐시버스터 타임스탬프를 정규화하면 남는 diff 는 **주석 1줄뿐**(`ratio-3-2/16-9` → `ratio-3-2/4-3/16-9`). Reveal `width`·`height`·`ratioClass` 전부 동일
 
 ## Issue359: `exercise`·`exercise-small` 본문 들여쓰기가 안 먹는다 — CSS 명시도 충돌 (등록: 2026-09-19, 해결: 2026-09-19, commit: `d537625`) ✅
 * 목적: prj60 작업 중 실측으로 드러난 것. `default_lec` 테마의 `exercise` 계열 layout 이 본문 좌측 들여쓰기를 선언해 두고도 **적용받지 못해** 나비 마스코트가 글자를 덮는다. 원고가 아니라 CSS 명시도 문제다
