@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 385
+* Issue HWM: 387
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -25,13 +25,49 @@
 
 # 🌱 이슈후보
 
-1. `6.roundtrip igTest` — pptx 에 없는 글자 6종(`Chapter 1.`~`Chapter 5.` · `v0.8.0`). Issue379 로 테마 자산 축이 해소되니 드러난 **다음 실패**이며 그 수정 전 기준선에서도 같았다(stash 대조). `Chapter N.` 은 `::: part` 라벨 계열(Issue374 선행 수정 `bf3efa3` 과 같은 축)이고 `v0.8.0` 은 `version_badge` 다 — 계약에 선언할지 전달할지 판단 필요
 
 # 🚧 진행중
 
 # 📕 중요
 
 # 📙 일반
+
+## Issue386: `6.roundtrip igTest` — pptx 에 없는 글자 6종. **part 라벨은 선언, `version_badge` 는 배선 누락** (등록: 2026-09-20)
+* 목적: 왕복 검사가 `Chapter 1.`~`Chapter 5.` · `v0.8.0` 을 *"pptx 에 없는 글자"* 로 잡는다. 실측으로 가르니 **성격이 둘로 갈린다** — 앞 5건은 의도된 드롭이라 계약에 선언할 일이고, `v0.8.0` 은 **표지 코너 슬롯 배선이 빠진 것**이라 고쳐야 한다
+* 카테고리: Build
+* 상세 (실측 2026-09-20 · igTest):
+    - **`Chapter N.` 5건 — 의도된 드롭.** HTML 챕터 파일의 `<p>Chapter N.</p>` 이고 원고 `::: part` 라벨에서 나온다. pptx 는 [build-source.py](lib/pptx/build-source.py) 의 `PART_BLOCK` 이 그 펜스를 지운다 — 챕터 진입 장의 **제목이 그 역할을 대신**하므로 라벨을 그대로 옮기면 중복이다(Issue374 선행 수정 `bf3efa3` 이 세운 방향)
+    - 🔑 **`v0.8.0` — 배선 누락이고, 게다가 자리와 내용이 어긋나 있다.** 표지 템플릿([_cover.html](theme/default/layouts/_cover.html#L28))의 코너는 **셋**이다:
+
+      | HTML | 슬롯 | 값(igTest) | pptx 배선 |
+      | :--- | :--- | :--- | :--- |
+      | `cover-corner cover-tl` | `{{github_url}}` | `github.com/Finfra/m2slide` | ✅ `corner_tl` |
+      | `cover-corner cover-tr` | `{{version_badge}}` | **`v0.8.0`** | ❌ **없다** |
+      | `cover-corner cover-br` | `{{homepage}}` | `finfra.kr` | ✅ `corner_br` |
+      | `cover-meta > cover-version` | `{{version}}` | `1.0` | ⚠️ `version` 좌표(**우상단** l 1624)에 들어간다 |
+
+    - ⚠️ 즉 **pptx 우상단에는 `1.0` 이 앉아 있는데 HTML 우상단은 `v0.8.0`** 이다. [lane-t.py:118-120](lib/pptx/lane-t.py#L118) 의 추출 정규식이 `cover-tl`·`cover-br`·`cover-meta` 셋만 있고 **`cover-tr` 이 빠져** 있어, 빈 우상단 좌표를 `version`(중앙 메타)이 차지한 꼴이다
+    - 두 값은 **다른 것**이다 — `version_badge` 는 frontmatter 필드, `version` 은 `Projects/<N>/VERSION` 파일(project-version-rules). 표지에 둘 다 보이므로 pptx 도 둘 다 보여야 파리티다
+* 구현 명세:
+    - ① `Chapter N.` → [fidelity.yml](data/m2slide2ppt/fidelity.yml) 에 `part_label` 항목을 `grade: declared_drop` 으로 선언. `reverse_action` 은 역변환이 되살릴 필요가 없으므로 `none`. 근거에 *"진입 장 제목이 그 역할을 대신한다"* 를 적는다
+    - ② `version_badge` → lane T 추출에 `cover-tr` 을 더하고 **우상단 좌표를 그것에 준다**. `version`(VERSION 파일)은 HTML `cover-meta` 자리를 실측해 좌표를 신설한다 — 두 값이 겹치지 않게
+    - ⚠️ 좌표는 **HTML computed style 실측**으로 얻는다(Issue379 와 같은 절차). reveal `transform: scale()` 적용 후 값을 그대로 쓰면 틀린다
+    - 검증: `6.roundtrip igTest` **통과** · `3.parity` 3덱 7/7 불변 · 표지 텍스트에 `v0.8.0`·`1.0` 둘 다 존재 · `7.coverage` 새 🔴/❌ 0
+
+## Issue387: 폰트 family 지정이 vendor 미러 웹폰트로 사실상 한정된다 — 제한 완화 + 용량 가드레일 (등록: 2026-09-20)
+* 목적: 사용자 지시(2026-09-20) — *"웹폰트로만 제한하지 말 것. 포털처럼 응답속도가 빠른 사이트가 아님. 단 너무 큰 폰트는 가드레일에서 걸를 것."* 지금은 쓸 수 있는 폰트가 `lib/vendor/` 에 미러된 구글폰트로 좁혀져 있다. 그 제한을 풀되 **과대 폰트 자산은 차단**한다
+* 카테고리: Asset
+* 상세:
+    - 현황 실측(2026-09-20): `lib/vendor/` **21M** · woff2 **119** · woff **23** · **ttf 0 · otf 0**. [fetch-vendor.js](lib/vendor/fetch-vendor.js#L101) 가 받은 뒤 `.ttf` 를 지운다(주석: *"repo 용량 절감"*)
+    - ⚠️ **용량 절감이 최우선이던 전제가 사용자 판단으로 바뀌었다** — 이 저장소의 산출물은 포털이 아니라 강의 덱이고, 몇 MB 가 응답속도를 좌우하지 않는다
+    - 상호작용 주의 — 폰트 family 를 넓히면 두 판정이 함께 움직인다: [check-visual.py](lib/pptx/check-visual.py) 의 `font_outside_theme` 축(allowlist = pptx 테마 major/minor)과 [3.parity.sh](z_test/ig-ppt/3.parity.sh) ⑥(테마 밖 폰트 0). **정책을 allowlist 로 쓰면 그것이 곧 whitelisting** 이라 그 축이 무력해진다(그 경계는 이미 한 번 다퉜다)
+* 구현 명세:
+    - ① **지정 경로를 연다** — theme·`_config.yml` 에서 vendor 미러 밖 family 를 지정할 수 있게 하고, 그 family 가 vendor 에 없으면 **시스템 폰트로 해석**한다(없으면 브라우저 대체 — 그것이 정상 동작임을 문서에 박는다)
+    - ② **용량 가드레일** — 상한값은 현황 실측으로 산정하고 근거를 이슈에 남긴다(사용자 위임 2026-09-20). 형태는 *"받는 단계에서 경고하고 보존 · 검사 단계에서 상한 초과를 단언"* 을 기본으로 한다 — 조용히 버리면 *"어떤 폰트가 없는지"* 가 비밀이 된다
+    - ③ `font_outside_theme`·`3.parity` ⑥ 의 판정을 **재정의**한다. 열린 family 를 통과시키되 *"아무 폰트나 통과"* 가 되지 않는 경계를 세운다
+    - ④ 문서 — `repo-tracking-rules.md` 의 *"woff2/woff만 보관(.ttf 제외)"* 조항 · `css.md`/`theme.md` 의 폰트 절 · `m2slide-identity.md` 의 *"외부 의존 0"* 과의 관계(시스템 폰트는 로컬 자원이라 외부 의존이 아니다)
+    - 검증: 시스템 폰트 지정 덱이 빌드·렌더되고 · 상한 초과 자산이 가드레일에 걸리며 · `3.parity` ⑥ 과 `--lint-deployment` 가 기존 덱에서 불변
+
 
 # 📗 선택
 
