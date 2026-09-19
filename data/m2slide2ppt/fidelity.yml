@@ -355,6 +355,25 @@ elements:
       전부 `:---`(좌측)이라 정렬 차이가 드러날 수 없었다. 정렬이 섞인 덱으로 재보니 보존된다.
       계약의 근거 덱이 그 축을 담지 않으면 "차이 없음" 과 "차이를 못 봄" 이 구분되지 않는다.
 
+  - id: part_label
+    m2slide: "`::: part` 펜스가 내는 `Chapter N.` 라벨 (HTML 챕터 파일의 `<p>`)"
+    pptx: "들어가지 않는다 — **챕터 진입 장의 제목이 그 역할을 한다**"
+    grade: declared_drop
+    reason: |
+      HTML 은 챕터 파일 안에서 *"여기가 몇 번째 챕터인가"* 를 라벨로 알린다. pptx 는 그
+      자리에 **챕터 진입 장**이 따로 서므로(제목 + 챕터 목차) 라벨을 함께 옮기면 같은
+      정보가 두 번 나온다. 그래서 [build-source.py](../../lib/pptx/build-source.py) 의
+      `PART_BLOCK` 이 그 펜스를 지운다 — 의도된 드롭이다.
+    caveat: |
+      ⚠️ 라벨이 **직전 장으로 흘러든 회귀가 있었다**(Issue374 선행 수정 `bf3efa3`). 제거
+      경로가 `explicit_entry` 분기에만 빠져 있어 `Chapter N.` 이 앞 장 본문에 붙었고
+      왕복 −3 · lane B 2/6 을 동시에 냈다. 지우는 것과 **흘리지 않는 것**은 다른 일이다.
+    reverse_action: none
+    detect: |
+      HTML 쪽 `<p>Chapter \d+\.</p>` — 원고 `::: part` 의 산출이다. 역변환은 되살리지
+      않는다(원고에 `::: part` 를 다시 쓰는 것은 사람의 편집 결정이다).
+    evidence: "igTest 5챕터 — HTML `Chapter 1.`~`Chapter 5.` 5건 · pptx 0건 (2026-09-20)"
+
   - id: table_cell_image
     m2slide: "표 셀 안의 `![alt](path)`"
     pptx: "그 셀의 **alt 텍스트만** (그림은 들어가지 않는다)"
