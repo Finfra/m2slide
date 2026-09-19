@@ -33,7 +33,11 @@
 
 # 📙 일반
 
-## Issue382: pptx **패키지 조립 무결성** 검사 부재 — 글로벌 `check-assembly` 배선 (등록: 2026-09-20)
+# 📗 선택
+
+# ✅ 완료
+
+## Issue382: pptx **패키지 조립 무결성** 검사 부재 — 글로벌 `check-assembly` 배선 (등록: 2026-09-20, 해결: 2026-09-20, commit: `bfb73be`) ✅
 * 목적: lane B/G/M/S/T 가 pptx 의 XML part·rel 을 **손으로 끼우는데**, 그 조립이 온전한지 재는 검사가 하나도 없다. 글로벌 [`check-assembly.py`](~/.claude/skills/ppt-check/scripts/check-assembly.py) 를 **배선만** 해서 그 축을 덮는다.
 * 카테고리: Build
 * 상세:
@@ -48,11 +52,15 @@
     - `--baseline` 필요 3규칙은 Issue383 소관 — 여기서는 SKIP 으로 두되 **SKIP 건수를 보고**한다. 숨기면 *"통과"* 와 *"축이 사라짐"* 이 구분되지 않는다([`check-coverage.py`](lib/pptx/check-coverage.py) 와 같은 취지)
     - ⚠️ **`lib/pptx/` 에 새 스크립트를 만들지 않는다.** 글로벌 SCAR 를 호출한다 — 복사하면 prj8 이 경고한 2원 갈라짐이 그대로 재현된다
     - 글로벌 도구가 없는 머신에서는 **SKIP 하고 그 사실을 보고**한다 (조용한 통과 금지)
-
-
-# 📗 선택
-
-# ✅ 완료
+* 결과 — 명세 1순위대로 **전용 러너 배선**. [8.assembly.sh](z_test/ig-ppt/8.assembly.sh) 신설:
+    - **판정은 글로벌 SCAR 가 한다** — 러너는 호출·집계·보고만 한다. `lib/pptx/` 에 복사하지 않았다(prj8 이 경고한 2원 갈라짐 회피). 요약 줄에서 FAIL·SKIP 건수를 얻고, **rc 와 FAIL 건수를 함께 본다** — 도구가 요약 형식을 바꿔도 놓치지 않는다
+    - **차단 지점이 아니다** — 명세가 `build-pptx.sh` 내장을 2순위로 둔 이유를 그대로 따랐다. 내장 검증은 FAIL 시 빌드를 죽이므로 현재 FAIL 0 인 축을 거기 넣으면 **오탐 1건이 배포를 막는다**
+    - `--baseline` 3규칙은 Issue383 소관으로 SKIP 하되 **건수를 보고**한다. 글로벌 도구 부재 시에도 **SKIP + 경고 보고** — *"도구 부재는 무결성 통과가 아니다"* 를 출력에 박았다
+    - 🔑 **통과만 확인하면 검사가 작동하는지 알 수 없어 고의 손상으로 재봤다** — `presentation.xml` 의 `sldId` 하나를 지운 손상본을 만들어 **FAIL 2 포착**(`dropped_slide_relationship_removed` 고아 part 1 · `no_duplicate_or_missing_after_reorder` 목록 41 ≠ part 42) · 러너 **rc1**. Issue339 의 `check-empty` 가 substring 필터 탓에 검사 전체가 무력화됐던 것을 그냥 통과로 읽었던 일이 있어 그 절차를 지켰다
+    - ⚠️ **rc 는 파이프 없이 직접 측정했다** — 처음에 `… | tail -6` 뒤에서 `$?` 를 읽어 **tail 의 rc(0)** 를 러너 rc 로 오독했다. 같은 함정을 `| grep` 에서도 한 번 밟았다
+    - **검증** — 정상 3덱(aTest-all 51장 · igTest 42장 · m2Slide_chapter_mode 34장) `FAIL 0 · SKIP 3` · 러너 rc0 · 손상본 rc1 · 도구 부재 SKIP rc0
+    - 문서 — [apply-verify-rules](.claude/rules/apply-verify-rules.md) §4.11 신설 · [CLAUDE.md](CLAUDE.md) 「패키지 조립 무결성」 절 신설(lane 절 뒤). 요청서가 사실과 달랐던 부분(*"장 유실·순서"* 는 이미 `3.parity` ①③④ 가 덮는다)은 등록 시 이슈 본문이 이미 바로잡아 두었다
+    - ℹ️ 커밋은 이 3파일만 담았다 — 같은 워킹트리에 다른 세션의 미커밋 3파일(`client.js`·`generate-slides.js`·`slide.css`)이 있어 `git add` 를 파일 단위로 좁혔다
 
 ## Issue385: 실습 2종 layout 이 이론 장과 머리 구조가 갈린다 — head-bar 부재 + 제목 브러시 잘림 (등록: 2026-09-20, 해결: 2026-09-20, commit: 4af5434) ✅
 * 목적: 실습 장표가 이론 장표와 **다른 덱처럼** 보인다. 제목 아래 노랑 브러시가 글자 폭에서 끊기고, 상단 보조 제목(head-bar) 두 칸이 아예 없다. 같은 과정 안에서 장을 넘길 때마다 제목이 좌우로 출렁인다
