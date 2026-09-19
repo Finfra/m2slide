@@ -776,7 +776,24 @@ def relayout_caption(slide, px2emu, L, W, log):
         col_w = []
         for c in range(ncol):
             col_w.append(max(_tw(t.cell(r, c).text, fs) for r in range(nrow)) + 2 * T["pad_x"])
-        tw = min(sum(col_w), W / px2emu)
+
+        #   표 폭 — HTML 의 `table-layout: auto` + `min-width: 50%` · `max-width: 90%` 를
+        #   그대로 옮긴다 (Issue358). 콘텐츠 합만 쓰면 **여유가 0 이라 셀이 줄바꿈된다** —
+        #   실측: 'lane A' 68.1pt vs 가용 68.0pt, 0.1pt 초과로 두 줄이 됐다.
+        #   HTML 은 min-width 가 콘텐츠보다 커서 남는 폭을 열에 비례 배분하고, 그 여유가
+        #   곧 잘림 방지다. 안전 계수를 지어내지 않고 CSS 규칙을 옮기는 이유가 그것이다.
+        body_w = W / px2emu
+        content_w = sum(col_w)
+        tw = content_w
+        if T.get("min_w_ratio"):
+            tw = max(tw, body_w * float(T["min_w_ratio"]))
+        tw = min(tw, body_w * float(T.get("max_w_ratio", 1.0)), body_w)
+        if content_w > 0 and tw > content_w:
+            k = tw / content_w                      # auto 레이아웃의 비례 배분
+            col_w = [w * k for w in col_w]
+        elif content_w > tw:
+            k = tw / content_w                      # max-width 상한에 걸린 경우
+            col_w = [w * k for w in col_w]
         tbl.left = emu(L / px2emu + (W / px2emu - tw) / 2.0)
         tbl.top = emu(SPLIT["top"] + text_h + T["gap_before"])
         tbl.width = emu(tw)
