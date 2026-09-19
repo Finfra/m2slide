@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 377
+* Issue HWM: 381
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -25,16 +25,53 @@
 
 # 🌱 이슈후보
 
-1. 테마 배경 자산(CSS `background-image`)이 pptx 로 옮겨지지 않는다 — `6.roundtrip igTest` 가 `finfraPuffer2.png` 1종으로 실패. 원고 `#layout-chapter` 5개가 요구하는 `.layout-chapter`·`.layout-chapter-toc` 배경인데 lane T 는 장식만 심고 배경 자산은 다루지 않는다. 계약(`fidelity.yml`)에 `declared_drop` 으로 선언할지 lane T 를 확장할지 판단 필요 (Issue374 검증에서 드러남)
-1. `3.parity` 가 single mode 덱의 본문을 대조하지 못한다 — 챕터 HTML 이 없고 본문이 `index.html` 안에 있어 `html_body=0` 이 된다. 현재 Issue374 가 ①③ 을 `skip` 으로 처리했으나 **검증 구멍은 남는다**. `index.html` 을 본문으로 읽되 표지·목차 장을 가려내는 판정이 필요 (실측 대상 aTest)
-
-1. htmlart callout 허브 라벨이 6px 넘친다 — `m2Slide_visual_component` 5장 30번("바이브 코딩으로 쉽고, 빠르게, 정확하게"). Issue370 전덱 스캔에서 유일하게 남은 넘침이며 annotate 와 무관한 별건. Issue364 의 `fitFsFor` 를 callout 허브에도 적용할지 판단 필요
-
 # 🚧 진행중
 
 # 📕 중요
 
 # 📙 일반
+
+## Issue379: 테마 배경 자산(CSS `background-image`)이 pptx 로 옮겨지지 않는다 (등록: 2026-09-19)
+* 목적: `6.roundtrip igTest` 가 **`finfraPuffer2.png` 1종**으로 실패한다. 원고의 `#layout-chapter` 5개가 요구하는 `.layout-chapter`·`.layout-chapter-toc` 배경인데 lane T 는 장식(가로선·표지·머리말·카드…)만 심고 **배경 자산은 다루지 않는다**. [Issue374](#issue374) 검증에서 드러났다
+* 상세:
+    - 검사 주체는 [check-parity.py](lib/pptx/check-parity.py) `css_theme_assets()` — 빌드 CSS 가 참조하는 `theme-img/` 자산을 긁고 `pptx_media_hashes()` 의 **패키지 이미지 바이트**와 대조한다. 태그만 세면 로고가 통째로 빠져도 1:1 이 맞기 때문에(실측 2026-09-10) CSS 참조를 본다
+    - 대상 판정은 **덱이 실제로 쓰는 layout** 의 배경만이다(HTML `<section class>` 에서 `layout-` 을 긁는다). igTest 는 `layout-chapter` 5장이 있어 `finfraPuffer2.png` 가 "사용 중" 으로 잡힌다
+    - ⚠️ **본 이슈는 Issue374 와 무관하게 이전부터 있었다** — 원고(`#layout-chapter` 5개)도 그 CSS 규칙([slide.css:431·456](theme/default_lec/slide.css#L431))도 최근 변경이 없다(`git show` 확인). Issue374 가 `3.parity` 를 고치며 함께 돌린 `6.roundtrip` 에서 **보였을 뿐**이다
+    - `fidelity.yml` 에 이 축의 선언이 없다 — 곧 지금은 `undeclared_gain` 의 반대편(선언 없는 **손실**)이라 계약이 판정하지 못한다
+* 구현 명세:
+    - 판정이 먼저다 — **계약을 고칠 것인가 변환을 고칠 것인가**
+        - ⒜ **`declared_drop` 으로 선언** — CSS 배경은 pptx 에서 `<p:bg>` 또는 배경 도형이 되어야 하는데, 그것은 장식이 아니라 **레이아웃 자산**이라 lane T 의 책임 범위를 넘는다. 선언하면 `6.roundtrip` 이 예산으로 흡수한다. 비용 최소
+        - ⒝ **lane T 확장** — `theme-img/` 를 슬라이드 배경으로 심는다. 정합성은 높으나 배치·크기(`background-position: 6% 10%` · `background-size: 16% auto`)를 EMU 로 옮겨야 하고, 그 값은 layout 마다 다르다
+    - ⚠️ 어느 쪽이든 **`7.coverage.sh` 의 판정과 맞물린다** — 계약에서 축을 거두면 그 러너가 *"아무도 재지 않는 축"* 으로 잡을 수 있다. 거두는 판단은 사람이 한다(apply-verify-rules §4.10)
+    - 검증: `6.roundtrip igTest` 통과 + `7.coverage.sh` 4덱에서 새 🔴/❌ 0
+
+## Issue380: `3.parity` 가 single mode 덱의 본문을 대조하지 못한다 (등록: 2026-09-19)
+* 목적: 챕터 HTML 이 없고 본문이 `index.html` 안에 있는 single mode 덱에서 `html_body=0` 이 되어 기대값이 성립하지 않는다. [Issue374](#issue374) 가 ①③ 을 `skip` 으로 막아 **거짓 통과·거짓 실패를 없앴지만 검증 구멍은 남았다** — 실측 대상 `aTest` 는 지금 `통과 5/7 · 건너뜀 2` 다
+* depends: Issue374
+* 상세:
+    - 챕터 목록 구성은 [3.parity.sh](z_test/ig-ppt/3.parity.sh) 가 AGENDA.md 를 정본으로 읽고, 없으면 `index.html`·`agenda.html` **제외** 후 나머지 HTML 을 챕터로 삼는다. single mode 는 그 둘뿐이라 `chapters=[]` 가 된다
+    - ⚠️ single mode 의 `index.html` 은 **본문 + 표지 + (목차)** 가 한 파일에 섞여 있다. 그대로 본문으로 세면 구조 장이 이중 계수된다 — `has_cover` 판정이 이미 `index.html` 의 `layout-_cover` 를 보고 있으므로 그 장을 빼야 한다
+    - 실측(aTest): pptx 9장 · 본문 구간 7장 · 구조 2장(표지 1 + `agenda` 표식 1)
+* 구현 명세:
+    - `chapters` 가 비면 `index.html` 을 **유일 챕터**로 삼되, top-level `<section>` 중 **구조 장을 제외**하고 센다 — `layout-_cover`·`id="toc-placeholder"`·`layout-_agenda`
+    - 제외 판정은 [Issue373](#issue373) 이 harvest 에서 쓴 것과 **같은 규칙**을 쓴다(`id="toc-placeholder"` 제외). 판정이 또 갈리지 않게 한다
+    - ③ 제목 순차 대조는 그 유일 챕터에 대해 돌리고, 진입쌍(챕터명↔H1) 뒤집힘은 single mode 에 없으므로 `head=0` 으로 둔다
+    - 검증: `3.parity aTest` 가 **skip 0 으로 7/7** · igTest·aTest-all 7/7 불변 · `6.roundtrip` 3덱 불변
+
+## Issue381: htmlart callout **branch 라벨**이 3줄이면 6px 잘린다 (등록: 2026-09-19)
+* 목적: `m2Slide_visual_component` 5장 30번(원고 슬라이드 29 · `5.27b callout — horizontal`)의 branch 라벨 `**바이브 코딩으로 쉽고, 빠르게, 정확하게**` 가 박스를 6px 넘겨 잘린다. [Issue370](#issue370) 전덱 스캔에서 유일하게 남은 넘침이다
+* 상세 (실측 2026-09-19 — `scrollHeight` vs `clientHeight`):
+    - ⚠️ **이슈후보 표현("허브 라벨")이 부정확했다 — 넘치는 것은 hub 가 아니라 branch 라벨이다.** hub(`HTML 대시보드 워크플로우` · fs **82px** · fo 920×210)는 넘침 0이고, branch 라벨(fs **44px** · fo 480×**150**)이 `scrollHeight 156 > clientHeight 150` 이다
+    - 줄높이 53.68px(44 × 1.22) × **3줄** = 161px 이라 150 고정 박스에 들어가지 않는다. 같은 장의 다른 라벨 2개(`보고서|제안서|…` · `화면용|출력용|…`)는 2줄이라 정상 — 곧 **3줄이 되는 순간 잘린다**
+    - [Issue364](#issue364) 와 같은 무경고 클리핑 축이다(폭 축 auto-fit 은 있고 높이 축이 없다)
+* 구현 명세:
+    - [Issue364](#issue364) 의 `wrapLines`·`fitFsFor` 를 재사용한다 — 이미 같은 파일 상단 유틸이고 `word-break:keep-all` wrap 을 흉내 낸다
+    - ⒜ 라벨 폰트를 줄 수 기반으로 낮춘다(박스 고정) — 형제 라벨과 글자 크기가 달라질 수 있다. `uniformTitleFs` 로 **형제 일관성**을 함께 세우는 편이 낫다
+    - ⒝ `labelH` 를 줄 수 기반으로 늘린다(폰트 고정) — 8방위 zone 배치가 anchor 기준이라 박스가 커지면 **이웃 라벨과 겹칠 수 있다**. 그쪽은 검증 비용이 크다
+    - **판정 제안: ⒜** — Issue364 가 이미 세운 축이고 배치 계약을 건드리지 않는다
+    - ⚠️ **파일 경합** — 같은 `renderCallout` 의 hub stem 을 다른 세션이 미커밋(34줄)으로 손대는 중이다(2026-09-19 관측). 내 변경은 branch 라벨 영역이라 줄이 다르지만, **커밋에 남의 미완성 작업을 섞지 않도록** 그쪽 커밋 뒤에 착수한다
+    - 검증: 해당 장 넘침 0 · callout 4종(horizontal·vertical·fan·wide) 전 슬라이드 넘침 0 · `m2Slide_visual_component` 전덱 노드 넘침 0(Issue370 기준 262 노드)
+
 
 # 📗 선택
 
