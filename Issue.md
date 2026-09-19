@@ -25,26 +25,12 @@
 
 # 🌱 이슈후보
 
+1. 테마 배경 자산(CSS `background-image`)이 pptx 로 옮겨지지 않는다 — `6.roundtrip igTest` 가 `finfraPuffer2.png` 1종으로 실패. 원고 `#layout-chapter` 5개가 요구하는 `.layout-chapter`·`.layout-chapter-toc` 배경인데 lane T 는 장식만 심고 배경 자산은 다루지 않는다. 계약(`fidelity.yml`)에 `declared_drop` 으로 선언할지 lane T 를 확장할지 판단 필요 (Issue374 검증에서 드러남)
+1. `3.parity` 가 single mode 덱의 본문을 대조하지 못한다 — 챕터 HTML 이 없고 본문이 `index.html` 안에 있어 `html_body=0` 이 된다. 현재 Issue374 가 ①③ 을 `skip` 으로 처리했으나 **검증 구멍은 남는다**. `index.html` 을 본문으로 읽되 표지·목차 장을 가려내는 판정이 필요 (실측 대상 aTest)
+
 1. htmlart callout 허브 라벨이 6px 넘친다 — `m2Slide_visual_component` 5장 30번("바이브 코딩으로 쉽고, 빠르게, 정확하게"). Issue370 전덱 스캔에서 유일하게 남은 넘침이며 annotate 와 무관한 별건. Issue364 의 `fitFsFor` 를 callout 허브에도 적용할지 판단 필요
 
 # 🚧 진행중
-
-## Issue374: 챕터 진입 장의 정본을 세우고 러너를 그것에 맞춘다 (등록: 2026-09-19)
-* 목적: `3.parity igTest` 가 3/7 로 남아 있는데, 원인 추적에서 **판정이 두 번 뒤집혔다**. 더 큰 사실은 그 과정에서 드러났다 — **장 구성 규칙이 어디에도 설계 문서로 없다.** 규칙은 [build-source.py](lib/pptx/build-source.py) 의 docstring·주석에만 있어 러너·설계 문서·코드가 서로 다른 전제를 든다
-* plan: `_doc_work/plan/chapter-entry-parity_plan.md`
-* depends: Issue369
-* 상세 — 한 세션 안에서 세 번 어긋났다:
-    - **코드 ↔ 코드**: `normalize_chapter` docstring 이 *"part 라벨은 버린다"* 고 정해 두었는데 `explicit_entry` 경로에만 빠져 있었다 → `Chapter N.` 이 직전 장으로 흘러 왕복 −3 · lane B 2/6 (commit `bf3efa3` 로 해소, igTest 37 → 42장)
-    - **설계 ↔ 실측**: [chapter-single-mode.md](_doc_arch/chapter-single-mode.md) 는 *"`cards_placeholder=false` 면 H1 챕터 타이틀을 deck 에서 제거"* 라 단언하는데 **명시 `#layout-*` 이 붙으면 살아남는다**(slide-parser 가 `s.layout` 이 있으면 autoToc 판정을 건너뛴다). 이 예외가 문서에 없다
-    - **러너 ↔ 정책**: `3.parity` 는 `html_body + n_prologue`(41)를 기대하는데 현행 pptx 는 거기에 **Agenda 장 1개**를 더 만든다(42). ③④ 는 `Section Header` 전제인데 현행 진입 장은 `## 부제 + 목록` 이라 `Title and Content` 로 나온다
-    - ⚠️ `6.roundtrip` 은 같은 덱에서 **통과**한다(생성물 예산 ±2 로 흡수). **두 러너가 같은 사실을 다르게 판정**하는 상태 자체가 정합 대상이다
-* 구현 명세:
-    - **① 문서 먼저** — 러너를 먼저 고치면 그 기대값이 또 다른 복제본이 되어 다음 변경 때 같은 자리에서 갈린다. `pptx-parity-design.md` 에 「장 구성 — 무엇이 몇 장이 되나」 절 신설(생성물 예산 정의 포함) + `chapter-single-mode.md` 에 명시 layout 예외 반영
-    - **② 러너는 참조하게** — `3.parity` 의 `want` 에 pptx 전용 생성 장을 반영하되 **숫자를 박지 말고 pptx 에서 세어 얻는다**. ③④ 의 `Section Header` 전제 제거 — 챕터 경계는 AGENDA 챕터명 + 제목 순서로 찾는다
-    - **③ 검증** — `3.parity igTest` 7/7 · 회귀 0(`6.roundtrip` 3덱 · `4.laneb` · `5.lanem` · `--lint-data` · `--coverage`) · **두 러너가 같은 덱에서 같은 판정**
-    - 열린 질문 3건은 plan `# 열린 질문` 절 참조 (Agenda 장의 계약상 지위 · 진입 장을 Section Header 로 낼 것인가 🚧 · 두 러너 일원화 여부)
-* Checkpoints:
-
 
 # 📕 중요
 
@@ -76,6 +62,33 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue374: 챕터 진입 장의 정본을 세우고 러너를 그것에 맞춘다 (등록: 2026-09-19, 해결: 2026-09-19, commit: `ac5c094`) ✅
+* 목적: `3.parity igTest` 가 3/7 로 남아 있는데, 원인 추적에서 **판정이 두 번 뒤집혔다**. 더 큰 사실은 그 과정에서 드러났다 — **장 구성 규칙이 어디에도 설계 문서로 없다.** 규칙은 [build-source.py](lib/pptx/build-source.py) 의 docstring·주석에만 있어 러너·설계 문서·코드가 서로 다른 전제를 든다
+* plan: `_doc_work/plan/chapter-entry-parity_plan.md`
+* depends: Issue369
+* 상세 — 한 세션 안에서 세 번 어긋났다:
+    - **코드 ↔ 코드**: `normalize_chapter` docstring 이 *"part 라벨은 버린다"* 고 정해 두었는데 `explicit_entry` 경로에만 빠져 있었다 → `Chapter N.` 이 직전 장으로 흘러 왕복 −3 · lane B 2/6 (commit `bf3efa3` 로 해소, igTest 37 → 42장)
+    - **설계 ↔ 실측**: [chapter-single-mode.md](_doc_arch/chapter-single-mode.md) 는 *"`cards_placeholder=false` 면 H1 챕터 타이틀을 deck 에서 제거"* 라 단언하는데 **명시 `#layout-*` 이 붙으면 살아남는다**(slide-parser 가 `s.layout` 이 있으면 autoToc 판정을 건너뛴다). 이 예외가 문서에 없다
+    - **러너 ↔ 정책**: `3.parity` 는 `html_body + n_prologue`(41)를 기대하는데 현행 pptx 는 거기에 **Agenda 장 1개**를 더 만든다(42). ③④ 는 `Section Header` 전제인데 현행 진입 장은 `## 부제 + 목록` 이라 `Title and Content` 로 나온다
+    - ⚠️ `6.roundtrip` 은 같은 덱에서 **통과**한다(생성물 예산 ±2 로 흡수). **두 러너가 같은 사실을 다르게 판정**하는 상태 자체가 정합 대상이다
+* 구현 명세:
+    - **① 문서 먼저** — 러너를 먼저 고치면 그 기대값이 또 다른 복제본이 되어 다음 변경 때 같은 자리에서 갈린다. `pptx-parity-design.md` 에 「장 구성 — 무엇이 몇 장이 되나」 절 신설(생성물 예산 정의 포함) + `chapter-single-mode.md` 에 명시 layout 예외 반영
+    - **② 러너는 참조하게** — `3.parity` 의 `want` 에 pptx 전용 생성 장을 반영하되 **숫자를 박지 말고 pptx 에서 세어 얻는다**. ③④ 의 `Section Header` 전제 제거 — 챕터 경계는 AGENDA 챕터명 + 제목 순서로 찾는다
+    - **③ 검증** — `3.parity igTest` 7/7 · 회귀 0(`6.roundtrip` 3덱 · `4.laneb` · `5.lanem` · `--lint-data` · `--coverage`) · **두 러너가 같은 덱에서 같은 판정**
+    - 열린 질문 3건은 plan `# 열린 질문` 절 참조 (Agenda 장의 계약상 지위 · 진입 장을 Section Header 로 낼 것인가 🚧 · 두 러너 일원화 여부)
+* Checkpoints:
+* 결과 — **①②③**. `3.parity igTest` **3/7 → 7/7**:
+    - 🔑 **Q1 은 결정이 아니라 확인으로 닫혔다** — `Agenda` 장은 [fidelity.yml](data/m2slide2ppt/fidelity.yml) 에 **이미 `agenda_slide` / `grade: synthesized`** 로 선언돼 있었다(HTML `agenda.html` 1장 ↔ pptx 1장). 새 계약이 필요한 게 아니라 **러너가 그 선언을 안 읽던 것**이 문제였다. 같은 파일에 `deck_toc_slide` 도 선언돼 있는데 러너가 그것을 빼먹은 것이 ① 의 42 ↔ 41 이었다
+    - **① 문서 먼저** — [pptx-parity-design.md](_doc_arch/pptx-parity-design.md) 「장 구성 — 무엇이 몇 장이 되나」 신설(대응 원칙 · 생성 장 카탈로그 · 진입 장 판정 · `Section Header` 경고). [chapter-single-mode.md](_doc_arch/chapter-single-mode.md) 에 **명시 `#layout-*` 예외** 반영 — `slide-parser` 가 `s.layout` 이 있으면 autoToc 판정을 건너뛰므로 `cards_placeholder=false` 의 제거 대상이 되지 않는다
+    - 🔑 **생성 장 셋을 한 덩어리로 세면 틀린다** — `chapter_toc` 는 HTML 챕터 안에도 있어 본문 계수에 이미 잡히고, `deck_toc`·`agenda` 만 예산에 더한다. 실측 igTest 표식 7개(`deck_toc` 1 · `agenda` 1 · `chapter_toc` 5) 중 **더할 것은 2개**. 러너는 숫자를 박지 않고 `lane-s.json` 에서 센다
+    - 🔑 **`Section Header` 개수로 챕터 경계를 찾는 판정이 애초에 성립하지 않았다** — 그 layout 은 제목만 담으므로 현행 진입 장(`## 부제 + 목록`)은 `Title and Content` 로 나온다. 실측 igTest 는 **챕터 5개인데 `Section Header` 0개**다. 경계는 AGENDA 순서 + 챕터별 HTML 장수로 자른다
+    - **진입 장 수는 세어 보고만 하고 단언하지 않는다** — 챕터별로 명시 layout 유무가 달라 *"챕터 수와 같아야 한다"* 도 *"0 이거나 전부"* 도 성립하지 않는다(실측 aTest-all: 챕터 6 중 진입 장 5). 진입쌍 어긋남은 ③ 이 잡는다
+    - 🔑 **`skip` 축 신설 — 구 러너는 한 덱에서 두 판정이 엇갈렸다.** 챕터 HTML 이 0개인 single mode(aTest)에서 ①은 *"0장 기대"* 로 실패시키고 ③은 대조 대상이 없어 **조용히 통과**시켰다. 대조 불가를 명시해 건너뛰고, **skip 을 통과로 세지 않는다**(총계가 `통과 5/7 · 건너뜀 2` 로 나온다) — 통과로 세면 거짓 안심, 실패로 세면 고칠 것 없는 빨간불이다
+    - **검증** — `3.parity`: igTest 3/7 실패 → **7/7** · aTest-all 3/7 실패 → **7/7** · aTest 2/7 실패 → **실패 0**(①③ skip). `6.roundtrip` aTest·aTest-all ✅ · `4.laneb` 6/6 · `5.lanem` ✅ · **장 수 축에서 두 러너가 같은 판정**
+    - Q2(진입 장을 `Section Header` 로 낼 것인가)·Q3(두 러너 일원화)은 plan 이 명시한 대로 **범위 밖** 그대로다
+    - ⚠️ **남은 것 — `6.roundtrip igTest` 는 테마 자산 1건으로 실패한다**(`finfraPuffer2.png`). 원고의 `#layout-chapter` 5개가 요구하는 CSS 배경인데 lane T 가 배경 자산을 pptx 로 옮기지 않는 **기존 격차**다(원고·해당 CSS 규칙 모두 이번에 건드리지 않았다 — `git show` 로 확인). 장 수 축이 아니라 `3.parity` 에 없는 축이라 종료 조건과 무관하며 이슈후보로 넘겼다
+    - ⚠️ `--lint-data` 는 `Projects/1.design_rnd/DESIGN.md` 의 내부 이슈 번호 누출 5건으로 실패한다 — **다른 세션이 작업 중인 덱**의 기존 위반이라 본 이슈 범위 밖
 
 ## Issue371: default_lec `contents-split` 이 반쪽이다 — divider 는 테마가 숨기고 머리말 슬롯은 템플릿에 없다 (등록: 2026-09-19, 해결: 2026-09-19, commit: `7dc0644`) ✅
 * 목적: 발주처 prj60 `__lec` 이 `2.3.contents-split` 을 쓰려다 **제목 아래가 빈 띠로 남고 머리말(`1일차 — …`)이 통째로 사라지는** 것을 보고. 진단 결과 템플릿·테마·엔진 셋 중 **템플릿만 있고 나머지 둘과의 배선이 안 됐다**. 본 이슈는 진단·해법 선택지까지 하고 수정은 별도 결정으로 넘긴다
