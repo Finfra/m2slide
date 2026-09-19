@@ -57,7 +57,9 @@
     - ✅ **생성 장 3종을 계약에 세웠다** — `deck_toc_slide` 신설(계약에 아예 없었다) · `agenda_slide`·`chapter_toc_slide` 판정을 위치 휴리스틱에서 lane S `synth` 표식으로. 역변환이 36장 중 **0장** 걸러내던 것이 9장 정상 제거
     - ✅ **진입 장 판정을 세 곳에서 일치** — slide-parser(HTML `autoToc`) · build-source(`drop_auto_toc`) · check-roundtrip(`entry_slides`). 자식 헤딩을 가진 **H2 진입 장**을 pptx 만 만들던 것을 고쳤다(챕터4: HTML 6 · pptx 8 → 6)
     - ✅ **표 셀 그림을 별도 축으로** — `table_cell_image` 신설. pptx 네이티브 표의 셀은 그림을 담을 수 없어(`a:tc` 는 txBody 만) alt 텍스트만 남는다. `table` 에 섞어 재면 셀 글자·행열·정렬이 멀쩡한데 표가 깨진 것처럼 보인다
-    - ⏳ **남은 것** — ① PowerPoint 실물 확인(사용자 입력 대기) ② lane G 확장(timeline·chevron·step·funnel·numbered·compare — 레이아웃별 캐시 기하 실측 필요) ③ 코드 상자 안 수식(PowerPoint 렌더 확인 필요) ④ cards 본문 여러 줄·2단계 높이 규칙(픽스처 필요)
+    - ✅ **lane G 확장 — chevron** (commit `d75c05e`, `19f0677`) — `htmlart chevron` 이 Basic Chevron Process SmartArt 로 나간다. LibreOffice 렌더로 HTML 과 같은 꼴(맞물린 갈매기·진행에 따른 농도·첫 장만 평평) 확인, 역변환 무손실. **한 종류를 더하는 일이 카탈로그 한 줄이 아님**이 드러났다 — `.glo` 의 layoutNode 이름이 레이아웃마다 통째로 달라 데이터 모델을 새로 지어야 한다. 그래서 `BUILDERS` 디스패치를 세웠고 다음 종류는 그 위에 붙는다
+    - ⏳ **남은 것** — ① PowerPoint 실물 확인(사용자 입력 대기) ② lane G 나머지 5종(timeline·step·funnel·numbered·compare) ③ 코드 상자 안 수식(PowerPoint 렌더 확인 필요) ④ cards 본문 여러 줄·2단계 높이 규칙(픽스처 필요)
+    - 📌 **선행 결함 2건 더** — ⑴ `m2Slide_visual_component` p28(Graphviz 장) 코드 상자가 캔버스를 벗어난다(lane T `restyle_code` · lane G 무관) ⑵ lane B/G 는 **H2 제목이 없는 장을 건너뛴다** — fPmIntro 의 chevron 장이 `# H1` 이라 대상에서 빠졌다(제목이 매칭 키인 구조적 한계)
     - 📌 **선행 결함 발견 (별건)** — `3.parity.sh igTest` 가 4/7 실패한다(slide-count·title-parity·structure-slides·font-outside-theme). **본 작업 이전 커밋에서도 동일**함을 워크트리 대조로 확인했다. 원인은 `cards_placeholder` 기본값 false 로 H1 진입 장이 없어 Section Header 가 0개인 것이며, 러너 쪽 전제가 낡았다
 
 

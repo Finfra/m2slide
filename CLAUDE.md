@@ -347,7 +347,9 @@ htmlArt 는 애초에 **PowerPoint SmartArt 를 본뜬 어휘**다([smartart-cat
 * **캐시는 HTML 실측 기하**로 그린다(`process_geometry` = `renderProcess` 의 viewBox 규칙). 그래서 열자마자 HTML 과 같은 꼴이고, 사용자가 손대는 순간부터 SmartArt 규칙(Basic Process 재배치)을 따른다
 * ⚠️ `diagramDrawing` 관계는 **슬라이드 rels** 에 둔다 — `dsp:dataModelExt@relId` 가 슬라이드 rId 다. data 파트에 걸면 LibreOffice 가 빈 그룹으로 들여온다(실측 2026-09-11). LibreOffice 는 캐시만 그리고 자기 레이아웃은 하지 않으므로 캐시 없는 SmartArt 는 LibreOffice 에서 백지다
 * 역변환([pptx2source.py](lib/pptx/pptx2source.py))은 `dgm:dataModel` 의 parOf 연결로 `* 항목` / `  - 하위` 를 그대로 되찾는다 — 계약 `htmlart_smartart: lossless`
-* 지금은 `htmlart process` 하나다. 나머지(timeline·chevron·step·funnel…)는 레이아웃별 캐시 기하를 실측해 `smartart.catalog` 에 더할 때까지 lane B 그대로다
+* 지금은 **`htmlart process`(Basic Process) · `htmlart chevron`(Basic Chevron Process)** 둘이다. 나머지(timeline·step·funnel·numbered·compare)는 lane B 그대로다
+* **한 종류를 더하는 일은 카탈로그 한 줄이 아니다** — `.glo` 의 layoutNode 이름이 레이아웃마다 통째로 다르므로(process1 은 `node`·`sibTrans`·`connectorText`, chevron1 은 `composite`·`parTx`·`desTx`·`parTxOnly`·`space`) **데이터 모델을 새로 짓고** HTML 렌더러 기하를 복제한 캐시를 함께 만들어야 한다. [smartart.py](lib/pptx/smartart.py) `BUILDERS` 에 (모델 빌더, 캐시 빌더) 쌍으로 건다
+* ⚠️ **검증할 수 있는 갈래만 넣는다.** chevron1 은 자식 유무로 갈래가 갈리는데(`parTxOnly` vs `composite`+`desTx`) 후자는 캐시와 데이터 모델이 1:1 이 아니게 된다 — 카탈로그의 `needs_flat: true` 가 그런 원고를 lane B 로 되돌린다
 * 회귀: `./z_test/ig-ppt/6.roundtrip.sh aTest` 의 `htmlart_smartart` 행 · `4.laneb.sh` ① 이 lane G 장 수를 같이 보고한다
 
 #### lane M — 수식을 네이티브 OMML 로 (Issue339)
