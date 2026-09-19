@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 368
+* Issue HWM: 369
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -27,45 +27,21 @@
 
 # 🚧 진행중
 
-## Issue358: m2slide → pptx 미세 조정 — HTML 실측 ↔ pptx 렌더 대조를 같은 방식으로 반복 (등록: 2026-09-11)
-* 목적: Issue342~357 로 변환 정책이 "대체로 맞는" 상태가 됐다. 남은 차이를 같은 방식 — HTML 실측(ego-browser, 1920×1280) ↔ LibreOffice 렌더 대조 → [transform.yml](data/m2slide2ppt/transform.yml)·[fidelity.yml](data/m2slide2ppt/fidelity.yml) 갱신 → 재빌드 → 6.roundtrip 러너 — 으로 좁혀 간다. 원고는 손대지 않는다
-* depends: Issue357
-* 상세 (알려진 잔여 — 발견 순):
-    - **PowerPoint 실물 확인 반영** — Issue354·357 은 LibreOffice 렌더 + PowerPoint 서체 캐시·저장본 구조 대조까지가 검증 한계였다. 사용자가 PowerPoint 에서 본 차이(서체·SmartArt 편집 가능 여부·수식)를 첫 입력으로 받는다
-    - **나머지 htmlart 를 lane G(SmartArt) 로** — timeline·chevron·step·funnel·numbered·compare 는 아직 lane B 도형 근사. 종류마다 HTML 렌더러 기하를 실측해 `smartart.catalog` + 캐시 기하를 더한다(레이아웃 자원: `SmartArt.framework` lo/cs/qs)
-    - **Issue343 이월** — 중첩 깊이(2칸 vs CommonMark)·하이픈 뒤 공백 없는 불릿의 정본 결정, 무제 이미지 장(`_blank`·문단+이미지)의 pptx 배치. m2Slide_chapter_mode 러너 FAIL 2건(장 +5·글자 25종)이 이 항목이다
-    - ~~**표 폭** — 열 폭을 모노스페이스 어림(한글 1em·그 외 0.5em)으로 잡아 HTML 904 vs pptx 876~~ ✅ **해결** (2026-09-19, commit `02d3c86`·`7cfdeaa`·`85fa4bc`·`c0032d1`)
-        - 원인은 어림 계수가 아니라 **두 가지**였다. ① `table_geometry.fs` 가 45.4 — 본문 문단 글자를 표에 그대로 쓴 값이고, HTML 의 `td`·`th` 는 실측 **40px** 이다(1920px = 13.333in 이라 1px = 정확히 0.5pt → 22.7pt vs 20pt, 13.5% 초과). ② 폭 계산에 **여유가 0** 이었다 — `'lane A'` 68.1pt vs 가용 68.0pt, **0.1pt 초과로 두 줄**이 됐다
-        - 계수(한글 1.0·라틴 0.5)는 **맞았다** — ego-browser Range 실측으로 확인(`'구분'` 80px=1.0em · `'lane A'` 120px=0.5em)
-        - 해법은 안전 계수를 지어내는 대신 **CSS 규칙을 옮긴 것**이다 — HTML 표는 `table-layout:auto` + `min-width:50%` · `max-width:90%` 이고, 본문 폭(1808)의 50% = **904px** 이 곧 Issue358 이 적어 둔 그 904 다. 남는 폭을 열에 비례 배분하면 여유가 생기고 그것이 잘림 방지다
-        - 결과: 표 폭 904px(HTML 904) · 열 226·293.8·384.2(HTML 226·293.5·383.5) · 글자 20pt(HTML 40px) · 잘림 0
-    - ~~**일반 장 표 미처리**~~ ✅ **해결** (같은 날, commit `c0032d1`) — 표 서식이 `relayout_caption`(= `Content with Caption` 전용) 안에만 있어 일반 `Title and Content` 표는 pandoc 기본 그대로였다. 실측 m2Slide_chapter_mode p32 **8.5pt**·열 602px 균등 vs 같은 덱 p33 20pt·904px — 한 덱 안에서 표 두 개가 서로 다른 꼴이었다. 서식을 `apply_table_style()` 로 추출해 두 경로가 공유한다. ⚠️ 세로 위치는 건드리지 않았다 — 일반 장 표의 HTML 배치 규칙은 아직 실측 전이다
-    - ~~**표 정렬 소실**~~ ✅ **계약 오판이었다** (commit `85fa4bc`) — `fidelity.yml` 이 `lossy`("정렬 지시자는 대응 어휘가 없어 소실")로 선언했으나 실측하면 LEFT/CENTER/RIGHT 가 **전부 보존**된다. 구 근거 덱 aTest 의 표는 세 열이 모두 `:---`(좌측)이라 **정렬 차이가 드러날 수 없었다**. `lossless` 로 정정. 교훈: 근거 덱이 그 축을 담지 않으면 *"차이 없음"* 과 *"차이를 못 봄"* 이 구분되지 않는다
-    - **코드 상자 안 수식** — 코드 다음 문단의 OMML 은 PowerPoint 렌더를 봐야 한다(LibreOffice 는 fallback 평문)
-    - **cards 본문 여러 줄·2단계** — aTest 는 한 줄 카드뿐. 여러 줄·`-` 2단계 카드의 높이 규칙(`card_geometry.body_line_h`) 실측
-    - ~~**🔴 러너가 잃은 축 — "테마 밖 폰트 0"**~~ ✅ **해결** (2026-09-19, commit `a20797f`·`52b4407`·`7e2123e`·`76799bd`) — `check-visual` 에 `font_outside_theme` 축 신설(계약 `must_match`). 허용 기준은 **pptx 템플릿이 실제로 들고 있는 서체**(테마 major/minor)다 — ⚠️ 첫 판이 정책 `font.code` 를 허용 근거로 넣어 Menlo 를 통과시켰다(*화이트리스트로 덮기*와 실질이 같아 축의 존재 이유가 사라진다). 이어서 원인 제거 — `font.code` 를 **Menlo → NanumGothicCoding**(사용자 결정). 구 값은 CSS 체인에 실제로 있는 값이었으나 **HTML 은 폴백 체인이 있고 pptx 는 단일 지정**이라, 임베드 폰트 없는 이 pptx 는 Menlo 가 없는 머신에서 조용히 대체된다. `lane-t.py` 의 하드코딩 폴백 `or "Menlo"` 도 템플릿 서체로 정정. 결과: 3덱 전부 `밖 0` · aTest 빌드 WARN 1 → 0 · 3.parity igTest **4/7 → 3/7**
-    - **🔴 구(舊) 기록 — 러너가 잃은 축 (원문)** (순환 테스트 재실행 2026-09-19 발견). `3.parity igTest` ⑥ 이 Menlo ×5 를 잡았는데 **aTest 에도 Menlo 가 있다**(p4). 그런데 `6.roundtrip aTest` 는 통과한다 — 그 러너의 시각 축에 `body_font`(서체 일치)는 있어도 **테마 밖 폰트를 세는 축이 없기 때문**이다. 주 러너가 `3.parity` → `6.roundtrip` 으로 옮겨 가며 **검출 축 하나가 조용히 사라졌다**. 축이 없으면 고쳐도 고쳐졌는지 잴 수 없으므로 **이것을 먼저** 복원한다. 그 다음 Menlo 잔존 원인 실측(theme 서체는 NanumGothicCoding 이고 retheme 가 `typeface=` 를 치환하는데 남았다 — 못 훑는 자리인지 그 뒤에 심어진 것인지)
-    - **`3.parity` ③④ — 구조 실측 완료, 정본 결정 대기** (2026-09-19). 내용 손실은 **없다**(pptx 에 제목이 없는 HTML 장 4개를 찾았으나 본문 텍스트로는 전부 존재). HTML 한 챕터는 **두 장**이다 — `[1] layout-chapter` 는 *"Chapter 1. 정체성 한 줄 정의"* 로 **li 0개(제목만)**, `[2] layout-_cards layout-_toc` 가 *"m2slide란?"* + **li 5개**(챕터 내 목차). 현행 변환은 이 둘을 `## 부제 + 목록` **한 장으로 병합**해 pandoc 이 `Title and Content` 로 낸다 → `Section Header` 0개 · 장 수 `39 − 5 + 3 = 37`
-        - ⚠️ **문서와 실측이 어긋나 고치지 못했다.** [normalize_chapter](lib/pptx/build-source.py) docstring 은 *"`# 01. m2slide란?` → Section Header(제목만)"* 를 약속하는데 중간 원고에 그 장이 **없다**(로그: `H1 진입 생략(cards_placeholder=false)`). 그리고 [_config.org.yml](_config.org.yml) 은 *"false 시 H1 슬라이드 자체를 deck 에서 제거"* 라 하는데 igTest 는 false 인데도 HTML 에 `layout-_cards` 장이 **남아 있다**
-        - 결정이 필요한 것: `cards_placeholder` 가 지우는 대상이 `[1]` 인가 `[2]` 인가, 그리고 pptx 챕터 진입을 **제목만 장(Section Header)으로 분리**할 것인가 현행 병합을 최종형으로 볼 것인가. 사용자 방향은 "(b) 변환을 Section Header 로 → 남는 차이만 러너 정리" 지만, 위 두 불일치를 먼저 정하지 않으면 36장 덱의 장 구성을 추측으로 바꾸게 된다
-    - **(구 기록) `3.parity` 기대값이 낡았다** — igTest 4/7 중 ①③④ 는 회귀가 아니다. `45a644e`("진입 장 판정을 HTML 과 일치")가 `cards_placeholder=false` 덱에서 H1 진입 장을 생략하도록 바꾼 **의도된 결과**이고 장 수도 계산이 맞는다(HTML 본문 39 − 진입 5 + 표지 1 + 목차 1 + Agenda 1 = 37). 러너가 구 기준(진입 5장)을 들고 있다. 기대값을 맞추든 `6.roundtrip` 으로 일원화하든 **두 러너의 기대값이 갈리는 구조**부터 정한다
-    - **raw HTML 태그가 pptx 에 글자로 노출** — `m2Slide_chapter_mode` 내용 대조의 *"pptx 에만 있는 글자"* 에 `<li>원하는 레이아웃을 직접 구성할 수 있습니다.</li>` 등이 그대로 있다. HTML 빌드에서는 태그로 렌더되지만 pptx 에서는 글자다. 러너는 *"HTML 글자가 pptx 에 전부 있는가"* 가 기준이라 통과시키지만 청중은 `<li>` 를 본다
+## Issue369: `aTest-all` — 갈린 픽스처를 한 덱으로 합쳐 모든 축을 한 번에 잰다 (등록: 2026-09-19)
+* 목적: 왕복 계약을 재는 픽스처가 **aTest**(single·변환 경로 커버리지)·**igTest**(chapter·인포그래픽)·**m2Slide_chapter_mode**(chapter·레이아웃) 셋으로 갈려 있다. 갈린 픽스처는 **축이 빠진 것을 못 본다** — [Issue358](#issue358) 에서 표 정렬 오판(근거 덱이 전부 좌측 정렬이라 차이가 드러날 수 없었다)과 `font_outside_theme` 축 소실이 정확히 그 형태였다. igTest 내용을 합친 `aTest-all` 한 덱으로 **계약이 선언한 모든 요소를 한 번에** 왕복시킨다
+* depends: Issue358
+* 상세:
+    - **왜 합치나** — 계약([fidelity.yml](data/m2slide2ppt/fidelity.yml))은 요소 38종 + 시각 12축을 선언하는데, 어느 한 덱도 그 전부를 담지 않는다. 덱마다 통과해도 **어느 축이 아무 덱에도 없는지**는 아무도 세지 않는다
+    - **모드는 chapter** — single 이 못 가진 축(덱 전체 목차·Agenda·챕터 TOC·H1 진입 장·`cards_placeholder` 분기)을 담는다. single 전용 축은 기존 `aTest` 가 계속 맡는다
+    - **theme 은 `default`** — `transform.yml` 의 `theme_geometry` 실측값이 default 기준이라고 스스로 적고 있다. igTest 는 `default_lec` 이므로 옮기면서 꼴이 바뀌지만, 왕복 축은 테마 독립이고 시각 축은 그 프로젝트 CSS 를 실측해 대조하므로 문제되지 않는다
+    - **기존 픽스처는 남긴다** — aTest 는 single mode 회귀, igTest 는 인포그래픽 lane, m2Slide_chapter_mode 는 레이아웃 데모로 각자 역할이 있다. `aTest-all` 은 **커버리지 감사용**으로 더하는 것이지 대체가 아니다
 * 구현 명세:
-    - 한 항목마다 ① ego-browser 로 HTML 실측 ② `soffice --headless --convert-to pdf` + `pdftoppm` 렌더 ③ 나란히 대조 ④ 정책 갱신(backup 후, 단독 커밋) ⑤ 필요 시 lane T/G 코드 ⑥ `./z_test/ig-ppt/6.roundtrip.sh aTest` 전건 + `4.laneb`·`5.lanem`·`--lint-data`
-    - 정책이 소유해야 할 값(좌표·색·서체·기하)은 코드에 박지 않는다 — 검사기가 그 정책을 읽어 must_match 로 잰다
-    - 종료 조건: 위 잔여 항목이 전부 계약(fidelity.yml)에 선언되거나 해소되고, aTest·m2Slide_chapter_mode 러너가 FAIL 0
-* 진행 (2026-09-19 · commit `137acd5`, `45a644e`, `b77e86e`, `a7750f0`):
-    - ✅ **러너 FAIL 0 달성** — `6.roundtrip` 이 aTest·m2Slide_chapter_mode 둘 다 통과. 후자는 FAIL 3건(bullets·h2_slide_title·table) + 장 수 +5 + 모자란 글자 25종이던 상태였다
-    - ✅ **표 폭** (잔여 4번) — `02d3c86`·`7cfdeaa`·`85fa4bc`·`c0032d1` 로 해소. 표 계약은 `lossy → lossless` 로 **정정**(정렬은 보존된다 — 구 판정의 근거 덱이 전부 좌측 정렬이라 차이가 드러날 수 없었다)
-    - ✅ **Issue343 이월 일부** (잔여 3번) — *하이픈 뒤 공백 없는 불릿*은 계약 서술이 **오판**임을 실측으로 밝혔다. HTML 도 pptx 도 CommonMark 느슨한 이어짐으로 **같게** 렌더하며, 어긋나 있던 것은 검사기였다. 무제 이미지 장은 빈 `## ` 생성 중단 + `head_bar_text` 선언으로 정리. **중첩 깊이(2칸 vs CommonMark)는 그대로 `bullet_nesting: lossy`** — 원고를 고치지 않고는 해소되지 않는다
-    - ✅ **생성 장 3종을 계약에 세웠다** — `deck_toc_slide` 신설(계약에 아예 없었다) · `agenda_slide`·`chapter_toc_slide` 판정을 위치 휴리스틱에서 lane S `synth` 표식으로. 역변환이 36장 중 **0장** 걸러내던 것이 9장 정상 제거
-    - ✅ **진입 장 판정을 세 곳에서 일치** — slide-parser(HTML `autoToc`) · build-source(`drop_auto_toc`) · check-roundtrip(`entry_slides`). 자식 헤딩을 가진 **H2 진입 장**을 pptx 만 만들던 것을 고쳤다(챕터4: HTML 6 · pptx 8 → 6)
-    - ✅ **표 셀 그림을 별도 축으로** — `table_cell_image` 신설. pptx 네이티브 표의 셀은 그림을 담을 수 없어(`a:tc` 는 txBody 만) alt 텍스트만 남는다. `table` 에 섞어 재면 셀 글자·행열·정렬이 멀쩡한데 표가 깨진 것처럼 보인다
-    - ✅ **lane G 확장 — chevron** (commit `d75c05e`, `19f0677`) — `htmlart chevron` 이 Basic Chevron Process SmartArt 로 나간다. LibreOffice 렌더로 HTML 과 같은 꼴(맞물린 갈매기·진행에 따른 농도·첫 장만 평평) 확인, 역변환 무손실. **한 종류를 더하는 일이 카탈로그 한 줄이 아님**이 드러났다 — `.glo` 의 layoutNode 이름이 레이아웃마다 통째로 달라 데이터 모델을 새로 지어야 한다. 그래서 `BUILDERS` 디스패치를 세웠고 다음 종류는 그 위에 붙는다
-    - ⏳ **남은 것** — ① PowerPoint 실물 확인(사용자 입력 대기) ② lane G 나머지 5종(timeline·step·funnel·numbered·compare) ③ 코드 상자 안 수식(PowerPoint 렌더 확인 필요) ④ cards 본문 여러 줄·2단계 높이 규칙(픽스처 필요)
-    - 📌 **선행 결함 2건 더** — ⑴ `m2Slide_visual_component` p28(Graphviz 장) 코드 상자가 캔버스를 벗어난다(lane T `restyle_code` · lane G 무관) ⑵ lane B/G 는 **H2 제목이 없는 장을 건너뛴다** — fPmIntro 의 chevron 장이 `# H1` 이라 대상에서 빠졌다(제목이 매칭 키인 구조적 한계)
-    - 📌 **선행 결함 발견 (별건)** — `3.parity.sh igTest` 가 4/7 실패한다(slide-count·title-parity·structure-slides·font-outside-theme). **본 작업 이전 커밋에서도 동일**함을 워크트리 대조로 확인했다. 원인은 `cards_placeholder` 기본값 false 로 H1 진입 장이 없어 Section Header 가 0개인 것이며, 러너 쪽 전제가 낡았다
-
+    - ① `Projects/aTest-all/` 생성 — chapter mode(`markdown/` + `AGENDA.md`), `_config.yml` 은 aTest 기준(theme `default` · `slide_ratio: "3:2"` · `cards_placeholder: false`)
+    - ② 원고 = aTest(`aTest.md`) + igTest(`markdown/*.md` 5챕터)를 챕터로 배치. **문구는 옮기기만 하고 새로 짓지 않는다**
+    - ③ 계약 요소 커버리지를 **세는 도구**를 만든다 — fidelity 의 요소·축 목록 ↔ 그 덱이 실제로 담은 것을 대조해 *"아무 덱에도 없는 축"* 을 보고. 이것이 이 이슈의 본체다(합본 자체는 수단)
+    - ④ `./z_test/ig-ppt/6.roundtrip.sh aTest-all` 전건 통과 + `4.laneb`·`5.lanem`·`--lint-data`
+    - ⑤ 기존 3덱 회귀 0
+    - 종료 조건: `aTest-all` 왕복 FAIL 0 + 커버리지 보고가 **미측정 축 0** 을 내거나, 남은 축을 이유와 함께 선언
 
 # 📕 중요
 
@@ -176,6 +152,51 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue358: m2slide → pptx 미세 조정 — HTML 실측 ↔ pptx 렌더 대조를 같은 방식으로 반복 (등록: 2026-09-11, 해결: 2026-09-19, commit: `137acd5`, `45a644e`, `b77e86e`, `a7750f0`, `d75c05e`, `19f0677`, `02d3c86`, `7cfdeaa`, `85fa4bc`, `c0032d1`, `a20797f`, `52b4407`, `7e2123e`, `76799bd` 외 7건) ✅
+* 목적: Issue342~357 로 변환 정책이 "대체로 맞는" 상태가 됐다. 남은 차이를 같은 방식 — HTML 실측(ego-browser, 1920×1280) ↔ LibreOffice 렌더 대조 → [transform.yml](data/m2slide2ppt/transform.yml)·[fidelity.yml](data/m2slide2ppt/fidelity.yml) 갱신 → 재빌드 → 6.roundtrip 러너 — 으로 좁혀 간다. 원고는 손대지 않는다
+* depends: Issue357
+* 상세 (알려진 잔여 — 발견 순):
+    - **PowerPoint 실물 확인 반영** — Issue354·357 은 LibreOffice 렌더 + PowerPoint 서체 캐시·저장본 구조 대조까지가 검증 한계였다. 사용자가 PowerPoint 에서 본 차이(서체·SmartArt 편집 가능 여부·수식)를 첫 입력으로 받는다
+    - **나머지 htmlart 를 lane G(SmartArt) 로** — timeline·chevron·step·funnel·numbered·compare 는 아직 lane B 도형 근사. 종류마다 HTML 렌더러 기하를 실측해 `smartart.catalog` + 캐시 기하를 더한다(레이아웃 자원: `SmartArt.framework` lo/cs/qs)
+    - **Issue343 이월** — 중첩 깊이(2칸 vs CommonMark)·하이픈 뒤 공백 없는 불릿의 정본 결정, 무제 이미지 장(`_blank`·문단+이미지)의 pptx 배치. m2Slide_chapter_mode 러너 FAIL 2건(장 +5·글자 25종)이 이 항목이다
+    - ~~**표 폭** — 열 폭을 모노스페이스 어림(한글 1em·그 외 0.5em)으로 잡아 HTML 904 vs pptx 876~~ ✅ **해결** (2026-09-19, commit `02d3c86`·`7cfdeaa`·`85fa4bc`·`c0032d1`)
+        - 원인은 어림 계수가 아니라 **두 가지**였다. ① `table_geometry.fs` 가 45.4 — 본문 문단 글자를 표에 그대로 쓴 값이고, HTML 의 `td`·`th` 는 실측 **40px** 이다(1920px = 13.333in 이라 1px = 정확히 0.5pt → 22.7pt vs 20pt, 13.5% 초과). ② 폭 계산에 **여유가 0** 이었다 — `'lane A'` 68.1pt vs 가용 68.0pt, **0.1pt 초과로 두 줄**이 됐다
+        - 계수(한글 1.0·라틴 0.5)는 **맞았다** — ego-browser Range 실측으로 확인(`'구분'` 80px=1.0em · `'lane A'` 120px=0.5em)
+        - 해법은 안전 계수를 지어내는 대신 **CSS 규칙을 옮긴 것**이다 — HTML 표는 `table-layout:auto` + `min-width:50%` · `max-width:90%` 이고, 본문 폭(1808)의 50% = **904px** 이 곧 Issue358 이 적어 둔 그 904 다. 남는 폭을 열에 비례 배분하면 여유가 생기고 그것이 잘림 방지다
+        - 결과: 표 폭 904px(HTML 904) · 열 226·293.8·384.2(HTML 226·293.5·383.5) · 글자 20pt(HTML 40px) · 잘림 0
+    - ~~**일반 장 표 미처리**~~ ✅ **해결** (같은 날, commit `c0032d1`) — 표 서식이 `relayout_caption`(= `Content with Caption` 전용) 안에만 있어 일반 `Title and Content` 표는 pandoc 기본 그대로였다. 실측 m2Slide_chapter_mode p32 **8.5pt**·열 602px 균등 vs 같은 덱 p33 20pt·904px — 한 덱 안에서 표 두 개가 서로 다른 꼴이었다. 서식을 `apply_table_style()` 로 추출해 두 경로가 공유한다. ⚠️ 세로 위치는 건드리지 않았다 — 일반 장 표의 HTML 배치 규칙은 아직 실측 전이다
+    - ~~**표 정렬 소실**~~ ✅ **계약 오판이었다** (commit `85fa4bc`) — `fidelity.yml` 이 `lossy`("정렬 지시자는 대응 어휘가 없어 소실")로 선언했으나 실측하면 LEFT/CENTER/RIGHT 가 **전부 보존**된다. 구 근거 덱 aTest 의 표는 세 열이 모두 `:---`(좌측)이라 **정렬 차이가 드러날 수 없었다**. `lossless` 로 정정. 교훈: 근거 덱이 그 축을 담지 않으면 *"차이 없음"* 과 *"차이를 못 봄"* 이 구분되지 않는다
+    - **코드 상자 안 수식** — 코드 다음 문단의 OMML 은 PowerPoint 렌더를 봐야 한다(LibreOffice 는 fallback 평문)
+    - **cards 본문 여러 줄·2단계** — aTest 는 한 줄 카드뿐. 여러 줄·`-` 2단계 카드의 높이 규칙(`card_geometry.body_line_h`) 실측
+    - ~~**🔴 러너가 잃은 축 — "테마 밖 폰트 0"**~~ ✅ **해결** (2026-09-19, commit `a20797f`·`52b4407`·`7e2123e`·`76799bd`) — `check-visual` 에 `font_outside_theme` 축 신설(계약 `must_match`). 허용 기준은 **pptx 템플릿이 실제로 들고 있는 서체**(테마 major/minor)다 — ⚠️ 첫 판이 정책 `font.code` 를 허용 근거로 넣어 Menlo 를 통과시켰다(*화이트리스트로 덮기*와 실질이 같아 축의 존재 이유가 사라진다). 이어서 원인 제거 — `font.code` 를 **Menlo → NanumGothicCoding**(사용자 결정). 구 값은 CSS 체인에 실제로 있는 값이었으나 **HTML 은 폴백 체인이 있고 pptx 는 단일 지정**이라, 임베드 폰트 없는 이 pptx 는 Menlo 가 없는 머신에서 조용히 대체된다. `lane-t.py` 의 하드코딩 폴백 `or "Menlo"` 도 템플릿 서체로 정정. 결과: 3덱 전부 `밖 0` · aTest 빌드 WARN 1 → 0 · 3.parity igTest **4/7 → 3/7**
+    - **🔴 구(舊) 기록 — 러너가 잃은 축 (원문)** (순환 테스트 재실행 2026-09-19 발견). `3.parity igTest` ⑥ 이 Menlo ×5 를 잡았는데 **aTest 에도 Menlo 가 있다**(p4). 그런데 `6.roundtrip aTest` 는 통과한다 — 그 러너의 시각 축에 `body_font`(서체 일치)는 있어도 **테마 밖 폰트를 세는 축이 없기 때문**이다. 주 러너가 `3.parity` → `6.roundtrip` 으로 옮겨 가며 **검출 축 하나가 조용히 사라졌다**. 축이 없으면 고쳐도 고쳐졌는지 잴 수 없으므로 **이것을 먼저** 복원한다. 그 다음 Menlo 잔존 원인 실측(theme 서체는 NanumGothicCoding 이고 retheme 가 `typeface=` 를 치환하는데 남았다 — 못 훑는 자리인지 그 뒤에 심어진 것인지)
+    - **`3.parity` ③④ — 구조 실측 완료, 정본 결정 대기** (2026-09-19). 내용 손실은 **없다**(pptx 에 제목이 없는 HTML 장 4개를 찾았으나 본문 텍스트로는 전부 존재). HTML 한 챕터는 **두 장**이다 — `[1] layout-chapter` 는 *"Chapter 1. 정체성 한 줄 정의"* 로 **li 0개(제목만)**, `[2] layout-_cards layout-_toc` 가 *"m2slide란?"* + **li 5개**(챕터 내 목차). 현행 변환은 이 둘을 `## 부제 + 목록` **한 장으로 병합**해 pandoc 이 `Title and Content` 로 낸다 → `Section Header` 0개 · 장 수 `39 − 5 + 3 = 37`
+        - ⚠️ **문서와 실측이 어긋나 고치지 못했다.** [normalize_chapter](lib/pptx/build-source.py) docstring 은 *"`# 01. m2slide란?` → Section Header(제목만)"* 를 약속하는데 중간 원고에 그 장이 **없다**(로그: `H1 진입 생략(cards_placeholder=false)`). 그리고 [_config.org.yml](_config.org.yml) 은 *"false 시 H1 슬라이드 자체를 deck 에서 제거"* 라 하는데 igTest 는 false 인데도 HTML 에 `layout-_cards` 장이 **남아 있다**
+        - 결정이 필요한 것: `cards_placeholder` 가 지우는 대상이 `[1]` 인가 `[2]` 인가, 그리고 pptx 챕터 진입을 **제목만 장(Section Header)으로 분리**할 것인가 현행 병합을 최종형으로 볼 것인가. 사용자 방향은 "(b) 변환을 Section Header 로 → 남는 차이만 러너 정리" 지만, 위 두 불일치를 먼저 정하지 않으면 36장 덱의 장 구성을 추측으로 바꾸게 된다
+    - **(구 기록) `3.parity` 기대값이 낡았다** — igTest 4/7 중 ①③④ 는 회귀가 아니다. `45a644e`("진입 장 판정을 HTML 과 일치")가 `cards_placeholder=false` 덱에서 H1 진입 장을 생략하도록 바꾼 **의도된 결과**이고 장 수도 계산이 맞는다(HTML 본문 39 − 진입 5 + 표지 1 + 목차 1 + Agenda 1 = 37). 러너가 구 기준(진입 5장)을 들고 있다. 기대값을 맞추든 `6.roundtrip` 으로 일원화하든 **두 러너의 기대값이 갈리는 구조**부터 정한다
+    - **raw HTML 태그가 pptx 에 글자로 노출** — `m2Slide_chapter_mode` 내용 대조의 *"pptx 에만 있는 글자"* 에 `<li>원하는 레이아웃을 직접 구성할 수 있습니다.</li>` 등이 그대로 있다. HTML 빌드에서는 태그로 렌더되지만 pptx 에서는 글자다. 러너는 *"HTML 글자가 pptx 에 전부 있는가"* 가 기준이라 통과시키지만 청중은 `<li>` 를 본다
+* 구현 명세:
+    - 한 항목마다 ① ego-browser 로 HTML 실측 ② `soffice --headless --convert-to pdf` + `pdftoppm` 렌더 ③ 나란히 대조 ④ 정책 갱신(backup 후, 단독 커밋) ⑤ 필요 시 lane T/G 코드 ⑥ `./z_test/ig-ppt/6.roundtrip.sh aTest` 전건 + `4.laneb`·`5.lanem`·`--lint-data`
+    - 정책이 소유해야 할 값(좌표·색·서체·기하)은 코드에 박지 않는다 — 검사기가 그 정책을 읽어 must_match 로 잰다
+    - 종료 조건: 위 잔여 항목이 전부 계약(fidelity.yml)에 선언되거나 해소되고, aTest·m2Slide_chapter_mode 러너가 FAIL 0
+* 진행 (2026-09-19 · commit `137acd5`, `45a644e`, `b77e86e`, `a7750f0`):
+    - ✅ **러너 FAIL 0 달성** — `6.roundtrip` 이 aTest·m2Slide_chapter_mode 둘 다 통과. 후자는 FAIL 3건(bullets·h2_slide_title·table) + 장 수 +5 + 모자란 글자 25종이던 상태였다
+    - ✅ **표 폭** (잔여 4번) — `02d3c86`·`7cfdeaa`·`85fa4bc`·`c0032d1` 로 해소. 표 계약은 `lossy → lossless` 로 **정정**(정렬은 보존된다 — 구 판정의 근거 덱이 전부 좌측 정렬이라 차이가 드러날 수 없었다)
+    - ✅ **Issue343 이월 일부** (잔여 3번) — *하이픈 뒤 공백 없는 불릿*은 계약 서술이 **오판**임을 실측으로 밝혔다. HTML 도 pptx 도 CommonMark 느슨한 이어짐으로 **같게** 렌더하며, 어긋나 있던 것은 검사기였다. 무제 이미지 장은 빈 `## ` 생성 중단 + `head_bar_text` 선언으로 정리. **중첩 깊이(2칸 vs CommonMark)는 그대로 `bullet_nesting: lossy`** — 원고를 고치지 않고는 해소되지 않는다
+    - ✅ **생성 장 3종을 계약에 세웠다** — `deck_toc_slide` 신설(계약에 아예 없었다) · `agenda_slide`·`chapter_toc_slide` 판정을 위치 휴리스틱에서 lane S `synth` 표식으로. 역변환이 36장 중 **0장** 걸러내던 것이 9장 정상 제거
+    - ✅ **진입 장 판정을 세 곳에서 일치** — slide-parser(HTML `autoToc`) · build-source(`drop_auto_toc`) · check-roundtrip(`entry_slides`). 자식 헤딩을 가진 **H2 진입 장**을 pptx 만 만들던 것을 고쳤다(챕터4: HTML 6 · pptx 8 → 6)
+    - ✅ **표 셀 그림을 별도 축으로** — `table_cell_image` 신설. pptx 네이티브 표의 셀은 그림을 담을 수 없어(`a:tc` 는 txBody 만) alt 텍스트만 남는다. `table` 에 섞어 재면 셀 글자·행열·정렬이 멀쩡한데 표가 깨진 것처럼 보인다
+    - ✅ **lane G 확장 — chevron** (commit `d75c05e`, `19f0677`) — `htmlart chevron` 이 Basic Chevron Process SmartArt 로 나간다. LibreOffice 렌더로 HTML 과 같은 꼴(맞물린 갈매기·진행에 따른 농도·첫 장만 평평) 확인, 역변환 무손실. **한 종류를 더하는 일이 카탈로그 한 줄이 아님**이 드러났다 — `.glo` 의 layoutNode 이름이 레이아웃마다 통째로 달라 데이터 모델을 새로 지어야 한다. 그래서 `BUILDERS` 디스패치를 세웠고 다음 종류는 그 위에 붙는다
+    - ⏳ **남은 것** — ① PowerPoint 실물 확인(사용자 입력 대기) ② lane G 나머지 5종(timeline·step·funnel·numbered·compare) ③ 코드 상자 안 수식(PowerPoint 렌더 확인 필요) ④ cards 본문 여러 줄·2단계 높이 규칙(픽스처 필요)
+    - 📌 **선행 결함 2건 더** — ⑴ `m2Slide_visual_component` p28(Graphviz 장) 코드 상자가 캔버스를 벗어난다(lane T `restyle_code` · lane G 무관) ⑵ lane B/G 는 **H2 제목이 없는 장을 건너뛴다** — fPmIntro 의 chevron 장이 `# H1` 이라 대상에서 빠졌다(제목이 매칭 키인 구조적 한계)
+    - 📌 **선행 결함 발견 (별건)** — `3.parity.sh igTest` 가 4/7 실패한다(slide-count·title-parity·structure-slides·font-outside-theme). **본 작업 이전 커밋에서도 동일**함을 워크트리 대조로 확인했다. 원인은 `cards_placeholder` 기본값 false 로 H1 진입 장이 없어 Section Header 가 0개인 것이며, 러너 쪽 전제가 낡았다
+* 종결 (2026-09-19 · 사용자 판정 "종료해도 됨"):
+    - 종료 조건이던 **러너 FAIL 0 을 달성**했다 — `6.roundtrip` 이 aTest·m2Slide_chapter_mode 둘 다 전건 통과
+    - 이 이슈가 남긴 가장 큰 교훈은 **계약이 추정으로 쓰인 자리가 있었다**는 것이다. 표 정렬(`lossy` → 실측하니 보존)·하이픈 뒤 공백 없는 불릿(*"산출물 불일치"* → 실측하니 양쪽 같음) 둘 다 **근거 덱이 그 축을 담지 않아** 차이 없음과 차이를 못 봄이 구분되지 않았다. 같은 이유로 `font_outside_theme` 축은 러너를 옮기며 **조용히 사라져** 있었다
+    - **이월** → [Issue369](#issue369): 위 교훈의 구조적 해법(갈린 픽스처를 한 덱으로 합쳐 모든 축을 한 번에 잰다)
+    - **이월** → 별도 이슈 필요: ⑴ PowerPoint 실물 확인(서체·SmartArt 편집 가능 여부·코드 상자 안 수식 — 사용자 입력이 첫 단계) ⑵ lane G 나머지 5종(timeline·step·funnel·numbered·compare) ⑶ cards 본문 여러 줄·2단계 높이 규칙 ⑷ `3.parity` 기대값 갱신 또는 `6.roundtrip` 일원화 ⑸ raw HTML 태그가 pptx 에 글자로 노출
+
 
 ## Issue368: 피드백 종류 축 구현 — `원고/도구` 선택 + 도구 의견의 prj42 전달 (등록: 2026-09-19, 해결: 2026-09-19, commit: `f4057eb`) ✅
 * 목적: Issue367 에서 확정한 축1·축3 을 m2slide 측에 구현한다. 지금은 `policy` 체크박스 하나가 소유 경계를 겸해 모호하고, 도구 결함 의견이 외부 repo 에 고여 prj42 로 돌아올 길이 없다
