@@ -90,7 +90,7 @@
 
 # ✅ 완료
 
-## Issue363: htmlart `callout` 라벨이 viewBox 밖에 그려진다 — `wide` orientation 신설 (등록: 2026-09-19, 해결: 2026-09-19, commit: `85fa4bc`) ✅
+## Issue363: htmlart `callout` 라벨이 viewBox 밖에 그려진다 — `wide` orientation 신설 (등록: 2026-09-19, 해결: 2026-09-19, commit: `85fa4bc`, `b3bb28b`) ✅
 * 목적: Issue362 의 4:3 검증에서 드러난 **선행 결함**. 4:3 이 만든 문제가 아니라 4:3 이 **드러낸** 문제다
 * depends: Issue362
 * 상세 — 원인 사슬:
