@@ -141,6 +141,29 @@ contents_mascot:
   h: 114
   asset: finfraPuffer2s.png
 
+# 챕터 진입 장 마스코트 (Issue379) — CSS `.layout-chapter` 의 **배경**이다
+#   `background-image: finfraPuffer2.png` · `background-position: 0% 26%` ·
+#   `background-size: 16% auto` (theme/default_lec/slide.css `.layout-chapter`)
+#
+#   실측 2026-09-19 (ego-browser computed style · igTest 진입 장):
+#     section CSS 박스 = 캔버스 전체 1920×1280 (렌더 1720×1146.7 은 reveal
+#       transform scale 0.895833 적용 후 값이다 — 1720/0.895833 = 1920)
+#     이미지 원본 392×358 → `16% auto` = 1920×0.16 = 307.2 · 307.2×358/392 = 280.6
+#     `0% 26%` → x = 0×(1920−307.2) = 0 · y = 0.26×(1280−280.6) = 259.8
+#
+#   ⚠️ 본문 장의 `contents_mascot`(finfraPuffer2s.png)와 **다른 자산·다른 자리**다.
+#      진입 장이 pptx 에서 본문 장과 같은 layout(`Title and Content`)으로 나오는 탓에
+#      구분 지점이 없어 이 자산만 pptx 에 실리지 않았다 — 판정은 lane S 표식
+#      (`layout: chapter`)으로 한다. 검출은 check-parity 의 자산 해시 대조였다.
+#   🚧 `.layout-chapter-toc`(같은 자산 · `6% 10%`)는 좌표를 실측할 덱이 없어 미등록.
+#      그 layout 을 쓰는 덱이 생기면 같은 방식으로 더한다.
+chapter_mascot:
+  l: 0
+  t: 260
+  w: 307
+  h: 281
+  asset: finfraPuffer2.png
+
 # 본문 장 머리말 바 — 상단 가로선과 제목 사이에 앉는다
 head_geometry:
   left:  { l: 84,  t: 34, w: 868, h: 26, fs: 20, align: left }
