@@ -289,13 +289,17 @@ types:
     recommend_count: "중앙 1 + branch 2-6"
     impl_note: "첫 항목 머리에서 :fa-([\\w-]+): 또는 emoji 1자 분리 → 아이콘 슬롯. **bold** 감지 → accent-1, 아니면 accent-2. orientation 클래스(horizontal/vertical/fan/wide)에 따라 branch 좌표 분산. branch path: hub edge → 짧은 stub → arrow head + 끝에 박스 없는 텍스트."
     orientation_note: |
-      wide = vertical 과 같은 좌우 배치인데 캔버스를 실제 콘텐츠 폭(2920×1200)까지
-      넓힌 변형. horizontal·vertical 은 좌우(W/E) zone 라벨이 viewBox(2000×1200)
-      밖에 놓이고 preserveAspectRatio="meet" 의 레터박스 여백에 얹혀 보인다 —
-      블록이 세로로 자라 여백이 좁아지는 판형(4:3 등)에서 라벨이 잘린다.
-      판형 4:3 에서 좌우 분산 배치가 필요하면 vertical 대신 wide 를 쓴다.
-      대가는 크기다 — 캔버스가 넓어 폭 제한 스케일이 낮아지므로 도해가 작게 보인다.
-      branch 3개 이하의 horizontal 은 N·NE·SE 만 써서 원래 안전하다.
+      라벨 박스는 zone anchor 에서 바깥으로 펼쳐지므로 캔버스(2000×1200)를 예사로
+      넘는다 — 좌표식 전수 계산: horizontal 은 branch 3개부터, vertical 은 1개부터
+      밖이고 필요 폭은 조합마다 2260~2920 으로 다르다. 그런데도 보였던 것은
+      preserveAspectRatio="meet" 의 레터박스 여백에 얹혀 있었기 때문이고, 블록이
+      세로로 자라 그 여백이 좁아지는 판형(4:3)에서는 잘린다.
+      그래서 viewBox 를 라벨 실좌표까지 감싸는 확장이 두 자리에서 적용된다:
+        · 판형 4:3 — orient 와 무관하게 **자동**. 원고는 손댈 것이 없다
+        · {.w}/{.wide} — 판형과 무관하게 항상. vertical 배치를 쓰되 라벨을
+          온전히 보이는 쪽을 명시적으로 택할 때
+      3:2·16:9 는 레터박스 여백이 넉넉해 적용하지 않는다 — 넓히면 meet 스케일이
+      낮아져 도해가 작아지므로, 실제로 잘리는 자리에서만 넓힌다.
 
 # ── 콘텐츠 신호 → htmlArt 타입 결정표 (fast-path, 위→아래 first-match) ──────
 # 에이전트는 슬라이드 본문 키워드를 위에서부터 대조하여 첫 매칭 타입을 채택한다.
