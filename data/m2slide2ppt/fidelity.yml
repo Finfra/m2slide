@@ -270,9 +270,16 @@ elements:
   - id: table
     m2slide: "마크다운 표"
     pptx: "네이티브 표"
-    grade: lossy
-    reason: "정렬 지시자(`:---`)는 pptx 표에 대응 어휘가 없어 소실된다. 셀 내용·행열은 보존."
-    evidence: "aTest p6 표 3행 보존 · 정렬 소실 — 2026-09-09"
+    grade: lossless
+    reason: |
+      셀 내용·행열에 더해 **정렬(좌·중·우)까지 보존**된다 — pandoc 이 `:---`·`:-:`·`---:` 를
+      문단 정렬로 옮긴다. 글자·열 폭·머리행 꼴은 lane T 가 HTML 실측대로 입힌다
+      (transform.yml `table_geometry`).
+    evidence: |
+      m2Slide_chapter_mode p32 — 3열이 LEFT/CENTER/RIGHT 로 보존됨을 실측 · 2026-09-19.
+      ⚠️ 구 판정은 `lossy`("정렬 소실")였는데 **오판이었다** — 근거 덱 aTest 의 표는 세 열이
+      전부 `:---`(좌측)이라 정렬 차이가 드러날 수 없었다. 정렬이 섞인 덱으로 재보니 보존된다.
+      계약의 근거 덱이 그 축을 담지 않으면 "차이 없음" 과 "차이를 못 봄" 이 구분되지 않는다.
 
   - id: subheading
     m2slide: "`### H3` 이하 소제목"

@@ -1,7 +1,7 @@
 ---
 title: htmlArt 27종
 type: ppt
-release_date: 2026-06-30
+release_date: 2026-09-19
 ---
 
 # 5. htmlArt 27종
@@ -502,6 +502,22 @@ release_date: 2026-06-30
 `{.v}` 옵션: 세로 stem line, branch가 좌·우로 분산. 좌우 대등 부연 표현.
 
 ::: htmlart callout {.v}
+* :fa-rocket: 신규 기능 출시
+* **속도 2배 향상**
+* 안정성 강화
+* UX 개편
+* 모바일 지원
+:::
+
+---
+
+## 5.27d callout — wide (`{.w}`)
+#layout-contents
+
+`{.w}`/`{.wide}` 옵션: `{.v}` 와 같은 좌·우 분산 배치인데 캔버스를 실제 콘텐츠 폭까지 넓힌 변형.
+`{.v}` 는 좌우 라벨이 viewBox 밖에 놓여 레터박스 여백에 얹혀 보이므로, 블록이 세로로 자라 여백이 좁아지는 판형(4:3)에서 잘린다. `{.w}` 는 그 의존을 없앤다 — 대가로 도해가 작게 보인다.
+
+::: htmlart callout {.w}
 * :fa-rocket: 신규 기능 출시
 * **속도 2배 향상**
 * 안정성 강화

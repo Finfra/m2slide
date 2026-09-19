@@ -5,7 +5,7 @@ author: 남중구 (핀프라)
 type: ppt
 cover_enabled: false
 markmap_depth: 2
-release_date: 2026-06-30
+release_date: 2026-09-19
 ---
 
 ## [1. 텍스트·구조 요소](./01-text-structure.md)
