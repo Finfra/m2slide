@@ -36,7 +36,11 @@
 
 # 📙 일반
 
-## Issue361: sreMsa v2.1.2 가독성 처방을 `legibility` goal 로 정책 스키마에 편입 (등록: 2026-09-19)
+# 📗 선택
+
+# ✅ 완료
+
+## Issue361: sreMsa v2.1.2 가독성 처방을 `legibility` goal 로 정책 스키마에 편입 (등록: 2026-09-19, 해결: 2026-09-19, commit: `d25edf7`) ✅
 * 목적: m2slide 의 `legibility` 계열은 **선언만 있고 비어 있다.** [lint-policy-schema.py](lib/lint-policy-schema.py) 가 술어 6종(`chars_max`·`items_max`·`font_size_min`·`box_overflow_max`·`lines_max`·`no_empty_bullet_li`)을 열거하지만 실제로 쓰는 룰은 [styles.yml](data/md-builder/styles.yml) 의 `backtick_marker_conflict_policy` 하나뿐이고, 그마저 `no_empty_bullet_li` 만 쓴다 — **나머지 5종은 소비처 0건**이다. 한편 prj61 sreMsa 는 v2.1.2 에서 그 5종을 실제로 기계 판정하는 검증기와 실측 근거를 이미 만들었다. 그 처방을 정책 스키마로 옮겨 빈 계열을 채운다
 * 상세 (근거 — prj61 sreMsa Issue18, 2026-09-19 종결, commit 960908b):
     - 정본 리포트 `~/work/sreMsa/_doc_work/report/v2.1.2_가독성교정_issue18_report.md` · 검증기 `~/work/sreMsa/sh/ig-legibility-check.py`
@@ -58,10 +62,17 @@
     - 검증: `./m2slide.sh --lint-data` rc0 + 검사 4(goal-oriented 스키마)가 신규 술어를 계열 정합으로 받아들일 것
     - 종료 조건: ①~④ 가 문서·코드에 반영되고 `--lint-data` 가 통과하며, 신규 술어를 실제로 쓰는 룰이 최소 1건 등록된다
 * ⚠️ **본 이슈는 등록까지만 수행했다** (사용자 지시 2026-09-19 — "등록만 하고 구현은 하지 말 것"). 착수 전 ③ 의 설계 판정을 먼저 사용자와 확인한다
-
-# 📗 선택
-
-# ✅ 완료
+* 결과 — **①~④ 전부**. 착수 전 ③④ 를 사용자에게 확인하고(이슈가 요구한 절차) 그 판정대로 냈다:
+    - **③ 적용 범위 — 축을 세우지 않는다** (사용자 판정: *"축 신설 없이 술어 조건으로"*). 근거가 실측이다: m2slide 정방향 pptx 는 reference-doc 테마 + 생성 도형이라 **모든 요소가 생성분**이고, sreMsa 가 겪은 *"Keynote 산 상속분을 건드리지 않는다"* 문제가 **구조적으로 존재하지 않는다**. 소비처 0 인 축을 세우면 *이 계열이 비어 있던 것과 같은 실패*를 축 층에서 되풀이한다. 범위는 룰 내부 `scope.target: run_with_explicit_size` 로 적었다. 🚧 `ppt2m2slide` 로 상속분이 유입되는 경로가 실제 소비처를 가지면 그때 축으로 승격
+    - **④ 룰 위치 — `transform.yml`** (사용자 판정). 굵기·바닥 글자 크기는 **산출 측 테마 값**이고 집행 지점도 lane T·retheme 이다. 원고에는 pt 라는 개념이 없어 **판정 근거를 원고에서 얻을 수 없다** — 판정과 집행이 같은 단계에 있어야 갈리지 않는다
+    - **신규 술어 3종** — `emphasis_scope`(굵기 유지 조건 화이트리스트) · `overlap_count_max` · `decoration_intrusion_max`. 뒤 둘은 교정이 **새로 만든** 충돌만 센다 — 원래 있던 겹침과 성격이 다르고 그 **차분**을 재는 술어가 기존 계열에 없었다
+    - 🔑 **`goal_check` 에 조건·전술을 넣었다가 검사 4에 걸렸고, 그것이 옳은 동작이었다.** 처음 설계는 `target`·`absorb_order`·`value_bearing_shapes` 를 `goal_check` 안에 뒀는데 lint 가 *"계열에 없는 술어"* 로 거부했다. `goal_check` 는 **판정 술어의 닫힌 집합**이고 조건·전술은 판정이 아니다 — 섞으면 *"무엇을 재는가"* 와 *"어떻게 고치는가"* 가 한 자리에 엉킨다. `scope`·`remedy` 로 분리했고 이 경험을 [policy-goal-schema.md](_doc_arch/policy-goal-schema.md) 에 경고로 남겼다
+    - **흡수 순서는 `remedy.absorb_order` 가 목록으로 들고 있다** — 순서가 정책의 본체다. ⑹(라벨을 막대 밖으로)은 legibility 와 fidelity 가 정면으로 부딪치는 예외라 `remedy.value_bearing_shapes: keep_geometry` 로 명시했다(값을 가진 도형을 키우면 **그래프가 거짓말이 된다** — 카나리 5% 막대 0.046in 실측)
+    - `confidence: medium` 상한 — 단일 프로젝트 1회 관측이고, ⑶ 이웃 라벨 죔은 전 장 일괄 적용이 회귀를 낸 실사례(228건 → 필요분 4건)가 있다
+    - **검증** — `--lint-data` 검사 4 **통과**(goal-oriented 룰 11개, 신규 술어를 계열 정합으로 받음) · 정책 yml backup 선행(`_backup/20260919-204137-transform.yml`) · 커밋은 정책 규율대로 정책 yml + 정책 문서 + 정책 lint 구현만
+    - ⚠️ **`--lint-data` rc0 은 달성하지 못했다** — 검사 5 가 `Projects/1.design_rnd/DESIGN.md` 의 내부 이슈 번호 누출 **5건**을 잡는데 **다른 세션이 작업 중인 덱**의 기존 위반이며 본 이슈와 무관하다(`run-policy-fixture.sh` 실패도 같은 원인 하나이고 골든 픽스처 자체는 통과)
+    - 🚧 **집행체는 아직 없다** — 본 이슈의 산출은 이슈 명세대로 **스키마 정의 + 정책 룰**이다. lane T 에서 이 바닥선을 실제로 재고 흡수하는 코드는 후속이다
+    - ℹ️ 설계 문서([policy-goal-schema.md](_doc_arch/policy-goal-schema.md))는 이 repo 가 `_doc_arch` 를 추적하지 않아(`.gitignore:6` — repo-tracking-rules) 커밋에 담기지 않는다. 로컬 파일로는 정상 갱신됐다
 
 ## Issue374: 챕터 진입 장의 정본을 세우고 러너를 그것에 맞춘다 (등록: 2026-09-19, 해결: 2026-09-19, commit: `ac5c094`) ✅
 * 목적: `3.parity igTest` 가 3/7 로 남아 있는데, 원인 추적에서 **판정이 두 번 뒤집혔다**. 더 큰 사실은 그 과정에서 드러났다 — **장 구성 규칙이 어디에도 설계 문서로 없다.** 규칙은 [build-source.py](lib/pptx/build-source.py) 의 docstring·주석에만 있어 러너·설계 문서·코드가 서로 다른 전제를 든다
