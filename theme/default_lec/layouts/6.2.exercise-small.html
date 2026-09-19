@@ -10,6 +10,8 @@ not_recommended_for:
 slots:
   - title
   - content
+  - head_left
+  - head_right
 example: |
   ## 체크 포인트
 
@@ -17,9 +19,12 @@ example: |
   * 슬라이드 페이지 수 일치
 -->
 <section class="layout-exercise-small">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">{{head_left}}</div>
+    <div class="contents-head-right">{{head_right}}</div>
+  </div>
   <div class="exercise-header">
     <h1 class="exercise-title">{{title}}</h1>
-    <div class="exercise-divider"></div>
   </div>
   <div class="exercise-body">{{content}}</div>
 </section>

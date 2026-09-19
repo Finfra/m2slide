@@ -10,6 +10,8 @@ not_recommended_for:
 slots:
   - title
   - content
+  - head_left
+  - head_right
 example: |
   ## 실습: 모듈 분리
 
@@ -18,9 +20,12 @@ example: |
   3. 빌드 검증
 -->
 <section class="layout-exercise">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">{{head_left}}</div>
+    <div class="contents-head-right">{{head_right}}</div>
+  </div>
   <div class="exercise-header">
     <h1 class="exercise-title">{{title}}</h1>
-    <div class="exercise-divider"></div>
   </div>
   <div class="exercise-body">{{content}}</div>
 </section>

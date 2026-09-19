@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 384
+* Issue HWM: 385
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -28,6 +28,21 @@
 1. `6.roundtrip igTest` — pptx 에 없는 글자 6종(`Chapter 1.`~`Chapter 5.` · `v0.8.0`). Issue379 로 테마 자산 축이 해소되니 드러난 **다음 실패**이며 그 수정 전 기준선에서도 같았다(stash 대조). `Chapter N.` 은 `::: part` 라벨 계열(Issue374 선행 수정 `bf3efa3` 과 같은 축)이고 `v0.8.0` 은 `version_badge` 다 — 계약에 선언할지 전달할지 판단 필요
 
 # 🚧 진행중
+
+## Issue385: 실습 2종 layout 이 이론 장과 머리 구조가 갈린다 — head-bar 부재 + 제목 브러시 잘림 (등록: 2026-09-20)
+* 목적: 실습 장표가 이론 장표와 **다른 덱처럼** 보인다. 제목 아래 노랑 브러시가 글자 폭에서 끊기고, 상단 보조 제목(head-bar) 두 칸이 아예 없다. 같은 과정 안에서 장을 넘길 때마다 제목이 좌우로 출렁인다
+* 상세:
+    - 요청 출처: prj60 `__lec` 강의 덱(`202609_Rebuild/1.design_rnd`) — m2slide 저장소에서 `exercise` 계열을 실제로 쓰는 **유일한 덱**이다(`Projects/1.design_rnd` 심볼릭 링크)
+    - **제목 브러시**: [base.css §1208](lib/css/base.css) 이 `section[class*="layout-"] > div[class$="-header"]` 에 `display:flex` 와 `align-items:center` 를 함께 준다. flex 교차축이 `center` 면 자식이 shrink-to-fit 이 되어 `.exercise-title` 박스가 글자 폭만큼만 잡히고 `::after` 의 `hr.png` 가 그 안에서 끊긴다. 이론 장은 제목이 `-header` div 밖(section 직계 `.title`)이라 이 규칙을 안 받아 전폭이었다
+    - **head-bar**: 실습 템플릿에 `{{head_left}}`·`{{head_right}}` 슬롯이 아예 없었다. `html-builder` 는 layout 과 무관하게 두 값을 `vars` 에 넣으므로 템플릿만 받으면 된다
+    - ⚠️ **head-bar 규칙이 layout 이름을 나열하는 선택자로 4곳에 흩어져 있고 실습 2종이 네 목록에 전부 빠져 있었다** — `position:relative` · `::after` 브러시 · `display:flex` 본체 · 좌/우 자식·빈 값 숨김. 그래서 슬롯만 달면 `display:block`·`position:static`·브러시 없음으로 떨어진다
+    - 실측(수정 전, `offsetWidth` 기준): 이론 제목폭 **1808**·left **56** 고정 vs 실습 **1312·1610·1220** / left **304·155·350** 유동
+* 구현 명세:
+    - 템플릿 [6.1.exercise.html](theme/default_lec/layouts/6.1.exercise.html)·[6.2.exercise-small.html](theme/default_lec/layouts/6.2.exercise-small.html) 에 head-bar 추가 + `@meta` slots 갱신. 죽은 `exercise-divider` 는 제거(`_stripEmptyWrappers` 가 지우고 theme §3 이 숨기는 이중 사문)
+    - theme 에 실습 전용 블록 — `align-items: stretch` · 제목 `margin-left/right: 0; width: 100%` · head-bar 규칙 한 벌
+    - 🔴 **`margin: 0 auto` 가 `align-items` 를 이긴다** — flex 아이템의 auto margin 이 남는 공간을 먼저 흡수한다. 교차축만 바꿔서는 안 되고 좌우 margin 을 0 으로 되돌려야 한다
+    - 🔴 **기존 `.layout-exercise .exercise-header` 블록에 합치지 말 것** — (0,3,1) 이라 base.css 의 (0,3,2) 에 진다. 자식 결합자 + `div` 요소로 동점을 만들어야 후순위 로드가 이긴다
+    - 검증: 이론 장과 head-bar top·height·display·브러시, 제목 top·width·left, body top 이 **전부 일치**할 것 + 3덱 전수 계측 회귀 0
 
 # 📕 중요
 

@@ -553,6 +553,96 @@
   padding: 34px 0 31px 0;
 }
 
+/* 실습 2종을 이론 장과 같은 머리 구조로 맞춘다 (__lec 2026.09.20 요구).
+   ① 제목 브러시가 글자 폭에서 끊기던 것을 전폭으로 — base.css §1208
+      `section[class*="layout-"] > div[class$="-header"]` 가 `display:flex` 와 함께
+      `align-items: center` 를 주는데, flex 교차축이 center 면 자식이 shrink-to-fit 이 된다.
+      그래서 `.exercise-title` 박스가 글자 폭만큼만 잡히고 `::after` 의 hr.png 가 그 안에서 끊겼다.
+      이론 장은 제목이 `-header` div 밖(section 직계 `.title`)이라 이 규칙을 안 받아 전폭이었다.
+      실측(1808px 기준): 이론 제목폭 1808·left 56 고정 vs 실습 1312·1610 / left 304·155 유동.
+      제목 길이에 따라 좌측 시작점이 움직여 장을 넘길 때 제목이 좌우로 출렁였다.
+   ② head-bar 를 실습에도 달았으므로 위 블록의 상단 34px 을 회수한다 — 그 값은 애초에
+      "실습엔 head-bar 가 없으니 그 자리를 패딩이 대신한다" 는 전제로 넣은 것이다.
+      이제 head-bar 가 실물로 있으니 패딩까지 두면 제목이 이론 장보다 34px 아래로 내려간다.
+   🔴 위 블록에 합치지 말 것 — `.layout-exercise .exercise-header` 는 (0,3,1) 이라
+      base.css 의 (0,3,2) 에 진다. 자식 결합자 + `div` 요소로 (0,3,2) 동점을 만들어야
+      후순위 로드가 이긴다 (Issue359 와 같은 기법). */
+.reveal section.layout-exercise > div.exercise-header,
+.reveal section.layout-exercise-small > div.exercise-header {
+  align-items: stretch;
+  padding: 0 0 31px 0;
+}
+
+/* 제목을 헤더 전폭으로 — `align-items: stretch` 만으로는 안 된다.
+   §3 제목 공통 규칙이 `margin: 0 auto` 를 주는데, **flex 아이템의 auto margin 은
+   남는 공간을 먼저 흡수**하므로 교차축 정렬보다 이긴다. 그래서 좌우 margin 을 0 으로
+   되돌리고 폭을 명시해야 브러시(`::after` hr.png)가 이론 장과 같은 폭으로 깔린다.
+   명시도: 클래스 4 · 요소 2 = (0,4,2) > §3 의 (0,3,1). */
+.reveal section.layout-exercise > div.exercise-header > .exercise-title,
+.reveal section.layout-exercise-small > div.exercise-header > .exercise-title {
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* 실습 2종 head-bar — 이론 장과 같은 모양으로 (__lec 2026.09.20 요구).
+   🔴 head-bar 규칙은 이 파일에서 **layout 이름을 나열**하는 선택자로 4곳에 흩어져 있고
+      (§ position·::after 브러시 · display:flex 본체 · 좌/우 자식 · 빈 값 숨김),
+      실습 2종이 그 네 목록에 **전부 빠져** 있었다. 그래서 head-bar 를 템플릿에 달아도
+      `display:block` · `position:static` · 브러시 없음으로 떨어졌다(실측 높이 45px vs 이론 37px).
+      목록 4곳에 이름을 더하는 대신 여기 한 블록으로 모은다 — 나열 선택자는 layout 이 늘 때마다
+      같은 누락을 반복하므로, 적어도 실습 계열은 한 자리에서 끝나게 한다. */
+.reveal section.layout-exercise > .contents-head-bar,
+.reveal section.layout-exercise-small > .contents-head-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 28px 0 28px;
+  margin: 0;
+  font-size: 0.5em;
+  color: rgba(0, 0, 0, 0.6);
+  min-height: 0;
+  line-height: 1.3;
+  position: relative;
+}
+.reveal section.layout-exercise > .contents-head-bar > .contents-head-left,
+.reveal section.layout-exercise-small > .contents-head-bar > .contents-head-left {
+  text-align: left;
+  flex: 1 1 50%;
+  font-weight: 600;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.reveal section.layout-exercise > .contents-head-bar > .contents-head-right,
+.reveal section.layout-exercise-small > .contents-head-bar > .contents-head-right {
+  text-align: right;
+  flex: 1 1 50%;
+  opacity: 0.75;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.reveal section.layout-exercise > .contents-head-bar:empty,
+.reveal section.layout-exercise-small > .contents-head-bar:empty,
+.reveal section.layout-exercise > .contents-head-bar:has(> .contents-head-left:empty):has(> .contents-head-right:empty),
+.reveal section.layout-exercise-small > .contents-head-bar:has(> .contents-head-left:empty):has(> .contents-head-right:empty) {
+  display: none;
+}
+.reveal section.layout-exercise > .contents-head-bar::after,
+.reveal section.layout-exercise-small > .contents-head-bar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 100;
+}
+
 /* 4.7 closing: puffer1 중앙 큼 + cat 우하단
    Issue72: !important 제거 — base.css와 동일 specificity. theme 후순위 로드로 자연 우선 */
 .reveal section.layout-closing {
