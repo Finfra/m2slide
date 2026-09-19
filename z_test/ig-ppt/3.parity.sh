@@ -147,12 +147,37 @@ if os.path.exists(agenda_md):
     for name, mdfile in re.findall(r"^#{2,3}\s*\[([^\]]+)\]\(\.?/?([^)]+\.md)\)", read(agenda_md), re.M):
         h = os.path.join(SLIDE_DIR, os.path.basename(mdfile)[:-3] + ".html")
         if os.path.exists(h): chapters.append((norm(name), h))
-if not chapters:     # single mode 등 AGENDA 없는 덱
+if not chapters:     # AGENDA 없는 덱 — 챕터 HTML 이 따로 있으면 그것을 순서대로
     for h in sorted(f for f in os.listdir(SLIDE_DIR) if f.endswith(".html")):
         if h not in ("index.html", "agenda.html"):
             chapters.append(("", os.path.join(SLIDE_DIR, h)))
 
-html_chapters = [[sec_title(s) for s in top_sections(read(h))] for _, h in chapters]
+# Issue380: single mode 는 **본문이 `index.html` 안에** 있어 위 폴백이 빈손으로 끝난다
+#   (`index.html`·`agenda.html` 둘뿐이므로 둘 다 제외되면 남는 것이 없다).
+#   그 상태에서 구 구현은 `html_body=0` 으로 ①을 "0장 기대" 로 실패시키고 ③은 대조
+#   대상이 없어 조용히 통과시켰다. Issue374 가 둘을 `skip` 으로 막아 거짓 신호는
+#   없앴지만 **검증 구멍은 남았다** — 그것을 여기서 닫는다.
+#
+#   ⚠️ `index.html` 을 그대로 본문으로 세면 안 된다. 구조 장(표지·목차·agenda)이
+#      같은 파일에 섞여 있어 `n_prologue` 와 **이중 계수**된다. 제외 판정은
+#      Issue373 이 agenda harvest 에서 쓴 것과 같은 규칙을 쓴다(판정을 또 갈리게
+#      하지 않는다) — `id="toc-placeholder"` · `layout-_cover` · `layout-_agenda`.
+single_index = False
+_index_path = os.path.join(SLIDE_DIR, "index.html")
+if not chapters and os.path.exists(_index_path):
+    chapters.append(("", _index_path))
+    single_index = True
+
+STRUCT_MARK = ('id="toc-placeholder"', "layout-_cover", "layout-_agenda")
+def is_structure_section(sec):
+    head = sec[:400]          # 여는 <section …> 태그와 그 직후만 본다
+    return any(m in head for m in STRUCT_MARK)
+
+if single_index:
+    html_chapters = [[sec_title(s) for s in top_sections(read(h))
+                      if not is_structure_section(s)] for _, h in chapters]
+else:
+    html_chapters = [[sec_title(s) for s in top_sections(read(h))] for _, h in chapters]
 html_body = sum(len(c) for c in html_chapters)
 
 # 구조 장 — HTML 에서는 별도 *페이지*로 존재해 <section> 계수에 안 잡힌다
@@ -228,7 +253,7 @@ players = [s.slide_layout.name for s in slides]
 #    ①을 "0장 기대" 로 실패시키고 ③은 대조 대상이 없어 **조용히 통과**시켰다 —
 #    한 덱에서 두 판정이 엇갈리는 거짓 신호다. 대조 불가를 명시하고 건너뛴다.
 #    🚧 single mode 본문 대조 지원은 별건 (`index.html` 을 본문으로 읽어야 한다).
-single_no_chapters = (len(chapters) == 0)
+single_no_chapters = (len(chapters) == 0)   # Issue380 이후 single mode 는 index.html 로 채워진다
 want = html_body + n_prologue
 if single_no_chapters:
     skip("①", "챕터 HTML 0개 — single mode 로 보인다(본문이 index.html 안). "
@@ -277,7 +302,8 @@ for hsec, cname in chapters_for_parity:
         bad.append("%s: pptx 장 부족 (HTML %d · pptx %d)" % (cname, len(hk), len(pk))); continue
     # 진입 2장은 HTML 과 **순서가 뒤집혀 있다**(HTML=[챕터 H1, 챕터 TOC] ·
     #   pptx=[챕터명, H1]). Issue329 에서 의도해 수렴시킨 매핑이라 쌍 내부는 집합으로 본다.
-    head = 2 if len(hk) >= 2 else 0
+    # single mode 는 챕터 진입 장이 없어 진입쌍 뒤집힘이 성립하지 않는다 (Issue380)
+    head = 0 if single_index else (2 if len(hk) >= 2 else 0)
     if head and sorted(hk[:head]) != sorted(pk[:head]):
         bad.append("%s: 진입쌍 %s ≠ %s" % (cname, hk[:head], pk[:head]))
     if hk[head:] != pk[head:]:
