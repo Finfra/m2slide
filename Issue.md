@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 364
+* Issue HWM: 368
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -167,6 +167,72 @@
     - 검증: `./m2slide.sh --lint-data` rc0 + 검사 4(goal-oriented 스키마)가 신규 술어를 계열 정합으로 받아들일 것
     - 종료 조건: ①~④ 가 문서·코드에 반영되고 `--lint-data` 가 통과하며, 신규 술어를 실제로 쓰는 룰이 최소 1건 등록된다
 * ⚠️ **본 이슈는 등록까지만 수행했다** (사용자 지시 2026-09-19 — "등록만 하고 구현은 하지 말 것"). 착수 전 ③ 의 설계 판정을 먼저 사용자와 확인한다
+
+
+## Issue365: 외부 프로젝트를 `/p/` 에 올리는 공식 수단 — `--link`/`--unlink`/`--links` (등록: 2026-09-19)
+* 목적: 다른 repo 에서 진행 중인 덱을 dev-server 개요에 올리는 방법이 지금은 `ln -sfn` 손작업이고, 그 사실이 문서 어디에도 없다. 실측(2026-09-19)으로 심링크가 목록 등재·개요 렌더·solo 뷰·의견 저장까지 **완전히 동작**함을 확인했으므로, 우연히 되는 동작을 **공식 수단으로 승격**한다
+* depends: (없음)
+* 상세:
+    - 경로 해소 단일 지점 [server.py `_project_root()`](lib/dev-server/server.py) 는 `Projects/<P>` → `Projects_deck/decks/*/<P>` 순으로 `os.path.isdir()` 판정한다. isdir 은 심링크를 따라가므로 **외부 경로가 그대로 통과**한다
+    - 실측 결과: 빌드 성공(산출물은 외부 경로 `slide/`) · `/p/` 목록 등재 · 개요 의견 셀 생성 · solo 뷰 200 · 의견 POST `saved:1` · 적재 위치가 **외부 경로** `_pipeline/feedback/dev-feedback.jsonl` · 개요 "미처리 N건" 반영 · `Projects/.gitignore` 의 `/*` 로 git 오염 0
+    - 빠진 것은 기능이 아니라 **입구**다 — 등재·해제 수단, 중복 토큰 검사, 실수로 실디렉토리를 지우는 것을 막는 가드
+    - 서버 루트는 기동 시 `os.chdir(root)` 로 m2slide 에 고정되고 탐색 루트는 위 두 곳뿐이라, *"제3의 프로젝트 루트를 등록하는 설정"* 은 구조적으로 없다. 그래서 수단이 심링크인 것이며 이 이슈는 그 전제를 바꾸지 않는다
+* 구현 명세:
+    - `./m2slide.sh --link <외부경로> [토큰]` — 토큰 생략 시 경로 basename. 순서: 경로 존재·isdir 확인 → 토큰 형식 검사(`^[A-Za-z0-9][A-Za-z0-9._-]*$`) → **중복 토큰 검사**(`Projects/` 실체·심링크 + `Projects_deck/decks/*/`) → `ln -sfn` → 결과 1줄 보고(토큰·실제 경로·소유 prj)
+    - `./m2slide.sh --unlink <토큰>` — **`os.path.islink` 참일 때만** 제거한다. 실디렉토리면 거부하고 사유를 출력 (오삭제 차단이 이 서브커맨드의 존재 이유)
+    - `./m2slide.sh --links` — 토큰 · 실제 경로(`realpath`) · 소유 prj 번호 표. prj 번호는 `~/_git/___pm/projects/{N}` 최장 prefix 역조회로 **런타임 산출**한다(`sh/fpm_function.sh` `cdf-num()` 과 동일 정책) — 별도 메타 파일을 만들지 않는다
+    - ⚠️ 마운트 메타를 **파일로 남길지 여부는 Issue367 의 소유 설계에 종속**된다. 본 이슈는 런타임 산출만으로 끝나는 범위에 머문다
+    - 문서: [dev-server.md](_doc_arch/dev-server.md) 에 "외부 프로젝트 마운트" 절 신설 — 지금 이 문서는 `Projects/` 전제로만 쓰여 있다
+    - 검증: 위 실측 절차 재현(빌드 → `/p/` 등재 → 의견 POST → 외부 경로 적재) + `--unlink` 가 실디렉토리를 거부하는지 1건
+
+## Issue366: `/p/` 목록·개요에서 외부 마운트 프로젝트를 구분 표기 (등록: 2026-09-19)
+* 목적: 마운트 프로젝트가 본체 프로젝트와 화면상 구분되지 않는다. 지금 고치는 원고가 **어느 repo 것인지** 개요만 보고 알 수 없고, 의견 전달처가 갈리는 순간(Issue367) 이 구분은 선택이 아니라 전제가 된다
+* depends: Issue365
+* 상세:
+    - `/pd/`(덱 목록)는 별도 페이지라 구분이 되지만, `/p/` 목록에 올라온 뒤로는 본체와 동일하게 보인다
+    - 판정 자체는 비용이 없다 — `os.path.islink(Projects/<P>)` 한 줄이면 갈린다
+* 구현 명세:
+    - [`_serve_project_list()`](lib/dev-server/server.py) 카드에 🔗 배지 + `realpath` 를 `title` 속성으로. 본체 프로젝트에는 아무 표기도 붙이지 않는다(무표기가 기본)
+    - [`_serve_project_overview()`](lib/dev-server/server.py) 머리에도 같은 배지 + 실제 경로 + 소유 prj 번호 1줄
+    - `Projects_deck` 경유(deck 토큰)도 같은 축으로 표기 — 지금은 `/p/` 에서 출처를 알 수 없다
+    - 검증: 심링크 1건 등재 후 `/p/` 에 배지 노출 · 본체 프로젝트 카드에는 미노출 · 개요 머리의 실제 경로가 `realpath` 와 일치
+
+## Issue367: 외부 마운트 피드백의 소유·전달 책임 설계 — 의견이 누구에게 가고 누가 처리하는가 (등록: 2026-09-19)
+* 목적: 사용자 지적(2026-09-19) — *"외부 프로젝트에서 진행하는 경우 의견이 prj42 가 아니라 요청한 프로젝트에 전달되어야 한다"*. 현재는 **적재 위치만 우연히 맞고 처리 책임과 역방향 경로가 설계돼 있지 않다**
+* depends: Issue365
+* 상세:
+    - **현상①** — 원고 의견은 외부 경로 `_pipeline/feedback/dev-feedback.jsonl` 에 정상 적재된다(실측). 그런데 소비 설계([dev-server-feedback.md](_doc_arch/dev-server-feedback.md) "소비 설계")는 *"m2slide 폴더의 Claude Code 세션에 붙여넣어 실행"* 으로 못박혀 있다 → **m2slide 세션이 타 repo 원고를 고치게 된다**. 글로벌 [input-interpretation-rules](~/.claude/rules/input-interpretation-rules.md) 의 *"현재 프로젝트 밖 부작용 = 승인 필수"* 와 정면으로 어긋난다
+    - **현상②** — `policy: true` 항목은 외부 경로 `_pipeline/policy/_dev-feedback.yml` 로 간다. 그런데 그 인박스의 **종착지는 m2slide 글로벌 `data/<단계>/*.yml` promotion** 이다 → 도구 정책 의견이 외부 repo 에 고여 **prj42 로 돌아올 길이 없다**. 현상①의 정확한 거울상이다
+    - **현상③** — 개요 커맨드 박스가 내는 `/feedback-process <P>` 는 m2slide 로컬 커맨드다. 외부 prj 세션에는 그 커맨드가 존재하지 않는다
+* 구현 명세:
+    - 본 이슈의 산출은 **결정과 문서**다. 코드 변경은 결정 후 별도 이슈로 분리한다
+    - **축1 — 의견의 종류**: 원고(그 덱의 내용) / 도구(m2slide 렌더·테마·레이아웃 결함)로 갈린다. 현재 `policy` 체크박스 하나가 *"정책화 여부"* 와 *"소유 경계"* 를 겸해 모호하다. 체크박스를 종류 선택으로 바꿀지, 축을 하나 더 세울지 결정한다
+    - **축2 — 적재처**: 원고 → 요청 prj(현행 유지) · 도구 → prj42. 후자의 구체 경로를 정한다 (m2slide `_doc_work/feedback/inbox.jsonl` 신설 / `Issue.md` 🌱 이슈후보 자동 등록 / 기존 policy promotion 경로 재사용 중 택1)
+    - **축3 — 처리 주체**: 원고 의견은 **그 prj 세션**이 돌아야 위 룰과 정합한다. `/feedback-process` 를 글로벌 SCAR 로 승격할지 · prj 별로 배포할지 · `/fpm-do <N>` 위임으로 넘길지 결정한다
+    - **축4 — 커맨드 문자열**: 개요가 마운트 여부를 알게 되면(Issue366) 커맨드 박스도 그 prj 기준으로 내야 한다 (`cd <실제경로>` 안내 또는 `/fpm-do <N> "/feedback-process <P>"`)
+    - 판정 결과를 [dev-server-feedback.md](_doc_arch/dev-server-feedback.md) 에 "외부 마운트 — 소유와 전달" 절로 기술하고, 소비 설계 절의 *"m2slide 폴더 세션"* 문구를 그에 맞게 고친다
+    - ⚠️ **착수 전 사용자 확인 필수** — 축1·축3 은 기술 판단이 아니라 업무 방식 선택이다
+* ✅ **결정 (2026-09-19 사용자 확정)**:
+    - **축1 = 종류 선택으로 교체**. `policy` 체크박스를 없애고 `원고 / 도구` 라디오를 둔다. 의견 1건은 둘 중 하나에 속하며 **그 선택이 곧 전달처**다. 기존 policy(정책 승격) 의미는 '도구' 쪽으로 흡수한다
+    - **축3 = `/feedback-process` 를 글로벌 SCAR 로 승격**. 마운트 프로젝트의 원고 의견은 **그 prj 세션이 자기 repo 원고를 고친다** → "현재 프로젝트 밖 부작용" 자체가 성립하지 않게 된다
+    - 따라서 **축2** 는 원고 → 요청 prj(현행 유지) · 도구 → prj42 로 확정되고, **축4** 는 개요가 마운트를 알 때(Issue366 완료) 그 prj 기준 커맨드 문자열을 내는 것으로 확정된다. 도구 의견의 prj42 측 구체 경로는 착수 시 정한다
+    - ⚠️ 글로벌 SCAR 승격은 **prj3(`~/.claude/Issue.md`) 이슈 등록 절차**를 거친다 — 본 repo 에서 즉흥 수정하지 않는다([global-scar-change-rules](~/.claude/rules/global-scar-change-rules.md))
+    - m2slide 측 구현은 Issue368 로 분리했다. 본 이슈는 **설계 확정**으로 종결한다
+
+
+
+## Issue368: 피드백 종류 축 구현 — `원고/도구` 선택 + 도구 의견의 prj42 전달 (등록: 2026-09-19)
+* 목적: Issue367 에서 확정한 축1·축3 을 m2slide 측에 구현한다. 지금은 `policy` 체크박스 하나가 소유 경계를 겸해 모호하고, 도구 결함 의견이 외부 repo 에 고여 prj42 로 돌아올 길이 없다
+* depends: Issue367
+* 상세:
+    - 확정된 방향: 종류는 `원고 / 도구` 택일 · 원고는 요청 prj 로(현행) · 도구는 prj42 로 · 처리 주체는 그 prj 세션
+    - 글로벌 `/feedback-process` 승격은 **prj3 소관**이라 본 이슈 범위 밖이다 — 본 이슈는 m2slide 측(서버 UI·적재·커맨드 문자열)만 다룬다
+* 구현 명세:
+    - ① 개요 의견 셀의 `policy` 체크박스를 `원고 / 도구` 라디오로 교체한다. 기본값은 **원고** — 대부분의 의견이 그 덱의 내용이기 때문이다. POST 스키마의 `policy: bool` 은 `kind: "content"|"tool"` 로 바꾸고, 구 필드는 한 릴리스 동안 받아 `policy:true → kind:"tool"` 로 읽는다(기존 인박스 호환)
+    - ② `kind: "tool"` 항목의 적재처를 정한다 — m2slide `_doc_work/feedback/tool-inbox.jsonl` 신설이 1안이고, 출처(`project`·`real path`·`prj`)를 레코드에 함께 적어 **어느 덱에서 온 지적인지** 잃지 않게 한다. `_doc_work/` 는 git 미추적이라 로컬 학습 루프 입력이라는 성격과 맞는다
+    - ③ 개요 커맨드 박스가 마운트 프로젝트에서는 **그 prj 기준 문자열**을 내게 한다 (`_mount_info` 가 이미 실제 경로·prj 번호를 준다). 복사 버튼 tooltip 의 *"m2slide 폴더의 세션에 붙여넣기"* 문구도 함께 고친다
+    - ④ [dev-server-feedback.md](_doc_arch/dev-server-feedback.md) 의 저장 규약 표·소비 설계 절을 ①~③ 에 맞춰 고친다
+    - 검증: 마운트 프로젝트에서 원고 의견 → 외부 경로 적재 · 도구 의견 → m2slide 적재(출처 보존) · 본체 프로젝트는 종전과 동일 · `test_server.py` 에 종류별 라우팅 테스트 추가
 
 
 # 📗 선택

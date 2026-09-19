@@ -437,6 +437,81 @@ class DevHandler(SimpleHTTPRequestHandler):
                 return matches[0]
         return direct
 
+    # ---- external mount awareness (Issue366) ----
+    _PRJ_REGISTRY_CACHE = None   # (dir mtime, [(abs path, number), ...])
+
+    def _prj_registry(self):
+        """Load the {FPM_BASE}/projects/<N> → path registry (cached on dir mtime)."""
+        base = os.path.join(
+            os.environ.get('FPM_BASE') or os.path.expanduser('~/_git/___pm'), 'projects')
+        try:
+            mtime = os.path.getmtime(base)
+        except OSError:
+            return []
+        cached = DevHandler._PRJ_REGISTRY_CACHE
+        if cached and cached[0] == mtime:
+            return cached[1]
+        rows = []
+        for name in os.listdir(base):
+            if not name.isdigit():
+                continue
+            try:
+                with open(os.path.join(base, name), encoding='utf-8') as fh:
+                    raw = fh.read().strip()
+            except OSError:
+                continue
+            if not raw:
+                continue
+            rows.append((os.path.realpath(os.path.expanduser(raw)).rstrip('/'), name))
+        DevHandler._PRJ_REGISTRY_CACHE = (mtime, rows)
+        return rows
+
+    def _prj_number(self, real_path: str):
+        """Reverse-resolve a path to its ___pm project number (longest prefix wins).
+
+        Same policy as sh/fpm_function.sh cdf-num(). Computed at runtime so a
+        mount needs no metadata file (Issue365). None when the path is unregistered.
+        """
+        target = os.path.realpath(real_path).rstrip('/')
+        best_num, best_len = None, -1
+        for path, num in self._prj_registry():
+            if (target == path or target.startswith(path + os.sep)) and len(path) > best_len:
+                best_num, best_len = num, len(path)
+        return best_num
+
+    def _mount_info(self, project: str):
+        """Describe how <project> entered /p/ — None for a plain Projects/ directory.
+
+        {'kind': 'link'|'deck', 'real': abs source dir, 'prj': number or None}.
+        """
+        direct = os.path.join(os.getcwd(), 'Projects', project)
+        if os.path.islink(direct):
+            real = os.path.realpath(direct)
+            return {'kind': 'link', 'real': real, 'prj': self._prj_number(real)}
+        if os.path.isdir(direct):
+            return None
+        root = self._project_root(project)
+        decks = os.path.realpath(os.path.join(os.getcwd(), 'Projects_deck'))
+        if os.path.isdir(root) and os.path.realpath(root).startswith(decks + os.sep):
+            real = os.path.realpath(root)
+            return {'kind': 'deck', 'real': real, 'prj': self._prj_number(real)}
+        return None
+
+    def _mount_badge(self, project: str, with_path: bool = False) -> str:
+        """Badge marking an externally mounted project — '' for local ones.
+
+        Local projects stay unmarked on purpose: absence of the badge is the
+        signal that the source lives in this repo.
+        """
+        info = self._mount_info(project)
+        if not info:
+            return ''
+        icon = '🔗 외부 마운트' if info['kind'] == 'link' else '🎴 덱'
+        prj = f' · prj{info["prj"]}' if info['prj'] else ''
+        esc_real = self._esc_html(info['real'])
+        tail = f' <code class="mount-path">{esc_real}</code>' if with_path else ''
+        return (f'<span class="mount-badge" title="{esc_real}">{icon}{prj}</span>{tail}')
+
     def _short_file_rel(self, project: str, chapter):
         """Build cwd-relative path for /p/<project>[/<chapter>] form (deck-aware, Issue290)."""
         stem = chapter if chapter else 'index'
@@ -1174,6 +1249,8 @@ class DevHandler(SimpleHTTPRequestHandler):
             # Issue261 — overview feedback UI (bytes badge + opinion cell + bulk bar)
             '.title-cell{min-width:200px}'
             '.bytes-badge{display:block;text-align:right;color:#999;font-size:11px;margin-top:4px}'
+            '.mount-badge{display:inline-block;padding:1px 7px;border:1px solid #cbb;border-radius:10px;background:#fdf6ec;color:#a65;font-size:12px;white-space:nowrap}'
+            '.mount-path{font-size:12px;color:#777}'
             '.feedback-cell{min-width:220px}'
             '.fb-text{width:100%;box-sizing:border-box;font:inherit;font-size:13px;'
             'padding:4px 6px;border:1px solid #ccc;border-radius:4px;'
@@ -1292,6 +1369,8 @@ class DevHandler(SimpleHTTPRequestHandler):
             '@media (prefers-color-scheme:dark){body{background:#1a1a1a;color:#e0e0e0}'
             '.card{background:#222;border-color:#444}.card .links a{background:#2a3a3e}'
             'th{background:#2a3a3e}td,th{border-color:#444}code{background:#2d2d2d;color:#e0e0e0}'
+            '.mount-badge{background:#2e2820;color:#d9a86a;border-color:#5a4d3a}'
+            '.mount-path{color:#999}'
             '.fb-text{background:#222;border-color:#555}'
             '.fb-actions .fb-send{background:#2a3a3e;border-color:#555}'
             '.fb-bulk-bar{background:#2a3a3e;border-color:#444}'
@@ -1525,7 +1604,10 @@ class DevHandler(SimpleHTTPRequestHandler):
             cards = buckets[cat_key]
             cat_emoji = self._CATEGORY_EMOJI.get(cat_key, '📁')
             title_html = f'{cat_emoji} {self._esc_html(p)}'
-            meta_line = ''
+            # Issue366 — external mount badge (local projects stay unmarked).
+            mount_badge = self._mount_badge(p, with_path=True)
+            mount_line = f'<div class="meta">{mount_badge}</div>' if mount_badge else ''
+            meta_line = mount_line
             if meta:
                 manual_badge = self._manual_check_badge(meta['manual'])
                 pub_badge = self._publishing_badge(meta['publishing'])
@@ -1536,7 +1618,7 @@ class DevHandler(SimpleHTTPRequestHandler):
                     bits.append(f'📝 {self._esc_html(meta["desc"])}')
                 bits.append(manual_badge)
                 bits.append(pub_badge)
-                meta_line = f'<div class="meta">{" · ".join(bits)}</div>'
+                meta_line += f'<div class="meta">{" · ".join(bits)}</div>'
                 if meta['work']:
                     meta_line += f'<div class="meta">📌 {self._esc_html(meta["work"])}</div>'
             gear = (f'<button type="button" class="cfg-gear" '
@@ -1729,6 +1811,10 @@ class DevHandler(SimpleHTTPRequestHandler):
             )
             sections_html_blocks.append(section)
         summary = f'<b>{total_slides}</b> slides · {mode_label}'
+        # Issue366 — say where the source lives when it is not this repo.
+        overview_mount = self._mount_badge(project, with_path=True)
+        if overview_mount:
+            summary += f' · {overview_mount}'
         # Issue264 — copy-paste command box (manual feedback processor entry).
         # Shown twice: next to top summary + inside bottom bulk bar.
         pending = self._pending_feedback_count(project)

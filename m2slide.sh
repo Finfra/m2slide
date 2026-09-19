@@ -117,6 +117,129 @@ if [ "$1" = "--serve" ]; then
   esac
 fi
 
+# Subcommand: --link / --unlink / --links (Issue365 — 외부 프로젝트 마운트)
+# 다른 repo 에서 진행 중인 덱을 Projects/<토큰> 심링크로 올려 /p/ 에 등재한다.
+# 경로 해소 단일 지점인 dev-server `_project_root()` 가 isdir 판정이라 심링크를 그대로 따라간다
+# — 서버는 손대지 않는다. 여기서 더하는 것은 입구(등재·해제·목록)와 안전 가드뿐이다.
+if [ "$1" = "--link" ] || [ "$1" = "--unlink" ] || [ "$1" = "--links" ]; then
+  link_projects_dir="$SCRIPT_DIR/Projects"
+  link_decks_dir="$SCRIPT_DIR/Projects_deck/decks"
+
+  # prj 번호 역조회 — {FPM_BASE}/projects/{N} 최장 prefix 일치.
+  # sh/fpm_function.sh cdf-num() 과 동일 정책이며, 번호는 런타임 산출이라 메타 파일을 만들지 않는다.
+  m2s_prj_num() {
+    local target="$1" base="${FPM_BASE:-$HOME/_git/___pm}/projects"
+    [ -d "$base" ] || return 1
+    target="$(cd "$target" 2>/dev/null && pwd -P)" || return 1
+    local f p best_id="" best_len=-1
+    for f in "$base"/[0-9]*; do
+      [ -f "$f" ] || continue
+      p="$(cat "$f" 2>/dev/null)"
+      case "$p" in "~"*) p="$HOME${p#\~}" ;; esac
+      p="${p%/}"
+      [ -z "$p" ] && continue
+      p="$(cd "$p" 2>/dev/null && pwd -P)" || continue
+      if [ "$target" = "$p" ] || [ "${target#"$p"/}" != "$target" ]; then
+        if [ "${#p}" -gt "$best_len" ]; then
+          best_len="${#p}"
+          best_id="$(basename "$f")"
+        fi
+      fi
+    done
+    [ -n "$best_id" ] || return 1
+    echo "$best_id"
+  }
+
+  case "$1" in
+    --links)
+      # 한글은 한 글자가 두 칸이라 헤더 폭을 그만큼 줄여 데이터 열과 맞춘다.
+      printf "%-26s %-10s %s\n" "토큰" "소유 prj" "실제 경로"
+      printf "%-28s %-12s %s\n" "----------------------------" "------------" "------------------------------"
+      link_found=0
+      for entry in "$link_projects_dir"/*; do
+        [ -L "$entry" ] || continue
+        [ -d "$entry" ] || { printf "%-28s %-12s %s\n" "$(basename "$entry")" "-" "⚠️ 끊긴 링크 → $(readlink "$entry")"; link_found=1; continue; }
+        link_real="$(cd "$entry" && pwd -P)"
+        link_prj="$(m2s_prj_num "$link_real" 2>/dev/null || echo '-')"
+        printf "%-28s %-12s %s\n" "$(basename "$entry")" "$link_prj" "$link_real"
+        link_found=1
+      done
+      [ "$link_found" -eq 0 ] && echo "(마운트된 외부 프로젝트 없음)"
+      exit 0
+      ;;
+
+    --link)
+      link_src="$2"
+      if [ -z "$link_src" ]; then
+        echo "Usage: $(basename "$0") --link <외부경로> [토큰]" >&2
+        exit 1
+      fi
+      case "$link_src" in "~"*) link_src="$HOME${link_src#\~}" ;; esac
+      if [ ! -d "$link_src" ]; then
+        echo "❌ Error: 디렉토리가 아니거나 존재하지 않음: $link_src" >&2
+        exit 1
+      fi
+      link_real="$(cd "$link_src" && pwd -P)"
+      link_tok="${3:-$(basename "$link_real")}"
+      if ! [[ "$link_tok" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+        echo "❌ Error: 토큰 형식 위반 (^[A-Za-z0-9][A-Za-z0-9._-]*$): $link_tok" >&2
+        exit 1
+      fi
+      link_dest="$link_projects_dir/$link_tok"
+      if [ -L "$link_dest" ]; then
+        link_cur="$(cd "$link_dest" 2>/dev/null && pwd -P || echo '')"
+        if [ "$link_cur" = "$link_real" ]; then
+          echo "ℹ️  이미 등재됨 (변경 없음): $link_tok → $link_real"
+          exit 0
+        fi
+        echo "❌ Error: 토큰 '$link_tok' 이 다른 경로에 이미 마운트됨: ${link_cur:-$(readlink "$link_dest")}" >&2
+        echo "   해제 후 다시 등재: $(basename "$0") --unlink $link_tok" >&2
+        exit 1
+      fi
+      if [ -e "$link_dest" ]; then
+        echo "❌ Error: Projects/$link_tok 가 이미 실디렉토리로 존재함 — 다른 토큰을 쓸 것" >&2
+        exit 1
+      fi
+      # deck 토큰과 겹치면 Projects/ 가 우선 매칭되어 덱이 가려진다 — 거부하지 않고 알린다.
+      if [ -d "$link_decks_dir" ]; then
+        for cat_dir in "$link_decks_dir"/*; do
+          [ -d "$cat_dir/$link_tok" ] || continue
+          echo "⚠️  같은 토큰의 덱이 있음: $(basename "$cat_dir")/$link_tok — /p/$link_tok 은 이 마운트가 가립니다" >&2
+        done
+      fi
+      ln -s "$link_real" "$link_dest"
+      link_prj="$(m2s_prj_num "$link_real" 2>/dev/null || echo '-')"
+      echo "✅ 마운트: $link_tok"
+      echo "   실제 경로: $link_real"
+      echo "   소유 prj:  $link_prj"
+      echo "   다음: ./$(basename "$0") $link_tok   → http://127.0.0.1:9877/p/$link_tok"
+      exit 0
+      ;;
+
+    --unlink)
+      link_tok="$2"
+      if [ -z "$link_tok" ]; then
+        echo "Usage: $(basename "$0") --unlink <토큰>" >&2
+        exit 1
+      fi
+      link_dest="$link_projects_dir/$link_tok"
+      if [ ! -e "$link_dest" ] && [ ! -L "$link_dest" ]; then
+        echo "❌ Error: Projects/$link_tok 없음" >&2
+        exit 1
+      fi
+      # 오삭제 차단이 이 서브커맨드의 존재 이유 — 실디렉토리는 절대 건드리지 않는다.
+      if [ ! -L "$link_dest" ]; then
+        echo "❌ Error: Projects/$link_tok 는 실디렉토리입니다 — 본 커맨드는 마운트 해제 전용이라 거부합니다" >&2
+        exit 1
+      fi
+      link_real="$(cd "$link_dest" 2>/dev/null && pwd -P || readlink "$link_dest")"
+      rm "$link_dest"
+      echo "✅ 마운트 해제: $link_tok (실제 경로는 그대로 남음 — $link_real)"
+      exit 0
+      ;;
+  esac
+fi
+
 # Subcommand: --export-ir / --unity (Issue286 — m2unity 출력 백엔드 계약)
 # 계약 정본: _doc_arch/m2unity-contract.md. 현재 인터페이스 정의 + stub 단계.
 # exporter 실동 구현은 element-level 구조화 파서를 요하므로 계약 ① 확정 후 별도 이슈.

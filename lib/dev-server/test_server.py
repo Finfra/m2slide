@@ -446,6 +446,58 @@ class FeedbackPostTest(unittest.TestCase):
             DevHandler._FEEDBACK_POST_RE.match('/p/m2Slide/s/1/1'))
 
 
+class MountInfoTest(unittest.TestCase):
+    """Issue366 — 외부 마운트 판정. 본체 프로젝트가 마운트로 오인되면 안 된다."""
+
+    @classmethod
+    def setUpClass(cls):
+        import tempfile
+        cls.tmp = tempfile.mkdtemp(prefix='m2slide-mount-')
+        cls.ext = os.path.join(cls.tmp, 'outside', 'extDeck')
+        os.makedirs(cls.ext)
+        cls.old_cwd = os.getcwd()
+        cls.root = os.path.join(cls.tmp, 'repo')
+        os.makedirs(os.path.join(cls.root, 'Projects', 'localProj'))
+        os.makedirs(os.path.join(cls.root, 'Projects_deck', 'decks', 'misc', 'someDeck'))
+        os.chdir(cls.root)
+        os.symlink(cls.ext, os.path.join('Projects', 'extDeck'))
+
+    @classmethod
+    def tearDownClass(cls):
+        import shutil
+        os.chdir(cls.old_cwd)
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def _handler(self):
+        return DevHandler.__new__(DevHandler)
+
+    def test_local_project_is_not_a_mount(self):
+        self.assertIsNone(self._handler()._mount_info('localProj'))
+
+    def test_local_project_gets_no_badge(self):
+        # 배지의 부재가 "원고가 이 repo 에 있다"는 신호 — 붙으면 신호가 죽는다.
+        self.assertEqual(self._handler()._mount_badge('localProj'), '')
+
+    def test_symlinked_project_is_a_link_mount(self):
+        info = self._handler()._mount_info('extDeck')
+        self.assertIsNotNone(info)
+        self.assertEqual(info['kind'], 'link')
+        self.assertEqual(info['real'], os.path.realpath(self.ext))
+
+    def test_deck_token_is_a_deck_mount(self):
+        info = self._handler()._mount_info('someDeck')
+        self.assertIsNotNone(info)
+        self.assertEqual(info['kind'], 'deck')
+
+    def test_badge_carries_real_path_in_title(self):
+        badge = self._handler()._mount_badge('extDeck')
+        self.assertIn('mount-badge', badge)
+        self.assertIn(os.path.realpath(self.ext), badge)
+
+    def test_unknown_project_is_not_a_mount(self):
+        self.assertIsNone(self._handler()._mount_info('nope'))
+
+
 class PendingFeedbackCountTest(unittest.TestCase):
     """Issue264 — _pending_feedback_count (개요 커맨드 박스 미처리 건수)."""
 
