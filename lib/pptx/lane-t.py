@@ -572,7 +572,9 @@ def restyle_code(slide, px2emu, L, W, log):
             p_ = paras[i]
             p_.line_spacing = CODE["line_h"] / CODE["fs"]
             for r in p_.runs:
-                r.font.name = FONT.get("code") or "Menlo"
+                #   폴백도 **템플릿 서체**여야 한다 — 하드코딩 "Menlo" 는 정책이 비면
+                #   테마 밖 서체를 조용히 심어 `font_outside_theme` 축을 깨뜨린다 (Issue358)
+                r.font.name = FONT.get("code") or FONT.get("body") or "NanumGothicCoding"
                 r.font.size = Pt(fs_pt)
                 r.font.color.rgb = RGBColor.from_string(
                     CODE["keyword"] if r.font.bold else CODE["fg"])
