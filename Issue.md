@@ -79,6 +79,8 @@
 * 결과: 이론 장과 **전 축 일치** — head-bar top 28 · height 37 · `display:flex` · `hr.png` 브러시, 제목 top 65 · **width 1808(전폭)** · left 56 고정, body top 198. 실습 `exercise`·`exercise-small`·검증 장 모두 같은 값
 * 회귀: 3덱 197장 전수 계측 **0건**(표지 `::part` 오탐 1건씩은 기존과 동일). 변경이 전부 `.layout-exercise`/`-small` 스코프라 다른 layout 은 선택자에 닿지 않는다
 * ⚠️ 동시 편집 — `theme/default_lec/slide.css` 에 제3 세션의 미커밋 27줄(2026.09.19)이 있어 **hunk 단위로 인덱스에만 적용**해 커밋했다. 워킹트리의 남의 변경은 보존했고 커밋에 섞이지 않은 것을 `git diff --cached` 로 확인했다
+* 🔴 **후속 (2026-09-20, commit: 위 해시 다음)** — head-bar 를 달자 **노랑 선이 4개**가 됐다(head-bar 위·아래·제목 아래·하단). §2 상단 프레임 브러시(`section::before`, top 12px)를 숨기는 목록에도 실습 2종이 빠져 있었기 때문이다. 이론 장은 *"head-bar 가 자기 아래에 브러시를 그리니 위엣것은 숨긴다"* 로 이미 처리돼 있었다. 같은 숨김 + 빈 head-bar 복원 규칙을 실습에도 추가해 **3개로 맞췄다**(head-bar::after · 제목::after · section::after — 이론 장과 구성 동일)
+* ⚠️ **나열 선택자 누락이 이 이슈에서만 5곳**이었다 — `position:relative` · `::after` 브러시 · `display:flex` 본체 · 좌/우 자식·빈 값 숨김 · **§2 상단 브러시 숨김**. 새 layout 을 추가할 때 head-bar 를 쓰려면 이 다섯을 모두 확인해야 한다
 
 
 ## Issue384: prj8 cg crossfeed 접수 — 주입 2건 판정 + svg-direct·free-image 전역 자산 명시 (등록: 2026-09-20, 해결: 2026-09-20, commit: `f789ae7, 100308d`) ✅

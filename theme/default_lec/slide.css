@@ -643,6 +643,23 @@
   z-index: 100;
 }
 
+/* 상단 §2 프레임 브러시를 숨긴다 — 이론 장이 하는 것과 같다.
+   head-bar 가 **자기 아래**에 브러시를 그리므로 §2 의 `::before`(top:12px, head-bar 위)를
+   그대로 두면 선이 넷이 된다: head-bar 위 1 + head-bar 아래 1 + 제목 아래 1 + 하단 1.
+   맨 위 것이 남는 선이고, 이론 장은 이미 이 숨김 목록에 들어 있었다. 실습 2종만 빠져 있었다. */
+.reveal section.layout-exercise::before,
+.reveal section.layout-exercise-small::before {
+  display: none !important;
+}
+/* head-bar 가 비어 숨김된 슬라이드는 상단 브러시를 되살린다 — 상단 무바 회귀 방지.
+   단일 모드처럼 outline 이 없어 head_left/right 가 둘 다 빈 덱이 여기 걸린다. */
+.reveal section.layout-exercise:has(> .contents-head-bar:empty)::before,
+.reveal section.layout-exercise:has(> .contents-head-bar > .contents-head-left:empty):has(> .contents-head-bar > .contents-head-right:empty)::before,
+.reveal section.layout-exercise-small:has(> .contents-head-bar:empty)::before,
+.reveal section.layout-exercise-small:has(> .contents-head-bar > .contents-head-left:empty):has(> .contents-head-bar > .contents-head-right:empty)::before {
+  display: block !important;
+}
+
 /* 4.7 closing: puffer1 중앙 큼 + cat 우하단
    Issue72: !important 제거 — base.css와 동일 specificity. theme 후순위 로드로 자연 우선 */
 .reveal section.layout-closing {
