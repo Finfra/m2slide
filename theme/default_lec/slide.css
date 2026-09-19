@@ -494,39 +494,52 @@
   display: none;
 }
 
-/* 4.5 exercise: butterfly 좌측 + cat 우하단 */
-.reveal section.layout-exercise {
-  background-image:
-    url('../theme-img/finfraButterfly.png'),
-    url('../theme-img/finfraCat.png');
-  background-repeat: no-repeat, no-repeat;
-  background-position: 4% 60%, 96% 92%;
-  background-size: 14% auto, 16% auto;
-}
-
-/* Issue359: 선택자에 `> div` 를 반드시 유지할 것 — 장황해 보여도 필수다.
-   base.css §9 의 `.reveal section[class*="layout-"] > div[class$="-body"]`(명시도 0-3-2)가
-   shorthand `padding: 1em 0` 로 좌우 padding 을 0 으로 덮는다. theme 이 나중에 로드돼도
-   0-3-1 로는 못 이긴다. 자식 결합자 + 요소 선택자로 0-3-2 동점을 만들어야 후순위 로드가 이긴다. */
-.reveal section.layout-exercise > div.exercise-body {
-  padding-left: 18%;
-  padding-right: 4%;
-}
-
-/* 4.6 exercise-small: butterfly 크게 좌측 + cat 우하단 (말풍선) */
+/* 4.5 + 4.6 exercise / exercise-small — 실습 2종 공통 규칙 (__lec 2026.09.19 요구)
+   구 구조는 두 레이아웃이 마스코트·여백을 각자 선언해 나비가 14% vs 22% 로 갈렸다.
+   같은 "실습"인데 크기가 1.57배 차이 나 넘길 때마다 눈에 띈다 → 공통 선언으로 병합한다.
+   나비는 summary 레이아웃(§4.7.5)과 같은 9% 로 최소화한다 — 테마 안에서 유일하게
+   실습 2종만 크던 값이라 summary 쪽이 이미 기준선 역할을 하고 있었다. */
+.reveal section.layout-exercise,
 .reveal section.layout-exercise-small {
   background-image:
     url('../theme-img/finfraButterfly.png'),
     url('../theme-img/finfraCat.png');
   background-repeat: no-repeat, no-repeat;
-  background-position: 6% 50%, 92% 90%;
-  background-size: 22% auto, 18% auto;
+  background-position: 3% 64%, 95% 92%;
+  background-size: 9% auto, 12% auto;
 }
 
-/* Issue359: `> div` 필수 — 위 layout-exercise 와 같은 명시도 동점(0-3-2) 확보용. */
+/* Issue359: 선택자에 `> div` 를 반드시 유지할 것 — 장황해 보여도 필수다.
+   base.css §9 의 `.reveal section[class*="layout-"] > div[class$="-body"]`(명시도 0-3-2)가
+   shorthand `padding: 1em 0` 로 좌우 padding 을 0 으로 덮는다. theme 이 나중에 로드돼도
+   0-3-1 로는 못 이긴다. 자식 결합자 + 요소 선택자로 0-3-2 동점을 만들어야 후순위 로드가 이긴다.
+   좌여백은 나비 축소(22%·14% → 9%)에 맞춰 13% 로 통일했다 — 구 30%·18% 는 이제 없는
+   마스코트를 피하던 값이라 실습 지시문만 불필요하게 접혔다. */
+.reveal section.layout-exercise > div.exercise-body,
 .reveal section.layout-exercise-small > div.exercise-body {
-  padding-left: 30%;
+  padding-left: 13%;
   padding-right: 4%;
+}
+
+/* 실습 제목 밴드를 _contents(이론 장표)와 동일하게 맞춘다 (__lec 2026.09.19 요구).
+   구 구조에서는 §4.2 가 _contents 제목만 --title-font-size(1.5em)로 내려 잡고
+   실습 제목은 base.css 기본값(exercise 2.8em · exercise-small 2.2em)에 방치돼,
+   이론 60px vs 실습 88·112px 로 갈렸다. 2줄 제목일 때 본문 시작선이
+   195px(이론) vs 389px(exercise)까지 벌어져 장표를 넘길 때 제목 밴드가 출렁인다.
+   아래 3개 선언으로 제목 시작 y·제목 블록 높이·본문 시작 y 가 _contents 와 완전 일치한다. */
+.reveal section.layout-exercise .exercise-title,
+.reveal section.layout-exercise-small .exercise-title {
+  font-size: var(--title-font-size, 1.5em);
+  padding-top: var(--title-padding, 0);
+  padding-bottom: 0.4em;
+}
+
+/* 34px = _contents 의 contents-head-bar 밴드 높이(padding-top 8px + 1em 라인).
+   실습 레이아웃엔 head-bar 가 없으므로 헤더 상단 패딩이 그 자리를 대신해야
+   제목 시작선이 62px 로 일치한다. 하단 31px 은 _contents 제목의 margin-bottom 과 동일. */
+.reveal section.layout-exercise .exercise-header,
+.reveal section.layout-exercise-small .exercise-header {
+  padding: 34px 0 31px 0;
 }
 
 /* 4.7 closing: puffer1 중앙 큼 + cat 우하단

@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 374
+* Issue HWM: 375
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -272,6 +272,26 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue375: default_lec 실습 2종 — 마스코트·여백·제목 밴드를 이론 장표에 맞춘다 (등록: 2026-09-19, 해결: 2026-09-19, commit: 본 커밋) ✅
+* 목적: 발주처 prj60(`__lec`) 1일차 덱에서 **실습 장표만 이론 장표와 따로 논다**는 지적을 받았다. 원인은 셋이고, 전부 [default_lec](theme/default_lec/slide.css) 안에서 `layout-exercise` 와 `layout-exercise-small` 이 **같은 "실습"인데 각자 선언**돼 있던 데서 온다
+* 상세 (실측 기준 폭 1806px):
+    - **① 마스코트가 2종 사이에서 1.57배 갈렸다** — 나비 `14%`(exercise) vs `22%`(exercise-small). 고양이도 `16%` vs `18%`. 장을 넘길 때마다 같은 그림이 커졌다 작아졌다 했다
+    - **② 좌여백이 큰 마스코트를 피하느라 과했다** — `exercise-body` 좌여백이 `18%`(325px)·`30%`(542px). 실습 지시문이 우측으로 밀려 불필요하게 접혔다
+    - **③ 제목 밴드가 이론 장표와 갈렸다** — §4.2 가 `_contents` 제목만 `--title-font-size`(1.5em)로 내려 잡고, 실습 제목은 [base.css](lib/css/base.css) 기본값(`exercise` 2.8em · `exercise-small` 2.2em)에 방치돼 **이론 60px vs 실습 88·112px**. 2줄 제목일 때 본문 시작선이 **195px(이론) vs 389px(exercise)** 까지 벌어져, 장을 넘길 때 제목 밴드가 출렁였다
+* 구현 명세:
+    - 2종을 **공통 선언으로 병합**한다. 각자 선언한 것이 갈림의 원인이므로 값을 맞추는 것이 아니라 선언을 하나로 만든다
+    - 나비 `9%` · 고양이 `12%` — `9%` 는 `summary` 레이아웃(§4.7.5)이 이미 쓰던 값이라 **테마 안 기준선**이다. 새 숫자를 발명하지 않았다
+    - 좌여백 `13%`(235px) 단일. ⚠️ [Issue359](#issue359) 의 `> div` 자식 결합자를 **반드시 유지** — base.css §9 의 `0-3-2` shorthand 를 이기려면 명시도 동점이 필요하다
+    - 제목은 `--title-font-size` 를 이론 장표와 공유하고, `exercise-header` 에 `padding: 34px 0 31px 0` 을 준다. `34px` 은 `_contents` 의 `contents-head-bar` 밴드 높이(padding-top 8px + 1em 라인)다 — 실습 레이아웃엔 head-bar 가 없으므로 헤더 상단 패딩이 그 자리를 대신해야 제목 시작선이 맞는다. 하단 `31px` 은 `_contents` 제목의 `margin-bottom` 과 같다
+    - 종료 조건: 재빌드 후 이론·실습 전장의 제목 시작 y·제목 블록 높이·본문 시작 y 가 일치
+* 결과 (발주처 prj60 세션 실측 + 본 세션 회귀 점검):
+    - ✅ **재빌드 후 전수 일치** — 이론 31장 / 실습 16장 **전부** 제목 시작 `62px` · 제목 블록 높이 `102px` · 본문 시작 `195px`. 실습 16장 나비·고양이 `9%`/`12%` 단일값. 좌여백 `542·325px` → `235px`
+    - ✅ **회귀 위험 0 (본 repo 전수 확인)** — 빌드 산출물 `Projects/*/slide` 28덱 + `docs/*` 17덱, html **398장**에서 `<section class="…layout-exercise…">` 실마크업 **0건**. `exercise-body`·`exercise-title`·`exercise-header` 마크업도 **0건**. 원고 `*.md` 의 `#layout-exercise` 지시자도 **0건**
+    - ⚠️ `layout-exercise` **문자열** 매치는 205장이나 전부 각 덱에 인라인·복사된 **CSS 보일러플레이트**다 — 파일 수만 세면 오판한다. 실마크업을 가진 파일은 레이아웃 템플릿 2개([6.1.exercise.html](theme/default_lec/layouts/6.1.exercise.html)·[6.2.exercise-small.html](theme/default_lec/layouts/6.2.exercise-small.html))뿐
+    - ✅ **이중 안전장치** — 빌드 산출물은 테마 CSS 스냅샷을 자기 `css/custom.css` 와 인라인에 동봉한다(`docs/fPmIntro/css/custom.css` 에 구 값 `14%`·`22%`·`18%`·`30%` 잔존 확인). 따라서 테마 수정은 **재빌드 전까지 기존 덱에 닿지 않는다**
+    - ✅ [theme/default](theme/default/slide.css) 는 구 값을 그대로 둔다 — 본 커밋 diff 범위 밖이라 영향 없다
+    - 📌 후속: `default_lec` 을 쓰는 덱을 **재빌드하면** 실습 장표 꼴이 바뀐다. 현재 실습 레이아웃을 실제로 쓰는 덱이 발주처 1일차뿐이라 지금은 영향이 없지만, 과거 덱을 되살려 재빌드할 때는 이 변경을 전제로 봐야 한다
 
 ## Issue360: layout `*-body` 명시도 충돌 전수 — base.css shorthand 가 theme 가로 padding 을 삼킨다 (등록: 2026-09-19, 해결: 2026-09-19, commit: `eb498e3`) ✅
 * 목적: [Issue359](#issue359) 로 `exercise`·`exercise-small` 을 고치면서 **같은 충돌이 살아 있는 layout 6종을 더 찾았다.** exercise 와 달리 이쪽은 실사용 덱이 전부 쓰는 layout 이라 고치는 순간 기존 덱의 렌더가 바뀐다 — 그래서 Issue359 에 묶지 않고 분리했다
