@@ -400,6 +400,24 @@ file:///<abs_path>/Projects/{Name}/slide/{chapter}.html?fwd=1#/N
 * ⚠️ **이 러너가 없으면 "차이 없음" 과 "차이를 못 봄" 이 구분되지 않는다.** Issue358 에서 표 정렬을 `lossy` 로 오판한 것(근거 덱의 표가 전부 좌측 정렬)과 `font_outside_theme` 축이 러너를 옮기며 조용히 사라진 것이 그 형태였다
 * 계약에서 요소를 **거두는 것**도 정당한 해법이다 — 다만 그 판단은 사람이 한다
 
+## 4.11 패키지 조립 무결성 (Issue382)
+
+**lane B/G/M/S/T 를 건드렸거나 pptx 의 part·rel 을 새로 끼우는 코드를 넣었으면 돌린다.**
+
+```bash
+./z_test/ig-ppt/8.assembly.sh            # 기본 3덱 (aTest-all·igTest·m2Slide_chapter_mode)
+./z_test/ig-ppt/8.assembly.sh <프로젝트…> [--no-build]
+```
+
+기존 러너가 **보지 못하는 층**이다. [`3.parity.sh`](../../z_test/ig-ppt/3.parity.sh) 는 python-pptx 의 **렌더 텍스트**로 장 수·제목·순서를 재고 [`6.roundtrip.sh`](../../z_test/ig-ppt/6.roundtrip.sh) 는 원고 ↔ 산출의 글자·요소를 잰다 — 둘 다 패키지가 열리고 파싱된 **뒤**를 본다. zip 항목 중복·끊긴 rel·미선언 미디어 확장자는 그 앞 단계다.
+
+* 판정은 글로벌 [`check-assembly.py`](file:///Users/nowage/.claude/skills/ppt-check/scripts/check-assembly.py) 가 한다 — 러너는 **호출·집계·보고**만 한다. ⚠️ `lib/pptx/` 에 복사하지 않는다(문서와 실행체가 따로 자라는 2원 갈라짐)
+* baseline 불요 **5규칙**: `zip_entry_names_unique` · `dropped_slide_relationship_removed` · `reorder_key_is_stable_across_save` · `no_duplicate_or_missing_after_reorder` · `declared_extensions_cover_all_media`
+* `--baseline` 필요 3규칙은 **Issue383 소관**이라 SKIP 이고 **건수를 보고한다** — 숨기면 *"통과"* 와 *"축이 사라짐"* 이 구분되지 않는다(§4.10 과 같은 취지)
+* ⚠️ **차단 지점이 아니다.** `--pptx` 내장 검증(§4.7)은 FAIL 시 빌드를 죽이므로, 현재 FAIL 0 인 축을 거기 넣으면 오탐 1건이 배포를 막는다. 이 축은 **회귀 가드**로만 둔다
+* ⚠️ 글로벌 도구가 없는 머신에서는 **SKIP 하고 그 사실을 보고**한다 — 도구 부재와 무결성 통과는 다른 사실이다
+* 이 축의 실사고 선례: lane G 의 `diagramDrawing` 관계를 슬라이드 rels 가 아니라 data 파트에 걸어 LibreOffice 가 빈 그룹으로 들여온 건(실측 2026-09-11). **어떤 검사도 잡지 못해 사람이 눈으로 찾았다**
+
 > lint subcommand 전체 목록: `--lint-deployment`(§4.5) · `--lint-license`(§4.6) · `--lint-data`([`data-access-rules.md`](data-access-rules.md)) · `--lint-config`·`--lint-layouts`([`../../_doc_arch/theme_layout.md`](../../_doc_arch/theme_layout.md)). PPTX 규격 검증(§4.7)은 subcommand 가 아니라 `--pptx` 빌드 내장이다.
 
 ## 5. 결과 보고

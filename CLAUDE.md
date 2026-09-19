@@ -378,6 +378,20 @@ pandoc 3.10 pptx writer 는 **Math 인라인을 만나면 그 슬라이드의 �
 * 실패해도 빌드를 죽이지 않는다 — 그 수식만 평문 LaTeX 로 남는다
 * 회귀 러너: `./z_test/ig-ppt/5.lanem.sh [프로젝트]` (단언 6종)
 
+#### 패키지 조립 무결성 (Issue382)
+
+lane B/G/M/S/T 는 pptx 의 XML part·rel 을 **손으로 끼운다.** 그 조립이 온전한지는 `check-conform`(규격)도 `check-empty`(내용)도 `3.parity`(렌더 텍스트)도 보지 못한다 — 셋 다 패키지가 열리고 파싱된 **뒤**를 본다.
+
+```bash
+./z_test/ig-ppt/8.assembly.sh                    # 기본 3덱
+./z_test/ig-ppt/8.assembly.sh <프로젝트…> [--no-build]
+```
+
+* 판정은 글로벌 [`check-assembly.py`](file:///Users/nowage/.claude/skills/ppt-check/scripts/check-assembly.py) 가 하고 러너는 호출·집계·보고만 한다. `lib/pptx/` 에 **복사하지 않는다**
+* baseline 불요 5규칙만 켠다(zip 항목 고유 · 지운 슬라이드 rel 잔존 · sldId 안정 · 목록=part · 미디어 확장자 선언). `--baseline` 3규칙은 Issue383 소관이며 **SKIP 건수를 보고**한다
+* ⚠️ **차단 지점이 아니다** — 내장 검증은 FAIL 시 빌드를 죽이므로 현재 FAIL 0 인 축을 거기 넣으면 오탐 1건이 배포를 막는다. 회귀 가드로만 둔다
+* 선례 — lane G 의 `diagramDrawing` 관계를 data 파트에 걸었을 때 LibreOffice 가 빈 그룹으로 들여왔다(2026-09-11). **어떤 검사도 잡지 못했다**
+
 #### 백지 장 검출 (Issue339)
 
 `check-conform` 은 **규격**을 재고, [check-empty.py](lib/pptx/check-empty.py) 는 **내용 유무**를 잰다. 제목만 남은 장은 규격상 완전해서 conform 을 통과한다 — 그래서 별도 검사다. 면제는 표지와 챕터 진입 장(`Section Header` layout)뿐이다.
