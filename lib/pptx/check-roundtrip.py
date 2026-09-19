@@ -73,6 +73,8 @@ RE_DIV_OPEN = re.compile(
     r"^[ \t]*:::+[ \t]*(?:([^:{\s][^:{]*?)[ \t]*)?(\{[^}]*\})?[ \t]*$")
 RE_DIV_CLOSE = re.compile(r"^[ \t]*:::+[ \t]*$")
 RE_IMG = re.compile(r"!\[([^\]]*)\]\(([^)\s]+)")
+#   본문 링크 — 이미지(`![..](..)`)와 가르려고 앞에 `!` 가 없는 것만 본다
+RE_LINK = re.compile(r"(?<!!)\[([^\]]*)\]\(([^)]*)\)")
 #   표 셀 치환용 — 닫는 괄호까지 온전히 먹는다 (RE_IMG 는 경로 앞까지만 본다)
 RE_IMG_FULL = re.compile(r"!\[([^\]]*)\]\([^)]*\)")
 RE_BULLET = re.compile(r"^([ \t]*)[*+-][ \t]+(.+?)[ \t]*$")
@@ -92,6 +94,14 @@ def norm(s):
     s = re.sub(r"\*\*|__|`", "", s)          # 강조·인라인코드 마크업
     s = re.sub(r"(?<!\w)[*_](?=\S)|(?<=\S)[*_](?!\w)", "", s)   # 한 겹 이탤릭
     s = re.sub(r"\\([.)])", r"\1", s)        # bullet_text 가 넣은 이스케이프
+    #   링크는 **글자만** 남긴다 — URL 보존 여부는 `hyperlink` 축이 따로 잰다.
+    #   한 축에 섞으면 URL 하나가 빠졌을 때 그 문장 전체가 사라진 것처럼 보인다
+    s = re.sub(r"(?<!!)\[([^\]]*)\]\([^)]*\)", r"\1", s)
+    #   pandoc 의 smart 확장이 곧은 따옴표를 둥근 것으로 바꾼다(`"` → `“”`, `'` → `‘’`).
+    #   HTML 은 원고 그대로라 **같은 문장이 두 산출물에서 다른 글자**가 된다 — 글자가
+    #   전달됐는지를 묻는 검사에서는 같게 본다(계약 `smart_punctuation` · Issue369).
+    s = s.replace("\u201c", '"').replace("\u201d", '"')
+    s = s.replace("\u2018", "'").replace("\u2019", "'")
     s = re.sub(r"\s+", " ", s)
     return s.strip()
 
@@ -271,6 +281,7 @@ def scan(lines):
         if m:
             e["h1_chapter"].append(norm(m.group(1)))
             e.setdefault("__lv__", []).append(1)
+            e["__h1__"] = [1]
             continue
         m = RE_H2.match(ln)
         if m:
@@ -306,6 +317,15 @@ def scan(lines):
 
         for mm in RE_IMG.finditer(ln):
             e["image"].append(norm(mm.group(1)) or os.path.basename(mm.group(2)))
+        for mm in RE_LINK.finditer(ln):
+            u = mm.group(2).strip()
+            if u:
+                #   ⚠️ **cards 안 링크는 다른 축이다.** 그 블록은 lane B 가 네이티브
+                #      도형으로 다시 그리는데 도형 글자에는 하이퍼링크가 없다 — 본문·표
+                #      링크는 pptx 에 `a:hlinkClick` 으로 살아 복원되므로, 한 축에 섞으면
+                #      멀쩡한 링크까지 같은 실패로 보인다(실측 aTest-all: 3 → 1)
+                in_cards = any(d.startswith("cards") for d in div_stack)
+                e["cards_hyperlink" if in_cards else "hyperlink"].append(u)
         for mm in RE_MATH_D.finditer(ln):
             e["math_display"].append(norm(mm.group(1) or mm.group(2)))
         for mm in RE_MATH_I.finditer(ln):
@@ -416,12 +436,23 @@ def collect(project_dir):
         #   원고 쪽에서도 세지 않는다. `cards_placeholder: true` 면 살아 있다
         synth |= entry_slides(slides)
     agg = collections.defaultdict(list)
+    cards_on = cards_placeholder_on(project_dir)
     for i, s in enumerate(slides):
         if i in synth:
             continue          # 자동 목차 장은 synthesized — 본문 요소로 세지 않는다
+        #   ⚠️ **챕터 진입 장은 통째로 사라진다** (`cards_placeholder: false`).
+        #      HTML 은 `_cards` autoToc 로 바꿔 빼고, pptx 는 `normalize_chapter` 가
+        #      H1 을 지우고 그 자리에 챕터 TOC 장을 만든다 — 그 TOC 장도 synthesized 라
+        #      왕복본에 없다. 그러므로 진입 장 **안의 H2 부제·layout 디렉티브**는
+        #      본문 요소가 아니다. 세면 무손실 선언인데 사라진 것으로 잡힌다
+        #      (실측 aTest-all: `h2_slide_title` −5 · `directive_layout` −5 · 2026-09-19).
+        #      H1 자체는 `h1_chapter`(declared_drop)로 계속 잰다 — 축을 잃지 않는다
+        entry = (not cards_on) and s.get("__h1__")
         for k, v in s.items():
-            if k == "__lv__":
+            if k in ("__lv__", "__h1__"):
                 continue      # 판정용 내부 표식 — 비교 대상이 아니다
+            if entry and k != "h1_chapter":
+                continue
             agg[k] += v
     return fm_all, dict(agg), slides
 

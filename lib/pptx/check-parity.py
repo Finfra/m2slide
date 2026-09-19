@@ -153,6 +153,11 @@ def norm(s):
     s = re.sub(r"\*([^*\n]+)\*", r"\1", s)
     s = re.sub(r"(?<!\w)[*_](?=\S)|(?<=\S)[*_](?!\w)", "", s)
     s = re.sub(r"^[ \t]*>[ \t]?", "", s)
+    #   pandoc 의 smart 확장이 곧은 따옴표를 둥근 것으로 바꾼다(`"` → `“”`, `'` → `‘’`).
+    #   HTML 은 원고 그대로라 **같은 문장이 두 산출물에서 다른 글자**가 된다 — 글자가
+    #   전달됐는지를 묻는 검사에서는 같게 본다(계약 `smart_punctuation` · Issue369).
+    s = s.replace("\u201c", '"').replace("\u201d", '"')
+    s = s.replace("\u2018", "'").replace("\u2019", "'")
     s = re.sub(r"\s+", " ", s).strip()
     return s
 

@@ -1091,12 +1091,19 @@ def main():
     # ⑭ lane S 사이드카 — 원고의 frontmatter 와 슬라이드별 복원 신호.
     #   `lane-s.py` 가 이것을 읽어 **pptx 안에** 심는다. 사이드카 자체는 왕복
     #   검증이 읽지 않는다 — 읽으면 늘 만점이 나오기 때문이다(커닝).
-    fm_src = None
-    for f in srcs:
-        fm = read_frontmatter(f)
-        if fm:
-            fm_src = fm
-            break
+    #   ⚠️ **chapter mode 의 메타 출처는 `AGENDA.md`** 다([md-m2slide-rules] — 챕터
+    #      파일의 frontmatter 는 그 챕터의 것이지 덱의 것이 아니다). 첫 원고부터
+    #      찾으면 챕터 제목이 덱 제목으로 실린다(실측 aTest-all: `aTest-all` 대신
+    #      `변환 경로 커버리지` · 메타 9필드 누락 · 2026-09-19).
+    #      검사기 `check-roundtrip.meta_source()` 가 이미 AGENDA 우선이라 **둘이 갈려
+    #      있었다** — 같은 규칙을 쓰게 맞춘다
+    fm_src = meta or None
+    if not fm_src:
+        for f in srcs:
+            fm = read_frontmatter(f)
+            if fm:
+                fm_src = fm
+                break
     sidecar_s = os.path.join(os.path.dirname(outdir), "lane-s.json")
     with open(sidecar_s, "w", encoding="utf-8") as fp:
         json.dump({"project": os.path.basename(proj),

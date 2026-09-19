@@ -47,6 +47,7 @@ except ImportError:
     sys.exit(2)
 
 MC = "http://schemas.openxmlformats.org/markup-compatibility/2006"
+REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
 P = "http://schemas.openxmlformats.org/presentationml/2006/main"
 SIG_PREFIX = "m2slide:"
 ORNAMENT_TAG = _OT
@@ -87,33 +88,57 @@ def para_math(para):
     return out
 
 
-def run_markup(child, emphasis):
+def run_markup(child, emphasis, links=None):
     """run 하나를 글자로. `b`/`i` 속성을 마크다운 강조로 되돌린다.
 
     ⚠️ **코드블록에서는 하지 않는다.** 문법 하이라이트가 키워드를 bold 로 칠하므로
        그대로 옮기면 코드 안에 `**def**` 가 박힌다(실측: pandoc skylighting 이
        `def`·`return` 을 bold+색으로 낸다).
+
+    하이퍼링크(`a:hlinkClick`)는 `[글자](URL)` 로 되돌린다 — **URL 은 pptx 에 살아
+    있었다**. 실측(aTest-all 2026-09-19): 링크 5개가 pptx 에 온전한데 역변환이 읽지
+    않아 `[m2slide 소개 자료](https://…)` 가 글자만 남았고, `bullets`·`table`·
+    `blockquote` 가 한꺼번에 계약 밖 차이로 잡혔다.
     """
     t = "".join(x.text or "" for x in child.iter("{%s}t" % A))
-    if not emphasis or not t.strip():
+    if not t.strip():
         return t
     pr = child.find("{%s}rPr" % A)
-    if pr is None:
+    #   ⚠️ 링크는 **강조를 안 살리는 자리에서도** 살린다 — 표 셀이 그렇다.
+    #      강조는 `norm()` 이 비교 전에 벗기지만 링크는 안 벗기므로, 한쪽만 갖고
+    #      있으면 그대로 계약 밖 차이가 된다(실측 aTest-all: `table` −4/+4)
+    url = None
+    if links is not None and pr is not None:
+        hl = pr.find("{%s}hlinkClick" % A)
+        if hl is not None:
+            url = links.get(hl.get("{%s}id" % REL))
+    if not emphasis and url is None:
         return t
-    b, i = pr.get("b") == "1", pr.get("i") == "1"
     lead = t[:len(t) - len(t.lstrip())]
     tail = t[len(t.rstrip()):]
     core = t.strip()
-    if b and i:
-        core = "***%s***" % core
-    elif b:
-        core = "**%s**" % core
-    elif i:
-        core = "*%s*" % core
+    if emphasis and pr is not None:
+        b, i = pr.get("b") == "1", pr.get("i") == "1"
+        if b and i:
+            core = "***%s***" % core
+        elif b:
+            core = "**%s**" % core
+        elif i:
+            core = "*%s*" % core
+    if url:
+        core = "[%s](%s)" % (core, url)
     return lead + core + tail
 
 
-def text_with_math(para, emphasis=False):
+def rel_urls(sh):
+    """그 도형이 속한 슬라이드의 **외부 링크** rId → URL."""
+    try:
+        return {rid: r.target_ref for rid, r in sh.part.rels.items() if r.is_external}
+    except Exception:
+        return {}
+
+
+def text_with_math(para, emphasis=False, links=None):
     """문단 텍스트를 수식 자리 표시와 함께 되살린다.
 
     python-pptx 의 `para.text` 는 AlternateContent 를 건너뛰므로 수식이 **사라진
@@ -124,7 +149,7 @@ def text_with_math(para, emphasis=False):
     for child in para._p:
         tag = child.tag.split("}")[-1]
         if tag == "r":
-            parts.append(("t", run_markup(child, emphasis)))
+            parts.append(("t", run_markup(child, emphasis, links)))
         elif tag == "br":
             parts.append(("t", "\n"))
         elif tag == "AlternateContent":
@@ -147,7 +172,13 @@ def text_with_math(para, emphasis=False):
 
 
 def norm_txt(s):
-    """비교용 정규화 — 강조 마크업·공백 요동으로 갈리지 않게 한다."""
+    """비교용 정규화 — 강조 마크업·링크·공백 요동으로 갈리지 않게 한다.
+
+    ⚠️ **링크를 벗기지 않으면 lane S 신호가 어긋난다.** 신호는 원고 글자로 적히는데
+       역변환은 하이퍼링크를 `[글자](URL)` 로 되살리므로, 그 문단만 매칭에 실패해
+       인용 표식이 안 붙었다(실측 aTest-all: `blockquote` −1 · 2026-09-19).
+    """
+    s = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", s or "")
     s = re.sub(r"\*\*\*|\*\*|__|`", "", s or "")
     s = re.sub(r"(?<!\w)[*_](?=\S)|(?<=\S)[*_](?!\w)", "", s)
     return re.sub(r"\s+", " ", s).strip()
@@ -218,14 +249,21 @@ def para_kind(para):
     return "bullet"
 
 
-def cell_text(c):
-    return " ".join(p.text.strip() for p in c.text_frame.paragraphs if p.text.strip())
+def cell_text(c, links=None):
+    """표 셀 → 글자. 링크는 되살린다(강조는 `norm()` 이 벗기므로 평문으로 둔다)."""
+    out = []
+    for para in c.text_frame.paragraphs:
+        t = "".join(run_markup(r, False, links)
+                    for r in para._p.findall("{%s}r" % A)).strip()
+        if t:
+            out.append(t)
+    return " ".join(out)
 
 
-def md_table(tbl):
+def md_table(tbl, links=None):
     rows = []
     for r in tbl.rows:
-        rows.append([cell_text(c) for c in r.cells])
+        rows.append([cell_text(c, links) for c in r.cells])
     if not rows:
         return []
     out = ["| " + " | ".join(rows[0]) + " |",
@@ -238,9 +276,10 @@ def md_table(tbl):
 def shape_lines(sh):
     """텍스트 도형 → (본문 줄, 수식 목록)."""
     lines, maths = [], []
+    links = rel_urls(sh)
     for para in sh.text_frame.paragraphs:
         kind0 = para_kind(para)
-        text, m = text_with_math(para, emphasis=(kind0 != "code"))
+        text, m = text_with_math(para, emphasis=(kind0 != "code"), links=links)
         maths += m
         if m and m[0][0] == "display":
             lines.append(("math_display", m[0][1], 0))
@@ -368,7 +407,7 @@ def convert(pptx_path, outdir, name):
             if sh.name.startswith("Title"):
                 continue
             if sh.has_table:
-                body += [""] + md_table(sh.table)
+                body += [""] + md_table(sh.table, rel_urls(sh))
                 continue
             if st.startswith("PICTURE"):
                 #   테마 장식(가로선·제목 밑줄)은 원고의 일부가 아니다 — lane T 가
@@ -502,6 +541,12 @@ def convert(pptx_path, outdir, name):
                     elif kind == "para":
                         if norm_txt(t) in heads:
                             out += ["", "%s %s" % ("#" * heads[norm_txt(t)], t)]
+                        elif norm_txt(t) in quotes:
+                            #   ⚠️ **불릿 없는 인용**(`> …`)도 여기로 온다. 전에는 이
+                            #      분기에 quotes 조회가 없어 복원 경로가 아예 없었다 —
+                            #      기존 덱이 전부 `* > …`(불릿 안 인용)라 드러나지 않았다
+                            #      (실측 aTest-all: `blockquote` −1 · 2026-09-19)
+                            out += ["", ("* > %s" if quotes[norm_txt(t)] == "b" else "> %s") % t]
                         else:
                             out += ["", t]
                     elif kind == "ordered":
