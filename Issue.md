@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 363
+* Issue HWM: 364
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -64,6 +64,69 @@
 
 
 # 📕 중요
+
+## Issue364: htmlart 노드 본문이 박스에서 조용히 잘린다 — 폭 축 auto-fit 만 있고 높이 축이 없다 (등록: 2026-09-19)
+* 목적: 발주처 prj60 `__lec` 에서 **넘침 경고도 빌드 경고도 없이 글자가 박스 경계에서 잘리는** 증상이 보고됐다. 실측 결과 원인은 4:3 이 아니라 **`titleFsFor` 의 auto-fit 이 "가장 긴 토큰의 폭" 한 축만 보고 총량(줄 수 × 줄높이)을 보지 않는 것**이다. 작성자가 지킬 수 있는 타입별 글자수 상한도 문서화돼 있지 않다. 본 이슈는 **진단·상한 산출까지** 하고 수정은 별도 결정으로 넘긴다
+* 상세 (실측 2026-09-19, ego-browser `scrollHeight` vs `clientHeight`, prj60 `01-day1.html` 62섹션·119 노드박스 전수):
+    - **잘림 지점**: [htmlart_dispatch.client.js](lib/component-hooks/htmlart_dispatch.client.js) `nodeBox` 가 foreignObject 안 div 에 `overflow:hidden` 을 건다(L92-101). foreignObject 자체도 클리핑한다 — **2중 클리핑**이라 밖으로 새지 않고 조용히 사라진다
+    - **박스 크기는 전부 고정값**이다. 내용 기반이 아니다:
+
+      | 타입 | 박스(viewBox 단위) | 소스 |
+      | :--- | :--- | :--- |
+      | `process` | `boxW=196, boxH=230` | [client.js:325](lib/component-hooks/htmlart_dispatch.client.js#L325) |
+      | `numbered` | `cardW=640, cardH=134` | [client.js:852](lib/component-hooks/htmlart_dispatch.client.js#L852) |
+      | `matrix` | `cell=320` (정사각) | [client.js:625](lib/component-hooks/htmlart_dispatch.client.js#L625) |
+
+    - **auto-fit 은 있다 — 다만 폭 축만이다.** `titleFsFor`([client.js:73-79](lib/component-hooks/htmlart_dispatch.client.js#L73))의 `widthCap` 은 `longestTokenEm(title)` 즉 **줄바꿈 불가 단일 토큰 하나**의 폭만 본다(Issue217 이 영문 장단어 클립을 막으려 넣은 것). 한글은 어절이 2~4자라 토큰이 짧아 `widthCap` 이 안 걸리고 폰트가 상한(`min(h*0.30, w*0.21, 44)`)에 그대로 붙는다 → 큰 글자로 여러 줄 wrap → **세로로 넘쳐 잘린다**. 박스 자동 확장·줄 수 기반 축소는 **구현이 없다**
+    - ⚠️ 총량을 재는 헬퍼 [`textEm`](lib/component-hooks/htmlart_dispatch.client.js#L55) 은 **이미 있는데 `titleFsFor` 가 쓰지 않는다** — Issue283 timeline 적응형 박스용으로만 들어갔다. 고칠 재료는 이미 파일 안에 있다
+    - **4:3 이 만든 문제가 아니라 드러낸 문제다.** `slide_ratio` 는 [config.js](lib/config.js)(검증·CSS `aspect-ratio`)와 [html-builder.js](lib/html-builder.js)(덱 컨테이너)까지만 가고 `htmlart_dispatch.client.js` 에 **도달하지 않는다**. 박스·폰트는 전부 viewBox 좌표 상수이고 SVG 는 `viewBox` 만 지정해 스케일되므로 **잘림 임계는 모든 비율에서 동일**하다. 실측에서도 foreignObject `width`/`height` 가 하드코딩값과 정확히 일치했다(`process` 196×230 → `clientHeight` 226 = 230 − 테두리 2×2). 4:3 은 캔버스가 좁아 작성자가 더 긴 문장을 넣게 된 정황일 뿐이다
+    - **prj60 실측 상관관계** (🔴 = `scrollHeight > clientHeight`):
+
+      | 타입 | 노드 | 폰트 | 결과 |
+      | :--- | ---: | ---: | :--- |
+      | `process` 제목만 | 14·16자 | 41px | 정상 |
+      | `process` 제목만 | **17자** | 41px | 🔴 +16px |
+      | `process` 제목+부제 | 8자+24자 | 41/27px | 🔴 +31px |
+      | `process` 제목+부제 | 8자+30자 | 41/27px | 🔴 +67px (최악) |
+      | `numbered` | 31·32·39자 | 40px | 정상 |
+      | `numbered` | **37·44자** | 40px | 🔴 +13px |
+      | `numbered` | **108자** | 37px | 🔴 +52px |
+      | `matrix` | **42~45자** | 44px | 🔴 +6px (빠듯) |
+      | `annotate` | 44자 | 56px | 🔴 +7px |
+
+    - 글자수와 잘림이 **단조 대응하지 않는다**(39자 정상 / 37자 잘림). 어절 길이가 `widthCap` 을 통해 폰트를 바꾸기 때문이다 — 작성자가 육안으로 규칙을 찾을 수 없는 이유이자, 경고가 필요한 이유다
+    - 부수 발견: `uniformTitleFs`([client.js:81](lib/component-hooks/htmlart_dispatch.client.js#L81))는 체인 전체의 **최솟값**을 쓴다. 한 노드에 긴 토큰이 하나 있으면 형제 전부의 폰트가 같이 내려간다 — 의도된 일관성 장치지만 상한 산출 시 노드 단독으로 계산하면 안 된다
+* 구현 명세:
+    - **(즉시 회피 — prj60 이 오늘 쓸 값)** 전형값은 한글 3자 어절 기준, 보수값은 2·3·4자 어절 전수의 최솟값이다. **보수값을 지키면 어떤 문장이어도 안 잘린다**:
+
+      | 타입 | 박스 | 전형(3자 어절) | **보수(권장)** |
+      | :--- | :--- | ---: | ---: |
+      | `process` 제목만 | 196×230 | 16자 | **13자** |
+      | `numbered` | 640×134 | 33자 | **31자** |
+      | `matrix` | 320×320 | 40자 | **27자** |
+
+    - ⚠️ **`process` 에 부제(중첩 항목)를 달면 예산이 급락한다** — 제목 길이가 폰트(41px 고정)를 안 낮추고 줄 수만 늘리기 때문:
+
+      | 제목 | 부제 최대(보수) | 합계 |
+      | ---: | ---: | ---: |
+      | 5~8자 | 14자 | 19~22자 |
+      | 9~12자 | 6자 | 15~18자 |
+      | 13자 이상 | **0자 (부제 불가)** | 13~14자 |
+
+      → 실무 규칙: **`process` 는 제목만 13자 이내로 쓴다.** 부제가 꼭 필요하면 제목 ≤8자 + 부제 ≤14자
+    - 참고로 함께 측정된 타입(전수 정상): `timeline` 300×229 ≤40자 · `callout` 920×150 ≤23자 · `bracket` 250×82 ≤33자. `annotate` 1400×120 은 44자에서 잘림
+    - **해법 후보 A — `titleFsFor` 에 높이(총량) 축 추가** *(권장)*
+        - `textEm(s)` 로 총 폭을 구해 `innerW` 로 나눠 예상 줄 수를 내고, `줄수 × fs × 1.2 ≤ h − padding` 이 될 때까지 `fs` 를 낮추는 `volumeCap` 을 `min(...)` 에 한 항으로 추가. 부제도 같은 방식
+        - 부작용: **긴 노드만 글자가 작아진다.** `volumeCap` 은 지금 넘치는 노드에서만 걸리므로 **정상 노드는 렌더가 1px도 안 바뀐다** → 기존 3:2·16:9 덱 회귀 범위가 "이미 잘려 있던 노드"로 한정된다. [Issue363](#issue363) 의 viewBox 확장이 **정상 도해까지 15% 축소**시킨 것과 성격이 다르다
+        - 한계: 120자급은 `fs` 하한 10px 에 걸려 **여전히 잘린다**. 하한 도달은 후보 C 의 경고로 알려야 한다
+    - **해법 후보 B — 박스 높이를 내용 기반으로(적응형 `boxH`)**
+        - `timeline` 이 Issue283 에서 이미 택한 방식. 최장 노드에 맞춰 `boxH` 를 키우고 `W`/`H` 재계산
+        - 부작용: **viewBox 가 커져 도해 전체가 축소된다** — [Issue363](#issue363) 의 실패 모드 그대로다. 게다가 영향이 잘린 노드에 그치지 않고 **그 도해 전체·모든 비율의 모든 기존 덱**에 미친다. `matrix` 는 `W=H` 정사각 제약이라 높이만 늘리면 배치가 깨진다
+        - 판정: 단독 적용 **비권장**. 하려면 opt-in 속성(ex `{.autofit}`)으로 신규 덱에만
+    - **해법 후보 C — 빌드 타임 경고** *(A 와 함께, 먼저 낼 수 있음)*
+        - 부작용 **없음**(빌드 비차단 경고). 기존 덱 렌더 0 영향. 다만 고쳐주지는 않는다
+    - **(c) 빌드 경고 구현 가능 여부 — 가능하고 난이도 낮다 (반나절)**: [markdown.js:322-328](lib/markdown.js#L322) 의 전처리 루프가 **이미** `::: htmlart` open~close 사이 전 줄을 순회하며 top-level `*` 를 세고 있다(`--htmlart-n`). 같은 루프에서 `lines[j]` 글자수를 재고 타입별 상한과 대조해 `console.warn` 하면 끝 — 새 파싱이 필요 없다. 상한 SSOT 는 [types.yml](data/htmlart/types.yml) `min_nodes` 옆에 `max_chars` 로 얹는다. 정밀 판정(어절 기반)은 A 의 `volumeCap` 공식을 빌드 측에서 재사용하면 렌더와 판정이 갈리지 않는다
+    - ⚠️ **조용한 잘림이 이 문제의 본질이다.** A 만 넣고 C 를 빼면 하한 도달 케이스가 다시 무경고로 잘린다 — A·C 를 한 이슈에서 함께 낼 것
 
 # 📙 일반
 
