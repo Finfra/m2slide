@@ -83,6 +83,11 @@ RE_QUOTE = re.compile(r"^[ \t]*>[ \t]?(.*?)[ \t]*$")
 RE_TABLE = re.compile(r"^[ \t]*\|.*\|[ \t]*$")
 RE_ATTR = re.compile(r"\{\.[a-zA-Z][\w .-]*\}")
 RE_SYMBOL = re.compile(r":fa-[\w-]+:")
+#   인라인 강조 — 종류를 값에 붙인다(`b:`/`i:`/`c:`). 텍스트만 넣으면 **강조가 풀려도**
+#   같은 값이라 축이 아무것도 재지 않는다
+RE_EMPH = [("b", re.compile(r"\*\*([^*\n]+)\*\*")),
+           ("i", re.compile(r"(?<!\*)\*([^*\n]+)\*(?!\*)")),
+           ("c", re.compile(r"`([^`\n]+)`"))]
 RE_SLOT_RIGHT = re.compile(r"^[ \t]*::right::[ \t]*$")
 RE_MATH_D = re.compile(r"\$\$(.+?)\$\$|\\\[(.+?)\\\]", re.S)
 RE_MATH_I = re.compile(r"\\\((.+?)\\\)", re.S)
@@ -334,6 +339,14 @@ def scan(lines):
             e["inline_fragment"].append(mm.group(0))
         for mm in RE_SYMBOL.finditer(ln):
             e["inline_symbol"].append(mm.group(0))
+        #   ⚠️ 계약에 `inline_emphasis` 가 선언돼 있는데 **여기서 만들지 않았다** —
+        #      원고에 `**굵게**` 가 아무리 많아도 0 이었다(실측 aTest-all 12건).
+        #      Issue358 의 `font_outside_theme` 과 같은 형태의 사각지대다 (Issue369)
+        for tag, pat in RE_EMPH:
+            for mm in pat.finditer(ln):
+                t = norm(mm.group(1))
+                if t:
+                    e["inline_emphasis"].append("%s:%s" % (tag, t))
 
         mdrop = RE_DROP_NOTE.match(ln)
         if mdrop:
@@ -458,6 +471,13 @@ def collect(project_dir):
             if entry and k != "h1_chapter":
                 continue
             agg[k] += v
+    #   ── 순서 축 — 계약의 `slide_order` 를 **실제로 잰다** (Issue369)
+    #      전에는 계약에 선언만 있고 `scan()` 이 만들지 않아 원고에 아무리 장이
+    #      많아도 0 이었다. 제목 시퀀스의 **인접 쌍**을 값으로 쓴다 — 순번을 그대로
+    #      쓰면 앞에서 장 하나가 빠질 때 뒤가 전부 밀려, 순서가 멀쩡한데도 전건
+    #      불일치로 보인다. 쌍이면 빠진 자리 근처만 달라진다
+    seq = [t for t in agg.get("h2_slide_title", []) if t]
+    agg["slide_order"] = ["%s→%s" % (a, b) for a, b in zip(seq, seq[1:])]
     return fm_all, dict(agg), slides
 
 
