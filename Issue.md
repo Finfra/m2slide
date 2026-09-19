@@ -32,7 +32,26 @@
 
 # 📙 일반
 
-## Issue386: `6.roundtrip igTest` — pptx 에 없는 글자 6종. **part 라벨은 선언, `version_badge` 는 배선 누락** (등록: 2026-09-20)
+## Issue387: 폰트 family 지정이 vendor 미러 웹폰트로 사실상 한정된다 — 제한 완화 + 용량 가드레일 (등록: 2026-09-20)
+* 목적: 사용자 지시(2026-09-20) — *"웹폰트로만 제한하지 말 것. 포털처럼 응답속도가 빠른 사이트가 아님. 단 너무 큰 폰트는 가드레일에서 걸를 것."* 지금은 쓸 수 있는 폰트가 `lib/vendor/` 에 미러된 구글폰트로 좁혀져 있다. 그 제한을 풀되 **과대 폰트 자산은 차단**한다
+* 카테고리: Asset
+* 상세:
+    - 현황 실측(2026-09-20): `lib/vendor/` **21M** · woff2 **119** · woff **23** · **ttf 0 · otf 0**. [fetch-vendor.js](lib/vendor/fetch-vendor.js#L101) 가 받은 뒤 `.ttf` 를 지운다(주석: *"repo 용량 절감"*)
+    - ⚠️ **용량 절감이 최우선이던 전제가 사용자 판단으로 바뀌었다** — 이 저장소의 산출물은 포털이 아니라 강의 덱이고, 몇 MB 가 응답속도를 좌우하지 않는다
+    - 상호작용 주의 — 폰트 family 를 넓히면 두 판정이 함께 움직인다: [check-visual.py](lib/pptx/check-visual.py) 의 `font_outside_theme` 축(allowlist = pptx 테마 major/minor)과 [3.parity.sh](z_test/ig-ppt/3.parity.sh) ⑥(테마 밖 폰트 0). **정책을 allowlist 로 쓰면 그것이 곧 whitelisting** 이라 그 축이 무력해진다(그 경계는 이미 한 번 다퉜다)
+* 구현 명세:
+    - ① **지정 경로를 연다** — theme·`_config.yml` 에서 vendor 미러 밖 family 를 지정할 수 있게 하고, 그 family 가 vendor 에 없으면 **시스템 폰트로 해석**한다(없으면 브라우저 대체 — 그것이 정상 동작임을 문서에 박는다)
+    - ② **용량 가드레일** — 상한값은 현황 실측으로 산정하고 근거를 이슈에 남긴다(사용자 위임 2026-09-20). 형태는 *"받는 단계에서 경고하고 보존 · 검사 단계에서 상한 초과를 단언"* 을 기본으로 한다 — 조용히 버리면 *"어떤 폰트가 없는지"* 가 비밀이 된다
+    - ③ `font_outside_theme`·`3.parity` ⑥ 의 판정을 **재정의**한다. 열린 family 를 통과시키되 *"아무 폰트나 통과"* 가 되지 않는 경계를 세운다
+    - ④ 문서 — `repo-tracking-rules.md` 의 *"woff2/woff만 보관(.ttf 제외)"* 조항 · `css.md`/`theme.md` 의 폰트 절 · `m2slide-identity.md` 의 *"외부 의존 0"* 과의 관계(시스템 폰트는 로컬 자원이라 외부 의존이 아니다)
+    - 검증: 시스템 폰트 지정 덱이 빌드·렌더되고 · 상한 초과 자산이 가드레일에 걸리며 · `3.parity` ⑥ 과 `--lint-deployment` 가 기존 덱에서 불변
+
+
+# 📗 선택
+
+# ✅ 완료
+
+## Issue386: `6.roundtrip igTest` — pptx 에 없는 글자 6종. **part 라벨은 선언, `version_badge` 는 배선 누락** (등록: 2026-09-20, 해결: 2026-09-20, commit: `1abf08d`, `2207101`) ✅
 * 목적: 왕복 검사가 `Chapter 1.`~`Chapter 5.` · `v0.8.0` 을 *"pptx 에 없는 글자"* 로 잡는다. 실측으로 가르니 **성격이 둘로 갈린다** — 앞 5건은 의도된 드롭이라 계약에 선언할 일이고, `v0.8.0` 은 **표지 코너 슬롯 배선이 빠진 것**이라 고쳐야 한다
 * 카테고리: Build
 * 상세 (실측 2026-09-20 · igTest):
@@ -53,25 +72,13 @@
     - ② `version_badge` → lane T 추출에 `cover-tr` 을 더하고 **우상단 좌표를 그것에 준다**. `version`(VERSION 파일)은 HTML `cover-meta` 자리를 실측해 좌표를 신설한다 — 두 값이 겹치지 않게
     - ⚠️ 좌표는 **HTML computed style 실측**으로 얻는다(Issue379 와 같은 절차). reveal `transform: scale()` 적용 후 값을 그대로 쓰면 틀린다
     - 검증: `6.roundtrip igTest` **통과** · `3.parity` 3덱 7/7 불변 · 표지 텍스트에 `v0.8.0`·`1.0` 둘 다 존재 · `7.coverage` 새 🔴/❌ 0
-
-## Issue387: 폰트 family 지정이 vendor 미러 웹폰트로 사실상 한정된다 — 제한 완화 + 용량 가드레일 (등록: 2026-09-20)
-* 목적: 사용자 지시(2026-09-20) — *"웹폰트로만 제한하지 말 것. 포털처럼 응답속도가 빠른 사이트가 아님. 단 너무 큰 폰트는 가드레일에서 걸를 것."* 지금은 쓸 수 있는 폰트가 `lib/vendor/` 에 미러된 구글폰트로 좁혀져 있다. 그 제한을 풀되 **과대 폰트 자산은 차단**한다
-* 카테고리: Asset
-* 상세:
-    - 현황 실측(2026-09-20): `lib/vendor/` **21M** · woff2 **119** · woff **23** · **ttf 0 · otf 0**. [fetch-vendor.js](lib/vendor/fetch-vendor.js#L101) 가 받은 뒤 `.ttf` 를 지운다(주석: *"repo 용량 절감"*)
-    - ⚠️ **용량 절감이 최우선이던 전제가 사용자 판단으로 바뀌었다** — 이 저장소의 산출물은 포털이 아니라 강의 덱이고, 몇 MB 가 응답속도를 좌우하지 않는다
-    - 상호작용 주의 — 폰트 family 를 넓히면 두 판정이 함께 움직인다: [check-visual.py](lib/pptx/check-visual.py) 의 `font_outside_theme` 축(allowlist = pptx 테마 major/minor)과 [3.parity.sh](z_test/ig-ppt/3.parity.sh) ⑥(테마 밖 폰트 0). **정책을 allowlist 로 쓰면 그것이 곧 whitelisting** 이라 그 축이 무력해진다(그 경계는 이미 한 번 다퉜다)
-* 구현 명세:
-    - ① **지정 경로를 연다** — theme·`_config.yml` 에서 vendor 미러 밖 family 를 지정할 수 있게 하고, 그 family 가 vendor 에 없으면 **시스템 폰트로 해석**한다(없으면 브라우저 대체 — 그것이 정상 동작임을 문서에 박는다)
-    - ② **용량 가드레일** — 상한값은 현황 실측으로 산정하고 근거를 이슈에 남긴다(사용자 위임 2026-09-20). 형태는 *"받는 단계에서 경고하고 보존 · 검사 단계에서 상한 초과를 단언"* 을 기본으로 한다 — 조용히 버리면 *"어떤 폰트가 없는지"* 가 비밀이 된다
-    - ③ `font_outside_theme`·`3.parity` ⑥ 의 판정을 **재정의**한다. 열린 family 를 통과시키되 *"아무 폰트나 통과"* 가 되지 않는 경계를 세운다
-    - ④ 문서 — `repo-tracking-rules.md` 의 *"woff2/woff만 보관(.ttf 제외)"* 조항 · `css.md`/`theme.md` 의 폰트 절 · `m2slide-identity.md` 의 *"외부 의존 0"* 과의 관계(시스템 폰트는 로컬 자원이라 외부 의존이 아니다)
-    - 검증: 시스템 폰트 지정 덱이 빌드·렌더되고 · 상한 초과 자산이 가드레일에 걸리며 · `3.parity` ⑥ 과 `--lint-deployment` 가 기존 덱에서 불변
-
-
-# 📗 선택
-
-# ✅ 완료
+* 결과 — **세 가지가 겹쳐 있었다.** `6.roundtrip igTest` 가 **rc0 통과**:
+    - ① **표지 우상단 코너 배선 누락** — `cover-tr`(`version_badge`)이 [lane-t.py](lib/pptx/lane-t.py#L118) 추출에 **없었다.** 그래서 빈 우상단 좌표를 중앙 메타의 `version` 이 차지했고, 🔑 **자리와 내용이 어긋났다**(pptx 우상단 `1.0` ↔ HTML 우상단 `v0.8.0`). 좌표는 그대로 쓴다 — 기존 `version` 좌표의 우변 1824 가 실측(tr l 1787 + w 37)과 **일치**한다. 값 선택만 `corner_tr or version` 으로 고쳤다
+    - 🔑 **판정을 새로 만들지 않았다 — 테마가 이미 정해 뒀다.** `slide.css:857` 의 `:has(.cover-tr:not(:empty)) … .cover-version { display: none }` 즉 *"version_badge 가 있으면 version 은 중복이라 숨긴다"*. HTML 이 정본이므로 pptx 도 같은 규칙을 쓴다
+    - ② **화면에 없는 글자를 빠짐으로 세고 있었다** — 위 규칙으로 숨겨지는 `cover-version` 을 정적 HTML 파싱이 *"HTML 에 있다"* 로 셌다. `aside class="notes"`(발표자 노트)를 제외하는 **선례와 같은 취지**로 파서에서 건너뛴다. 코너가 비어 이것이 보이는 덱에서는 pptx 도 같은 자리에 넣으므로 제외해도 빠짐이 생기지 않는다
+    - ③ **`declared_drop` 선언만으로는 아무것도 바뀌지 않았다** — 두 곳이 그 선언을 몰랐다. `declared_drop_texts()` 는 `fidelity.yml` 을 읽지 않고 **원고 패턴으로** 모으므로(mermaid·raw HTML 과 같은 방식) part 블록 수집을 더했고, `collect()` 는 `::: part` 를 `div_other` 에 섞어 담아 **`7.coverage` 가 *"계약은 선언했는데 검사기가 안 재는 축"* 으로 잡았다** → 전용 축으로 분리
+    - 🔑 **`7.coverage` 가 제 일을 했다** — 계약에 항목을 더하자마자 🔴 로 잡았다. 그 러너가 없으면 *"선언은 했는데 아무도 재지 않는 축"* 이 조용히 늘어난다(apply-verify-rules §4.10 이 세운 목적 그대로)
+    - **검증** — `6.roundtrip` igTest **rc0**(*"HTML 의 글자가 pptx 에 전부 있다"*) · aTest·aTest-all·m2Slide_chapter_mode ✅ · `3.parity` 3덱 7/7 · `4.laneb` 6/6 · `5.lanem` ✅ · `8.assembly` 통과 · **`7.coverage` 미측정 축 0**(`part_label` 2덱에서 5건씩) · 표지 텍스트에 `v0.8.0` 존재
 
 ## Issue382: pptx **패키지 조립 무결성** 검사 부재 — 글로벌 `check-assembly` 배선 (등록: 2026-09-20, 해결: 2026-09-20, commit: `bfb73be`) ✅
 * 목적: lane B/G/M/S/T 가 pptx 의 XML part·rel 을 **손으로 끼우는데**, 그 조립이 온전한지 재는 검사가 하나도 없다. 글로벌 [`check-assembly.py`](~/.claude/skills/ppt-check/scripts/check-assembly.py) 를 **배선만** 해서 그 축을 덮는다.
