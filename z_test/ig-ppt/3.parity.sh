@@ -69,6 +69,7 @@ fi
 echo "── 검증: $PPTX ↔ $PDIR/slide/*.html"
 python3 - "$PROJ" "$PDIR" "$PPTX" <<'PY'
 import html as H
+import json
 import os
 import re
 import subprocess
@@ -85,7 +86,13 @@ SLIDE_DIR = os.path.join(PDIR, "slide")
 CONFORM = os.path.expanduser("~/.claude/skills/ppt-check/scripts/check-conform.py")
 
 fails = []           # 실패한 단언의 이름만 모은다 — 전부 재고 나서 한 번에 보고한다
+skips = []           # 전제가 성립하지 않아 건너뛴 축 — **통과로 세지 않는다**
 def ok(tag, msg):    print("  ✅ %s %s" % (tag, msg))
+# 대조 전제가 성립하지 않는 축 — 실패로도 통과로도 세지 않고 **사유를 남긴다**.
+#   통과로 세면 거짓 안심이고 실패로 세면 고칠 것이 없는 빨간불이 된다 (Issue374).
+def skip(tag, msg):
+    print("  ⏭️  %s %s" % (tag, msg))
+    skips.append(tag)
 def no(tag, name, msg):
     print("  ❌ %s %s" % (tag, msg))
     fails.append(name)
@@ -157,7 +164,31 @@ if os.path.exists(index_html):
         if "layout-_cover" in s[:300]:
             has_cover, cover_title = True, sec_title(s); break
 has_agenda = os.path.exists(os.path.join(SLIDE_DIR, "agenda.html"))
-n_prologue = (1 if has_cover else 0) + (1 if has_agenda else 0)
+
+# 생성 장 예산 — **숫자를 박지 않고 pptx 가 스스로 적은 표식에서 센다** (Issue374).
+#   정본: _doc_arch/pptx-parity-design.md 「장 구성 — 무엇이 몇 장이 되나」
+#   구 구현은 `has_cover + has_agenda` 로 **둘만** 셌다. 그런데 정방향은 chapter mode
+#   에서 덱 전체 목차(`deck_toc`)를 한 장 더 만들고 그것도 fidelity.yml 에
+#   `synthesized` 로 선언돼 있다 → 기대값이 1 모자라 ① 이 42 ↔ 41 로 실패했다.
+#   ⚠️ `chapter_toc` 는 더하지 않는다 — HTML 챕터 안에도 있어 본문 계수에 이미 잡힌다.
+BUDGET_SYNTH = ("deck_toc", "agenda")   # HTML 챕터 본문에 대응이 없는 생성 장
+lane_s_path = os.path.join(PDIR, "_pipeline", "pptx", "lane-s.json")
+synth_marks, entry_marks, lane_s_ok = {}, 0, False
+if os.path.exists(lane_s_path):
+    try:
+        with open(lane_s_path, encoding="utf-8") as fp: _ls = json.load(fp)
+        for _sl in _ls.get("slides", []):
+            for _t in (_sl.get("synth") or []):
+                synth_marks[_t] = synth_marks.get(_t, 0) + 1
+            if "chapter" in (_sl.get("layout") or []): entry_marks += 1
+        lane_s_ok = True
+    except Exception:
+        lane_s_ok = False
+if lane_s_ok:
+    n_prologue = (1 if has_cover else 0) + sum(synth_marks.get(t, 0) for t in BUDGET_SYNTH)
+else:
+    # 표식 없는 pptx(외부 산출 등) — 구 휴리스틱으로 폴백한다
+    n_prologue = (1 if has_cover else 0) + (1 if has_agenda else 0)
 
 # ── PPTX 파싱 ─────────────────────────────────────────────────────────────
 prs = Presentation(PPTX)
@@ -192,8 +223,17 @@ ptitles = [ptitle(s) for s in slides]
 players = [s.slide_layout.name for s in slides]
 
 # ── ① slide-count ─────────────────────────────────────────────────────────
+# ⚠️ 챕터 HTML 이 하나도 없으면(single mode — 본문이 `index.html` 안에 있다)
+#    `html_body` 가 0 이라 기대값 자체가 성립하지 않는다. 구 구현은 그 상태에서
+#    ①을 "0장 기대" 로 실패시키고 ③은 대조 대상이 없어 **조용히 통과**시켰다 —
+#    한 덱에서 두 판정이 엇갈리는 거짓 신호다. 대조 불가를 명시하고 건너뛴다.
+#    🚧 single mode 본문 대조 지원은 별건 (`index.html` 을 본문으로 읽어야 한다).
+single_no_chapters = (len(chapters) == 0)
 want = html_body + n_prologue
-if len(slides) == want:
+if single_no_chapters:
+    skip("①", "챕터 HTML 0개 — single mode 로 보인다(본문이 index.html 안). "
+               "pptx %d장 ↔ HTML 본문 대조 불가" % len(slides))
+elif len(slides) == want:
     ok("①", "슬라이드 %d장 = HTML 본문 %d + 구조 %d" % (len(slides), html_body, n_prologue))
 else:
     no("①", "slide-count",
@@ -216,56 +256,83 @@ else:
 #   HTML  = [챕터 H1, 챕터 TOC]        pptx = [Section Header(챕터명), 챕터 TOC(H1)]
 # 이는 Issue329 에서 의도해 수렴시킨 매핑이라 쌍 내부 순서는 집합으로 본다.
 # 본문 장은 순서까지 정확히 일치해야 한다 — 거기서 어긋나면 장이 밀렸거나 사라진 것이다.
-seg_start = [i for i, l in enumerate(players) if l == "Section Header"]
-if len(seg_start) != len(chapters):
-    no("③", "title-parity",
-       "Section Header %d개 ≠ 챕터 %d개 — 챕터 경계가 무너져 제목 대조 불가"
-       % (len(seg_start), len(chapters)))
+# 챕터 경계 — **`Section Header` 개수로 찾지 않는다** (Issue374).
+#   그 layout 은 제목만 담으므로 현행 진입 장(`## 부제 + 목록`)은 구조가 맞지 않아
+#   `Title and Content` 로 나온다. 실측 igTest 는 챕터 5개인데 Section Header 0개다.
+#   layout 이름은 구조가 고르는 **결과값**이지 계약이 아니다 — 경계는 AGENDA 챕터
+#   순서와 각 챕터의 HTML 장수로 자른다. 정본: pptx-parity-design.md 「장 구성」
+bad = []
+body_titles = [t or "" for t in ptitles[n_prologue:]]
+cursor = 0
+if single_no_chapters:
+    skip("③", "챕터 HTML 0개 — 제목 순차 대조 불가 (single mode)")
+    chapters_for_parity = []
 else:
-    bad = []
-    bounds = seg_start + [len(slides)]
-    for ci, (hsec, cname) in enumerate(zip(html_chapters, [c[0] for c in chapters])):
-        seg = [t or "" for t in ptitles[bounds[ci]:bounds[ci + 1]]]
-        hk, pk = [key(t) for t in hsec], [key(t) for t in seg]
-        if len(hk) < 2 or len(pk) < 2:
-            bad.append("%s: 진입 2장 미형성 (HTML %d · pptx %d)" % (cname, len(hk), len(pk))); continue
-        if sorted(hk[:2]) != sorted(pk[:2]):
-            bad.append("%s: 진입쌍 %s ≠ %s" % (cname, hk[:2], pk[:2]))
-        if hk[2:] != pk[2:]:
-            for j, (a, b) in enumerate(zip(hk[2:], pk[2:])):
-                if a != b:
-                    bad.append("%s: %d번째 본문 '%s' ≠ '%s'" % (cname, j + 1, a, b)); break
-            else:
-                bad.append("%s: 본문 장수 HTML %d ≠ pptx %d" % (cname, len(hk) - 2, len(pk) - 2))
+    chapters_for_parity = list(zip(html_chapters, [c[0] for c in chapters]))
+for hsec, cname in chapters_for_parity:
+    seg = body_titles[cursor:cursor + len(hsec)]
+    cursor += len(hsec)
+    hk, pk = [key(t) for t in hsec], [key(t) for t in seg]
+    if len(pk) < len(hk):
+        bad.append("%s: pptx 장 부족 (HTML %d · pptx %d)" % (cname, len(hk), len(pk))); continue
+    # 진입 2장은 HTML 과 **순서가 뒤집혀 있다**(HTML=[챕터 H1, 챕터 TOC] ·
+    #   pptx=[챕터명, H1]). Issue329 에서 의도해 수렴시킨 매핑이라 쌍 내부는 집합으로 본다.
+    head = 2 if len(hk) >= 2 else 0
+    if head and sorted(hk[:head]) != sorted(pk[:head]):
+        bad.append("%s: 진입쌍 %s ≠ %s" % (cname, hk[:head], pk[:head]))
+    if hk[head:] != pk[head:]:
+        for j, (a, b) in enumerate(zip(hk[head:], pk[head:])):
+            if a != b:
+                bad.append("%s: %d번째 본문 '%s' ≠ '%s'" % (cname, j + 1, a, b)); break
+        else:
+            bad.append("%s: 본문 장수 HTML %d ≠ pptx %d" % (cname, len(hk) - head, len(pk) - head))
+if chapters_for_parity:
+    if cursor != len(body_titles):
+        bad.append("본문 구간 %d장 ≠ 챕터 합 %d장 — 장이 밀렸다" % (len(body_titles), cursor))
     if bad:
         no("③", "title-parity", "제목 불일치 %d건 — %s" % (len(bad), " / ".join(bad[:3])))
     else:
-        ok("③", "제목 문자열·순서 일치 (챕터 %d · 본문 %d장)" % (len(chapters), html_body - 2 * len(chapters)))
+        ok("③", "제목 문자열·순서 일치 (챕터 %d · 본문 %d장)"
+           % (len(chapters), len(body_titles)))
 
 # ── ④ structure-slides ────────────────────────────────────────────────────
 prob = []
 if has_cover:
     if not ptitles or key(ptitles[0] or "") != key(cover_title):
         prob.append("표지 제목 '%s' ≠ HTML cover '%s'" % (ptitles[0] if ptitles else None, cover_title))
-if has_agenda:
-    # 목차 장은 제목이 아니라 **구조 표식**이다(build-source 가 유일하게 짓는 문자열).
-    # 앞머리 구조 구간 안에서만 찾는다 — 본문에 같은 제목이 있어도 그건 목차 장이 아니다.
-    agenda_i = next((i for i in range(min(n_prologue, len(slides)))
-                     if key(ptitles[i] or "") == "목차"), None)
-    if agenda_i is None:
-        prob.append("목차 장 없음 (앞 %d장에 '목차' 제목 부재)" % n_prologue)
-    else:
-        lines = [key(x) for x in "\n".join(texts(slides[agenda_i].shapes)).split("\n")]
+# 생성 장은 제목이 아니라 **구조 표식**이다 — 표식이 선언한 것이 실제로 있는지 본다.
+#   `deck_toc` 제목은 `목차` · `agenda` 제목은 `Agenda` 로 고정이다(build-source 가
+#   짓는 유일한 문자열). 앞머리 구조 구간 안에서만 찾는다 — 본문에 같은 제목이 있어도
+#   그건 생성 장이 아니다.
+#   ⚠️ 제목 대조는 **대소문자를 무시한다** — 계약값은 `Agenda`(fidelity.yml `agenda_slide`)
+#      인데 표식 이름은 소문자 `agenda` 라 그대로 비교하면 있는 장을 없다고 판정한다.
+SYNTH_TITLE = {"deck_toc": "목차", "agenda": "Agenda"}
+def kf(t): return key(t).casefold()
+head_keys = [kf(ptitles[i] or "") for i in range(min(n_prologue, len(slides)))]
+for mark, want_title in SYNTH_TITLE.items():
+    n_mark = synth_marks.get(mark, 0) if lane_s_ok else (1 if (mark == "agenda" and has_agenda) else 0)
+    if not n_mark: continue
+    if kf(want_title) not in head_keys:
+        prob.append("%s 장 없음 (앞 %d장에 '%s' 제목 부재)" % (mark, n_prologue, want_title))
+        continue
+    if mark == "deck_toc":   # 덱 전체 목차는 챕터명을 모두 담아야 한다
+        ti = head_keys.index(kf(want_title))
+        lines = [key(x) for x in "\n".join(texts(slides[ti].shapes)).split("\n")]
         missing = [c for c, _ in chapters if c and key(c) not in lines]
         if missing:
             prob.append("목차 장에 챕터 누락: %s" % missing[:3])
-if len(seg_start) != len(chapters):
-    prob.append("Section Header %d ≠ 챕터 %d" % (len(seg_start), len(chapters)))
+# 챕터 진입 장은 **세어 보고만 한다 — 단언하지 않는다.**
+#   있어야 하는 수는 `cards_placeholder` 와 **챕터별 명시 `#layout-*` 유무**로 갈리고,
+#   그 둘은 챕터마다 다를 수 있다(실측 aTest-all: 챕터 6 중 진입 장 5 — 01 챕터만
+#   명시 layout 이 없다). 그래서 *"챕터 수와 같아야 한다"* 도 *"0 이거나 전부"* 도
+#   성립하지 않는다. 진입쌍이 실제로 어긋났는지는 ③ 의 제목 순차 대조가 이미 잡는다.
 if prob:
     no("④", "structure-slides", "구조 슬라이드 — " + " / ".join(prob))
 else:
-    ok("④", "구조 슬라이드 %d장 (표지 %d · 목차 %d · 챕터 진입 %d)"
-       % (n_prologue + len(seg_start), int(has_cover), int(has_agenda), len(seg_start)))
+    ok("④", "구조 슬라이드 %d장 (표지 %d · 생성 %s · 챕터 진입 %d)"
+       % (n_prologue + entry_marks, int(has_cover),
+          "+".join("%s×%d" % (k, v) for k, v in sorted(synth_marks.items())) or "0",
+          entry_marks))
 
 # ── ⑤ markdown-leak ───────────────────────────────────────────────────────
 # 렌더 텍스트에서만 찾는다. 패턴은 m2slide 고유 문법으로 좁혔다 — `-->` 처럼
@@ -334,7 +401,14 @@ else:
 
 print()
 if fails:
-    print("[3.parity] 실패 %d/7 — %s" % (len(fails), ", ".join(fails)))
+    print("[3.parity] 실패 %d/7%s — %s"
+          % (len(fails), (" · 건너뜀 %d" % len(skips)) if skips else "", ", ".join(fails)))
     sys.exit(1)
-print("[3.parity] 통과 7/7 — %s" % PPTX)
+# skip 을 통과로 세지 않는다 — aTest(single mode)에서 ①③ 이 건너뛰였는데 "7/7" 로
+#   보고하면 대조하지 않은 축을 검증한 것으로 읽힌다 (Issue374).
+if skips:
+    print("[3.parity] 통과 %d/7 · 건너뜀 %d (%s) — %s"
+          % (7 - len(skips), len(skips), ", ".join(skips), PPTX))
+else:
+    print("[3.parity] 통과 7/7 — %s" % PPTX)
 PY
