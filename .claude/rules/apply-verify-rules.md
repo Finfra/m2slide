@@ -299,7 +299,7 @@ file:///<abs_path>/Projects/{Name}/slide/{chapter}.html?fwd=1#/N
 
 * 실측: `page.screenshot()` 과 `cdp("Page.captureScreenshot")` 이 **전 옵션에서 15초 CDP 타임아웃**. 3회 재시도(45초) · `fromSurface:false` · viewport override 유무를 갈라 **6회 연속 실패, 성공 0회**. ego lite 는 GUI 로 정상 실행 중이었으므로 **앱 부재가 원인이 아니다**
 * 근거 조항: 글로벌 [browser-engine-rules](~/.claude/rules/browser-engine-rules.md) 의 *"ego 재시도가 반복 실패해 실측으로 현저히 느릴 때"*. 속도 선호·습관이 아니라 **실측된 불가**라서 예외가 성립한다 — 게이트가 물으면 이 줄을 근거로 답한다
-* ⚠️ **잠정 우회이며 원인은 아직 규명되지 않았다.** 글로벌 ego 자산의 문제이므로 `~/.claude/Issue.md` 로 추적하고, 원인이 잡히면 캡처도 ego 로 되돌린다. *"캡처는 원래 Playwright"* 로 굳히지 말 것
+* ⚠️ **잠정 우회이며 원인은 아직 규명되지 않았다.** 글로벌 ego 자산의 문제이므로 **글로벌 Issue653**(`~/.claude/Issue.md`) 으로 추적 중이고, 원인이 잡히면 캡처도 ego 로 되돌린다 — 되돌릴 곳까지 그 이슈에 적어 두었다. *"캡처는 원래 Playwright"* 로 굳히지 말 것
 * **캡처가 아닌 축을 캡처로 대신하지 말 것** — 구조·텍스트·스타일 판정은 `evaluate()` 가 더 정확하고 빠르다. Playwright 로 넘어가는 유일한 사유는 *"사람이 볼 PNG 가 필요하다"* 뿐이다
 * 경로 의무는 그대로 [capture-output-rules](capture-output-rules.md) — `_doc_work/capture/` 하위
 * 재실측 절차(예외 해제 판정): 위 실측을 그대로 1회 돌려 `page.screenshot({path})` 가 1초 내 성공하면 예외를 거두고 본 절을 삭제한다

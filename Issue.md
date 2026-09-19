@@ -52,7 +52,7 @@
     - `capture-output-rules` 트리거를 엔진 중립으로 일반화, ego `page.screenshot({path})` 예시 추가
     - `open-slide` `--verify` 를 ego 진입 + CDP console 수집으로 교체, 캡처만 예외 표기
     - `slide-compare` Step 5 · `slide-tuner` Step 7 은 산출물이 *"사람이 대조할 PNG"* 라 예외 유지하되 **근거와 해제 조건을 명시**
-    - ⚠️ 캡처 예외는 **잠정**이다 — 원인 미규명. 글로벌 ego 자산 문제이므로 `~/.claude/Issue.md` 추적 대상(별도 등록)
+    - ⚠️ 캡처 예외는 **잠정**이다 — 원인 미규명. 글로벌 ego 자산 문제이므로 **글로벌 Issue653** 으로 추적(사용자 승인 후 등록 완료). 연관 문서 오류는 **글로벌 Issue652**(web-auto 의 ego API 예시가 현행과 불일치)
 
 ## Issue376: exercise 계열 레이아웃에 표가 있으면 제목이 슬롯에서 사라진다 (등록: 2026-09-19, 해결: 2026-09-19, commit: `dcd9338`) ✅
 * 목적: `layout-exercise`·`layout-exercise-small` 슬라이드에 표가 들어가면 `exercise-title` 슬롯이 비어 제목이 본문으로 밀리고, agenda TOC 에도 「슬라이드 N」 으로만 뜬다. 실습 장에서 제목은 수강생이 지금 무엇을 하는지 가리키는 신호라 비면 안 된다
