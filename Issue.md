@@ -25,6 +25,8 @@
 
 # 🌱 이슈후보
 
+1. htmlart callout 허브 라벨이 6px 넘친다 — `m2Slide_visual_component` 5장 30번("바이브 코딩으로 쉽고, 빠르게, 정확하게"). Issue370 전덱 스캔에서 유일하게 남은 넘침이며 annotate 와 무관한 별건. Issue364 의 `fitFsFor` 를 callout 허브에도 적용할지 판단 필요
+
 # 🚧 진행중
 
 ## Issue374: 챕터 진입 장의 정본을 세우고 러너를 그것에 맞춘다 (등록: 2026-09-19)
@@ -71,42 +73,6 @@
     - 종료 조건: ①~④ 가 문서·코드에 반영되고 `--lint-data` 가 통과하며, 신규 술어를 실제로 쓰는 룰이 최소 1건 등록된다
 * ⚠️ **본 이슈는 등록까지만 수행했다** (사용자 지시 2026-09-19 — "등록만 하고 구현은 하지 말 것"). 착수 전 ③ 의 설계 판정을 먼저 사용자와 확인한다
 
-## Issue370: htmlart annotate 라벨이 target 본문 글자 위로 올라탄다 — 라벨 x 가 상수라 거터 예약이 없다 (등록: 2026-09-19)
-* 목적: 발주처 prj60 `__lec` 에서 주해 라벨이 target 글자 위에 겹쳐 그려진다는 보고. 발주처가 문장을 3차에 걸쳐 줄였으나(44자 → 26자 → 22자) **22자에서도 양쪽 64px 씩 겹쳤다.** 진단 결과 원인은 문장 길이가 아니라 **라벨 x 좌표가 target 과 무관한 상수**이고 target 텍스트 박스가 viewBox 전폭을 쓰는 것이다. 본 이슈는 **진단·상한 산출까지** 하고 수정은 별도 결정으로 넘긴다
-* depends: Issue364
-* 상세:
-    - **① 라벨 x 에 클램프가 없다 — 상수다.** [client.js:1457](lib/component-hooks/htmlart_dispatch.client.js#L1457) `var labelX = side==='left' ? 30 : W - 30 - labelW;` · `labelW=300`([client.js:1384](lib/component-hooks/htmlart_dispatch.client.js#L1384)). 좌 라벨 `30~330`, 우 라벨 `1070~1370` 으로 **고정**이며, 실측 span 박스 `b.x` 를 참조하는 자리가 **한 군데도 없다**
-    - **target 텍스트 박스는 전폭이다.** [client.js:1406](lib/component-hooks/htmlart_dispatch.client.js#L1406) `.attr('x',0)…attr('width',W)` (`W=1400`, [client.js:1382](lib/component-hooks/htmlart_dispatch.client.js#L1382)) + 안쪽 div `width:100%` flex center, **max-width 없음**
-    - ⇒ 겹침이 산술로 결정된다: **한 줄 실폭 > `W − 2×(30+labelW)` = 740** 이면 반드시 겹친다. 문장을 줄여서 빠져나갈 수 있는 문제가 아니라 **임계를 넘었는지 아닌지**의 문제다
-    - **② `over`/`under` 는 라벨 y 를 옮기지 않는다 — 그리고 그것은 설계다.** [client.js:1448-1449](lib/component-hooks/htmlart_dispatch.client.js#L1448) 에서 `pos` 가 쓰이는 곳은 `lineY`(span 강조 줄 + 곡선 시작점) **뿐**이다. 라벨 y 는 [client.js:1458-1460](lib/component-hooks/htmlart_dispatch.client.js#L1458) 이 `cy`(=310) 기준으로만 계산한다 → 주해 1개면 `284~336` 으로 target 띠(`250~370`) 한가운데. [client.js:1437-1440](lib/component-hooks/htmlart_dispatch.client.js#L1437) 주석이 *좌/우 균형 분할·곡선 비교차*를 라벨 배치 목적으로 명시하므로 **라벨을 좌·우 거터에 두는 것이 의도**다. 누락된 것은 y 로직이 아니라 **그 거터를 target 이 침범하지 못하게 하는 제약**이다
-    - **③ "영문은 괜찮다"는 전제가 성립하지 않는다.** 저장소 자체 폭 모델([`charEm`](lib/component-hooks/htmlart_dispatch.client.js#L47) — 한글 1.0em / 그 외 0.58em)에 `targetFs=56`·`letter-spacing 0.02em` 을 적용한 계산:
-
-      | 케이스 | 자 | 추정 한 줄 폭 | 판정 |
-      | :--- | ---: | ---: | :--- |
-      | 쇼케이스(영문) `The quick brown fox…` | 43 | **1445px** | wrap 임계 1400 에 **3% 차로 걸침** |
-      | 발주처 1차 | 44 | 1996px | 접힘 → 세로 잘림([Issue364](#issue364)) |
-      | 발주처 2차 | 26 | 1304px | 한 줄, 편측 **282px** 침범 |
-      | 발주처 3차 | 22 | 984px | 한 줄, 편측 **122px** 침범 |
-
-    - 쇼케이스([05-htmlart-27.md:455](Projects/m2Slide_visual_component/markdown/05-htmlart-27.md#L455))는 한 줄이면 전폭 1400 을 채워 겹치고, 접히더라도 greedy wrap 이라 1행이 약 1315px 이라 **역시 겹친다.** 곧 *영문이라 안전한 것*이 아니라 **그 슬라이드를 아무도 들여다보지 않은 것**에 가깝다 (검증 필요 — 육안·`getBoundingClientRect` 실측 미실시. 모델 추정이 임계에 3% 차로 붙어 있어 판정이 뒤집힐 여지가 있다)
-    - ⚠️ **위험 구간이 한국어 문장의 자연 길이와 정확히 겹친다** — 한 줄 실폭 **740~1400px**, 곧 **한글 13~30자**. 그 아래면 안전, 그 위면 접혀 [Issue364](#issue364) 의 세로 잘림으로 넘어간다. **annotate 의 안전 창은 한글 12자(영문 22자) 이하 하나뿐이다**
-    - Issue364 와의 경계: Issue364 는 **세로 축**(줄수 × 줄높이 > 120), 본 이슈는 **가로 축**(한 줄 폭 > 740). annotate 는 두 결함을 동시에 갖는다 — Issue364 실측표의 `annotate 44자 🔴 +7px` 이 세로 축 쪽 근거다
-    - **실사용 영향도 — 현역 덱 0건.** `::: htmlart annotate` 원고는 4건인데 z_done 아카이브 2건(`Projects/z_done/aTest/markdown/04-htmlart.md:421`·`Projects/z_done/aTest_v1/markdown/08.4.ratio-compare-explain.md:98`), 쇼케이스 1건, 그 pptx 파이프라인 사본 1건이 전부다 → **회귀 위험이 사실상 없다**
-* 구현 명세:
-    - **해법 후보 A — target 텍스트 박스를 거터 안쪽으로 가둔다** *(권장)*
-        - [client.js:1406](lib/component-hooks/htmlart_dispatch.client.js#L1406) 의 foreignObject 를 `x = 30+labelW+gap`, `width = W − 2×(30+labelW+gap)` 로 좁힌다(gap=20 → `x=350, width=700`). target 이 거터 밖으로 **나갈 수 없게 되어 겹침이 구조적으로 불가능**해진다
-        - 대신 줄이 늘어나므로 **세로 축을 함께 풀어야 한다** — fo 높이 120 고정을 줄 수 기반으로 늘리고 라벨 기준 `cy`([client.js:1459](lib/component-hooks/htmlart_dispatch.client.js#L1459))를 target 실높이 중심으로 재계산. [Issue364](#issue364) 해법 후보 A(`volumeCap`)와 같은 성격이라 **한 이슈에서 함께 내는 편이 낫다**(그래서 `depends`)
-        - 영향도: 현역 덱 0건. 쇼케이스 1건은 700 폭에서 2~3줄로 접혀 **렌더가 바뀐다** — 다만 지금도 겹쳐 있으므로 개선 방향의 변화다 (검증 필요 — before/after 캡처)
-        - 한계: 700px 은 한글 **12자/줄**이라 긴 문장은 3줄 이상이 된다. 56px 고정 폰트를 유지하면 세로가 터지므로 폰트 축소가 반드시 동반된다
-    - **해법 후보 B — 라벨 x 를 target 실측으로 클램프하고 viewBox 를 넓힌다**
-        - `drawLines()` 는 이미 span 실측 박스를 갖고 있다([client.js:1424-1437](lib/component-hooks/htmlart_dispatch.client.js#L1424)). target 실측 좌우 끝으로 `labelX_left = min(30, minX − labelW − gap)` · `labelX_right = max(W−30−labelW, maxX + gap)` 로 **밀어낸다**. 음수·W 초과가 되므로 **viewBox 확장이 동반**된다
-        - **선례가 같은 파일 안에 있다** — callout 의 `wide` orientation 이 정확히 같은 기법이다([client.js:1505-1508](lib/component-hooks/htmlart_dispatch.client.js#L1505) 주석: *"viewBox 를 라벨 실좌표까지 넓혀 레터박스 여백 의존을 없앤 변형"*). 4:3 에서 orient 무관 자동 적용이라고 적혀 있어 **판형 대응까지 검증된 경로**다
-        - 영향도: viewBox 확장은 **도해 전체를 축소**시킨다 — [Issue363](#issue363) 이 정상 도해까지 15% 줄여 문제가 된 실패 모드와 같은 성격이다. 다만 annotate 는 **현역 덱 0건**이라 이 타입에 한해서는 그 리스크가 실질적으로 없다
-        - 한계: target 이 길수록 viewBox 가 계속 넓어져 글자가 무한정 작아진다. 확장 상한이 필요하고 상한에 걸리면 결국 후보 A 로 되돌아온다
-    - **판정 제안: A 를 기본, B 를 보완.** A 가 *"target 은 거터를 침범하지 않는다"* 는 불변식을 세우고, B 는 라벨 자리가 그래도 모자랄 때의 탈출구다. ⚠️ **A 를 단독으로 넣으면 안 된다** — 폭을 좁히면 줄이 늘어 Issue364 의 세로 잘림을 오히려 키운다
-    - ⚠️ **착수 전 ③ 의 육안 검증을 먼저 한다.** 쇼케이스가 실제로 겹쳐 있는지에 따라 *"회귀 0"* 인지 *"이미 깨진 것을 고치는 것"* 인지가 갈린다
-    - 종료 조건: 겹침 판정 산식이 소스와 일치하고(한 줄 폭 ≤ 안전 폭), 쇼케이스·prj60 3차 문장 양쪽에서 라벨 박스와 target 박스가 겹치지 않음을 `getBoundingClientRect` 로 실측 확인
-
 ## Issue371: default_lec `contents-split` 이 반쪽이다 — divider 는 테마가 숨기고 머리말 슬롯은 템플릿에 없다 (등록: 2026-09-19)
 * 목적: 발주처 prj60 `__lec` 이 `2.3.contents-split` 을 쓰려다 **제목 아래가 빈 띠로 남고 머리말(`1일차 — …`)이 통째로 사라지는** 것을 보고. 진단 결과 템플릿·테마·엔진 셋 중 **템플릿만 있고 나머지 둘과의 배선이 안 됐다**. 본 이슈는 진단·해법 선택지까지 하고 수정은 별도 결정으로 넘긴다
 * 상세:
@@ -132,7 +98,41 @@
     - 검증: prj60 `1.design_rnd` 의 `contents-split` 슬라이드에서 머리말·제목 띠 렌더를 육안 확인 + `./m2slide.sh` 기존 3덱 회귀 0(해당 layout 미사용이라 0 예상)
     - 종료 조건: `contents-split` 이 `contents`·`contents-full` 과 **머리말·제목 띠에서 같은 겉모습**을 내고, `theme/` 의 다른 테마 렌더 변화 0
 
-## Issue372: 레이아웃 슬롯 추출기가 fenced div 중첩을 추적하지 않는다 — 같은 파이프라인의 두 처리기가 문법이 다르다 (등록: 2026-09-19)
+## Issue373: agenda markmap 이 챕터 안 계층을 버린다 — harvest 가 `h1`/`h2` 를 가르지 않고 평평하게 담는다 (등록: 2026-09-19)
+* 목적: 발주처 prj60 `__lec` 1일차 덱에서 [agenda.html](Projects/1.design_rnd/slide/agenda.html) markmap 이 **챕터 한 파일의 62 슬라이드를 전부 형제로** 낸다. 원고는 `#` 7 · `##` 54 로 2단인데 agenda 만 평평하다. 같은 원고에서 만드는 덱 안 목차(`#/toc-placeholder`)는 [html-builder.js:295-320](lib/html-builder.js#L295) `generateTOCFromFile` 이 `#`=가지 · `##`=잎으로 정상 중첩하므로, **한 원고에서 두 목차가 다른 구조로 나온다**
+* 상세 (실측 2026-09-19 — `Projects/1.design_rnd` 가 prj60 과 같은 원고):
+    - **원인 확정** — [generate-slides.js:354-379](lib/generate-slides.js#L354) 의 agenda markmap 확장 보강 블록. `<section>` 을 훑으며 [:373](lib/generate-slides.js#L373) 에서 `/<h[12][^>]*>([\s\S]*?)<\/h[12]>/` 로 제목만 뽑고 [:376](lib/generate-slides.js#L376) 에서 `items.push(...)` 로 **레벨 구분 없이 평평하게** 담는다. [:378](lib/generate-slides.js#L378) 이 그 배열을 통째로 `node.children` 에 넣는다 → 발주처 1차 진단대로다
+    - **실측**: 원고 `01-day1.md` = `#` 7 · `##` 54 (코드펜스 제외). 산출 `01-day1.html` 의 `.slides` 하위 top-level `<section>` = 62 (= 61 + toc-placeholder 1). agenda 의 `01-day1.html#/N` 앵커 = **1~62 전부, 전원 형제**
+    - ⚠️ **`h1`/`h2` 태그로 가르면 안 된다 — 62 섹션 중 첫 heading 이 `<h1>` 인 것이 26 개다.** 원고의 `#` 은 7 개뿐이고, 나머지 19 개는 `##` 인데 레이아웃 템플릿이 제목을 `<h1>` 로 렌더한 것이다. 태그 기준으로 가르면 **가짜 가지 19 개**가 생긴다
+    - ✅ **`data-heading-level` 이 정답이다.** [html-builder.js:636-637](lib/html-builder.js#L636) 이 `<section>` 에 붙이며, 실측상 `data-heading-level="1"` 이 붙은 섹션은 **정확히 7 개**이고 그 제목이 원고 `#` 7 줄과 **1:1 일치**한다(`#/1,3,12,24,37,48,58`)
+    - ⚠️ 단 **`data-heading-level="2"` 는 한 번도 나오지 않는다** — H2 는 무속성이다. 곧 *"속성 1 = 가지, 무속성 = 그 가지의 잎"* 규칙으로 써야 하고, `="2"` 를 기대하는 구현은 빈 결과를 낸다
+    - ⚠️ `slide.headingLevel` 의 **대입 지점을 현재 트리에서 grep 으로 찾지 못했다** (`lib/` 전체에서 `headingLevel` 은 [html-builder.js](lib/html-builder.js) 12 곳뿐이고 전부 소비처·주석). 산출물에는 실제로 붙으므로 어딘가에서 동적으로 부여된다 (검증 필요) — 고치기 전에 대입 지점을 확정할 것
+    - **toc-placeholder 혼입은 버그다** — `#/2` 섹션은 `id="toc-placeholder"` 이면서 안에 챕터 제목 `<h1>` 을 갖고 있어, `#/1`(챕터 표지)과 **제목이 똑같은 노드**가 agenda 에 두 번 뜬다. 원고에 대응 heading 이 없는 삽입 슬라이드이므로 제외 대상
+    - **`###` 서브 엔트리로 우회할 수 없다**는 판단도 맞다. [generate-slides.js:355](lib/generate-slides.js#L355) 가 children 이 있으면 건너뛰지만, [agenda.js:334](lib/agenda.js#L334) 가 `path.basename(경로, '.md') + '.html'` 로만 해석한다. `node -e` 실측: `./01-day1.md#/3` → **`3.html`** (보고된 `01-day1.md#/3.html` 이 아니다 — `#/` 의 `/` 를 경로 구분자로 보고 basename 이 `3` 이 된다). 어느 쪽이든 **없는 파일을 조용히 가리키는 죽은 링크**라 결론은 같다
+    - **기존 덱 영향도 전수** (`Projects/` 94 개 챕터가 harvest 경로를 탄다):
+
+      | 구분 | 수 | 고치면 |
+      | :--- | :-- | :--- |
+      | `#` 2 개 이상 + `##` 있음 | **1** (`1.design_rnd/01-day1.md`) | 2 단으로 바뀐다 — **본 이슈의 대상** |
+      | `#` 2 개 이상 + `##` 0 | 10 (AgenticCoding 2 · BasicKnowledgeForAI_small 2 · fPmIntro 3 · fPmIntro_en 3) | 전원이 가지가 되지만 자식이 없어 **지금과 같은 평면** |
+      | `#` 1 개 | 77 | 챕터 노드 아래 **제목이 같은 노드가 한 겹 더** 생긴다 — 77 중 **75 가 agenda 항목명과 동일 문자열** |
+
+    - 곧 **회귀 위험은 `#` 1 개짜리 77 개**에 있다. 레벨만 살리면 `챕터 → (같은 제목) → 잎` 이 되어 한 겹이 헛돈다
+* 구현 명세:
+    - ① harvest 를 `data-heading-level="1"` 기준 **2 단 조립**으로 바꾼다 — 속성이 있으면 새 가지를 열고, 없으면 **직전 가지의 자식**으로 넣는다. 가지가 아직 없으면(파일 첫 슬라이드가 H2) 지금처럼 루트 직계로 둔다 ([html-builder.js:295-320](lib/html-builder.js#L295) 의 `currentSection` 처리와 같은 모양 → **두 목차의 판정이 한 규칙으로 합쳐진다**)
+    - ② **toc-placeholder 제외** — `<section ... id="toc-placeholder">` 이면 push 하지 않는다. ⚠️ `idx` 증가는 **그대로 둔다**. `#/N` 은 산출 DOM 순서가 ground truth 라 건너뛴 만큼 당기면 모든 뒤 앵커가 1 씩 어긋난다
+    - ③ **`#` 이 1 개뿐이면 가지를 만들지 않고 지금처럼 평면 유지** — 위 표의 77 개를 무변경으로 지키는 가장 싼 가드다. (대안: 첫 가지 제목이 agenda 항목명과 같으면 챕터 노드로 흡수. 75/77 이 해당하나 문자열 비교라 표기 흔들림에 약하다)
+    - ④ **markmap 펼침 깊이 동반 확인** — [`_config.yml`](Projects/1.design_rnd/_config.yml) `markmap_depth: 2`, agenda 산출의 `initialExpandLevel: 2`. 계층이 한 겹 깊어지면 잎이 기본 접힘이 된다. 원 요구가 *"클릭해서 펼치기"* 였으므로 접힘이 정상이지만, **의도한 접힘인지 1 회 확인**할 것
+    - ⑤ **`agenda.js` 같은 파일 앵커 지원은 별개 해법이고, 권하지 않는다.** [agenda.js](lib/agenda.js) 에 `path.basename(m[2], '.md') + '.html'` 이 **12 곳** 있고([:119](lib/agenda.js#L119)~[:334](lib/agenda.js#L334)) 전부 *"엔트리 1 개 = 파일 1 개"* 를 전제한다. 앵커를 허용하면 [getChapterNumberMap:290-298](lib/agenda.js#L290) 의 `map[html]` 이 같은 키에 두 번 써져 챕터 번호가 덮이고, `getNextChapter`·`getParentPage`·`getNextSiblingChapter` 의 ⇤/⇥ 이동이 같은 파일을 서로 다른 챕터로 센다. **난이도 상** — 프래그먼트 분리 + 12 곳 + 네비게이션 4 종 재정의. ①~③ 이 같은 증상을 훨씬 싸게 없앤다
+    - 검증: `Projects/1.design_rnd` 재빌드 후 agenda 의 `01-day1.html#/N` 가지 7 · 잎 54 · toc-placeholder 0 · 앵커 번호가 재빌드 전과 동일. 나머지 93 개 챕터는 **agenda 산출 diff 0**
+    - 종료 조건: 위 검증 2 항 통과 + `data-heading-level` 대입 지점 확정 기록
+
+
+# 📗 선택
+
+# ✅ 완료
+
+## Issue372: 레이아웃 슬롯 추출기가 fenced div 중첩을 추적하지 않는다 — 같은 파이프라인의 두 처리기가 문법이 다르다 (등록: 2026-09-19, 해결: 2026-09-19, commit: `433c807`) ✅
 * 목적: 슬롯 안에 htmlart 를 넣는 조합(`::: left` 안의 `::: htmlart`)이 **성립하지 않는다.** `:::` 로 쓰면 슬롯이 htmlart 의 닫는 줄을 먼저 먹어 남은 `:::` 가 본문에 `<p>:::</p>` 로 새고, Pandoc 관행대로 `::::` 로 피하면 **슬롯 이름 매칭 자체가 실패**해 좌우 내용이 전부 `{{content}}` 로 쏟아진다. 발주처 prj60 `__lec` 보고
 * 상세:
     - **⚠️ 먼저 — `extractSlots` 실체 경로와, 그것이 grep 에 안 잡힌 이유**
@@ -174,41 +174,57 @@
     - ③ 회귀 범위 — `:::` 슬롯을 쓰는 **모든 덱**이 대상이나, 현행과 달라지는 것은 **슬롯 안에 다시 `:::` 가 있는 경우뿐**이고 그 경우는 지금 정상 렌더가 **불가능**하므로 정상 덱의 렌더는 바뀌지 않는다 (검증 필요 — 기존 덱 전수 빌드 diff 로 확인)
     - 검증: 위 실측 A·B 가 각각 `slots={left,right}` + 본문 잔여 0 을 내고, `:::`·`::::` 가 **같은 결과**를 낼 것. `./m2slide.sh` 기존 덱 전수 빌드 후 산출 HTML diff 0
     - 종료 조건: 슬롯 안 htmlart 가 정상 렌더되고, 콜론 3개·4개가 동일 결과를 내며, 기존 덱 산출 diff 0
+* 결과 — **①②를 함께 냈다**(판정을 공유 헬퍼로 뽑는 것이 이슈의 본체였다):
+    - **판정 단일 지점** — `isCodeFenceLine`·`isFencedDivOpen`·`isFencedDivClose`·`findFencedDivClose` 를 [markdown.js](lib/markdown.js) 에 두고 export. `slide-parser.js → markdown.js` 단방향 의존이라 순환 없이 공유된다. 같은 파일의 `scanColumnWidths` 도 그 헬퍼를 쓰게 바꿨다 — **한 파일 안에도 두 벌을 두지 않는다**
+    - **`extractSlots` 를 줄 단위 depth 추적으로** — 열기 `^:{3,}\s+\S` · 닫기 `^:{3,}\s*$` · 코드펜스 안은 세지 않는다. 예약어 가드는 **top-level 만** 보던 기존 의미를 유지한다(중첩 `htmlart` 는 슬롯 본문에 온전히 담긴 채 `preprocessPandocDiv` 가 처리)
+    - 🔑 **부수로 드러난 구 버그 — 코드펜스 안의 슬롯 예시가 지워지고 있었다.** 구 구현은 `inCode` 를 보지 않아 문서에 예시로 적은 ` ```markdown / ::: leftPanel … ` 를 슬롯으로 빼내 **코드블록을 통째로 비웠다**(`z_done/aTest_v1/markdown/02-slot.md` 실측 — 산출이 ` ```markdown\n\n\n``` `). 전수 동등성 검사의 유일한 차이가 이것이었고, **회귀가 아니라 수정**이다
+    - 🔑 **NUL sentinel 을 함께 없앴다 — 이슈가 "별도 승격 판단" 으로 남긴 항목.** 같은 이슈에서 처리하는 것이 맞다고 판정했다: 비용이 한 줄인데 방치하면 **모든 grep 기반 도구가 이 파일을 조용히 빠뜨린다**(실제로 그 때문에 `extractSlots` 가 없는 것으로 오진됐다). `\x00FENCE{n}\x00` → **이스케이프 표기** `\x01`(STX) 로 바꿔 소스에 제어문자를 0개로 만들었다 — 같은 저장소 [client.js](lib/component-hooks/htmlart_dispatch.client.js) 가 이미 STX/ETX 를 쓰면서 텍스트로 판정되는 선례를 받았다
+    - **검증** — 이슈 실측 A(`:::`)·B(`::::`)가 **같은 결과**(`slots={left,right}` · 잔여 content 0) · 빌드 픽스처 양쪽에서 htmlart 렌더 1건·`:::` 잔존 0·미치환 placeholder 0 · 원고 **1151 슬라이드** 구·신 동등성 차이 1건(위 코드펜스 개선뿐) · 슬롯 사용 **20 덱 재빌드 산출 diff 0**(차이 136 전부 `custom.css?v=<타임스탬프>` 캐시버스터. `1.design_rnd/05-day5` 만 실질 차이였으나 원고 mtime 19:56:38 로 **다른 세션의 원고 변경**임을 확인) · 코드펜스 안 `---` 보호 유지·sentinel 누출 0
 
+## Issue370: htmlart annotate 라벨이 target 본문 글자 위로 올라탄다 — 라벨 x 가 상수라 거터 예약이 없다 (등록: 2026-09-19, 해결: 2026-09-19, commit: `c5345b9`) ✅
+* 목적: 발주처 prj60 `__lec` 에서 주해 라벨이 target 글자 위에 겹쳐 그려진다는 보고. 발주처가 문장을 3차에 걸쳐 줄였으나(44자 → 26자 → 22자) **22자에서도 양쪽 64px 씩 겹쳤다.** 진단 결과 원인은 문장 길이가 아니라 **라벨 x 좌표가 target 과 무관한 상수**이고 target 텍스트 박스가 viewBox 전폭을 쓰는 것이다. 본 이슈는 **진단·상한 산출까지** 하고 수정은 별도 결정으로 넘긴다
+* depends: Issue364
+* 상세:
+    - **① 라벨 x 에 클램프가 없다 — 상수다.** [client.js:1457](lib/component-hooks/htmlart_dispatch.client.js#L1457) `var labelX = side==='left' ? 30 : W - 30 - labelW;` · `labelW=300`([client.js:1384](lib/component-hooks/htmlart_dispatch.client.js#L1384)). 좌 라벨 `30~330`, 우 라벨 `1070~1370` 으로 **고정**이며, 실측 span 박스 `b.x` 를 참조하는 자리가 **한 군데도 없다**
+    - **target 텍스트 박스는 전폭이다.** [client.js:1406](lib/component-hooks/htmlart_dispatch.client.js#L1406) `.attr('x',0)…attr('width',W)` (`W=1400`, [client.js:1382](lib/component-hooks/htmlart_dispatch.client.js#L1382)) + 안쪽 div `width:100%` flex center, **max-width 없음**
+    - ⇒ 겹침이 산술로 결정된다: **한 줄 실폭 > `W − 2×(30+labelW)` = 740** 이면 반드시 겹친다. 문장을 줄여서 빠져나갈 수 있는 문제가 아니라 **임계를 넘었는지 아닌지**의 문제다
+    - **② `over`/`under` 는 라벨 y 를 옮기지 않는다 — 그리고 그것은 설계다.** [client.js:1448-1449](lib/component-hooks/htmlart_dispatch.client.js#L1448) 에서 `pos` 가 쓰이는 곳은 `lineY`(span 강조 줄 + 곡선 시작점) **뿐**이다. 라벨 y 는 [client.js:1458-1460](lib/component-hooks/htmlart_dispatch.client.js#L1458) 이 `cy`(=310) 기준으로만 계산한다 → 주해 1개면 `284~336` 으로 target 띠(`250~370`) 한가운데. [client.js:1437-1440](lib/component-hooks/htmlart_dispatch.client.js#L1437) 주석이 *좌/우 균형 분할·곡선 비교차*를 라벨 배치 목적으로 명시하므로 **라벨을 좌·우 거터에 두는 것이 의도**다. 누락된 것은 y 로직이 아니라 **그 거터를 target 이 침범하지 못하게 하는 제약**이다
+    - **③ "영문은 괜찮다"는 전제가 성립하지 않는다.** 저장소 자체 폭 모델([`charEm`](lib/component-hooks/htmlart_dispatch.client.js#L47) — 한글 1.0em / 그 외 0.58em)에 `targetFs=56`·`letter-spacing 0.02em` 을 적용한 계산:
 
-## Issue373: agenda markmap 이 챕터 안 계층을 버린다 — harvest 가 `h1`/`h2` 를 가르지 않고 평평하게 담는다 (등록: 2026-09-19)
-* 목적: 발주처 prj60 `__lec` 1일차 덱에서 [agenda.html](Projects/1.design_rnd/slide/agenda.html) markmap 이 **챕터 한 파일의 62 슬라이드를 전부 형제로** 낸다. 원고는 `#` 7 · `##` 54 로 2단인데 agenda 만 평평하다. 같은 원고에서 만드는 덱 안 목차(`#/toc-placeholder`)는 [html-builder.js:295-320](lib/html-builder.js#L295) `generateTOCFromFile` 이 `#`=가지 · `##`=잎으로 정상 중첩하므로, **한 원고에서 두 목차가 다른 구조로 나온다**
-* 상세 (실측 2026-09-19 — `Projects/1.design_rnd` 가 prj60 과 같은 원고):
-    - **원인 확정** — [generate-slides.js:354-379](lib/generate-slides.js#L354) 의 agenda markmap 확장 보강 블록. `<section>` 을 훑으며 [:373](lib/generate-slides.js#L373) 에서 `/<h[12][^>]*>([\s\S]*?)<\/h[12]>/` 로 제목만 뽑고 [:376](lib/generate-slides.js#L376) 에서 `items.push(...)` 로 **레벨 구분 없이 평평하게** 담는다. [:378](lib/generate-slides.js#L378) 이 그 배열을 통째로 `node.children` 에 넣는다 → 발주처 1차 진단대로다
-    - **실측**: 원고 `01-day1.md` = `#` 7 · `##` 54 (코드펜스 제외). 산출 `01-day1.html` 의 `.slides` 하위 top-level `<section>` = 62 (= 61 + toc-placeholder 1). agenda 의 `01-day1.html#/N` 앵커 = **1~62 전부, 전원 형제**
-    - ⚠️ **`h1`/`h2` 태그로 가르면 안 된다 — 62 섹션 중 첫 heading 이 `<h1>` 인 것이 26 개다.** 원고의 `#` 은 7 개뿐이고, 나머지 19 개는 `##` 인데 레이아웃 템플릿이 제목을 `<h1>` 로 렌더한 것이다. 태그 기준으로 가르면 **가짜 가지 19 개**가 생긴다
-    - ✅ **`data-heading-level` 이 정답이다.** [html-builder.js:636-637](lib/html-builder.js#L636) 이 `<section>` 에 붙이며, 실측상 `data-heading-level="1"` 이 붙은 섹션은 **정확히 7 개**이고 그 제목이 원고 `#` 7 줄과 **1:1 일치**한다(`#/1,3,12,24,37,48,58`)
-    - ⚠️ 단 **`data-heading-level="2"` 는 한 번도 나오지 않는다** — H2 는 무속성이다. 곧 *"속성 1 = 가지, 무속성 = 그 가지의 잎"* 규칙으로 써야 하고, `="2"` 를 기대하는 구현은 빈 결과를 낸다
-    - ⚠️ `slide.headingLevel` 의 **대입 지점을 현재 트리에서 grep 으로 찾지 못했다** (`lib/` 전체에서 `headingLevel` 은 [html-builder.js](lib/html-builder.js) 12 곳뿐이고 전부 소비처·주석). 산출물에는 실제로 붙으므로 어딘가에서 동적으로 부여된다 (검증 필요) — 고치기 전에 대입 지점을 확정할 것
-    - **toc-placeholder 혼입은 버그다** — `#/2` 섹션은 `id="toc-placeholder"` 이면서 안에 챕터 제목 `<h1>` 을 갖고 있어, `#/1`(챕터 표지)과 **제목이 똑같은 노드**가 agenda 에 두 번 뜬다. 원고에 대응 heading 이 없는 삽입 슬라이드이므로 제외 대상
-    - **`###` 서브 엔트리로 우회할 수 없다**는 판단도 맞다. [generate-slides.js:355](lib/generate-slides.js#L355) 가 children 이 있으면 건너뛰지만, [agenda.js:334](lib/agenda.js#L334) 가 `path.basename(경로, '.md') + '.html'` 로만 해석한다. `node -e` 실측: `./01-day1.md#/3` → **`3.html`** (보고된 `01-day1.md#/3.html` 이 아니다 — `#/` 의 `/` 를 경로 구분자로 보고 basename 이 `3` 이 된다). 어느 쪽이든 **없는 파일을 조용히 가리키는 죽은 링크**라 결론은 같다
-    - **기존 덱 영향도 전수** (`Projects/` 94 개 챕터가 harvest 경로를 탄다):
+      | 케이스 | 자 | 추정 한 줄 폭 | 판정 |
+      | :--- | ---: | ---: | :--- |
+      | 쇼케이스(영문) `The quick brown fox…` | 43 | **1445px** | wrap 임계 1400 에 **3% 차로 걸침** |
+      | 발주처 1차 | 44 | 1996px | 접힘 → 세로 잘림([Issue364](#issue364)) |
+      | 발주처 2차 | 26 | 1304px | 한 줄, 편측 **282px** 침범 |
+      | 발주처 3차 | 22 | 984px | 한 줄, 편측 **122px** 침범 |
 
-      | 구분 | 수 | 고치면 |
-      | :--- | :-- | :--- |
-      | `#` 2 개 이상 + `##` 있음 | **1** (`1.design_rnd/01-day1.md`) | 2 단으로 바뀐다 — **본 이슈의 대상** |
-      | `#` 2 개 이상 + `##` 0 | 10 (AgenticCoding 2 · BasicKnowledgeForAI_small 2 · fPmIntro 3 · fPmIntro_en 3) | 전원이 가지가 되지만 자식이 없어 **지금과 같은 평면** |
-      | `#` 1 개 | 77 | 챕터 노드 아래 **제목이 같은 노드가 한 겹 더** 생긴다 — 77 중 **75 가 agenda 항목명과 동일 문자열** |
-
-    - 곧 **회귀 위험은 `#` 1 개짜리 77 개**에 있다. 레벨만 살리면 `챕터 → (같은 제목) → 잎` 이 되어 한 겹이 헛돈다
+    - 쇼케이스([05-htmlart-27.md:455](Projects/m2Slide_visual_component/markdown/05-htmlart-27.md#L455))는 한 줄이면 전폭 1400 을 채워 겹치고, 접히더라도 greedy wrap 이라 1행이 약 1315px 이라 **역시 겹친다.** 곧 *영문이라 안전한 것*이 아니라 **그 슬라이드를 아무도 들여다보지 않은 것**에 가깝다 (검증 필요 — 육안·`getBoundingClientRect` 실측 미실시. 모델 추정이 임계에 3% 차로 붙어 있어 판정이 뒤집힐 여지가 있다)
+    - ⚠️ **위험 구간이 한국어 문장의 자연 길이와 정확히 겹친다** — 한 줄 실폭 **740~1400px**, 곧 **한글 13~30자**. 그 아래면 안전, 그 위면 접혀 [Issue364](#issue364) 의 세로 잘림으로 넘어간다. **annotate 의 안전 창은 한글 12자(영문 22자) 이하 하나뿐이다**
+    - Issue364 와의 경계: Issue364 는 **세로 축**(줄수 × 줄높이 > 120), 본 이슈는 **가로 축**(한 줄 폭 > 740). annotate 는 두 결함을 동시에 갖는다 — Issue364 실측표의 `annotate 44자 🔴 +7px` 이 세로 축 쪽 근거다
+    - **실사용 영향도 — 현역 덱 0건.** `::: htmlart annotate` 원고는 4건인데 z_done 아카이브 2건(`Projects/z_done/aTest/markdown/04-htmlart.md:421`·`Projects/z_done/aTest_v1/markdown/08.4.ratio-compare-explain.md:98`), 쇼케이스 1건, 그 pptx 파이프라인 사본 1건이 전부다 → **회귀 위험이 사실상 없다**
 * 구현 명세:
-    - ① harvest 를 `data-heading-level="1"` 기준 **2 단 조립**으로 바꾼다 — 속성이 있으면 새 가지를 열고, 없으면 **직전 가지의 자식**으로 넣는다. 가지가 아직 없으면(파일 첫 슬라이드가 H2) 지금처럼 루트 직계로 둔다 ([html-builder.js:295-320](lib/html-builder.js#L295) 의 `currentSection` 처리와 같은 모양 → **두 목차의 판정이 한 규칙으로 합쳐진다**)
-    - ② **toc-placeholder 제외** — `<section ... id="toc-placeholder">` 이면 push 하지 않는다. ⚠️ `idx` 증가는 **그대로 둔다**. `#/N` 은 산출 DOM 순서가 ground truth 라 건너뛴 만큼 당기면 모든 뒤 앵커가 1 씩 어긋난다
-    - ③ **`#` 이 1 개뿐이면 가지를 만들지 않고 지금처럼 평면 유지** — 위 표의 77 개를 무변경으로 지키는 가장 싼 가드다. (대안: 첫 가지 제목이 agenda 항목명과 같으면 챕터 노드로 흡수. 75/77 이 해당하나 문자열 비교라 표기 흔들림에 약하다)
-    - ④ **markmap 펼침 깊이 동반 확인** — [`_config.yml`](Projects/1.design_rnd/_config.yml) `markmap_depth: 2`, agenda 산출의 `initialExpandLevel: 2`. 계층이 한 겹 깊어지면 잎이 기본 접힘이 된다. 원 요구가 *"클릭해서 펼치기"* 였으므로 접힘이 정상이지만, **의도한 접힘인지 1 회 확인**할 것
-    - ⑤ **`agenda.js` 같은 파일 앵커 지원은 별개 해법이고, 권하지 않는다.** [agenda.js](lib/agenda.js) 에 `path.basename(m[2], '.md') + '.html'` 이 **12 곳** 있고([:119](lib/agenda.js#L119)~[:334](lib/agenda.js#L334)) 전부 *"엔트리 1 개 = 파일 1 개"* 를 전제한다. 앵커를 허용하면 [getChapterNumberMap:290-298](lib/agenda.js#L290) 의 `map[html]` 이 같은 키에 두 번 써져 챕터 번호가 덮이고, `getNextChapter`·`getParentPage`·`getNextSiblingChapter` 의 ⇤/⇥ 이동이 같은 파일을 서로 다른 챕터로 센다. **난이도 상** — 프래그먼트 분리 + 12 곳 + 네비게이션 4 종 재정의. ①~③ 이 같은 증상을 훨씬 싸게 없앤다
-    - 검증: `Projects/1.design_rnd` 재빌드 후 agenda 의 `01-day1.html#/N` 가지 7 · 잎 54 · toc-placeholder 0 · 앵커 번호가 재빌드 전과 동일. 나머지 93 개 챕터는 **agenda 산출 diff 0**
-    - 종료 조건: 위 검증 2 항 통과 + `data-heading-level` 대입 지점 확정 기록
-
-
-# 📗 선택
-
-# ✅ 완료
+    - **해법 후보 A — target 텍스트 박스를 거터 안쪽으로 가둔다** *(권장)*
+        - [client.js:1406](lib/component-hooks/htmlart_dispatch.client.js#L1406) 의 foreignObject 를 `x = 30+labelW+gap`, `width = W − 2×(30+labelW+gap)` 로 좁힌다(gap=20 → `x=350, width=700`). target 이 거터 밖으로 **나갈 수 없게 되어 겹침이 구조적으로 불가능**해진다
+        - 대신 줄이 늘어나므로 **세로 축을 함께 풀어야 한다** — fo 높이 120 고정을 줄 수 기반으로 늘리고 라벨 기준 `cy`([client.js:1459](lib/component-hooks/htmlart_dispatch.client.js#L1459))를 target 실높이 중심으로 재계산. [Issue364](#issue364) 해법 후보 A(`volumeCap`)와 같은 성격이라 **한 이슈에서 함께 내는 편이 낫다**(그래서 `depends`)
+        - 영향도: 현역 덱 0건. 쇼케이스 1건은 700 폭에서 2~3줄로 접혀 **렌더가 바뀐다** — 다만 지금도 겹쳐 있으므로 개선 방향의 변화다 (검증 필요 — before/after 캡처)
+        - 한계: 700px 은 한글 **12자/줄**이라 긴 문장은 3줄 이상이 된다. 56px 고정 폰트를 유지하면 세로가 터지므로 폰트 축소가 반드시 동반된다
+    - **해법 후보 B — 라벨 x 를 target 실측으로 클램프하고 viewBox 를 넓힌다**
+        - `drawLines()` 는 이미 span 실측 박스를 갖고 있다([client.js:1424-1437](lib/component-hooks/htmlart_dispatch.client.js#L1424)). target 실측 좌우 끝으로 `labelX_left = min(30, minX − labelW − gap)` · `labelX_right = max(W−30−labelW, maxX + gap)` 로 **밀어낸다**. 음수·W 초과가 되므로 **viewBox 확장이 동반**된다
+        - **선례가 같은 파일 안에 있다** — callout 의 `wide` orientation 이 정확히 같은 기법이다([client.js:1505-1508](lib/component-hooks/htmlart_dispatch.client.js#L1505) 주석: *"viewBox 를 라벨 실좌표까지 넓혀 레터박스 여백 의존을 없앤 변형"*). 4:3 에서 orient 무관 자동 적용이라고 적혀 있어 **판형 대응까지 검증된 경로**다
+        - 영향도: viewBox 확장은 **도해 전체를 축소**시킨다 — [Issue363](#issue363) 이 정상 도해까지 15% 줄여 문제가 된 실패 모드와 같은 성격이다. 다만 annotate 는 **현역 덱 0건**이라 이 타입에 한해서는 그 리스크가 실질적으로 없다
+        - 한계: target 이 길수록 viewBox 가 계속 넓어져 글자가 무한정 작아진다. 확장 상한이 필요하고 상한에 걸리면 결국 후보 A 로 되돌아온다
+    - **판정 제안: A 를 기본, B 를 보완.** A 가 *"target 은 거터를 침범하지 않는다"* 는 불변식을 세우고, B 는 라벨 자리가 그래도 모자랄 때의 탈출구다. ⚠️ **A 를 단독으로 넣으면 안 된다** — 폭을 좁히면 줄이 늘어 Issue364 의 세로 잘림을 오히려 키운다
+    - ⚠️ **착수 전 ③ 의 육안 검증을 먼저 한다.** 쇼케이스가 실제로 겹쳐 있는지에 따라 *"회귀 0"* 인지 *"이미 깨진 것을 고치는 것"* 인지가 갈린다
+    - 종료 조건: 겹침 판정 산식이 소스와 일치하고(한 줄 폭 ≤ 안전 폭), 쇼케이스·prj60 3차 문장 양쪽에서 라벨 박스와 target 박스가 겹치지 않음을 `getBoundingClientRect` 로 실측 확인
+* 결과 — **후보 A 를 세로 축과 함께 냈다**(이슈의 판정 제안대로. A 단독은 금지였다):
+    - 🔑 **착수 전 ③ 육안 검증이 판을 갈랐다** — 쇼케이스는 *"회귀 0"* 이 아니라 **이미 깨져 있었다**. 실측(`getBoundingClientRect`): 한 줄 **1252px**(모델 추정 1445 는 15% 과대였으나 결론은 같다) · 좌 라벨 2개 **256×22** · 우 라벨 **256×52 전면 겹침**. 곧 *영문이라 안전한 것*이 아니라 그 슬라이드를 아무도 들여다보지 않은 것이었다
+    - **A 거터 예약** — target fo 를 `x=30+labelW+20`, `width=W−2×gutter` 로 가둔다. 라벨을 밖으로 밀어내는 후보 B 는 viewBox 확장이 동반돼 [Issue363](#issue363) 의 실패 모드(정상 도해까지 축소)를 밟으므로 **target 을 가두는 쪽**을 택했다. 겹침이 **산술이 아니라 구조로** 불가능해진다
+    - **거터는 라벨 실측으로 좁힌다** — `labelW = clamp(160, 300, textEm(최장 라벨)×24)`. 고정 300 은 6자 라벨에서 절반이 빈 거터가 되고 그만큼 target 이 불필요하게 접혔다(실측 22자 케이스: labelW 208 → targetW 884, 2줄로 끝남)
+    - **세로 축 동반** — 폭을 좁히면 줄이 늘어 [Issue364](#issue364) 의 세로 잘림을 키운다. 같은 총량 축(`wrapLines` 재사용, `letter-spacing:0.02em` 은 fs×1.02 로 근사)으로 fs·fo 높이를 함께 산정
+    - 🔑 **이슈에 없던 결함이 실측에서 하나 더 나왔다 — 라벨 자체도 잘려 있었다.** `labelH` 52 고정에 2줄(24×1.3×2 = 62.4)이 들어가지 않는다(쇼케이스 13자 라벨 `scrollHeight 57 > clientHeight 52`). Issue364 와 같은 무경고 클리핑이라 함께 풀었다(줄 수 기반 `labelH`, 라벨 다수로 세로가 넘치면 간격을 먼저 줄인다)
+    - **다줄 대비** — span 정렬을 `x` 단독에서 `(줄, x)` 로 바꿨다. 다줄에서 x 만 보면 라벨 순서가 줄을 넘나들어 곡선이 교차한다. 한 줄이면 y 가 모두 같아 **기존 순서와 동일**하다
+    - **검증** — 쇼케이스(영문 43자) + 발주처 재현 3종(44·26·22자) 5케이스 전부 **겹침 0 · 잘림 0**. 변경은 `renderAnnotate` 안에만 있어(hunk 5개 전부) 나머지 26종은 코드가 그대로다
+    - ⚠️ **별건 발견** — 전덱 스캔에서 `ha-callout-svg` 1건이 6px 넘친다(`m2Slide_visual_component` 5장 30번, *"바이브 코딩으로 쉽고, 빠르게, 정확하게"*). annotate 가 아니고 본 수정과 무관한 **기존 결함**이라 이슈후보로 넘겼다
 
 ## Issue364: htmlart 노드 본문이 박스에서 조용히 잘린다 — 폭 축 auto-fit 만 있고 높이 축이 없다 (등록: 2026-09-19, 해결: 2026-09-19, commit: `6affdd4`, `6e46c09`) ✅
 * 목적: 발주처 prj60 `__lec` 에서 **넘침 경고도 빌드 경고도 없이 글자가 박스 경계에서 잘리는** 증상이 보고됐다. 실측 결과 원인은 4:3 이 아니라 **`titleFsFor` 의 auto-fit 이 "가장 긴 토큰의 폭" 한 축만 보고 총량(줄 수 × 줄높이)을 보지 않는 것**이다. 작성자가 지킬 수 있는 타입별 글자수 상한도 문서화돼 있지 않다. 본 이슈는 **진단·상한 산출까지** 하고 수정은 별도 결정으로 넘긴다
