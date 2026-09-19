@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 360
+* Issue HWM: 361
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -61,6 +61,30 @@
     - ⚠️ **일괄 적용 전에 시각 확인이 필요하다.** 고치면 theme 작성자가 의도한 값이 비로소 먹으므로 기존 덱의 여백이 전부 바뀐다. layout 별 before/after 캡처를 붙여 사용자 승인 후 반영
     - 근본 대안도 함께 검토: base.css L782 의 shorthand `padding: 1em 0` 을 `padding-block: 1em` 으로 바꾸면 좌우를 아예 건드리지 않아 theme 의 가로 선언이 자연히 산다. **base.css 수정이라 [CLAUDE.md](CLAUDE.md) "base.css 수정 가드" 의 사용자 컨펌 대상**
     - 검증: `./m2slide.sh m2Slide_single_mode` · `m2Slide_chapter_mode` + 테스트 필수 4항목 + layout 별 `getComputedStyle` before/after
+
+## Issue361: sreMsa v2.1.2 가독성 처방을 `legibility` goal 로 정책 스키마에 편입 (등록: 2026-09-19)
+* 목적: m2slide 의 `legibility` 계열은 **선언만 있고 비어 있다.** [lint-policy-schema.py](lib/lint-policy-schema.py) 가 술어 6종(`chars_max`·`items_max`·`font_size_min`·`box_overflow_max`·`lines_max`·`no_empty_bullet_li`)을 열거하지만 실제로 쓰는 룰은 [styles.yml](data/md-builder/styles.yml) 의 `backtick_marker_conflict_policy` 하나뿐이고, 그마저 `no_empty_bullet_li` 만 쓴다 — **나머지 5종은 소비처 0건**이다. 한편 prj61 sreMsa 는 v2.1.2 에서 그 5종을 실제로 기계 판정하는 검증기와 실측 근거를 이미 만들었다. 그 처방을 정책 스키마로 옮겨 빈 계열을 채운다
+* 상세 (근거 — prj61 sreMsa Issue18, 2026-09-19 종결, commit 960908b):
+    - 정본 리포트 `~/work/sreMsa/_doc_work/report/v2.1.2_가독성교정_issue18_report.md` · 검증기 `~/work/sreMsa/sh/ig-legibility-check.py`
+    - 실측 규모 — 인포그래픽 run 887개 중 **16pt 미만 769 → 0**, **bold 393 → 213**, **도형 밖 넘침 6 → 0**, 신규 겹침·장식 침범 0, 장 수 보존(147·133)
+    - 처방① **바닥 글자 크기 16pt** — 기존 `font_size_min` 술어에 그대로 대응한다
+    - 처방② **본문 굵기 해제** — 16pt 본문의 bold 를 전부 푼다. 유지는 넷뿐(바닥보다 큰 글자 · 진한 채움 위 흰 글자 · 강조 배경 안 글자 · 원형 안 3자 이하 기호). **대응 술어 없음**
+    - 처방③ **넘침 흡수 순서** — 글자를 키우면 도형을 넘치므로 줄이지 않고 ⑴가로 확장 ⑵여백 0 ⑶이웃 라벨 죔 ⑷도형 확대 ⑸괘선 길이 ⑹라벨을 막대 밖으로 순으로 흡수한다. `box_overflow_max` 에 대응하되 **전술의 순서 자체가 정책의 일부**다
+    - 처방④ **신규 겹침 0 · 신규 장식 침범 0** — 교정이 만들어 낸 새 충돌을 기준본과 대조해 센다. **대응 술어 없음**
+    - 처방⑤ **적용 범위가 판정의 핵심** — *"placeholder 가 아니면서 run 에 크기가 명시된 도형"* 만 고친다. 곧 **우리가 생성한 도형만**이고 상속분(Keynote 산 원본)은 건드리지 않는다. 근거는 원본 전수 조사에서 그런 run 이 0개라는 실측이다. **대응 필드 없음**
+    - ⚠️ **⑹ 은 값을 가진 도형을 키우면 그래프가 거짓말이 되는 예외다** — 카나리 5% 막대는 높이 0.046in 이라 막대를 그대로 두고 라벨만 밖으로 꺼냈다. legibility 와 fidelity 가 정면으로 부딪치는 지점이고, 스키마가 이 충돌을 표현할 수 있어야 한다
+    - ⚠️ **⑶ 은 전 장 일괄 적용이 회귀를 냈다** — 추정 글꼴이 실제보다 좁아 멀쩡하던 카드 제목이 두 줄로 접혔다(part1 s22 실측). 228건 → 필요분 4건으로 줄였다. `confidence` 와 적용 범위를 어떻게 둘지의 실사례다
+* 구현 명세:
+    - 산출은 **스키마 정의 + 정책 yml 룰**이다. 교정 스크립트 이식은 범위 밖 — sreMsa 는 pptx 후처리이고 m2slide 는 원고 → 산출 경로라 구현체가 다르다. 옮기는 것은 *판정 기준*이지 *코드*가 아니다
+    - ① [policy-goal-schema.md](_doc_arch/policy-goal-schema.md) 에 `legibility` 계열 절을 세우고 신규 술어를 정의한다 — `emphasis_scope`(굵기 유지 조건 화이트리스트)·`overlap_count_max`·`decoration_intrusion_max`. 이름·의미는 등록 시점 잠정이며 착수 때 확정한다
+    - ② 문서를 먼저 고치고 [lint-policy-schema.py](lib/lint-policy-schema.py) 의 `GOAL_CHECK_FAMILIES["legibility"]` 를 뒤따라 동기화한다 (순서는 [data-access-rules.md](.claude/rules/data-access-rules.md) 의 동기화 의무)
+    - ③ **적용 범위 축을 어디에 둘지 가른다** — 처방⑤ 의 판정 기준은 덱 용도(`purpose`, 축 2)가 아니라 **요소의 출처**(생성분 / 상속분)라서 기존 두 축 어디에도 맞지 않는다. 축을 새로 세울지, `applies_to_*` 계열로 흡수할지가 이 이슈의 설계 핵심이다
+    - ④ 룰이 `data/md-builder/styles.yml`(원고 측)과 [transform.yml](data/m2slide2ppt/transform.yml)(pptx 산출 측) 중 어디에 사는지 가른다. 굵기·바닥 크기는 산출 측 테마 값이라 후자일 가능성이 높다
+    - ⑤ `evidence` 에 prj61 실측을 그대로 적는다(project: sreMsa · date: 2026-09-19 · 위 수치). `confidence` 는 단일 프로젝트 1회 관측이라 **medium 이 상한**이다
+    - 검증: `./m2slide.sh --lint-data` rc0 + 검사 4(goal-oriented 스키마)가 신규 술어를 계열 정합으로 받아들일 것
+    - 종료 조건: ①~④ 가 문서·코드에 반영되고 `--lint-data` 가 통과하며, 신규 술어를 실제로 쓰는 룰이 최소 1건 등록된다
+* ⚠️ **본 이슈는 등록까지만 수행했다** (사용자 지시 2026-09-19 — "등록만 하고 구현은 하지 말 것"). 착수 전 ③ 의 설계 판정을 먼저 사용자와 확인한다
+
 
 # 📗 선택
 
