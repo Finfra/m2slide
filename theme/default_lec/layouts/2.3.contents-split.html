@@ -11,6 +11,8 @@ slots:
   - content
   - left
   - right
+  - head_left
+  - head_right
 example: |
   ## 모듈 분리 비교
 
@@ -25,9 +27,18 @@ example: |
   :::
 -->
 <section class="layout-split-image-text">
+  <!-- Issue371: 머리말(head_left/head_right)이 통째로 빠져 있었다. 엔진은 이미 모든
+       layout 의 vars 에 `_hl`/`_hr` 을 무조건 주입하므로(html-builder) 템플릿이 쓰지
+       않았던 것뿐이다. `_contents`·`2.2.contents-full` 과 **같은 클래스명**을 쓴다 —
+       `contents-head` 문자열이 layout.js `_stripEmptyWrappers` 의 예외이고, 테마의
+       `:has()` fallback(빈 head-bar collapse · 제목 위 브러시 복원)도 이 이름에
+       걸려 있다. 이름을 바꾸면 빈 바가 제거되고 그 fallback 이 매칭 대상을 잃는다. -->
+  <div class="contents-head-bar">
+    <div class="contents-head-left">{{head_left}}</div>
+    <div class="contents-head-right">{{head_right}}</div>
+  </div>
   <div class="split-header">
     {{content}}
-    <div class="split-divider"></div>
   </div>
   <div class="split-row">
     <div class="split-left">{{left}}</div>

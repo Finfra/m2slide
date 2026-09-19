@@ -148,7 +148,12 @@
 .reveal section[class*="layout-"] .blank-title::after,
 .reveal section[class*="layout-"] .closing-title::after,
 .reveal section[class*="layout-"] .summary-title::after,
-.reveal section[class*="layout-"] .toc-title::after {
+.reveal section[class*="layout-"] .toc-title::after,
+/* Issue371: split 은 `{{content}}` 를 `.split-header` 로 한 겹 감싸므로 위 `> .title`
+   (section 직계)에 걸리지 않아 **제목 아래가 빈 띠로 남았다.** divider 가 없어서가
+   아니라 브러시가 선택자에서 빗나간 것이다 — 그래서 divider 를 되살리는 대신(그쪽은
+   §3 아래 `[class$="-divider"]` 숨김과도 충돌한다) 여기 한 줄을 더한다. */
+.reveal section.layout-split-image-text .split-header > .title::after {
   content: "";
   position: absolute;
   left: 0;
@@ -357,7 +362,8 @@
    hr.png 하단 브러시(§3 > .title::after)가 폭 가득 (contents-full 만 텍스트 폭으로 짧게 나오던 문제 교정 2026-07-02). */
 .reveal section.layout-_contents > .title,
 .reveal section.layout-contents > .title,
-.reveal section.layout-contents-full > .title {
+.reveal section.layout-contents-full > .title,
+.reveal section.layout-split-image-text .split-header > .title {
   width: 100%;
   text-align: center;
   box-sizing: border-box;
@@ -368,26 +374,31 @@
    head_left 라벨이 항상 바 위에 오도록 함 (사용자 요구: "바가 무조건 아래"). */
 .reveal section.layout-_contents::before,
 .reveal section.layout-contents::before,
-.reveal section.layout-contents-full::before {
+.reveal section.layout-contents-full::before,
+.reveal section.layout-split-image-text::before {
   display: none !important;
 }
 /* head-bar가 비어 숨김된 슬라이드(단일모드 등)는 상단 §2 브러시 복원 — 상단 무바 회귀 방지 */
 .reveal section.layout-_contents:has(> .contents-head-bar:empty)::before,
 .reveal section.layout-_contents:has(> .contents-head-bar > .contents-head-left:empty):has(> .contents-head-bar > .contents-head-right:empty)::before,
 .reveal section.layout-contents-full:has(> .contents-head-bar:empty)::before,
-.reveal section.layout-contents-full:has(> .contents-head-bar > .contents-head-left:empty):has(> .contents-head-bar > .contents-head-right:empty)::before {
+.reveal section.layout-contents-full:has(> .contents-head-bar > .contents-head-left:empty):has(> .contents-head-bar > .contents-head-right:empty)::before,
+.reveal section.layout-split-image-text:has(> .contents-head-bar:empty)::before,
+.reveal section.layout-split-image-text:has(> .contents-head-bar > .contents-head-left:empty):has(> .contents-head-bar > .contents-head-right:empty)::before {
   display: block !important;
 }
 /* contents-full/contents 도 _contents 와 동일하게 head-bar 라벨 아래 브러시 배치 —
    미적용 시 §2 상단 프레임선이 챕터명 라벨과 겹쳐 "챕터명 이상"하게 보임 (사용자 요구 2026-07-03). */
 .reveal section.layout-_contents > .contents-head-bar,
 .reveal section.layout-contents > .contents-head-bar,
-.reveal section.layout-contents-full > .contents-head-bar {
+.reveal section.layout-contents-full > .contents-head-bar,
+.reveal section.layout-split-image-text > .contents-head-bar {
   position: relative;
 }
 .reveal section.layout-_contents > .contents-head-bar::after,
 .reveal section.layout-contents > .contents-head-bar::after,
-.reveal section.layout-contents-full > .contents-head-bar::after {
+.reveal section.layout-contents-full > .contents-head-bar::after,
+.reveal section.layout-split-image-text > .contents-head-bar::after {
   content: "";
   position: absolute;
   left: 0;
