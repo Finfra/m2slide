@@ -1,7 +1,8 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 358
+* Issue HWM: 360
 * Checkpoints:
+    - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
     - bf2efa7 (2026-07-13) 작업 트리 스냅샷
 * 오래된 Issue는 `z_old/old_issue.md`에 저장
@@ -46,9 +47,50 @@
 
 # 📙 일반
 
+## Issue360: layout `*-body` 명시도 충돌 전수 — base.css shorthand 가 theme 가로 padding 을 삼킨다 (등록: 2026-09-19)
+* 목적: [Issue359](#issue359) 로 `exercise`·`exercise-small` 을 고치면서 **같은 충돌이 살아 있는 layout 6종을 더 찾았다.** exercise 와 달리 이쪽은 실사용 덱이 전부 쓰는 layout 이라 고치는 순간 기존 덱의 렌더가 바뀐다 — 그래서 Issue359 에 묶지 않고 분리했다
+* depends: Issue359
+* 상세 (실측 2026-09-19, ego-browser `getComputedStyle`, 1920 기준):
+    - 원인은 Issue359 와 같다 — [base.css](lib/css/base.css) `.reveal section[class*="layout-"] > div[class$="-body"]`(명시도 **0-3-2**, `padding: 1em 0`)가 theme 의 0-3-1 선언을 이긴다. theme 이 나중에 로드돼도 소용없다
+    - theme [default_lec](theme/default_lec/slide.css): `cover-body`(L722 `0.6em 5% 0.6em 0` → 실측 `30px 0`) · `summary-body`(L578 `0 6% 0 5%` → `42px 0`) · `chapter-toc-body`(L433 `1em 1.4em`) · `chapter-body`(L488 `0` → `40px 0`) · `_contents_no_title > .contents-body`(L405 `padding-top: 0` → `40px`)
+    - theme [default](theme/default/slide.css): `_toc > .toc-body`(L794 `1em 1.5em`) · `cover-body`(L689) · `chapter-toc-body`(L447) · `_contents_no_title`(L426). `_blank > .blank-body`(L531)는 `!important` 라 이미 이긴다
+    - **가장 눈에 띄는 것은 cover** — 강사명 박스가 `padding-right: 5%` 를 못 받아 우측 끝에 붙는다. 같은 슬라이드의 `cover-tr`·`cover-br` 은 `right: 5%` 라 **둘이 안 맞는다**
+    - 선례가 이미 있다: [default/slide.css](theme/default/slide.css) L1468 주석이 *"base.css §5 를 이기려고 `.slides` 를 넣었다"* 고 적고 `.reveal .slides section.layout-chapter .chapter-body`(0-4-1)로 올려 놨다. 같은 함정을 이미 한 번 밟았다는 뜻이다
+* 구현 명세:
+    - 고치는 방법은 Issue359 와 같다 — 선택자에 `> div` 를 넣어 0-3-2 동점을 만든다. base.css 는 건드리지 않는다
+    - ⚠️ **일괄 적용 전에 시각 확인이 필요하다.** 고치면 theme 작성자가 의도한 값이 비로소 먹으므로 기존 덱의 여백이 전부 바뀐다. layout 별 before/after 캡처를 붙여 사용자 승인 후 반영
+    - 근본 대안도 함께 검토: base.css L782 의 shorthand `padding: 1em 0` 을 `padding-block: 1em` 으로 바꾸면 좌우를 아예 건드리지 않아 theme 의 가로 선언이 자연히 산다. **base.css 수정이라 [CLAUDE.md](CLAUDE.md) "base.css 수정 가드" 의 사용자 컨펌 대상**
+    - 검증: `./m2slide.sh m2Slide_single_mode` · `m2Slide_chapter_mode` + 테스트 필수 4항목 + layout 별 `getComputedStyle` before/after
+
 # 📗 선택
 
 # ✅ 완료
+
+## Issue359: `exercise`·`exercise-small` 본문 들여쓰기가 안 먹는다 — CSS 명시도 충돌 (등록: 2026-09-19, 해결: 2026-09-19, commit: `d537625`) ✅
+* 목적: prj60 작업 중 실측으로 드러난 것. `default_lec` 테마의 `exercise` 계열 layout 이 본문 좌측 들여쓰기를 선언해 두고도 **적용받지 못해** 나비 마스코트가 글자를 덮는다. 원고가 아니라 CSS 명시도 문제다
+* 상세:
+    - 충돌 표 (먼저 로드되는 쪽이 **명시도로** 이긴다):
+
+      | 출처 | 선택자 | 명시도 | 선언 |
+      | :--- | :--- | :--- | :--- |
+      | [base.css](lib/css/base.css) L782 (먼저 로드) | `.reveal section[class*="layout-"] > div[class$="-body"]` | **0-3-2** | `padding: 1em 0` |
+      | [default_lec/slide.css](theme/default_lec/slide.css) L507·L522 (나중 로드) | `.reveal section.layout-exercise .exercise-body` | 0-3-1 | `padding-left: 18%` |
+
+    - shorthand `padding: 1em 0` 이 `padding-left`·`padding-right` 를 **0 으로 리셋**한다. 나중에 로드돼도 명시도가 낮아 theme 선언이 진다
+    - 실측(ego-browser `getComputedStyle`, 1920 기준): **before `padding: 40px 0px 40px 0px`** — 선언한 18%/30%·4% 가 전혀 안 걸렸다
+    - 증상: 나비(`background-position: 4% 60%`, `background-size: 14%`)가 본문 글자와 겹친다. `exercise-small` 은 나비가 22% 라 더 심하다. 부수적으로 `htmlart numbered` SVG 가 폭이 안 줄어 본문 영역을 넘친다
+    - 🔴 **`#layout-exercise` 실사용 0건**(`Projects/` 전수 grep)인 이유가 이것으로 보인다 — 안 쓴 게 아니라 **써 보니 깨져서** 안 쓴 것. 동시에 기존 덱에 회귀 위험이 없는 근거이기도 하다
+    - 같은 결함이 `theme/default` 에도 **글자 그대로 복제**돼 있었다(L469·L484) — 함께 고쳤다
+* 구현 명세:
+    - 선택자에 **자식 결합자 + 요소 선택자**(`> div`)를 넣어 0-3-2 동점을 만든다. 동점이면 나중 로드가 이긴다
+    - `.reveal section.layout-exercise > div.exercise-body` · `.reveal section.layout-exercise-small > div.exercise-body`
+    - ⚠️ **base.css 는 고치지 않는다** — [CLAUDE.md](CLAUDE.md) 의 base.css 가드(사용자 컨펌 필수)와 우선순위 규칙(`theme slide.css > layout CSS > base.css`)을 따라 theme 에서 끝낸다
+    - 장황해 보이는 선택자가 되돌려지지 않도록 **왜 `> div` 가 필요한지** 주석을 규칙 위에 남긴다
+    - 검증: 대표 프로젝트 2종 빌드 + 테스트 필수 4항목 + `exercise` 최소 원고로 `padding-left` 실측
+* 결과:
+    - 실측 **before `padding-left: 0px` → after `325.44px`(= 1808 × 18%)** · exercise-small `0px → 542.40px`(= 30%) · `padding-right` 양쪽 `72.31px`(= 4%). 나비와 본문이 겹치지 않음을 캡처로 확인
+    - 회귀 검증: `./m2slide.sh m2Slide_single_mode`·`m2Slide_chapter_mode` rc0. 산출 diff 는 **캐시버스터 타임스탬프 + 본 수정분뿐**. 테스트 필수 4항목(첫 슬라이드 제목·다음 슬라이드 제목·스크롤 `overflow-y: auto` 유지·880×587 리사이즈) 전건 통과, 콘솔 에러 0
+    - 전수 확인 중 **같은 충돌이 live layout 6종에 더 있음**을 발견 — 기존 덱 렌더가 바뀌는 범위라 [Issue360](#issue360) 으로 분리
 
 ## Issue343: m2slide 파서와 pandoc 이 같은 원고를 다르게 읽는다 — HTML 덱과 pptx 가 갈린다 (등록: 2026-09-10, 해결: 2026-09-11, commit: `fd7567e`, `8ad540c`, `4e904c4`, `a0621e9`) ✅
 * 목적: Issue342 왕복 검증 중에 드러난 것. **왕복 문제가 아니라 산출물 불일치**다 — 같은 원고가 HTML 덱과 pptx 에서 다른 모양으로 렌더된다
