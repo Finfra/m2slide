@@ -143,6 +143,16 @@ MATH = re.compile(r"\$\$.+?\$\$|\\\(.+?\\\)|\\\[.+?\\\]", re.S)
 def norm(s):
     s = MATH.sub(" ", s or "")
     s = LANE_B_NUM.sub("", s)
+    #   인라인 마크업·인용 접두를 벗긴다 (Issue358). 이 검사가 묻는 것은 *"글자가
+    #   전달됐는가"* 이지 *"기호까지 같은가"* 가 아니다. 실측(m2Slide_chapter_mode):
+    #   HTML 조각 `와 *이탤릭체*를 지원합니다.` 와 pptx 의 `…이탤릭체를 지원합니다.`,
+    #   HTML `> 인용문…` 과 pptx `인용문…` 이 기호 하나로 갈려 모자람으로 잡혔다.
+    s = re.sub(r"\*\*|__|`", "", s)
+    #   ⚠️ 쌍을 **먼저** 푼다. 경계 단언(`(?!\w)`)만 쓰면 한글 뒤 `*` 가 남는다 —
+    #      파이썬 `\w` 는 유니코드라 `를` 이 단어문자다(실측: `와 이탤릭체*를 …`)
+    s = re.sub(r"\*([^*\n]+)\*", r"\1", s)
+    s = re.sub(r"(?<!\w)[*_](?=\S)|(?<=\S)[*_](?!\w)", "", s)
+    s = re.sub(r"^[ \t]*>[ \t]?", "", s)
     s = re.sub(r"\s+", " ", s).strip()
     return s
 
@@ -156,8 +166,112 @@ def tokens(chunks):
     for c in chunks:
         for line in re.split(r"[\n\r\x0b]+", c):
             t = norm(line)
+            #   원고 끝의 고아 `---` 는 슬라이드 구분자로 소비되지 못하고 HTML 에
+            #   `<p>---</p>` 로 남는다. pptx 는 내지 않는 것이 맞다 — 콘텐츠가 아니다
+            if re.fullmatch(r"[-*_]{3,}", t):
+                continue
             if len(t) >= 2:
                 out.append(t)
+    return out
+
+
+def untitled_head_texts(project_dir):
+    """**제목 없는 장**의 머리말 글자 (Issue358).
+
+    lane T 는 장의 제목을 열쇠로 HTML 에서 머리말을 찾고, 본문 장식 경로 전체가
+    제목 placeholder 존재를 전제한다(`ttl is not None`). `### H3` 로만 시작하는
+    슬라이드는 pandoc 이 제목 없는 장으로 내므로 **열쇠도 자리도 없다** — 그래서
+    그 장만 머리말 글자가 비어 있다(실측 m2Slide_chapter_mode: `4.1. 이미지`·
+    `4.2. 리스트` 각 2회 · 2026-09-19).
+
+    계약은 같은 뿌리(`subheading` caveat)에서 이미 *"순번으로 세는 것도 불안정하니
+    근사하지 않고 선언한다"* 고 정했다. 여기서도 근사하지 않고 면제하되 **개수를
+    보고한다** — 숨기면 제목 있는 장의 머리말이 통째로 빠져도 조용히 지나간다.
+
+    ⚠️ 그래서 면제는 **제목 없는 section 의 머리말**로만 한정한다.
+    """
+    import glob as _g
+    from pptx import Presentation
+    name = os.path.basename(project_dir.rstrip("/"))
+    pptx_path = os.path.join(project_dir, "slide", "%s.pptx" % name)
+    if not os.path.isfile(pptx_path):
+        return set()
+    #   ⚠️ **제목이 없는 쪽은 pptx 다.** HTML 은 `### H3` 도 슬라이드 제목으로
+    #      렌더하지만(`class="title"`), pandoc 은 `--slide-level=2` 라 H3 장을
+    #      제목 없는 장으로 낸다. 그래서 HTML 만 보고 "제목 없는 장" 을 고르면
+    #      **한 장도 안 걸린다**. pptx 에서 고르고 그 글자로 HTML 을 찾는다.
+    keys = set()
+    for sl in Presentation(pptx_path).slides:
+        has_title = any(sh.has_text_frame and sh.name.startswith("Title")
+                        and sh.text_frame.text.strip() for sh in sl.shapes)
+        if has_title:
+            continue
+        for sh in sl.shapes:
+            if sh.has_text_frame and sh.text_frame.text.strip():
+                keys.add(norm(sh.text_frame.text.strip().splitlines()[0]))
+                break
+    if not keys:
+        return set()
+    files = sorted(_g.glob(os.path.join(project_dir, "slide", "*.html")))
+    use = [f for f in files
+           if os.path.basename(f) not in ("index.html", "agenda.html")]
+    out = set()
+    for f in use:
+        h = open(f, encoding="utf-8").read()
+        for sec in re.findall(r"<section[^>]*>.*?(?=<section|\Z)", h, re.S):
+            t = re.search(r'class="(?:contents-)?title"[^>]*>(.*?)</', sec, re.S)
+            if not t or norm(re.sub(r"<[^>]+>", " ", t.group(1))) not in keys:
+                continue
+            for cls in ("contents-head-left", "contents-head-right"):
+                m = re.search(r'class="%s"[^>]*>(.*?)</div>' % cls, sec, re.S)
+                if m:
+                    v = norm(re.sub(r"<[^>]+>", " ", m.group(1)))
+                    if len(v) >= 2:
+                        out.add(v)
+    return out
+
+
+def declared_drop_texts(project_dir):
+    """계약이 **버리기로 선언한** 것들의 글자 (Issue358).
+
+    `div_other`(raw HTML) · `mermaid_fence` · `component_fence` 는 fidelity.yml 이
+    `declared_drop` 으로 선언한 요소다 — pptx 에 없는 것이 계약대로다. 그런데 이
+    전수 대조는 HTML ↔ pptx 를 **직접** 비교하느라 계약을 보지 않아, 계약대로
+    사라진 글자를 전부 실패로 들었다(실측 m2Slide_chapter_mode: raw HTML `<p>첫 번째
+    카드의 내용입니다.</p>` 류 · 2026-09-19).
+
+    ⚠️ **원고에서 모은다** — 중간 산출물(`_pipeline/`)을 읽으면 그때그때 달라지고,
+    빌드를 안 돌린 상태에서 못 잰다.
+    """
+    import glob as _g
+    srcs = sorted(_g.glob(os.path.join(project_dir, "markdown", "*.md")))
+    if not srcs:
+        srcs = [f for f in sorted(_g.glob(os.path.join(project_dir, "*.md")))
+                if os.path.basename(f) != "AGENDA.md"]
+    out = set()
+    tag = re.compile(r"<[^>]+>")
+    for f in srcs:
+        in_fence, keep = False, False
+        for ln in open(f, encoding="utf-8"):
+            m = re.match(r"^[ \t]*```([\w-]*)", ln)
+            if m:
+                if not in_fence:
+                    in_fence = True
+                    #   pptx 로 옮겨지는 펜스(코드블록)는 면제 대상이 아니다
+                    keep = (m.group(1) or "") in ("", "text")
+                else:
+                    in_fence = False
+                continue
+            if in_fence:
+                if not keep:
+                    t = norm(ln)
+                    if len(t) >= 2:
+                        out.add(t)
+                continue
+            if ln.lstrip().startswith("<"):
+                t = norm(tag.sub(" ", ln))
+                if len(t) >= 2:
+                    out.add(t)
     return out
 
 
@@ -321,8 +435,20 @@ def main():
     p_text = collections.Counter(tokens([t for s in ps for t in s["text"]]))
     miss_c = h_text - p_text
     extra_c = p_text - h_text
-    missing = sorted(miss_c.elements(), key=lambda x: (-len(x), x))
-    missing = sorted(set(missing), key=lambda x: (-len(x), x))
+    missing = sorted(set(miss_c.elements()), key=lambda x: (-len(x), x))
+    #   ① 조각 경계가 다를 뿐인 것을 뺀다 (Issue358). 이 검사가 묻는 것은 *"글자가
+    #      pptx 에 있는가"* 이지 *"줄 나눔이 같은가"* 가 아니다. 실측: HTML 이 네 줄로
+    #      보여 주는 것을 pptx 는 한 문단에 공백으로 이어 담는다(CommonMark 느슨한
+    #      이어짐) — 같은 글자인데 조각 단위가 달라 전부 모자람으로 잡혔다.
+    p_blob = norm(" ".join(t for s_ in ps for t in s_["text"]))
+    missing = [t for t in missing if t not in p_blob]
+    #   ② 계약이 버리기로 선언한 것을 뺀다 — 없는 것이 계약대로다
+    dropped = declared_drop_texts(proj)
+    missing = [t for t in missing if t not in dropped]
+    #   ③ 제목 없는 장의 머리말 — 계약 `head_bar_text`(known_gap). 면제하되 센다
+    head_gap = untitled_head_texts(proj)
+    head_gap = sorted(t for t in missing if t in head_gap)
+    missing = [t for t in missing if t not in head_gap]
     extra = sorted(set(extra_c.elements()), key=lambda x: (-len(x), x))
 
     h_img = sum(len(s["img"]) for s in hs)
@@ -351,6 +477,9 @@ def main():
     print("자산  CSS 참조 %d종 · pptx 미포함 %d종"
           % (len(theme_used), len(asset_missing)))
     print("-" * 76)
+    if head_gap:
+        print("ℹ️  제목 없는 장의 머리말 %d종은 계약이 선언한 차이다 (head_bar_text) — %s"
+              % (len(head_gap), ", ".join(head_gap[:4])))
     if missing:
         print("❌ pptx 에 없는 글자 %d종 (긴 것부터 %d개)"
               % (len(missing), min(a.max_report, len(missing))))
