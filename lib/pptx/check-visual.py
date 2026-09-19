@@ -416,6 +416,41 @@ def main():
         "%d장 · 위반 %d" % (cap_n, len(cap_bad)), not cap_bad, "; ".join(cap_bad))
 
     # ⑨ 남은 꼴 — 카드 밴드·자간 등 기계로 잴 수 없는 것
+    # ⑫ 테마 밖 폰트 — 주 러너가 옮겨 오며 **잃었던 축** (Issue358 재실행에서 발각)
+    #
+    #   `3.parity.sh` ⑥ 이 igTest 에서 `Menlo ×5` 를 잡았는데, 같은 결함이 aTest 에도
+    #   있는데도 이 러너는 통과시켰다 — `body_font`(서체 일치)는 있어도 **템플릿 밖 서체를
+    #   세는 축이 없었기 때문**이다. 주 러너가 3.parity → 6.roundtrip 으로 옮겨 가며
+    #   검출 축 하나가 조용히 사라졌고, 구 러너로 재지 않았다면 계속 안 보였을 것이다.
+    #
+    #   왜 중요한가 — 템플릿에 없는 서체는 **그 폰트가 없는 머신에서 조용히 대체된다**.
+    #   배포본이 보는 사람마다 달라지므로 `check-conform` 도 이것을 센다.
+    #   ⚠️ 화이트리스트로 덮지 말 것 — 덮는 순간 이 축의 존재 이유가 사라진다
+    #      (3.parity.sh 머리말의 같은 경고. 실제로 Courier ×20 을 그렇게 잡아냈다).
+    #      허용 서체를 늘려야 한다면 **정책(transform.yml `font`)에 적고 그 값을 읽는다**.
+    #   허용 기준은 **pptx 템플릿이 실제로 들고 있는 서체**(테마 major/minor)다.
+    #   ⚠️ 정책(`transform.yml font.*`)을 허용 근거로 삼지 않는다 — 그러면 정책에 적기만
+    #      하면 통과하므로 "화이트리스트로 덮기" 와 실질이 같아지고, 이 축이 막으려던
+    #      위험(뷰어 머신에 그 폰트가 없어 조용히 대체됨)은 그대로 남는다.
+    #      첫 판이 정확히 그 함정을 밟아 `font.code: Menlo` 때문에 Menlo 를 통과시켰다.
+    theme_fonts = {x for x in (pf.get("majorFont"), pf.get("minorFont")) if x}
+    used = {}
+    for sl in slides:
+        for sh in iter_shapes(sl):
+            if not sh.has_text_frame:
+                continue
+            for para in sh.text_frame.paragraphs:
+                for r_ in para.runs:
+                    nm = r_.font.name
+                    if nm:
+                        used[nm] = used.get(nm, 0) + 1
+    outside = {f: c for f, c in used.items() if f not in theme_fonts}
+    add("font_outside_theme",
+        ("템플릿 서체 %s" % ", ".join(sorted(theme_fonts))) if theme_fonts else "(템플릿 서체 없음)",
+        ("밖 %s" % ", ".join("%s ×%d" % kv for kv in sorted(outside.items()))) if outside
+        else "밖 0",
+        not outside)
+
     add("layout_ornament", "theme CSS 의 세부 꼴", "(부분 이식)", False)
 
     w = max(len(r[0]) for r in rows) + 2
