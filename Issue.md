@@ -43,6 +43,9 @@
     - ~~**표 정렬 소실**~~ ✅ **계약 오판이었다** (commit `85fa4bc`) — `fidelity.yml` 이 `lossy`("정렬 지시자는 대응 어휘가 없어 소실")로 선언했으나 실측하면 LEFT/CENTER/RIGHT 가 **전부 보존**된다. 구 근거 덱 aTest 의 표는 세 열이 모두 `:---`(좌측)이라 **정렬 차이가 드러날 수 없었다**. `lossless` 로 정정. 교훈: 근거 덱이 그 축을 담지 않으면 *"차이 없음"* 과 *"차이를 못 봄"* 이 구분되지 않는다
     - **코드 상자 안 수식** — 코드 다음 문단의 OMML 은 PowerPoint 렌더를 봐야 한다(LibreOffice 는 fallback 평문)
     - **cards 본문 여러 줄·2단계** — aTest 는 한 줄 카드뿐. 여러 줄·`-` 2단계 카드의 높이 규칙(`card_geometry.body_line_h`) 실측
+    - **🔴 러너가 잃은 축 — "테마 밖 폰트 0"** (순환 테스트 재실행 2026-09-19 발견). `3.parity igTest` ⑥ 이 Menlo ×5 를 잡았는데 **aTest 에도 Menlo 가 있다**(p4). 그런데 `6.roundtrip aTest` 는 통과한다 — 그 러너의 시각 축에 `body_font`(서체 일치)는 있어도 **테마 밖 폰트를 세는 축이 없기 때문**이다. 주 러너가 `3.parity` → `6.roundtrip` 으로 옮겨 가며 **검출 축 하나가 조용히 사라졌다**. 축이 없으면 고쳐도 고쳐졌는지 잴 수 없으므로 **이것을 먼저** 복원한다. 그 다음 Menlo 잔존 원인 실측(theme 서체는 NanumGothicCoding 이고 retheme 가 `typeface=` 를 치환하는데 남았다 — 못 훑는 자리인지 그 뒤에 심어진 것인지)
+    - **`3.parity` 기대값이 낡았다** — igTest 4/7 중 ①③④ 는 회귀가 아니다. `45a644e`("진입 장 판정을 HTML 과 일치")가 `cards_placeholder=false` 덱에서 H1 진입 장을 생략하도록 바꾼 **의도된 결과**이고 장 수도 계산이 맞는다(HTML 본문 39 − 진입 5 + 표지 1 + 목차 1 + Agenda 1 = 37). 러너가 구 기준(진입 5장)을 들고 있다. 기대값을 맞추든 `6.roundtrip` 으로 일원화하든 **두 러너의 기대값이 갈리는 구조**부터 정한다
+    - **raw HTML 태그가 pptx 에 글자로 노출** — `m2Slide_chapter_mode` 내용 대조의 *"pptx 에만 있는 글자"* 에 `<li>원하는 레이아웃을 직접 구성할 수 있습니다.</li>` 등이 그대로 있다. HTML 빌드에서는 태그로 렌더되지만 pptx 에서는 글자다. 러너는 *"HTML 글자가 pptx 에 전부 있는가"* 가 기준이라 통과시키지만 청중은 `<li>` 를 본다
 * 구현 명세:
     - 한 항목마다 ① ego-browser 로 HTML 실측 ② `soffice --headless --convert-to pdf` + `pdftoppm` 렌더 ③ 나란히 대조 ④ 정책 갱신(backup 후, 단독 커밋) ⑤ 필요 시 lane T/G 코드 ⑥ `./z_test/ig-ppt/6.roundtrip.sh aTest` 전건 + `4.laneb`·`5.lanem`·`--lint-data`
     - 정책이 소유해야 할 값(좌표·색·서체·기하)은 코드에 박지 않는다 — 검사기가 그 정책을 읽어 must_match 로 잰다
