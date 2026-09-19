@@ -29,21 +29,6 @@
 
 # 🚧 진행중
 
-## Issue385: 실습 2종 layout 이 이론 장과 머리 구조가 갈린다 — head-bar 부재 + 제목 브러시 잘림 (등록: 2026-09-20)
-* 목적: 실습 장표가 이론 장표와 **다른 덱처럼** 보인다. 제목 아래 노랑 브러시가 글자 폭에서 끊기고, 상단 보조 제목(head-bar) 두 칸이 아예 없다. 같은 과정 안에서 장을 넘길 때마다 제목이 좌우로 출렁인다
-* 상세:
-    - 요청 출처: prj60 `__lec` 강의 덱(`202609_Rebuild/1.design_rnd`) — m2slide 저장소에서 `exercise` 계열을 실제로 쓰는 **유일한 덱**이다(`Projects/1.design_rnd` 심볼릭 링크)
-    - **제목 브러시**: [base.css §1208](lib/css/base.css) 이 `section[class*="layout-"] > div[class$="-header"]` 에 `display:flex` 와 `align-items:center` 를 함께 준다. flex 교차축이 `center` 면 자식이 shrink-to-fit 이 되어 `.exercise-title` 박스가 글자 폭만큼만 잡히고 `::after` 의 `hr.png` 가 그 안에서 끊긴다. 이론 장은 제목이 `-header` div 밖(section 직계 `.title`)이라 이 규칙을 안 받아 전폭이었다
-    - **head-bar**: 실습 템플릿에 `{{head_left}}`·`{{head_right}}` 슬롯이 아예 없었다. `html-builder` 는 layout 과 무관하게 두 값을 `vars` 에 넣으므로 템플릿만 받으면 된다
-    - ⚠️ **head-bar 규칙이 layout 이름을 나열하는 선택자로 4곳에 흩어져 있고 실습 2종이 네 목록에 전부 빠져 있었다** — `position:relative` · `::after` 브러시 · `display:flex` 본체 · 좌/우 자식·빈 값 숨김. 그래서 슬롯만 달면 `display:block`·`position:static`·브러시 없음으로 떨어진다
-    - 실측(수정 전, `offsetWidth` 기준): 이론 제목폭 **1808**·left **56** 고정 vs 실습 **1312·1610·1220** / left **304·155·350** 유동
-* 구현 명세:
-    - 템플릿 [6.1.exercise.html](theme/default_lec/layouts/6.1.exercise.html)·[6.2.exercise-small.html](theme/default_lec/layouts/6.2.exercise-small.html) 에 head-bar 추가 + `@meta` slots 갱신. 죽은 `exercise-divider` 는 제거(`_stripEmptyWrappers` 가 지우고 theme §3 이 숨기는 이중 사문)
-    - theme 에 실습 전용 블록 — `align-items: stretch` · 제목 `margin-left/right: 0; width: 100%` · head-bar 규칙 한 벌
-    - 🔴 **`margin: 0 auto` 가 `align-items` 를 이긴다** — flex 아이템의 auto margin 이 남는 공간을 먼저 흡수한다. 교차축만 바꿔서는 안 되고 좌우 margin 을 0 으로 되돌려야 한다
-    - 🔴 **기존 `.layout-exercise .exercise-header` 블록에 합치지 말 것** — (0,3,1) 이라 base.css 의 (0,3,2) 에 진다. 자식 결합자 + `div` 요소로 동점을 만들어야 후순위 로드가 이긴다
-    - 검증: 이론 장과 head-bar top·height·display·브러시, 제목 top·width·left, body top 이 **전부 일치**할 것 + 3덱 전수 계측 회귀 0
-
 # 📕 중요
 
 # 📙 일반
@@ -68,6 +53,25 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue385: 실습 2종 layout 이 이론 장과 머리 구조가 갈린다 — head-bar 부재 + 제목 브러시 잘림 (등록: 2026-09-20, 해결: 2026-09-20, commit: 4af5434) ✅
+* 목적: 실습 장표가 이론 장표와 **다른 덱처럼** 보인다. 제목 아래 노랑 브러시가 글자 폭에서 끊기고, 상단 보조 제목(head-bar) 두 칸이 아예 없다. 같은 과정 안에서 장을 넘길 때마다 제목이 좌우로 출렁인다
+* 상세:
+    - 요청 출처: prj60 `__lec` 강의 덱(`202609_Rebuild/1.design_rnd`) — m2slide 저장소에서 `exercise` 계열을 실제로 쓰는 **유일한 덱**이다(`Projects/1.design_rnd` 심볼릭 링크)
+    - **제목 브러시**: [base.css §1208](lib/css/base.css) 이 `section[class*="layout-"] > div[class$="-header"]` 에 `display:flex` 와 `align-items:center` 를 함께 준다. flex 교차축이 `center` 면 자식이 shrink-to-fit 이 되어 `.exercise-title` 박스가 글자 폭만큼만 잡히고 `::after` 의 `hr.png` 가 그 안에서 끊긴다. 이론 장은 제목이 `-header` div 밖(section 직계 `.title`)이라 이 규칙을 안 받아 전폭이었다
+    - **head-bar**: 실습 템플릿에 `{{head_left}}`·`{{head_right}}` 슬롯이 아예 없었다. `html-builder` 는 layout 과 무관하게 두 값을 `vars` 에 넣으므로 템플릿만 받으면 된다
+    - ⚠️ **head-bar 규칙이 layout 이름을 나열하는 선택자로 4곳에 흩어져 있고 실습 2종이 네 목록에 전부 빠져 있었다** — `position:relative` · `::after` 브러시 · `display:flex` 본체 · 좌/우 자식·빈 값 숨김. 그래서 슬롯만 달면 `display:block`·`position:static`·브러시 없음으로 떨어진다
+    - 실측(수정 전, `offsetWidth` 기준): 이론 제목폭 **1808**·left **56** 고정 vs 실습 **1312·1610·1220** / left **304·155·350** 유동
+* 구현 명세:
+    - 템플릿 [6.1.exercise.html](theme/default_lec/layouts/6.1.exercise.html)·[6.2.exercise-small.html](theme/default_lec/layouts/6.2.exercise-small.html) 에 head-bar 추가 + `@meta` slots 갱신. 죽은 `exercise-divider` 는 제거(`_stripEmptyWrappers` 가 지우고 theme §3 이 숨기는 이중 사문)
+    - theme 에 실습 전용 블록 — `align-items: stretch` · 제목 `margin-left/right: 0; width: 100%` · head-bar 규칙 한 벌
+    - 🔴 **`margin: 0 auto` 가 `align-items` 를 이긴다** — flex 아이템의 auto margin 이 남는 공간을 먼저 흡수한다. 교차축만 바꿔서는 안 되고 좌우 margin 을 0 으로 되돌려야 한다
+    - 🔴 **기존 `.layout-exercise .exercise-header` 블록에 합치지 말 것** — (0,3,1) 이라 base.css 의 (0,3,2) 에 진다. 자식 결합자 + `div` 요소로 동점을 만들어야 후순위 로드가 이긴다
+    - 검증: 이론 장과 head-bar top·height·display·브러시, 제목 top·width·left, body top 이 **전부 일치**할 것 + 3덱 전수 계측 회귀 0
+* 결과: 이론 장과 **전 축 일치** — head-bar top 28 · height 37 · `display:flex` · `hr.png` 브러시, 제목 top 65 · **width 1808(전폭)** · left 56 고정, body top 198. 실습 `exercise`·`exercise-small`·검증 장 모두 같은 값
+* 회귀: 3덱 197장 전수 계측 **0건**(표지 `::part` 오탐 1건씩은 기존과 동일). 변경이 전부 `.layout-exercise`/`-small` 스코프라 다른 layout 은 선택자에 닿지 않는다
+* ⚠️ 동시 편집 — `theme/default_lec/slide.css` 에 제3 세션의 미커밋 27줄(2026.09.19)이 있어 **hunk 단위로 인덱스에만 적용**해 커밋했다. 워킹트리의 남의 변경은 보존했고 커밋에 섞이지 않은 것을 `git diff --cached` 로 확인했다
+
 
 ## Issue384: prj8 cg crossfeed 접수 — 주입 2건 판정 + svg-direct·free-image 전역 자산 명시 (등록: 2026-09-20, 해결: 2026-09-20, commit: `f789ae7, 100308d`) ✅
 * 목적: prj8 이 `ppt-maker`(prj3) ↔ m2slide 축을 대조해 보낸 주입 후보 2건을 실측으로 판정하고, m2slide 소유이면서 전역에서 호출되는 자산 2종을 문서에 명시한다.
