@@ -289,6 +289,152 @@ def build_process_drawing(items, ids, G, scale, px2emu):
     return xml.encode("utf-8"), (W, H)
 
 
+# ── chevron (Basic Chevron Process) ──────────────────────────────────────────
+#
+#   `renderChevron` 은 갈매기를 **tip 만큼 겹쳐 문다** — i 번째 왼쪽 패인 자리에 i-1
+#   번째 화살촉이 들어간다. 그래서 전체 폭이 `N×chW` 가 아니라 `N×chW − (N−1)×tip` 이다.
+#   맨 앞은 왼쪽이 평평하므로(`notch=0`) preset 도 다르다 — `homePlate` 대 `chevron`.
+
+def chevron_layout(items, G):
+    """renderChevron 과 같은 좌표(viewBox 단위). 반환: (W, H, boxes) · boxes=(x,y,w,h,notch)."""
+    n = len(items)
+    cw, chh = G["ch_w"], G["ch_h"]
+    tip = chh * G["tip_ratio"]
+    px, py = G["pad_x"], G["pad_y"]
+    W = px * 2 + n * cw - (n - 1) * tip
+    H = py * 2 + chh
+    boxes = []
+    for i in range(n):
+        x = px + i * (cw - tip)
+        boxes.append((x, py, cw, chh, 0.0 if i == 0 else tip))
+    return W, H, boxes, tip
+
+
+def build_chevron_model(items, spec, drawing_rid):
+    """`chevron1` 의 데이터 모델 — **자식 없는 갈래**(`parTxOnly`·`parTxOnlySpace`).
+
+    ⚠️ chevron1 은 `maxDepth val=2` 로 갈래가 갈린다. 자식이 있으면 `composite` 아래
+       `parTx`(chevron)+`desTx`(rect) 두 도형이 되는데, HTML 은 갈매기 **하나 안에**
+       제목·부제를 함께 넣는다(`centerLabel`). 캐시와 데이터 모델이 어긋나므로 그
+       갈래는 만들지 않고 lane B 로 되돌린다(`needs_flat`).
+    """
+    lo, qs, cs = spec["layout"], spec["style"], spec["colors"]
+    pres_id = URN + "layout/" + lo
+    n = len(items)
+    DOC = gid()
+    pts, cxns = [], []
+    pts.append('<dgm:pt modelId="%s" type="doc"><dgm:prSet loTypeId="%s" loCatId="%s" '
+               'qsTypeId="%s" qsCatId="%s" csTypeId="%s" csCatId="%s" phldr="0"/>'
+               '<dgm:spPr/>%s</dgm:pt>'
+               % (DOC, pres_id, CAT["layout"], URN + "quickstyle/" + qs, CAT["style"],
+                  URN + "colors/" + cs, CAT["colors"], _t("")))
+    node_ids, sib_ids = [], []
+    for i, it in enumerate(items):
+        nid, pt_, st_, c_ = gid(), gid(), gid(), gid()
+        pts.append('<dgm:pt modelId="%s"><dgm:prSet phldrT="[텍스트]"/><dgm:spPr/>%s</dgm:pt>'
+                   % (nid, _t(it["title"])))
+        pts.append('<dgm:pt modelId="%s" type="parTrans" cxnId="%s"><dgm:prSet/><dgm:spPr/>%s</dgm:pt>'
+                   % (pt_, c_, _t("")))
+        pts.append('<dgm:pt modelId="%s" type="sibTrans" cxnId="%s"><dgm:prSet/><dgm:spPr/>%s</dgm:pt>'
+                   % (st_, c_, _t("")))
+        cxns.append('<dgm:cxn modelId="%s" srcId="%s" destId="%s" srcOrd="%d" destOrd="0" '
+                    'parTransId="%s" sibTransId="%s"/>' % (c_, DOC, nid, i, pt_, st_))
+        node_ids.append(nid)
+        sib_ids.append(st_)
+
+    P_DIAG = gid()
+    pts.append('<dgm:pt modelId="%s" type="pres"><dgm:prSet presAssocID="%s" presName="diagram" '
+               'presStyleCnt="0"><dgm:presLayoutVars><dgm:dir/><dgm:resizeHandles val="exact"/>'
+               '</dgm:presLayoutVars></dgm:prSet><dgm:spPr/></dgm:pt>' % (P_DIAG, DOC))
+    p_nodes, p_spaces = [], []
+    for i in range(n):
+        pn = gid()
+        p_nodes.append(pn)
+        pts.append('<dgm:pt modelId="%s" type="pres"><dgm:prSet presAssocID="%s" presName="parTxOnly" '
+                   'presStyleLbl="node1" presStyleIdx="%d" presStyleCnt="%d"><dgm:presLayoutVars>'
+                   '<dgm:bulletEnabled val="1"/></dgm:presLayoutVars></dgm:prSet><dgm:spPr/></dgm:pt>'
+                   % (pn, node_ids[i], i, n))
+        if i < n - 1:
+            ps = gid()
+            p_spaces.append(ps)
+            pts.append('<dgm:pt modelId="%s" type="pres"><dgm:prSet presAssocID="%s" '
+                       'presName="parTxOnlySpace" presStyleCnt="0"/><dgm:spPr/></dgm:pt>'
+                       % (ps, sib_ids[i]))
+    for i in range(n):
+        cxns.append('<dgm:cxn modelId="%s" type="presOf" srcId="%s" destId="%s" srcOrd="0" destOrd="0" '
+                    'presId="%s"/>' % (gid(), node_ids[i], p_nodes[i], pres_id))
+        if i < n - 1:
+            cxns.append('<dgm:cxn modelId="%s" type="presOf" srcId="%s" destId="%s" srcOrd="0" destOrd="0" '
+                        'presId="%s"/>' % (gid(), sib_ids[i], p_spaces[i], pres_id))
+    k = 0
+    for i in range(n):
+        cxns.append('<dgm:cxn modelId="%s" type="presParOf" srcId="%s" destId="%s" srcOrd="%d" destOrd="0" '
+                    'presId="%s"/>' % (gid(), P_DIAG, p_nodes[i], k, pres_id))
+        k += 1
+        if i < n - 1:
+            cxns.append('<dgm:cxn modelId="%s" type="presParOf" srcId="%s" destId="%s" srcOrd="%d" destOrd="0" '
+                        'presId="%s"/>' % (gid(), P_DIAG, p_spaces[i], k, pres_id))
+            k += 1
+
+    xml = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+           '<dgm:dataModel xmlns:dgm="%s" xmlns:a="%s"><dgm:ptLst>%s</dgm:ptLst>'
+           '<dgm:cxnLst>%s</dgm:cxnLst><dgm:bg/><dgm:whole/>'
+           '<dgm:extLst><a:ext uri="http://schemas.microsoft.com/office/drawing/2008/diagram">'
+           '<dsp:dataModelExt xmlns:dsp="%s" relId="%s" minVer="%s"/></a:ext></dgm:extLst>'
+           '</dgm:dataModel>'
+           % (NS["dgm"], NS["a"], "".join(pts), "".join(cxns), NS["dsp"], drawing_rid, DIAGRAM_URI))
+    return xml.encode("utf-8"), {"nodes": p_nodes, "sibs": p_spaces}
+
+
+def build_chevron_drawing(items, ids, G, scale, px2emu):
+    """dsp:drawing — 갈매기 preset. 맨 앞은 `homePlate`(왼쪽 평평), 나머지는 `chevron`."""
+    W, H, boxes, tip = chevron_layout(items, G)
+    n = len(items)
+    e = lambda v: int(round(v * scale * px2emu))
+    pt100 = lambda v: int(round(v * scale * px2emu / 12700 * 100))
+    base = G.get("opacity_base", 0.6)
+    sps = []
+    for i, (bx, by, bw, bh, notch) in enumerate(boxes):
+        it = items[i]
+        alpha = base + (1.0 - base) * (i / float(max(n - 1, 1)))
+        paras = ['<a:p><a:pPr marL="0" lvl="0" indent="0" algn="ctr"><a:lnSpc><a:spcPct val="120000"/></a:lnSpc>'
+                 '<a:spcBef><a:spcPct val="0"/></a:spcBef><a:spcAft><a:spcPct val="0"/></a:spcAft><a:buNone/></a:pPr>'
+                 '<a:r><a:rPr lang="ko-KR" sz="%d" b="1" kern="1200"><a:solidFill><a:srgbClr val="FFFFFF"/>'
+                 '</a:solidFill></a:rPr><a:t>%s</a:t></a:r></a:p>'
+                 % (pt100(G["title_fs"]), escape(it["title"]))]
+        #   화살촉 깊이는 **짧은 변** 기준이다 — chevron/homePlate 의 adj 규약
+        adj = int(round(tip / float(min(bw, bh)) * 100000))
+        prst = "homePlate" if i == 0 else "chevron"
+        #   글자는 갈매기의 **평행사변형 속살**에만 놓는다 (HTML centerLabel 과 같은 상자)
+        tx, tw = bx + notch, bw - tip - notch
+        sps.append(
+            '<dsp:sp modelId="%s"><dsp:nvSpPr><dsp:cNvPr id="0" name=""/><dsp:cNvSpPr/></dsp:nvSpPr>'
+            '<dsp:spPr><a:xfrm><a:off x="%d" y="%d"/><a:ext cx="%d" cy="%d"/></a:xfrm>'
+            '<a:prstGeom prst="%s"><a:avLst><a:gd name="adj" fmla="val %d"/></a:avLst></a:prstGeom>'
+            '<a:solidFill><a:schemeClr val="accent1"><a:alpha val="%d"/></a:schemeClr></a:solidFill>'
+            '<a:ln w="%d" cap="flat" cmpd="sng" algn="ctr"><a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill>'
+            '<a:prstDash val="solid"/></a:ln><a:effectLst/></dsp:spPr>%s'
+            '<dsp:txBody><a:bodyPr spcFirstLastPara="0" vert="horz" wrap="square" lIns="%d" tIns="%d" '
+            'rIns="%d" bIns="%d" numCol="1" spcCol="1270" anchor="ctr" anchorCtr="0"><a:noAutofit/></a:bodyPr>'
+            '<a:lstStyle/>%s</dsp:txBody>'
+            '<dsp:txXfrm><a:off x="%d" y="%d"/><a:ext cx="%d" cy="%d"/></dsp:txXfrm></dsp:sp>'
+            % (ids["nodes"][i], e(bx), e(by), e(bw), e(bh), prst, adj, int(round(alpha * 100000)),
+               e(2), _STYLE, e(6), e(6), e(6), e(6), "".join(paras),
+               e(tx), e(by), e(max(tw, 20)), e(bh)))
+    xml = ('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+           '<dsp:drawing xmlns:dsp="%s" xmlns:dgm="%s" xmlns:a="%s"><dsp:spTree>'
+           '<dsp:nvGrpSpPr><dsp:cNvPr id="0" name=""/><dsp:cNvGrpSpPr/></dsp:nvGrpSpPr><dsp:grpSpPr/>%s'
+           '</dsp:spTree></dsp:drawing>' % (NS["dsp"], NS["dgm"], NS["a"], "".join(sps)))
+    return xml.encode("utf-8"), (W, H)
+
+
+#   레이아웃 → (데이터 모델 빌더, 캐시 빌더). 새 종류는 여기 한 줄로 붙는다
+BUILDERS = {
+    "process1": (build_process_model, build_process_drawing),
+    "chevron1": (build_chevron_model, build_chevron_drawing),
+}
+
+
 # ── 패키지에 심기 ─────────────────────────────────────────────────────────────
 
 def _next_index(pkg):
@@ -300,11 +446,14 @@ def _next_index(pkg):
 
 
 def insert_process(slide, prs, items, spec, G, art, px2emu, res_dir, descr="m2slide:content/smartart"):
-    """`htmlart process` 항목을 Basic Process SmartArt 로 그 장에 심는다.
+    """htmlArt 항목을 SmartArt 로 그 장에 심는다 — 레이아웃은 `spec["layout"]` 이 정한다.
 
-    art  = {l, t, w, h} 캔버스 px — HTML `.htmlart-process` 상자. svg 는 그 안에
-           `viewBox` 비율을 지켜(letterbox) 가운데 놓이므로 프레임도 그렇게 잡는다.
-    반환: 프레임(px) dict. 자원이 없으면 None(호출자가 lane B 로 되돌린다).
+    art  = {l, t, w, h} 캔버스 px — HTML 의 htmlArt 상자. svg 는 그 안에 `viewBox`
+           비율을 지켜(letterbox) 가운데 놓이므로 프레임도 그렇게 잡는다.
+    반환: 프레임(px) dict. 자원이 없거나 레이아웃을 모르면 None(호출자가 lane B 로 되돌린다).
+
+    ⚠️ 이름은 `insert_process` 로 남겨 둔다 — lane-g 가 그 이름으로 부른다. 하는 일은
+       레이아웃 디스패치다(`BUILDERS`).
     """
     from pptx.opc.package import Part
     from pptx.opc.packuri import PackURI
@@ -314,7 +463,14 @@ def insert_process(slide, prs, items, spec, G, art, px2emu, res_dir, descr="m2sl
         if b is None:
             return None
         blobs[kind] = b
-    W, H, _, _, _ = process_layout(items, G)
+    builders = BUILDERS.get(spec["layout"])
+    if builders is None:
+        return None                      # 모르는 레이아웃 — 근사하지 않고 lane B 로 넘긴다
+    build_model, build_drawing = builders
+    if spec["layout"] == "chevron1":
+        W, H, _, _ = chevron_layout(items, G)
+    else:
+        W, H, _, _, _ = process_layout(items, G)
     scale = min(art["w"] / float(W), art["h"] / float(H))
     fx = art["l"] + (art["w"] - W * scale) / 2.0
     fy = art["t"] + (art["h"] - H * scale) / 2.0
@@ -332,8 +488,8 @@ def insert_process(slide, prs, items, spec, G, art, px2emu, res_dir, descr="m2sl
     #      `diagramDrawing` rId10). data 파트에 걸면 LibreOffice 가 캐시를 못 찾아 **빈 그룹**
     #      으로 들여온다(실측 2026-09-11 A/B — 관계 위치만 옮기자 그려졌다)
     rid_dr = slide.part.relate_to(drawing, RT["drawing"])
-    data_xml, ids = build_process_model(items, spec, rid_dr)
-    drawing_xml, _ = build_process_drawing(items, ids, G, scale, px2emu)
+    data_xml, ids = build_model(items, spec, rid_dr)
+    drawing_xml, _ = build_drawing(items, ids, G, scale, px2emu)
     data._blob = data_xml
     drawing._blob = drawing_xml
     parts = {"data": data, "layout": mk("layout", blobs["layout"]),

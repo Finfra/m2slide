@@ -94,12 +94,26 @@ def main():
     for i, s in enumerate(slides):
         index.setdefault(laneb.slide_title(s) or "", []).append(i)
 
-    done, skipped = 0, []
+    done, skipped, demoted = 0, [], 0
+
+    def demote(t, spec, why):
+        """이 대상만 lane B 로 되돌린다 — 뒤에 도는 lane B 가 사이드카를 그대로 읽는다."""
+        nonlocal demoted
+        t["lane"] = "b"
+        t["kind"] = (spec or {}).get("fallback", "process")
+        demoted += 1
+        skipped.append(why)
+
     for t in targets:
         title, label = laneb.norm(t["title"]), "%s / %s" % (t.get("src", "?"), t["title"][:28])
         spec = catalog.get(t.get("raw"))
         if not spec:
             skipped.append("%s — 카탈로그에 없다(%r)" % (label, t.get("raw")))
+            continue
+        #   ⚠️ 하위 항목이 있으면 레이아웃 갈래가 달라지는 종류가 있다(chevron1 의
+        #      `composite`+`desTx`). 검증되지 않은 갈래를 **근사하지 않고** 되돌린다
+        if spec.get("needs_flat") and any(it.get("subs") for it in t["items"]):
+            demote(t, spec, "%s — 하위 항목이 있어 lane B 로 (레이아웃 갈래 미지원)" % label)
             continue
         cand = index.get(title, [])
         if t["ord"] >= len(cand):
@@ -114,7 +128,7 @@ def main():
         if keep is None:
             skipped.append("%s — 본문 문단이 사이드카와 다르다(원고 변경?)" % label)
             continue
-        G = pol.get("process_geometry") or {}
+        G = pol.get(spec.get("geometry") or "process_geometry") or {}
         art = dict(G.get("art") or {"l": 56, "t": 245, "w": 1808, "h": 939})
         if keep:
             #   앞 문단이 남으면 그 아래부터 — 줄 높이는 본문 글자(45.4px) 어림
@@ -127,13 +141,18 @@ def main():
             ph._element.getparent().remove(ph._element)
         frame = smartart.insert_process(slide, prs, t["items"], spec, G, art, px2emu, res_dir)
         if frame is None:
-            skipped.append("%s — 자원 파일 부재(%s)" % (label, spec))
+            demote(t, spec, "%s — 자원 부재 또는 미지원 레이아웃(%s)" % (label, spec.get("layout")))
             continue
         done += 1
 
     prs.save(a.out_pptx)
-    print("  lane G SmartArt — %d/%d장 (%s)" % (done, len(targets),
-          " · ".join(sorted({t.get("raw", "?") for t in targets}))))
+    if demoted:
+        #   개별 강등분을 사이드카에 되적는다 — lane B 가 이어받아 그린다
+        with open(sidecar, "w", encoding="utf-8") as f:
+            json.dump(side, f, ensure_ascii=False, indent=2)
+    print("  lane G SmartArt — %d/%d장%s (%s)"
+          % (done, len(targets), (" · lane B 로 %d" % demoted) if demoted else "",
+             " · ".join(sorted({t.get("raw", "?") for t in targets}))))
     for s in skipped:
         warn(s)
     return 0
