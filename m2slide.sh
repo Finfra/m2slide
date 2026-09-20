@@ -608,11 +608,15 @@ if [ "$GENERATE_PDF" = true ]; then
   echo ""
   echo "📄 Generating PDF files..."
   
-  if command -v decktape &> /dev/null; then
-      DECKTAPE_CMD="decktape"
-  else
-      echo "  ⚠️  Decktape not found in PATH. Using npx..."
-      DECKTAPE_CMD="npx -y decktape"
+  # Issue399: decktape 를 직접 부르지 않는다.
+  #   decktape 는 슬라이드별 Chrome 폰트 서브셋을 «이름으로» 통합하면서 FontFile2 만
+  #   갈아끼우고 각 페이지의 CIDToGIDMap·/W·콘텐츠 CID 는 그대로 둔다 → 한글이 **다른
+  #   글자로 치환**된다. 텍스트 레이어는 원문 그대로라 추출 검사로는 안 잡힌다.
+  #   래퍼가 통합을 끈 사본을 만들어 실행하고, 패치가 안 먹으면 거기서 죽는다.
+  DECKTAPE_CMD="$SCRIPT_DIR/lib/pdf/decktape-run.sh"
+  if [ ! -x "$DECKTAPE_CMD" ]; then
+    echo "  ❌ lib/pdf/decktape-run.sh 가 없거나 실행 권한이 없습니다 (Issue399)" >&2
+    exit 1
   fi
 
   if ls "$OUTPUT_DIR"/*.html 1> /dev/null 2>&1; then
@@ -622,95 +626,126 @@ if [ "$GENERATE_PDF" = true ]; then
     mkdir -p "$PDF_TMP_DIR"
     PDF_EXPECT=0      # Issue398: decktape 가 찍었다고 보고한 장 수의 총합 (합본 기대치)
     PDF_LOSS=0        #           한 장이라도 어긋나면 1
+    PDF_DECK_SIZE=""  # Issue402: agenda.html 은 Reveal 덱이 아니라 자기 크기를 모른다 —
+                      #           형제 챕터가 알려준 값을 물려받는다
 
     # Detect single-page mode: in single mode index.html IS the slide deck;
-    # in chapter mode index.html is a redirect/cover and agenda.html is the
-    # Markmap landing — neither is a Reveal.js deck.
+    # in chapter mode index.html is the deck cover and agenda.html is the
+    # Markmap landing — neither is a chapter, but **둘 다 PDF 에 들어가야 한다**(Issue402).
     SINGLE_PAGE_MODE=false
     if [ "$INPUT_DIR" = "$PROJECT_DIR" ]; then
       SINGLE_PAGE_MODE=true
     fi
 
-    for file in "$OUTPUT_DIR"/*.html; do
-      filename=$(basename "$file")
+    # 한 HTML → 한 PDF. 크기 산출·decktape 호출·손실 대조·폰트 격리 검사를 한 자리에 둔다.
+    #   $1 입력 html · $2 출력 pdf · $3 크기 override("" 면 HTML 에서 읽음) · $4.. decktape 인자
+    _pdf_export() {
+      local _html="$1" _out="$2" _size_override="$3"; shift 3
+      local _nm _size _rev _w _h _log _printed _inpdf
+      _nm="$(basename "${_out%.pdf}")"
 
-      # agenda.html is a Markmap landing page in both modes — never a Reveal deck
-      if [ "$filename" == "agenda.html" ]; then
-        continue
-      fi
-
-      # In chapter mode, index.html is redirect/cover (not a deck) — skip.
-      # In single-page mode, index.html IS the deck — process it.
-      if [ "$filename" == "index.html" ] && [ "$SINGLE_PAGE_MODE" != true ]; then
-        continue
-      fi
-
-      name="${filename%.*}"
-      echo "  Processing $filename..."
-
-      # Issue396: decktape 는 --size 미지정 시 1280x720(16:9)로 굳는다 — 4:3·3:2 덱은
-      #   비율이 어긋나 전 페이지가 잘린다(실측 1.design_rnd: 표지 제목이 좌측 1/3 에
-      #   찍히고 본문 다이어그램·하단 불릿이 통째로 소실. exit 0 이라 빌드는 성공으로 보인다).
-      #   16:9 프로젝트에서는 우연히 일치해 드러나지 않아 4:3 에서만 표면화됐다.
-      #
-      #   크기는 **산출 HTML 이 이미 답을 갖고 있다** — `Reveal.initialize` 의 width/height 가
-      #   `slide_ratio` 해석의 최종 결과다. 그 값을 그대로 읽어 넘긴다.
-      #   ⚠️ 여기에 «비율 → 치수» 매핑표를 두지 않는 이유 — 그 표가 곧 **두 번째 판정 지점**이
-      #      되어 lib/config.js 의 해석과 갈린다. HTML 에서 읽으면 비율이 늘어도 여기는 안 고친다.
-      DECK_SIZE=""
-      _rev_init=$(sed -n '/Reveal\.initialize(/,/^[[:space:]]*});/p' "$file")
-      _dw=$(printf '%s\n' "$_rev_init" | sed -n 's/^[[:space:]]*width:[[:space:]]*\([0-9]\{1,\}\).*/\1/p' | head -1)
-      _dh=$(printf '%s\n' "$_rev_init" | sed -n 's/^[[:space:]]*height:[[:space:]]*\([0-9]\{1,\}\).*/\1/p' | head -1)
-      if [ -n "$_dw" ] && [ -n "$_dh" ]; then
-        DECK_SIZE="--size ${_dw}x${_dh}"
+      # Issue396: 크기는 **산출 HTML 이 이미 답을 갖고 있다** — Reveal.initialize 의
+      #   width/height 가 slide_ratio 해석의 최종 결과다. 여기에 매핑표를 두지 않는다.
+      _size=""
+      if [ -n "$_size_override" ]; then
+        _size="$_size_override"
       else
-        # 읽기 실패를 조용히 넘기지 않는다 — 기본값으로 떨어지면 비율이 어긋난 PDF 가
-        # 성공처럼 나오는 것이 바로 이 이슈의 증상이다
-        echo "  ⚠️  $filename: Reveal 크기를 못 읽음 — decktape 기본값(16:9)으로 진행, 비율 확인 필요"
+        _rev=$(sed -n '/Reveal\.initialize(/,/^[[:space:]]*});/p' "$_html")
+        _w=$(printf '%s\n' "$_rev" | sed -n 's/^[[:space:]]*width:[[:space:]]*\([0-9]\{1,\}\).*/\1/p' | head -1)
+        _h=$(printf '%s\n' "$_rev" | sed -n 's/^[[:space:]]*height:[[:space:]]*\([0-9]\{1,\}\).*/\1/p' | head -1)
+        if [ -n "$_w" ] && [ -n "$_h" ]; then
+          _size="${_w}x${_h}"
+          PDF_DECK_SIZE="$_size"
+        else
+          # 읽기 실패를 조용히 넘기지 않는다 — 기본값으로 떨어지면 비율이 어긋난 PDF 가
+          # 성공처럼 나오는 것이 Issue396 의 증상 자체였다
+          echo "  ⚠️  $(basename "$_html"): Reveal 크기를 못 읽음 — decktape 기본값(16:9), 비율 확인 필요"
+        fi
       fi
 
-      # Run decktape and filter out known non-critical SVG errors
+      _log="$PDF_TMP_DIR/.$_nm.decktape.log"
       # Issue398: 출력을 tee 로 남겨 `Printed N slides` 를 회수한다 — 그 수가 이 장의
-      #   **기대 페이지 수**다. 아래에서 산출 PDF 와 대조하고, 총합을 합본 단계로 넘긴다.
-      _dtlog="$PDF_TMP_DIR/.$name.decktape.log"
+      #   기대 페이지 수다. 아래에서 산출 PDF 와 대조하고 총합을 합본 단계로 넘긴다.
       # shellcheck disable=SC2086
-      $DECKTAPE_CMD $DECK_SIZE reveal "$file" "$PDF_TMP_DIR/$name.pdf" 2>&1 \
-        | tee "$_dtlog" \
+      "$DECKTAPE_CMD" ${_size:+--size $_size} "$@" "$_html" "$_out" 2>&1 \
+        | tee "$_log" \
         | grep -vE "Error: <g> attribute transform|translate\(NaN,NaN\)"
 
-      # Check exit code of the first command in the pipe (decktape)
-      if [ "${PIPESTATUS[0]}" -eq 0 ]; then
-          # Issue398: decktape 가 찍었다고 말한 수와 **파일에 실제로 담긴 수**를 대조한다.
-          #   둘이 갈리면 그 장에서 이미 잃은 것이고, 여기서 안 잡으면 합본까지 조용히 간다.
-          _printed=$(grep -oE "Printed [0-9]+ slides" "$_dtlog" | tail -1 | grep -oE "[0-9]+")
-          _inpdf=$(python3 -c "
+      if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+        echo "  ❌ Failed to generate PDF for $_nm"
+        PDF_LOSS=1
+        return 1
+      fi
+
+      _printed=$(grep -oE "Printed [0-9]+ slides" "$_log" | tail -1 | grep -oE "[0-9]+")
+      _inpdf=$(python3 -c "
 from Quartz import PDFDocument
 from Foundation import NSURL
 import sys
 d=PDFDocument.alloc().initWithURL_(NSURL.fileURLWithPath_(sys.argv[1]))
 print(d.pageCount() if d is not None else -1)
-" "$PDF_TMP_DIR/$name.pdf" 2>/dev/null)
-          if [ -n "$_printed" ] && [ -n "$_inpdf" ] && [ "$_printed" != "$_inpdf" ]; then
-            echo "  ❌ $name.pdf: decktape 는 ${_printed}장을 찍었다는데 파일엔 ${_inpdf}p 뿐이다 — 이 장에서 손실"
-            PDF_LOSS=1
-          else
-            echo "  ✅ Generated: $name.pdf (${_inpdf:-?}p)"
-          fi
-          if [ -n "$_printed" ]; then
-            PDF_EXPECT=$(( PDF_EXPECT + _printed ))
-          fi
+" "$_out" 2>/dev/null)
+      if [ -n "$_printed" ] && [ -n "$_inpdf" ] && [ "$_printed" != "$_inpdf" ]; then
+        echo "  ❌ $_nm.pdf: decktape 는 ${_printed}장을 찍었다는데 파일엔 ${_inpdf}p 뿐이다 — 이 장에서 손실"
+        PDF_LOSS=1
       else
-          echo "  ❌ Failed to generate PDF for $name"
-          PDF_LOSS=1
+        echo "  ✅ Generated: $_nm.pdf (${_inpdf:-?}p)"
       fi
+      [ -n "$_printed" ] && PDF_EXPECT=$(( PDF_EXPECT + _printed ))
+
+      # Issue399: 글리프 치환은 **텍스트 추출로 안 잡힌다**. 구조로 잰다 —
+      #   FontFile2 를 여러 페이지가 공유하면 통합이 돈 것이고 곧 치환된 PDF 다.
+      if ! python3 "$SCRIPT_DIR/lib/pdf/check-pdf-fonts.py" "$_out"; then
+        PDF_LOSS=1
+      fi
+      return 0
+    }
+
+    # ── 챕터 본문 ─────────────────────────────────────────────────────────────
+    for file in "$OUTPUT_DIR"/*.html; do
+      filename=$(basename "$file")
+      # index.html·agenda.html 은 챕터가 아니다 — 아래에서 따로 뽑는다
+      [ "$filename" == "agenda.html" ] && continue
+      if [ "$filename" == "index.html" ] && [ "$SINGLE_PAGE_MODE" != true ]; then
+        continue
+      fi
+      echo "  Processing $filename..."
+      _pdf_export "$file" "$PDF_TMP_DIR/${filename%.*}.pdf" "" reveal
     done
+
+    # ── 표지·목차 (Issue402) ──────────────────────────────────────────────────
+    #   chapter mode 에서 index.html(덱 표지)·agenda.html(전체 목차)이 통째로
+    #   빠져 있었다. 챕터마다 자기 표지·자기 목차는 있어서 «있는 것처럼» 보이지만
+    #   덱 제목과 전체 차례는 어디에도 없다 — 배포본으로는 결함이다.
+    PDF_COVER=""
+    PDF_AGENDA=""
+    if [ "$SINGLE_PAGE_MODE" != true ]; then
+      if [ -f "$OUTPUT_DIR/index.html" ]; then
+        echo "  Processing index.html (덱 표지)..."
+        _pdf_export "$OUTPUT_DIR/index.html" "$PDF_TMP_DIR/000-cover.pdf" "" reveal \
+          && PDF_COVER="$PDF_TMP_DIR/000-cover.pdf"
+      fi
+      if [ -f "$OUTPUT_DIR/agenda.html" ]; then
+        # agenda.html 은 Reveal 덱이 아니라 Markmap 랜딩이다 — generic 플러그인으로
+        # 한 장만 찍는다. markmap 은 JS 렌더라 pause 를 넉넉히 주고, --media print 로
+        # 웹 UI(다운로드 버튼)를 인쇄에서 뺀다.
+        echo "  Processing agenda.html (전체 목차)..."
+        _pdf_export "$OUTPUT_DIR/agenda.html" "$PDF_TMP_DIR/001-agenda.pdf" "$PDF_DECK_SIZE" \
+          --pause 3000 generic --max-slides 1 --media print \
+          && PDF_AGENDA="$PDF_TMP_DIR/001-agenda.pdf"
+      fi
+    fi
 
     # Combine per-chapter PDFs into a single PDF in slide/ for download button
     echo ""
     echo "  📚 Combining chapter PDFs..."
     COMBINED_PDF="$OUTPUT_DIR/$PROJECT_NAME.pdf"
+    # 순서는 파일명 정렬에 맡기지 않는다 — 표지·목차가 먼저다
     PDF_LIST=()
+    [ -n "$PDF_COVER" ] && PDF_LIST+=("$PDF_COVER")
+    [ -n "$PDF_AGENDA" ] && PDF_LIST+=("$PDF_AGENDA")
     while IFS= read -r p; do
+      case "$(basename "$p")" in 000-cover.pdf|001-agenda.pdf) continue ;; esac
       PDF_LIST+=("$p")
     done < <(find "$PDF_TMP_DIR" -maxdepth 1 -name "*.pdf" | sort)
 
@@ -719,13 +754,24 @@ print(d.pageCount() if d is not None else -1)
         echo "  ✅ Combined PDF saved to slide/: $PROJECT_NAME.pdf"
       else
         echo "  ❌ Failed to combine PDFs"
+        PDF_LOSS=1
       fi
     else
       echo "  ⚠️  No chapter PDFs found to combine."
+      PDF_LOSS=1
     fi
 
     # Clean up temp dir (per-chapter PDFs)
     rm -rf "$PDF_TMP_DIR"
+
+    # Issue399/401: 여기까지 왔는데 PDF_LOSS 가 서 있으면 **성공으로 보고하지 않는다**.
+    #   구 코드는 이 값을 세워 두고 아무 데서도 읽지 않아, 장 단위 손실을 알고도
+    #   exit 0 으로 끝났다.
+    if [ "$PDF_LOSS" -ne 0 ]; then
+      echo ""
+      echo "  ❌ PDF 생성에 결함이 있습니다 — 위 판정 줄을 읽고 배포 전에 확인하십시오." >&2
+      exit 2
+    fi
   else
     echo "  ⚠️  No HTML files found to convert."
   fi
