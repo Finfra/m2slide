@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 387
+* Issue HWM: 389
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -25,6 +25,11 @@
 
 # 🌱 이슈후보
 
+1. single mode 의 H1 을 원고로 되찾기 — chapter mode 는 챕터 TOC 장 제목에서 되찾았으나(Issue388) single mode 는 H1 만 있던 장이 pptx 에 흔적을 남기지 않아 불가. 정방향이 신호(lane S·docProps)만 남기면 되고 **deck 은 변하지 않는다**(되살린 `# H1` 을 재빌드하면 `cards_placeholder: false` 가 다시 지운다). 닫으면 `fidelity.yml h1_chapter` 를 `lossy` 로 올릴 수 있다
+1. 구조적 4축을 되찾을지 — `component_fence`·`wordart_fence`·`mermaid_fence`·`inline_symbol`. 되찾으려면 **원고 조각을 pptx 안에 밀반입**(도형 alt-text·docProps)해야 한다. `6.roundtrip` ④ 커닝 검사는 «pptx 안의 신호» 를 허용하므로 규칙상 가능하지만, alt-text 는 접근성 창에 노출되고 캡션 축과 겹친다 — **제품 결정이 필요**하다(사용자 판단 대기)
+1. `m2Slide_chapter_mode` 의 `bullet_nesting` ±4 — m2slide(2칸=1레벨) ↔ pandoc(CommonMark) 해석차. **왕복 문제이기 전에 HTML·pptx 산출물 불일치**다(`fidelity.yml` caveat 에 🚧 로 있음)
+1. `::: part` 를 소비하지 않는 테마에서 그 블록이 **조용히 사라진다** — `theme/default` 의 `_chapter.html` 에 `{{part}}` 가 없어 원고에 쓴 5개가 HTML·pptx 양쪽에서 버려진다(aTest-all 실측). 슬롯 미소비를 저작 단계에서 경고할지
+
 
 # 🚧 진행중
 
@@ -35,6 +40,49 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue389: 왕복 — 정방향이 pptx 로 옮기지 않아 신호 자체가 없는 2축 (등록: 2026-09-20, 해결: 2026-09-20, commit: `2d734b3`, `3cbe7c8`, `cce46d7`, `ecddf22`) ✅
+* 결과:
+    - ① `part_label` — **테마 조건부였다.** `{{part}}` 슬롯은 `default_lec` 에만 있어 `default` 덱은 HTML 도 그 글자를 렌더하지 않는다(aTest-all HTML 0회 · igTest 5회). 원고의 `::: part` 유무로 판정하면 `default` 덱 pptx 만 더 보여주는 새 불일치가 됐을 것이므로 lane T 가 **빌드 산출 HTML** 을 읽어 판정한다. igTest `part_label` 5/5 · `paragraph` −5 → 0
+    - ② `cards_hyperlink` 2/2 · ③ 카드 코드 인라인 포함 `inline_emphasis` 62/62 — 원인은 **원문이 두 번 벗겨지는 것**이었다(`build-source` ⑫ `strip_inline` → lane T 가 도형에서 다시 평문 읽기). `items_md` 를 나란히 싣고 lane T 가 run 을 쪼개 되입힌다
+    - **고아 rel 규칙은 늘리지 않는다** — 그 rel 은 lane B 가 링크를 걷고 다시 안 달아 생긴 **이 결함의 증상**이었고, 수리 후 0 이다(p19 실측). 남아 보였던 p50 4건은 **표 셀 안** 링크라 제 스캔이 표를 훑지 않은 오탐이었다(`table` 20/20 · `hyperlink` 1/1 통과). 동기가 사라졌고, `check-assembly.py` 는 글로벌 SCAR 라 여기서 고칠 수도 없다
+    - 구 계약의 *"고칠 곳은 글로벌 `ppt-info` 라 m2slide 안에서 못 고친다"* 는 **틀렸다** — 카드를 최종적으로 그리는 주체는 lane T `redraw_cards` 다(Issue349)
+* depends: Issue388
+* 목적: Issue388 과 같은 순환 테스트에서 나온 차이 중 **pptx 에 신호가 아예 없는** 것들이다. 되찾으려면 정방향이 옮겨야 하고 그것은 **pptx 의 보이는 꼴을 바꾼다** — 그래서 역변환 단독 수정인 Issue388 과 갈라 둔다
+* 상세:
+    - **① `part_label` 5→0 · `paragraph` −5 (같은 5건)** — 챕터 머리의 `::: part` 라벨(`Chapter 1.`~`Chapter 5.`)이 pptx 에 **한 글자도 없다**. HTML 챕터 layout 은 그것을 제목 위에 렌더하므로 이것은 원고 축이 아니라 **보이는 것의 차이**다
+    - Issue386 이 이 축을 `declared_drop`(`reverse_action: none`)으로 선언해 러너를 초록으로 만들었다. 선언은 *"모르는 손실"* 을 없애는 장치이지 손실을 정당화하는 장치가 아니므로, 옮길 수 있으면 옮기는 것이 맞다
+    - **② `cards_hyperlink` 2→0** — `::: cards` 안의 `[글자](URL)` 이 도형 글자로만 남고 링크가 빠진다. 다만 **URL 자체는 슬라이드 rel 에 남아 있다**(실측 p19 외부 rel 2건: `github.com/Finfra/m2slide`·`finfra.github.io/m2slide`) — 어느 run 도 그것을 참조하지 않는 **고아 rel** 이다. 즉 lane B 가 원래 문단을 걷을 때 rel 을 지우지 않았고 새 도형에 달지도 않았다
+    - 부수 관측 — 고아 외부 rel 은 `8.assembly` 의 5규칙에 걸리지 않는다(그 규칙은 *지운 슬라이드*의 rel 만 본다). 규칙을 늘릴지는 이 이슈에서 판단한다
+    - **③ 카드 안 코드 인라인 1건** — lane B 가 카드 본문을 단일 run 으로 평탄화해 `_config.yml` 의 서식이 사라진다(Issue388 ③ 이 못 잡는 나머지)
+* 구현 명세:
+    - ⚠️ **글로벌 `ppt-info` 는 무수정 호출이다**(CLAUDE.md lane B). 그러므로 수리 지점은 `lib/pptx/lane-b.py` 의 **병합 단계**이거나 `build-source.py` 의 표시 단계다 — 카드 도형이 자리를 잡은 뒤 링크·서식을 run 에 다시 입히는 후처리
+    - ① `::: part` 는 챕터 진입 장에 텍스트 도형으로 심는다. 좌표는 HTML computed style 실측으로 정한다(Issue379 와 같은 절차). lane T 소관으로 보이나 착수 시 재확인
+    - 시각 축이 바뀌므로 `check-visual`·`3.parity` 를 반드시 함께 돌린다. 되찾으면 `fidelity.yml` 의 `part_label`·`cards_hyperlink` 등급을 올린다
+    - **구조적으로 못 되찾는 축은 이 이슈 밖이다** — `inline_symbol`(`:fa-*:` 글리프 폰트 부재) · `mermaid_fence`(pptx 에 렌더 PNG 만 남고 원본 소스가 없다) · `component_fence`·`wordart_fence`(웹 전용). 이들을 되찾으려면 **원고 조각을 pptx 안에 밀반입**해야 하므로 별도 결정이 필요하다
+
+
+## Issue388: 왕복 — 역변환이 pptx 에 남은 신호를 못 읽어 3축을 버린다 (등록: 2026-09-20, 해결: 2026-09-20, commit: `015ab97`, `813effe`) ✅
+* 결과:
+    - ① `h1_chapter` — chapter mode 3덱 전부 왕복(aTest-all 6/6 · igTest 5/5 · m2Slide_chapter_mode 7/7). **자리가 둘이었다** — `# H1` 만 있던 장은 TOC 로 바뀌고, `# H1`+`## H2` 한 장은 진입 장 **뒤에** TOC 가 붙는다. 구 계약의 recover 지침(*"첫 본문 장에 붙인다"*)대로 했다가 무관한 본문 장이 진입 장으로 오인돼 `h2_slide_title` −6 · `bullets` −21 · `slide_order` −11 로 깨졌고, 사전 패스로 갈라 해결
+    - single mode(aTest) 1건은 남는다 — `cards_placeholder: false` 가 **HTML·pptx 양쪽에서** 그 장을 지우므로 산출물끼리는 어긋나지 않는다. 원고 축만의 격차이고 정방향 표식이 필요해 이슈후보로 넘겼다
+    - ② 카드 본문이 **블록 밖으로 새던** 것 해소 — `bullet_nesting` aTest ±3 · aTest-all ±11 · igTest ±8 → 0. lane B 가 카드를 세 도형(테두리·제목 띠·본문 TextBox)으로 그리는데 역변환이 AUTO_SHAPE 만 봤다
+    - ③ 코드 인라인 — 서체 명시가 신호다. 전수 실측에서 **오탐 0**(본문 run 중 `latin` 명시 6개가 전부 코드 인라인, 일반 불릿 268 run 은 0)
+* 목적: 사용자 지시(2026-09-20) — *"aTest·aTest-all 을 렌더 → pptx → m2slide 로 되돌려 **차이가 없게끔** 순환 테스트"*. `6.roundtrip` 는 두 덱 모두 rc0 이지만 그것은 *"선언된 차이는 통과"* 라는 뜻이고 차이 0 이 아니다. 실측한 차이 중 **신호가 이미 pptx 에 있는데 역변환이 읽지 않아 잃는 것** 3축을 되찾는다
+* 상세:
+    - **① `h1_chapter` 6→0 (aTest-all) · 1→0 (aTest)** — `pptx2source.convert()` 가 챕터를 `if lay == "Section Header"` 로만 판정한다. 그런데 실측 두 덱의 layout 분포는 `Title Slide`·`Title and Content`·`Content with Caption` 뿐으로 **`Section Header` 는 0회** — 그 분기는 죽은 코드다. Issue374(`3.parity` 챕터 경계)·Issue379(lane T 챕터 마스코트)가 걷어낸 **같은 낡은 전제의 세 번째 자리**다
+    - H1 텍스트는 pptx 에 살아 있다 — 정방향이 챕터 진입 장의 H1 을 걷고 그 자리에 `chapter_toc` 장을 만들며 **그 장의 제목이 H1** 이다(실측 p04 제목 `01. 변환 경로 커버리지`). 역변환은 그 장을 `synthesized` 로 지우면서 제목을 읽지 않고 버린다
+    - **② 카드 본문이 블록 밖으로 샌다 → `bullet_nesting` 깊이 1→0 (aTest 3건 · aTest-all 11건)** — lane B 가 카드 한 장을 **세 도형**으로 그린다: 테두리 `Rounded Rectangle`(글자 없음) · 제목 띠 `Rectangle`(AUTO_SHAPE) · 본문 `TextBox`(TEXT_BOX). `group_boxes()` 는 `autoshapes`(AUTO_SHAPE)만 보므로 제목만 집고, 본문 TextBox 는 일반 텍스트 경로로 흘러 **블록 뒤 상위 불릿**이 된다
+    - 실측 대조 — 원본 `* **lane A**` + `  - 불릿·표·이미지` → 왕복 `* **lane A**` … `:::` 뒤에 `* 불릿·표·이미지`. 같은 lane B 의 `htmlart process` 는 한 도형에 제목·본문이 함께 있어 정상 복원된다(`* 기획` / `  - 주제 정의`)
+    - **③ `inline_emphasis` 코드 인라인 7→0 (aTest-all)** — `run_markup()` 이 `b`/`i` 만 마크다운으로 되돌린다. 굵게는 55/55 생존하는데 코드는 **전멸**이다(`` `_config.yml` ``·`` `file://` ``×2·`` `.pptx` ``×2·`` `ppt2m2slide` ``×2)
+    - 신호는 pptx 에 있다 — 코드 폰트 교정이 그 run 에 `latin` 서체를 박는다(`para_kind()` 가 코드**블록** 판정에 이미 쓰는 기제). 전수 실측: 제목·코드문단을 뺀 본문 run 중 `latin` 명시는 aTest-all 에서 **정확히 6개이고 전부 그 코드 인라인**이며 일반 불릿 268 run 은 0 — **오탐 0**
+    - 남은 1건(`_config.yml의 theme·layout`)은 카드 안이라 lane B 가 run 서식을 뭉개 신호가 없다 → Issue389 소관
+* 구현 명세:
+    - 수정 범위는 **`lib/pptx/pptx2source.py` 단독**이다. 정방향(pptx 산출)을 건드리지 않으므로 덱 산출물·시각 축 회귀가 원리적으로 없다
+    - ① 챕터 판정을 **lane S 표식**으로 옮긴다 — `chapter_toc` synth 장을 지울 때 그 제목을 `# H1` 로 뒤따르는 본문 장 앞에 붙인다. 장을 새로 만들지 않으므로 `slide_order` 가 흔들리지 않는다. `Section Header` 분기는 사람이 PowerPoint 에서 만든 pptx 를 위해 **폴백으로 남긴다**
+    - ② 카드 본문 TextBox 를 테두리 도형의 기하로 짝지어 `  - 본문` 으로 내고, 일반 텍스트 경로에서 **제외**한다. 짝짓기 실패 시 현행 동작(상위 불릿)을 유지해 손실이 늘지 않게 한다
+    - ③ `run_markup()` 에 코드 인라인 복원을 더한다. `emphasis` 가 꺼진 자리(코드블록)에서는 하지 않는다 — 하이라이트가 서체를 박으므로 켜면 코드 안에 백틱이 박힌다. 굵게와 겹치면 원고 표기대로 **코드가 안쪽**(`**`x`**`)
+    - 검증: `6.roundtrip aTest`·`aTest-all` 재실행으로 위 3축이 차이 0 이 되는지 · 되찾은 축은 `fidelity.yml` 등급을 실태에 맞게 올린다(`declared_drop`→`lossless` 등) · `3.parity`·`7.coverage`·`8.assembly` 무회귀
 
 ## Issue387: 본문 폰트 family 지정 배선이 끊겨 있었다 — 제한 완화 + 용량 가드레일 (등록: 2026-09-20, 해결: 2026-09-20, commit: `1b1a8d9`) ✅
 * 목적: 사용자 지시(2026-09-20) — *"웹폰트로만 제한하지 말 것. 포털처럼 응답속도가 빠른 사이트가 아님. 단 너무 큰 폰트는 가드레일에서 걸를 것."* 지금은 쓸 수 있는 폰트가 `lib/vendor/` 에 미러된 구글폰트로 좁혀져 있다. 그 제한을 풀되 **과대 폰트 자산은 차단**한다
