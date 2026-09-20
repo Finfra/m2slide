@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""detect-viewport.py — choose Playwright viewport size from project slide_ratio.
+"""detect-viewport.py — choose capture viewport size from project slide_ratio.
 
 Reads Projects/<Name>/_config.yml `slide_ratio` (default 16:9) and emits
-JSON {width, height, ratio} for Playwright screenshot calls.
+JSON {width, height, ratio} for headless screenshot calls (ego-browser).
 
 Usage:
     detect-viewport.py <project_dir>
@@ -45,7 +45,7 @@ def read_ratio(config_path: Path) -> str:
 
 
 def main() -> int:
-    p = argparse.ArgumentParser(description="Detect Playwright viewport from slide_ratio.")
+    p = argparse.ArgumentParser(description="Detect capture viewport from slide_ratio.")
     p.add_argument("project_dir", help="Projects/<Name> path")
     args = p.parse_args()
 

@@ -103,7 +103,9 @@ grep -h '^theme:' Projects/<P>/_config.yml _config.yml _config.org.yml 2>/dev/nu
 
 * **ego 는 `file://` 를 연다** — Playwright 가 못 하던 축이다. [file-deployment-rules](file-deployment-rules.md) 의 *"임의 단일 `.html` + `img/` 만으로 동작"* 계약을 **실제 배포 조건 그대로** 헤드리스 검증할 수 있게 됐다. dev-server 경유는 그 계약을 우회한 근사였다
 * **예외는 없다 — 캡처를 포함해 전 축이 ego 다.** 2026-09-19~20 사이 캡처 축이 15초 타임아웃(6회 연속·성공 0회) → 74~85ms(3회 성공)로 뒤집혔다. 구 §4.2 「캡처만 Playwright」 예외는 그 재실측으로 **해제**됐다(Issue397 작업 중 확인)
-* ⚠️ **원인은 규명되지 않은 채 증상만 사라졌다.** 다시 타임아웃이 재현되면 예외를 되살리기 전에 **먼저 실측 수치를 남긴다** — 「느린 것 같다」는 근거가 아니다
+* ⚠️ **원인은 규명되지 않은 채 증상만 사라졌다** — 글로벌 Issue653 은 *"재현되지 않는다"* 로 종결됐지 원인이 잡힌 것이 아니다(독립 2세션 교차 46/46 성공 · 21~94ms). 가설 5종이 **기각**돼 있다: 버전 회귀 ❌(같은 빌드) · 앱 재기동 ❌(실패 때와 같은 프로세스 인스턴스) · TCC 권한 ❌(`Page.captureScreenshot` 은 화면이 아니라 페이지를 뜬다) · 배경 탭·viewport override·대형 서피스 ❌ · 「창 activate 필요」「경로 인자 필수」 ❌(과거 두 번의 오진)
+* 🔴 **다시 15초 타임아웃을 만나면 — 재시도도, 엔진 교체도 아니다.** 남은 가설은 「한 인스턴스 안에서 특정 Page 의 컴포지터만 굳는다」 하나이므로 **처방은 `task.newPage()` 로 새 Page 에서 찍는 것**이다. 같은 Page 를 두들기는 것은 굳은 자리를 다시 두들기는 것이다
+* ⚠️ **표본 없이 가설을 세우지 말 것** — 실패를 만나면 계측을 먼저 돌린다. `bash ~/.claude/sh/ego-capture-probe.sh 5` (원장 `~/.claude/_doc_work/z_log/ego-capture-probe.tsv`). 상세 SSOT 는 글로벌 [web-auto](~/.claude/skills/web-auto/SKILL.md) 「캡처가 15초 타임아웃을 낼 때」
 
 검증 의도에 따라 두 채널 분기:
 

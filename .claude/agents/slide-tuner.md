@@ -304,17 +304,28 @@ for card in payload[1:]:
 
 ## Step 7. 재빌드 + 변경 슬라이드 재캡처
 
-> ⚠️ 아래 캡처가 Playwright 인 것은 **사람이 눈으로 대조할 PNG** 가 산출물이기 때문이다 ([apply-verify-rules](../rules/apply-verify-rules.md) §4.2 예외 — ego 캡처가 전 옵션 15초 타임아웃). **진입·구조 판정은 ego 가 기본**이므로 그 축까지 Playwright 로 끌고 가지 말 것.
+> 캡처 산출물은 **사람이 눈으로 대조할 PNG** 다. 엔진은 **ego** — 2026-09-19 의 15초 타임아웃을 근거로 두었던 Playwright 예외는 2026-09-20 재실측(74~85ms)으로 해제됐다([apply-verify-rules](../rules/apply-verify-rules.md) §4.0). **진입·구조 판정은 `evaluate()`·`snapshot()`** 이 더 정확하니 그 축을 캡처로 대신하지 말 것.
 
 ```bash
 ./m2slide.sh <project>
-
-# 변경된 슬라이드 인덱스 목록 (Step 6 액션 적용 슬라이드)으로 부분 재캡처
-for chap_slide in <changed_list>; do
-    mcp__playwright__browser_navigate "http://localhost:9877/p/<P>/s/${chap_slide}?_=$(date +%s)"
-    mcp__playwright__browser_take_screenshot --filename="$OUT/slide-${chap_slide}.png"
-done
 ```
+
+변경된 슬라이드 인덱스 목록(Step 6 액션 적용 슬라이드)만 부분 재캡처한다. **한 task space 안에서 순회**한다:
+
+```bash
+ego-browser nodejs <<'EOF'
+const task = await taskSpace("slide-tuner 재캡처");
+const page = task.page("cap");
+for (const cs of CHANGED_LIST) {
+  await page.goto(`http://127.0.0.1:9877/p/<P>/s/${cs}?_=${Date.now()}`);
+  await page.waitForLoadState();
+  await page.screenshot({ path: `${OUT}/slide-${cs}.png` });   // 절대경로
+}
+await task.finish({ keep: [] });
+EOF
+```
+
+* ⚠️ 15초 타임아웃이 나면 재시도하지 말고 **`task.newPage()` 로 새 Page 에서** 찍는다 (글로벌 Issue653 처방)
 
 라운드 결과 `_doc_work/tuner/{ts}/round-N.md`에 기록.
 

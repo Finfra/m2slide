@@ -1,6 +1,6 @@
 ---
 title: open-slide
-description: m2slide 슬라이드를 정확한 URL로 열고 포커스 강제 또는 헤드리스 검증. 트리거 — "슬라이드 N번 열어줘", "X.Y #N 보여줘", "검증해줘", "open slide". 인자 `{project} {chapter_prefix} {N} [--firefox] [--build] [--verify]`. 기본 = 시각 채널(AppleScript Chrome + file:// + `?fwd=1#/N`). `--verify` = 헤드리스 채널(HTTP dev-server + Playwright + screenshot + console).
+description: m2slide 슬라이드를 정확한 URL로 열고 포커스 강제 또는 헤드리스 검증. 트리거 — "슬라이드 N번 열어줘", "X.Y #N 보여줘", "검증해줘", "open slide". 인자 `{project} {chapter_prefix} {N} [--firefox] [--build] [--verify]`. 기본 = 시각 채널(AppleScript Chrome + file:// + `?fwd=1#/N`). `--verify` = 헤드리스 채널(HTTP dev-server + ego-browser + screenshot + console).
 date: 2026-05-25
 ---
 
@@ -30,7 +30,7 @@ m2slide 코드/콘텐츠 수정 후 특정 슬라이드(예: `aTest_v1` 08.4 #/6
 | `N` | reveal.js horizontal slide index (0-base) | `6` |
 | `--firefox` | (옵션) Chrome 대신 Firefox 사용 | |
 | `--build` | (옵션) open 전 `./m2slide.sh <project>` 실행 | |
-| `--verify` | (옵션, Issue235) 헤드리스 검증 모드 — HTTP dev-server + Playwright navigate + screenshot + console 캡처 | |
+| `--verify` | (옵션, Issue235) 헤드리스 검증 모드 — HTTP dev-server + ego-browser `goto` + `screenshot` + console 캡처 | |
 
 # 동작 순서
 
@@ -79,7 +79,7 @@ http://localhost:9877/p/<project>/n/<chap>/<section-id>    # deck nav + reveal.j
 
 ## 4. 브라우저 실행 + 포커스 강제
 
-**⚠️ shell `open -a` 명령 금지** — 동일 URL 재호출 시 새 탭만 추가되고 foreground 안 와서 컨텐츠 슬라이드 접속 검증 실패. AppleScript 또는 Playwright만 사용 (apply-verify-rules §4 정책).
+**⚠️ shell `open -a` 명령 금지** — 동일 URL 재호출 시 새 탭만 추가되고 foreground 안 와서 컨텐츠 슬라이드 접속 검증 실패. AppleScript(시각 채널) 또는 ego-browser(헤드리스)만 사용 (apply-verify-rules §4 정책).
 
 기본 (Chrome) — AppleScript:
 
@@ -117,7 +117,7 @@ EOF
 
 ego-browser 대안 (`--firefox` 없이 페이지 콘텐츠 자동 검증이 필요할 때):
 * `ego-browser nodejs` heredoc 에서 `page.goto(...)` — 기본 엔진 ([apply-verify-rules](../../rules/apply-verify-rules.md) §4.0)
-* **`file://` 도 직접 연다** — dev-server 경유가 강제되지 않는다 (Playwright 는 `file://` 차단이라 `--verify` 가 필수였다)
+* **`file://` 도 직접 연다** — dev-server 경유가 강제되지 않는다 (Playwright 는 `file://` 차단이라 `--verify` 가 필수였다. ego 는 배포 조건 그대로 잰다)
 * 판정은 `evaluate()`·`snapshot()`. PNG 가 필요하면 §4.2 예외 경로
 
 ## 4-V. --verify 헤드리스 검증 모드 (Issue235)
@@ -145,13 +145,13 @@ ego-browser 대안 (`--firefox` 없이 페이지 콘텐츠 자동 검증이 필�
     await task.finish({ keep: [] });
     EOF
     ```
-4. 스크린샷이 필요하면 — **현재만** Playwright 예외 ([apply-verify-rules](../../rules/apply-verify-rules.md) §4.2. ego 캡처가 15초 타임아웃):
+4. 스크린샷이 필요하면 — **ego 로 찍는다** (2026-09-20 부로 Playwright 예외 해제):
+    ```js
+    await page.screenshot({ path: "/abs/.../_doc_work/capture/verify-<project>-<chapter_prefix>-<N>.png" });
     ```
-    mcp__playwright__browser_take_screenshot(
-        filename="_doc_work/capture/verify-<project>-<chapter_prefix>-<N>.png"
-    )
-    ```
+    * `path` 는 **절대경로**로 준다 — heredoc 의 cwd 가 호출 위치와 다를 수 있다. 경로 의무는 [capture-output-rules](../../rules/capture-output-rules.md)
     * 구조·텍스트 판정이 목적이면 캡처하지 말 것 — 3번 `evaluate()` 가 더 정확하고 빠르다
+    * 15초 타임아웃을 만나면 재시도가 아니라 `task.newPage()` 로 새 Page 에서 찍는다 ([apply-verify-rules](../../rules/apply-verify-rules.md) §4.0)
 5. console 이벤트에서 `Runtime.exceptionThrown`·`Log.entryAdded`(level=error/warning) 추출
 6. console에서 ERROR·WARN 추출하여 §5 결과 보고에 포함
 

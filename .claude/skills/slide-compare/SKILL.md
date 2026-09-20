@@ -27,7 +27,7 @@ slide-compare <project> --original <pdf_or_pptx_path> [--out <dir>] [--viewport 
 | `<project>` | 필수 | — | `Projects/<Name>` 또는 `<Name>` |
 | `--original <path>` | 필수 | — | 비교 원본 — PDF 직접 또는 PPTX (PPTX는 내부에서 libreoffice 거쳐 PDF 변환) |
 | `--out <dir>` | 선택 | `_doc_work/capture/tuner/<TS>/` | 캡처 출력 디렉토리 |
-| `--viewport WxH` | 선택 | `_config.yml slide_ratio` 기반 자동 | Playwright 캡처 viewport (1920x1080 / 1920x1280 등) |
+| `--viewport WxH` | 선택 | `_config.yml slide_ratio` 기반 자동 | 캡처 viewport (1920x1080 / 1920x1280 등) |
 | `--mode <m>` | 선택 | `all` | `init`(첫 10) / `batch`(HWM..HWM+N) / `end`(마지막 10) / `all`(전체) |
 | `--hwm-file <path>` | 선택 | `_doc_work/tuner/<project>/hwm.yml` | HWM 진행 파일 — batch/init 모드에서 사용 |
 | `--batch <N>` | 선택 | 20 | batch 모드의 카드 수 |
@@ -81,19 +81,31 @@ EOF
 
 `--viewport WxH` 명시 시 우선.
 
-## Step 5 — m2slide 슬라이드 캡처 (Playwright MCP — §4.2 예외)
+## Step 5 — m2slide 슬라이드 캡처 (ego-browser)
 
-> ⚠️ **여기만 Playwright 인 이유**: 본 스킬의 산출물이 *"사람이 눈으로 대조할 PNG"* 라서다. ego 캡처는 2026-09-19 실측에서 전 옵션 15초 타임아웃(6회 연속 실패)이라 [apply-verify-rules](../../rules/apply-verify-rules.md) §4.2 예외에 해당한다. **진입·구조 판정까지 Playwright 로 하지 말 것** — 그 축은 ego 가 기본이다. 예외가 풀리면 이 절도 ego 로 되돌린다.
+> 본 스킬의 산출물은 *"사람이 눈으로 대조할 PNG"* 다. **캡처도 ego 로 찍는다** — 2026-09-19 의 15초 타임아웃을 근거로 두었던 Playwright 예외는 2026-09-20 재실측(74~85ms)으로 해제됐다([apply-verify-rules](../../rules/apply-verify-rules.md) §4.0).
 
 `Projects/<P>/markdown/AGENDA.md` 또는 `slide/*.html` 목록으로 chapter list 산출. 각 챕터의 슬라이드 수는 `http://localhost:9877/p/<P>/s/<chap>` JSON endpoint로 확인.
 
-각 슬라이드:
-```
-mcp__playwright__browser_navigate("http://localhost:9877/p/<P>/s/<chap>/<slide>?_=${TS}")
-mcp__playwright__browser_take_screenshot(filename="{out}/slide-c<chap>-s<slide>.png")
+한 task space 안에서 전 슬라이드를 순회한다 — 슬라이드마다 세션을 새로 열지 않는다:
+
+```bash
+ego-browser nodejs <<'EOF'
+const task = await taskSpace("slide-compare 캡처");
+const page = task.page("cap");
+for (const [chap, slide] of SLIDES) {
+  await page.goto(`http://127.0.0.1:9877/p/<P>/s/${chap}/${slide}?_=${Date.now()}`);
+  await page.waitForLoadState();
+  await page.screenshot({ path: `{out}/slide-c${chap}-s${slide}.png` });   // 절대경로
+}
+await task.finish({ keep: [] });
+EOF
 ```
 
-cache-bust 위해 `?_=${TS}` 쿼리 추가.
+* `path` 는 **절대경로** — heredoc 의 cwd 가 호출 위치와 다를 수 있다
+* cache-bust 위해 `?_=${Date.now()}` 쿼리 추가
+* ⚠️ 15초 타임아웃이 나면 재시도하지 말고 **`task.newPage()` 로 새 Page 에서** 찍는다 — 굳는 것은 Page 단위의 컴포지터다(글로벌 Issue653 처방)
+* **진입·구조 판정까지 캡처로 하지 말 것** — 그 축은 `evaluate()`·`snapshot()` 이 더 정확하고 빠르다
 
 ## Step 6 — pairing.yml 생성
 
