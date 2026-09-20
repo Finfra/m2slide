@@ -24,6 +24,7 @@
   --m2-card-title-fg: var(--m2-text, #111111);       /* 제목 글자: palette text */
   --m2-card-body-bg: rgba(0, 0, 0, 0.04);   /* 본문: 슬라이드 배경 위 옅은 틴트 */
   --m2-card-border: rgba(0, 0, 0, 0.12);    /* 테두리: 옅은 중립색 */
+  --m2-media-border: rgba(0, 0, 0, 0.16);   /* 캡처 이미지 테두리 — 카드보다 한 단계 진하게(흰 배경 캡처 경계용) */
 }
 
 /* 슬라이드 본문 색상 — 흰 배경, 검정 텍스트 (sky.css 의존 제거 후 명시) */
@@ -276,6 +277,32 @@
   flex: 1 1 0;
   min-height: 0;
   overflow: hidden;
+}
+
+/* 캡처 이미지 테두리 — 흰 배경 스크린샷이 흰 슬라이드에 얹히면 경계가 사라져
+   어디까지가 화면 캡처인지 읽히지 않는다. raster 이미지에만 준다:
+   svg(mermaid·htmlArt)는 자체 윤곽이 있고 위 규칙이 100% 로 늘리므로 제외. */
+.reveal .media-container img {
+  border: 2px solid var(--m2-media-border, rgba(0, 0, 0, 0.16));
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* ⚠️ 테두리의 전제 조건 — fit 모드에서 요소 박스를 그려지는 이미지에 맞춘다.
+   base.css §fit 은 img 를 `width/height:100% + object-fit:contain` 으로 만들어
+   요소 박스가 letterbox 여백까지 포함한다(실측 1.design_rnd 3일차: 박스 777×991 에
+   이미지 777×463 — 박스의 53% 가 빈 여백). 그 상태로 테두리를 걸면 이미지가 아니라
+   빈 박스를 두르므로, fit 모드에 한해 auto 사이징으로 되돌려 shrink-wrap 시킨다.
+
+   보이는 이미지 크기는 그대로다 — contain 의 맞춤 결과와 max-width/max-height 의
+   맞춤 결과가 같은 값이기 때문. 다만 원본보다 «확대»되던 이미지는 원본 크기로
+   내려온다(실측 38장 중 2장, 1.82배·1.11배 — 둘 다 확대로 뭉개지던 것).
+   svg 는 대상이 아니다(위 mermaid/media svg 규칙이 계속 100% 로 늘린다). */
+.media-enlarge-fit .reveal section[class*="layout-"] .media-container img {
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
 }
 
 .reveal section[class*="layout-"] .mermaid svg,
@@ -1268,6 +1295,33 @@ body.agenda-page .agenda-frame {
 .reveal section.layout-contents-full > .contents-head-bar:empty,
 .reveal section.layout-contents-full > .contents-head-bar:has(> .contents-head-left:empty):has(> .contents-head-right:empty) {
   display: none;
+}
+
+/* 4:3 덱의 머리말 축소분 보정 (__lec 2026.09.19 요구 — prj42 레퍼런스 덱 대조).
+   4:3 은 1920×1440 이라 세로가 모자란 창에서 3:2(1920×1280) 대비 정확히 12.5% 더 축소된다
+   (1440÷1280 = 1.125. 1600×900 창 실측 배율 0.6250 vs 0.7031, 머리말 화면 12.5px vs 14.1px).
+   머리말은 0.5em 회색이라 그 축소가 "흐리고 작다"로 그대로 체감된다. 축소분만큼 되돌린다.
+   ⚠️ `.reveal.ratio-4-3` 로 스코프한 이유 — 3:2 덱은 축소 손해가 **없다**. 같이 키우면 그쪽만
+   과해진다. 보정은 손해를 본 비율에만 준다. 테마 전역으로 올리면 레퍼런스 덱이 망가진다.
+   ⚠️ 우측 `.contents-head-right` 의 `opacity: 0.75` 는 그대로 둔다 — 좌/우 위계는 테마 의도다. */
+.reveal.ratio-4-3 section[class*="layout-"] > .contents-head-bar {
+  font-size: 0.56em;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+/* 실습·정리 장표의 본문 글자 크기를 이론 장표와 맞춘다 (__lec 2026.09.19 요구).
+   base.css 는 ul/ol 의 `font-size: 1.1em` 을 `_contents`(L876)·`contents-full`(L912) 에만 준다.
+   그 목록에서 실습 2종·summary 가 빠져 있어 같은 불릿이 **이론 44px / 실습 40px** 로 갈렸고,
+   장표를 넘길 때마다 글자가 커졌다 작아졌다 했다. 크기만 맞춘다 — 글꼴·색·굵기는 건드리지 않는다.
+   ⚠️ 근본 원인은 layout 이름을 **나열**하는 선택자다. 새 layout 이 늘 때마다 여기 손대야 하고,
+   실제로 실습 계열은 head-bar·제목 풀폭 브러시에서도 같은 이유로 매번 빠졌다. */
+.reveal section.layout-exercise ul,
+.reveal section.layout-exercise ol,
+.reveal section.layout-exercise-small ul,
+.reveal section.layout-exercise-small ol,
+.reveal section.layout-summary ul,
+.reveal section.layout-summary ol {
+  font-size: 1.1em;
 }
 
 /* =========================================================================
