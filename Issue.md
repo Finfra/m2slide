@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 394
+* Issue HWM: 395
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -36,6 +36,21 @@
 # 🚧 진행중
 
 # 📕 중요
+
+## Issue395: `balance` 라벨 박스가 콘텐츠를 따라 늘지 않아 글자가 잘린다 (등록: 2026-09-20)
+* 목적: 같은 덱 5일차 17장(「청구항을 넓게 쓰는 것과 좁게 쓰는 것」)에서 저울 접시 위 라벨 박스의 **제목 윗줄이 반쯤 잘리고 부제도 아래로 잘린다**. 접수 문구 *"컨텐츠 부분이 위로 늘어나지 않아서 글자가 짤림"*
+* 상세 (실측 2026-09-20 · `z_test/htmlart-fo-audit.mjs` ONLY=balance):
+    - 재현: `http://127.0.0.1:9877/p/1.design_rnd/n/5/17`
+    - 5일차 balance 3장(5·17·58)의 **foreignObject 6개 전부** 세로 넘침 — overV 4.2 · 4.5 · 8.9 · 14.1px
+    - 원인은 `renderBalance` 의 `plateH=78` **고정**이다. 제목 22px·부제 13px 도 고정이라 auto-fit 이 통째로 빠져 있었다 (Issue391 chevron 과 같은 계열의 잔존 부재)
+    - 박스 내부가 `justify-content:center` 라 넘칠 때 **위·아래로 균등하게** 벌어지고 foreignObject 가 그 바깥을 잘라 낸다 → 화면에는 「윗줄이 잘린 제목」으로 나타난다
+    - 가로는 여유가 있었다(over 전부 음수) — **세로 전용** 결함이다
+* 구현 명세:
+    - `plateH` 를 `wrapLines` 실측으로 산출한다. 박스는 접시 **위에** 놓이므로 높이를 키우면 자연히 위로 자란다 — 캔버스(820×460)는 건드리지 않는다(상단 여백이 이미 270px 남아 있었다)
+    - 좌·우는 **큰 쪽으로 통일**한다. 따로 재면 시소 양팔의 박스가 어긋난다
+    - 상한은 기울어진 팔 위에서 박스가 캔버스 상단을 넘지 않는 높이. 걸리면 폰트를 줄여 맞추고, 줄여도 안 들어가면 **`console.warn` 으로 알린다** — 조용히 자르지 않는다
+    - 계산 계수(line-height 1.1·1.3·padding)는 렌더 style 과 **한 쌍**으로 고친다. 한쪽만 고치면 통과한 값이 렌더에서 넘친다
+
 
 # 📙 일반
 
