@@ -134,6 +134,8 @@ types:
   chevron:
     tier: v2
     intent: "순차 단계 (강한 진행감 강조)"
+    max_chars: 14            # 노드 1개 권장 상한 (2자 어절 5줄 보수값 — 넘으면 폰트가 자동 축소된다)
+    max_token_chars: 4       # 공백 없는 토막 상한 — 중간칸이 노치에 깎여 127px 뿐이라 총량보다 토막이 먼저 폰트를 낮춘다 (5자 21px·6자 17px)
     smartart_category: process
     input: "평면 리스트 — 최상위 항목 = 단계, 작성 순서 = 진행 순서"
     sublevel: "하위 들여쓰기 = 단계 보조 설명 (선택)"
