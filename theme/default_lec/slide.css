@@ -451,6 +451,20 @@
   z-index: 100;
 }
 
+/* Issue408: 제목 글자를 head-bar 브러시 위로 올린다.
+   위 브러시는 `bottom:-6px` 로 head-bar 를 **4px 넘어** 제목 박스 안까지 내려오고,
+   `z-index:100` 이라 제목 위에 그려진다(그 z 는 본문에 가려지지 않게 하려는 것 — §2 주석).
+   한글·라틴 글리프는 그 띠까지 올라오지 않아 여태 드러나지 않았으나, **이모지는 em 박스를
+   넘어 위로 뻗어** 그 띠에 걸린다. 브러시가 불투명 PNG 라 손끝이 잘려 나간다.
+   실측(2026-09-20 prj60 1.design_rnd p39·p40·p42): `🙋 실습 P1-1-…` 의 손 윗부분 소실.
+   ⚠️ 여백을 늘려 피하지 않는다 — 화면에선 3px 차로 간신히 비껴가고 PDF 에선 브러시가
+      5px 아래로 내려와 닿는, **여유가 0 에 가까운** 설계가 문제의 본체다. 내용이 장식
+      위에 오게 하면 그 미세한 차이와 무관해진다. 레이아웃은 1px 도 움직이지 않는다. */
+.reveal section[class*="layout-"] > .title {
+  position: relative;
+  z-index: 101;
+}
+
 /* Issue97 (Issue80 §2.5 동기): _contents_no_title — 헤더 영역 없음, 본문이 위까지 차지 */
 .reveal section.layout-_contents_no_title > .contents-body,
 .reveal section.layout-contents_no_title > .contents-body {
