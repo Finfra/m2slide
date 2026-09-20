@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 400
+* Issue HWM: 402
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -43,6 +43,25 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue401: `--pptx` 가 본문 있는 진입 장을 통째로 버린다 — HTML 은 남긴다 (등록: 2026-09-20, 해결: 2026-09-20, commit: `94b3faa`) ✅
+* 목적: 같은 원고로 지은 HTML 과 pptx 의 **내용이 갈린다**. `## N-M.` 진입 장이 `#layout-*` 을 달고 본문(도입 문단·불릿·도해)을 담고 있으면 HTML 은 정상 렌더하는데 pptx 는 그 장을 **통째로 버린다**. 빠진 장은 「비어 있는 장」으로도 세어지지 않아 `check-conform`·`check-empty`·`3.parity` 어느 것도 잡지 못하고 배포까지 조용히 간다.
+* 상세 (실측 2026-09-20, prj60(__lec) `202609_Rebuild/1.design_rnd` · 505장 덱):
+    - 「자식 헤딩을 가졌으면서 본문이 있는 진입 장」이 원고에 **36개**(본문 합 366줄). pptx 505장 전체 텍스트에서 그 제목 표본 5종을 찾았으나 **0건**이다
+    - 표본 `## 4-1. 기술 보고서 초안 작성`(본문 17줄) — HTML `04-day4.html` 에는 도입 문단·quadrantChart 가 모두 있고, pptx 에는 제목도 본문도 이미지도 없다
+    - 그 장에 실려 있던 **mermaid 1건이 장과 함께 사라졌다** — 원고 펜스 18개 → 전처리 소스 17개
+    - 빌드 로그는 이 생략을 `Cards Page 생략 — 자식 헤딩을 가진 진입 장 36개 (HTML 과 같은 판정)` 이라 적는다. **그 괄호가 틀렸고**, 틀린 채로 안심시켜 재발을 덮는다
+* 구현 명세:
+    - 원인은 [`lib/pptx/build-source.py`](lib/pptx/build-source.py) `drop_auto_toc` 가 slide-parser 의 가드 한 줄을 빠뜨린 것이다. HTML 쪽 정본은 [`lib/slide-parser.js`](lib/slide-parser.js) 의 `if (s.layout) return;` — **명시 `#layout-*` 이 붙은 장은 `_cards` autoToc 로 변환하지 않으므로** `cards_placeholder: false` 라도 살아남는다
+    - ⚠️ 같은 파일의 `normalize_chapter` 는 이미 `explicit_entry` 로 그 가드를 갖고 있다. **한 파일 안에서 판정이 갈려 있었다** — H1 진입 장은 지키고 H2 이하 진입 장은 버렸다
+    - 고칠 곳은 `drop_auto_toc` 하나다. `LAYOUT_LINE` 이 걸리는 블록은 건너뛰고, 유지 건수를 로그에 내어 「지켰다」가 보이게 한다
+    - 검증: 고친 뒤 재빌드해 36개 진입 장의 제목·본문이 pptx 에 나타나는지 전수 대조한다. 장 수만 보면 안 된다 — `defer_heavy` 가 장을 쪼개므로 HTML 섹션 수와 pptx 장 수는 원래 일치하지 않는다
+    - 회귀: `./z_test/ig-ppt/3.parity.sh` · `7.coverage.sh`
+* 결과:
+    - [`lib/pptx/build-source.py`](lib/pptx/build-source.py) `drop_auto_toc` 에 `LAYOUT_LINE` 가드를 넣고 유지 건수를 `auto_toc_kept` 로 로그에 냈다. **가드는 자식 확인 뒤에 둔다** — 앞에 두면 애초에 지워지지 않을 장까지 세어 「유지 434개」가 찍히고, 그 수로는 무엇을 지켰는지 못 읽는다(본 이슈가 겨냥한 오해를 로그가 되풀이한다)
+    - 실측 `1.design_rnd`: **505장 → 547장**. 진입 장 36개 제목·본문이 전수 복원됐고, 그 장에 묻혀 있던 mermaid 1건도 살아나 코드펜스 잔존이 2 → **0** 이 됐다
+    - 로그가 `Cards Page 생략 … 36개` 대신 `진입 장 유지 — 명시 layout 36개` 로 바뀌어, 지운 수뿐 아니라 **지킨 수**가 보인다
+    - 회귀 `3.parity.sh igTest` 단언 7종 rc0 · `7.coverage.sh` rc0. 파리티 ①(`42장 = HTML 본문 39 + 구조 3`)이 통과한 것은 **지워야 할 장까지 살려 놓지는 않았다**는 뜻이다
 
 ## Issue400: htmlart `block` — 악센트 바가 글자를 덮는다 (등록: 2026-09-20, 해결: 2026-09-20, commit: `9a87f78`) ✅
 * 목적: `block` 도해의 제목 첫 글자가 좌측 악센트 바에 가려 잘려 보인다. 접수 시 추정은 *"박스 너비가 자동으로 안 늘어난다"* 였으나 **실측 결과가 갈렸다** — 너비가 모자란 것이 아니라 바가 글자 위에 덧칠된 것이다.
