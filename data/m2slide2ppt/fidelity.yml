@@ -232,17 +232,29 @@ elements:
     pptx: "`cards_placeholder` 설정에 달렸다 — 아래"
     grade: declared_drop
     reason: |
-      **설정이 정하는 항목이다.** `cards_placeholder: false` 면 HTML 이 H1 슬라이드를
-      **deck 에서 지우므로**(_config.org.yml 주석) pptx 도 만들지 않는다 — 원고의 H1 은
-      구조 정보로만 남고 장이 되지 않는다. `true` 면 양쪽 모두 장을 만든다.
+      **모드가 정하는 항목이다.** chapter mode 는 H1 을 걷고 그 자리에 챕터 TOC 장을
+      만들며 **그 장의 제목이 H1** 이다 — 즉 글자가 pptx 에 살아 있다. single mode 는
+      `toc_placeholder` 게이트가 chapter mode 로 한정돼 있어(`build-source.py`
+      `toc_ph = flag(...) and is_chapter`) H1 만 있는 장이 **아무 장도 만들지 않고
+      사라진다**. HTML 은 그 자리를 autoToc 로 채우므로 산출물끼리도 갈린다.
     caveat: |
+      ⚠️ **chapter mode 는 이제 왕복한다** — 역변환이 챕터 TOC 장을 지울 때 그 제목을
+      `# H1` 로 되돌린다(실측 2026-09-20: aTest-all 6/6 · igTest 5/5 ·
+      m2Slide_chapter_mode 7/7). 등급이 `declared_drop` 으로 남은 것은 **single mode
+      하나 때문**이고, 그 탓에 chapter mode 가 회귀해도 이 등급은 통과시킨다 —
+      single mode 를 닫는 순간 `lossy` 로 올려야 한다.
       ⚠️ 이 항목이 `lossless` 였던 것은 계약이 **원고만** 보고 산출물을 보지 않았기
       때문이다. 그 탓에 같은 원고가 HTML 8장 · pptx 10장으로 갈렸는데도 초록불이었다
       (실측 2026-09-10). 원고 축과 시각 축이 **다른 정본을 보던** 자리다.
     recover: |
-      lane S 신호에 H1 글자를 담으면 역변환이 되살릴 수 있다 — 다만 그 장이 pptx 에
-      없으므로 **어느 장의 신호에 붙일지**를 먼저 정해야 한다(첫 본문 장이 후보).
-    evidence: "aTest `cards_placeholder: false` — HTML·pptx 둘 다 H1 장 없음 (2026-09-10)"
+      chapter mode 는 해결됐다. single mode 는 **정방향이 먼저** 표식을 남겨야 한다 —
+      H1 만 있던 장이 pptx 에 흔적을 남기지 않으므로 역변환만으로는 불가능하다.
+      ⚠️ 구 지침이 적어 둔 *"첫 본문 장의 신호에 붙인다"* 는 **틀렸다.** 그대로 하면
+      무관한 본문 장이 H1 을 얻고, `collect()` 가 그 장을 진입 장으로 오인해 통째로
+      셈에서 뺀다(실측 2026-09-20: `h2_slide_title` −6 · `bullets` −21 · `slide_order`
+      −11). H1 은 **직전 진입 장**(`layout: chapter`)의 것이거나, 진입 장이 없으면
+      **그 TOC 장 자체**가 H1 만 있던 장이다.
+    evidence: "aTest(single) H1 장이 pptx 에 없음 · chapter mode 3덱은 왕복 일치 (2026-09-20)"
 
   - id: deck_toc_slide
     m2slide: "HTML `index.html` 의 markmap 목차 — 원고에는 없다"
@@ -420,7 +432,13 @@ elements:
       읽고 pandoc 은 CommonMark(부모 마커 + 공백) 기준이라, `    - 레벨 2`(4칸)를
       m2slide 는 레벨 2 로 pandoc 은 레벨 1 로 읽는다. 즉 **같은 원고가 HTML 덱과
       pptx 에서 다른 깊이로 렌더된다** — 왕복 문제이기 전에 산출물 불일치다.
-    caveat: "🚧 깊이 3 이상을 쓰는 덱에서 육안 차이가 난다. 별도 이슈로 다룰 값어치가 있다"
+    caveat: |
+      🚧 깊이 3 이상을 쓰는 덱에서 육안 차이가 난다. 별도 이슈로 다룰 값어치가 있다.
+      ℹ️ **카드가 원인이던 몫은 사라졌다** — lane B 가 카드를 테두리·제목 띠·본문 세
+      도형으로 그리는데 역변환이 AUTO_SHAPE 만 봐서 본문이 블록 밖 상위 불릿으로
+      샜다(깊이 1→0). 기하로 짝지어 해결(2026-09-20: aTest 3건·aTest-all 11건·
+      igTest 8건 → 0). 남은 것은 **위 파서 해석 차이**뿐이다
+      (m2Slide_chapter_mode −4/+4: 깊이 2→1 · 4→3).
     evidence: "m2Slide_chapter_mode '레벨 2'(4칸) → pptx lvl 1 — 2026-09-09"
 
   - id: ordered_list
@@ -447,11 +465,21 @@ elements:
     pptx: "run 의 `b`/`i` 속성"
     grade: lossy
     reason: |
-      굵게·이탤릭은 run 속성으로 살아 돌아온다. **인라인 코드는 구분되지 않는다** —
-      pptx 에서는 서체만 다를 뿐 별도 표시가 없어 평문으로 되돌아온다.
+      굵게·이탤릭은 run 속성으로 살아 돌아온다. **인라인 코드도 이제 돌아온다** —
+      서체가 그 run 에만 명시되는 것이 신호다(코드 폰트 교정의 부산물이며
+      `para_kind()` 가 코드**블록** 판정에 이미 쓰는 기제와 같다). 구 기술 *"구분되지
+      않는다"* 는 신호를 찾지 못한 상태의 기록이었다.
       ⚠️ 코드블록 안에서는 복원하지 않는다 — 문법 하이라이트가 키워드를 bold 로
-      칠하므로 그대로 옮기면 코드에 `**def**` 가 박힌다(실측).
-    evidence: "m2Slide_chapter_mode p4 marks=['b','i'] — 2026-09-09"
+      칠하므로 그대로 옮기면 코드에 `**def**` 가 박힌다(실측). 호출부가
+      `emphasis=(kind0 != "code")` 로 끊는다.
+    caveat: |
+      🚧 **lane B 카드 안에서는 여전히 잃는다** — 카드 본문이 서식 없는 단일 run 으로
+      평탄화되므로 신호 자체가 없다(aTest-all·igTest 각 1건: `` `_config.yml` ``).
+      정방향이 도형에 서식을 다시 입혀야 한다.
+    evidence: |
+      전수 실측 2026-09-20 — 제목·코드문단을 뺀 본문 run 중 `latin` 명시는 aTest-all
+      6개이고 **전부 코드 인라인**, 일반 불릿 268 run 은 0 (오탐 0). 복원 후
+      aTest-all 62→61 · igTest 59→58 · m2Slide_chapter_mode 는 −1 이 0 으로.
 
   - id: mermaid_fence
     m2slide: "` ```mermaid ` 다이어그램"
@@ -523,6 +551,10 @@ elements:
       aTest 두 블록은 깊이 1·정규 표기라 통과할 뿐 **이 픽스처로는 그 손실이 드러나지
       않는다**. 승격은 2단계 중첩 카드 + 미검증 6종(numbered·compare·timeline·chevron·
       step·funnel) 픽스처를 더한 뒤 재측정하고 판단한다.
+      ℹ️ **본문이 블록 안으로 돌아왔다**(2026-09-20) — 그 전에는 카드 본문이 `:::` 밖
+      상위 불릿으로 새어 `cards` 개수는 맞는데 **내용이 남의 블록에 있었다**. 테두리
+      도형의 기하로 본문 TEXT_BOX 를 제 카드에 짝지어 해결. 링크(`cards_hyperlink`)와
+      run 서식은 아직 못 싣는다.
     evidence: "aTest p4 alt-text `block:[cards]` 로 종류 복원 — 2026-09-10 (agent 실증)"
 
   - id: htmlart_smartart
