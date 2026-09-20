@@ -26,6 +26,7 @@
 
 # 🌱 이슈후보
 
+
 1. single mode 의 H1 을 원고로 되찾기 — chapter mode 는 챕터 TOC 장 제목에서 되찾았으나(Issue388) single mode 는 H1 만 있던 장이 pptx 에 흔적을 남기지 않아 불가. 정방향이 신호(lane S·docProps)만 남기면 되고 **deck 은 변하지 않는다**(되살린 `# H1` 을 재빌드하면 `cards_placeholder: false` 가 다시 지운다). 닫으면 `fidelity.yml h1_chapter` 를 `lossy` 로 올릴 수 있다
 1. `m2Slide_chapter_mode` 의 `bullet_nesting` ±4 — m2slide(2칸=1레벨) ↔ pandoc(CommonMark) 해석차. **왕복 문제이기 전에 HTML·pptx 산출물 불일치**다(`fidelity.yml` caveat 에 🚧 로 있음)
 1. htmlart 캔버스 종횡비 정렬 — `arrow` 외 나머지(funnel·venn·bracket·block·hexagon·step·numbered·balance 는 가로를, timeline·chevron·process·hierarchy·workflow 는 세로를 버린다). 원인은 Issue390 과 같다 — 그 이슈가 «세로 반지름을 고정하고 가로를 목표 비율에서 역산한다» 는 해법과 M 스윕 검증 절차를 남겼으니([types.yml](data/htmlart/types.yml) `arrow.canvas_note`) 거기서 시작한다. 다만 타입마다 배치 재설계가 필요하다
@@ -57,6 +58,37 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue412: 덱 특성 커버리지를 policy 처럼 한 곳에서 관리한다 (등록: 2026-09-21, 해결: 2026-09-21, commit: `6634161`) ✅
+* 목적: 픽스처 덱이 **무엇을 커버하는가** 가 어디에도 선언돼 있지 않아, 커버되지 않는 특성이 생겨도 아무도 볼 수 없다. 실측 근거를 `data/` 로 승격하고 `7.coverage` 가 그 구멍을 감사하게 한다.
+* plan: `_doc_work/plan/parity-fixture-coverage_plan.md`
+* task: `_doc_work/plan/parity-fixture-coverage_task.md`
+* depends: Issue403, Issue404, Issue405, Issue406, Issue409, Issue410
+* 상세 (실측 2026-09-20, prj60(__lec) `1.design_rnd` 520장):
+    - 그 덱에서 렌더 결함 **7건**이 한 번에 나왔는데 같은 시점 `aTest`·`igTest` 는 **전부 초록불**이었다
+    - 장 제목 레벨 분포 — aTest `H2 37 · H3 0` / 1.design_rnd `H2 63 · **H3 398(86%)**`. pandoc 은 `--slide-level=2` 라 H3 장은 제목을 잃고, **7건 중 5건이 그 한 뿌리**에서 나왔다
+    - 🔴 결함보다 심각한 것은 **「보이지 않았다」는 사실**이다. 「픽스처에 H3 장이 0개」가 어디에도 선언돼 있지 않아 [`7.coverage.sh`](z_test/ig-ppt/7.coverage.sh) 조차 구멍을 못 봤다 — 그 러너는 «계약이 선언한 **요소**» 만 보고 «원고가 가질 수 있는 **특성**» 은 보지 않는다
+    - 근거가 흩어진 네 곳과 한계: `fidelity.yml` `evidence`(왕복만) · 러너 스크립트의 덱 이름(커버 범위를 못 읽음) · 코드 주석(가로질러 못 셈) · `_doc_work`(gitignored, 이 머신에만)
+    - `z_test/` 전수 grep 결과 **`1.design_rnd` 0건** — 이번에 고친 7건은 회귀로 고정되지 않았다
+* 구현 명세:
+    - `data/m2slide2ppt/fixtures.yml` 신설(`kind: catalog`) — 픽스처 덱 목록 + 덱별 **원고 특성 실측 수치**
+    - 특성은 **기계로 셀 수 있는 것만** 넣는다(제목 레벨·중첩 깊이·중간 코드·카드 본문 줄수·표지 제목 폭·본문 가진 진입 장·lane C 이월 종류). 「느낌」은 감사할 수 없다
+    - ⚠️ **수치를 러너 스크립트에 박지 않는다** — `3.parity` ① 이 이미 그 실수를 했고 지금은 `lane-s.json` 에서 세어 얻는다. 박으면 또 하나의 복제본이 되고 갈린 날 정본을 못 찾는다
+    - `7.coverage.sh` 에 «덱 특성» 감사 블록 추가. 판정 문법은 기존과 동일(🔴 검사기가 안 잼 / ❌ 픽스처에 없음 / ⚠️ 한 덱뿐). **차단하지 않는다**
+    - H3 특성은 **새 최소 덱**으로 담는다(사용자 확정 2026-09-21) — `aTest-all` 에 덧붙이면 그 계열의 기존 evidence 수치가 전부 바뀌어 계약 갱신 범위가 번진다
+    - `fidelity.yml` `subheading` 의 caveat *"H2 제목이 없는 슬라이드는 매칭 키가 없다"* 는 Issue403 으로 전제가 사라졌다 — 문구 교체
+    - **검증은 반증으로 한다** — 신규 픽스처를 뺀 상태로 러너를 돌려 `title_level_h3` 가 `❌ 픽스처에 없음` 으로 뜨는지 본다. 초록불만 보면 감사가 실제로 도는지 알 수 없다
+    - 설계 SSOT: [`_doc_arch/pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) "근거는 어디에 사는가 — 덱 특성 커버리지"
+
+* 결과:
+    - `data/m2slide2ppt/fixtures.yml`(`kind: catalog`) 신설 — **축의 정의·근거는 사람이, 수치는 `lib/pptx/scan-fixtures.py` 가** 채운다
+    - `check-coverage.py` 에 `deck_traits()` 추가. 판정 문법은 기존과 같고 **이진 축**(`binary: true`)만 구분했다 — `long_cover_title` 은 0/1 이라 「표본이 얇다」가 성립하지 않는다
+    - 픽스처 `Projects/h3Test` 신설(12장 · 빌드 15장 · FAIL 0 · WARN 0 · 백지 장 0). **7축 전부**를 담는다
+    - 🔴 **검증을 반증으로 했다** — h3Test 투입 **전** `long_cover_title` ❌ · `title_level_h3` ⚠️(4개) 였던 것이 투입 **후** 둘 다 ✅ 로 뒤집혔다. 초록불만 보면 감사가 실제로 도는지 알 수 없다
+    - 계약 갱신 — `subheading` caveat 의 전제(「H2 없는 장은 매칭 키가 없다」)가 Issue403 으로 사라졌음을 명시하고 **남는 한계**(한 장에 H3 둘 이상)를 따로 적었다. `h2_slide_title` evidence 에 H3 덱 근거 추가
+    - 회귀 6종 전부 rc0 (3.parity · 4.laneb · 5.lanem · 6.roundtrip · 7.coverage · 8.assembly)
+    - ⚠️ **정책 yml 혼재 커밋** — `fidelity.yml` 이 코드와 같은 커밋(`6634161`)에 섞였다. [data-access-rules](.claude/rules/data-access-rules.md) 「정책 yml 커밋 규율」 위반이며, 같은 규율이 *"되돌리지 말고 후속 커밋에서 분리 이력을 남긴다"* 고 정하므로 히스토리를 재작성하지 않고 여기 적는다
+    - ⚠️ `--lint-data` **전체는 여전히 실패**한다. 원인은 이 이슈와 무관하다 — 외부 강의 덱 심링크 `Projects/1.design_rnd` 의 슬라이드 제목에 `(Issue6` 등 내부 추적 표기가 남아 검사 5에 걸린다
 
 ## Issue410: lane B 카드 글자가 상자 밖으로 흘러나간다 (등록: 2026-09-20, 해결: 2026-09-21, commit: `66e7ac5`) ✅
 * depends: Issue404
