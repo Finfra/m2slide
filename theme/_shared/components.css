@@ -298,6 +298,33 @@
   font-size: 0.85em;
 }
 
+/* Issue392: 세로로 눌린 htmlArt 를 좌우 2열로 — 판정·DOM 재배치는
+   lib/component-hooks/htmlart_dispatch.client.js `relayoutSquished()` 가 한다.
+   본 규칙은 그 결과 클래스(.htmlart-side)를 받는 표시 계약일 뿐이며,
+   클래스가 붙지 않은 장은 1px 도 바뀌지 않는다.
+   .contents-body 는 이미 flex column 이므로 방향만 돌리면 된다. */
+.reveal section[class*="layout-"] .contents-body.htmlart-side {
+  flex-direction: row;
+  align-items: stretch;
+  gap: 1.2em;
+}
+.reveal section[class*="layout-"] .contents-body.htmlart-side > .m2-htmlart,
+.reveal section[class*="layout-"] .contents-body.htmlart-side > .htmlart-side-rest {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+}
+.reveal section[class*="layout-"] .contents-body.htmlart-side > .htmlart-side-rest {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  overflow: hidden;
+}
+/* 세로로 쌓였을 때의 간격 보정(위 `.m2-htmlart + *`)은 좌우 배치에선 불필요 */
+.reveal section[class*="layout-"] .contents-body.htmlart-side > .m2-htmlart + * {
+  margin-top: 0;
+}
+
 /* ── htmlArt 타입 CSS (process·cycle·hierarchy·pyramid) ───────────────────
    4타입 전부 렌더 백엔드 d3 SVG 로 이관 완료 (Issue193). 런타임 훅
    lib/component-hooks/htmlart_dispatch.js 가 data-htmlart div 내부 <ul> 을
