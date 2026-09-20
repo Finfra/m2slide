@@ -306,6 +306,22 @@ def shape_lines(sh):
     return lines, maths
 
 
+def para_md(para, links=None):
+    """문단을 **마크업 살린 글자**로 — 카드 본문 복원용 (Issue389).
+
+    `p.text` 는 run 을 이어 붙이기만 해서 링크·코드가 평문이 된다. 카드 본문에는
+    원고의 `[글자](URL)` 과 `` `코드` `` 가 들어 있으므로 run 단위로 되돌린다.
+    """
+    out = []
+    for ch in para._p:
+        tag = ch.tag.split("}")[-1]
+        if tag == "r":
+            out.append(run_markup(ch, True, links))
+        elif tag == "br":
+            out.append(" ")
+    return re.sub(r"\s+", " ", "".join(out)).strip()
+
+
 def _center_in(sh, frame):
     """도형의 **중심**이 테두리 도형 안에 있는가 — 카드 짝짓기 판정 (Issue388)."""
     fl, ft = frame.left or 0, frame.top or 0
@@ -349,8 +365,9 @@ def group_boxes(shapes, textboxes=()):
             for tb in sorted((t for t in textboxes if _center_in(t, own)),
                              key=lambda x: (x.top or 0, x.left or 0)):
                 consumed.add(id(tb))
-                txts += [q.text.strip() for q in tb.text_frame.paragraphs
-                         if q.text.strip()]
+                lk = rel_urls(tb)
+                txts += [x for x in (para_md(q, lk) for q in tb.text_frame.paragraphs)
+                         if x]
         boxes.append((sh.top or 0, sh.left or 0, txts))
     boxes.sort(key=lambda b: (b[0], b[1]))
     return [b[2] for b in boxes], consumed

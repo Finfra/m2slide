@@ -687,12 +687,19 @@ def scan_lane_b(blocks, src_label, seen, out, stat):
 
         flat = []
         clean_items = []
+        #   원문도 함께 싣는다 (Issue389) — `items`·`flat` 은 **pandoc 과 같은 글자**여야
+        #   병합 단계의 본문 대조가 성립하므로 건드리지 않고, 서식·링크를 되입힐 lane T
+        #   를 위해 `items_md` 를 나란히 둔다. 읽는 쪽이 없으면 그냥 남는 필드다.
+        md_items = []
         for it in items:
             t = strip_inline(it["title"])
             subs = [strip_inline(s) for s in it["subs"]]
             flat.append(t)
             flat += subs
             clean_items.append({"title": t, "subs": subs})
+            md_items.append({"title": it["title"].strip(),
+                             "subs": [x.strip() for x in it["subs"]]})
+        rec.update({"items_md": md_items})
         rec.update({"lane": "g" if smart else "b", "kind": kind, "items": clean_items, "flat": flat,
                     "lead": sum(1 for l in lines[:oi] if l.strip() and not H2.match(l))})
         out.append(rec)

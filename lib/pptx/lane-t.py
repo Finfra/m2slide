@@ -379,7 +379,82 @@ def set_major_font(path, name, log, bold=None):
     return changed
 
 
-def redraw_cards(slide, px2emu, L, W):
+def load_card_md(proj):
+    """lane B 사이드카의 **카드 원문**을 «평문 → 원문» 으로 (Issue389).
+
+    `redraw_cards` 는 lane B 가 그린 도형에서 **평문**을 읽는다. 그래서 원고의
+    `` `_config.yml` `` 과 `[글자](URL)` 이 그 자리에서 이미 사라져 있다 — 링크는
+    글자만 남고(`cards_hyperlink` −2) 코드는 서식이 없다(`inline_emphasis` −1).
+    사이드카에 나란히 실어 둔 원문을 평문으로 되짚어 찾는다.
+
+    ⚠️ 정방향이 자기 사이드카를 읽는 것은 커닝이 아니다 — 금지 대상은 **역변환**이
+       사이드카를 보는 것이다(`6.roundtrip` ④). lane S 도 같은 방식으로 읽는다.
+    """
+    import json as _j
+    p = os.path.join(proj, "_pipeline", "pptx", "lane-b.json")
+    if not os.path.isfile(p):
+        return {}
+    out = {}
+    try:
+        d = _j.load(open(p, encoding="utf-8"))
+    except Exception:
+        return {}
+    for t in (d.get("targets") or []):
+        plain, raw = t.get("items") or [], t.get("items_md") or []
+        if len(plain) != len(raw):
+            continue                      # 짝이 안 맞으면 손대지 않는다
+        for pi, ri in zip(plain, raw):
+            if pi.get("title") and ri.get("title"):
+                out.setdefault(pi["title"], ri["title"])
+            for a_, b_ in zip(pi.get("subs") or [], ri.get("subs") or []):
+                if a_ and b_:
+                    out.setdefault(a_, b_)
+    return out
+
+
+#   인라인 마크다운 토큰 — 링크 · 코드 · 굵게. `strip_inline` 의 역방향이다
+MD_TOKEN = re.compile(r"\[([^\]]+)\]\(([^)\s]+)\)|`([^`]+)`|\*\*([^*]+)\*\*")
+
+
+def add_md_runs(para, raw, fs_pt, color, mono=None):
+    """문단에 원문을 **run 으로 쪼개** 넣는다 — 링크·코드·굵게를 살린다 (Issue389).
+
+    ⚠️ 하이퍼링크는 `run.hyperlink.address` 로 건다 — python-pptx 가 rel 을 함께
+       만든다. 손으로 rel 을 넣으면 **고아 rel** 이 남는다(실측 2026-09-20: lane B 가
+       원래 문단을 걷을 때 남긴 외부 rel 2건이 어느 run 에서도 참조되지 않았다).
+    """
+    pos, made = 0, 0
+    for m in MD_TOKEN.finditer(raw):
+        if m.start() > pos:
+            _card_run(para, raw[pos:m.start()], fs_pt, color)
+        txt, url = (m.group(1), m.group(2)) if m.group(1) else (
+            m.group(3) or m.group(4), None)
+        r = _card_run(para, txt, fs_pt, color)
+        if url:
+            r.hyperlink.address = url
+        elif m.group(3) and mono:
+            r.font.name = mono            # 코드 인라인 — 역변환이 서체로 되찾는다
+        elif m.group(4):
+            r.font.bold = True
+        pos, made = m.end(), made + 1
+    #   ⚠️ 남은 꼬리를 넣는 것으로 **토큰이 없는 경우까지 덮인다**(pos=0). 여기에
+    #      "토큰이 없으면 전체를 넣는다" 를 더하면 글자가 두 번 들어간다 —
+    #      실측 2026-09-20: `불릿·표·이미지불릿·표·이미지` (bullets −8/+8)
+    if pos < len(raw):
+        _card_run(para, raw[pos:], fs_pt, color)
+    return made
+
+
+def _card_run(para, text, fs_pt, color):
+    from pptx.dml.color import RGBColor as _RGB
+    r = para.add_run()
+    r.text = text
+    r.font.size = fs_pt
+    r.font.color.rgb = _RGB.from_string(color)
+    return r
+
+
+def redraw_cards(slide, px2emu, L, W, md_map=None, mono=None):
     """lane B 가 그린 `cards` 를 **m2slide 카드**로 다시 그린다 (Issue349).
 
     lane B 는 글로벌 ppt-info 의 `cards`(좌측 액센트 바 + 회색 본문)를 쓴다.
@@ -454,6 +529,10 @@ def redraw_cards(slide, px2emu, L, W):
             pass
         p0 = tf.paragraphs[0]
         p0.alignment = PP_ALIGN.CENTER
+        #   ⚠️ 제목 밴드는 **원문을 쓰지 않는다.** 역변환의 `render_div` 가 제목에
+        #      `**` 를 다시 붙이므로(`* **제목**`) 여기서 굵게를 살리면 `****제목****`
+        #      이 된다. 카드 제목에 링크·코드를 쓰는 원고도 실측 0건이라, 되입힐
+        #      자리는 **본문 줄**로 좁힌다 (Issue389)
         r0 = p0.add_run()
         r0.text = lines[0]
         r0.font.bold = True
@@ -472,10 +551,9 @@ def redraw_cards(slide, px2emu, L, W):
             for j, t in enumerate(lines[1:]):
                 para = btf.paragraphs[0] if j == 0 else btf.add_paragraph()
                 para.alignment = PP_ALIGN.LEFT
-                r = para.add_run()
-                r.text = t
-                r.font.size = Pt(round(CARD["body_fs"] * px2emu / 12700, 1))
-                r.font.color.rgb = RGBColor.from_string(CARD["fg"])
+                add_md_runs(para, (md_map or {}).get(t, t),
+                            Pt(round(CARD["body_fs"] * px2emu / 12700, 1)),
+                            CARD["fg"], mono)
     return n
 
 
@@ -1046,6 +1124,7 @@ def main():
     logo_path = os.path.join(a.themeimg, (COVER.get("logo") or {}).get("asset", ""))
 
     signals = load_signals(proj)
+    card_md = load_card_md(proj)
     seen_titles = {}
     for i, slide in enumerate(slides):
         lay = slide.slide_layout.name
@@ -1213,7 +1292,8 @@ def main():
             #   lane B 가 그린 cards 를 m2slide 카드로 다시 그린다.
             #   신호를 읽지 않아도 된다 — `redraw_cards` 가 **커넥터 유무**로 가른다
             #   (커넥터가 있으면 순차 블록이라 손대지 않는다)
-            log["card"] += redraw_cards(slide, px2emu, L, W)
+            log["card"] += redraw_cards(slide, px2emu, L, W, card_md,
+                                        (FONT or {}).get("code"))
             #   제목 옆 마스코트 — `.layout-_contents > .title` 의 배경이라
             #   `<img>` 로는 보이지 않는다(전수 대조가 자산 해시로 잡아냈다)
             #   Issue379: 챕터 진입 장은 **다른 마스코트**를 쓴다 — HTML `.layout-chapter`
