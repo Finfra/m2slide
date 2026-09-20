@@ -24,7 +24,11 @@
   --m2-card-title-fg: var(--m2-text, #111111);       /* 제목 글자: palette text */
   --m2-card-body-bg: rgba(0, 0, 0, 0.04);   /* 본문: 슬라이드 배경 위 옅은 틴트 */
   --m2-card-border: rgba(0, 0, 0, 0.12);    /* 테두리: 옅은 중립색 */
-  --m2-media-border: rgba(0, 0, 0, 0.16);   /* 캡처 이미지 테두리 — 카드보다 한 단계 진하게(흰 배경 캡처 경계용) */
+  /* 캡처 이미지 테두리 — 값은 WCAG 2.1 §1.4.11(비텍스트 대비) 3:1 에 맞춘 것이다.
+     0.42 를 흰 배경에 얹으면 #949494 = 3.03:1 로 기준을 막 넘는다(팔레트 5종 전부 3.01~3.03).
+     ⚠️ 구 0.16 은 1.45:1 이라 기준의 절반도 안 됐다 — 「테두리가 없다」는 신고가 실제로는
+     「걸려 있는데 안 읽힌다」였던 이유다. 눈대중으로 되돌리지 말 것. */
+  --m2-media-border: rgba(0, 0, 0, 0.42);
 }
 
 /* 슬라이드 본문 색상 — 흰 배경, 검정 텍스트 (sky.css 의존 제거 후 명시) */
@@ -281,9 +285,17 @@
 
 /* 캡처 이미지 테두리 — 흰 배경 스크린샷이 흰 슬라이드에 얹히면 경계가 사라져
    어디까지가 화면 캡처인지 읽히지 않는다. raster 이미지에만 준다:
-   svg(mermaid·htmlArt)는 자체 윤곽이 있고 위 규칙이 100% 로 늘리므로 제외. */
+   svg(mermaid·htmlArt)는 자체 윤곽이 있고 위 규칙이 100% 로 늘리므로 제외.
+
+   ⚠️ 값을 «이미지 밝기별로» 가르지 않는다. 셋 다 그럴 이유가 없다:
+   ① 테두리가 읽혀야 할 상대는 이미지가 아니라 슬라이드 배경이고, default_lec 팔레트
+      5종 배경은 전부 near-white(#FFFFFF~#FFF8F0)라 상대가 하나로 고정돼 있다.
+   ② 어두운 캡처에서는 「과해지는」 것이 아니라 이미 있는 경계에 묻힌다 — 해가 없다.
+   ③ 런타임 밝기 판정은 file:// 배포에서 아예 불가능하다(로컬 이미지를 canvas 에
+      올리면 tainted 되어 getImageData 가 SecurityError). 단일 파일 배포 계약
+      (.claude/rules/file-deployment-rules.md)과 정면으로 충돌한다. */
 .reveal .media-container img {
-  border: 2px solid var(--m2-media-border, rgba(0, 0, 0, 0.16));
+  border: 2px solid var(--m2-media-border, rgba(0, 0, 0, 0.42));
   border-radius: 4px;
   box-sizing: border-box;
 }
