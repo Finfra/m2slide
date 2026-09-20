@@ -89,7 +89,7 @@ def para_math(para):
 
 
 def run_markup(child, emphasis, links=None):
-    """run 하나를 글자로. `b`/`i` 속성을 마크다운 강조로 되돌린다.
+    """run 하나를 글자로. `b`/`i`/코드 서체를 마크다운 강조로 되돌린다.
 
     ⚠️ **코드블록에서는 하지 않는다.** 문법 하이라이트가 키워드를 bold 로 칠하므로
        그대로 옮기면 코드 안에 `**def**` 가 박힌다(실측: pandoc skylighting 이
@@ -118,6 +118,19 @@ def run_markup(child, emphasis, links=None):
     tail = t[len(t.rstrip()):]
     core = t.strip()
     if emphasis and pr is not None:
+        #   코드 인라인 — **run 에 서체가 명시돼 있는 것**이 신호다 (Issue388). 코드 폰트
+        #   교정이 그 run 에만 `latin` 을 박으므로, 서체 이름이 본문 서체와 같아도
+        #   (`NanumGothicCoding` 처럼) **명시 여부**로 갈린다. `para_kind()` 가 코드
+        #   **블록**을 가르는 데 이미 쓰는 기제와 같다.
+        #   전수 실측(2026-09-20 aTest·aTest-all): 제목·코드문단을 뺀 본문 run 중 `latin`
+        #   명시는 6개이고 **전부 코드 인라인**, 일반 불릿 268 run 은 0 — 오탐 0.
+        #   ⚠️ 코드블록에서는 발동하지 않는다 — 호출부가 `emphasis=(kind0 != "code")`
+        #      로 끊는다. 켜면 하이라이트가 박은 서체 때문에 코드 안에 백틱이 박힌다.
+        lat = pr.find("{%s}latin" % A)
+        if lat is not None and lat.get("typeface"):
+            #   ⚠️ **굵게보다 먼저** 감싼다 — 원고 표기가 `**`x`**` 이므로 순서를 뒤집으면
+            #      같은 글자가 `` `**x**` `` 라는 다른 마크업으로 돌아온다
+            core = "`%s`" % core
         b, i = pr.get("b") == "1", pr.get("i") == "1"
         if b and i:
             core = "***%s***" % core
@@ -293,21 +306,54 @@ def shape_lines(sh):
     return lines, maths
 
 
-def group_boxes(shapes):
+def _center_in(sh, frame):
+    """도형의 **중심**이 테두리 도형 안에 있는가 — 카드 짝짓기 판정 (Issue388)."""
+    fl, ft = frame.left or 0, frame.top or 0
+    fr, fb = fl + (frame.width or 0), ft + (frame.height or 0)
+    cx = (sh.left or 0) + (sh.width or 0) / 2
+    cy = (sh.top or 0) + (sh.height or 0) / 2
+    return fl <= cx <= fr and ft <= cy <= fb
+
+
+def group_boxes(shapes, textboxes=()):
     """AUTO_SHAPE 묶음을 카드 항목으로 — 액센트 바(가느다란 사각형)는 버린다.
 
-    카드 한 장은 **제목 문단 + 본문 문단들**이다(도형 하나 안에 함께 있다).
+    카드 한 장은 **제목 문단 + 본문 문단들**이다. 그런데 lane B 가 그 둘을 담는
+    방식이 블록마다 다르다:
+
+        htmlart 계열   도형 **하나**에 제목·본문 문단이 함께 있다
+        `cards`        **세 도형** — 테두리 `Rounded Rectangle`(글자 없음) ·
+                       제목 띠 `Rectangle`(AUTO_SHAPE) · 본문 `TextBox`(TEXT_BOX)
+
+    후자에서 본문은 TEXT_BOX 라 AUTO_SHAPE 만 보면 **놓친다**. 놓친 본문은 일반
+    텍스트 경로로 흘러 블록 **뒤에 상위 불릿**으로 붙었다 — 원고에서는 카드 안의
+    `  - 본문` 이므로 중첩 깊이가 1→0 으로 어긋났다(실측 2026-09-20: aTest 3건 ·
+    aTest-all 11건). 그래서 테두리 도형의 기하로 본문을 제 카드에 되돌린다.
+
+    ⚠️ 짝지을 테두리가 없으면 **종전 동작 그대로**다 — htmlart 계열이 그 경우이고,
+       거기서 본문을 억지로 끌어오면 남의 글자를 카드에 집어넣는다.
+
+    반환: (항목 목록, 소비한 TEXT_BOX 의 id 집합)
     """
-    boxes = []
+    frames = [sh for sh in shapes
+              if not (sh.has_text_frame and sh.text_frame.text.strip())]
+    boxes, consumed = [], set()
     for sh in shapes:
         if not sh.has_text_frame:
             continue
         txts = [p.text.strip() for p in sh.text_frame.paragraphs if p.text.strip()]
         if not txts:
             continue                          # 액센트 바 — 글자가 없다
+        own = next((fr for fr in frames if _center_in(sh, fr)), None)
+        if own is not None:
+            for tb in sorted((t for t in textboxes if _center_in(t, own)),
+                             key=lambda x: (x.top or 0, x.left or 0)):
+                consumed.add(id(tb))
+                txts += [q.text.strip() for q in tb.text_frame.paragraphs
+                         if q.text.strip()]
         boxes.append((sh.top or 0, sh.left or 0, txts))
     boxes.sort(key=lambda b: (b[0], b[1]))
-    return [b[2] for b in boxes]
+    return [b[2] for b in boxes], consumed
 
 
 def render_div(kind, items):
@@ -385,8 +431,15 @@ def convert(pptx_path, outdir, name):
                 out_.append(":::")
                 body += out_
 
+        card_used = set()
         if autoshapes:
-            items = group_boxes(autoshapes)
+            #   카드 본문 TEXT_BOX 후보 — 테마 장식·차트 서브라벨은 원고가 아니다
+            tb_cand = [sh for sh in shapes_all
+                       if str(sh.shape_type or "").startswith("TEXT_BOX")
+                       and sh.has_text_frame and sh.text_frame.text.strip()
+                       and not shape_descr(sh).startswith(ORNAMENT_TAG)
+                       and not shape_descr(sh).startswith(CONTENT_TAG)]
+            items, card_used = group_boxes(autoshapes, tb_cand)
             # 커넥터가 카드 사이를 잇고 있으면 순차 블록이다 — 도형만 보면 이것이
             # 유일한 구분 신호이고, `cards` 와 `htmlart numbered` 는 같은 블록으로
             # 렌더되므로 **원리적으로 갈리지 않는다**. lane S 신호가 있으면 그것이 답이다.
@@ -400,6 +453,8 @@ def convert(pptx_path, outdir, name):
             st = str(sh.shape_type or "")
             if st.startswith("AUTO_SHAPE") or st.startswith("LINE"):
                 continue
+            if id(sh) in card_used:
+                continue                      # 카드 본문으로 이미 썼다 (Issue388)
             if getattr(sh, "has_chart", False) and sh.has_chart:
                 continue
             if shape_descr(sh).startswith(CONTENT_TAG):
@@ -486,9 +541,51 @@ def convert(pptx_path, outdir, name):
             continue
         doc.append("%s: %s" % (k, v))
     doc += ["---", ""]
+    #   챕터 H1 되찾기 (Issue388) — **챕터 TOC 장의 제목이 원고의 H1** 이다
+    #
+    #   정방향은 챕터 머리의 H1 을 걷고 그 자리에 챕터 TOC 장을 만든다. 그 TOC 장은
+    #   `synthesized` 라 위에서 지워지는데, 지우면서 제목까지 버리면 `h1_chapter` 가
+    #   통째로 사라진다(실측 2026-09-20: aTest-all 6→0 · aTest 1→0).
+    #
+    #   ⚠️ 위 `if lay == "Section Header"` 분기로는 못 잡는다 — 두 덱의 layout 분포에
+    #      `Section Header` 가 **0회**다(Issue374·379 가 `3.parity`·lane T 에서 걷어낸
+    #      것과 같은 낡은 전제). 그 분기는 사람이 PowerPoint 에서 만든 pptx 를 위해
+    #      폴백으로 남기고, m2slide 산출물은 lane S 표식으로 판정한다.
+    #
+    #   ⚠️ **자리가 둘이다.** 원고가 H1 을 어떻게 적었는지에 따라 정방향의 결과가 갈린다:
+    #
+    #     ⓐ `# H1` 만 있는 장          그 장 자체가 챕터 TOC 로 **바뀐다**
+    #                                  → 제 자리에서 `# H1` 블록으로 되돌린다
+    #     ⓑ `# H1` + `## H2` 한 장      진입 장(H2·`#layout-chapter`)은 그대로 두고
+    #                                  **그 뒤에** TOC 를 덧붙인다
+    #                                  → H1 은 **앞** 진입 장의 것이다
+    #
+    #   실측 aTest-all: ⓐ 는 챕터 01(p04), ⓑ 는 챕터 02~06(p13←p14 · p20←p21 …).
+    #   ⓑ 를 «TOC 다음 장» 에 붙이면 무관한 본문 장이 H1 을 얻어 `collect()` 가 그 장을
+    #   진입 장으로 오인해 통째로 셈에서 뺀다(실측: `h2_slide_title` −6 · `bullets` −21).
+    h1_attach, h1_solo = {}, {}
+    for i, (k, p) in enumerate(raw):
+        if k != "slide" or i not in drop:
+            continue
+        if "chapter_toc" not in ((p[3] or {}).get("synth") or []):
+            continue
+        t = (p[0] or "").strip()
+        if not t:
+            continue
+        j = i - 1
+        prev_sig = raw[j][1][3] if (j >= 0 and raw[j][0] == "slide") else {}
+        if j >= 0 and j not in drop and "chapter" in ((prev_sig or {}).get("layout") or []):
+            h1_attach[j] = t                 # ⓑ 앞 진입 장의 H1
+        else:
+            h1_solo[i] = t                   # ⓐ H1 만 있던 장
+
     blocks = []
     for i, (k, p) in enumerate(raw):
-        if k == "cover" or i in drop:
+        if k == "cover":
+            continue
+        if i in drop:
+            if i in h1_solo:
+                blocks.append("# %s" % h1_solo[i])
             continue
         if k == "chapter":
             blocks.append("# %s" % p)
@@ -505,11 +602,19 @@ def convert(pptx_path, outdir, name):
         #   라 `### H3` 로만 시작하는 슬라이드를 **제목 없는 장**으로 낸다(계약
         #   `subheading` 의 caveat 이 적은 그 4건). 빈 제목을 `## ` 로 되돌리면
         #   원고에 없던 H2 가 생겨 `h2_slide_title` 이 lossless 인데 늘어난다.
-        out = ["## %s" % title] if title else []
-        #   디렉티브 — lane S 가 심어 둔 것을 제목 바로 아래에 되돌린다
-        for d in sig.get("id", []) + sig.get("anim", []) + \
-                ["layout-" + x for x in sig.get("layout", [])]:
-            out.append("#" + d)
+        dirs = ["#" + d for d in sig.get("id", []) + sig.get("anim", []) +
+                ["layout-" + x for x in sig.get("layout", [])]]
+        out = []
+        if i in h1_attach:
+            #   원고는 `# H1` **바로 아래**에 디렉티브를 둔다. 순서를 지키지 않으면
+            #   재빌드 때 디렉티브 영역이 H2 에 막혀 `#layout-chapter` 가 죽는다
+            #   (md-m2slide-rules 「슬라이드 단위 애니메이션 디렉티브」 — 첫 헤더
+            #   다음의 연속 구간만 디렉티브로 읽는다)
+            out += ["# %s" % h1_attach[i]] + dirs + [""]
+            dirs = []
+        if title:
+            out.append("## %s" % title)
+        out += dirs
         out.append("")
         for item in body:
             if isinstance(item, tuple) and item[0] == "__PIC__":
