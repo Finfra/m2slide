@@ -401,6 +401,13 @@ def convert(pptx_path, outdir, name):
             d = shape_descr(sh)
             if d.startswith(CONTENT_TAG + "/pie-sub/") and sh.has_text_frame:
                 pie_subs.setdefault(int(d.rsplit("/", 1)[1]), []).append(sh.text_frame.text.strip())
+        #   `::: part` 라벨 — lane T 가 내용 표식으로 심는다 (Issue389). 일반 텍스트
+        #   경로는 CONTENT_TAG 를 통째로 건너뛰므로 여기서 먼저 집는다
+        part_txt = ""
+        for sh in shapes_all:
+            if shape_descr(sh).startswith(CONTENT_TAG + "/part") and sh.has_text_frame:
+                part_txt = sh.text_frame.text.strip()
+                break
         #   SmartArt → `::: htmlart <종류>` (Issue357). 데이터 모델의 parOf 가 항목·하위·순서다
         for sh in shapes_all:
             dia = smartart.read_diagram(sh, slide) if str(sh._element.tag).endswith("}graphicFrame") else None
@@ -488,7 +495,11 @@ def convert(pptx_path, outdir, name):
                 lines, m = shape_lines(sh)
                 maths += m
                 body.append(("__TXT__", lines))
-        raw.append(("slide", (title, body, captions, read_slide_signals(slide))))
+        sig_ = read_slide_signals(slide)
+        if part_txt:
+            sig_ = dict(sig_)
+            sig_["_part"] = part_txt
+        raw.append(("slide", (title, body, captions, sig_)))
 
     # ── 자동 생성 장 제거 (Issue358)
     #
@@ -612,6 +623,9 @@ def convert(pptx_path, outdir, name):
             #   다음의 연속 구간만 디렉티브로 읽는다)
             out += ["# %s" % h1_attach[i]] + dirs + [""]
             dirs = []
+        if sig.get("_part"):
+            #   원고 순서는 `# H1` · 디렉티브 · `::: part` · `## H2` 다 (Issue389)
+            out += ["::: part", sig["_part"], ":::", ""]
         if title:
             out.append("## %s" % title)
         out += dirs

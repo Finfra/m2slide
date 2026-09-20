@@ -99,6 +99,7 @@ COVER = load_section("cover_geometry")
 HEAD = load_section("head_geometry")
 MASCOT = load_section("contents_mascot")
 CHAPTER_MASCOT = load_section("chapter_mascot")   # Issue379 — 진입 장 배경
+CHAPTER_PART = load_section("chapter_part")       # Issue389 — 진입 장 part 라벨
 CARD = load_section("card_geometry")
 FONT = load_section("font")
 AGENDA = load_section("agenda_geometry")
@@ -144,6 +145,34 @@ def read_cover(project_dir):
         m = re.search(pat, h, re.S)
         if m and strip_tags(m.group(1)):
             out[k] = strip_tags(m.group(1))
+    return out
+
+
+def read_parts(project_dir):
+    """챕터 진입 장의 part 라벨 — 제목을 열쇠로 삼는다 (Issue389).
+
+    ⚠️ **테마가 이 글자의 생사를 정한다.** `{{part}}` 슬롯은 `default_lec` 의
+       `4.2.chapter.html` 에만 있고 `default` 의 `_chapter.html` 에는 없다. 슬롯이
+       없으면 **HTML 도 이 글자를 렌더하지 않으므로**(실측 2026-09-20: aTest-all
+       `Chapter N.` 0회 · igTest 5회) 원고에 `::: part` 가 있다는 사실만 보고 그리면
+       pptx 만 더 보여주는 **새 불일치**가 된다.
+
+       그래서 원고가 아니라 **빌드 산출 HTML** 을 읽는다 — 테마 조건이 자동으로
+       지켜지고, 판정을 여기 복제하지 않는다(HTML 이 정본이다).
+    """
+    import glob as _g
+    files = sorted(_g.glob(os.path.join(project_dir, "slide", "*.html")))
+    use = [f for f in files
+           if os.path.basename(f) not in ("index.html", "agenda.html")] or \
+          [f for f in files if os.path.basename(f) == "index.html"]
+    out = {}
+    for f in use:
+        h = open(f, encoding="utf-8").read()
+        for sec in re.findall(r"<section[^>]*>.*?(?=<section|\Z)", h, re.S):
+            t = re.search(r'class="chapter-title"[^>]*>(.*?)</', sec, re.S)
+            q = re.search(r'class="chapter-part"[^>]*>(.*?)</div>', sec, re.S)
+            if t and q and strip_tags(q.group(1)):
+                out[strip_tags(t.group(1))] = strip_tags(q.group(1))
     return out
 
 
@@ -946,6 +975,9 @@ def add_text(shapes, spec, text, px2emu, tag=ORNAMENT_TAG + "/text"):
     run.font.size = Pt(round(spec.get("fs", 14) * px2emu / 12700, 1))
     if spec.get("bold"):
         run.font.bold = True
+    if spec.get("color"):
+        from pptx.dml.color import RGBColor as _RGB
+        run.font.color.rgb = _RGB.from_string(spec["color"])
     if tag:
         set_descr(box, tag)
     return box
@@ -1009,6 +1041,7 @@ def main():
     proj = os.path.dirname(os.path.dirname(os.path.abspath(a.pptx)))
     cover = read_cover(proj)
     heads = read_heads(proj)
+    parts = read_parts(proj)
     slides = list(prs.slides)
     logo_path = os.path.join(a.themeimg, (COVER.get("logo") or {}).get("asset", ""))
 
@@ -1196,6 +1229,12 @@ def main():
                          int(_ms["t"] * px2emu), int(_ms["w"] * px2emu),
                          int(_ms["h"] * px2emu), kind="mascot")
                 log["cover"] += 1
+            #   part 라벨 — 진입 장에만, **HTML 이 실제로 렌더한 덱에만** (Issue389)
+            if "chapter" in (sig.get("layout") or []):
+                if add_text(slide.shapes, CHAPTER_PART,
+                            parts.get(ttl.text_frame.text.strip(), ""), px2emu,
+                            tag=CONTENT_TAG + "/part"):
+                    log["cover"] += 1
             #   머리말 바 — 그 장의 제목을 열쇠로 HTML 에서 찾는다
             hl, hrr = heads.get(ttl.text_frame.text.strip(), ("", ""))
             if add_text(slide.shapes, HEAD.get("left"), hl, px2emu):
