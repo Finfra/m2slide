@@ -31,6 +31,7 @@
 1. htmlart 캔버스 종횡비 정렬 — `arrow` 외 나머지(funnel·venn·bracket·block·hexagon·step·numbered·balance 는 가로를, timeline·chevron·process·hierarchy·workflow 는 세로를 버린다). 원인은 Issue390 과 같다 — 그 이슈가 «세로 반지름을 고정하고 가로를 목표 비율에서 역산한다» 는 해법과 M 스윕 검증 절차를 남겼으니([types.yml](data/htmlart/types.yml) `arrow.canvas_note`) 거기서 시작한다. 다만 타입마다 배치 재설계가 필요하다
 1. htmlart 고정 폰트 잔여 + 세로 넘침 — `centerLabel` 을 고정 폰트로 부르는 `venn`(28/18)·`hexagon`(25/17)·`pie`(20/15) 와 `balance` 가 세로로 넘친다. prj60 전수(2026-09-20, `z_test/htmlart-fo-audit.mjs`) venn 4건(+4~15px)·balance 10건(+6~23px). Issue391 과 같은 결함 계열 — fit 경로(`uniformTitleFs`)로 통일
 1. `::: part` 를 소비하지 않는 테마에서 그 블록이 **조용히 사라진다** — `theme/default` 의 `_chapter.html` 에 `{{part}}` 가 없어 원고에 쓴 5개가 HTML·pptx 양쪽에서 버려진다(aTest-all 실측). 슬롯 미소비를 저작 단계에서 경고할지
+1. 캡처 이미지 테두리가 `default`·`default_dark` 에는 **아예 없다** — `--m2-media-border` 도 `.reveal .media-container img` 규칙도 `default_lec` 에만 있다(2026-09-20 실측). Issue397 과 같은 결함 계열이나 성격이 갈린다: `default` 는 기존 덱 **전부**의 렌더가 바뀌어 회귀 범위가 다르고, `default_dark` 는 배경이 `#0c0e16` 이라 **검정 alpha 로는 성립하지 않아** 흰 alpha 로 다시 역산해야 한다(기준은 같은 WCAG 3:1)
 
 
 # 🚧 진행중

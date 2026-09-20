@@ -91,18 +91,19 @@ grep -h '^theme:' Projects/<P>/_config.yml _config.yml _config.org.yml 2>/dev/nu
 
 헤드리스 검증의 기본 엔진은 **ego-browser** 다. 글로벌 [browser-engine-rules](~/.claude/rules/browser-engine-rules.md) 의 *"기본은 ego"* 가 m2slide 에도 그대로 적용된다. 본 룰이 과거 Playwright 를 지목하고 있어 세션이 그쪽을 집어 왔으나(2026-09-19 실사용 관측), **룰과 엔진 정책이 갈라져 있던 그 비대칭이 재발 지점이었다**.
 
-2026-09-19 실측 (aTest · dev-server 9877 · ego lite 0.5.0.32):
+2026-09-19 실측 (aTest · dev-server 9877 · ego lite 0.5.0.32) + **2026-09-20 캡처 축 재실측**(1.design_rnd):
 
-| 축 | ego-browser | Playwright MCP |
-| :--- | :--- | :--- |
-| 진입 `goto()` | 172ms ✅ | MCP 왕복 |
-| 의미 트리 `snapshot()` | 12ms ✅ | ✅ |
-| DOM 실측 `evaluate()` | 1ms ✅ | `browser_evaluate` |
-| **`file://` 직접 진입** | **✅ 가능** | **❌ 차단(보안 기본값)** |
-| PNG 캡처 | ❌ 15초 타임아웃 (6회 연속) | ✅ |
+| 축                        | ego-browser              | Playwright MCP        |
+| :------------------------ | :----------------------- | :-------------------- |
+| 진입 `goto()`             | 172ms ✅                 | MCP 왕복              |
+| 의미 트리 `snapshot()`    | 12ms ✅                  | ✅                    |
+| DOM 실측 `evaluate()`     | 1ms ✅                   | `browser_evaluate`    |
+| **`file://` 직접 진입**   | **✅ 가능**              | **❌ 차단(보안 기본값)** |
+| PNG 캡처                  | **74~85ms ✅** (3회 성공) | ✅                    |
 
 * **ego 는 `file://` 를 연다** — Playwright 가 못 하던 축이다. [file-deployment-rules](file-deployment-rules.md) 의 *"임의 단일 `.html` + `img/` 만으로 동작"* 계약을 **실제 배포 조건 그대로** 헤드리스 검증할 수 있게 됐다. dev-server 경유는 그 계약을 우회한 근사였다
-* **캡처(PNG)만 예외**다 — §4.2. 그 외 어떤 축도 Playwright 로 가지 않는다
+* **예외는 없다 — 캡처를 포함해 전 축이 ego 다.** 2026-09-19~20 사이 캡처 축이 15초 타임아웃(6회 연속·성공 0회) → 74~85ms(3회 성공)로 뒤집혔다. 구 §4.2 「캡처만 Playwright」 예외는 그 재실측으로 **해제**됐다(Issue397 작업 중 확인)
+* ⚠️ **원인은 규명되지 않은 채 증상만 사라졌다.** 다시 타임아웃이 재현되면 예외를 되살리기 전에 **먼저 실측 수치를 남긴다** — 「느린 것 같다」는 근거가 아니다
 
 검증 의도에 따라 두 채널 분기:
 
@@ -269,7 +270,7 @@ curl -L http://localhost:9877/p/<P>/s/c   # → /n/c
         ```
         * legacy `http://localhost:9877/Projects/<P>/slide/<X>.html` 직접 진입은 차단됨 (Issue236.11 — 404)
         * 별도 `python3 -m http.server 8765` fallback 사용 금지 — dev-server 가 단일 진입점
-    * 판정은 `evaluate()`·`snapshot()` 으로 한다. 사람이 볼 PNG 가 필요한 경우에만 §4.2 예외
+    * 판정은 `evaluate()`·`snapshot()` 으로 한다 — 구조·텍스트·스타일은 그쪽이 더 정확하고 빠르다. PNG 는 **사람이 볼 필요가 있을 때만** 찍고, 그때도 ego 로 찍는다(경로 의무 [capture-output-rules](capture-output-rules.md))
     * 단순 "열어보기"에는 과하다 — 그 경우 1번 AppleScript
 
 3. **`open-slide` 스킬** (Issue223) — 임의 슬라이드 진입 자동화
@@ -292,17 +293,6 @@ file:///<abs_path>/Projects/{Name}/slide/{chapter}.html?fwd=1#/N
 * **AppleScript 또는 ego-browser 만 사용**: `open -a` shell 명령은 §4 정책으로 금지. AppleScript 는 `URL:"..."` heredoc 내부 인용이라 `#` 안전, ego 는 `page.goto("…")` 인수 직접 전달이라 인용 무관
 * **chapter mode**: `{chapter}.html?fwd=1#/N` 형태 (예: `01-opening.html?fwd=1#/3`)
 * **single mode**: `index.html?fwd=1#/N`
-
-### 4.2 스크린샷 캡처 — 지금만 Playwright 예외 (Issue377)
-
-**PNG 캡처는 2026-09-19 시점 ego 에서 실패한다.** 그 한 축에 한해 Playwright MCP 를 쓴다.
-
-* 실측: `page.screenshot()` 과 `cdp("Page.captureScreenshot")` 이 **전 옵션에서 15초 CDP 타임아웃**. 3회 재시도(45초) · `fromSurface:false` · viewport override 유무를 갈라 **6회 연속 실패, 성공 0회**. ego lite 는 GUI 로 정상 실행 중이었으므로 **앱 부재가 원인이 아니다**
-* 근거 조항: 글로벌 [browser-engine-rules](~/.claude/rules/browser-engine-rules.md) 의 *"ego 재시도가 반복 실패해 실측으로 현저히 느릴 때"*. 속도 선호·습관이 아니라 **실측된 불가**라서 예외가 성립한다 — 게이트가 물으면 이 줄을 근거로 답한다
-* ⚠️ **잠정 우회이며 원인은 아직 규명되지 않았다.** 글로벌 ego 자산의 문제이므로 **글로벌 Issue653**(`~/.claude/Issue.md`) 으로 추적 중이고, 원인이 잡히면 캡처도 ego 로 되돌린다 — 되돌릴 곳까지 그 이슈에 적어 두었다. *"캡처는 원래 Playwright"* 로 굳히지 말 것
-* **캡처가 아닌 축을 캡처로 대신하지 말 것** — 구조·텍스트·스타일 판정은 `evaluate()` 가 더 정확하고 빠르다. Playwright 로 넘어가는 유일한 사유는 *"사람이 볼 PNG 가 필요하다"* 뿐이다
-* 경로 의무는 그대로 [capture-output-rules](capture-output-rules.md) — `_doc_work/capture/` 하위
-* 재실측 절차(예외 해제 판정): 위 실측을 그대로 1회 돌려 `page.screenshot({path})` 가 1초 내 성공하면 예외를 거두고 본 절을 삭제한다
 
 ## 4.5 파일 단위 배포 검증 (Issue235)
 

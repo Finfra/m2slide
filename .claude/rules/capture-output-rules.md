@@ -9,8 +9,8 @@ date: 2026-05-24
 m2slide 저장소(`lib/m2slide/`)에서 다음 동작 발생 시 자동 발동:
 
 * 스크린샷·캡처 파일(`.png`, `.jpg`, `.jpeg`, `.webp`) 신규 생성
-* 브라우저 캡처 호출 — ego `page.screenshot({ path })` (기본) 또는 Playwright `mcp__playwright__browser_take_screenshot`
-    - ⚠️ 엔진 선택은 여기가 아니라 [apply-verify-rules](apply-verify-rules.md) §4.0·§4.2 가 정한다. 본 룰은 **어느 엔진이든 경로 의무**만 건다
+* 브라우저 캡처 호출 — ego `page.screenshot({ path })`
+    - ⚠️ 엔진 선택은 여기가 아니라 [apply-verify-rules](apply-verify-rules.md) §4.0 이 정한다(2026-09-20 부터 **캡처를 포함해 전 축이 ego**). 본 룰은 **어느 엔진이든 경로 의무**만 건다
 * `fcapture` / `capture-w` / `capture-m` 스킬 실행
 * AppleScript `screencapture` 직접 실행
 * 비교용 변종 캡처(`compare-*.png`, `v2-*.png`, `slide-*.png`, `htmlart-*.png` 등) 생성
@@ -41,16 +41,6 @@ await page.screenshot({
 
 // ❌ path 생략 → 임시 경로에 떨어져 회수 못 함
 await page.screenshot();
-```
-
-```python
-## ✅ Playwright MCP (apply-verify-rules §4.2 예외 경로) — filename 에 _doc_work/capture/ 명시
-mcp__playwright__browser_take_screenshot(
-    filename="_doc_work/capture/compare-slide-22.png"
-)
-
-## ❌ filename 생략 → cwd 루트에 page-{ts}.png 떨어짐 → .gitignore 차단됨
-mcp__playwright__browser_take_screenshot()
 ```
 
 ```bash
@@ -92,6 +82,7 @@ mkdir -p _doc_work/capture
 
 * 루트에 캡처 파일 발견 즉시 `_doc_work/capture/`로 이동 + 사용자 보고
 * 동일 회귀 발견 시 `~/.claude/learning_log.md`에 한 줄 기록 (`* YYYY-MM-DD: m2slide 캡처 파일 루트 오염`)
+* ⚠️ 어떤 도구를 쓰든 **출력 경로를 생략하지 않는다** — 생략 시 도구마다 다른 임시 위치·cwd 루트로 떨어져 회수하지 못한다. 이것이 본 룰이 겨냥하는 재발 지점이다
 * 외부 도구(MCP·스킬)의 기본 경로가 루트로 떨어지는 케이스 발견 시 본 룰에 회피 패턴 추가
 
 # 예외
