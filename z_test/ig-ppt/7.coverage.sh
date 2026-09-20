@@ -32,8 +32,11 @@ cd "$ROOT"
 if [ "$#" -gt 0 ]; then
   DECKS=("$@")
 else
-  #   기본 4덱 — aTest-all(종합) · aTest(single) · chapter_mode(레이아웃) · igTest(인포그래픽)
-  DECKS=(aTest-all aTest m2Slide_chapter_mode igTest)
+  #   기본 5덱 — aTest-all(종합) · aTest(single) · chapter_mode(레이아웃) ·
+  #   igTest(인포그래픽) · h3Test(**장 제목이 H3** — Issue412)
+  #   ⚠️ h3Test 를 빼면 `title_level_h3` 가 4개짜리 한 덱으로 줄고 `long_cover_title`
+  #      은 0 이 된다. 그 상태가 Issue403·406 을 놓친 그때의 픽스처 구성이다
+  DECKS=(aTest-all aTest m2Slide_chapter_mode igTest h3Test)
 fi
 
 say() { printf '%s\n' "$*"; }

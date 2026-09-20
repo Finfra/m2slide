@@ -189,7 +189,87 @@ def main():
               % (len(thin), ", ".join(thin[:8]) + (" …" if len(thin) > 8 else "")))
     print("ℹ️  `synthesized` %d종은 원고에 없는 것이 정상이라 이 셈에서 뺐다"
           % (len(els) - len(measurable)))
-    return 1 if (blind or none_) else 0
+
+    return (1 if (blind or none_) else 0) | deck_traits()
+
+
+# ── 덱 특성 커버리지 (Issue412) ────────────────────────────────────────────
+#
+#   위 감사는 *"계약이 선언한 **요소**를 어느 덱인가는 담고 있는가"* 를 본다.
+#   이 감사는 *"원고가 가질 수 있는 **특성**을 어느 덱인가는 갖고 있는가"* 를 본다.
+#
+#   🔴 둘은 다르다. `1.design_rnd` 에서 렌더 결함 7건이 한 번에 났을 때 위 감사는
+#      초록불이었다 — 계약 요소는 전부 어딘가 있었기 때문이다. 없었던 것은
+#      **H3 제목 장을 가진 덱**이고, 그 사실은 어디에도 선언돼 있지 않았다.
+#
+#   선언은 `data/m2slide2ppt/fixtures.yml` 이 갖고, 수치는 `scan-fixtures.py` 가
+#   채운다. 여기서는 **읽어서 판정만** 한다 — 숫자를 박으면 또 하나의 복제본이 된다.
+def deck_traits():
+    path = os.path.join(ROOT, "data", "m2slide2ppt", "fixtures.yml")
+    if not os.path.isfile(path):
+        print("\nℹ️  fixtures.yml 이 없어 덱 특성 감사를 건너뛴다 — %s" % path)
+        return 0
+    try:
+        import yaml
+    except ImportError:
+        print("\nℹ️  pyyaml 이 없어 덱 특성 감사를 건너뛴다")
+        return 0
+    with open(path, encoding="utf-8") as f:
+        d = yaml.safe_load(f) or {}
+    axes = d.get("axes") or {}
+    decks = d.get("decks") or {}
+    thin_n = ((d.get("coverage") or {}).get("thin_threshold") or 1)
+    if not axes or not decks:
+        print("\nℹ️  fixtures.yml 에 axes·decks 가 없다 — 덱 특성 감사를 건너뛴다")
+        return 0
+
+    names = list(decks)
+    cw = max(9, max(len(n) for n in names))
+    w = max(len(a) for a in axes)
+    print()
+    print("=" * 78)
+    print("덱 특성 커버리지 — 특성 %d종 × 덱 %d (Issue412)" % (len(axes), len(names)))
+    print("=" * 78)
+    print("%-*s %s  판정" % (w, "특성", " ".join("%-*s" % (cw, n[:cw]) for n in names)))
+    print("-" * 78)
+
+    none_, thin = [], []
+    for aid, meta in axes.items():
+        vals = [int(decks[n].get(aid, 0) or 0) for n in names]
+        have = [v for v in vals if v > 0]
+        if not have:
+            mark = "❌ 픽스처에 없음"
+            none_.append((aid, meta))
+        elif meta.get("binary"):
+            #   0/1 축은 «몇 개» 가 없다 — 하나라도 있으면 그 경로를 지난다
+            mark = "✅"
+        elif len(have) == 1 and max(have) <= thin_n:
+            mark = "⚠️ 표본이 얇다"
+            thin.append((aid, meta, max(have)))
+        else:
+            mark = "✅"
+        print("%-*s %s  %s"
+              % (w, aid, " ".join("%-*s" % (cw, v) for v in vals), mark))
+
+    print("-" * 78)
+    if none_:
+        print("❌ 어느 픽스처도 갖지 않은 특성 %d종" % len(none_))
+        for aid, meta in none_:
+            print("   · %-22s Issue%-5s %s"
+                  % (aid, meta.get("issue", "?"), meta.get("why", "")[:44]))
+        print("   그 특성을 가진 원고를 픽스처에 더한다 — 없으면 회귀를 구조적으로 못 잡는다.")
+    if thin:
+        #   ⚠️ «있다» 로 충분하지 않다. m2Slide_chapter_mode 의 H3 4장이 그 증거다 —
+        #      축은 있었으나 86% 가 H3 인 덱을 대표하기에는 표본이 얇았다
+        print("⚠️ 표본이 얇은 특성 %d종 — 한 덱에 %d개 이하다" % (len(thin), thin_n))
+        for aid, meta, n in thin:
+            print("   · %-22s %d개  (Issue%s)" % (aid, n, meta.get("issue", "?")))
+    if not none_ and not thin:
+        print("✅ 선언된 특성을 **전부 충분한 표본으로** 담고 있다")
+    print("ℹ️  수치는 `lib/pptx/scan-fixtures.py --all --update` 가 채운다 — 손으로 고치지 않는다")
+    #   ⚠️ 차단하지 않는다 — 회귀 가드다(rc 는 0). 계약 요소 감사와 같은 성격이나,
+    #      이쪽은 «원고를 더하라» 는 제안이라 빌드를 막을 근거가 아니다
+    return 0
 
 
 if __name__ == "__main__":

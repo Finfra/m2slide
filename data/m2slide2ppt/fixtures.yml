@@ -1,0 +1,124 @@
+# kind: catalog — 단계 종속이 아닌 공유 어휘·인벤토리. 전 단계 읽기 허용 (Issue340)
+# fixtures.yml — 픽스처 덱이 **무엇을 커버하는가** (Issue412)
+#
+# 왜 있나
+#   `1.design_rnd`(520장) 에서 렌더 결함 7건이 한 번에 나왔는데 같은 시점
+#   `aTest`·`igTest` 는 전부 초록불이었다. 그 덱들은 장 제목이 전부 H2 이고
+#   문제의 덱은 H3 가 86% 였다 — pandoc 은 `--slide-level=2` 로 돈다(Issue403).
+#
+#   🔴 결함보다 심각한 것은 **「보이지 않았다」는 사실**이다. 픽스처에 H3 장이 몇
+#      개인지 어디에도 선언돼 있지 않아 `7.coverage` 조차 구멍을 볼 수 없었다.
+#      그 러너는 «계약이 선언한 요소» 를 보고 «원고가 가질 수 있는 특성» 은 안 본다.
+#
+# 무엇이 정본인가
+#   축의 **정의와 근거**는 사람이 여기 적는다(`axes`).
+#   덱의 **수치**는 사람이 적지 않는다 — `lib/pptx/scan-fixtures.py --all --update`
+#   가 원고에서 세어 채운다. 손으로 적으면 원고가 바뀐 날 조용히 갈린다.
+#
+# ⚠️ 정상값을 여기 적지 않는다 — 그것은 계약 `fidelity.yml` 소유다.
+#    여기는 «그 특성을 가진 덱이 있는가» 만 답한다. 층이 다르다.
+#
+# 설계 SSOT: _doc_arch/pptx-parity-design.md 「근거는 어디에 사는가 — 덱 특성 커버리지」
+
+axes:
+  title_level_h3:
+    label: "장 제목이 `### H3` 이상인 장"
+    why: "pandoc 은 `--slide-level=2` 라 H3 장은 Title placeholder 를 비운 채 나간다. 제목이 죽으면 머리말·lane B 매칭·마스코트·lane S 가 줄줄이 따라 죽는다"
+    issue: 403
+
+  nested_bullet:
+    label: "2단계 이상 중첩 불릿이 있는 장"
+    why: "레이아웃 `lstStyle` 이 `lvl1pPr` 만 가지면 중첩이 마스터 기본값(28pt)으로 남아 부모(20pt)보다 커진다"
+    issue: 409
+
+  code_mid_slide:
+    label: "코드 펜스가 그 장의 **첫 내용이 아닌** 장"
+    why: "코드가 중간이면 앞 문단의 조판 높이를 어림해야 하고, 그 어림은 서체·자간·자동축소를 몰라 원리적으로 어긋난다"
+    issue: 405
+
+  cards_with_body:
+    label: "본문(하위 불릿)을 가진 카드 블록"
+    why: "좁은 카드는 한 문단이 두세 줄로 접힌다. 높이를 문단 수로 잡으면 글자가 상자 밖으로 샌다"
+    issue: 410
+
+  long_cover_title:
+    label: "표지 제목이 상자 폭을 넘는가"
+    binary: true        # 0/1 축이라 «표본이 얇다» 판정을 걸지 않는다 — 1 이면 충분하다
+    why: "`cover_geometry.fs` 가 다른 덱에서 잰 고정값이라, 긴 제목은 PowerPoint 에서 잘려 나가고 LibreOffice 에서 접혀 가로선을 덮는다"
+    issue: 406
+
+  entry_slide_with_body:
+    label: "자식 헤딩과 본문을 **함께** 가진 진입 장"
+    why: "본문이 없는 진입 장만 상정하면 그런 장이 pptx 에서만 통째로 사라진다. 빠진 장은 「비어 있는 장」으로도 세어지지 않아 어떤 검사도 못 본다"
+    issue: 401
+
+  htmlart_lane_c:
+    label: "lane B 카탈로그 밖 htmlart 종류 수"
+    why: "카탈로그에 없는 종류는 평문 불릿으로 눕는다. 설계상 정상이나 그 수가 많으면 HTML 과 인상이 크게 갈린다"
+    issue: 331
+
+# ── 덱 ────────────────────────────────────────────────────────────────────
+#   ⚠️ 아래 수치는 `scan-fixtures.py --all --update` 가 채운다. 손으로 고치지 말 것.
+#      `note:` 는 사람이 적는다.
+decks:
+  aTest:
+    note: "single mode 기본 픽스처. 왕복·lane B/M 의 주 대상"
+    slides: 9
+    title_level_h3: 0
+    nested_bullet: 3
+    code_mid_slide: 0
+    cards_with_body: 1
+    long_cover_title: 0
+    entry_slide_with_body: 0
+    htmlart_lane_c: 1
+
+  aTest-all:
+    note: "chapter mode · 요소 커버리지가 가장 넓다"
+    slides: 43
+    title_level_h3: 0
+    nested_bullet: 6
+    code_mid_slide: 6
+    cards_with_body: 4
+    long_cover_title: 0
+    entry_slide_with_body: 5
+    htmlart_lane_c: 1
+
+  igTest:
+    note: "3.parity 의 기준 덱"
+    slides: 34
+    title_level_h3: 0
+    nested_bullet: 3
+    code_mid_slide: 6
+    cards_with_body: 3
+    long_cover_title: 0
+    entry_slide_with_body: 5
+    htmlart_lane_c: 0
+
+  m2Slide_chapter_mode:
+    note: "chapter mode 최소 덱. H3 장이 **4개뿐**이라 이 축의 유일한 표본이었다"
+    slides: 33
+    title_level_h3: 4
+    nested_bullet: 3
+    code_mid_slide: 0
+    cards_with_body: 0
+    long_cover_title: 0
+    entry_slide_with_body: 0
+    htmlart_lane_c: 0
+
+  h3Test:
+    note: "장 제목이 H3 인 덱. Issue403 의 뿌리를 재현한 최소 픽스처 — 7축 전부를 담는다"
+    slides: 12
+    title_level_h3: 8
+    nested_bullet: 3
+    code_mid_slide: 1
+    cards_with_body: 1
+    long_cover_title: 1
+    entry_slide_with_body: 2
+    htmlart_lane_c: 1
+
+# 커버리지 판정
+#   thin: 이 수 이하로 가진 덱만 있으면 «한 덱뿐» 경고를 낸다.
+#   ⚠️ «있다/없다» 만으로는 부족하다 — m2Slide_chapter_mode 의 H3 4장이 그 증거다.
+#      축이 존재하긴 했으나 86% H3 덱을 대표하기에는 표본이 얇았다.
+coverage:
+  thin_threshold: 5
