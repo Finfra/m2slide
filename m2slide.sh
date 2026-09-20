@@ -620,6 +620,8 @@ if [ "$GENERATE_PDF" = true ]; then
     PDF_TMP_DIR="$OUTPUT_DIR/.pdf-tmp"
     rm -rf "$PDF_TMP_DIR"
     mkdir -p "$PDF_TMP_DIR"
+    PDF_EXPECT=0      # Issue398: decktape 가 찍었다고 보고한 장 수의 총합 (합본 기대치)
+    PDF_LOSS=0        #           한 장이라도 어긋나면 1
 
     # Detect single-page mode: in single mode index.html IS the slide deck;
     # in chapter mode index.html is a redirect/cover and agenda.html is the
@@ -668,14 +670,38 @@ if [ "$GENERATE_PDF" = true ]; then
       fi
 
       # Run decktape and filter out known non-critical SVG errors
+      # Issue398: 출력을 tee 로 남겨 `Printed N slides` 를 회수한다 — 그 수가 이 장의
+      #   **기대 페이지 수**다. 아래에서 산출 PDF 와 대조하고, 총합을 합본 단계로 넘긴다.
+      _dtlog="$PDF_TMP_DIR/.$name.decktape.log"
       # shellcheck disable=SC2086
-      $DECKTAPE_CMD $DECK_SIZE reveal "$file" "$PDF_TMP_DIR/$name.pdf" 2>&1 | grep -vE "Error: <g> attribute transform|translate\(NaN,NaN\)"
+      $DECKTAPE_CMD $DECK_SIZE reveal "$file" "$PDF_TMP_DIR/$name.pdf" 2>&1 \
+        | tee "$_dtlog" \
+        | grep -vE "Error: <g> attribute transform|translate\(NaN,NaN\)"
 
       # Check exit code of the first command in the pipe (decktape)
       if [ "${PIPESTATUS[0]}" -eq 0 ]; then
-          echo "  ✅ Generated: $name.pdf"
+          # Issue398: decktape 가 찍었다고 말한 수와 **파일에 실제로 담긴 수**를 대조한다.
+          #   둘이 갈리면 그 장에서 이미 잃은 것이고, 여기서 안 잡으면 합본까지 조용히 간다.
+          _printed=$(grep -oE "Printed [0-9]+ slides" "$_dtlog" | tail -1 | grep -oE "[0-9]+")
+          _inpdf=$(python3 -c "
+from Quartz import PDFDocument
+from Foundation import NSURL
+import sys
+d=PDFDocument.alloc().initWithURL_(NSURL.fileURLWithPath_(sys.argv[1]))
+print(d.pageCount() if d is not None else -1)
+" "$PDF_TMP_DIR/$name.pdf" 2>/dev/null)
+          if [ -n "$_printed" ] && [ -n "$_inpdf" ] && [ "$_printed" != "$_inpdf" ]; then
+            echo "  ❌ $name.pdf: decktape 는 ${_printed}장을 찍었다는데 파일엔 ${_inpdf}p 뿐이다 — 이 장에서 손실"
+            PDF_LOSS=1
+          else
+            echo "  ✅ Generated: $name.pdf (${_inpdf:-?}p)"
+          fi
+          if [ -n "$_printed" ]; then
+            PDF_EXPECT=$(( PDF_EXPECT + _printed ))
+          fi
       else
           echo "  ❌ Failed to generate PDF for $name"
+          PDF_LOSS=1
       fi
     done
 
@@ -689,7 +715,7 @@ if [ "$GENERATE_PDF" = true ]; then
     done < <(find "$PDF_TMP_DIR" -maxdepth 1 -name "*.pdf" | sort)
 
     if [ "${#PDF_LIST[@]}" -gt 0 ]; then
-      if python3 "$SCRIPT_DIR/lib/combine-pdfs.py" "$COMBINED_PDF" "${PDF_LIST[@]}"; then
+      if python3 "$SCRIPT_DIR/lib/combine-pdfs.py" --expect "$PDF_EXPECT" "$COMBINED_PDF" "${PDF_LIST[@]}"; then
         echo "  ✅ Combined PDF saved to slide/: $PROJECT_NAME.pdf"
       else
         echo "  ❌ Failed to combine PDFs"
