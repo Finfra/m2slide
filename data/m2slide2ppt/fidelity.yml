@@ -493,9 +493,14 @@ elements:
       칠하므로 그대로 옮기면 코드에 `**def**` 가 박힌다(실측). 호출부가
       `emphasis=(kind0 != "code")` 로 끊는다.
     caveat: |
-      🚧 **lane B 카드 안에서는 여전히 잃는다** — 카드 본문이 서식 없는 단일 run 으로
-      평탄화되므로 신호 자체가 없다(aTest-all·igTest 각 1건: `` `_config.yml` ``).
-      정방향이 도형에 서식을 다시 입혀야 한다.
+      ℹ️ **카드 안까지 해결됐다**(2026-09-20 · aTest-all 62/62). 카드 본문이 서식 없는
+      단일 run 으로 평탄화되던 것을 lane T 가 사이드카의 원문(`items_md`)으로 run 을
+      쪼개 코드 서체를 다시 입힌다 — 그 서체가 곧 역변환의 신호이므로 한 번의 수리로
+      양방향이 맞는다.
+      ⚠️ **제목 밴드는 원문을 쓰지 않는다** — 역변환의 `render_div` 가 제목에 `**` 를
+      다시 붙이므로 굵게를 살리면 `****제목****` 이 된다. 카드 제목에 링크·코드를 쓰는
+      원고는 실측 0건이라 되입힐 자리를 본문 줄로 좁혔다. 그런 원고가 생기면 그때
+      `render_div` 쪽과 함께 판단한다.
     evidence: |
       전수 실측 2026-09-20 — 제목·코드문단을 뺀 본문 run 중 `latin` 명시는 aTest-all
       6개이고 **전부 코드 인라인**, 일반 불릿 268 run 은 0 (오탐 0). 복원 후
@@ -573,8 +578,8 @@ elements:
       step·funnel) 픽스처를 더한 뒤 재측정하고 판단한다.
       ℹ️ **본문이 블록 안으로 돌아왔다**(2026-09-20) — 그 전에는 카드 본문이 `:::` 밖
       상위 불릿으로 새어 `cards` 개수는 맞는데 **내용이 남의 블록에 있었다**. 테두리
-      도형의 기하로 본문 TEXT_BOX 를 제 카드에 짝지어 해결. 링크(`cards_hyperlink`)와
-      run 서식은 아직 못 싣는다.
+      도형의 기하로 본문 TEXT_BOX 를 제 카드에 짝지어 해결. **링크·코드 서식도 실린다**
+      (Issue389) — 본문 줄에 한한다.
     evidence: "aTest p4 alt-text `block:[cards]` 로 종류 복원 — 2026-09-10 (agent 실증)"
 
   - id: htmlart_smartart
@@ -663,16 +668,29 @@ elements:
 
   - id: cards_hyperlink
     m2slide: "`::: cards` 블록 안의 `[글자](URL)`"
-    pptx: "도형 글자 — **URL 은 들어가지 않는다**"
+    pptx: "도형 글자에 `a:hlinkClick` — **클릭된다** (Issue389)"
     grade: declared_drop
     reason: |
-      cards 는 lane B 가 네이티브 도형으로 다시 그리는데(글로벌 `ppt-info` 블록 렌더러)
-      그 도형의 글자에는 하이퍼링크가 붙지 않는다. 본문·표 링크(`hyperlink`)는 살아
-      돌아오므로 **한 축에 섞으면 멀쩡한 링크까지 같은 실패로 보인다** — 축을 나눴다.
+      cards 는 도형으로 다시 그려지는데 그 과정에서 인라인 마크다운이 벗겨져 URL 결속이
+      사라졌다. 본문·표 링크(`hyperlink`)는 살아 돌아오므로 **한 축에 섞으면 멀쩡한
+      링크까지 같은 실패로 보인다** — 축을 나눠 둔 것이 진단에 그대로 도움이 됐다.
+    caveat: |
+      ℹ️ **해결됐다**(2026-09-20 · aTest-all 2/2). 구 recover 가 짚은 *"고칠 곳은 글로벌
+      `ppt-info` 라 m2slide 안에서 못 고친다"* 는 **틀렸다** — 카드를 최종적으로 그리는
+      주체는 `ppt-info` 가 아니라 **lane T 의 `redraw_cards`** 다(m2slide 카드는 상단
+      노란 제목 밴드 + 본문이라 다른 물건이어서 Issue349 에 다시 그리게 했다). 즉 수리
+      지점은 처음부터 m2slide 안이었다.
+      🚧 등급은 `declared_drop` 으로 둔다 — 카드 링크가 없는 덱이 정상이고, 있는 덱은
+      동수로 통과한다. 올리면 링크 없는 덱이 실패한다.
     recover: |
-      렌더러가 run 에 `a:hlinkClick` 을 붙이면 된다. 다만 그곳은 **글로벌 SCAR**
-      (`ppt-info`)라 m2slide 안에서 고칠 수 없다 — 별도 이슈로 올린다.
-    evidence: "aTest-all 02장 `::: cards` 2건 — 글자는 남고 URL 만 소실 (2026-09-19)"
+      끝났다. 원문은 `build-source` ⑫ 가 `items_md` 로 나란히 싣고(기존 `items`·`flat` 은
+      pandoc 대조용이라 불변), lane T 가 `add_md_runs()` 로 run 을 쪼개 건다. 링크는
+      `run.hyperlink.address` 로 걸어야 한다 — 손으로 rel 을 넣으면 **고아 rel** 이 남고
+      그것을 잡는 검사가 없다(실측: 수리 전 p19 에 어느 run 도 참조하지 않는 외부 rel
+      2건이 있었다).
+    evidence: |
+      2026-09-20 — aTest-all p19 두 링크가 run 에 결속(`github.com/Finfra/m2slide` ·
+      `finfra.github.io/m2slide`)되고 그 장의 고아 rel 0. 왕복 2/2.
 
   # ── 디렉티브·인라인 장식 ───────────────────────────────────
   - id: directive_id
