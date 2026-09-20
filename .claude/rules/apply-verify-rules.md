@@ -410,6 +410,26 @@ file:///<abs_path>/Projects/{Name}/slide/{chapter}.html?fwd=1#/N
 * ⚠️ 글로벌 도구가 없는 머신에서는 **SKIP 하고 그 사실을 보고**한다 — 도구 부재와 무결성 통과는 다른 사실이다
 * 이 축의 실사고 선례: lane G 의 `diagramDrawing` 관계를 슬라이드 rels 가 아니라 data 파트에 걸어 LibreOffice 가 빈 그룹으로 들여온 건(실측 2026-09-11). **어떤 검사도 잡지 못해 사람이 눈으로 찾았다**
 
+## 4.12 PDF 파리티 회귀 (Issue413)
+
+**`--pdf` 경로를 건드렸거나, 테마·htmlart 렌더·클라이언트 훅을 고쳤으면 돌린다.** pptx 와 달리 PDF 는 **고정된 렌더 결과**라 화면과 다르면 그 자체가 결함이다 — 설계 SSOT 는 [`../../_doc_arch/pdf-parity-design.md`](../../_doc_arch/pdf-parity-design.md).
+
+| 무엇을 고쳤나                                               | 부를 러너                                              |
+| :---------------------------------------------------------- | :----------------------------------------------------- |
+| `m2slide.sh` PDF 블록 · `lib/pdf/*` · `lib/combine-pdfs.py` | `./z_test/pdf/1.integrity.sh`                          |
+| 테마 CSS · htmlart 렌더러 · 레이아웃 템플릿                 | `./z_test/pdf/2.tripath.sh <P> <챕터.html> <N> <탐침>` |
+| `lib/component-hooks/*.client.js` (런타임 레이아웃)         | `./z_test/pdf/3.nondeterminism.sh <P> [챕터.html] [N]` |
+
+* **`1.integrity`** — 페이지 수(원고 section 합 + 표지·목차) · 비율 · 폰트 격리 · 백지 장 보고. 기본은 `--no-build` 로 **이미 있는 PDF** 를 잰다
+    - ⚠️ 산출물이 원고보다 오래되면 **STALE(rc 3)** 로 «판정 불가» 를 보고한다. 불일치로 보고하면 있지도 않은 손실을 쫓게 된다(실측 igTest)
+* **`2.tripath`** — 화면 ① · 단독 추출 ② · 전체 추출 ③ 에서 같은 탐침의 폰트·위치를 재어 **결함 계열(C1~C4)을 찍는다**
+    - ⚠️ **C4(HTML 자체 결함)는 기계가 못 가른다** — 셋이 «똑같이 잘못» 인 경우다. 일치 판정이 나와도 화면을 사람이 봐야 한다
+* **`3.nondeterminism`** — 같은 챕터를 N회 뽑아 **전 페이지 조판 지문**이 같은지. 기본 N=3
+    - 🔴 **통과가 «비결정성 없음» 의 증명이 아니다.** 사건률 p 면 놓칠 확률이 `(1-p)^N` 다. 실측(Issue407 구 코드): 사건률 약 25% → N=3 이면 **42% 확률로 놓친다**. 의심되면 N 을 올린다
+    - 지문에 **텍스트 내용은 넣지 않는다** — Issue399 는 글리프가 치환돼도 텍스트 레이어가 멀쩡했다
+
+⚠️ 세 러너 모두 **차단 지점이 아니다.** 차단은 이미 `--pdf` 빌드 안에 있다(`Printed N` 대조·`combine --expect`·폰트 격리·`PDF_LOSS` → `exit 2`). 러너까지 차단이면 오탐 1건이 배포를 막는다 — §4.11 과 같은 판단.
+
 > lint subcommand 전체 목록: `--lint-deployment`(§4.5) · `--lint-license`(§4.6) · `--lint-data`([`data-access-rules.md`](data-access-rules.md)) · `--lint-config`·`--lint-layouts`([`../../_doc_arch/theme_layout.md`](../../_doc_arch/theme_layout.md)). PPTX 규격 검증(§4.7)은 subcommand 가 아니라 `--pptx` 빌드 내장이다.
 
 ## 5. 결과 보고
