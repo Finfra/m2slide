@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 390
+* Issue HWM: 391
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -15,19 +15,21 @@
 
 결정은 **각 정본 문서**에 산다 — 여기 사본을 두지 않는다(2026.09.02 정리).
 
-| 결정                                                                               | 정본                                                                       |
-| :--------------------------------------------------------------------------------- | :------------------------------------------------------------------------- |
-| 별도 `_meta.yml` 파일 미사용 — `AGENDA.md`·`{프로젝트명}.md` frontmatter 에 넣는다 | [meta-yml.md](_doc_arch/meta-yml.md) "별도 `_meta.yml` 파일은 쓰지 않는다" |
-| m2slide 모듈 분리는 나중에 — 지금은 상위 프로젝트와 함께                           | [decisions.md](_doc_arch/decisions.md) "m2slide 모듈 분리는 나중에"        |
-| SCAR 는 가급적 프로젝트 폴더에 배치 (배포용 자족)                                  | [scar-portability.md](_doc_arch/scar-portability.md) "SSOT 경계"           |
-| `img/` 소스·빌드 이중 복사 유지                                                    | [decisions.md](_doc_arch/decisions.md) "`img/` 이중 복사를 유지한다"       |
-| 로우·값 단위 개별 애니메이션 지원 (Issue149 완료)                                  | [animation.md](_doc_arch/animation.md) "3. m2slide syntax 설계"            |
+| 결정                                                                               | 정본                                                                                 |
+| :--------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------- |
+| 별도 `_meta.yml` 파일 미사용 — `AGENDA.md`·`{프로젝트명}.md` frontmatter 에 넣는다 | [meta-yml.md](_doc_arch/meta-yml.md) "별도 `_meta.yml` 파일은 쓰지 않는다"           |
+| m2slide 모듈 분리는 나중에 — 지금은 상위 프로젝트와 함께                           | [decisions.md](_doc_arch/decisions.md) "m2slide 모듈 분리는 나중에"                  |
+| SCAR 는 가급적 프로젝트 폴더에 배치 (배포용 자족)                                  | [scar-portability.md](_doc_arch/scar-portability.md) "SSOT 경계"                     |
+| `img/` 소스·빌드 이중 복사 유지                                                    | [decisions.md](_doc_arch/decisions.md) "`img/` 이중 복사를 유지한다"                 |
+| 로우·값 단위 개별 애니메이션 지원 (Issue149 완료)                                  | [animation.md](_doc_arch/animation.md) "3. m2slide syntax 설계"                      |
+| 왕복 구조적 4축은 pptx 에 밀반입하지 않는다 (선언된 손실 유지)                     | [decisions.md](_doc_arch/decisions.md) "왕복 구조적 4축은 pptx 에 밀반입하지 않는다" |
 
 # 🌱 이슈후보
 
 1. single mode 의 H1 을 원고로 되찾기 — chapter mode 는 챕터 TOC 장 제목에서 되찾았으나(Issue388) single mode 는 H1 만 있던 장이 pptx 에 흔적을 남기지 않아 불가. 정방향이 신호(lane S·docProps)만 남기면 되고 **deck 은 변하지 않는다**(되살린 `# H1` 을 재빌드하면 `cards_placeholder: false` 가 다시 지운다). 닫으면 `fidelity.yml h1_chapter` 를 `lossy` 로 올릴 수 있다
-1. 구조적 4축을 되찾을지 — `component_fence`·`wordart_fence`·`mermaid_fence`·`inline_symbol`. 되찾으려면 **원고 조각을 pptx 안에 밀반입**(도형 alt-text·docProps)해야 한다. `6.roundtrip` ④ 커닝 검사는 «pptx 안의 신호» 를 허용하므로 규칙상 가능하지만, alt-text 는 접근성 창에 노출되고 캡션 축과 겹친다 — **제품 결정이 필요**하다(사용자 판단 대기)
 1. `m2Slide_chapter_mode` 의 `bullet_nesting` ±4 — m2slide(2칸=1레벨) ↔ pandoc(CommonMark) 해석차. **왕복 문제이기 전에 HTML·pptx 산출물 불일치**다(`fidelity.yml` caveat 에 🚧 로 있음)
+1. htmlart 캔버스 종횡비 정렬 — `arrow` 외 나머지(funnel·venn·bracket·block·hexagon·step·numbered·balance 는 가로를, timeline·chevron·process·hierarchy·workflow 는 세로를 버린다). 원인은 Issue390 과 같다 — 그 이슈가 «세로 반지름을 고정하고 가로를 목표 비율에서 역산한다» 는 해법과 M 스윕 검증 절차를 남겼으니([types.yml](data/htmlart/types.yml) `arrow.canvas_note`) 거기서 시작한다. 다만 타입마다 배치 재설계가 필요하다
+1. htmlart 고정 폰트 잔여 + 세로 넘침 — `centerLabel` 을 고정 폰트로 부르는 `venn`(28/18)·`hexagon`(25/17)·`pie`(20/15) 와 `balance` 가 세로로 넘친다. prj60 전수(2026-09-20, `z_test/htmlart-fo-audit.mjs`) venn 4건(+4~15px)·balance 10건(+6~23px). Issue391 과 같은 결함 계열 — fit 경로(`uniformTitleFs`)로 통일
 1. `::: part` 를 소비하지 않는 테마에서 그 블록이 **조용히 사라진다** — `theme/default` 의 `_chapter.html` 에 `{{part}}` 가 없어 원고에 쓴 5개가 HTML·pptx 양쪽에서 버려진다(aTest-all 실측). 슬롯 미소비를 저작 단계에서 경고할지
 
 
@@ -40,6 +42,45 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue391: `chevron` 라벨이 이웃 도형에 덮여 사라진다 — 유일하게 폰트 auto-fit 이 없는 타입 (등록: 2026-09-20, 해결: 2026-09-20, commit: `ef8c158`, `597ee09`) ✅
+* 목적: 발주처 prj60 `__lec` 3일차 「크롤링의 기법」에서 `페이지네이션` 이 **`|이지네이·` 로 좌우가 잘려** 보고됐다. Issue364(폭 축 auto-fit)가 **`chevron` 만 빠진 채** 종결돼 남은 잔여 케이스다. 다른 타입은 `fitFsFor` 로 폰트를 낮춰 담는데 `chevron` 은 **낮추는 코드 자체가 없다**
+* 상세 (실측 2026-09-20 · ego-browser · prj60 `03-day3.html`·`06-day6.html`):
+    - **원인 ①  폰트가 고정이다.** [renderChevron](lib/component-hooks/htmlart_dispatch.client.js#L797) 은 `nodeBox` 가 아니라 `centerLabel(svg, …, 29, 19)` 을 부른다 — **제목 29px·부제 19px 하드코딩**이고 `uniformTitleFs`/`fitFsFor` 를 거치지 않는다. `process`·`step`·`timeline` 등은 전부 `nodeBox` 경로라 `widthCap` 이 걸린다
+    - **원인 ②  중간칸 유효 폭이 노치에 깎여 127px 뿐이다.** `chW=290, tip=chH*0.4=81.6` 이고 라벨 폭은 `chW-tip-notch` 다. 첫 칸만 `notch=0` 이라 208px 이고, **2번째 칸부터는 `290-81.6-81.6=126.8px`**(`centerLabel` 의 `padding:0 6px` 제외 115px). 29px 고정 + `word-break:keep-all` 이면 **공백 없는 한글 5자부터 넘친다**
+    - **원인 ③  경고가 없다.** [data/htmlart/types.yml](data/htmlart/types.yml) 의 `chevron` 항목에 **`max_chars` 가 아예 없다** → `markdown.js` 의 Issue364 경고가 이 타입에서는 절대 뜨지 않는다. 같은 절 주석은 *"상한을 넘겨도 잘리지는 않는다 — `fitFsFor` 가 폰트를 낮춰 담는다"* 고 적고 있으나 **`chevron` 에는 그 전제가 성립하지 않는다**
+    - **Issue364 와 다른 점**: 364 는 `overflow:hidden` 2중 클리핑에 **세로로** 삼켜지는 것이었다. 이쪽은 **가로로 삐져나간 뒤 다음 polygon 이 그 위에 그려져 덮인다** — DOM 상으로는 아무것도 클리핑되지 않아 성격이 다르다
+    - 🔴 **기존 계측 4종이 전부 통과시킨다** — 클리핑 조상이 없고(삐져나가는 것이라), 슬라이드 경계 안이고, SVG 내부라 형제 겹침에서 제외된다. 실제로 prj60 이 `slide-audit.mjs` 로 0건을 받은 장에서 사용자가 육안으로 잡았다
+    - **실측치** (prj60 6일차 「RAG 세 글자의 뜻」, 3노드):
+
+      | 라벨 | foreignObject 폭 | 텍스트 실폭 | 초과 |
+      | :--- | ---: | ---: | ---: |
+      | `Generation — 답하기` | 240px | 274px | **34px** (좌우 17px씩) |
+      | `Augmented — 붙이기` | 240px | 247px | 7px |
+
+    - ⚠️ **계측 기준을 내부 div 로 잡으면 0건이 나온다**(1차 오탐으로 겪었다) — flex 자식이라 `max-content` 로 늘어나 텍스트는 언제나 div 안에 들어맞는다. **기준은 foreignObject 경계**여야 한다
+* 구현 명세:
+    - **최소 수정**: `renderChevron` 이 `uniformTitleFs(items, chW-tip*2, chH)` 를 구해 `centerLabel` 에 넘긴다. 다만 `centerLabel` 은 `titleFs`/`subFs` 를 인자로만 받으므로 호출부 한 줄로 끝난다. 폭 인자는 **가장 좁은 칸(중간칸) 기준**이어야 한다 — 첫 칸 기준으로 재면 여전히 넘친다
+    - **함께**: `types.yml` 의 `chevron` 에 `max_chars` 를 넣어 경고 경로를 살린다. 폰트 fit 이 들어가면 상한은 *"넘으면 작아진다"* 의 의미가 되므로 다른 타입과 같은 성격이 된다. fit 전 임시값은 **중간칸 4자**다
+    - **검증**: `foreignObject` 경계 대 텍스트 실폭 계측 — prj60 `Project/202609_Rebuild/1.design_rnd/_pipeline/tools/slide-audit-fo.mjs` 가 이미 그 형태로 있다 (볼륨이 달라 상대링크 불가 — 경로 그대로 표기). 수정 후 208장 전수에서 0건이어야 한다
+    - ⚠️ **`chevron` 을 폐기하지 않는다** — 강한 진행감이 필요한 자리가 있고, 짧은 라벨(2~4자)에서는 정상 동작한다. 고칠 것은 **폰트 고정**이다
+* 📌 발주처 회피는 이미 끝났다 (prj60, 2026-09-20): 해당 2장을 `htmlart process` 로 교체하고 `DESIGN.md` 상한 표에 *"`chevron` 중간칸 4자"* + 판정 한 줄(*"공백 없이 5자를 넘는 토막이 있으면 `chevron` 을 쓰지 않는다"*)을 박았다. **본 이슈가 막고 있는 것은 없다**
+* ✅ 결과 (2026-09-20 · `ef8c158` 정책 · `597ee09` 코드):
+    - [renderChevron](lib/component-hooks/htmlart_dispatch.client.js): `Math.min(29, uniformTitleFs(items, labelW+12, chH))` — 중간칸(`chW-2*tip` = 126.8) 기준 체인 균일 fit. `centerLabel` padding 6 과 `fitFsFor` 가 전제하는 12 의 차를 `+12` 로 보정해 innerW 가 실제 안쪽 폭+안전 8 이 되게 했다. 짧은 라벨(2~3자 어절)은 29px 그대로 — 저장소 데모(`m2Slide_visual_component` 5장 14번) 5개 라벨 29px 불변 실측
+    - [types.yml](data/htmlart/types.yml) `chevron`: `max_chars: 14` + 신설 `max_token_chars: 4`. [markdown.js](lib/markdown.js) 가 가장 긴 토막을 렌더러 `longestTokenEm` 과 같은 구분자로 잘라 따로 경고한다 — `페이지네이션` 은 총량 6자라 총량 상한으로는 영영 경고되지 않았다. 테스트 6건 추가([markdown.test.js](lib/__tests__/markdown.test.js) 72/72)
+    - 실측 (ego-browser · foreignObject 경계 대 텍스트 실폭·실높이):
+
+      | 대상 | 수정 전 | 수정 후 |
+      | :--- | :--- | :--- |
+      | 픽스처 `페이지네이션` | +40px (29px) | 0 (17px) |
+      | 픽스처 `Generation — 답하기` | +19.8px | 0 (18px) |
+      | 픽스처 부제 동반 `6-2 — 그 볼트를 그대로 올림` | 가로 0 · **세로 +28/+32px** | 0 (23/15px) |
+      | prj60 6일치 427섹션 · htmlart 204장 · fo 841 | — | chevron 0건 |
+      | 저장소 데모 5장 chevron 5라벨 | 29px | 29px 불변 |
+
+    - 🔍 **세로 축은 등록 시점엔 몰랐다** — 가로만 재던 계측이 놓친 두 번째 결함(부제 동반 장이 fo 클리핑으로 조용히 잘림)이 같은 fit 으로 함께 해소됐다. 재사용 도구 [z_test/htmlart-fo-audit.mjs](z_test/htmlart-fo-audit.mjs) 는 두 축을 다 잰다. 진단 기록: [debug_TECH.md](_doc_work/debug_TECH.md) 2026-09-20 항목
+    - ⚠️ 제목의 *"유일하게"* 는 체인형 한정이다 — `centerLabel` 을 고정 폰트로 부르는 곳이 셋 더 있다(`venn` 28/18 · `hexagon` 25/17 · `pie` 20/15). prj60 전수에서 `venn` 4건·`balance` 10건이 **세로로** 넘친다 → 🌱 이슈후보 등재
+    - 부기: `--lint-data` 실패 9건은 전부 `Projects/1.design_rnd`(prj60 심링크) `DESIGN.md`·`AUTHORING.md` 텍스트 위생 건이라 본 변경과 무관 · prj60 `DESIGN.md` 의 *"chevron 중간칸 4자"* 회피 규칙은 이제 빌드 경고가 같은 판정을 낸다(회피 해제는 prj60 판단)
 
 ## Issue390: htmlart 캔버스 종횡비가 본문 영역과 어긋나 도해가 작게 그려진다 — `arrow` 는 가로 40% 를 버린다 (등록: 2026-09-20, 해결: 2026-09-20, commit: `26bba40`) ✅
 * 목적: 4:3 덱에서 htmlart 도해가 본문 영역을 다 못 쓰고 가운데 작게 그려진다. SVG `preserveAspectRatio` 기본값이 `meet` 이라 캔버스·컨테이너 중 **짧은 축**에 맞춰 축소되는데, 타입별 캔버스 종횡비가 본문 영역과 크게 어긋나 있다. 가장 심한 `arrow` 부터 잡는다
