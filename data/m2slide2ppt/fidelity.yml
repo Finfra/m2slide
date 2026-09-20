@@ -232,11 +232,17 @@ elements:
     pptx: "`cards_placeholder` 설정에 달렸다 — 아래"
     grade: declared_drop
     reason: |
-      **모드가 정하는 항목이다.** chapter mode 는 H1 을 걷고 그 자리에 챕터 TOC 장을
-      만들며 **그 장의 제목이 H1** 이다 — 즉 글자가 pptx 에 살아 있다. single mode 는
-      `toc_placeholder` 게이트가 chapter mode 로 한정돼 있어(`build-source.py`
-      `toc_ph = flag(...) and is_chapter`) H1 만 있는 장이 **아무 장도 만들지 않고
-      사라진다**. HTML 은 그 자리를 autoToc 로 채우므로 산출물끼리도 갈린다.
+      **설정이 정하는 항목이다.** `cards_placeholder: false` 면 HTML 이 H1 슬라이드를
+      **deck 에서 지우므로**(_config.org.yml 주석) pptx 도 만들지 않는다 — 원고의 H1 은
+      구조 정보로만 남고 장이 되지 않는다. `true` 면 양쪽 모두 장을 만든다.
+      ⚠️ **산출물끼리는 어긋나지 않는다** — 실측 2026-09-20: aTest(single) HTML 8장 =
+      표지 1 + 본문 7 · pptx 9장 = 표지·Agenda + 본문 7. aTest-all(chapter) HTML 48
+      본문 = pptx 42 본문 + 챕터 TOC 6. 즉 이 축은 **원고↔원고** 축이며 시각 축의
+      결함이 아니다.
+      그러면서 **글자의 생사는 모드가 가른다**: chapter mode 는 `toc_placeholder` 가
+      챕터 TOC 장을 만들고 **그 장의 제목이 H1** 이라 pptx 에 살아 있다. single mode 는
+      그 게이트가 chapter mode 로 한정돼 있어(`build-source.py`
+      `toc_ph = flag(...) and is_chapter`) H1 이 **아무 흔적도 남기지 않는다**.
     caveat: |
       ⚠️ **chapter mode 는 이제 왕복한다** — 역변환이 챕터 TOC 장을 지울 때 그 제목을
       `# H1` 로 되돌린다(실측 2026-09-20: aTest-all 6/6 · igTest 5/5 ·
@@ -248,7 +254,9 @@ elements:
       (실측 2026-09-10). 원고 축과 시각 축이 **다른 정본을 보던** 자리다.
     recover: |
       chapter mode 는 해결됐다. single mode 는 **정방향이 먼저** 표식을 남겨야 한다 —
-      H1 만 있던 장이 pptx 에 흔적을 남기지 않으므로 역변환만으로는 불가능하다.
+      H1 이 pptx 에 흔적을 남기지 않으므로 역변환만으로는 불가능하다. 표식은 도형이
+      아니라 신호(lane S·docProps)로 충분하다 — **되찾아도 deck 은 그대로**이기
+      때문이다(되살린 `# H1` 을 재빌드하면 `cards_placeholder: false` 가 다시 지운다).
       ⚠️ 구 지침이 적어 둔 *"첫 본문 장의 신호에 붙인다"* 는 **틀렸다.** 그대로 하면
       무관한 본문 장이 H1 을 얻고, `collect()` 가 그 장을 진입 장으로 오인해 통째로
       셈에서 뺀다(실측 2026-09-20: `h2_slide_title` −6 · `bullets` −21 · `slide_order`
@@ -369,22 +377,34 @@ elements:
 
   - id: part_label
     m2slide: "`::: part` 펜스가 내는 `Chapter N.` 라벨 (HTML 챕터 파일의 `<p>`)"
-    pptx: "들어가지 않는다 — **챕터 진입 장의 제목이 그 역할을 한다**"
+    pptx: "**테마가 렌더하면 진입 장 좌상단에 옮긴다** — 안 하면 들어가지 않는다"
     grade: declared_drop
     reason: |
-      HTML 은 챕터 파일 안에서 *"여기가 몇 번째 챕터인가"* 를 라벨로 알린다. pptx 는 그
-      자리에 **챕터 진입 장**이 따로 서므로(제목 + 챕터 목차) 라벨을 함께 옮기면 같은
-      정보가 두 번 나온다. 그래서 [build-source.py](../../lib/pptx/build-source.py) 의
-      `PART_BLOCK` 이 그 펜스를 지운다 — 의도된 드롭이다.
+      **테마가 이 글자의 생사를 정한다.** `{{part}}` 슬롯은 `default_lec` 의
+      `4.2.chapter.html` 에만 있고 `default` 의 `_chapter.html` 에는 없다 — 슬롯이 없는
+      테마에서는 **HTML 도 이 글자를 렌더하지 않으므로** pptx 가 빼는 것이 옳다.
+      슬롯이 있는 테마에서는 HTML 이 좌상단에 보여주므로 pptx 도 옮긴다(Issue389).
+      구 기술 *"진입 장의 제목이 그 역할을 한다"* 는 성립하지 않았다 — 진입 장 제목은
+      H2(`정체성 한 줄 정의`)이고 `Chapter 1.` 과 같은 정보가 아니다.
     caveat: |
       ⚠️ 라벨이 **직전 장으로 흘러든 회귀가 있었다**(Issue374 선행 수정 `bf3efa3`). 제거
       경로가 `explicit_entry` 분기에만 빠져 있어 `Chapter N.` 이 앞 장 본문에 붙었고
       왕복 −3 · lane B 2/6 을 동시에 냈다. 지우는 것과 **흘리지 않는 것**은 다른 일이다.
-    reverse_action: none
+      🚧 **등급이 테마 조건을 담지 못한다.** `default_lec` 덱은 이제 왕복하고
+      (`declared_drop` 의 동수 통과) `default` 덱은 여전히 0 이다(`ok(drop)`). 계약에
+      테마 축이 없어 둘을 한 등급으로 덮고 있으며, 그래서 `default_lec` 이 회귀해도
+      이 등급은 통과시킨다. 축을 테마별로 가르려면 `check-roundtrip` 이 왕복본의
+      테마를 알아야 하는데 왕복본은 언제나 single mode 라 알 수 없다.
+    reverse_action: restore
     detect: |
-      HTML 쪽 `<p>Chapter \d+\.</p>` — 원고 `::: part` 의 산출이다. 역변환은 되살리지
-      않는다(원고에 `::: part` 를 다시 쓰는 것은 사람의 편집 결정이다).
-    evidence: "igTest 5챕터 — HTML `Chapter 1.`~`Chapter 5.` 5건 · pptx 0건 (2026-09-20)"
+      HTML 쪽 `<div class="chapter-part">Chapter \d+\.</div>`. lane T 가 **빌드 산출
+      HTML 을 읽어** 그 글자가 있을 때만 그리므로 테마 조건이 자동으로 지켜진다 —
+      원고에 `::: part` 가 있다는 사실만 보고 그리면 pptx 만 더 보여주는 새 불일치가
+      된다. 도형에는 내용 표식(`m2slide:content/part`)을 달아 역변환이 되찾는다.
+    evidence: |
+      2026-09-20 — igTest(default_lec) HTML 5건 · pptx 5건 왕복 일치.
+      aTest-all(default) HTML 0건 · pptx 0건 (원고에는 `::: part` 5개가 있다).
+      좌표는 ego computed style 실측 → CSS px 환산 (transform.yml `chapter_part`).
 
   - id: table_cell_image
     m2slide: "표 셀 안의 `![alt](path)`"

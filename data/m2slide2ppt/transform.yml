@@ -164,6 +164,31 @@ chapter_mascot:
   h: 281
   asset: finfraPuffer2.png
 
+# 챕터 진입 장의 part 라벨 — `::: part` 슬롯 (Issue389)
+#
+#   ⚠️ **테마가 이 글자의 생사를 정한다.** `{{part}}` 슬롯을 가진 layout 은
+#      `theme/default_lec/layouts/4.2.chapter.html` 뿐이고, `theme/default` 의
+#      `_chapter.html` 에는 없다 — 그런 덱에서는 **HTML 도 이 글자를 렌더하지 않는다**
+#      (실측 2026-09-20: aTest-all(default) HTML 에 `Chapter N.` 0회 ·
+#       igTest(default_lec) 5회). 그러므로 lane T 는 이 좌표를 무조건 쓰지 않고
+#      **빌드 산출 HTML 에 그 글자가 있을 때만** 그린다. 없는 덱에 그리면 pptx 만
+#      더 보여주는 새 불일치가 된다.
+#
+#   좌표는 ego-browser computed style 실측(igTest 01 진입 장, 2026-09-20)을 CSS px 로
+#   환산한 값이다 — 렌더값은 reveal `transform: scale(0.895833)` 적용 **후**이므로
+#   그 배수로 나눈다: l 103.19/0.895833 = 115.2 · t (133.52−87.67)/0.895833 = 51.2 ·
+#   w 298.14/0.895833 = 332.8 · h 57.33/0.895833 = 64.0. `font-size` 는 computed 가
+#   이미 CSS px(64)이라 환산하지 않는다.
+chapter_part:
+  l: 115
+  t: 51
+  w: 333
+  h: 64
+  fs: 64
+  align: center
+  bold: true
+  color: "2ECC71"
+
 # 본문 장 머리말 바 — 상단 가로선과 제목 사이에 앉는다
 head_geometry:
   left:  { l: 84,  t: 34, w: 868, h: 26, fs: 20, align: left }
