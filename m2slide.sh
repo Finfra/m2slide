@@ -646,9 +646,30 @@ if [ "$GENERATE_PDF" = true ]; then
       name="${filename%.*}"
       echo "  Processing $filename..."
 
+      # Issue396: decktape 는 --size 미지정 시 1280x720(16:9)로 굳는다 — 4:3·3:2 덱은
+      #   비율이 어긋나 전 페이지가 잘린다(실측 1.design_rnd: 표지 제목이 좌측 1/3 에
+      #   찍히고 본문 다이어그램·하단 불릿이 통째로 소실. exit 0 이라 빌드는 성공으로 보인다).
+      #   16:9 프로젝트에서는 우연히 일치해 드러나지 않아 4:3 에서만 표면화됐다.
+      #
+      #   크기는 **산출 HTML 이 이미 답을 갖고 있다** — `Reveal.initialize` 의 width/height 가
+      #   `slide_ratio` 해석의 최종 결과다. 그 값을 그대로 읽어 넘긴다.
+      #   ⚠️ 여기에 «비율 → 치수» 매핑표를 두지 않는 이유 — 그 표가 곧 **두 번째 판정 지점**이
+      #      되어 lib/config.js 의 해석과 갈린다. HTML 에서 읽으면 비율이 늘어도 여기는 안 고친다.
+      DECK_SIZE=""
+      _rev_init=$(sed -n '/Reveal\.initialize(/,/^[[:space:]]*});/p' "$file")
+      _dw=$(printf '%s\n' "$_rev_init" | sed -n 's/^[[:space:]]*width:[[:space:]]*\([0-9]\{1,\}\).*/\1/p' | head -1)
+      _dh=$(printf '%s\n' "$_rev_init" | sed -n 's/^[[:space:]]*height:[[:space:]]*\([0-9]\{1,\}\).*/\1/p' | head -1)
+      if [ -n "$_dw" ] && [ -n "$_dh" ]; then
+        DECK_SIZE="--size ${_dw}x${_dh}"
+      else
+        # 읽기 실패를 조용히 넘기지 않는다 — 기본값으로 떨어지면 비율이 어긋난 PDF 가
+        # 성공처럼 나오는 것이 바로 이 이슈의 증상이다
+        echo "  ⚠️  $filename: Reveal 크기를 못 읽음 — decktape 기본값(16:9)으로 진행, 비율 확인 필요"
+      fi
+
       # Run decktape and filter out known non-critical SVG errors
       # shellcheck disable=SC2086
-      $DECKTAPE_CMD reveal "$file" "$PDF_TMP_DIR/$name.pdf" 2>&1 | grep -vE "Error: <g> attribute transform|translate\(NaN,NaN\)"
+      $DECKTAPE_CMD $DECK_SIZE reveal "$file" "$PDF_TMP_DIR/$name.pdf" 2>&1 | grep -vE "Error: <g> attribute transform|translate\(NaN,NaN\)"
 
       # Check exit code of the first command in the pipe (decktape)
       if [ "${PIPESTATUS[0]}" -eq 0 ]; then
