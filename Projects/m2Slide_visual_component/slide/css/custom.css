@@ -318,6 +318,33 @@
   font-size: 0.85em;
 }
 
+/* Issue392: 세로로 눌린 htmlArt 를 좌우 2열로 — 판정·DOM 재배치는
+   lib/component-hooks/htmlart_dispatch.client.js `relayoutSquished()` 가 한다.
+   본 규칙은 그 결과 클래스(.htmlart-side)를 받는 표시 계약일 뿐이며,
+   클래스가 붙지 않은 장은 1px 도 바뀌지 않는다.
+   .contents-body 는 이미 flex column 이므로 방향만 돌리면 된다. */
+.reveal section[class*="layout-"] .contents-body.htmlart-side {
+  flex-direction: row;
+  align-items: stretch;
+  gap: 1.2em;
+}
+.reveal section[class*="layout-"] .contents-body.htmlart-side > .m2-htmlart,
+.reveal section[class*="layout-"] .contents-body.htmlart-side > .htmlart-side-rest {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+}
+.reveal section[class*="layout-"] .contents-body.htmlart-side > .htmlart-side-rest {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  overflow: hidden;
+}
+/* 세로로 쌓였을 때의 간격 보정(위 `.m2-htmlart + *`)은 좌우 배치에선 불필요 */
+.reveal section[class*="layout-"] .contents-body.htmlart-side > .m2-htmlart + * {
+  margin-top: 0;
+}
+
 /* ── htmlArt 타입 CSS (process·cycle·hierarchy·pyramid) ───────────────────
    4타입 전부 렌더 백엔드 d3 SVG 로 이관 완료 (Issue193). 런타임 훅
    lib/component-hooks/htmlart_dispatch.js 가 data-htmlart div 내부 <ul> 을
@@ -1966,4 +1993,20 @@ body.agenda-page .agenda-frame {
 .reveal .slides section strong {
   color: var(--m2-accent-5, #C82506);
   font-weight: 700;
+}
+
+/* ── 본문 폰트 family 지정 배선 (Issue387) ────────────────────────────────
+   `_config.yml` 의 `style.theContents.font_family` 는 파싱되어
+   `--content-font-family` 변수로 산출까지 나오는데, 그 변수를 쓰는 셀렉터가
+   base.css 의 `.reveal .theContents` **하나뿐**이었다. 현행 layout 템플릿의 본문
+   컨테이너는 `contents-body`·`exercise-body`·`summary-body` … 이므로 그 변수가
+   **아무 요소에도 닿지 않았다** — 사용자가 폰트를 지정해도 보이지 않는다
+   (실측 2026-09-20: `index.html` 에 `--content-font-family: 'Helvetica Neue'…` 가
+   나갔는데 본문 `li` 의 computed 는 `--global-font-family` 기본값).
+
+   ⚠️ 상속을 덮는 것이라 명시도 다툼이 없다 — `.reveal` 의 `--global-font-family` 는
+      자식에게 **상속**으로 내려오고, 자식에 직접 선언하면 그것이 이긴다.
+   ⚠️ 변수 미지정 시 `inherit` 이므로 기존 덱은 무변경이다(회귀 0). */
+.reveal section[class*="layout-"] > div[class$="-body"] {
+  font-family: var(--content-font-family, inherit);
 }

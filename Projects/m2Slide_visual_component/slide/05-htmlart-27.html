@@ -835,7 +835,18 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1em 0;
+}
+
+/* Issue360: padding 은 '기본값' 이므로 명시도 0(:where) + 세로만 선언한다.
+   구 `padding: 1em 0`(0-3-2)은 아래 layout 별 규칙(0-3-1)과 theme 의 0-3-1 선언을
+   전부 이겨서, base 가 스스로 적은 1.5em 조차 한 번도 적용된 적이 없었다.
+   그 충돌을 우회한 흔적이 이미 둘 있다 — layout-chapter 의 `.slides` 4-class 선택자와
+   _blank 의 !important. 같은 함정을 두 번 밟았다는 뜻이라 규칙 쪽을 고친다.
+   가로는 아예 선언하지 않는다: theme 의 `5%` 같은 가로 선언이 자연히 살아야 하고,
+   기본값으로 가로 여백을 강제할 이유도 없다. flex/overflow 는 레이아웃 골격이라
+   명시도를 그대로 둔다(내려가면 closing-body 의 flex-grow:0 등이 되살아나 배치가 바뀐다). */
+:where(.reveal section[class*="layout-"] > div[class$="-body"]) {
+  padding-block: 1em;
 }
 
 /* === Accent line (divider) — 공통 골격, 색상은 theme에서 override === */
@@ -906,7 +917,12 @@ body {
 }
 
 .reveal section.layout-_contents .contents-body {
-  padding: 1.5em 0;
+  /* Issue360: 구 `padding: 1.5em 0` → `padding-block: 1em`. 전자는 범용 규칙(0-3-2)에
+     눌려 한 번도 적용된 적이 없는 미검증 값이었고, 실제 기준은 줄곧 1em 이었다.
+     가로는 선언하지 않는다 — theme 의 가로 선언이 살아야 한다. 이 규칙(0-3-1)은
+     theme 의 낮은 명시도 부분 선언(ex: `padding-top: 0`, 0-0-4)을 이겨야 하므로
+     :where 기본값에 맡기지 않고 여기 명시한다. theme 의 0-3-1 선언은 나중 로드라 이긴다. */
+  padding-block: 1em;
 }
 
 .reveal section.layout-_contents ul,
@@ -940,7 +956,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 .reveal section.layout-contents-full ul,
@@ -1015,7 +1033,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* 5. Chapter Layout */
@@ -1042,7 +1062,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* 6. Exercise Layout */
@@ -1069,7 +1091,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* 6.2 Exercise-Small Layout */
@@ -1119,7 +1143,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* image-only / full-video 자동 감지 시 풀스크린 미디어 표시 (공통 패턴) */
@@ -1206,7 +1232,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 .reveal section.layout-toc .toc-markmap {
@@ -1393,7 +1421,7 @@ html.ratio-fill .agenda-frame {
 
   </style>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"/>
-  <link rel="stylesheet" href="css/custom.css?v=1789791925995">
+  <link rel="stylesheet" href="css/custom.css?v=1789910130394">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -2496,12 +2524,86 @@ html.ratio-fill .agenda-frame {
     });
     return m;
   }
+  // 총량(줄 수 × 줄높이) 상한 — 박스 높이를 넘지 않는 최대 폰트 (Issue364)
+  //
+  //   왜 필요한가 — `widthCap` 은 **줄바꿈 불가 단일 토큰 하나**의 폭만 본다(Issue217 이
+  //   영문 장단어 클립을 막으려 넣은 것). 한글은 어절이 2~4자라 토큰이 짧아 `widthCap` 이
+  //   걸리지 않고 폰트가 상한에 붙는다 → 큰 글자로 여러 줄 wrap → **세로로 넘쳐 잘린다.**
+  //   `nodeBox` 는 div 와 foreignObject 양쪽에서 클리핑하므로 밖으로 새지 않고 **조용히**
+  //   사라진다(실측 2026-09-19 prj60: process 17자 +16px · 제목8+부제30자 +67px).
+  //
+  //   ⚠️ 연속 근사(fs ≤ √(innerW·innerH/(1.2·tot)))로는 부족하다 — 줄 수가 `ceil` 이라
+  //      17자에서 41 → 40 으로 1px 만 내려가고 여전히 5줄이라 넘친다. 그래서 상한에서
+  //      1px 씩 내리며 **실제 줄 수로** 판정한다(44→10, 비용 무시 가능).
+  //
+  //   부작용이 좁은 이유 — 이 상한은 **지금 넘치는 노드에서만** 걸린다. 정상 노드는 루프
+  //   첫 회에 통과해 값이 그대로다(검산 process 196×230: 14·16자 41px **불변** · 17자만
+  //   41 → 38, 5줄 → 4줄). Issue363 의 viewBox 확장이 정상 도해까지 15% 줄인 것과 다르다.
+  // 제목 **+ 부제** 총량으로 맞춘 폰트 — nodeBox 렌더 공식과 같은 식이어야 한다 (Issue364)
+  //
+  //   부제를 따로 재면 안 되는 이유 — `subFs` 는 `titleFs*0.66` 으로 따라오는데 **둘의
+  //   합산 높이를 아무도 보지 않는다.** 실측(process 196×230, 제목 8자 + 부제 30자):
+  //   제목만 보면 41px 이 통과하지만 부제까지 쌓으면 +67px 넘친다. 제목 길이가 폰트를
+  //   낮추지 않고 줄 수만 늘리기 때문이라 작성자가 육안으로 규칙을 찾을 수 없다.
+  //
+  //   줄높이·여백은 nodeBox 가 실제로 쓰는 값 그대로다(제목 1.2 · 부제 1.3 · 사이 3px).
+  //   식이 갈리면 여기서 통과한 값이 렌더에서 넘친다.
+  // 어절 단위 wrap 줄 수 — CSS `word-break:keep-all` 을 그대로 흉내 낸다 (Issue364)
+  //
+  //   ⚠️ 글자 총량(`textEm(s)*fs/innerW`)으로는 **과소 추정**된다. keep-all 은 어절이
+  //      남은 폭에 안 들어가면 통째로 다음 줄로 보내므로 **줄 끝에 빈 공간이 남는다**.
+  //      실측(process 196×230, 부제 27px "주제와 청중을 정의하고 범위를 좁히는 작업입니다"):
+  //      총량 추정 4줄 · 실제 6줄 — 어절 2개가 164px 에 거의 안 들어가 어절당 1줄이 됐다.
+  //      이 차이 때문에 첫 판이 41px 을 통과시켰고 +24px 이 그대로 남았다.
+  function wrapLines(text, fs, innerW){
+    var toks=String(text||'').split(/\s+/).filter(Boolean);
+    if(!toks.length)return 0;
+    var sp=charEm(' ')*fs, lines=1, cur=0;
+    for(var i=0;i<toks.length;i++){
+      var wt=textEm(toks[i])*fs;
+      if(cur===0)cur=wt;
+      else if(cur+sp+wt<=innerW)cur+=sp+wt;
+      else {lines++; cur=wt;}
+    }
+    return lines;
+  }
+  function fitFsFor(title, subs, w, h){
+    var innerW=Math.max(w-32, 40);                // padding 12*2 + safety 8
+    var innerH=Math.max(h-24, 30);                // padding 6*2 + border 2*2 + safety
+    var widthCap=Math.floor(innerW/longestTokenEm(title));
+    var start=Math.min(Math.round(h*0.30), Math.round(w*0.21), 44, widthCap);
+    var list=(subs&&subs.length)?subs:null;
+    for(var fs=start; fs>=10; fs--){
+      var sub=Math.max(Math.round(fs*(title?0.66:0.92)), 12);
+      var need=0;
+      if(title)need+=wrapLines(title, fs, innerW)*fs*1.2;
+      if(list){
+        for(var i=0;i<list.length;i++){
+          need+=wrapLines(list[i], sub, innerW)*sub*1.3;
+        }
+        if(title)need+=3;                          // margin-top
+      }
+      if(need<=innerH)return fs;
+    }
+    return 10;
+  }
+  // 목표 폰트에서 이 콘텐츠가 요구하는 박스 높이 — fitFsFor 의 역산 (Issue392)
+  //   ⚠️ 줄높이·여백은 fitFsFor·nodeBox 와 **같은 식**이어야 한다. 갈리면 여기서 키운
+  //      박스가 렌더에서 다시 넘친다(Issue364 가 남긴 교훈과 같은 자리).
+  function boxNeedH(title, subs, fs, w){
+    var innerW=Math.max(w-32, 40);
+    var sub=Math.max(Math.round(fs*(title?0.66:0.92)), 12);
+    var need=0;
+    if(title)need+=wrapLines(title, fs, innerW)*fs*1.2;
+    if(subs&&subs.length){
+      for(var i=0;i<subs.length;i++)need+=wrapLines(subs[i], sub, innerW)*sub*1.3;
+      if(title)need+=3;
+    }
+    return need+24;                                  // fitFsFor 의 innerH 보정(h-24) 역산
+  }
   // 단일 박스 title 폰트 크기 (nodeBox 내부 공식과 동일 — SSOT)
   function titleFsFor(title, w, h){
-    var innerW=Math.max(w-32, 40);                // padding 12*2 + safety 8
-    var widthCap=Math.floor(innerW/longestTokenEm(title));
-    var fs=Math.min(Math.round(h*0.30), Math.round(w*0.21), 44, widthCap);
-    return fs<10?10:fs;
+    return fitFsFor(title, null, w, h);
   }
   // 같은 크기 형제 박스 체인의 균일 title 폰트 — 개별 계산값의 최솟값.
   //   박스마다 따로 fit 하면 짧은 라벨만 커져 일관성이 깨진다 (m2Slide 회귀).
@@ -2509,14 +2611,18 @@ html.ratio-fill .agenda-frame {
     var fs=Infinity;
     list.forEach(function(it){
       var t=(typeof it==='string')?it:(it&&it.title);
-      if(t)fs=Math.min(fs, titleFsFor(t, w, h));
+      var sb=(typeof it==='string')?null:(it&&it.subs);   // 부제도 함께 (Issue364)
+      if(t)fs=Math.min(fs, fitFsFor(t, sb, w, h));
     });
     return isFinite(fs)?fs:null;
   }
 
   // 노드 박스 foreignObject 헬퍼 — 제목 + 선택적 부제 행.
   //   titleFsOverride: 블록 단위 균일 폰트 강제 (uniformTitleFs 결과 전달).
-  function nodeBox(parent, x, y, w, h, title, subs, accentBg, subFsOverride, titleFsOverride){
+  //   padLeftExtra: 박스 **위에** 덧그려지는 좌측 그래픽(block 악센트 바)의 폭.
+  //     ⚠️ 텍스트 영역에서 빼는 동시에 **fit 계산에도 같은 값**을 넘겨야 한다.
+  //        한쪽만 반영하면 통과한 폰트가 렌더에서 그 그래픽 밑으로 깔린다.
+  function nodeBox(parent, x, y, w, h, title, subs, accentBg, subFsOverride, titleFsOverride, padLeftExtra){
     var fo=parent.append('foreignObject')
       .attr('x',x).attr('y',y).attr('width',w).attr('height',h);
     var bg=accentBg?'var(--htmlart-accent,#2b8a9d)':'var(--htmlart-surface,#f4f4f5)';
@@ -2526,15 +2632,16 @@ html.ratio-fill .agenda-frame {
         +'flex-direction:column;align-items:center;justify-content:center;text-align:center;'
         +'background:'+bg+';color:'+fg+';'
         +'border:2px solid var(--htmlart-accent,#2b8a9d);border-radius:14px;'
-        +'padding:6px 12px;overflow:hidden');
+        +'padding:6px 12px 6px '+(12+(padLeftExtra||0))+'px;overflow:hidden');
     // Issue200: 폰트를 박스 크기(h·w) 비례로 — 텍스트가 박스를 카드처럼 채움.
     //   노드 박스를 키워도 viewBox 가 함께 커져 화면 글자 크기는 불변 →
     //   폰트/노드 비율 자체를 키워야 함(h 의 30%, 단 폭 제약·상한 적용).
     // Issue217: 가장 긴 토큰(영문 단일 단어 등)이 박스 폭을 초과하여 clip 되는
     //   회귀 방지 — title/subs 양쪽에 token 폭 기반 width cap + overflow-wrap fallback.
     //   토큰 폭은 longestTokenEm(CJK 글리프 인지)으로 추정.
-    var innerW=Math.max(w-32, 40);                // padding 12*2 + safety 8
-    var titleFs=titleFsOverride||titleFsFor(title, w, h);
+    var padL=padLeftExtra||0;
+    var innerW=Math.max(w-32-padL, 40);           // padding 12*2 + safety 8 + 좌측 덧그래픽
+    var titleFs=titleFsOverride||fitFsFor(title, subs, w-padL, h);   // 부제 포함 총량 (Issue364)
     // Issue201: title 없는 박스(pyramid 상세 패널)는 subs 가 본문이므로 크게.
     // Issue205: subFsOverride 전달 시 그 값을 강제 (pyramid 상세를 밴드 라벨보다 작게).
     var subFs=subFsOverride||Math.max(Math.round(titleFs*(title?0.66:0.92)), 12);
@@ -3140,7 +3247,25 @@ html.ratio-fill .agenda-frame {
     var items=collectItems(ul);
     if(items.length<2){ errBox(el,'htmlArt radial: 중심+스포크 2개 이상 필요'); return; }
     var center=items[0], spokes=items.slice(1), M=spokes.length;
-    var nodeW=204, nodeH=102, Rr=274, cW=240, cH=124;
+    var nodeW=204, nodeH=102, cW=240, cH=124;
+    // Issue392: 박스가 콘텐츠에 비해 작으면 uniformTitleFs 가 하한(10px)까지 눌리고,
+    //   **균일 폰트 계약 때문에 한 노드의 과밀이 나머지 전부를 끌어내린다.**
+    //   실측(prj60 1.design_rnd p16): 스포크 3 중 1개만 부제 2줄인데 셋 다 10px →
+    //   화면 6.1px, 본문 44px 의 0.14 배로 판독 불가. 좌우 배치(배율 0.356→0.61)로도
+    //   viewBox 안 비율은 그대로라 해소되지 않는다 — 고칠 자리는 **박스 크기**다.
+    //   balance(Issue395)·timeline(Issue283)과 같은 처방: 콘텐츠 실측으로 박스를 키운다.
+    //   ⚠️ 부작용이 좁은 이유 — 목표 폰트는 기존 fitFsFor 의 start 상한과 **같은 식**이라
+    //      정상 노드는 needH 가 기본값(102)을 넘지 않아 1px 도 바뀌지 않는다.
+    //      Rr 도 기존 274 를 하한으로 남겨 기본 케이스의 반지름이 줄지 않는다.
+    var tgt=Math.min(Math.round(nodeH*0.30), Math.round(nodeW*0.21), 44);
+    var needH=nodeH;
+    spokes.forEach(function(sp){ needH=Math.max(needH, boxNeedH(sp.title, sp.subs, tgt, nodeW)); });
+    nodeH=Math.ceil(needH);
+    var cTgt=Math.min(Math.round(cH*0.30), Math.round(cW*0.21), 44);
+    cH=Math.ceil(Math.max(cH, boxNeedH(center.title, center.subs, cTgt, cW)));
+    // 반지름 — 중심 박스·이웃 노드와 겹치지 않을 만큼만. 커진 박스를 따라간다
+    var Rr=Math.max(274, cH/2+nodeH/2+24, cW/2+nodeW/2+24,
+                    (nodeW+16)/(2*Math.sin(Math.PI/Math.max(M,2))));
     var cx=Rr+nodeW/2+30, cy=Rr+nodeH/2+30, W=cx*2, H=cy*2, step=2*Math.PI/M;
     var svg=mkSvg(el,W,H,'ha-radial-svg');
     var gL=svg.append('g');
@@ -3169,6 +3294,16 @@ html.ratio-fill .agenda-frame {
     var chW=290, chH=204, tip=chH*0.4, padX=20, padY=30;
     var W=padX*2+N*chW-(N-1)*tip, H=padY*2+chH;
     var svg=mkSvg(el,W,H,'ha-chevron-svg');
+    // Issue391: 제목 29px·부제 19px 고정이 htmlart 중 유일한 auto-fit 부재였다. 중간칸 라벨 폭은
+    //   노치에 깎여 chW-2*tip(126.8) 뿐이라 공백 없는 한글 5자부터 넘치고, 넘친 글자는 다음
+    //   polygon 이 위에 그려져 덮인다(클리핑이 아니라 어떤 계측에도 안 잡혔다 — 실측 prj60).
+    //   가장 좁은 칸(중간칸) 폭으로 체인 전체를 균일 fit 한다 — 첫 칸(notch=0) 기준이면 여전히 넘친다.
+    //   fitFsFor 는 nodeBox 의 padding 12*2 를 전제하므로 centerLabel(padding 6*2)에는 그 차 12 를
+    //   더해 넘긴다 → innerW 가 실제 안쪽 폭 + 안전 8 과 같아진다. 종전 29 는 상한으로 남겨
+    //   짧은 라벨(2~3자 어절)은 1px 도 바뀌지 않는다.
+    var labelW=chW-tip*2;
+    var tFs=Math.min(29, uniformTitleFs(items, labelW+12, chH)||29);
+    var sFs=Math.max(Math.round(tFs*0.66), 12);
     d3.range(N).forEach(function(i){
       var x=padX+i*(chW-tip), notch=(i===0)?0:tip;
       var pts=[
@@ -3183,26 +3318,44 @@ html.ratio-fill .agenda-frame {
         .attr('style','fill:var(--htmlart-accent,#2b8a9d);fill-opacity:'
           +(0.6+0.4*i/Math.max(N-1,1))+';stroke:#fff;stroke-width:2');
       centerLabel(svg, x+notch, padY, chW-tip-notch, chH,
-        items[i].title, items[i].subs, 'var(--htmlart-fg,#fff)', 29, 19);
+        items[i].title, items[i].subs, 'var(--htmlart-fg,#fff)', tFs, sFs);
     });
   }
 
-  // ── step — 계단형 단계 (좌하 → 우상 상승) + 라이저 연결선 ────────────────
+  // ── step — 계단형 단계 (좌하 → 우상 상승) + 우상향 상승 화살표 ─────────
   function renderStep(el){
     var ul=el.querySelector(':scope > ul'); if(!ul)return;
     var items=collectItems(ul);
     if(!items.length){ errBox(el,'htmlArt step: 단계 1개 이상 필요'); return; }
     var N=items.length;
-    var boxW=254, boxH=118, stepX=boxW*0.74, stepY=boxH*1.06, padX=26, padY=26;
+    // Issue394: 구 배치(stepX 0.74 · stepY 1.06)에서는 ㄱ자 라이저가 보이지 않았다.
+    //   다음 박스의 왼쪽 가장자리가 현재 박스의 오른쪽 가장자리보다 0.26*boxW 왼쪽에
+    //   있어(x2<x1) 수평 구간이 역행하며, 그 구간이 통째로 박스 i 영역 안이라 덮인다.
+    //   남는 것은 박스 경계를 따라 흐르는 연회색 토막뿐이라 «어디로 가는지» 가 안 읽힌다.
+    //   단 간격을 0.30*boxH 로 벌려 화살표가 설 자리를 만들고, stepX 를 0.90 으로
+    //   함께 넓혀 캔버스 종횡비(≈1.6:1)를 유지한다.
+    var boxW=254, boxH=118, stepX=boxW*0.90, stepY=boxH*1.30, padX=26, padY=26;
     var W=padX*2+(N-1)*stepX+boxW, H=padY*2+(N-1)*stepY+boxH;
     var svg=mkSvg(el,W,H,'ha-step-svg');
     function bx(i){ return padX+i*stepX; }
     function by(i){ return H-padY-boxH-i*stepY; }
-    var gC=svg.append('g');
+    // 상승 화살표 — 박스 i 윗변에서 박스 i+1 아랫변으로 우상향.
+    //   방향이 이 타입의 의미 자체라 색은 accent 를 쓴다(renderArrow 와 같은 취급).
+    //   머리는 polygon 으로 직접 계산한다 — 짧은 선분이라 marker 스케일이 과하게 걸린다.
+    var gC=svg.append('g'), headLen=18, headW=22;
     d3.range(N-1).forEach(function(i){
-      var x1=bx(i)+boxW, y1=by(i)+boxH*0.5, x2=bx(i+1), y2=by(i+1)+boxH*0.5;
-      gC.append('path').attr('d','M'+x1+' '+y1+'L'+x2+' '+y1+'L'+x2+' '+y2)
-        .attr('style','fill:none;stroke:var(--htmlart-box-border,rgba(0,0,0,.3));stroke-width:4');
+      var x1=bx(i)+boxW*0.86, y1=by(i);
+      var x2=bx(i+1)+boxW*0.14, y2=by(i+1)+boxH;
+      var dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy)||1, ux=dx/L, uy=dy/L;
+      var hx=x2-ux*headLen, hy=y2-uy*headLen;   // 머리 밑변 중심
+      var px=-uy, py=ux;                        // 진행 방향 법선
+      gC.append('line').attr('x1',x1).attr('y1',y1).attr('x2',hx).attr('y2',hy)
+        .attr('style','stroke:var(--htmlart-accent,#2b8a9d);stroke-width:7');
+      gC.append('polygon').attr('points',[
+        x2+','+y2,
+        (hx+px*headW/2)+','+(hy+py*headW/2),
+        (hx-px*headW/2)+','+(hy-py*headW/2)
+      ].join(' ')).attr('style','fill:var(--htmlart-accent,#2b8a9d)');
     });
     var tFs=uniformTitleFs(items, boxW, boxH);
     d3.range(N).forEach(function(i){
@@ -3216,8 +3369,29 @@ html.ratio-fill .agenda-frame {
     var items=collectItems(ul);
     if(items.length<2){ errBox(el,'htmlArt arrow: 중심+화살표 2개 이상 필요'); return; }
     var center=items[0], srcs=items.slice(1), M=srcs.length;
-    var nodeW=210, nodeH=104, Rr=330, cW=244, cH=130;
-    var cx=Rr+nodeW/2+40, cy=Rr+nodeH/2+40, W=cx*2, H=cy*2, step=2*Math.PI/M;
+    var nodeW=210, nodeH=104, cW=244, cH=130, pad=40;
+    // Issue390: 단일 반지름 원 → 타원 배치.
+    //   원으로 놓으면 M 과 무관하게 캔버스가 정사각에 가까워(950x844=1.13:1) 본문
+    //   영역(실측 1.89:1)에서 가로 40% 를 버렸다. 세로 반지름 Ry 를 고정하고 가로 Rx 를
+    //   역산해 캔버스 종횡비 자체를 본문에 맞춘다 (slide_ratio 는 여기 도달하지 않는다 — Issue364).
+    //   각도 규약은 기존과 동일 — d3.pointRadial(t,R) === [R*sin(t), -R*cos(t)], t=0 이 위쪽.
+    var TARGET=1.87, Ry=210, step=2*Math.PI/M;
+    //   M=2 만 예외 — 상하 1쌍이면 Rx 가 배치에 쓰이지 않아 캔버스가 되레 세로로 길어진다.
+    //   좌우로 눕혀 왼쪽·오른쪽에서 허브로 모이게 둔다.
+    var th0=(M===2)?Math.PI/2:0;
+    var maxS=0, maxC=0;
+    d3.range(M).forEach(function(i){
+      maxS=Math.max(maxS, Math.abs(Math.sin(th0+i*step)));
+      maxC=Math.max(maxC, Math.abs(Math.cos(th0+i*step)));
+    });
+    var halfH=Math.max(Ry*maxC+nodeH/2, cH/2)+pad;
+    //   Rx 하한 — 좌우 노드가 허브에 닿지 않고 화살표 몸통이 보일 만큼
+    var RxMin=nodeW/2+cW/2+100;
+    var Rx=maxS<1e-6 ? RxMin : Math.max((halfH*TARGET-pad-nodeW/2)/maxS, RxMin);
+    var halfW=Math.max(Rx*maxS+nodeW/2, cW/2)+pad;
+    var W=Math.round(halfW*2), H=Math.round(halfH*2), cx=W/2, cy=H/2;
+    function nodeX(i){ return cx+Rx*Math.sin(th0+i*step); }
+    function nodeY(i){ return cy-Ry*Math.cos(th0+i*step); }
     var svg=mkSvg(el,W,H,'ha-arrow-svg');
     svg.append('defs').append('marker')
       .attr('id','ha-arr-head').attr('viewBox','0 0 10 10')
@@ -3227,12 +3401,13 @@ html.ratio-fill .agenda-frame {
       .attr('style','fill:var(--htmlart-accent,#2b8a9d)');
     // Issue205: 사각형 중심→edge 거리(방향 인식). 기존엔 방향 무관하게 nodeH·cH(높이)만
     //   써서 가로(좌·우) 노드는 화살표 끝·머리가 박스 안에 묻혀 안 보였다.
+    //   타원 배치에서는 좌우 노드의 진입각이 더 눕기 때문에 이 방향 인식이 전제다.
     function rectEdge(ux,uy,hw,hh){
       return 1/Math.max(Math.abs(ux)/hw, Math.abs(uy)/hh);
     }
     var arrGap=10;
     d3.range(M).forEach(function(i){
-      var pos=d3.pointRadial(i*step,Rr), nx=cx+pos[0], ny=cy+pos[1];
+      var nx=nodeX(i), ny=nodeY(i);
       var dx=cx-nx, dy=cy-ny, d=Math.hypot(dx,dy)||1, ux=dx/d, uy=dy/d;
       var nE=rectEdge(ux,uy,nodeW/2,nodeH/2)+arrGap, cE=rectEdge(ux,uy,cW/2,cH/2)+arrGap;
       svg.append('line')
@@ -3243,8 +3418,7 @@ html.ratio-fill .agenda-frame {
     });
     var tFs=uniformTitleFs(srcs, nodeW, nodeH);
     d3.range(M).forEach(function(i){
-      var pos=d3.pointRadial(i*step,Rr);
-      nodeBox(svg, cx+pos[0]-nodeW/2, cy+pos[1]-nodeH/2, nodeW, nodeH,
+      nodeBox(svg, nodeX(i)-nodeW/2, nodeY(i)-nodeH/2, nodeW, nodeH,
         srcs[i].title, srcs[i].subs, false, null, tFs);
     });
     nodeBox(svg, cx-cW/2, cy-cH/2, cW, cH, center.title, center.subs, true);
@@ -3332,7 +3506,13 @@ html.ratio-fill .agenda-frame {
     var H=padY*2+rowH.reduce(function(a,b){return a+b;},0)+(groups.length-1)*grpGap;
     var W=padX*2+labelW+brZone+memberW;
     var svg=mkSvg(el,W,H,'ha-bracket-svg');
-    var labelFs=uniformTitleFs(groups, labelW, memberH);
+    // 라벨 폰트는 **제목만**으로 잰다 — 라벨 박스는 아래에서 subs 를 `[]` 로 넘겨
+    //   제목만 그리기 때문이다. `groups` 를 그대로 넘기면 `uniformTitleFs` 가
+    //   Issue364 이후 `it.subs` 까지 합산 높이에 넣어(멤버 박스에 그려질 본문이다)
+    //   250×82 안에 절대 안 들어간다고 판정하고 **하한 10px 로 무너진다.**
+    //   실발생 2026-09-19 prj63 #13·#31: 밴드 라벨만 좁쌀만 하게 렌더됨.
+    //   uniformTitleFs 는 문자열 항목에 대해 subs=null 로 처리하므로 title 만 넘긴다.
+    var labelFs=uniformTitleFs(groups.map(function(g){return g.title;}), labelW, memberH);
     var allMembers=groups.reduce(function(a,g){return a.concat(g.subs);},[]);
     var memberFs=uniformTitleFs(allMembers, memberW-8, memberH);
     var y=padY;
@@ -3357,13 +3537,21 @@ html.ratio-fill .agenda-frame {
     var items=collectItems(ul);
     if(!items.length){ errBox(el,'htmlArt block: 항목 1개 이상 필요'); return; }
     var N=items.length;
-    var accentW=24, blockW=740, blockH=124, gap=16, padX=22, padY=22;
+    // 악센트 바는 박스 **위에** 덧칠된다. 그 폭만큼 글자 자리를 비워 두지 않으면
+    //   한 줄로 꽉 찬 제목이 중앙정렬되며 첫 글자가 바 밑으로 깔린다.
+    //   실측(1.design_rnd p26 `빠른 응답 속도 — 실시간 대화에 적합함`):
+    //   글자 좌변 viewBox 40.5 < 바 우변 48 → 7.5 단위(화면 7.4px)가 가려졌다.
+    //   ⚠️ 고치는 방향이 둘인데 **바에 자기 폭을 주는** 쪽이다 —
+    //      textW 에서 24 를 빼 오면 제목이 한 줄씩 더 접혀 판독성이 되레 나빠진다
+    //      (실측 3항목 중 1항목이 1줄 → 2줄). 캔버스만 24 넓히면 글자 폭은 불변이다.
+    var accentW=24, textW=740, blockW=textW+accentW,
+        blockH=124, gap=16, padX=22, padY=22;
     var W=padX*2+blockW, H=padY*2+N*blockH+(N-1)*gap;
     var svg=mkSvg(el,W,H,'ha-block-svg');
-    var tFs=uniformTitleFs(items, blockW, blockH);
+    var tFs=uniformTitleFs(items, textW, blockH);   // fit 은 바를 뺀 폭으로 — nodeBox 내부와 같은 식
     d3.range(N).forEach(function(i){
       var y=padY+i*(blockH+gap);
-      nodeBox(svg, padX, y, blockW, blockH, items[i].title, items[i].subs, false, null, tFs);
+      nodeBox(svg, padX, y, blockW, blockH, items[i].title, items[i].subs, false, null, tFs, accentW);
       svg.append('rect').attr('x',padX+2).attr('y',y+2)
         .attr('width',accentW).attr('height',blockH-4).attr('rx',5)
         .attr('style','fill:var(--htmlart-accent,#2b8a9d)');
@@ -3375,8 +3563,28 @@ html.ratio-fill .agenda-frame {
     var ul=el.querySelector(':scope > ul'); if(!ul)return;
     var groups=collectItems(ul);
     if(!groups.length){ errBox(el,'htmlArt tab: 탭 1개 이상 필요'); return; }
-    var tabW=300, tabH=66, itemH=74, itemGap=8, panelPad=14, grpGap=28, padX=24, padY=22;
+    var tabH=66, itemH=74, itemGap=8, panelPad=14, grpGap=28, padX=24, padY=22;
     var panelW=740;
+    // Issue393: 탭 제목이 26px **고정**이라 라벨이 길면 사다리꼴 밖으로 넘쳐 패널 위에 걸친다
+    //   (실측 prj60 1.design_rnd p22 — 14.96em 라벨이 389 단위, tabW 300 을 89 초과).
+    //   chevron(Issue391)과 같은 auto-fit 부재 계열이나 고칠 자리가 다르다: 탭 제목은
+    //   foreignObject 가 아니라 SVG `text` 라 wrap 이 없다 → nodeBox 의 fitFsFor(줄 수 기반)를
+    //   그대로 쓸 수 없고 **한 줄 폭**만 본다. 그래서 감사 스크립트(foreignObject 기준)에도
+    //   잡히지 않았다.
+    //   ⚠️ chevron 과 달리 tab 은 가로 여유가 있다(캔버스 788 중 탭이 300) — 그러므로
+    //      **폰트를 줄이기 전에 탭을 넓힌다.** 탭 라벨은 그룹을 가르는 표제라 작아지면
+    //      구조 자체가 안 읽힌다. 넓혀도 모자랄 때만 축소한다.
+    var TAB_FS_MAX=26, TAB_W_MIN=300, TAB_PAD=40;
+    var tabWs=groups.map(function(g){
+      return Math.min(Math.max(TAB_W_MIN, Math.ceil(textEm(g.title)*TAB_FS_MAX)+TAB_PAD),
+                      panelW-TAB_PAD);
+    });
+    var tabFs=TAB_FS_MAX;
+    groups.forEach(function(g,gi){
+      var em=textEm(g.title);
+      if(em>0)tabFs=Math.min(tabFs, Math.floor((tabWs[gi]-TAB_PAD)/em));
+    });
+    tabFs=Math.max(tabFs, 12);
     var rowH=groups.map(function(g){
       var m=Math.max(g.subs.length,1);
       return tabH+panelPad*2+m*itemH+(m-1)*itemGap;
@@ -3389,6 +3597,7 @@ html.ratio-fill .agenda-frame {
     var y=padY;
     groups.forEach(function(g,gi){
       var grpH=rowH[gi];
+      var tabW=tabWs[gi];
       var th='M'+padX+' '+(y+tabH)
         +'L'+padX+' '+(y+14)+'Q'+padX+' '+y+' '+(padX+14)+' '+y
         +'L'+(padX+tabW-22)+' '+y+'Q'+(padX+tabW)+' '+y+' '+(padX+tabW+12)+' '+(y+tabH)
@@ -3402,7 +3611,7 @@ html.ratio-fill .agenda-frame {
         .attr('style','fill:var(--htmlart-accent,#2b8a9d)');
       svg.append('text').attr('x',padX+tabW/2).attr('y',y+tabH*0.63)
         .attr('text-anchor','middle')
-        .attr('style','font-size:26px;font-weight:700;fill:var(--htmlart-fg,#fff)')
+        .attr('style','font-size:'+tabFs+'px;font-weight:700;fill:var(--htmlart-fg,#fff)')
         .text(g.title);
       g.subs.forEach(function(it,ii){
         nodeBox(svg, padX+panelPad, panelY+panelPad+ii*(itemH+itemGap),
@@ -3514,7 +3723,36 @@ html.ratio-fill .agenda-frame {
     var diff=lW-rW, maxDiff=Math.max(Math.abs(diff), 4);
     var tilt=Math.atan2(diff*22, 360)*0.9;                 // -0.4~0.4 rad 정도
     var W=820, H=460, cx=W/2, cyPivot=H-90;
-    var armLen=320, plateW=240, plateH=78;
+    var armLen=320, plateW=240;
+    // ── 라벨 박스 높이를 콘텐츠 실측으로 정한다 (Issue395) ────────────────
+    //   고정 78px 이던 자리. 제목이 두 줄로 래핑되거나 부제가 길면 내부 flex 가
+    //   «중앙정렬» 이라 위·아래로 균등하게 넘치고 foreignObject 가 그것을 잘라 낸다
+    //   — 화면에는 「윗줄이 반쯤 잘린 제목」으로 나타난다(prj60 5일차 실측 6/6 넘침).
+    //   박스는 접시 «위에» 놓이므로 높이를 키우면 자연히 위로 자란다.
+    //   ⚠️ 여기 계수(1.1·1.3·padV)는 아래 plate() 의 line-height·padding 과 한 쌍이다
+    //      — 한쪽만 고치면 통과한 값이 렌더에서 넘친다.
+    var boxW=plateW-20, innerW=Math.max(boxW-18, 40);     // padding 8*2 + safety 2
+    var padV=12, gapSub=2;                                // padding 6*2 · 제목↔부제 margin
+    var titleFs=22, subFs=13, plateH=78;
+    // 기울어진 팔 위에서 박스가 캔버스 상단을 넘지 않을 상한.
+    var lift=Math.abs(Math.sin(tilt))*(armLen+boxW/2);
+    var maxPlateH=Math.max(78, (cyPivot-8)-14-lift-8);
+    function plateNeed(g, w){
+      var need=wrapLines(g._cleanTitle+' ('+w+')', titleFs, innerW)*titleFs*1.1;
+      if(g.subs.length)
+        need+=gapSub+wrapLines(g.subs.join(' \u00b7 '), subFs, innerW)*subFs*1.3;
+      return Math.ceil(need+padV+2);
+    }
+    for(;;){
+      plateH=Math.max(78, plateNeed(L,lW), plateNeed(R,rW));
+      if(plateH<=maxPlateH||titleFs<=14)break;            // 상한에 걸리면 폰트를 줄여 맞춘다
+      titleFs--; subFs=Math.max(11, Math.round(titleFs*0.6));
+    }
+    if(plateH>maxPlateH){                                 // 줄여도 안 들어가면 «조용히» 자르지 않는다
+      console.warn('htmlArt balance: 라벨이 접시 위 공간을 넘칩니다 — 항목을 줄이십시오',
+        {need:plateH, max:Math.round(maxPlateH)});
+      plateH=maxPlateH;
+    }
     var svg=mkSvg(el,W,H,'ha-balance-svg');
     // 받침대(삼각형)
     svg.append('polygon')
@@ -3544,12 +3782,13 @@ html.ratio-fill .agenda-frame {
         .attr('style','fill:var(--htmlart-accent,#2b8a9d);stroke:#fff;stroke-width:3');
       var fo=arm.append('foreignObject').attr('x',bx).attr('y',by)
         .attr('width',plateW-20).attr('height',plateH);
-      var sub=group.subs.length?'<div style="font-size:13px;opacity:.92;margin-top:2px;'
+      var sub=group.subs.length?'<div style="font-size:'+subFs+'px;line-height:1.3;'
+        +'opacity:.92;margin-top:'+gapSub+'px;'
         +'word-break:keep-all">'+group.subs.map(esc).join(' · ')+'</div>':'';
       fo.append('xhtml:div').attr('style','width:100%;height:100%;display:flex;'
         +'flex-direction:column;align-items:center;justify-content:center;text-align:center;'
-        +'color:var(--htmlart-fg,#fff);padding:0 8px;box-sizing:border-box;word-break:keep-all')
-        .html('<div style="font-weight:800;font-size:22px;line-height:1.1">'+esc(group._cleanTitle)
+        +'color:var(--htmlart-fg,#fff);padding:6px 8px;box-sizing:border-box;word-break:keep-all')
+        .html('<div style="font-weight:800;font-size:'+titleFs+'px;line-height:1.1">'+esc(group._cleanTitle)
           +' <span style="opacity:.85;font-weight:600">('+w+')</span></div>'+sub);
     }
     plate(-1, lW, L);
@@ -3807,11 +4046,58 @@ html.ratio-fill .agenda-frame {
     if(!annots.length){ errBox(el,'htmlArt annotate: over/under 주석 필요'); return; }
 
     var W=1400, H=620, cx=W/2, cy=H/2;
-    var targetFs=56;
-    var labelW=300, labelH=52, labelGap=24;
+    var labelGap=24, labelFs=24, labelPad=12;
     var colorMap={red:'#e74c3c',blue:'#3498db',green:'#27ae60',yellow:'#f1c40f',
                   orange:'#e67e22',purple:'#9b59b6',pink:'#e91e63',cyan:'#16a085',black:'#222'};
     function colorOf(c){ return colorMap[c.toLowerCase()] || c; }
+
+    // ── 거터 예약 — target 이 라벨 자리를 침범하지 못하게 한다 (Issue370) ────
+    //   라벨 x 는 상수(`30` / `W-30-labelW`)였고 target fo 는 viewBox 전폭(`x=0,
+    //   width=W`)이었다. 둘 사이에 아무 제약이 없어 **한 줄 실폭이 `W − 2×(30+labelW)`
+    //   를 넘으면 반드시 겹쳤다** — 문장을 줄여 빠져나갈 문제가 아니라 임계를 넘었는지의
+    //   문제다(실측 2026-09-19 쇼케이스 영문 43자: 한 줄 1252px, 편측 침범 256px).
+    //
+    //   고칠 자리는 라벨이 아니라 **target** 이다. 라벨을 target 밖으로 밀어내면(후보 B)
+    //   viewBox 가 넓어져 도해 전체가 축소되고, 그것은 Issue363 이 정상 도해까지 15%
+    //   줄여 문제가 됐던 실패 모드다. 거터를 예약하면 겹침이 **구조적으로 불가능**해진다.
+    //
+    //   라벨이 짧으면 거터도 좁혀 target 에 폭을 돌려준다 — 고정 300 은 6자 라벨에서
+    //   절반이 빈 거터가 되고 그만큼 target 이 불필요하게 접힌다.
+    var labelNeed=0;
+    annots.forEach(function(a){
+      var w=textEm(a.label)*labelFs+labelPad;
+      if(w>labelNeed)labelNeed=w;
+    });
+    var labelW=Math.max(160, Math.min(300, Math.ceil(labelNeed)));
+    var gutter=30+labelW+20;
+    var targetW=W-2*gutter;
+
+    // 라벨도 잘려 있었다 — `labelH` 52 고정에 2줄(24px×1.3×2 = 62.4)이 들어가지 않는다
+    //   (실측 쇼케이스 13자 라벨 `scrollHeight 57 > clientHeight 52`). 무경고 클리핑이라
+    //   Issue364 와 같은 성격이고, 폭은 거터가 이미 묶었으므로 높이로만 푼다.
+    var labelLines=1;
+    annots.forEach(function(a){
+      var n=wrapLines(a.label, labelFs, labelW-labelPad);
+      if(n>labelLines)labelLines=n;
+    });
+    var labelH=Math.max(52, Math.ceil(labelLines*labelFs*1.3)+4);
+    // 라벨이 많고 길면 세로로 viewBox 를 넘는다 — 글자를 줄이기 전에 간격을 먼저 줄인다
+    var sideMax=Math.ceil(annots.length/2);
+    if(sideMax>1 && sideMax*labelH+(sideMax-1)*labelGap > H-40){
+      labelGap=Math.max(8, Math.floor((H-40-sideMax*labelH)/(sideMax-1)));
+    }
+
+    // 폭을 거터 안쪽으로 좁히면 줄이 늘어 세로가 터진다 — 그래서 후보 A 를 단독으로
+    //   넣으면 안 된다(Issue370 구현 명세). Issue364 와 같은 총량 축으로 함께 푼다:
+    //   줄 수 × 줄높이가 상한에 들어갈 때까지 폰트를 낮추고, fo 높이를 실제 줄 수로 준다.
+    //   `letter-spacing:0.02em` 은 폭 모델에 없으므로 fs 에 1.02 를 곱해 근사한다.
+    var targetFs=56, targetLines=1;
+    for(; targetFs>24; targetFs--){
+      targetLines=wrapLines(target, targetFs*1.02, targetW);
+      if(targetLines*targetFs*1.2<=360)break;
+    }
+    targetLines=wrapLines(target, targetFs*1.02, targetW);
+    var targetH=Math.max(120, Math.ceil(targetLines*targetFs*1.2)+8);
 
     var svg=mkSvg(el,W,H,'ha-annotate-svg');
 
@@ -3830,7 +4116,7 @@ html.ratio-fill .agenda-frame {
       function(m,i,s){ return '<span data-annot-idx="'+i+'" style="display:inline-block;">'+s+'</span>'; });
 
     var fo=svg.append('foreignObject')
-      .attr('x',0).attr('y',cy-60).attr('width',W).attr('height',120);
+      .attr('x',gutter).attr('y',cy-targetH/2).attr('width',targetW).attr('height',targetH);
     // 주의: 바깥 div 가 flex 면 내부 span 들이 flex item 으로 blockify 되어
     // (inline-block → block) 줄바꿈·측정이 깨짐. inner span 으로 한 번 감싸
     // 주석 span 들을 일반 inline 콘텐츠로 유지한다.
@@ -3865,7 +4151,11 @@ html.ratio-fill .agenda-frame {
       // span 가로 위치(x) 순으로 좌/우 균형 분할 — 왼쪽 절반 span 은 좌측 라벨,
       // 오른쪽 절반 span 은 우측 라벨. 라벨 세로 순서도 span x 순을 따라
       // 연결 곡선이 교차하지 않게 한다 (이전: x중점 기준 분할 → 불균형·교차).
-      boxes.sort(function(a,b){ return (a.x+a.w/2) - (b.x+b.w/2); });
+      // 다줄 target 에서는 x 만 보면 라벨 순서가 줄을 넘나들어 곡선이 교차한다 —
+      //   줄(y) 우선, 같은 줄 안에서 x. 한 줄이면 y 가 모두 같아 기존 순서와 동일하다.
+      boxes.sort(function(a,b){
+        return (Math.abs(a.y-b.y)>12 ? a.y-b.y : 0) || ((a.x+a.w/2)-(b.x+b.w/2));
+      });
       var half=Math.ceil(boxes.length/2);
       var left=boxes.slice(0,half);
       var right=boxes.slice(half);
@@ -3909,7 +4199,7 @@ html.ratio-fill .agenda-frame {
         fol.append('xhtml:div')
           .attr('style','width:100%;height:100%;display:flex;align-items:center;'
             +'justify-content:'+(side==='left'?'flex-end':'flex-start')+';'
-            +'padding:0 6px;font-size:24px;line-height:1.3;font-weight:600;'
+            +'padding:0 6px;font-size:'+labelFs+'px;line-height:1.3;font-weight:600;'
             +'text-align:'+(side==='left'?'right':'left')+';'
             +'word-break:keep-all;box-sizing:border-box;'
             +'color:var(--htmlart-fg,inherit);')
@@ -3981,6 +4271,29 @@ html.ratio-fill .agenda-frame {
     var hubW=920, hubH=210;
     var labelW=480, labelH=150;
     var hubFontSize=82;
+    // ── branch 라벨 폰트 — 3줄이 되면 잘렸다 (Issue381) ───────────────
+    //   `font-size:44px` 와 `labelH=150` 이 **둘 다 고정**이라 3줄이 나는 순간
+    //   3×44×1.22 = 161px 로 넘친다(실측 2026-09-19 m2Slide_visual_component 5장
+    //   30번 `바이브 코딩으로 쉽고, 빠르게, 정확하게` — scrollHeight 156 > clientHeight
+    //   150). 같은 장의 다른 라벨 2개는 2줄이라 정상이었다 — **3줄 진입이 임계**다.
+    //   Issue364·Issue370 과 같은 무경고 클리핑 축(폭 auto-fit 은 있고 높이 축이 없다).
+    //
+    //   ⚠️ 박스를 키우는 쪽(`labelH` 확대)은 택하지 않았다 — 8방위 zone 이 anchor
+    //      기준 배치라(`labelBox`) 박스가 커지면 이웃 라벨과 겹칠 수 있고, 그 검증
+    //      비용이 폰트 축소보다 크다.
+    //   형제 라벨은 **같은 크기**를 쓴다 — 하나만 작아지면 그것이 더 눈에 띈다.
+    //   줄 수는 렌더가 실제로 쓰는 값으로 센다(padding 0 14px · line-height 1.22).
+    //   토큰 라벨(` | ` 구분)은 구분자까지 넣어 재야 폭이 과소평가되지 않는다.
+    var labelInnerW=Math.max(labelW-28, 40);
+    var labelFs=44;
+    for(; labelFs>22; labelFs--){
+      var tooTall=false;
+      for(var li=0; li<branches.length; li++){
+        var lt=branches[li].tokens ? branches[li].tokens.join(' | ') : (branches[li].text||'');
+        if(wrapLines(lt, labelFs, labelInnerW)*labelFs*1.22 > labelH){ tooTall=true; break; }
+      }
+      if(!tooTall) break;
+    }
     // fan: 세로 여유 큰 캔버스 + hub 를 하단에 두고 위로 부채꼴 → 큰 radius·stagger 로 라벨 겹침 방지
     if(orient==='fan'){ W=2200; H=1500; cx=W/2; cy=1180; }
 
@@ -4098,17 +4411,41 @@ html.ratio-fill .agenda-frame {
     // ── SVG ───────────────────────────────────────────────────────
     var svg=mkSvg(el,vbW,H,'ha-callout-svg',vbX);
 
+    // ── hub 텍스트 실측 높이 — stem 이 글자를 가로지르지 않게 (Issue376) ──
+    //   hub 박스는 `cy` 중심이고 `align-items:center` 라 **텍스트 중앙도 정확히 cy** 다.
+    //   그래서 stem 을 `cy` 에 그으면 취소선처럼 제목을 관통한다(2026-09-19 prj63 실발생:
+    //   horizontal "📌 막혔을 때" 가 가로선에 그어짐). 브랜치 라벨은 이미 박스 하단
+    //   underline(`lb.y+labelH`)을 받고 있어 **같은 컴포넌트 안에서 처리가 갈려 있었다.**
+    //
+    //   줄 수를 `wrapLines` 로 재는 이유 — hubFontSize 는 82 고정이라 제목이 길면 2줄로
+    //   늘어난다. 고정 오프셋(ex: cy+60)을 쓰면 1줄에선 맞고 2줄에선 두 번째 줄을 그대로
+    //   관통한다. 렌더가 쓰는 값(line-height 1.15 · padding 0 32px · gap 24px)을 그대로 쓴다.
+    var hubIconW=hub.iconHtml?(hubFontSize+24):0;            // 아이콘 글리프 + gap:24px
+    var hubInnerW=Math.max(hubW-64-hubIconW, 40);            // padding 0 32px
+    var hubTextH=wrapLines(hub.title, hubFontSize, hubInnerW)*hubFontSize*1.15;
+    var hubTextGap=18;                                       // 브랜치 라벨 underline 여백(≈21)과 맞춤
+
     // stem line — horizontal/vertical 모드만
     if(orient==='horizontal' || orient==='vertical' || orient==='wide'){
       var sCol='var(--htmlart-callout-stem,var(--htmlart-fg,#888))';
       if(orient==='horizontal'){
+        // 가로 stem 은 hub 의 underline 이다 → 텍스트 **아래**로 내리고 hub 박스 하단에서 멈춘다.
         var slen=hubW*0.85;
-        svg.append('line').attr('x1',cx-slen/2).attr('y1',cy).attr('x2',cx+slen/2).attr('y2',cy)
+        var stemY=Math.min(cy+hubTextH/2+hubTextGap, hubB);
+        svg.append('line').attr('x1',cx-slen/2).attr('y1',stemY).attr('x2',cx+slen/2).attr('y2',stemY)
           .attr('style','stroke:'+sCol+';stroke-width:3;opacity:.55');
       } else {
+        // 세로 stem 은 좌우 배치(W/E)의 축(spine)이 의도이므로 **방향을 유지**하고
+        //   hub 텍스트가 놓인 구간만 비워 두 토막으로 긋는다. underline 으로 바꾸면
+        //   vertical 을 고른 작성자의 의도(세로축)가 사라진다.
         var vlen=hubH*1.8;
-        svg.append('line').attr('x1',cx).attr('y1',cy-vlen/2).attr('x2',cx).attr('y2',cy+vlen/2)
-          .attr('style','stroke:'+sCol+';stroke-width:3;opacity:.55');
+        var gapT=Math.max(cy-hubTextH/2-hubTextGap, cy-vlen/2);
+        var gapB=Math.min(cy+hubTextH/2+hubTextGap, cy+vlen/2);
+        [[cy-vlen/2, gapT],[gapB, cy+vlen/2]].forEach(function(seg){
+          if(seg[1]-seg[0]<=1)return;                        // 텍스트가 stem 전체를 덮으면 생략
+          svg.append('line').attr('x1',cx).attr('y1',seg[0]).attr('x2',cx).attr('y2',seg[1])
+            .attr('style','stroke:'+sCol+';stroke-width:3;opacity:.55');
+        });
       }
     }
 
@@ -4172,7 +4509,7 @@ html.ratio-fill .agenda-frame {
         .attr('style','width:100%;height:100%;display:flex;align-items:center;'
           +'justify-content:'+z.hAlign+';'
           +'color:'+color+';'
-          +'font-size:44px;font-weight:'+(b.bold?'800':'700')+';line-height:1.22;'
+          +'font-size:'+labelFs+'px;font-weight:'+(b.bold?'800':'700')+';line-height:1.22;'
           +'text-align:'+z.tAlign+';'
           +'word-break:keep-all;padding:0 14px;box-sizing:border-box;');
       if(b.tokens){
@@ -4243,8 +4580,66 @@ html.ratio-fill .agenda-frame {
       catch(e){ el.innerHTML='<div class="component-error">htmlArt '+type+' 렌더 실패: '+e.message+'</div>'; }
     });
   }
-  if(window.Reveal&&Reveal.on)Reveal.on('ready',render);
-  else document.addEventListener('DOMContentLoaded',render);
+  // ── 세로로 눌린 htmlart 를 좌우 배치로 (Issue392) ──────────────────────
+  //
+  //   `.m2-htmlart` 는 `flex:1 1 0` 으로 **본문이 쓰고 남은 세로**를 받는다(Issue197/198).
+  //   본문이 길면 그 잔여가 얇아지고, svg 는 viewBox 비율을 지키므로 **가로를 통째로 버리며**
+  //   축소된다 → 라벨이 같은 배율로 작아져 판독이 안 된다(실측 prj60 1.design_rnd p16:
+  //   컨테이너 1017×253 · viewBox 812×710 → 배율 0.356, 가로 1017 중 289 만 사용).
+  //
+  //   ⚠️ **무조건 좌우 분할하면 안 된다.** 전 프로젝트 실측(2026-09-20) htmlart 331 장 중
+  //      304 장(92%)이 본문과 동거한다 — 대부분은 본문이 짧아 이미 충분한 세로를 받고 있고,
+  //      그 장까지 뒤집으면 덱 전체가 바뀐다. 빌드 시점 휴리스틱(preprocessHeuristic)으로
+  //      가를 수 없는 이유도 같다 — 눌렸는지는 **렌더 높이를 재야** 알 수 있다.
+  //
+  //   그래서 판정은 «옮기면 실제로 커지는가» 하나다. 좌우로 옮겼을 때의 배율을 미리 셈해
+  //   지금보다 SIDE_GAIN 배 이상 커질 때만 전환한다. 이득이 없는 장은 손대지 않는다
+  //   (검산 p22 tab: 캔버스가 거의 정사각이라 1.01 배 → 전환 안 함).
+  //
+  //   전환은 **DOM 재배치뿐**이고 재렌더가 없다 — svg 는 width/height 100% + viewBox 라
+  //   컨테이너만 바뀌면 그대로 따라 커진다. 폰트도 viewBox 단위라 도해 안 비율은 불변이다.
+  var SIDE_GAIN=1.25;      // 이 배 이상 커질 때만 전환
+  var SIDE_COL=0.48;       // 2열 전환 시 한 열이 갖는 폭 비율 (gap 제외)
+  function sideBySide(body, el){
+    var kids=[].slice.call(body.children);
+    var htmlartFirst=(kids[0]===el);
+    var rest=document.createElement('div');
+    rest.className='htmlart-side-rest';
+    kids.forEach(function(k){ if(k!==el)rest.appendChild(k); });   // body 엔 el 만 남는다
+    // 원고 순서를 지킨다 — 도해가 첫 요소면 왼쪽, 아니면 본문을 왼쪽에 둔다
+    if(htmlartFirst)body.appendChild(rest);
+    else body.insertBefore(rest, el);
+    body.classList.add('htmlart-side');
+  }
+  function relayoutSquished(scope){
+    if(!scope)return;
+    scope.querySelectorAll('.contents-body').forEach(function(body){
+      if(body.getAttribute('data-htmlart-side-checked'))return;
+      var arts=body.querySelectorAll(':scope > .m2-htmlart');
+      if(arts.length!==1)return;                    // 2개 이상이면 열 배분이 달라져 셈이 안 맞는다
+      var el=arts[0];
+      var svg=el.querySelector('svg[viewBox]'); if(!svg)return;
+      var vb=svg.getAttribute('viewBox').split(/\s+/);
+      var vbW=+vb[2], vbH=+vb[3]; if(!(vbW>0&&vbH>0))return;
+      var er=el.getBoundingClientRect(), br=body.getBoundingClientRect();
+      if(er.width<40||er.height<10||br.height<40)return;          // 아직 레이아웃 전
+      body.setAttribute('data-htmlart-side-checked','1');
+      var now=Math.min(er.width/vbW, er.height/vbH);
+      var next=Math.min(br.width*SIDE_COL/vbW, br.height/vbH);
+      if(now>0&&next/now>=SIDE_GAIN)sideBySide(body, el);
+    });
+  }
+  function relayoutCurrent(){
+    var sec=(window.Reveal&&Reveal.getCurrentSlide&&Reveal.getCurrentSlide())
+      || document.querySelector('.reveal .slides > section');
+    relayoutSquished(sec);
+  }
+  if(window.Reveal&&Reveal.on){
+    Reveal.on('ready',function(){ render(); relayoutCurrent(); });
+    // 비활성 슬라이드는 레이아웃이 확정되지 않아 높이를 못 잰다 — 보일 때 잰다
+    Reveal.on('slidechanged',relayoutCurrent);
+  }
+  else document.addEventListener('DOMContentLoaded',function(){ render(); relayoutCurrent(); });
 })();
   </script>
   <script>
@@ -4396,7 +4791,7 @@ html.ratio-fill .agenda-frame {
 
 
     // Inject configuration
-    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"head_left":"d1","head_right":"now","head_breadcum":true,"cardColumns":"auto-fit","style":{"global":{"fontFamily":"'Nanum Gothic Coding', 'D2Coding', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif","fontImport":["https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
+    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"head_left":"d1","head_right":"now","head_breadcum":true,"head_number":"full","cardColumns":"auto-fit","style":{"global":{"fontFamily":"'Nanum Gothic Coding', 'D2Coding', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif","fontImport":["https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
 
     // Dynamic Styling and Resizing Script
     let observer; // Define observer at top level
