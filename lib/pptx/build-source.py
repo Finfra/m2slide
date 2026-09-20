@@ -105,7 +105,12 @@ ANIM_LINE = re.compile(
     r"|auto-animate|autoslide-\d+)[ \t]*$", re.M)
 SLOT_RIGHT = re.compile(r"^[ \t]*::right::[ \t]*$", re.M)
 SYMBOL = re.compile(r":fa-[\w-]+:")
-IMG = re.compile(r"(!\[[^\]]*\]\()([^)\s]+)(\s+\"[^\"]*\")?(\))")
+# 링크·이미지의 대괄호 라벨. CommonMark 는 라벨 안의 **균형 잡힌 대괄호**를 허용하므로
+#   `[^\]]*` 로 잡으면 alt 에 `[PDF]` 같은 표기가 든 순간 매칭이 통째로 실패한다.
+#   그 이미지만 절대화를 빠져나가고, pandoc 이 상대경로를 못 찾아 **덱 전체가 죽는다**
+#   (실측 2026-09-20: 48건 중 1건이 이 형태 → rc 99). 1단계 중첩까지 허용한다.
+MD_LABEL = r"(?:[^\[\]]|\[[^\[\]]*\])*"
+IMG = re.compile(r"(!\[" + MD_LABEL + r"\]\()([^)\s]+)(\s+\"[^\"]*\")?(\))")
 FENCE = re.compile(r"^[ \t]*```")
 HR = re.compile(r"^[ \t]*-{3,}[ \t]*$")
 H1 = re.compile(r"^#[ \t]+(.+?)[ \t]*$")
@@ -359,7 +364,7 @@ def _groups(body_lines):
             out.append((g, forced))
             continue
         heavy = all(l.lstrip().startswith("|") for l in g) or (
-            len(g) == 1 and re.match(r"^!\[[^\]]*\]\([^)]*\)\s*$", g[0].strip()) is not None)
+            len(g) == 1 and re.match(r"^!\[" + MD_LABEL + r"\]\([^)]*\)\s*$", g[0].strip()) is not None)
         out.append((g, heavy))
     return out
 
@@ -413,6 +418,14 @@ def bullet_text(t):
 #
 #   ⚠️ H1 은 여기서 건드리지 않는다 — `normalize_chapter` 가 그 자리에 챕터 TOC 장을
 #      만들어야 하므로, 먼저 지워 버리면 목차가 사라진다.
+#
+#   ⚠️ **명시 `#layout-*` 이 붙은 장은 HTML 이 변환하지 않는다** (Issue401).
+#      slide-parser 의 `if (s.layout) return;` 가 autoToc 변환 자체를 건너뛰므로,
+#      그런 장은 `cards_placeholder: false` 라도 `_cards` 가 되지 않아 **살아남는다**.
+#      이 가드를 빠뜨리면 본문을 담은 진입 장이 pptx 에서만 통째로 사라진다 — 빠진 장은
+#      「비어 있는 장」으로도 세어지지 않아 conform·check-empty·parity 가 전부 못 본다
+#      (실측 1.design_rnd: 본문 366줄을 담은 진입 장 36개 · mermaid 1건이 함께 소실).
+#      바로 아래 `normalize_chapter` 는 `explicit_entry` 로 이미 같은 가드를 갖고 있었다.
 def top_heading_level(block):
     """블록의 첫 헤딩 레벨 — 코드펜스 안은 세지 않는다."""
     in_fence = False
@@ -448,6 +461,13 @@ def drop_auto_toc(blocks, stat):
                 has_child = True
                 break
         if has_child:
+            #   명시 layout 은 HTML 이 변환하지 않는다 — 여기서도 지우지 않는다 (Issue401).
+            #   ⚠️ 이 판정은 **자식 확인 뒤**에 둔다. 앞에 두면 애초에 지워지지 않을 장까지
+            #      세어 「유지 434개」 같은 수가 나오고, 그 수로는 무엇을 지켰는지 못 읽는다
+            if any(LAYOUT_LINE.match(ln) for ln in b.split("\n")):
+                stat["auto_toc_kept"] += 1
+                out.append(b)
+                continue
             stat["auto_toc_dropped"] += 1
             continue
         out.append(b)
@@ -575,8 +595,8 @@ FENCE_DIV_CLOSE = re.compile(r"^[ \t]*:::+[ \t]*$")
 
 # 인라인 마크다운 → pandoc 이 실제로 렌더할 글자. 병합 단계의 본문 대조가 이 문자열을 쓴다
 INLINE_MD = (
-    (re.compile(r"!\[[^\]]*\]\([^)]*\)"), ""),
-    (re.compile(r"\[([^\]]*)\]\([^)]*\)"), r"\1"),
+    (re.compile(r"!\[" + MD_LABEL + r"\]\([^)]*\)"), ""),
+    (re.compile(r"\[(" + MD_LABEL + r")\]\([^)]*\)"), r"\1"),
     (re.compile(r"\*\*(.+?)\*\*"), r"\1"),
     (re.compile(r"(?<!\*)\*([^*\n]+)\*(?!\*)"), r"\1"),
     (re.compile(r"`([^`]+)`"), r"\1"),
@@ -1042,7 +1062,8 @@ def main():
     stat = {k: 0 for k in ("attr", "element", "id", "anim", "slot", "symbol",
                            "img_abs", "img_proj", "img_missing",
                            "chapter", "chapter_dropped", "agenda", "defer", "fence_flat", "fence_drop",
-                           "laneb", "laneb_defer", "math", "auto_toc_dropped", "chapter_entry_kept")}
+                           "laneb", "laneb_defer", "math", "auto_toc_dropped",
+                           "auto_toc_kept", "chapter_entry_kept")}
     made = []
     #   제목 순번은 **덱 전체** 기준이다 — 병합은 pptx 한 벌에서 장을 찾으므로,
     #   파일마다 0 부터 세면 동명 제목이 두 원고에 있을 때 서로를 가리킨다
@@ -1165,6 +1186,11 @@ def main():
         if stat["auto_toc_dropped"]:
             print("  Cards Page 생략 — 자식 헤딩을 가진 진입 장 %d개 (HTML 과 같은 판정)"
                   % stat["auto_toc_dropped"], file=sys.stderr)
+        if stat["auto_toc_kept"]:
+            #   「지웠다」만 세면 지키기로 한 장이 몇인지 보이지 않는다 — Issue401 의
+            #   손실은 이 수가 0 으로 보이지도 않던 자리에서 났다
+            print("  진입 장 유지 — 명시 layout %d개 (HTML 이 변환하지 않는 장)"
+                  % stat["auto_toc_kept"], file=sys.stderr)
         print("  장 구성 — Agenda %s · H1 진입 %s · 챕터 목차 %s (진입 장 생략 %d)"
               % ("주입" if stat["agenda"] else "생략",
                  "유지" if cards_ph else "생략(cards_placeholder=false)",
