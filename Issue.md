@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 391
+* Issue HWM: 394
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -42,6 +42,25 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue394: `step` 상승 연결선이 박스 뒤로 숨어 진행 방향이 읽히지 않음 (등록: 2026-09-20, 해결: 2026-09-20, commit: eceb243) ✅
+* 목적: 계단형 `htmlart step` 에서 단과 단을 잇는 선이 어디로 가는지 보이지 않는다. 계단의 의미는 «다음 단으로 올라간다» 인데 그 방향을 그림이 말해 주지 못한다.
+* 상세:
+    - 실발생: `Projects/1.design_rnd` 01-day1.md `#id-coa-llm-position` — 3단 계단 사이에 연회색 세로 토막만 보이고 화살표가 없다
+    - 원인 1 — **라이저가 역행해 박스 뒤로 숨는다.** `stepX = boxW*0.74` 라 다음 박스 왼쪽 가장자리가 현재 박스 오른쪽 가장자리보다 `0.26*boxW` **왼쪽**에 있다. ㄱ자 경로 `M x1 y1 L x2 y1 L x2 y2` 의 수평 구간이 `x2 < x1` 이라 되돌아가며, 그 구간이 통째로 박스 i 영역 안이다. 연결선 `g` 를 박스보다 먼저 그리므로 그대로 덮인다
+    - 원인 2 — **화살표 머리가 아예 없다.** `renderProcess`·`renderArrow` 와 달리 `stroke` 만 있고 marker·polygon 이 없다
+    - 원인 3 — **색이 테두리색이다.** `--htmlart-box-border`(기본 `rgba(0,0,0,.3)`)라 강조 요소가 아닌 보조선으로 읽힌다
+    - 원인 4 — **화살표가 설 자리가 없다.** `stepY = boxH*1.06` 이라 단 사이 세로 여유가 `0.06*boxH ≈ 7px` 뿐이다. 색만 바꿔도 7px 안에서는 방향이 안 보인다
+* 구현 명세:
+    - `renderStep()` — 단 간격을 `stepY = boxH*1.30` 으로 벌려 화살표 자리를 만들고, `stepX = boxW*0.90` 으로 함께 넓혀 캔버스 종횡비(≈1.6:1)를 유지한다
+    - ㄱ자 라이저를 버리고 **우상향 대각 화살표**로 바꾼다 — 박스 i 윗변 86% 지점 → 박스 i+1 아랫변 14% 지점. 계단 상승 방향과 벡터가 일치한다
+    - 색은 `--htmlart-accent`. 방향이 이 타입의 의미 자체이므로 `renderArrow` 와 같은 취급이다 (`--htmlart-arrow` 회색은 보조선용)
+    - 머리는 `polygon` 직접 계산 — 짧은 선분이라 `markerUnits` 기반 스케일이 과하게 걸린다
+    - 검증: `1.design_rnd` 빌드 후 화살표 `polygon` 개수 = 단 수 − 1, 화살표 bbox 가 박스 bbox 에 가려지지 않음
+* 결과: `1.design_rnd` p23(3단)·`m2Slide_visual_component` 5.13(4단) 양쪽에서 단마다 accent 우상향 화살표가 보인다. 화살표 중심의 topmost 요소가 polygon 자신이라 박스에 가려지지 않음을 DOM 으로 확인했고, 캔버스 종횡비는 1.62:1 → 1.60:1 로 사실상 유지됐다. `htmlart-fo-audit` 전수 29장 넘침 0.
+* 관측(별건): 본 검증에서 **ego-browser 캡처가 1회 성공**했다. [apply-verify-rules](.claude/rules/apply-verify-rules.md) §4.2 의 Playwright 예외는 «ego 캡처 15초 타임아웃» 실측을 근거로 하는데 지금은 그 전제가 성립하지 않는다. 예외 해제 판정은 글로벌 Issue653 소관이라 여기서는 사실만 남긴다.
+
+
 
 ## Issue391: `chevron` 라벨이 이웃 도형에 덮여 사라진다 — 유일하게 폰트 auto-fit 이 없는 타입 (등록: 2026-09-20, 해결: 2026-09-20, commit: `ef8c158`, `597ee09`) ✅
 * 목적: 발주처 prj60 `__lec` 3일차 「크롤링의 기법」에서 `페이지네이션` 이 **`|이지네이·` 로 좌우가 잘려** 보고됐다. Issue364(폭 축 auto-fit)가 **`chevron` 만 빠진 채** 종결돼 남은 잔여 케이스다. 다른 타입은 `fitFsFor` 로 폰트를 낮춰 담는데 `chevron` 은 **낮추는 코드 자체가 없다**
