@@ -46,9 +46,11 @@ python-pptx 는 **마스터·레이아웃에 그림을 넣지 못한다**(`Maste
     lane-t.py <pptx> <theme-img 디렉터리> --mode layout|ornament [--canvas-px 1920x1280]
 """
 import argparse
+import math
 import os
 import re
 import sys
+import unicodedata
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 try:
@@ -245,7 +247,55 @@ def fix_placeholders(container, name, L, W, T, H, px2emu, log):
                 ph.left, ph.width = L, W
             ph.top = int(PX["body_top"] * px2emu)
             ph.height = int(PX["body_h"] * px2emu)
+            log["lvl"] = log.get("lvl", 0) + level_sizes(ph)
         log["ph"] += 1
+
+
+
+def level_sizes(ph):
+    """본문 placeholder 의 **중첩 레벨 크기를 1레벨과 맞춘다** (Issue409).
+
+    본문 크기 교정(build-pptx.sh ①-b)은 레이아웃 `lstStyle` 의 **`lvl1pPr` 하나만**
+    고친다. 나머지 레벨은 마스터 `bodyStyle` 기본값(lvl1 32 · lvl2 28 · lvl3 24pt)을
+    그대로 물려받으므로, 본문이 20pt 로 줄면 **중첩 불릿이 부모보다 커진다** —
+    실측 2026-09-20 `1.design_rnd` p8·p10·p18·p20 전부 역전됐다.
+
+    HTML 은 중첩을 **부모와 같은 크기**로 렌더한다(실측 s18: depth1·depth2 모두
+    40.48px). 그 규칙을 그대로 옮긴다.
+
+    ⚠️ 마스터를 고치지 않고 **레이아웃**에 적는다 — 마스터는 제목·기타 스타일까지
+       공유하므로 거기서 손대면 영향 범위를 우리가 다 알 수 없다.
+    """
+    from pptx.oxml.ns import qn
+    try:
+        body_el = ph.text_frame._txBody
+    except Exception:
+        return 0
+    lst = body_el.find(qn("a:lstStyle"))
+    if lst is None:
+        return 0
+    lvl1 = lst.find(qn("a:lvl1pPr"))
+    if lvl1 is None:
+        return 0
+    d1 = lvl1.find(qn("a:defRPr"))
+    sz = d1.get("sz") if d1 is not None else None
+    if not sz:
+        return 0
+    n = 0
+    for i in range(2, 6):
+        tag = qn("a:lvl%dpPr" % i)
+        el = lst.find(tag)
+        if el is None:
+            el = lst.makeelement(tag, {})
+            lst.append(el)
+        d = el.find(qn("a:defRPr"))
+        if d is None:
+            d = el.makeelement(qn("a:defRPr"), {})
+            el.insert(0, d)
+        if d.get("sz") != sz:
+            d.set("sz", sz)
+            n += 1
+    return n
 
 
 ORNAMENT_TAG = _OT
@@ -277,15 +327,25 @@ def text_width_px(text, fs):
     폰트 메트릭을 쓰지 않는 이유는 pptx 서체(`Malgun Gothic`)가 macOS 에 없어
     어차피 정확히 잴 수 없기 때문이다 — 전각/반각 구분으로 충분하다.
     """
+    #   ⚠️ **문장부호를 반각으로 세지 않는다** (Issue406). 구 판정은 한글·한자만 1.0 으로
+    #      보고 `·`·`—`·따옴표를 0.55 로 셌는데, 그 글자들은 이 서체에서 **전각**이다.
+    #      표지 제목 「[설계·R&D] AI 활용 도면·기술문서 분석·지식화」 는 가운뎃점만 3개라
+    #      어림이 실제보다 6% 이상 좁게 나왔고, 그 값으로 맞춘 크기가 뷰어에서 넘쳤다.
     w = 0.0
     for ch in text or "":
         o = ord(ch)
-        if 0xAC00 <= o <= 0xD7A3 or 0x3131 <= o <= 0x318E or 0x4E00 <= o <= 0x9FFF:
+        if (0xAC00 <= o <= 0xD7A3 or 0x3131 <= o <= 0x318E      # 한글
+                or 0x4E00 <= o <= 0x9FFF                        # 한자
+                or 0x3040 <= o <= 0x30FF                        # 가나
+                or 0x3000 <= o <= 0x303F                        # CJK 문장부호
+                or 0xFF01 <= o <= 0xFF60                        # 전각 영숫자·기호
+                or o in (0x00B7, 0x2013, 0x2014, 0x2018, 0x2019,
+                         0x201C, 0x201D, 0x2026)):              # · – — ‘ ’ “ ” …
             w += 1.0
         elif ch == " ":
             w += 0.3
         else:
-            w += 0.55
+            w += 0.58
     return w * fs
 
 
@@ -490,7 +550,17 @@ def redraw_cards(slide, px2emu, L, W, md_map=None, mono=None):
     gap = CARD["gap"]
     cw = (W / px2emu - (n - 1) * gap) / n
     top = CARD["top"]
-    body_max = max(len(c) - 1 for c in cards)
+    #   ⚠️ **문단 수가 아니라 실제 줄 수로 잰다** (Issue410). 카드는 좁아서 본문
+    #      한 문단이 두세 줄로 접힌다 — 문단 수로 높이를 잡으면 글자가 상자 아래로
+    #      새어 나간다(실측 2026-09-20 `1.design_rnd` p7: 카드 4개 중 둘이 2줄씩).
+    _inner = max(cw - 2 * CARD["body_pad_x"], 10.0)
+    _bfs = CARD.get("body_fs", 40)
+
+    def _wrap_n(s):
+        per = max(_inner / max(_bfs, 1.0), 1.0)
+        return max(1, int(math.ceil(_em_width(s) / per)))
+
+    body_max = max((sum(_wrap_n(x) for x in c[1:]) or 0) for c in cards)
     ch = CARD["band_h"] + body_max * CARD["body_line_h"] + CARD["pad_bottom"]
 
     def emu(v):
@@ -511,6 +581,9 @@ def redraw_cards(slide, px2emu, L, W, md_map=None, mono=None):
         except Exception:
             pass
         base.text_frame.text = ""
+        #   표식 승계 (Issue404) — 원래 lane B 도형을 지우고 새로 그리므로, 여기서
+        #   다시 달지 않으면 뒤의 겹침 보정이 이 카드를 찾지 못한다
+        set_descr(base, LANEB_TAG)
 
         #   ② 제목 밴드 — 카드 상단 전체 폭, `--kn-accent`
         band = slide.shapes.add_shape(MSO_SHAPE.RECTANGLE,
@@ -520,6 +593,7 @@ def redraw_cards(slide, px2emu, L, W, md_map=None, mono=None):
         band.fill.fore_color.rgb = RGBColor.from_string(CARD["band_bg"])
         band.line.fill.background()
         band.shadow.inherit = False
+        set_descr(band, LANEB_TAG)
         tf = band.text_frame
         tf.word_wrap = True
         tf.margin_left = tf.margin_right = tf.margin_top = tf.margin_bottom = 0
@@ -545,6 +619,7 @@ def redraw_cards(slide, px2emu, L, W, md_map=None, mono=None):
                 emu(x + CARD["body_pad_x"]), emu(top + CARD["band_h"] + 12),
                 emu(cw - 2 * CARD["body_pad_x"]),
                 emu(len(lines[1:]) * CARD["body_line_h"]))
+            set_descr(bx, LANEB_TAG)
             btf = bx.text_frame
             btf.word_wrap = True
             btf.margin_left = btf.margin_right = btf.margin_top = btf.margin_bottom = 0
@@ -585,6 +660,38 @@ def body_placeholder(slide):
     return None
 
 
+
+LANEB_TAG = "m2slide:laneb"
+
+
+def push_laneb_below_body(slide, gap_emu):
+    """lane B 도형을 **최종 본문 아래**로 민다 (Issue404).
+
+    lane B 는 자기가 돌 때의 본문 기하로 y 를 잡는데, 그 뒤 이 스크립트가 본문
+    placeholder 를 최종 확정한다. 그래서 lane B 가 본 높이와 실제가 갈리고 도형이
+    본문 불릿 **위에 겹친다**(실측 2026-09-20 `1.design_rnd` p6 — 50.5mm 겹침).
+
+    본문을 줄이지 않고 **도형을 내린다** — 본문을 줄이면 글자가 상자를 넘치고,
+    넘쳤는지는 산출물을 열기 전엔 보이지 않는다. 내리는 쪽은 아래 여백을 쓸 뿐이다.
+
+    돌려주는 값은 민 거리(EMU)다. 0 이면 이미 아래에 있었다는 뜻이다.
+    """
+    shapes = [sh for sh in slide.shapes
+              if shape_descr(sh) == LANEB_TAG and sh.top is not None]
+    if not shapes:
+        return 0
+    body = body_placeholder(slide)
+    if body is None or body.top is None or body.height is None:
+        return 0
+    if not (body.text_frame.text or "").strip():
+        return 0
+    delta = (body.top + body.height + gap_emu) - min(sh.top for sh in shapes)
+    if delta <= 0:
+        return 0
+    for sh in shapes:
+        sh.top = sh.top + delta
+    return delta
+
 def is_code_para(para):
     from pptx.oxml.ns import qn
     pPr = para._p.find(qn("a:pPr"))
@@ -600,6 +707,31 @@ def send_to_back(slide, shape):
     el = shape._element
     tree.remove(el)
     tree.insert(2, el)          # nvGrpSpPr · grpSpPr 다음 = 맨 뒤
+
+
+def _em_width(s):
+    """문자열 폭을 em 으로 어림한다 — 한글·한자·가나 1, 나머지 0.55."""
+    return sum(1.0 if unicodedata.east_asian_width(c) in ("W", "F") else 0.55
+               for c in s)
+
+
+def wrapped_lines(p_, box_px, font_px):
+    """문단이 실제로 차지하는 줄 수 — **소프트 줄바꿈까지** 센다 (Issue405).
+
+    `<a:br>` 만 세면 한글 장문이 전부 1줄로 잡혀 앞 문단 높이가 크게 과소평가되고,
+    그 값을 쓰는 코드 상자가 **한참 위 문단을 덮는다**(실측 2026-09-20 `1.design_rnd`
+    p13: 상자가 코드보다 100px 위, 「완료조건」 불릿을 가렸다).
+
+    과대추정이 안전한 방향이다 — 상자가 조금 아래로 가는 것은 읽는 데 지장이 없지만
+    위로 가면 다른 글자를 덮는다.
+    """
+    txt = p_.text or ""
+    segs = re.split(r"[\n\v]", txt) or [""]
+    per = max(box_px / max(font_px, 1.0), 1.0)
+    n = 0
+    for s in segs:
+        n += max(1, int(math.ceil(_em_width(s) / per)))
+    return max(n, 1)
 
 
 def restyle_code(slide, px2emu, L, W, log):
@@ -665,22 +797,56 @@ def restyle_code(slide, px2emu, L, W, log):
                 if j in idx:
                     continue
                 sz = next((r.font.size.pt for r in paras[j].runs if r.font.size), 20)
-                est_y += lines_of(paras[j]) * sz * (12700 / px2emu) * 1.4 + 6
+                fpx = sz * (12700 / px2emu)
+                #   ⚠️ `lines_of` 를 쓰지 않는다 — 그것은 명시 줄바꿈만 센다 (Issue405)
+                est_y += wrapped_lines(paras[j], (W / px2emu) * 0.95, fpx) * fpx * 1.4 + 6
         n_lines = sum(lines_of(paras[i]) for i in g)
         h = 2 * CODE["pad_y"] + n_lines * CODE["line_h"]
-        box = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
-                                     emu(L / px2emu), emu(est_y), emu(W / px2emu), emu(h))
-        box.fill.solid()
-        box.fill.fore_color.rgb = RGBColor.from_string(CODE["bg"])
-        box.line.fill.background()
-        box.shadow.inherit = False
-        try:
-            box.adjustments[0] = CODE.get("radius_px", 6) / float(h)
-        except Exception:
-            pass
-        set_descr(box, ORNAMENT_TAG + "/codebox")
-        send_to_back(slide, box)
-        boxes += 1
+        #   ⚠️ **자리를 확신할 때만 상자를 깐다** (Issue405). 코드가 장 중간에 오면
+        #      앞 문단의 조판 높이를 어림할 수밖에 없는데, 그 어림은 서체·자간·자동축소를
+        #      모르므로 어긋난다 — 어긋난 상자는 **엉뚱한 문단 뒤에 깔린다**(실측
+        #      2026-09-20 `1.design_rnd` p13·p15: 「완료조건」 불릿이 회색 띠를 뒤집어썼다).
+        #      그 경우에는 상자 대신 **run 하이라이트**를 쓴다 — 글자 뒤에 직접 칠해지므로
+        #      위치가 원리적으로 어긋날 수 없다. 모서리·여백은 잃지만 **틀리지는 않는다**.
+        exact = first_is_code and g is groups[0]
+        if exact:
+            box = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
+                                         emu(L / px2emu), emu(est_y), emu(W / px2emu), emu(h))
+            box.fill.solid()
+            box.fill.fore_color.rgb = RGBColor.from_string(CODE["bg"])
+            box.line.fill.background()
+            box.shadow.inherit = False
+            try:
+                box.adjustments[0] = CODE.get("radius_px", 6) / float(h)
+            except Exception:
+                pass
+            set_descr(box, ORNAMENT_TAG + "/codebox")
+            send_to_back(slide, box)
+            boxes += 1
+        else:
+            for i in g:
+                for r in paras[i].runs:
+                    rPr = r._r.get_or_add_rPr()
+                    if rPr.find(qn("a:highlight")) is not None:
+                        continue
+                    hl = rPr.makeelement(qn("a:highlight"), {})
+                    hl.append(hl.makeelement(qn("a:srgbClr"), {"val": CODE["bg"]}))
+                    #   ⚠️ `a:rPr` 의 자식은 **순서가 스키마로 고정**돼 있다. 뒤에 붙이면
+                    #      이미 있는 `a:latin`(코드 서체 교정) 뒤로 가서 순서 위반이 되고
+                    #      빌드가 FAIL 한다(실측 2026-09-20 `check-xml-order`).
+                    #      highlight 는 fill·effect 다음, 밑줄·서체 앞자리다.
+                    anchor = None
+                    for tag in ("a:uLnTx", "a:uLn", "a:uFillTx", "a:uFill", "a:latin",
+                                "a:ea", "a:cs", "a:sym", "a:hlinkClick",
+                                "a:hlinkMouseOver", "a:rtl", "a:extLst"):
+                        anchor = rPr.find(qn(tag))
+                        if anchor is not None:
+                            break
+                    if anchor is not None:
+                        anchor.addprevious(hl)
+                    else:
+                        rPr.append(hl)
+            log["code_hl"] = log.get("code_hl", 0) + 1
         for i in g:
             p_ = paras[i]
             p_.line_spacing = CODE["line_h"] / CODE["fs"]
@@ -1190,27 +1356,54 @@ def main():
             #   pandoc 이 만든 제목 상자를 **HTML 이 재어 준 자리로 옮긴다**.
             #   지우고 새로 만들지 않는 것은 그 상자가 테마 서식을 이미 지녔기 때문이다
             spec = COVER.get("title") or {}
+            cover_fs = spec.get("fs")
             if ttl is not None and spec:
                 ttl.left = int(spec["l"] * px2emu); ttl.top = int(spec["t"] * px2emu)
                 ttl.width = int(spec["w"] * px2emu); ttl.height = int(spec["h"] * px2emu)
+                #   ⚠️ **상자에 맞게 줄인다** (Issue406). HTML 의 px 크기를 그대로 pt 로
+                #      옮기면 한글 장문 제목이 상자를 넘는다 — 실측 2026-09-20
+                #      `1.design_rnd`: 27자 제목이 77.5pt 로 들어가 폭 318.9mm 상자를
+                #      561mm 로 넘겼다. PowerPoint 는 좌우로 잘려 나가고 LibreOffice 는
+                #      3줄로 접혀 가로선·부제를 덮었다. 어느 쪽이든 표지가 깨진다.
+                #   ⚠️ `word_wrap=False` 는 넘침을 **감추지 못한다** — 줄바꿈만 막을 뿐이다.
+                #   ⚠️ 근본 원인은 `cover_geometry.fs` 가 **다른 덱에서 잰 고정값**이라는
+                #      것이다(transform.yml `fs: 155`). HTML 은 `font_size_auto` 로 덱마다
+                #      줄이는데(이 덱 실측 80px) pptx 는 늘 155px 를 쓴다. 덱별 실측을
+                #      넣는 것이 정본이나, 그 전까지 **상자를 넘지 않는 것**은 지킨다 🚧
+                _txt = ttl.text_frame.text.strip()
+                _tw = text_width_px(_txt, cover_fs)
+                if _tw > spec["w"] > 0:
+                    #   0.95 는 `text_width_px` 의 오차 보정이다 — 그 어림은 한글을 1em 으로
+                    #   보지만 Gmarket Sans 는 그보다 좁아 꽉 맞추면 뷰어에서 한 글자가
+                    #   넘친다(실측 2026-09-20: 여유 없이 맞추니 LibreOffice 가 2줄로 접었다).
+                    #   이 여유를 두면 이 덱에서 80px — HTML 이 스스로 줄인 크기와 같아진다
+                    #   0.97 은 어림의 잔여 오차 여유다 — 넘치는 쪽보다 조금 작은 쪽이 낫다
+                    cover_fs = cover_fs * spec["w"] / _tw * 0.97
                 for p_ in ttl.text_frame.paragraphs:
                     p_.alignment = ALIGN.get(spec.get("align", "center"))
                     for r_ in p_.runs:
-                        r_.font.size = Pt(round(spec["fs"] * px2emu / 12700, 1))
+                        r_.font.size = Pt(round(cover_fs * px2emu / 12700, 1))
                         r_.font.bold = bool(FONT.get("title_bold"))
                 #   ⚠️ 자동 맞춤을 끈다 — 상자 높이가 글자 높이와 같아(HTML 실측) 뷰어가
                 #      `normAutofit` 을 다시 계산하면 제목이 줄어든다(LibreOffice 즉시·
                 #      PowerPoint 는 편집 시). 크기는 우리가 실측으로 정한 값이다
                 ttl.text_frame.auto_size = MSO_AUTO_SIZE.NONE
                 ttl.text_frame.word_wrap = False
-            #   부제 placeholder 는 pandoc 이 비워 둔 채 남긴다 — 우리 상자와 겹치므로 없앤다
+            #   부제 placeholder 를 없앤다 — 아래에서 **HTML 이 재어 준 자리**에 우리가
+            #   다시 그리므로 두면 같은 글자가 두 번 나온다.
+            #   ⚠️ 예전에는 «비어 있을 때만» 지웠다. 그 조건은 frontmatter 에 `subtitle:`
+            #      이 없어 pandoc 이 placeholder 를 비워 두는 덱에서만 맞는다 — 있는 덱은
+            #      placeholder 가 차 있어 살아남고, 우리 상자와 **둘 다** 보인다
+            #      (실측 2026-09-20 `1.design_rnd` 표지: 「대금지오웰 ReBuild 아카데미」 2회).
+            _has_own_sub = bool((COVER.get("subtitle") or {}) and cover.get("subtitle"))
             for sh in list(slide.shapes):
-                if (sh.has_text_frame and sh.name.startswith("Subtitle")
-                        and not sh.text_frame.text.strip()):
+                if not (sh.has_text_frame and sh.name.startswith("Subtitle")):
+                    continue
+                if _has_own_sub or not sh.text_frame.text.strip():
                     sh._element.getparent().remove(sh._element)
             #   표지 제목 밑줄 — 글자 폭만큼, 제목 상자 맨 아래
             if spec and ttl is not None and ttl.text_frame.text.strip():
-                tw = min(spec["w"], text_width_px(ttl.text_frame.text.strip(), spec["fs"]))
+                tw = min(spec["w"], text_width_px(ttl.text_frame.text.strip(), cover_fs))
                 add_rule(slide.shapes, hr,
                          int((spec["l"] + (spec["w"] - tw) / 2) * px2emu),
                          int((spec["t"] + spec["h"] - G["rule_h"]) * px2emu),
@@ -1327,6 +1520,11 @@ def main():
             if add_text(slide.shapes, COVER.get("license"), cover["license"], px2emu):
                 log["cover"] += 1
 
+        #   ⚠️ **맨 마지막에 한다** (Issue404). 위에서 본문 placeholder 를 마지막으로
+        #      손대는 경로(relayout_caption·표·2분할)가 모두 지난 뒤여야 최종 기하다
+        if push_laneb_below_body(slide, int(4.0 * 36000)):
+            log["laneb_push"] = log.get("laneb_push", 0) + 1
+
     prs.save(a.pptx)
     #   ⚠️ **제목 서체를 여기서 다시 잡는다.** ③-c `retheme.py --font-only` 가
     #      theme.yml 의 서체(본문)로 pptx 전체를 덮어, layout 모드에서 고친
@@ -1334,6 +1532,11 @@ def main():
     #      최종 pptx 는 Nanum Gothic Coding). ornament 는 retheme 뒤 단계다.
     if FONT.get("title"):
         set_major_font(a.pptx, FONT["title"], log, bold=bool(FONT.get("title_bold")))
+    if log.get("laneb_push"):
+        #   lane B 도형이 본문을 덮고 있던 장 수다 — 0 이 아니면 lane B 의 기하 추정과
+        #   여기서 확정한 본문이 갈렸다는 뜻이라, 숨기지 않고 보고한다
+        print("  lane B 겹침 보정 — %d장 (본문 아래로 내림)" % log["laneb_push"],
+              file=sys.stderr)
     print("  lane T 장식 — 가로선·밑줄 %d · 표지 %d · 머리말 %d · 카드 %d · 코드 %d · 파이 %d · 표 %d · 2분할 %d · 캡션→alt %d (장 %d)%s"
           % (log["rule"], log["cover"], log["head"], log["card"], log.get("code", 0),
              log.get("pie", 0), log.get("table", 0), log.get("split", 0), log.get("caption_alt", 0),

@@ -644,7 +644,9 @@ def convert(pptx_path, outdir, name):
             #   원고 순서는 `# H1` · 디렉티브 · `::: part` · `## H2` 다 (Issue389)
             out += ["::: part", sig["_part"], ":::", ""]
         if title:
-            out.append("## %s" % title)
+            #   정방향이 장 제목을 H2 로 올렸으면(Issue403) 그 원래 깊이로 되돌린다.
+            #   신호가 없으면 H2 다 — 승격이 없었다는 뜻이다
+            out.append("%s %s" % ("#" * int(sig.get("hlvl", 2) or 2), title))
         out += dirs
         out.append("")
         for item in body:

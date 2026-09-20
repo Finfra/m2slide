@@ -115,6 +115,9 @@ FENCE = re.compile(r"^[ \t]*```")
 HR = re.compile(r"^[ \t]*-{3,}[ \t]*$")
 H1 = re.compile(r"^#[ \t]+(.+?)[ \t]*$")
 H2 = re.compile(r"^##[ \t]+(.+?)[ \t]*$")
+#   블록의 **최상위 헤딩** — 레벨을 가리지 않는다 (Issue403). m2slide 의 의미는
+#   «한 블록 = 한 장 · 최상위 헤딩 = 그 장의 제목» 이라 H3 도 장 제목이다
+TOP_HEAD = re.compile(r"^(#{2,6})[ \t]+(.+?)[ \t]*$")
 LAYOUT_LINE = re.compile(r"^[ \t]*#_?[a-z][a-z0-9-]*[ \t]*$")
 #   `::: part` — 챕터 진입 블록의 "Chapter 1." 라벨. **제목보다 앞에 오는 본문**이라
 #   그대로 두면 pandoc 이 제목 없는 내용으로 보고 **직전 장으로 흘린다**
@@ -474,6 +477,48 @@ def drop_auto_toc(blocks, stat):
     return out
 
 
+# ── ⑧-c 장 제목을 pandoc 의 slide level 로 올린다 (Issue403)
+#
+#   pandoc 은 `--slide-level=2` 로 돈다. 그래서 `### H3` 로 시작하는 장은
+#   **Title placeholder 가 빈 채로** 나가고, 제목 글자는 본문 첫 문단으로 흘러들어
+#   강조색 굵은 줄이 된다. HTML 은 H3 도 슬라이드 제목(`class="title"`)으로
+#   렌더하므로 같은 원고의 두 산출물이 갈린다.
+#
+#   실측 1.design_rnd: 헤딩 분포 `# 6 · ## 63 · ### 398` — 장 제목의 86% 가 H3 라
+#   덱 전체가 제목을 잃었다. aTest 는 `## 37 · ### 0` 이라 드러나지 않았다.
+#
+#   ⚠️ `--slide-level=3` 으로 바꾸는 우회는 쓰지 않는다 — 이 덱처럼 H2 진입 장과
+#      H3 장이 **공존**하면 반드시 한쪽이 깨진다. 고칠 것은 레벨 하나가 아니라
+#      «최상위 헤딩이 곧 장 제목» 이라는 의미를 pandoc 에 전달하는 일이다.
+#
+#   ⚠️ 이 단계는 `drop_auto_toc`·`normalize_chapter` **뒤**에 둔다. 그 둘은 부모·자식
+#      판정에 레벨을 쓰므로 먼저 올리면 판정이 뒤집힌다(Issue401 이 지킨 장이 흔들린다).
+def promote_headings(blocks, stat):
+    """블록의 최상위 헤딩이 H2 가 되도록 그 블록의 헤딩을 통째로 올린다."""
+    out = []
+    for b in blocks:
+        L = top_heading_level(b)
+        if L is None or L <= 2:
+            out.append(b)
+            continue
+        shift = L - 2
+        lines = b.split("\n")
+        in_fence = False
+        for i, ln in enumerate(lines):
+            if FENCE.match(ln):
+                in_fence = not in_fence
+                continue
+            if in_fence:
+                continue
+            #   `#layout-*`·`#id-*` 는 `#` 뒤에 공백이 없어 여기 걸리지 않는다
+            m = re.match(r"^(#{1,6})([ \t]+\S.*)$", ln)
+            if m:
+                lines[i] = "#" * max(len(m.group(1)) - shift, 1) + m.group(2)
+        stat["head_promoted"] += 1
+        out.append("\n".join(lines))
+    return out
+
+
 def normalize_chapter(blocks, chapter_title, stat, cards_ph=True, toc_ph=True,
                       lane_s=None, lane_s_seen=None, src_label=""):
     """⑧ 챕터 진입부를 **H1 단독 + 챕터 TOC** 두 장으로 정규화한다.
@@ -786,11 +831,17 @@ def scan_signals(text, src_label, seen, out):
     """
     for blk in split_slides(text):
         lines = blk.split("\n")
-        title = None
-        for ln in lines:
-            m = H2.match(ln)
+        title, title_ln, hlvl = None, None, 2
+        #   ⚠️ 장 식별을 **H2 로 좁히지 않는다** (Issue403). 이 자리가 `H2.match`
+        #      였을 때, 제목이 `### H3` 인 덱은 장을 하나도 식별하지 못해 신호가
+        #      통째로 비었다(실측 1.design_rnd: 398장 중 2장만 기입). 최상위 헤딩이
+        #      곧 그 장의 제목이라는 m2slide 의 의미를 그대로 쓴다
+        for i, ln in enumerate(lines):
+            m = TOP_HEAD.match(ln)
             if m:
-                title = strip_inline(m.group(1))
+                hlvl = len(m.group(1))
+                title = strip_inline(m.group(2))
+                title_ln = i
                 break
         if title is None:
             continue
@@ -798,9 +849,15 @@ def scan_signals(text, src_label, seen, out):
         seen[title] = ordinal + 1
 
         sig = {}
+        if hlvl != 2:
+            #   승격 전의 **원래 깊이**를 적는다 — 역변환이 `### ` 를 되돌리는 근거다
+            sig["hlvl"] = hlvl
         in_fence, lang = False, None
         bullet_i = 0
-        for ln in lines:
+        for i, ln in enumerate(lines):
+            if i == title_ln:
+                #   제목 줄은 `head` 로 세지 않는다 — 그것은 소제목이 아니라 장 제목이다
+                continue
             mf = re.match(r"^[ \t]*```([\w-]*)", ln)
             if mf and not in_fence:
                 in_fence, lang = True, mf.group(1) or ""
@@ -917,6 +974,8 @@ def clean(text, srcdir, proj, stat, chapter_title=None,
         blocks = drop_auto_toc(blocks, stat)
     blocks = normalize_chapter(blocks, chapter_title, stat, cards_ph, toc_ph,
                                lane_s, lane_s_seen, src_label)
+    #   ⑧-c 장 제목을 pandoc 의 slide level 로 — 부모·자식 판정이 끝난 뒤다
+    blocks = promote_headings(blocks, stat)
     blocks = [defer_heavy(b, stat) for b in blocks]
 
     # ⑫ lane B 표시 — **원고를 바꾸지 않고** 사이드카에만 적는다
@@ -1063,7 +1122,7 @@ def main():
                            "img_abs", "img_proj", "img_missing",
                            "chapter", "chapter_dropped", "agenda", "defer", "fence_flat", "fence_drop",
                            "laneb", "laneb_defer", "math", "auto_toc_dropped",
-                           "auto_toc_kept", "chapter_entry_kept")}
+                           "auto_toc_kept", "chapter_entry_kept", "head_promoted")}
     made = []
     #   제목 순번은 **덱 전체** 기준이다 — 병합은 pptx 한 벌에서 장을 찾으므로,
     #   파일마다 0 부터 세면 동명 제목이 두 원고에 있을 때 서로를 가리킨다
@@ -1186,6 +1245,10 @@ def main():
         if stat["auto_toc_dropped"]:
             print("  Cards Page 생략 — 자식 헤딩을 가진 진입 장 %d개 (HTML 과 같은 판정)"
                   % stat["auto_toc_dropped"], file=sys.stderr)
+        if stat["head_promoted"]:
+            #   제목이 H3 인 덱은 이 수가 0 이면 그 장들이 제목을 잃은 것이다 (Issue403)
+            print("  장 제목 승격 — 최상위 헤딩 → H2 %d장 (pandoc slide level 정합)"
+                  % stat["head_promoted"], file=sys.stderr)
         if stat["auto_toc_kept"]:
             #   「지웠다」만 세면 지키기로 한 장이 몇인지 보이지 않는다 — Issue401 의
             #   손실은 이 수가 0 으로 보이지도 않던 자리에서 났다

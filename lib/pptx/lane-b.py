@@ -60,6 +60,9 @@ IGPATH_DIR = os.path.join(SKILLS, "ig-maker", "scripts")
 
 EMU_MM = 36000.0
 NS_R = "{http://schemas.openxmlformats.org/officeDocument/2006/relationships}"
+NS_P = "http://schemas.openxmlformats.org/presentationml/2006/main"
+# lane T 가 본문 아래로 밀 때 이 도형을 식별하는 표식 (Issue404)
+LANEB_TAG = "m2slide:laneb"
 # `spTree` 자신의 속성 — 대상 장에 이미 있으므로 옮기면 중복돼 스키마 위반이 된다
 SKIP_TAGS = ("nvGrpSpPr", "grpSpPr")
 
@@ -191,13 +194,18 @@ def build_page(t, cw_mm, pt, avail):
     if kind in ("cards", "process"):
         n = max(len(items), 1)
         inner = max((cw_mm - 3.5 * (n - 1)) / n - 2.4, 10.0)
-        rows = 0
+        #   ⚠️ **가장 긴 카드에 맞춘다** (Issue410). 평균으로 잡으면 글이 많은 카드가
+        #      상자를 넘쳐 **글자가 카드 밖으로 흘러나간다**(실측 2026-09-20
+        #      `1.design_rnd` p7: 카드 4개 중 둘이 상자 아래로 2줄씩 새어 나갔다).
+        #      카드는 같은 높이로 나란히 서므로 최댓값이 곧 그 줄의 높이다.
+        per = []
         for it in items:
-            rows += wrapped(it["title"], inner, pt)
+            r = wrapped(it["title"], inner, pt)
             d = join_subs(it["subs"])
             if d:
-                rows += wrapped(d, inner, pt)
-        rows = max(rows / n, 2)                       # 카드 하나가 감당할 줄 수
+                r += wrapped(d, inner, pt)
+            per.append(r)
+        rows = max(max(per) if per else 2, 2)         # 카드 하나가 감당할 줄 수
         h = _fill(rows * line_mm(pt) + 8.0, avail)
         data = []
         for i, it in enumerate(items, 1):
@@ -286,6 +294,34 @@ def has_rel(el):
     return False
 
 
+def anchor_to(src_slide, y0):
+    """렌더된 한 장의 도형 전체를 **y0 에서 시작하도록** 옮긴다 (Issue404).
+
+    `info-build.py` 에 `--y0` 를 넘기지만 렌더러가 그 값대로 놓지 않는다 — 실측
+    2026-09-20 `1.design_rnd` p6: 기대 99.1mm 인데 도형은 6.0mm 기준으로 그려져
+    **본문 불릿 위에 50mm 겹쳤다**. `merge_shapes` 는 좌표를 그대로 옮기므로
+    겹침이 그대로 산출물로 간다.
+
+    ⚠️ 렌더러를 고치지 않고 여기서 맞추는 이유 — `info-build.py` 는 글로벌 SCAR 라
+       이 저장소에서 즉흥 수정하지 않는다(global-scar-change-rules). 그리고 이 자리는
+       **어느 렌더러를 쓰든** 「본문 아래에서 시작한다」를 보장해야 하는 자리다.
+
+    돌려주는 값은 옮긴 거리(mm)다 — 0 이 아니면 렌더러가 y0 를 안 지킨 것이므로
+    호출부가 그 건수를 보고한다. 조용히 고치면 렌더러 쪽 결함이 영영 안 보인다.
+    """
+    from pptx.util import Mm
+    tops = [sh.top for sh in src_slide.shapes if sh.top is not None]
+    if not tops:
+        return 0.0
+    delta = int(Mm(y0)) - min(tops)
+    if abs(delta) < int(Mm(0.5)):
+        return 0.0
+    for sh in src_slide.shapes:
+        if sh.top is not None:
+            sh.top = sh.top + delta
+    return delta / Mm(1)
+
+
 def merge_shapes(src_slide, dst_slide):
     """렌더된 한 장의 도형을 대상 장으로 옮긴다. 옮긴 개수를 돌려준다."""
     tree = dst_slide.shapes._spTree
@@ -296,6 +332,12 @@ def merge_shapes(src_slide, dst_slide):
         new_el = copy.deepcopy(el)
         if has_rel(new_el):
             return -1
+        #   ⚠️ **표식을 남긴다** (Issue404). lane T 가 뒤에서 본문 placeholder 를
+        #      최종 확정하는데, 그때 이 도형이 어느 것인지 알아야 본문 아래로 밀 수 있다.
+        #      이름으로는 구분되지 않는다 — lane T 자신도 Rectangle 을 여럿 만든다
+        cn = new_el.find(".//{%s}cNvPr" % NS_P)
+        if cn is not None:
+            cn.set("descr", LANEB_TAG)
         tree.append(new_el)                 # nvGrpSpPr·grpSpPr 뒤 = 스키마상 올바른 자리
         n += 1
     return n
@@ -365,7 +407,7 @@ def main():
     for i, s in enumerate(slides):
         index.setdefault(slide_title(s) or "", []).append(i)
 
-    done, skipped = 0, []
+    done, anchored, skipped = 0, 0, []
     tmpdir = tempfile.mkdtemp(prefix="m2slide_laneb_")
     for ti, t in enumerate(targets, 1):
         title, label = norm(t["title"]), "%s / %s" % (t.get("src", "?"), t["title"][:28])
@@ -437,7 +479,11 @@ def main():
             skipped.append("%s — 렌더 실패: %s"
                            % (label, (r.stdout + r.stderr).strip().splitlines()[-1:] or ["?"]))
             continue
-        moved = merge_shapes(list(Presentation(stem + ".pptx").slides)[0], slide)
+        src_slide = list(Presentation(stem + ".pptx").slides)[0]
+        #   렌더러가 y0 를 지키지 않으면 여기서 맞춘다 — 본문 위에 겹치지 않게 (Issue404)
+        if abs(anchor_to(src_slide, y0)) > 0:
+            anchored += 1
+        moved = merge_shapes(src_slide, slide)
         if moved < 0:
             skipped.append("%s — 도형에 관계 참조가 있어 병합하지 않았다" % label)
             continue
@@ -447,6 +493,9 @@ def main():
     if not a.quiet:
         print("  lane B 도형 렌더 — %d/%d장 (%s)"
               % (done, len(targets), ", ".join(sorted({t["kind"] for t in targets}))))
+        if anchored:
+            #   렌더러가 --y0 를 안 지킨 건수다. 조용히 고치면 그쪽 결함이 안 보인다
+            print("  lane B y0 보정 — %d장 (렌더러가 --y0 를 지키지 않았다)" % anchored)
     for s in skipped:
         warn(s)
     return 0
