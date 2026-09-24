@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 414
+* Issue HWM: 415
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -36,6 +36,76 @@
 
 
 # 🚧 진행중
+
+## Issue415: 아이폰에서 **탭(클릭)만으로** 덱이 동작하는지 ego-browser 로 점검·수정하고 aTest → aTest-all 2단계로 안정화 (등록: 2026-09-23)
+* 목적: 키보드 없는 아이폰에서 m2slide 덱을 탭만으로 넘기고 쓸 수 있어야 한다(사용자 전제: **터치 = 클릭**). 동시에 prj3 외부*핀봇(외부자문·외부컨설턴트)이 팀장핀봇 배분 경로로 실제 동작하는지 실증한다(요청: 사용자 → 나래, prj3#Issue678 후속)
+* 🎯 **현재 배분 지시 (2026-09-24, 나래) — 이것만 한다**:
+    - ① QA 배분 `fbot-qa-issue415` 를 `close --evidence`(증적: `_doc_work/report/iphone-tap-nav_qa-stage1_report.md`)
+    - ② **A1 만** 외부컨설턴트핀봇(`contractor`, 도구 `codex-worker`)에 발주 — 스와이프 IIFE(`lib/html-builder.js` `SWIPE_MIN_PX` 부근)가 **스크롤 뷰(`.reveal-scroll`)에서는 세로 스와이프를 키로 바꾸지 않게**. 가로 스와이프·페이지 뷰(PC) 세로 스와이프는 유지. 뷰 모드는 회전·리사이즈로 바뀌므로 초기화 시점 상수로 굳히지 말 것. 요청서 초안 `_doc_work/plan/iphone-tap-nav_patch-PA.md` 의 A1 절 사용 (A2·표지 전면 탭은 이번 범위 밖 — 사용자 결정 2026-09-24)
+    - ③ 받은 patch 를 적용 → 전 프로젝트 재렌더(`for d in Projects/*/slide; do ./m2slide.sh "Projects/$(basename $(dirname $d))"; done`)
+    - ④ 검증은 **ego 모바일 자동 테스트** — `z_test/ego-mobile/run.sh aTest aTest-all` (1단계 → 2단계). 완료 조건 = **M6 PASS** + 나머지 항목 무회귀(현재 M1~M5·L1 PASS, M6 만 FAIL — 기준 리포트 `_doc_work/report/ego-mobile_20260924_133335.md`)
+    - 🔴 **1차 시도 실패 원인 (2026-09-24 13:42, 나래 확인)** — 팀장이 codex-worker 를 **백그라운드 Bash** 로 발주하고 턴을 끝내자 `claude -p` 프로세스가 종료되며 codex 도 함께 죽었다(시작 70초 만, worktree `/tmp/codex-worker.20260924_134109.60018` 잔존). **백그라운드 Agent 는 `-p` 세션을 붙잡지만 백그라운드 Bash 는 못 붙잡는다.** 재시도 방법: 외부컨설턴트를 **Agent** 로 띄우고, 그 Agent 안에서 codex-worker 를 **포그라운드**(Bash timeout 600000)로 실행. 10분을 넘기면 `nohup … &` 로 분리 실행 후 `until [ -f <patch> ]` 폴링을 10분 단위로 반복. contractor 배분 `fbotdisp-1790224856-27fb3a77` 은 열린 채 유지 — 새 배분 없이 이것으로 재시도
+    - ✅ **배분 지시 ①~④ 완료 (2026-09-24 13:48, 팀장 `fbot-lead-m2slide`, commit: `0a4369e`)**
+        - ① QA 배분은 이미 원장에서 종결돼 있었다(`close --dry-run` → 미종결 아님)
+        - ② 외부컨설턴트를 **Agent** 로 띄우고 그 안에서 codex-worker 를 nohup + 포그라운드 폴링 → rc0·130초. 납품 [codex-work_20260924_134413.patch](_doc_work/report/codex-work_20260924_134413.patch): 세로 분기에 `if (Reveal.isScrollView()) return;` 1줄(touchend 시점 판정, Reveal 5.0.4 공개 API)
+        - ③ `git apply --check` 통과 → 적용 → Projects 29개 재렌더 전부 OK
+        - ④ [ego-mobile_20260924_134709.md](_doc_work/report/ego-mobile_20260924_134709.md) — aTest·aTest-all **M6 PASS**(위·아래 쓸기 키 합성 0), M1~M5·L1 무회귀
+        - 관측(비차단): aTest L1 은 표지에서 가로 스와이프 시 `n/a`(agenda)로 넘어간다 — 기준 133659 와 동일, 133335 에서는 `→ ?` 로 1회 FAIL. 흔들리는 항목이라 QA 재측정 대상
+        - 남은 완료 조건(이 배분 밖): PC 클릭·키보드 매트릭스 재검증 · 결과 보고서 · 외부자문핀봇 배분 기록
+    - ✅ 간격·htmlArt 두 수정은 팀장이 선커밋함(`cf74c53`) — codex base 에 포함됨
+    - ⚠️ 간격(`scrollLayout: 'compact'`)·htmlArt 높이(`base.css`) 수정은 **이미 적용됨(미커밋)** — patch 가 이 둘을 되돌리지 않게. codex 는 base 커밋만 보므로 위임 전 이 두 파일(`lib/html-builder.js`·`lib/css/base.css`)을 먼저 커밋하거나 `--base` 를 맞출 것
+* 상세:
+    - ① ego-browser 아이폰 에뮬(ex: 390×844, `Emulation.setDeviceMetricsOverride` `mobile:true`)에서 **탭·클릭만** 으로 다음/이전·챕터 경계·agenda·오버뷰 등 내비게이션 전수 점검 → 결함 목록. 키 입력 사용 금지
+    - ② 결함 수정(업데이트)
+    - ③ 테스트 2단계 — 1단계 `aTest` → 통과 시 2단계 `aTest-all` (회귀 + 아이폰 재점검)
+    - ④ 산출: 기획안(plan/task) · 안정화 진행 · 결과 보고서(`_doc_work/report/`)
+    - 선례: 원형 `m2-nav-arrows`·`setupMobileNavigation` 제거 이력(«마우스/터치 클릭으로 다음/이전 페이지 이동» 이슈) · 설계 [key_navigation.md](_doc_arch/key_navigation.md)
+* 인사계획 (나래 검토 2026-09-23 — 팀장핀봇 `fbot-lead-m2slide` 가 배분):
+
+| 단계          | 담당 (자리)                              | 할 일                                         | 도구                  |
+| :------------ | :--------------------------------------- | :-------------------------------------------- | :-------------------- |
+| 1 기획안      | 기획핀봇 (`42/dev-planner-1`)            | plan·task — 탭 전용 점검 매트릭스·완료 조건   | nPTiR                 |
+| 1' 설계 대조  | 외부자문핀봇 (`42/ext-advisor-1`)        | 내비게이션 설계 문서 ↔ 구현 drift (터치 관점) | `codex-arch-reviewer` |
+| 2 아이폰 점검 | QA핀봇 (`42/rev-qa-1`)                   | ① 실측 → 결함 목록                            | ego-browser           |
+| 3 수정        | 외부컨설턴트핀봇 (`42/ext-contractor-1`) | 결함별 patch 납품 → 팀장이 적용               | `codex-worker`        |
+| 4 안정화 검증 | QA핀봇 (`42/rev-qa-1`)                   | ③ 2단계 테스트 + 아이폰 재점검, 4축 판정      | 러너·ego-browser      |
+| 5 보고        | 팀장핀봇 → 나래                          | 결과 보고서                                   | —                     |
+
+* 인사계획 검토 결과 (반영 완료·주의):
+    - ✅ 4개 role 배분 dry-run 전부 허가 · 예산(배분 26·채용 13 잔여) 충분
+    - ✅ 외부*핀봇 자리 부재 → prj3 `data/fbot/org/42.yml` 에 `ext` 외부협력부서 2자리 추가
+    - ⚠️ **codex 샌드박스에서 ego-browser 불가**(실측: `cannot connect to the ego_cli bootstrap`) → 아이폰 점검은 QA핀봇, 외부컨설턴트핀봇은 **코드 수정만**
+    - ⚠️ 외부자문 도구는 `_doc_arch` 전용 → 계획서가 아니라 **설계 문서** 대조로 한정
+    - ⚠️ codex 는 **base 커밋만** 본다 — 작업트리에 미커밋 변경이 많다(`Projects/*/slide/*.html` 등). 위임 전 관련 변경 커밋 여부 확인
+    - ⚠️ `aTest` 픽스처가 **git 미추적**(이슈후보 29) → codex worktree 에는 픽스처가 없다. patch 검증은 QA 가 적용 후 수행
+    - ⚠️ 팀장 동시 배분 상한 **3** → 단계를 직렬로 돌린다
+* 🔴 사용자 실기기 보고 (2026-09-23, 나래 경유) — **최우선 결함**:
+    - 증상: 모바일로 `aTest` 를 열면 처음엔 **스크롤로 잘 보이다가**, 갑자기 **리프레쉬되면서 스크롤이 안 된다**
+    - ✅ **원인 확정 (QA 2026-09-23, 4/4 결정론 재현)** — 리프레쉬가 아니라 **이동**이다: Issue51 스와이프 IIFE 가 스크롤 뷰의 **세로 드래그(=스크롤)를 스와이프로 오인** → `ArrowUp` 합성 → `gotoTocOrAgenda()` → `agenda.html` 이동 → agenda 는 `scrollable:false`. `{passive:true}` 라 스크롤은 막지 않고 **손을 떼는 순간** 키가 나가서 «되다가 갑자기» 로 보였다. 증거: [iphone-tap-nav_qa-stage1_report.md](_doc_work/report/iphone-tap-nav_qa-stage1_report.md) §실기기 결함 재현
+    - 처방(P-A): 스와이프 판정에 **뷰 모드**를 넣어 스크롤 뷰에서만 세로 스와이프 dispatch 를 끈다. 가로 스와이프·페이지 뷰(PC·태블릿) 세로 스와이프는 유지 — 제거가 1순위가 아니다
+    - ~~나래 가설~~ **반증**(이력 보존): H1 resize 핸들러 3곳 덮어쓰기 — 높이 844→750→844·회전 2사이클 모두 스크롤 유지 / H2 iOS 실제 재로드 — `__sentinel` 생존·`navigation.type="navigate"`. 전제(`scrollActivationWidth` 435 → 스크롤 뷰 자동 진입)는 런타임에서도 참이었으나 결론이 틀렸다
+    - 계측 함정 2건(다음 계측자 필독): CDP 제스처는 1100~2254ms 라 `SWIPE_MAX_MS`(700) 에 걸려 «오인 없음» 으로 오진한다 → 페이지 내부 `TouchEvent` 합성(103ms) / `keydown` 프로브는 덱의 `stopImmediatePropagation()` 에 차단된다 → `window` 캡처
+* 🧪 사용자 수동 테스트 (2026-09-23, ego 스페이스 #7 — 고정 폭 iframe 틀 [모바일](../../../../../.claude/_doc_work/htm/m2slide-mobile-bench.html)·[PC](../../../../../.claude/_doc_work/htm/m2slide-pc-bench.html)): **PC 는 정상 · 키보드 없는 모바일이 문제** → P-A 최우선 확정. ⚠️ 모바일 틀은 터치 이벤트가 없어 A1(스와이프 오인)은 실기기 또는 DevTools 기기 모드에서만 재현된다
+* 🔴 사용자 실기기 보고 2 (2026-09-23) — **스크롤 뷰에서 슬라이드 간격이 너무 크다**(아이폰, htmlArt 차트 뒤 빈 공간이 화면 대부분):
+    - 원인(확정): reveal `scrollLayout` 기본값 `"full"` — 스크롤 뷰에서 한 장의 높이를 **뷰포트 높이**로 잡는다. m2slide 는 이 옵션을 설정하지 않는다(`lib/*.js` 0건). 390 폭에서 3:2 슬라이드 실높이는 260 인데 844 를 차지해 584px 가 빈칸
+    - 실측(ego 런타임 `Reveal.configure({scrollLayout:"compact"})`, 소스 무수정): 장당 높이 **844 → 260** · 8장 스크롤 길이 **7606 → 2934(−61%)**. PC 는 폭 435 이상이라 스크롤 뷰 미사용 → 영향 없음
+    - 처방 후보(P-A 편입): `Reveal.initialize` 에 `scrollLayout: 'compact'` — 덱·표지·agenda 초기화 전부 대조. `scrollSnap` 과의 상호작용은 QA 재측정 항목
+* ✅ 적용 완료 (2026-09-24, 사용자 직접 지시 — 나래 인박스 경로와 별개, 미커밋):
+    - ① 세로 간격: `lib/html-builder.js` 덱·표지 `Reveal.initialize` 에 `scrollLayout: 'compact'` → 장당 844 → 260
+    - ② 🔴 사용자 실기기 보고 3 — **모바일에서 htmlArt process·pie 본문이 비었다**. 원인: reveal `reveal.css` 의 `.reveal-viewport.reveal-scroll .scroll-page section { display:block !important }` 가 `base.css` 의 layout section flex 를 덮어써 `-body` 가 늘지 못하고 `flex:1 1 0` 인 htmlArt 가 높이 0. 처방: `lib/css/base.css` 에 `.reveal-viewport.reveal-scroll .scroll-page section[class*="layout-"] { display:flex !important }` (**base.css 가드 — 사용자 컨펌 2026-09-24**)
+    - 검증(Playwright **WebKit** iPhone 14, tailnet 경로): 모바일 htmlArt 높이 aTest process·pie **0 → 193** · aTest-all numbered 180 / PC 1440×900 process CSS 938.92px·화면 646px **수정 전과 동일** / Projects 29개 재렌더 전부 OK
+* ✅ 사용자 결정 Q1~Q3 (2026-09-23, 나래 경유 — [plan](_doc_work/plan/iphone-tap-nav_plan.md) 열린 질문 종결):
+    - Q1 본문 여백 탭 = 다음 슬라이드 → **도입 안 함**. A1 수정 후 스크롤로 충분한지 재측정
+    - Q2 표지 탭 대상 → **표지 전면 탭**(버튼 은폐 유지, 챕터모드 표지와 같은 방식). 대상 파일이 CSS 가 아니라 `html-builder.js` — P-C 가 아니라 P-A 계열로 재배치
+    - Q3 오버뷰 탭 대응물 → **불필요**. T14 는 «미설계» 로 [key_navigation.md](_doc_arch/key_navigation.md) 에 기록, A3 제외
+    - 발주 순서(전임 팀장 제안 채택): **P-A(A1·A2·Q2 표지 전면 탭) 먼저** → QA 재측정 «스크롤만으로 전 구간 도달?» → 가능하면 C1(스크롤 뷰 `.controls` 은폐)은 reveal 의도된 설계로 닫고 근거 기록, 불가하면 C1 발주. 요청서 초안: `_doc_work/plan/iphone-tap-nav_patch-{PA,PC}.md`
+    - ⚠️ 전임 팀장 몸체(세션 `75901e41`)는 12:57 종료 — prj3#Issue679 수정 후 **새로 배분·스폰**해 이어받는다. QA 배분 `close --evidence` 도 그때
+* 🔴 검토 범위 확장 — **모바일 + PC 둘 다** (사용자 지시 2026-09-23, 나래 경유):
+    - 모바일(아이폰 에뮬 390×844, 스크롤 뷰): 탭(클릭) 전용 — 기존 전제 유지
+    - PC(데스크톱 ex: 1440×900, 페이지 뷰): **클릭 + 키보드 매트릭스([key_navigation.md](_doc_arch/key_navigation.md)) 회귀**. 「키보드 없음」 전제는 모바일에만 적용
+    - ⚠️ 실기기 결함 수정이 resize 핸들러·스크롤 뷰를 건드리므로 **PC 회귀 위험이 가장 크다** — patch 마다 두 환경 모두 재검증. 결과 보고서는 모바일·PC 를 나란히 둔 표로
+* 구현 명세:
+    - 완료 조건: 아이폰 에뮬에서 탭만으로 전 내비게이션 통과 · **PC 에서 클릭·키보드 내비게이션 무회귀** · **위 실기기 결함(리프레쉬 후 스크롤 불가) 해소** · `aTest`·`aTest-all` 초록 · 결과 보고서 · 외부*핀봇 2종 각 1회 이상 배분·완료 기록(원장)
 
 # 📕 중요
 
