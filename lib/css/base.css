@@ -772,6 +772,14 @@ body {
   gap: 0;
 }
 
+/* Issue415: 좁은 화면(폭 435 미만)의 reveal 스크롤 뷰는 `.reveal-viewport.reveal-scroll .scroll-page section
+   { display:block !important }` 로 위 flex 를 덮어쓴다. 그러면 -body 가 남는 높이를 못 채워 flex:1 로
+   크기를 받는 htmlArt(process·pie 등)가 높이 0 이 된다(아이폰 실기기 보고, WebKit 실측 h=0).
+   스크롤 뷰에서만 발동하는 선택자라 PC 페이지 뷰는 무변경. 사용자 컨펌 2026-09-24 (base.css 가드) */
+.reveal-viewport.reveal-scroll .scroll-page section[class*="layout-"] {
+  display: flex !important;
+}
+
 .reveal section[class*="layout-"] > div[class$="-header"] {
   flex-shrink: 0;
   display: flex;
