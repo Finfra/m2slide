@@ -91,7 +91,7 @@ tools:
   # ⚠️ 전역 호출 대상 — m2slide 전용이 아니다. 글로벌 visual-gen 레지스트리(~/.claude/data/visual-gen/registry.yml)에
   #    scope: prj42 로 등재돼 m2slide 밖 세션도 /vg 로 고른다. 소유·수정은 prj42, 사용자는 전역.
   #    특히 svg_direct 는 Claude 가 한글을 native 로 쓰는 유일한 벡터 경로라 img-add(FLUX)의 한글 불가를 보완한다.
-  #    → 인자·산출 규약 변경 시 m2slide 밖 호출자를 함께 고려할 것 (prj8 crossfeed B, 2026-09-20)
+  #    → 인자·산출 규약 변경 시 m2slide 밖 호출자를 함께 고려할 것 (prj7 crossfeed B, 2026-09-20)
   - id: svg_direct
     type: vector_illustration
     handler: claude_svg_authoring    # agent(Claude)가 SVG 마크업 직접 저작 → img/ 저장
@@ -116,7 +116,7 @@ tools:
   # ⚠️ 전역 호출 대상 — m2slide 전용이 아니다. 글로벌 visual-gen 레지스트리(~/.claude/data/visual-gen/registry.yml)에
   #    scope: prj42 로 등재돼 m2slide 밖 세션도 /vg 로 고른다. 소유·수정은 prj42, 사용자는 전역.
   #    특히 svg_direct 는 Claude 가 한글을 native 로 쓰는 유일한 벡터 경로라 img-add(FLUX)의 한글 불가를 보완한다.
-  #    → 인자·산출 규약 변경 시 m2slide 밖 호출자를 함께 고려할 것 (prj8 crossfeed B, 2026-09-20)
+  #    → 인자·산출 규약 변경 시 m2slide 밖 호출자를 함께 고려할 것 (prj7 crossfeed B, 2026-09-20)
   - id: free_image
     type: photo
     handler: free-image              # .claude/skills/free-image (Openverse CC 검색·다운로드)

@@ -287,7 +287,7 @@ assets:
 | `mermaid-diagram` skill    | mermaid 문법 레퍼런스                      |
 | `ig-maker` subagent        | 인포그래픽 SVG 생성 (글로벌, 승인 게이트 뒤) |
 
-⚠️ **반대 방향도 있다 — `svg_direct`·`free_image` 는 전역에서 호출된다.** 둘 다 m2slide 소유(prj42)지만 글로벌 `visual-gen` 레지스트리에 `scope: prj42` 로 등재돼 m2slide 밖 세션이 `/vg` 로 고를 수 있다. 특히 `svg_direct`(handler `claude_svg_authoring`)는 Claude 가 **한글을 native 로 쓰는 유일한 벡터 생성 경로**라 `img-add`(FLUX)의 한글 불가를 보완한다. 정의는 [`data/media-creater/tools.yml`](../../data/media-creater/tools.yml) 이고, 규약을 바꾸면 **m2slide 밖 호출자도 깨진다** (prj8 crossfeed B, 2026-09-20)
+⚠️ **반대 방향도 있다 — `svg_direct`·`free_image` 는 전역에서 호출된다.** 둘 다 m2slide 소유(prj42)지만 글로벌 `visual-gen` 레지스트리에 `scope: prj42` 로 등재돼 m2slide 밖 세션이 `/vg` 로 고를 수 있다. 특히 `svg_direct`(handler `claude_svg_authoring`)는 Claude 가 **한글을 native 로 쓰는 유일한 벡터 생성 경로**라 `img-add`(FLUX)의 한글 불가를 보완한다. 정의는 [`data/media-creater/tools.yml`](../../data/media-creater/tools.yml) 이고, 규약을 바꾸면 **m2slide 밖 호출자도 깨진다** (prj7 crossfeed B, 2026-09-20)
 
 # 정책 변경 요청 처리
 

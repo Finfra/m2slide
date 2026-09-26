@@ -1,12 +1,12 @@
 ---
 name: Info
-description: fPmIntro 프로젝트 기획 메타 — fPM(prj7, 원본 prj1) 소개 PPT
+description: fPmIntro 프로젝트 기획 메타 — fPM(prj8, 원본 prj1) 소개 PPT
 date: 2026-06-30
 ---
 
 # 주제
 
-fPM(finfra Project Manager, prj7 / 원본 prj1 = `~/_git/___pm`) — Claude Code 기반 다중 프로젝트 관리·자동화 프레임워크를 Claude 사용자에게 소개하는 고품질 프레젠테이션.
+fPM(finfra Project Manager, prj8 / 원본 prj1 = `~/_git/___pm`) — Claude Code 기반 다중 프로젝트 관리·자동화 프레임워크를 Claude 사용자에게 소개하는 고품질 프레젠테이션.
 
 # 청중
 

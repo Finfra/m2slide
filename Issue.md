@@ -760,7 +760,7 @@
 * 목적: lane B/G/M/S/T 가 pptx 의 XML part·rel 을 **손으로 끼우는데**, 그 조립이 온전한지 재는 검사가 하나도 없다. 글로벌 [`check-assembly.py`](~/.claude/skills/ppt-check/scripts/check-assembly.py) 를 **배선만** 해서 그 축을 덮는다.
 * 카테고리: Build
 * 상세:
-    - 요청 출처: prj8 cg 위임 [`_doc_work/delegation_cg-crossfeed.md`](_doc_work/delegation_cg-crossfeed.md) A2. 대조표 정본은 prj8 `_doc_arch/ppt-parity-crossfeed.md`. **판정 = 채택**
+    - 요청 출처: prj7 cg 위임 [`_doc_work/delegation_cg-crossfeed.md`](_doc_work/delegation_cg-crossfeed.md) A2. 대조표 정본은 prj7 `_doc_arch/ppt-parity-crossfeed.md`. **판정 = 채택**
     - ⚠️ **요청서의 전제 일부는 사실과 다르다** — *"장 유실·순서"* 는 이미 덮여 있다: [`z_test/ig-ppt/3.parity.sh`](z_test/ig-ppt/3.parity.sh) ① slide-count(HTML 본문 장 + 구조 장 = pptx 장) · ③ title-parity(제목 문자열·순서) · ④ structure-slides. 실제로 빈 축은 **패키지 층**(zip 항목 중복·끊긴 rel·미선언 미디어 확장자)이고, parity 는 python-pptx **렌더 텍스트**로 판정하므로 그 층을 구조적으로 **볼 수 없다**
     - 이 축의 실사고가 이미 있었다 — lane G 의 `diagramDrawing` 관계를 슬라이드 rels 가 아닌 data 파트에 걸었을 때 LibreOffice 가 빈 그룹으로 들여왔다(실측 2026-09-11, [`CLAUDE.md`](CLAUDE.md) "lane G" 절). 당시 **어떤 검사도 잡지 못했고** 사람이 눈으로 찾았다
     - 실측(2026-09-20): 글로벌 `check-assembly.py` 를 기존 산출물에 **무개조로** 돌리니 그대로 동작한다. aTest-all(51장)·igTest(42장)·m2Slide_chapter_mode(34장) 전부 `FAIL 0 · SKIP 3 · 검사 8` rc0
@@ -769,10 +769,10 @@
     - 배선 위치 1순위는 `z_test/ig-ppt/` 전용 단언. **`build-pptx.sh` 내장은 2순위** — 내장 검증(`check-conform`·`check-xml-order`·`check-empty`)은 FAIL 시 빌드를 죽이므로, 현재 FAIL 0 인 축을 차단 지점에 바로 넣으면 오탐 1건이 빌드를 막는다
     - baseline 불요 5규칙만 켠다: `zip_entry_names_unique` · `dropped_slide_relationship_removed` · `reorder_key_is_stable_across_save` · `no_duplicate_or_missing_after_reorder` · `declared_extensions_cover_all_media`
     - `--baseline` 필요 3규칙은 Issue383 소관 — 여기서는 SKIP 으로 두되 **SKIP 건수를 보고**한다. 숨기면 *"통과"* 와 *"축이 사라짐"* 이 구분되지 않는다([`check-coverage.py`](lib/pptx/check-coverage.py) 와 같은 취지)
-    - ⚠️ **`lib/pptx/` 에 새 스크립트를 만들지 않는다.** 글로벌 SCAR 를 호출한다 — 복사하면 prj8 이 경고한 2원 갈라짐이 그대로 재현된다
+    - ⚠️ **`lib/pptx/` 에 새 스크립트를 만들지 않는다.** 글로벌 SCAR 를 호출한다 — 복사하면 prj7 이 경고한 2원 갈라짐이 그대로 재현된다
     - 글로벌 도구가 없는 머신에서는 **SKIP 하고 그 사실을 보고**한다 (조용한 통과 금지)
 * 결과 — 명세 1순위대로 **전용 러너 배선**. [8.assembly.sh](z_test/ig-ppt/8.assembly.sh) 신설:
-    - **판정은 글로벌 SCAR 가 한다** — 러너는 호출·집계·보고만 한다. `lib/pptx/` 에 복사하지 않았다(prj8 이 경고한 2원 갈라짐 회피). 요약 줄에서 FAIL·SKIP 건수를 얻고, **rc 와 FAIL 건수를 함께 본다** — 도구가 요약 형식을 바꿔도 놓치지 않는다
+    - **판정은 글로벌 SCAR 가 한다** — 러너는 호출·집계·보고만 한다. `lib/pptx/` 에 복사하지 않았다(prj7 이 경고한 2원 갈라짐 회피). 요약 줄에서 FAIL·SKIP 건수를 얻고, **rc 와 FAIL 건수를 함께 본다** — 도구가 요약 형식을 바꿔도 놓치지 않는다
     - **차단 지점이 아니다** — 명세가 `build-pptx.sh` 내장을 2순위로 둔 이유를 그대로 따랐다. 내장 검증은 FAIL 시 빌드를 죽이므로 현재 FAIL 0 인 축을 거기 넣으면 **오탐 1건이 배포를 막는다**
     - `--baseline` 3규칙은 Issue383 소관으로 SKIP 하되 **건수를 보고**한다. 글로벌 도구 부재 시에도 **SKIP + 경고 보고** — *"도구 부재는 무결성 통과가 아니다"* 를 출력에 박았다
     - 🔑 **통과만 확인하면 검사가 작동하는지 알 수 없어 고의 손상으로 재봤다** — `presentation.xml` 의 `sldId` 하나를 지운 손상본을 만들어 **FAIL 2 포착**(`dropped_slide_relationship_removed` 고아 part 1 · `no_duplicate_or_missing_after_reorder` 목록 41 ≠ part 42) · 러너 **rc1**. Issue339 의 `check-empty` 가 substring 필터 탓에 검사 전체가 무력화됐던 것을 그냥 통과로 읽었던 일이 있어 그 절차를 지켰다
@@ -802,18 +802,18 @@
 * ⚠️ **나열 선택자 누락이 이 이슈에서만 5곳**이었다 — `position:relative` · `::after` 브러시 · `display:flex` 본체 · 좌/우 자식·빈 값 숨김 · **§2 상단 브러시 숨김**. 새 layout 을 추가할 때 head-bar 를 쓰려면 이 다섯을 모두 확인해야 한다
 
 
-## Issue384: prj8 cg crossfeed 접수 — 주입 2건 판정 + svg-direct·free-image 전역 자산 명시 (등록: 2026-09-20, 해결: 2026-09-20, commit: `f789ae7, 100308d`) ✅
-* 목적: prj8 이 `ppt-maker`(prj3) ↔ m2slide 축을 대조해 보낸 주입 후보 2건을 실측으로 판정하고, m2slide 소유이면서 전역에서 호출되는 자산 2종을 문서에 명시한다.
+## Issue384: prj7 cg crossfeed 접수 — 주입 2건 판정 + svg-direct·free-image 전역 자산 명시 (등록: 2026-09-20, 해결: 2026-09-20, commit: `f789ae7, 100308d`) ✅
+* 목적: prj7 이 `ppt-maker`(prj3) ↔ m2slide 축을 대조해 보낸 주입 후보 2건을 실측으로 판정하고, m2slide 소유이면서 전역에서 호출되는 자산 2종을 문서에 명시한다.
 * 카테고리: Build
 * 상세:
-    - 요청서: [`_doc_work/delegation_cg-crossfeed.md`](_doc_work/delegation_cg-crossfeed.md) (prj8 cg, 2026.09.20). 경계는 *"변환기를 고치면 prj42, 언제 그 경로로 갈지 정하면 prj8"* — 발의는 prj8, **채택 판단은 prj42**
+    - 요청서: [`_doc_work/delegation_cg-crossfeed.md`](_doc_work/delegation_cg-crossfeed.md) (prj7 cg, 2026.09.20). 경계는 *"변환기를 고치면 prj42, 언제 그 경로로 갈지 정하면 prj7"* — 발의는 prj7, **채택 판단은 prj42**
     - A2(조립 무결성) → **채택**, Issue382 로 등록. A1(기준선 대비) → **보류**, Issue383 으로 등록
     - ⚠️ 핵심 발견: A1·A2 는 별개 기능이 아니라 **같은 글로벌 스크립트 하나**다. `--baseline` 은 `check-assembly.py` 의 플래그이므로 A2 를 배선하면 A1 은 구현 없이 따라온다. 따라서 남는 판단은 *"언제 쓰는가"* 뿐이다
     - B(전역 자산 명시) → **반영**. `svg_direct`·`free_image` 는 m2slide 소유지만 글로벌 `visual-gen` 레지스트리에 `scope: prj42` 로 등재돼 m2slide 밖 세션이 `/vg` 로 고른다. 3개 지점에 1줄씩 명시:
         - [`.claude/skills/free-image/SKILL.md`](.claude/skills/free-image/SKILL.md) 목적 절
         - [`data/media-creater/tools.yml`](data/media-creater/tools.yml) `svg_direct`·`free_image` 항목 위 주석
         - [`.claude/agents/media-creater.md`](.claude/agents/media-creater.md) 보조 도구 표 뒤
-    - 이관은 하지 않는다 — prj8 판정(ⓑ 연계만)에 동의. 판정 기준 *"누가 고치나"* 가 m2slide 본체와 같은 결론을 낸다
+    - 이관은 하지 않는다 — prj7 판정(ⓑ 연계만)에 동의. 판정 기준 *"누가 고치나"* 가 m2slide 본체와 같은 결론을 낸다
 * 검증:
     - `check-assembly.py` 3개 덱 실측 rc0 (Issue382 근거)
     - `data/media-creater/tools.yml` yaml 파싱 OK (tools 16개, `svg_direct`·`free_image` 보존)
