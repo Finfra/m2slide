@@ -18,7 +18,9 @@ date: 2026-07-03
 * **제거**(표에 있으나 폴더 없음): `# 비활성 프로젝트 (z_done)` 표로 행 이동 — 버전·설명 등 마지막 값 보존
 * **되살아남**(비활성 표에 있으나 폴더 재생성): 활성 표로 복귀, 메타 승계
 * **`Projects/.gitignore` 자동 생성 (Issue254)**: `Projects.md` **publishing 열이 `o`(affirmative: o·y·yes·✓ 등)인** 활성 폴더만 `!/<Name>/` 로 추적 허용. **`x`·빈값은 제외**(ignore). publishing 은 o/x yes-no 마커
-    - 열 순서: `분류` · `프로젝트` · `버전` · `설명` · `Manual Check` · `publishing` · `작업` (7열). `분류`(PR/lec/m2 등)는 사람 작성 열로 보존
+    - 열 순서: `분류` · `프로젝트` · `경로` · `버전` · `설명` · `Manual Check` · `publishing` · `작업` (8열, Issue416). 열은 **헤더 이름으로** 읽으므로 구 7열 표도 자동 이전된다. `분류`(PR/lec/m2 등)는 사람 작성 열로 보존
+    - **`경로` 열 = 외부 마운트의 유일한 기록 (Issue416)**: 비면 로컬, 채우면 외부. 경로 있는 활성 행은 `Projects/<이름>` 심링크를 표대로 **생성·재지정**한다(실디렉토리는 절대 건드리지 않고 경고만). 표에 경로가 없는 기존 심링크는 target 을 경로로 **시드**해 흡수. 경로에 접근할 수 없으면(볼륨 미마운트) 경고하고 행은 활성에 남긴다. 외부 행은 publishing 과 무관하게 `Projects/.gitignore` 추적 대상이 아니다
+    - `--link <경로> [토큰]` / `--unlink <토큰>` 은 이 표를 고친 뒤 sync 하는 단축 명령이다. unlink 는 심링크만 지우고 행을 비활성 표로 옮긴다(다음 sync 가 되살리지 않는다)
     - 고정 프리앰블(`/*` 전체 ignore + 특수 파일 `!/.gitignore`·`!/README.md`·`!/slide.css.md`) 뒤에 폴더 허용목록을 sort 하여 생성
     - **publishing 시드(회귀 방지)**: publishing 값이 비어 있고 폴더가 **현재 `Projects/.gitignore` 에 이미 허용**돼 있으면 `publishing='o'` 로 자동 채움 — 기존 추적 상태를 그대로 보존. `Projects.md` 는 gitignored 로컬 파일이라 fresh clone 시 publishing 값이 사라지므로, 커밋된 `Projects/.gitignore` 로부터 역시드
     - **이미 커밋된 폴더를 `x` 로 제외 시**: gitignore 재생성은 새 파일만 무시함. 기존 추적을 실제로 끊으려면 `git rm --cached -r Projects/<Name>` 별도 실행(파일 디스크 보존, 다음 push 시 github 제거)

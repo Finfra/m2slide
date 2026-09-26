@@ -529,6 +529,107 @@ class MountInfoTest(unittest.TestCase):
         self.assertIsNone(self._handler()._mount_info('nope'))
 
 
+class ProjectsRegistryTest(unittest.TestCase):
+    """Issue416 — Projects.md 경로 열이 /p/ 등록부. 표 이름 기반 파싱·마운트 판정·드리프트 노출."""
+
+    @classmethod
+    def setUpClass(cls):
+        import tempfile
+        cls.tmp = tempfile.mkdtemp(prefix='m2slide-registry-')
+        cls.ext = os.path.realpath(os.path.join(cls.tmp, 'outside', 'regExt'))
+        os.makedirs(cls.ext)
+        cls.gone = os.path.join(cls.tmp, 'unmounted', 'regGone')
+        cls.old_cwd = os.getcwd()
+        cls.root = os.path.join(cls.tmp, 'repo')
+        for p in ('regLocal', 'regStray'):
+            os.makedirs(os.path.join(cls.root, 'Projects', p))
+        os.chdir(cls.root)
+        # 표에는 경로가 있지만 심링크는 아직 없다 — 판정은 표를 따른다.
+        with open('Projects.md', 'w', encoding='utf-8') as fh:
+            fh.write('\n'.join([
+                '# 활성 프로젝트', '',
+                '| 분류 | 프로젝트 | 경로 | 버전 | 설명 | Manual Check | publishing | 작업 |',
+                '| :-- | :-- | :-- | :-- | :-- | :-- | :-- | :-- |',
+                '| m2 | regLocal | | 1.0 | 로컬 | o | o | |',
+                f'| lec | regExt | {cls.ext} | 2.0 | 외부 | | x | |',
+                f'| lec | regGone | {cls.gone} | 1.0 | 사라짐 | | x | |', '',
+            ]))
+
+    @classmethod
+    def tearDownClass(cls):
+        import shutil
+        os.chdir(cls.old_cwd)
+        shutil.rmtree(cls.tmp, ignore_errors=True)
+
+    def _handler(self):
+        return DevHandler.__new__(DevHandler)
+
+    def test_rows_parsed_by_header_name(self):
+        rows = {r['name']: r for r in self._handler()._read_projects_md_active_rows()}
+        self.assertEqual(rows['regLocal']['path'], '')
+        self.assertEqual(rows['regLocal']['version'], '1.0')
+        self.assertEqual(rows['regExt']['path'], self.ext)
+        self.assertEqual(rows['regExt']['desc'], '외부')
+
+    def test_legacy_seven_column_table_still_parses(self):
+        with open('Projects.md', encoding='utf-8') as fh:
+            saved = fh.read()
+        try:
+            with open('Projects.md', 'w', encoding='utf-8') as fh:
+                fh.write('# 활성 프로젝트\n\n| 분류 | 프로젝트 | 버전 | 설명 | Manual Check | publishing | 작업 |\n'
+                         '| :-- | :-- | :-- | :-- | :-- | :-- | :-- |\n| m2 | regLocal | 3.0 | d | | o | |\n')
+            rows = self._handler()._read_projects_md_active_rows()
+            self.assertEqual(rows[0]['version'], '3.0')
+            self.assertEqual(rows[0]['path'], '')
+        finally:
+            with open('Projects.md', 'w', encoding='utf-8') as fh:
+                fh.write(saved)
+
+    def test_mount_follows_table_path(self):
+        info = self._handler()._mount_info('regExt')
+        self.assertIsNotNone(info)
+        self.assertEqual(info['kind'], 'link')
+        self.assertEqual(info['real'], self.ext)
+
+    def test_local_row_is_not_a_mount(self):
+        self.assertIsNone(self._handler()._mount_info('regLocal'))
+
+    def _list_html(self):
+        h = self._handler()
+        captured = {}
+        h._write_html = lambda body, status=200: captured.setdefault('body', body)
+        h._serve_project_list()
+        return captured['body']
+
+    def _card(self, body, name):
+        """data-project=<name> 카드 한 장의 HTML — 다음 카드 시작 전까지."""
+        start = body.index(f'<div class="card" data-project="{name}"')
+        ends = [i for i in (body.find('<div class="card"', start + 1),
+                            body.find('</section>', start)) if i > 0]
+        return body[start:min(ends) if ends else len(body)]
+
+    def test_unregistered_folder_is_surfaced_not_hidden(self):
+        body = self._list_html()
+        attention = body[body.index('id="section-attention"'):]
+        self.assertIn('data-project="regStray"', attention)
+        self.assertIn('미등재', self._card(body, 'regStray'))
+
+    def test_registered_but_unreachable_row_is_surfaced(self):
+        card = self._card(self._list_html(), 'regGone')
+        self.assertIn('경로 없음', card)
+        self.assertIn(self.gone, card)
+
+    def test_registered_path_without_symlink_is_unmounted_not_missing(self):
+        card = self._card(self._list_html(), 'regExt')
+        self.assertIn('미마운트', card)
+        self.assertNotIn('경로 없음', card)
+
+    def test_registered_local_row_is_not_flagged(self):
+        card = self._card(self._list_html(), 'regLocal')
+        self.assertNotIn('미등재', card)
+        self.assertNotIn('경로 없음', card)
+
+
 class PendingFeedbackCountTest(unittest.TestCase):
     """Issue264 — _pending_feedback_count (개요 커맨드 박스 미처리 건수)."""
 

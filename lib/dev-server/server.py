@@ -485,6 +485,12 @@ class DevHandler(SimpleHTTPRequestHandler):
         {'kind': 'link'|'deck', 'real': abs source dir, 'prj': number or None}.
         """
         direct = os.path.join(os.getcwd(), 'Projects', project)
+        # Issue416 — the Projects.md 경로 column is the registry; the symlink is its
+        # materialization. Prefer the table so the badge follows what the user wrote.
+        row = next((r for r in self._read_projects_md_active_rows() if r['name'] == project), None)
+        if row and row.get('path'):
+            real = os.path.realpath(os.path.expanduser(row['path']))
+            return {'kind': 'link', 'real': real, 'prj': self._prj_number(real)}
         if os.path.islink(direct):
             real = os.path.realpath(direct)
             return {'kind': 'link', 'real': real, 'prj': self._prj_number(real)}
@@ -1465,9 +1471,9 @@ class DevHandler(SimpleHTTPRequestHandler):
     def _read_projects_md_active_rows(self):
         """Parse the '# 활성 프로젝트' markdown table from Projects.md (read-only reflection).
 
-        Projects.md is the personal/local index (gitignored); this just mirrors its
-        active-project table onto the dev-server /p/ page. No edit capability — SSOT
-        for editing remains Projects.md + `./m2slide.sh --sync-projects`.
+        Projects.md is the personal/local index (gitignored) and the registry of
+        /p/ (Issue416): its 경로 column is the only record of an external mount.
+        No edit capability — edits go through Projects.md + `./m2slide.sh --sync-projects`.
         """
         md_path = os.path.join(os.getcwd(), 'Projects.md')
         if not os.path.isfile(md_path):
@@ -1483,17 +1489,24 @@ class DevHandler(SimpleHTTPRequestHandler):
             i += 1
         if i >= len(lines) or not lines[i].strip().startswith('|'):
             return []
+        # Issue416 — columns are read by header name, not position (the 경로 column
+        # was inserted after 프로젝트; legacy 7-column tables still parse).
+        col_key = {'분류': 'category', '프로젝트': 'name', '경로': 'path', '버전': 'version',
+                   '설명': 'desc', 'Manual Check': 'manual', 'publishing': 'publishing', '작업': 'work'}
+        names = [c.strip() for c in lines[i].strip().strip('|').split('|')]
         i += 1  # header row
         if i < len(lines) and '-' in lines[i] and re.match(r'^\s*\|?[\s:|-]+\|?\s*$', lines[i]):
             i += 1  # separator row
         rows = []
         while i < len(lines) and lines[i].strip().startswith('|'):
             cells = [c.strip() for c in lines[i].strip().strip('|').split('|')]
-            if len(cells) >= 7:
-                rows.append({
-                    'category': cells[0], 'name': cells[1], 'version': cells[2],
-                    'desc': cells[3], 'manual': cells[4], 'publishing': cells[5], 'work': cells[6],
-                })
+            row = {k: '' for k in col_key.values()}
+            for k, h in enumerate(names):
+                if h in col_key and k < len(cells):
+                    row[col_key[h]] = cells[k]
+            row['name'] = row['name'].replace('`', '').strip()
+            if row['name']:
+                rows.append(row)
             i += 1
         return rows
 
@@ -1506,15 +1519,17 @@ class DevHandler(SimpleHTTPRequestHandler):
         ('info',  'ℹ️', '소개',      '도구·개념 소개 자료'),
         ('test',  '🧪', '테스트',    '개발·검증용 프로젝트'),
         ('other', '📁', '그 외',     '미분류 프로젝트'),
+        # Issue416 — registry drift surfaces here instead of being silently dropped.
+        ('attention', '⚠️', '확인 필요', 'Projects.md 에 없는 폴더(미등재) · 등재됐지만 경로에 접근할 수 없는 프로젝트 — ./m2slide.sh --sync-projects 로 정리'),
     ]
-    _CATEGORY_EMOJI = {k: e for k, e, _t, _d in _CATEGORY_SECTIONS if k != 'other'}
+    _CATEGORY_EMOJI = {k: e for k, e, _t, _d in _CATEGORY_SECTIONS if k not in ('other', 'attention')}
     _PUBLISH_AFFIRM_RE = re.compile(r'^(o|y|yes|true|1|✓|v|ok)$', re.IGNORECASE)
 
     @classmethod
     def _category_key(cls, raw: str) -> str:
         """Normalize a Projects.md category cell to a known section key ('other' fallback)."""
         k = (raw or '').strip().lower()
-        known = {key for key, *_ in cls._CATEGORY_SECTIONS}
+        known = {key for key, *_ in cls._CATEGORY_SECTIONS if key != 'attention'}
         return k if k in known else 'other'
 
     @classmethod
@@ -1603,7 +1618,10 @@ class DevHandler(SimpleHTTPRequestHandler):
             files = self._list_slide_files(p)
             entry = 'index.html' if 'index.html' in files else (files[0] if files else None)
             meta = meta_by_name.get(p)
-            cat_key = self._category_key(meta['category'] if meta else '')
+            # Issue416 — Projects.md is the registry. A folder missing from it is not
+            # hidden (that would make drift invisible) but parked under 확인 필요.
+            unregistered = meta is None and bool(meta_by_name)
+            cat_key = 'attention' if unregistered else self._category_key(meta['category'] if meta else '')
             cards = buckets[cat_key]
             cat_emoji = self._CATEGORY_EMOJI.get(cat_key, '📁')
             title_html = f'{cat_emoji} {self._esc_html(p)}'
@@ -1611,6 +1629,9 @@ class DevHandler(SimpleHTTPRequestHandler):
             mount_badge = self._mount_badge(p, with_path=True)
             mount_line = f'<div class="meta">{mount_badge}</div>' if mount_badge else ''
             meta_line = mount_line
+            if unregistered:
+                meta_line += ('<div class="meta">⚠️ 미등재 — <code>Projects.md</code> 활성 표에 없음 '
+                              '(<code>./m2slide.sh --sync-projects</code> 로 흡수)</div>')
             if meta:
                 manual_badge = self._manual_check_badge(meta['manual'])
                 pub_badge = self._publishing_badge(meta['publishing'])
@@ -1656,6 +1677,25 @@ class DevHandler(SimpleHTTPRequestHandler):
                 f'<a href="/p/{p}" target="_blank" rel="noopener">📋 슬라이드 목록</a>'
                 f'<a href="{first_link}" target="_blank" rel="noopener">🎬 진입 (cover/agenda/toc/첫슬라이드 fallback)</a>'
                 '</div></div>'
+            )
+        # Issue416 — registered rows whose folder is unreachable (e.g. an external
+        # volume is unmounted): the table says they exist, the filesystem disagrees.
+        present = set(projects)
+        for name, meta in meta_by_name.items():
+            if name in present:
+                continue
+            where = meta.get('path') or f'Projects/{name}'
+            if meta.get('path') and os.path.isdir(os.path.expanduser(meta['path'])):
+                # The source is there; only the Projects/<name> symlink is missing.
+                why = ('⚠️ 미마운트 — 경로는 있으나 심링크가 없음 '
+                       '(<code>./m2slide.sh --sync-projects</code> 로 복원)')
+            else:
+                why = '⚠️ 경로 없음 — 등재됐지만 폴더에 접근할 수 없음 (볼륨 미마운트 · 이동 · 삭제)'
+            buckets['attention'].append(
+                f'<div class="card" data-project="{self._esc_html(name)}">'
+                f'<h3>⚠️ {self._esc_html(name)}</h3>'
+                f'<div class="meta">{why}</div>'
+                f'<div class="meta"><code class="mount-path">{self._esc_html(where)}</code></div></div>'
             )
         sections_html = []
         for key, emoji, title, desc in self._CATEGORY_SECTIONS:

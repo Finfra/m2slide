@@ -169,6 +169,8 @@ if [ "$1" = "--link" ] || [ "$1" = "--unlink" ] || [ "$1" = "--links" ]; then
       ;;
 
     --link)
+      # Issue416 — 등재 기록은 Projects.md 경로 열이 소유한다. 이 분기는 사전 경고만 하고
+      # 표 편집·심링크 생성은 sync 스크립트(단일 지점)에 맡긴다.
       link_src="$2"
       if [ -z "$link_src" ]; then
         echo "Usage: $(basename "$0") --link <외부경로> [토큰]" >&2
@@ -181,25 +183,6 @@ if [ "$1" = "--link" ] || [ "$1" = "--unlink" ] || [ "$1" = "--links" ]; then
       fi
       link_real="$(cd "$link_src" && pwd -P)"
       link_tok="${3:-$(basename "$link_real")}"
-      if ! [[ "$link_tok" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
-        echo "❌ Error: 토큰 형식 위반 (^[A-Za-z0-9][A-Za-z0-9._-]*$): $link_tok" >&2
-        exit 1
-      fi
-      link_dest="$link_projects_dir/$link_tok"
-      if [ -L "$link_dest" ]; then
-        link_cur="$(cd "$link_dest" 2>/dev/null && pwd -P || echo '')"
-        if [ "$link_cur" = "$link_real" ]; then
-          echo "ℹ️  이미 등재됨 (변경 없음): $link_tok → $link_real"
-          exit 0
-        fi
-        echo "❌ Error: 토큰 '$link_tok' 이 다른 경로에 이미 마운트됨: ${link_cur:-$(readlink "$link_dest")}" >&2
-        echo "   해제 후 다시 등재: $(basename "$0") --unlink $link_tok" >&2
-        exit 1
-      fi
-      if [ -e "$link_dest" ]; then
-        echo "❌ Error: Projects/$link_tok 가 이미 실디렉토리로 존재함 — 다른 토큰을 쓸 것" >&2
-        exit 1
-      fi
       # deck 토큰과 겹치면 Projects/ 가 우선 매칭되어 덱이 가려진다 — 거부하지 않고 알린다.
       if [ -d "$link_decks_dir" ]; then
         for cat_dir in "$link_decks_dir"/*; do
@@ -207,9 +190,9 @@ if [ "$1" = "--link" ] || [ "$1" = "--unlink" ] || [ "$1" = "--links" ]; then
           echo "⚠️  같은 토큰의 덱이 있음: $(basename "$cat_dir")/$link_tok — /p/$link_tok 은 이 마운트가 가립니다" >&2
         done
       fi
-      ln -s "$link_real" "$link_dest"
+      node "$SCRIPT_DIR/lib/sync-projects-md.js" --link "$link_real" "$link_tok" || exit $?
       link_prj="$(m2s_prj_num "$link_real" 2>/dev/null || echo '-')"
-      echo "✅ 마운트: $link_tok"
+      echo "✅ 마운트: $link_tok (Projects.md 경로 열에 기록)"
       echo "   실제 경로: $link_real"
       echo "   소유 prj:  $link_prj"
       echo "   다음: ./$(basename "$0") $link_tok   → http://127.0.0.1:9877/p/$link_tok"
@@ -217,25 +200,12 @@ if [ "$1" = "--link" ] || [ "$1" = "--unlink" ] || [ "$1" = "--links" ]; then
       ;;
 
     --unlink)
-      link_tok="$2"
-      if [ -z "$link_tok" ]; then
+      if [ -z "$2" ]; then
         echo "Usage: $(basename "$0") --unlink <토큰>" >&2
         exit 1
       fi
-      link_dest="$link_projects_dir/$link_tok"
-      if [ ! -e "$link_dest" ] && [ ! -L "$link_dest" ]; then
-        echo "❌ Error: Projects/$link_tok 없음" >&2
-        exit 1
-      fi
-      # 오삭제 차단이 이 서브커맨드의 존재 이유 — 실디렉토리는 절대 건드리지 않는다.
-      if [ ! -L "$link_dest" ]; then
-        echo "❌ Error: Projects/$link_tok 는 실디렉토리입니다 — 본 커맨드는 마운트 해제 전용이라 거부합니다" >&2
-        exit 1
-      fi
-      link_real="$(cd "$link_dest" 2>/dev/null && pwd -P || readlink "$link_dest")"
-      rm "$link_dest"
-      echo "✅ 마운트 해제: $link_tok (실제 경로는 그대로 남음 — $link_real)"
-      exit 0
+      # 심링크만 지우고(실디렉토리 거부) 행을 비활성으로 옮긴다 — sync 스크립트가 판정 단일 지점.
+      exec node "$SCRIPT_DIR/lib/sync-projects-md.js" --unlink "$2"
       ;;
   esac
 fi
