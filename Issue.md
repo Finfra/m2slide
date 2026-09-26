@@ -39,6 +39,9 @@
 
 ## Issue415: 아이폰에서 **탭(클릭)만으로** 덱이 동작하는지 ego-browser 로 점검·수정하고 aTest → aTest-all 2단계로 안정화 (등록: 2026-09-23)
 * 목적: 키보드 없는 아이폰에서 m2slide 덱을 탭만으로 넘기고 쓸 수 있어야 한다(사용자 전제: **터치 = 클릭**). 동시에 prj3 외부*핀봇(외부자문·외부컨설턴트)이 팀장핀봇 배분 경로로 실제 동작하는지 실증한다(요청: 사용자 → 나래, prj3#Issue678 후속)
+* plan: `_doc_work/plan/iphone-tap-nav_plan.md`
+* task: `_doc_work/plan/iphone-tap-nav_task.md`
+* report: `_doc_work/report/issue415-result_report.md`
 * 🎯 **현재 배분 지시 (2026-09-24, 나래) — 이것만 한다**:
     - ① QA 배분 `fbot-qa-issue415` 를 `close --evidence`(증적: `_doc_work/report/iphone-tap-nav_qa-stage1_report.md`)
     - ② **A1 만** 외부컨설턴트핀봇(`contractor`, 도구 `codex-worker`)에 발주 — 스와이프 IIFE(`lib/html-builder.js` `SWIPE_MIN_PX` 부근)가 **스크롤 뷰(`.reveal-scroll`)에서는 세로 스와이프를 키로 바꾸지 않게**. 가로 스와이프·페이지 뷰(PC) 세로 스와이프는 유지. 뷰 모드는 회전·리사이즈로 바뀌므로 초기화 시점 상수로 굳히지 말 것. 요청서 초안 `_doc_work/plan/iphone-tap-nav_patch-PA.md` 의 A1 절 사용 (A2·표지 전면 탭은 이번 범위 밖 — 사용자 결정 2026-09-24)
