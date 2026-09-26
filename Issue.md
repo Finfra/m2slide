@@ -55,6 +55,7 @@
         - ④ [ego-mobile_20260924_134709.md](_doc_work/report/ego-mobile_20260924_134709.md) — aTest·aTest-all **M6 PASS**(위·아래 쓸기 키 합성 0), M1~M5·L1 무회귀
         - 관측(비차단): aTest L1 은 표지에서 가로 스와이프 시 `n/a`(agenda)로 넘어간다 — 기준 133659 와 동일, 133335 에서는 `→ ?` 로 1회 FAIL. 흔들리는 항목이라 QA 재측정 대상
         - 남은 완료 조건(이 배분 밖): PC 클릭·키보드 매트릭스 재검증 · 결과 보고서 · 외부자문핀봇 배분 기록
+    - ✅ **ego 모바일 자동 테스트 러너 커밋 (2026-09-26, pm-do 위임, commit: `03bdf44`)** — `z_test/ego-mobile/`(`run.sh`·`mobile-check.js`) + 본 이슈 plan·task·report 필드
     - ✅ 간격·htmlArt 두 수정은 팀장이 선커밋함(`cf74c53`) — codex base 에 포함됨
     - ⚠️ 간격(`scrollLayout: 'compact'`)·htmlArt 높이(`base.css`) 수정은 **이미 적용됨(미커밋)** — patch 가 이 둘을 되돌리지 않게. codex 는 base 커밋만 보므로 위임 전 이 두 파일(`lib/html-builder.js`·`lib/css/base.css`)을 먼저 커밋하거나 `--base` 를 맞출 것
 * 상세:
