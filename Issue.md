@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 415
+* Issue HWM: 416
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -118,6 +118,24 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue416: Projects.md 를 `/p/` 프로젝트 목록의 유일한 등록부로 — `경로` 열로 외부 마운트 표기·복원 (등록: 2026-09-26, 해결: 2026-09-26, commit: 39eb61a) ✅
+* 목적: `/p/` 카드 한 장의 출처가 다섯 군데(폴더 목록·심링크·덱 루트·Projects.md·___pm 레지스트리)로 흩어져 *"정본이 Projects.md 아니었나"* 라는 직관과 실제 동작이 어긋난다. 외부 프로젝트 여부·경로가 파일시스템 심링크에만 있어 표에서 보이지 않고, 다른 머신에서는 마운트가 복원되지 않는다
+* 상세:
+    - `Projects.md` 활성·비활성 표에 `경로` 열 추가 — 비면 로컬, 채우면 외부. 외부 여부 판정의 단일 지점
+    - `--sync-projects`: 경로 있는 행의 심링크를 생성·재지정(실디렉토리는 건드리지 않음), 표에 없는 기존 심링크는 경로를 시드해 행으로 흡수, 경로가 없으면(볼륨 미마운트 등) 경고만 하고 행 유지
+    - `--link`/`--unlink`: 표 편집 + sync 로 축소 (unlink 는 심링크일 때만, 행은 비활성으로)
+    - dev-server `/p/`: 표 열을 이름으로 파싱, 표에 없는 폴더는 `⚠️ 미등재` 칸에 모음, 마운트 배지를 표 경로 우선으로 판정
+    - 덱(`Projects_deck`) 흡수는 범위 밖(2단계)
+* 구현 명세:
+    - `lib/sync-projects-md.js` — 헤더 이름 기반 열 매핑, `M2SLIDE_ROOT` env 로 루트 주입(테스트용), `--link <path> <tok>`·`--unlink <tok>` 서브모드
+    - `lib/dev-server/server.py` — `_read_projects_md_active_rows` 헤더 기반, `_serve_project_list` 미등재 칸, `_mount_info` 표 경로 우선
+    - 검증(TDD): `node --test lib/__tests__/sync-projects-md.test.js` · `python3 -m unittest lib/dev-server/test_server.py` · `tdd/playlist.md` 10행 추가
+* 결과:
+    - sync 10건 · 서버 74건(신규 8) 통과. `tdd/playlist.md` 10행 ✅, Node 24 에서 깨지던 `node --test lib/__tests__/` 를 glob 으로 보정
+    - 실 `Projects.md` 이전 완료 — 외부 2건(`1.design_rnd`·`cg-e2e`) 경로 기록, `/p/` 배지 prj60·prj7 실측
+    - ⚠️ 별건 드리프트: publishing=o 인데 `Projects/.gitignore` 에 없는 4건(AgenticCoding·StellarEvolution·graphify·n3shIntro) — sync 가 추적 추가하려 하므로 두 파일은 HEAD 유지, 결정 대기
+    - ⚠️ 기존 실패 3건(integration head-bar 77~79)은 변경 전에도 실패 — 본 이슈 무관
 
 ## Issue414: 목차(markmap)가 화면을 안 채운다 — 렌더 결과가 **뷰포트 크기에 의존**한다 (등록: 2026-09-21, 해결: 2026-09-21, commit: `2075d6b`) ✅
 * 목적: agenda·챕터 TOC 의 markmap 이 박스의 절반도 못 채우고 좌상단에 몰린다. 브라우저 창(1280 내외)에서 보면 그럴듯한데 **PDF·대형 화면에서만** 작아 보여 «변환 문제» 로 오인되기 쉽다.
