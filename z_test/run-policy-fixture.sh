@@ -80,6 +80,13 @@ if [ -d "$HYFX" ]; then
   else
     pass "본문 이슈번호 미검출 (문맥 의존 제외)"
   fi
+  # chapter mode 의 루트 md(DESIGN.md 등)는 빌더가 읽지 않는 문서다 — 원고로 보면 오검출
+  #   (실측 2026-09-27: 1.design_rnd AUTHORING.md·DESIGN.md 9건이 --lint-data 를 실패시킴)
+  if printf '%s' "$HYOUT" | grep -q "DESIGN.md"; then
+    bad "chapter mode 루트 문서 오검출 — 원고 범위가 빌더(markdown/ 우선)와 갈림"
+  else
+    pass "chapter mode 루트 문서 미검출 (원고 = markdown/)"
+  fi
 else
   bad "텍스트 위생 픽스처 없음: $HYFX"
 fi
@@ -140,6 +147,8 @@ def emit(tag, viols):
         print(f"{tag}::{v}")
 
 emit("H1",   m.check_h1_dup(FX / "h1-dup-title"))
+# single 모드는 별도 픽스처 — 한 폴더에 markdown/ 과 루트 원고를 섞으면 빌더는 루트를 읽지 않는다
+emit("H1",   m.check_h1_dup(FX / "h1-dup-title-single"))
 emit("NOTE", m.check_note_echo(FX / "note-echo"))
 emit("SRC",  m.check_source_attr(FX / "source-attribution"))
 r = m.load_smartart_rule(root)

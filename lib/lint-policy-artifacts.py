@@ -136,7 +136,7 @@ def check_project(proj: Path, rule: dict):
     need_sibling = bool(gc.get("require_sibling_text", True))
     alt_signal = bool(gc.get("empty_alt_is_signal", True))
 
-    md_files = sorted(proj.glob("markdown/*.md")) + sorted(proj.glob("*.md"))
+    md_files = _source_md(proj)
     violations = []
     for md in md_files:
         if md.name.upper() == "AGENDA.MD":
@@ -229,12 +229,26 @@ def _heading_lines(text: str):
             yield i, m.group(1)
 
 
+def _source_dir(proj: Path) -> Path:
+    """원고 폴더 — 빌더(lib/generate-slides.js)와 **같은 규칙**: markdown/ 이 있으면 그것, 없으면 루트.
+
+    ⚠️ 예전엔 검사마다 `markdown/*.md + *.md` 를 합쳐 읽어, chapter mode 루트의
+       설계 문서(DESIGN.md·AUTHORING.md 등 — 빌더가 읽지 않는다)를 원고로 판정했다.
+    """
+    md_dir = proj / "markdown"
+    return md_dir if md_dir.is_dir() else proj
+
+
+def _source_md(proj: Path):
+    return sorted(_source_dir(proj).glob("*.md"))
+
+
 # 슬라이드 소스가 아닌 파이프라인 부산물 — 위생 검사 제외
 _HYGIENE_SKIP = {"info.md", "readme.md", "credits.md"}
 
 
 def check_hygiene(proj: Path, pattern):
-    md_files = sorted(proj.glob("markdown/*.md")) + sorted(proj.glob("*.md"))
+    md_files = _source_md(proj)
     violations = []
     for md in md_files:
         if md.name.upper() == "AGENDA.MD" or md.name.lower() in _HYGIENE_SKIP:
@@ -394,7 +408,7 @@ def parse_agenda(agenda_path: Path):
 
 def _body_md_files(proj: Path):
     """AGENDA·note·부산물 제외한 슬라이드 소스 md."""
-    files = sorted(proj.glob("markdown/*.md")) + sorted(proj.glob("*.md"))
+    files = _source_md(proj)
     out = []
     for md in files:
         n = md.name.lower()
@@ -542,7 +556,7 @@ def check_note_echo(proj: Path, threshold: float = 0.9):
                 id_bullets[m.group(1)] = (md, _slide_bullets(chunk))
 
     violations = []
-    notes = sorted(proj.glob("markdown/*_note.md")) + sorted(proj.glob("*_note.md"))
+    notes = sorted(_source_dir(proj).glob("*_note.md"))
     for note in notes:
         try:
             ntext = note.read_text()

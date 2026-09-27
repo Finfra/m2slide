@@ -115,7 +115,63 @@ def main(proj: str) -> int:
         print("      (Markmap 장은 SVG 가 Type 3 로 나가 정상적으로 0이다 — 차단하지 않는다)")
     else:
         print("  ✅ ④ 텍스트 0 페이지 없음")
+
+    # ── ⑤ 표지·목차 자리 (chapter mode) ─────────────────────────────────
+    if not single and extra:
+        if not check_cover_agenda(doc, slide, chapters):
+            rc = 1
     return rc
+
+
+def _plain(html_path: pathlib.Path) -> str:
+    """산출 HTML 의 정적 텍스트 — script·style 은 빼고 태그를 걷어낸다."""
+    import html as _html
+    s = html_path.read_text(errors="ignore")
+    s = re.sub(r"<(script|style)\b.*?</\1>", " ", s, flags=re.S)
+    return re.sub(r"\s+", " ", _html.unescape(re.sub(r"<[^>]+>", " ", s)))
+
+
+def _origin(page, sources: dict):
+    """페이지 텍스트 줄이 가장 많이 발견되는 원고 이름. 줄이 없으면 None.
+
+    ⚠️ 쪽 수(①)만으로는 표지·목차가 **제자리에 있는지** 모른다 — 챕터 장 2장이
+       더해지고 표지·목차가 빠져도 수는 맞는다. 그래서 쪽마다 출처를 되짚는다.
+       JS 가 만든 줄(내비 표시 `1 › 1 / 31` 등)은 어느 원고에도 없어 자연히 빠진다.
+    """
+    lines = [l.strip() for l in page.get_text().splitlines() if len(l.strip()) >= 4]
+    if not lines:
+        return None
+    score = {k: sum(1 for l in lines if l in s) for k, s in sources.items()}
+    best = max(score, key=score.get)
+    return best if score[best] > 0 else "?"
+
+
+def check_cover_agenda(doc, slide: pathlib.Path, chapters) -> bool:
+    """chapter mode 합본은 **덱 표지 → 전체 목차 → 첫 챕터** 순으로 시작한다 (Issue402).
+
+    구 결함은 index.html·agenda.html 을 둘 다 건너뛰어 1p 가 첫 챕터 표지였다 —
+    챕터마다 자기 표지·목차가 있어 **있는 것처럼 보였다**.
+    """
+    sources = {"index.html": _plain(slide / "index.html"), "first": _plain(chapters[0])}
+    has_agenda = (slide / "agenda.html").exists()
+    if has_agenda:
+        sources["agenda.html"] = _plain(slide / "agenda.html")
+    want = ["index.html"] + (["agenda.html"] if has_agenda else []) + ["first"]
+    got = [_origin(doc[i], sources) for i in range(min(len(want), doc.page_count))]
+    ok = len(got) == len(want) and got[0] == "index.html" and got[-1] == "first"
+    if has_agenda:
+        # Markmap 목차는 SVG 가 Type 3 로 나가 텍스트가 0일 수 있다 — 그때는
+        # «다른 원고의 장이 아니다» 까지만 판정한다(앞뒤가 표지·첫 챕터로 고정됨).
+        ok = ok and got[1] in ("agenda.html", None)
+    names = {"index.html": "표지", "agenda.html": "목차", "first": chapters[0].name,
+             None: "(텍스트 없음)", "?": "(출처 불명)"}
+    seq = " → ".join(names[g] for g in got)
+    if ok:
+        print(f"  ✅ ⑤ 앞 {len(want)}p 출처 {seq}")
+    else:
+        exp = " → ".join(names[w] for w in want)
+        print(f"  ❌ ⑤ 앞 {len(want)}p 출처 {seq} — 기대 {exp} (Issue402 회귀)", file=sys.stderr)
+    return ok
 
 
 if __name__ == "__main__":
