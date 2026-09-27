@@ -2,6 +2,7 @@
 title: m2slide 배포 재생목록
 description: prj42 m2slide 의 공개 저장소 태그 출고(GitHub clone)·GitHub Pages 덱 배포 검증 목록 (prj3#Issue717)
 date: 2026.09.27
+evidence_dir: tdd/evidence
 gate: pre-tag
 env: jm4
 ---
@@ -26,9 +27,9 @@ env: jm4
 
 # 증거
 
-* 경로: `_doc_work/_release/v{VER}/release-test_{VER}.md` (`VER` = 루트 `VERSION`)
+* 경로: `tdd/evidence/v{VER}/release-test_{VER}.md` (frontmatter `evidence_dir`) (`VER` = 루트 `VERSION`)
 * frontmatter `version·commit·dirty·result·env·date` + `| # | id | 결과 | 비고 |` 표 — 형식 SSOT 는 `~/.claude/_doc_arch/rules-ondemand/release-test-rules.md` "증거 형식"
-* ⚠️ `_doc_work/` 는 이 repo 에서 gitignore 다(`.claude/rules/repo-tracking-rules.md`) — 증거를 릴리스 커밋에 싣는 R3 를 하려면 이 경로의 추적 예외가 필요하다(후속 판단)
+* `_doc_work/` 가 이 repo 에서 gitignore 라 증거를 추적 경로 `tdd/evidence/` 에 둔다 — R3(릴리스 커밋에 싣기) 가능
 * ⚠️ `dirty: yes` 는 근거 불인정 — 이 저장소는 작업트리가 상시 dirty 하므로 R1 은 **clean clone** 에서 돈다(#2~#4)
 
 # 규약
