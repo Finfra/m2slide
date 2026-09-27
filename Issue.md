@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 419
+* Issue HWM: 420
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -131,6 +131,27 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue420: 라이선스 프로파일 A 적용 — CC BY 4.0 이중 → 코드 Apache-2.0 + theme/ Finfra Theme License(훅 ①③), 뱃지 코드 유지 (등록: 2026-09-27, 해결: 2026-09-27, commit: `c153b9b`) ✅
+* 목적: CC 는 소프트웨어 비권장이고 위치 지정 표기는 CC BY 조항과 긴장한다. 표기 의무를 테마 자산 저작권으로 옮기면 사용자 원고를 2차저작물로 주장할 필요가 없어 깨끗하다. 뱃지 동작은 그대로다
+* 상세:
+    - 루트 `LICENSE.md`(CC BY 이중) 삭제 → `LICENSE`(Apache-2.0 원문) · `NOTICE` · `TRADEMARK.md` · `COMMERCIAL.md`(배포본 약관 없음 — `{{N}}` 행 삭제, 테마 행만)
+    - `theme/LICENSE.md` = THEME-LICENSE 템플릿. 문구 "Powered by finfra.kr, Made by m2slide"·첫/끝 장 위치는 현행(`LICENSE.md:10`·`lib/config.js`)과 동일 유지
+    - 뱃지 자동 삽입·`license_attribution: false` 경고 코드 유지. 경고 문구 근거만 "CC BY 4.0 위반 소지" → "테마 라이선스 조건 이탈"(코드 + `_doc_arch/license-attribution.md` 동시 — 2원 구조)
+    - README(en·kr) 라이선스 절: 코드 Apache-2.0 / `theme/` Finfra Theme License 표 · CHANGELOG 항목 · "<0.8.0 MIT, 0.8.0~이번 커밋 이전 CC BY 4.0 이중" 주석
+    - ⚠️ 다른 세션이 이 repo 에서 작업 중(작업트리 dirty) — 자기 파일만 `git add`, `-A` 금지
+    - 정본 `/Users/nowage/_git/___architect/_doc_arch/license-profiles.md` §4 row 42 · 템플릿 `/Users/nowage/_git/___architect/data/template/license/README.md`(자리표 값 표 포함 — `{{N}}`=250 · `{{LICENSOR}}`=`Finfra Co., Ltd. (https://finfra.kr)` · `{{CONTACT}}`=finfra@gmail.com)
+* 구현 명세:
+    - 검증: 파일 5종 + `theme/LICENSE.md` 존재 · `./m2slide.sh --lint-license` 통과 · 기존 테스트 green · 빌드 산출물 첫/끝 장 뱃지 그대로
+    - 금지: `git push`(사용자가 push) · npm publish · 기존 릴리스 태그 변경
+    - `Issue.md` 는 `python3 ~/.claude/sh/issue-tx.py --file Issue.md stage --issues <N>` / `check` 경유 · 커밋 후 ✅ 이동 + hash 기록
+* 결과:
+    - 신설: [LICENSE](LICENSE)(Apache-2.0 원문 — fCapture·fSnippet `_public` 과 md5 동일) · [NOTICE](NOTICE) · [TRADEMARK.md](TRADEMARK.md) · [COMMERCIAL.md](COMMERCIAL.md)(테마·상표 행만) · [theme/LICENSE.md](theme/LICENSE.md). `{{YEAR}}`=2025(GitHub repo 생성 2025-11-16)
+    - ⚠️ `theme/LICENSE.md` 가 `.gitignore` `/theme/*` 에 막혀 있었다 → `!/theme/LICENSE.md` 화이트리스트 추가
+    - 템플릿 조정: 배포본 약관이 없는 repo 라 TRADEMARK·COMMERCIAL 의 `official builds`·`DISTRIBUTION-TERMS.md` 참조를 테마 라이선스 참조로 교체. THEME-LICENSE 의 `THIRD-PARTY-NOTICES.md`(부재) 는 «`lib/vendor/`·CDN 자산은 각자 라이선스» 로 교체 — 테마 폴더에 제3자 폰트·이미지 없음(실측)
+    - 경고 문구 교체: `lib/config.js`·`server.py`(설정 GUI help)·`_config.org.yml`·주석 2곳 + `_doc_arch/license-attribution.md`(로컬 전용, gitignored). `generate-slides.js` 는 다른 세션 미커밋분이 있어 **내 hunk 만** `git apply --cached` 로 스테이징
+    - 검증: `--lint-license` 통과 · `node --test` 201/201 · `test_server` 74 OK · `m2Slide_single_mode` 뱃지 첫(0)/끝(36) 장·문구 무변경 · `license_attribution: false` 새 경고 출력 확인
+    - TDD 예외: 동작 변경 없음(경고 문자열·라이선스 문서 교체) — 기존 스위트 무회귀로 갈음
 
 ## Issue419: 표지(`_cover`) frontmatter 값 HTML 이스케이프 — `<b>`·`&` 가 태그·엔티티로 새어 나옴 (등록: 2026-09-27, 해결: 2026-09-27, commit: `d3407e3`) ✅
 * 목적: prj41 videoMaker tdd #05 `title-card-frontmatter-fields` 가 red — m2slide 가 title/subtitle/instructor_name 등 frontmatter 값을 layout 변수(`{{title}}` 등)로 치환할 때 escape 하지 않는다. 사용자 결정(prj5#Issue101 ①, 2026-09-27 20:08): **escape 만** 한다. `.annot.`·`{raw}` 옵트인은 보류
