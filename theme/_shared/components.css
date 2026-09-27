@@ -392,7 +392,7 @@
 }
 
 /* ── License attribution badge (Issue292) ─────────────────────────────────
-   LICENSE.md CC BY 4.0 조건 — 첫 장·마지막 장에 항상 표기.
+   theme/LICENSE.md(테마 라이선스) 조건 — 첫 장·마지막 장에 항상 표기.
    설계 SSOT: _doc_arch/license-attribution.md
    - 위치: 하단 중앙, 상하단 노랑 가로선(section[class*="layout-"]::after, bottom:12px
      height:10px, z-index:100 — 본 파일 §2) "바깥"(아래)에 배치. 2026-07-15 사용자 시각

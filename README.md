@@ -520,7 +520,15 @@ Check the help:
 
 ## License
 
-Dual license — see [LICENSE.md](./LICENSE.md) for full terms.
+| Part                                                  | License                                                    | Attribution                                                                      |
+| :---------------------------------------------------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| Source code (`lib/`, `bin/`, build scripts)           | [Apache-2.0](./LICENSE) — see also [NOTICE](./NOTICE)      | None (keep NOTICE)                                                               |
+| Bundled themes (`theme/` — CSS, layouts, images)      | [m2slide Theme License](./theme/LICENSE.md)                | **"Powered by finfra.kr, Made by m2slide"** on the **first and last slides**      |
+| Presentations you generate                            | Yours                                                      | Inherit the theme condition only if you used a bundled theme                     |
 
-* **Free (CC BY 4.0)**: Presentations generated with m2slide must keep the attribution line **"Powered by finfra.kr, Made by m2slide"** on the **first and last slides**.
-* **Paid (Commercial license)**: Generating presentations with that attribution removed requires a paid commercial license. Contact: <finfra@gmail.com> / <https://finfra.kr>
+* **Free**: keep the attribution line on the first and last slides — m2slide inserts it automatically.
+* **Paid**: generating presentations with a bundled theme **without** that line requires a commercial license — see [COMMERCIAL.md](./COMMERCIAL.md). Contact: <finfra@gmail.com> / <https://finfra.kr>
+* Themes you author yourself carry no attribution requirement.
+* Trademarks ("m2slide", "Finfra", "Powered by finfra.kr") are not licensed by Apache-2.0 — see [TRADEMARK.md](./TRADEMARK.md).
+
+> Earlier releases keep the license they shipped with: **< 0.8.0 — MIT**, **0.8.0 up to this change — dual CC BY 4.0 + commercial**.
