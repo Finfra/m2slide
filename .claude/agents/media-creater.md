@@ -48,7 +48,7 @@ L2 부재 시 L1 그대로 사용 (하위호환). 설계 SSOT: [`../../_doc_arch
 2. **본문 분석 기반** — 슬라이드 텍스트에서 `content_pattern_rules[].body_patterns` 매칭. 임의 시각화 추가 금지.
 3. **형식별 위임** — `tools[].delegate_skill` 사용. mermaid는 인라인 코드블록, excalidraw는 별도 파일, 이미지는 placeholder + 명세.
 4. **본문 비파괴** — `processing_policy.body_preservation: true` 적용. 텍스트 변경 금지. mermaid 코드블록·이미지 placeholder만 추가.
-5. **외부 스킬 위임** — 실제 이미지 파일 생성은 `tools[].delegate_skill` (gemini-image-describer / make-mermaid / excalidraw-diagram)에 위임.
+5. **외부 스킬 위임** — 실제 이미지 파일 생성은 `tools[].delegate_skill` (gemini-image-describer / ig-mermaid / ig-excalidraw)에 위임.
 
 # 적용 알고리즘 (tools.yml 활용)
 
@@ -206,7 +206,7 @@ img-add --edit \
         --project          <Name>
 ```
 
-* ⚠️ `flux-fg1`·`flux-enqueue` **직접 호출 금지** — img-add 경유만 (img-add 필수 원칙)
+* ⚠️ `img-add-fg1`·`flux-enqueue` **직접 호출 금지** — img-add 경유만 (img-add 필수 원칙)
 * ⚠️ **강등 금지 (fail-loud)** — edit 실패 시 `image_restyle`(img2img)·`local_image_gen` 으로 조용히 대체하지 말 것. img2img 는 정밀 편집을 못 하므로(strength 0.3↑ 원본 복제 / 0.1 드리프트, 2026-07-13 실측) 사용자가 못 알아채는 품질 회귀가 된다. "edit 백엔드 불가(사유)" 명시 후 **원본 유지·중단**(`on_failure: keep_original`)
 * ⚠️ **원본 덮어쓰기 금지** — `_edit` 접미 산출물로 저장하고 원본은 `img/` 에 함께 보존
 * 소요 ≈ 7분/건 (steps 28, 폴링 타임아웃 12분). 다건이면 체크포인트에 예상 소요 명시
@@ -281,10 +281,10 @@ assets:
 
 | 도구                       | 용도                                       |
 | :------------------------- | :----------------------------------------- |
-| `make-mermaid` skill       | mermaid 다이어그램 생성·개선 전문 스킬     |
-| `excalidraw-diagram` skill | excalidraw JSON 파일 생성                  |
+| `ig-mermaid` skill       | mermaid 다이어그램 생성·개선 전문 스킬     |
+| `ig-excalidraw` skill | excalidraw JSON 파일 생성                  |
 | `gemini-image-describer`   | 이미지 → 설명 (역방향 검증용)              |
-| `mermaid-diagram` skill    | mermaid 문법 레퍼런스                      |
+| `ig-mermaid` skill    | mermaid 문법 레퍼런스                      |
 | `ig-maker` subagent        | 인포그래픽 SVG 생성 (글로벌, 승인 게이트 뒤) |
 
 ⚠️ **반대 방향도 있다 — `svg_direct`·`free_image` 는 전역에서 호출된다.** 둘 다 m2slide 소유(prj42)지만 글로벌 `visual-gen` 레지스트리에 `scope: prj42` 로 등재돼 m2slide 밖 세션이 `/vg` 로 고를 수 있다. 특히 `svg_direct`(handler `claude_svg_authoring`)는 Claude 가 **한글을 native 로 쓰는 유일한 벡터 생성 경로**라 `img-add`(FLUX)의 한글 불가를 보완한다. 정의는 [`data/media-creater/tools.yml`](../../data/media-creater/tools.yml) 이고, 규약을 바꾸면 **m2slide 밖 호출자도 깨진다** (prj7 crossfeed B, 2026-09-20)

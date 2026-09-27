@@ -54,7 +54,7 @@ date: 2026-05-26
 | `kind` | 무엇 | 읽기 |
 | :--- | :--- | :--- |
 | `policy/stage` | 파이프라인 단계 정책 (`data/<stage>/`) | **그 단계 SCAR 만** |
-| `policy/upstream` | 글로벌 SCAR 정책에 얹는 m2slide 측 local override (`promo-cartoon` 류) | 그 벤더 경로만 |
+| `policy/upstream` | 글로벌 SCAR 정책에 얹는 m2slide 측 local override (`img-cartoon` 류) | 그 벤더 경로만 |
 | `catalog` | 단계 종속이 아닌 공유 어휘·인벤토리 | **전 단계 허용** |
 
 * 파일을 열면 첫 줄에 있으므로 **판정이 필요한 순간에 보인다**. 목록을 찾아 대조할 필요가 없다
