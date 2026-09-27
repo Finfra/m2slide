@@ -1914,12 +1914,12 @@
 * 목적: Issue335 after 에서 ig-maker 가 전체 캔버스를 재작화한 원인의 절반은 **선택할 레이아웃 카탈로그가 프로젝트에 없었기** 때문이다(theme/curriculum/theme.yml 자체가 부재 — 내장 기본 테마로 조립). 테마 정본을 세우고 layouts 카탈로그를 선언해 prj3#Issue484(ig-maker 구조 개정)의 판정 재료를 공급한다
 * 상세:
     - `_asset_ppt/theme/curriculum/theme.yml` 신설 — canvas·margin·palette(원본 실측 hex)·**layouts 카탈로그**
-    - layouts 스키마는 prj3 `_doc_arch/ig-maker-design.md` §레이아웃 계약이 SSOT — 여기는 **값**만 선언
+    - layouts 스키마는 prj3 `_doc_arch/ig-maker.md` §레이아웃 계약이 SSOT — 여기는 **값**만 선언
     - 초기 2종: `content`(테마 타이틀 밴드+본문 영역 — 덱 장표 표준) · `canvas`(전면 — 독립 인포그래픽용)
 * 구현 명세:
     - 검증: prj3 개정(Issue484 로 재번호) 후 `_source/3` 재생성이 이 카탈로그를 읽어 `content` 를 선택하고 본문 영역만 작화하는지 확인
 * 결과 (Walkthrough):
-    - `theme/curriculum/theme.yml` 신설 — canvas·margin·palette(실측 hex 5슬롯)·layouts 2종(content·canvas). 스키마 SSOT 는 prj3 `ig-maker-design.md` §12
+    - `theme/curriculum/theme.yml` 신설 — canvas·margin·palette(실측 hex 5슬롯)·layouts 2종(content·canvas). 스키마 SSOT 는 prj3 `ig-maker.md` §12
     - `_source/3` 재생성 실증: 봇이 `content` 자가 판정(`4.layout.yml` 기록, 애매성 없음) → viewBox 를 content_box 비율로 고정해 구조적 침범 불가 → 타이틀은 테마 골드 밴드로 조립. 게이트 전부 통과(문구 16/16·커넥터 5/5)
     - 색이 팔레트 **슬롯명**(band/green/purple) 참조로 바뀜 — hex 인라인 0건. ⚠️ 로더가 `gold` 슬롯 키를 병합하지 않아 band 로 대체(로더 허용 키 확장은 후속 판단)
     - 리포트 갱신: `_doc_work/report/ig-maker-before-after_report.md` "after v2" 절
@@ -2112,7 +2112,7 @@
 * depends: Issue320, Issue322
 * 목적: 사용자 지시("igTest 다시 만드는 수준") 이행 — playground 원본에서 픽스처를 fresh 재생성하고, 2차 정합 상태에서 통합 경로 전판(빌드 · `--pptx` 검증 차단 · 비용 게이트 · 회귀 러너 3종 · lint)을 재검증한다. ig-maker 1장 E2E(캡처→팬아웃→발행→슬라이드 참조)로 SVG 소비 경로를 재실증한다.
 * 상세:
-    - 기존 igTest 는 삭제하지 않고 스크래치로 이동 보존(오판 대비 — ig-maker-design §4-5 "삭제를 승인 대상으로 남겨 둔 절차가 오판을 막았다"와 같은 취지)
+    - 기존 igTest 는 삭제하지 않고 스크래치로 이동 보존(오판 대비 — ig-maker §4-5 "삭제를 승인 대상으로 남겨 둔 절차가 오판을 막았다"와 같은 취지)
     - 재생성 절차 = Issue319 규약: `~/.claude/playground/resource/m2slide` 복사(markdown 5챕터 + `_config.yml` + `VERSION` + `Info.md`) + [`data/ppt-integration/`](data/ppt-integration/README.md) 템플릿 2종 복사
     - E2E 팬아웃은 **1장** — 게이트 임계(warn 2) 미만, 1라운드 선례(Issue312) 있음. 인스턴스는 sonnet 모델 명시(본 세션 모델 상속 금지 — 크레딧 과금 회피)
     - 픽스처는 git 미추적(Issue319) — `--sync-projects` 실행 금지(추적 목록 부작용 실측 있음)
@@ -2123,7 +2123,7 @@
 
 ## Issue322: ```pptx-info 펜스 블록의 m2slide 빌드 통과성 실측 + 사용 정책 박제 (등록: 2026-08-18, 해결: 2026-08-18, commit: e496f0c) ✅
 * 완료 실측 (스크래치 프로젝트, 2026-08-18): HTML 빌드 = `<code class="language-pptx-info hljs">` 코드블록 리터럴 렌더·빌드 정상. `--pptx`(lane A) = pandoc 일반 코드블록 통과·검증 rc0. 즉 빌드는 비파괴지만 **yaml 소스가 청중에 노출** → "m2slide 마크다운에서 쓰지 않는다" 정책을 [`md-m2slide-rules`](.claude/rules/md-m2slide-rules.md) 에 박제 + 통합 SSOT 판정 완료 표기
-* 목적: 상위 설계 [`pptx-scar-design.md`](file:///Users/nowage/.claude/_doc_arch/pptx-scar-design.md) §8-3 이 prj42 몫으로 지정한 *"` ```pptx-info ` 블록을 파서가 통과시키는지 확인(미지원 코드블록으로 렌더될 수 있음)"* 을 이행한다. 실측 후 m2slide 마크다운에서의 사용 정책을 규칙으로 박제한다.
+* 목적: 상위 설계 [`pptx-scar.md`](file:///Users/nowage/.claude/_doc_arch/pptx-scar.md) §8-3 이 prj42 몫으로 지정한 *"` ```pptx-info ` 블록을 파서가 통과시키는지 확인(미지원 코드블록으로 렌더될 수 있음)"* 을 이행한다. 실측 후 m2slide 마크다운에서의 사용 정책을 규칙으로 박제한다.
 * 상세:
     - `pptx-info` 블록은 파트 C(ppt-info, lane B 인포그래픽 덱)의 페이지 정의 입력이다. m2slide 덱(lane A)의 인포그래픽 경로는 ig-maker SVG 발행(`img/`)이 정본이므로, m2slide 마크다운에서는 **쓰지 않는다**가 유력 — 실측으로 확정
     - 확인 지점 2곳: ① m2slide HTML 빌드가 블록을 만나면 어떻게 렌더되나(코드블록 리터럴? 빌드 깨짐?) ② `--pptx`(md2pptx lane A) 경로에서의 처리
@@ -2147,9 +2147,9 @@
 
 ## Issue320: ig·ppt·cartoon 설계 2차 정합 — 글로벌 8/11~8/17 변경 반영 (등록: 2026-08-18, 해결: 2026-08-18, commit: 90cf746) ✅
 * 완료 실측: `ig-ppt-integration.md` 에 igsvg 대조 게이트·카툰 편입 경로 절 신설 + 미해결 4건 재판정(위임 1·유지 1·판정 완료 3) 반영. `issue-rules.md` 완료 섹션명 표기 정정(구 `🏁 완료-해결순` → 실물 `✅ 완료`). ⚠️ `_doc_arch/` 는 gitignore(로컬 전용)라 커밋은 룰 정정분만 담김
-* 목적: 1라운드(Issue309~319) 종결 이후 글로벌 *-maker 쪽에 들어온 변경(prj3 Issue382~388·412·425·426)을 m2slide 통합 SSOT 에 반영하고, [`ig-ppt-integration.md`](_doc_arch/ig-ppt-integration.md) 미해결 4건 + 상위 설계([`pptx-scar-design.md`](file:///Users/nowage/.claude/_doc_arch/pptx-scar-design.md) §8 "prj42 수정 필요 3건" 중 잔여 2건)를 재판정해 결정을 박제한다. 검토 결론 — **글로벌 *-maker 는 수정 불요**, m2slide 쪽 문서·배선 갱신으로 전부 흡수된다.
+* 목적: 1라운드(Issue309~319) 종결 이후 글로벌 *-maker 쪽에 들어온 변경(prj3 Issue382~388·412·425·426)을 m2slide 통합 SSOT 에 반영하고, [`ig-ppt-integration.md`](_doc_arch/ig-ppt-integration.md) 미해결 4건 + 상위 설계([`pptx-scar.md`](file:///Users/nowage/.claude/_doc_arch/pptx-scar.md) §8 "prj42 수정 필요 3건" 중 잔여 2건)를 재판정해 결정을 박제한다. 검토 결론 — **글로벌 *-maker 는 수정 불요**, m2slide 쪽 문서·배선 갱신으로 전부 흡수된다.
 * 상세:
-    - 반영 대상 글로벌 변경: `igsvg` 대조 게이트 재정의(prj3#388 — 입력을 5.svg 고정에서 해제, 기준은 `7.pptx` 문구·우회 플래그 없음) · `7.svg` 생성 주체 확정(#383 — 에이전트가 그리고 igsvg 는 판정만) · agent id 형식 집행(#384) · `.ready` `seeded_by` 쓰기 권한 확대(#382) · ig-selector 갈래 2 = promo-cartoon 위임(pptx-scar-design §6-1-c P5)
+    - 반영 대상 글로벌 변경: `igsvg` 대조 게이트 재정의(prj3#388 — 입력을 5.svg 고정에서 해제, 기준은 `7.pptx` 문구·우회 플래그 없음) · `7.svg` 생성 주체 확정(#383 — 에이전트가 그리고 igsvg 는 판정만) · agent id 형식 집행(#384) · `.ready` `seeded_by` 쓰기 권한 확대(#382) · ig-selector 갈래 2 = promo-cartoon 위임(pptx-scar §6-1-c P5)
     - 재판정 ①: 상위 설계 §8-2 `Projects/_ppt/` 공용 자산 루트 — **신설하지 않음**. m2slide 는 프로젝트=덱 단위고 테마가 프로젝트마다 다르다. `Projects/<N>/ppt/_asset_ppt` 상향 탐색 공유(Issue310)로 충분
     - 재판정 ②: 파이프라인 단계 5 선별 자동화 — **사람 지목 유지**. 팬아웃·승인 게이트는 ig-selector 소유(Issue313)라 m2slide 가 자동화하면 게이트 우회가 된다
     - 재판정 ③: `pptx.yml` 전 프로젝트 롤아웃 — **옵트인 유지**(필요 프로젝트만 템플릿 복사). 근거: ppt/ 폴더는 덱 작업이 실제로 있는 프로젝트에만 의미가 있다
