@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 417
+* Issue HWM: 418
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -112,6 +112,19 @@
     - 완료 조건: 아이폰 에뮬에서 탭만으로 전 내비게이션 통과 · **PC 에서 클릭·키보드 내비게이션 무회귀** · **위 실기기 결함(리프레쉬 후 스크롤 불가) 해소** · `aTest`·`aTest-all` 초록 · 결과 보고서 · 외부*핀봇 2종 각 1회 이상 배분·완료 기록(원장)
 
 # 📕 중요
+
+## Issue418: m2slide pptx 파리티·빌드 게이트·깨진 링크 (등록: 2026-09-27)
+* 목적: 같은 원고에서 HTML 16장이 pptx 28장으로 불어나고 도해가 평문이 됐는데 빌드는 rc=0 으로 끝났다 (prj7#Issue36 점검)
+* 상세:
+    - `lib/pptx/build-pptx.sh`: 최종 check-conform 이 `tail -1 || true` — FAIL 이면 항목 출력 + exit 2
+    - `lib/pptx/build-source.py`: 챕터 1장이 3장으로 분할, 덱 목차 장 끼어듦, 표지 제목이 폴더명, 부제 `<strong>` 앞 절단
+    - `lib/pptx/lane-b.py`: 프로세스 도해·카드 4개·제목만 카드가 평문 불릿으로 강등 — 도형 변환 대상 추가 또는 강등 장 로그
+    - `lib/generate-slides.js`: 챕터 진입 장 H1 유실(m2slide_info 예제에서도 재현)
+    - `lib/htmlart/` annotate: 한글 여러 줄에서 강조선 미표시·연결선 이탈
+    - `m2slide.sh --pdf`: 본문 제외·Chrome 미지정 · 외부 경로 빌드 후 dev-server URL 404
+    - 링크 깨짐: `.claude/rules/md-m2slide-rules.md` 등 `~/.claude/rules/md-slide-rules.md`(→ `_doc_arch/rules-ondemand/`) · `opus-4-7-execution-rules`(→ `opus-4-8`) 약 15곳 · README pptx 사용법 보강
+* 구현 명세:
+    - 근거: prj7 `_doc_work/report/output-quality-2026.09.27/m2slide.md`
 
 # 📙 일반
 
