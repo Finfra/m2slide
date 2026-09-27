@@ -17,6 +17,7 @@ date: 2026-05-03
 
 ## 1. 사전 검증
 
+* **출고 전 게이트 R2** ([release-test-rules](~/.claude/_doc_arch/rules-ondemand/release-test-rules.md)): `python3 ~/.claude/sh/release-test-audit.py recheck --repo . --version <출고할 버전>` — rc≠0 이면 출고 중단. `tdd/release.md` 의 `r2: warn` 동안은 경고만 내고 rc 0 이다(첫 R1 통과 후 `block` 으로 전환)
 * git working tree clean (또는 release-only 변경만 staged)
 * `VERSION` 파일 존재 (없으면 `0.1.0`로 초기 생성)
 * 사용자 승인 (Opus 4.7 실행 제약 — 파괴적 작업)

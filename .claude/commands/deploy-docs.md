@@ -58,6 +58,8 @@ ls -1 docs/ 2>/dev/null | grep -v -E '^(index\.html|\.DS_Store)$'
 
 ### B-0. 사전 검증
 
+* **출고 전 게이트 R2** ([release-test-rules](~/.claude/_doc_arch/rules-ondemand/release-test-rules.md)): `python3 ~/.claude/sh/release-test-audit.py recheck --repo .` — rc≠0 이면 출고 중단. `tdd/release.md` 의 `r2: warn` 동안은 경고만 내고 rc 0 이다(첫 R1 통과 후 `block` 으로 전환)
+
 | 체크                           | 실패 시 동작                              |
 | :----------------------------- | :---------------------------------------- |
 | `Projects/{project}/` 폴더 존재 | 즉시 중단 + 오류 보고                     |

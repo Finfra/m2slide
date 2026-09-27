@@ -4,6 +4,7 @@ description: prj42 m2slide 의 공개 저장소 태그 출고(GitHub clone)·Git
 date: 2026.09.27
 evidence_dir: tdd/evidence
 gate: pre-tag
+r2: warn
 env: jm4
 ---
 
