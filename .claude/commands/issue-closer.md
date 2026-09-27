@@ -61,4 +61,4 @@ source ~/.bin/issue-helper.sh
 
 # Opus 4.7 실행 제약
 
-공통 제약은 [`~/.claude/rules/opus-4-7-execution-rules.md`](../../../../../.claude/rules/opus-4-7-execution-rules.md) 참조.
+공통 제약은 [`~/.claude/rules/opus-4-8-execution-rules.md`](../../../../../../../.claude/rules/opus-4-8-execution-rules.md) 참조.

@@ -550,8 +550,8 @@ open Projects/LlmAndVibeCoding/slide/01-opening.html
 | `config-sync-rules`   | `_config.yml` 설정 키 추가·제거·변경 시 4곳(`lib/config.js` 파서·`_config.org.yml` 문서·설정 GUI `_CONFIG_SCHEMA`·`_doc_arch/config-gui.md`) 동기화 강제 |
 
 **슬라이드 마크다운 작성 시 의무 참조 순서**:
-1. `~/.claude/rules/md-rules.md` (일반 마크다운 기본)
-2. `~/.claude/rules/md-slide-rules.md` (슬라이드 도구 공통)
+1. `~/.claude/_doc_arch/rules-ondemand/md-rules.md` (일반 마크다운 기본)
+2. `~/.claude/_doc_arch/rules-ondemand/md-slide-rules.md` (슬라이드 도구 공통)
 3. `.claude/rules/md-m2slide-rules.md` (m2slide 특화)
 
 ## graphify

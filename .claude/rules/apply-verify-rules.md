@@ -430,6 +430,18 @@ file:///<abs_path>/Projects/{Name}/slide/{chapter}.html?fwd=1#/N
 
 ⚠️ 세 러너 모두 **차단 지점이 아니다.** 차단은 이미 `--pdf` 빌드 안에 있다(`Printed N` 대조·`combine --expect`·폰트 격리·`PDF_LOSS` → `exit 2`). 러너까지 차단이면 오탐 1건이 배포를 막는다 — §4.11 과 같은 판단.
 
+## 4.13 single mode pptx 파리티 · 최종 게이트 (Issue418)
+
+**`build-source.py`(장 구성·표지 메타·모드 판정) · `lane-t.py`(좌표) · `build-pptx.sh` 최종 판정 · chapter layout 제목 규칙을 건드렸으면 돌린다.**
+
+```bash
+./z_test/ig-ppt/9.single-parity.sh            # --no-pdf 로 PDF 축 생략
+```
+
+* 픽스처는 저장소에 추적되는 `z_test/fixtures/pptx-parity/gate16/`(single · `markdown/` 단독 · H1 챕터 3 · 16:9)이고 **임시 사본**에서 빌드한다
+* ⚠️ [`3.parity.sh`](../../z_test/ig-ppt/3.parity.sh) ①③ 은 single mode 에서 skip 된다 — 그 틈으로 HTML 16장 → pptx 28장이 rc0 으로 나갔다. single mode 파리티는 이 러너가 잰다
+* 최종 check-conform 은 이제 **차단**이다(FAIL → `build-pptx.sh` rc 2 → `m2slide.sh` rc 1). lane B/G/T/M/S 가 나중에 넣은 도형의 위반은 md2pptx 내장 검증(§4.7)이 못 보고 여기서만 잡힌다
+
 > lint subcommand 전체 목록: `--lint-deployment`(§4.5) · `--lint-license`(§4.6) · `--lint-data`([`data-access-rules.md`](data-access-rules.md)) · `--lint-config`·`--lint-layouts`([`../../_doc_arch/theme_layout.md`](../../_doc_arch/theme_layout.md)). PPTX 규격 검증(§4.7)은 subcommand 가 아니라 `--pptx` 빌드 내장이다.
 
 ## 5. 결과 보고

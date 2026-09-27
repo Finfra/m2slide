@@ -4,7 +4,7 @@ description: m2slide 프로젝트 마크다운 작성 규칙. md-slide-rules의 
 date: 2026-05-01
 ---
 
-> 기본 규칙은 `~/.claude/rules/md-slide-rules.md` 참조 (Frontmatter, 슬라이드 구분자, 헤더 컨벤션, 멀티 컬럼 등 슬라이드 도구 공통).
+> 기본 규칙은 `~/.claude/_doc_arch/rules-ondemand/md-slide-rules.md` 참조 (Frontmatter, 슬라이드 구분자, 헤더 컨벤션, 멀티 컬럼 등 슬라이드 도구 공통).
 > 본 규칙은 그 위에 m2slide 고유 확장만 정의함. 충돌 시 본 규칙 우선.
 
 # 적용 범위
@@ -735,8 +735,8 @@ ASCII 와이어프레임을 변환 없이 **원문 그대로** D2Coding 모노�
 
 # 참고
 
-* 슬라이드 도구 공통 규칙: [`~/.claude/rules/md-slide-rules.md`](../../../../../.claude/rules/md-slide-rules.md)
-* 일반 마크다운 규칙: [`~/.claude/rules/md-rules.md`](../../../../../.claude/rules/md-rules.md)
+* 슬라이드 도구 공통 규칙: [`~/.claude/_doc_arch/rules-ondemand/md-slide-rules.md`](../../../../../../../.claude/_doc_arch/rules-ondemand/md-slide-rules.md)
+* 일반 마크다운 규칙: [`~/.claude/_doc_arch/rules-ondemand/md-rules.md`](../../../../../../../.claude/_doc_arch/rules-ondemand/md-rules.md)
 * m2slide CSS 가드: [`CLAUDE.md`](../../CLAUDE.md) "CSS 수정 시 주의사항"
 * theme/layout 시스템: [`_doc_arch/theme.md`](../../_doc_arch/theme.md), [`_doc_arch/theme_layout.md`](../../_doc_arch/theme_layout.md)
 * slot 카탈로그 SSOT (4 yml, Issue150) + 통합 가이드 (Issue151): [`data/slot_meta.yml`](../../data/slot_meta.yml) / [`data/slot_pandoc.yml`](../../data/slot_pandoc.yml) / [`data/slot_animation.yml`](../../data/slot_animation.yml) / [`data/slot_user.yml`](../../data/slot_user.yml) — 가이드 [`_doc_arch/slot_guide.md`](../../_doc_arch/slot_guide.md)

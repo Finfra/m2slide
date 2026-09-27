@@ -39,7 +39,7 @@ An independent per-project folder structure lets you manage many lecture decks a
 - **HTML**: Reveal.js presentation (default)
 - **EPUB**: e-book (`--epub`)
 - **PDF**: per-chapter combined PDF (`--pdf`, uses decktape)
-- **PPTX**: PowerPoint-compatible (`--pptx`, uses pandoc)
+- **PPTX**: editable PowerPoint deck (`--pptx`) — theme, cover, cards and diagrams are carried over; the build **fails** on PowerPoint spec violations (see [PowerPoint conversion](#5-powerpoint-conversion-optional))
 - **Automatic GitHub Pages deploy**: `deploy_formats` in `_config.yml` + the `/deploy-docs` command auto-syncs artifacts and cards (see the [GitHub Pages deployment](#github-pages-deployment) section)
 
 ## Project Structure
@@ -120,7 +120,13 @@ Multiple Markdown files → per-chapter HTML + a mind-map table of contents. For
 
 # Specify a particular project
 ./m2slide.sh Projects/ProjectA
+
+# A project folder outside this repository (absolute path)
+./m2slide.sh /abs/path/to/MyDeck
 ```
+
+* Every build clears `slide/*.html` in the target project and regenerates it (other files in `slide/` are kept).
+* A project outside `Projects/` is built in place — `markdown/`, `slide/` and `_pipeline/` live in that folder. The dev-server only serves `Projects/<name>`, so the build prints a `file://…/slide/index.html` link for such a folder (use `--link` to register it and get a `/p/<name>` URL).
 
 **Detailed control (running Node.js directly)**:
 ```bash
@@ -219,14 +225,16 @@ open Projects/NewProject/slide/index.html
 ### 5. PowerPoint conversion (optional)
 
 ```bash
-# Pandoc must be installed (brew install pandoc)
+# HTML + PPTX (requires pandoc and the ppt-* skills; output: slide/<Project>.pptx)
+./m2slide.sh Projects/ProjectA --pptx
 
-# Convert a single file
-pandoc Projects/ProjectA/markdown/01-section.md -o presentation.pptx
-
-# Combine all material
-pandoc Projects/ProjectA/markdown/*.md -o complete.pptx
+# Skip the spec gate on purpose (the result is not for distribution)
+./m2slide.sh Projects/ProjectA --pptx --pptx-no-verify
 ```
+
+* The deck keeps the same slide structure as the HTML deck (cover, agenda, chapter entries, body slides). Cards and supported htmlArt blocks become native shapes; a block that cannot be converted stays as plain bullets and the build log names the slide (`⚠️ 평문 불릿으로 남음 — p8 «…»`).
+* After all post-processing the deck is re-checked (`check-conform --lane a`). A FAIL (off-canvas shape, invalid layout, …) prints the failing items and makes the build fail; warnings do not.
+* Do **not** call `pandoc` directly on the Markdown — the theme is lost and `#layout-*` directives leak into the slides.
 
 ## Highlights
 

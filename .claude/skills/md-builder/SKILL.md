@@ -233,8 +233,8 @@ Glob refs/*.md → 키워드별 발췌 인덱싱
 # 참조
 
 * SSOT yml: [`data/md-builder/styles.yml`](../../../data/md-builder/styles.yml) (스타일·패턴·검증)
-* 글로벌 md 규칙: [`~/.claude/rules/md-rules.md`](../../../../../.claude/rules/md-rules.md)
-* 슬라이드 공통 규칙: [`~/.claude/rules/md-slide-rules.md`](../../../../../.claude/rules/md-slide-rules.md)
+* 글로벌 md 규칙: [`~/.claude/_doc_arch/rules-ondemand/md-rules.md`](../../../../../../../../.claude/_doc_arch/rules-ondemand/md-rules.md)
+* 슬라이드 공통 규칙: [`~/.claude/_doc_arch/rules-ondemand/md-slide-rules.md`](../../../../../../../../.claude/_doc_arch/rules-ondemand/md-slide-rules.md)
 * m2slide 마크다운 규칙: [`../../rules/md-m2slide-rules.md`](../../rules/md-m2slide-rules.md)
 * release-date 규칙: [`../../rules/release-date-rules.md`](../../rules/release-date-rules.md)
 * apply-verify 규칙: [`../../rules/apply-verify-rules.md`](../../rules/apply-verify-rules.md)

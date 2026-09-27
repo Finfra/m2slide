@@ -39,7 +39,7 @@
 - **HTML**: Reveal.js 프레젠테이션 (기본)
 - **EPUB**: 전자책 (`--epub`)
 - **PDF**: 챕터별 합본 PDF (`--pdf`, decktape 사용)
-- **PPTX**: PowerPoint 호환 (`--pptx`, pandoc 사용)
+- **PPTX**: 편집 가능한 PowerPoint 덱 (`--pptx`) — 테마·표지·카드·도해를 옮기고, PowerPoint 규격 위반이 있으면 빌드가 **실패**한다 ([PowerPoint 변환](#5-powerpoint-변환-옵션) 참조)
 - **GitHub Pages 자동 배포**: `_config.yml`의 `deploy_formats` + `/deploy-docs` 커맨드로 산출물·카드 자동 동기화 (자세한 내용은 [GitHub Pages 배포](#github-pages-배포) 섹션)
 
 ## 프로젝트 구조
@@ -120,7 +120,13 @@ m2slide/
 
 # 특정 프로젝트 지정
 ./m2slide.sh Projects/ProjectA
+
+# 저장소 밖 프로젝트 폴더 (절대경로)
+./m2slide.sh /abs/path/to/MyDeck
 ```
+
+* 빌드마다 대상 프로젝트의 `slide/*.html` 을 지우고 다시 만든다(`slide/` 의 다른 파일은 남는다).
+* `Projects/` 밖 폴더는 그 자리에서 빌드된다 — `markdown/`·`slide/`·`_pipeline/` 이 그 폴더에 생긴다. dev-server 는 `Projects/<이름>` 만 서빙하므로 이런 폴더에는 `file://…/slide/index.html` 링크를 안내한다(`--link` 로 등록하면 `/p/<이름>` URL 로 볼 수 있다).
 
 **상세 제어 (Node.js 직접 실행)**:
 ```bash
@@ -219,14 +225,16 @@ open Projects/NewProject/slide/index.html
 ### 5. PowerPoint 변환 (옵션)
 
 ```bash
-# Pandoc 설치 필요 (brew install pandoc)
+# HTML + PPTX (pandoc·ppt-* 스킬 필요 — 산출: slide/<프로젝트>.pptx)
+./m2slide.sh Projects/ProjectA --pptx
 
-# 개별 파일 변환
-pandoc Projects/ProjectA/markdown/01-section.md -o presentation.pptx
-
-# 전체 자료 통합
-pandoc Projects/ProjectA/markdown/*.md -o complete.pptx
+# 규격 게이트를 의도적으로 넘길 때만 (배포 대상 아님)
+./m2slide.sh Projects/ProjectA --pptx --pptx-no-verify
 ```
+
+* HTML 덱과 **같은 장 구성**(표지·agenda·챕터 진입 장·본문)으로 나온다. 카드와 지원되는 htmlArt 는 네이티브 도형이 되고, 변환하지 못한 블록은 평문 불릿으로 남으며 빌드 로그가 그 장을 적는다(`⚠️ 평문 불릿으로 남음 — p8 «…»`).
+* 후처리를 모두 마친 뒤 다시 검사한다(`check-conform --lane a`). FAIL(캔버스 이탈·템플릿 밖 레이아웃 등)이면 항목을 출력하고 빌드가 실패한다. WARN 은 막지 않는다.
+* 마크다운에 `pandoc` 을 **직접** 부르지 말 것 — 테마가 빠지고 `#layout-*` 지시자가 본문에 새어 나온다.
 
 ## 주요 특징
 

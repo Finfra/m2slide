@@ -258,7 +258,7 @@ orchestrator `--no-checkpoint` 미지정 시 `checkpoint.template` 메시지 출
 
 * SSOT yml: [`data/agenda-designer/patterns.yml`](../../data/agenda-designer/patterns.yml) (mode·outline·템플릿·검증)
 * m2slide 마크다운 규칙: [`../rules/md-m2slide-rules.md`](../rules/md-m2slide-rules.md)
-* 슬라이드 공통 규칙: [`~/.claude/rules/md-slide-rules.md`](../../../../../.claude/rules/md-slide-rules.md)
+* 슬라이드 공통 규칙: [`~/.claude/_doc_arch/rules-ondemand/md-slide-rules.md`](../../../../../../../.claude/_doc_arch/rules-ondemand/md-slide-rules.md)
 * 파이프라인: [`_doc_arch/authoring-pipeline.md`](../../_doc_arch/authoring-pipeline.md) 단계 3
 * 입력 SSOT: [`_doc_arch/info.md`](../../_doc_arch/info.md)
 * umbrella task: [`_doc_work/z_done/tasks/authoring-pipeline_task.md`](../../_doc_work/z_done/tasks/authoring-pipeline_task.md)

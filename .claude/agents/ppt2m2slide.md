@@ -405,7 +405,7 @@ python3 lib/tuner/ppt-post-diff.py Projects/<Name>
 
 # Opus 4.7 실행 제약
 
-공통 제약은 [`~/.claude/rules/opus-4-7-execution-rules.md`](~/.claude/rules/opus-4-7-execution-rules.md) 참조. 본 agent 특화 제약:
+공통 제약은 [`~/.claude/rules/opus-4-8-execution-rules.md`](../../../../../../../.claude/rules/opus-4-8-execution-rules.md) 참조. 본 agent 특화 제약:
 
 * 슬라이드 처리는 `heuristics.yml processing_limits.max_slides` (기본 200장)까지. 초과 시 분할 변환 요청
 * 변환 단계 6개 각각 실패 시 재시도 1회 → 실패 시 사용자 보고 + 중단
