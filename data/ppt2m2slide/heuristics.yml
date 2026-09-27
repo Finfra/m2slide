@@ -968,7 +968,7 @@ palette_match:
     accent_6: 0.2
 
 # ── PPT 슬라이드 처리 상한 ────────────────────────────────────
-# Opus 4.7 루프 상한 준수 (rules/opus-4-7-execution-rules.md)
+# Opus 4.8 루프 상한 준수 (rules/opus-4-8-execution-rules.md)
 processing_limits:
   max_slides: 200              # 초과 시 분할 변환 요청
   smartart_per_slide_max: 5    # 한 슬라이드에 SmartArt 5개 초과 시 경고

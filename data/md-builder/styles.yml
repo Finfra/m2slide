@@ -532,9 +532,9 @@ raw_markdown_syntax_block_policy:
 # 5. md 규칙 준수 (3-tier — 글로벌 + 슬라이드 공통 + m2slide 특화)
 # ============================================================================
 md_rules_compliance:
-  - source: "~/.claude/rules/md-rules.md"
+  - source: "~/.claude/_doc_arch/rules-ondemand/md-rules.md"
     apply: [frontmatter, bullet, table]
-  - source: "~/.claude/rules/md-slide-rules.md"
+  - source: "~/.claude/_doc_arch/rules-ondemand/md-slide-rules.md"
     apply: [slide_separator, h2_slide_title, code_block_language]
   - source: ".claude/rules/md-m2slide-rules.md"
     apply: [layout_meta_skip, slot_div, agenda_inline_link]

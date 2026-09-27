@@ -260,7 +260,7 @@ validation_rules:
       confidence: low                        # goal 스키마 전환 완료 · enforce 스캐너는 후속
   shared:
     - id: md_slide_rules_compliant
-      desc: "~/.claude/rules/md-slide-rules.md 준수"
+      desc: "~/.claude/_doc_arch/rules-ondemand/md-slide-rules.md 준수"
     - id: md_m2slide_rules_compliant
       desc: ".claude/rules/md-m2slide-rules.md 준수"
 
