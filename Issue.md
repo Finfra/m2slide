@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 416
+* Issue HWM: 417
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -118,6 +118,16 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue417: TDD 재생목록 전 목표 green — prj5#Issue100 웨이브 (등록: 2026-09-27, 해결: 2026-09-27, commit: `ac4e933`) ✅
+* 목적: prj5 Issue100(TDD 대상 전 prj 재생목록 완성)의 prj42 몫 — [tdd/playlist.md](tdd/playlist.md) 10개 목표를 실제로 돌려 전량 ✅
+* 상세:
+    - 착수 시 9/10 ✅ 로 적혀 있었으나 **실행하니 #1·#2 가 red** 였다 — 둘 다 제품 회귀가 아니라 테스트·스캐너 쪽 전제가 낡은 것
+    - #1 통합 테스트 3건: 픽스처 drift(`aTest`=single·`m2Slide`=chapter 로 바뀜) → 모드가 이름에 박힌 `m2Slide_single_mode`·`m2Slide_chapter_mode` 로 고정 + `--no-serve`
+    - #2 위생 스캐너: 원고 선택이 빌더와 갈림(`markdown/*.md + *.md`) → chapter 루트 설계 문서(1.design_rnd `DESIGN.md`·`AUTHORING.md`) 9건 오검출. 빌더 규칙(markdown/ 우선) 단일 헬퍼로 통일, 재현 픽스처 선행
+    - #6 신설: `1.integrity` ⑤ — chapter 합본 앞 3p 출처를 원고로 되짚음(쪽 수만으로는 제자리를 모른다). 변이 PDF 3종 red · 실 PDF green
+* 검증(jm4, 격리 사본·읽기 전용): unit+integration 198/198 · policy-fixture 통과 · 1.integrity ①~⑤(chapter 33p·4:3 single 27p) · 3.nondeterminism --mechanism 조기 판정 0 · 3.parity 7/7 · 6.roundtrip 계약대로 · ego-mobile M1~M6·L1 PASS · sync-projects+test_server 74 OK
+* 환경 발견: `~/.cache/puppeteer` 비어 `--pdf` 가 Chrome 146 을 못 찾음 → `PUPPETEER_EXECUTABLE_PATH` 로 시스템 Chrome 지정(debug_TECH 2026-09-27)
 
 ## Issue416: Projects.md 를 `/p/` 프로젝트 목록의 유일한 등록부로 — `경로` 열로 외부 마운트 표기·복원 (등록: 2026-09-26, 해결: 2026-09-26, commit: 39eb61a) ✅
 * 목적: `/p/` 카드 한 장의 출처가 다섯 군데(폴더 목록·심링크·덱 루트·Projects.md·___pm 레지스트리)로 흩어져 *"정본이 Projects.md 아니었나"* 라는 직관과 실제 동작이 어긋난다. 외부 프로젝트 여부·경로가 파일시스템 심링크에만 있어 표에서 보이지 않고, 다른 머신에서는 마운트가 복원되지 않는다
