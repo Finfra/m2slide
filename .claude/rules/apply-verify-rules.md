@@ -412,7 +412,7 @@ file:///<abs_path>/Projects/{Name}/slide/{chapter}.html?fwd=1#/N
 
 ## 4.12 PDF 파리티 회귀 (Issue413)
 
-**`--pdf` 경로를 건드렸거나, 테마·htmlart 렌더·클라이언트 훅을 고쳤으면 돌린다.** pptx 와 달리 PDF 는 **고정된 렌더 결과**라 화면과 다르면 그 자체가 결함이다 — 설계 SSOT 는 [`../../_doc_arch/pdf-parity-design.md`](../../_doc_arch/pdf-parity-design.md).
+**`--pdf` 경로를 건드렸거나, 테마·htmlart 렌더·클라이언트 훅을 고쳤으면 돌린다.** pptx 와 달리 PDF 는 **고정된 렌더 결과**라 화면과 다르면 그 자체가 결함이다 — 설계 SSOT 는 [`../../_doc_arch/pdf-parity.md`](../../_doc_arch/pdf-parity.md).
 
 | 무엇을 고쳤나                                               | 부를 러너                                              |
 | :---------------------------------------------------------- | :----------------------------------------------------- |
