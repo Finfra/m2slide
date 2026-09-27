@@ -520,7 +520,15 @@ current_project: LlmAndVibeCoding
 
 ## 라이선스
 
-이중 라이선스 — 전문은 [LICENSE.md](./LICENSE.md) 참조.
+| 부분                                          | 라이선스                                               | 표기 의무                                                              |
+| :-------------------------------------------- | :----------------------------------------------------- | :--------------------------------------------------------------------- |
+| 소스 코드 (`lib/`·`bin/`·빌드 스크립트)       | [Apache-2.0](./LICENSE) — [NOTICE](./NOTICE) 동봉      | 없음 (NOTICE 보존)                                                     |
+| 번들 테마 (`theme/` — CSS·레이아웃·이미지)    | [m2slide Theme License](./theme/LICENSE.md)            | **첫 장과 마지막 장**에 **"Powered by finfra.kr, Made by m2slide"**     |
+| 생성한 프레젠테이션                           | 사용자 소유                                            | 번들 테마를 썼을 때만 위 테마 조건 승계                                |
 
-* **무료 (CC BY 4.0)**: m2slide로 생성한 프레젠테이션은 **첫 장과 마지막 장**에 표기 문구 **"Powered by finfra.kr, Made by m2slide"** 를 유지해야 합니다.
-* **유료 (상업 라이선스)**: 해당 표기를 제거한 프레젠테이션을 생성·배포하려면 유료 상업 라이선스가 필요합니다. 문의: <finfra@gmail.com> / <https://finfra.kr>
+* **무료**: 첫 장·마지막 장 표기를 유지하면 됩니다 — m2slide 가 자동으로 넣습니다.
+* **유료**: 번들 테마로 만든 프레젠테이션에서 표기를 **제거**하려면 상업 라이선스가 필요합니다 — [COMMERCIAL.md](./COMMERCIAL.md). 문의: <finfra@gmail.com> / <https://finfra.kr>
+* 직접 만든 테마로 만든 프레젠테이션에는 표기 의무가 없습니다.
+* 상표("m2slide"·"Finfra"·"Powered by finfra.kr")는 Apache-2.0 이 허락하지 않습니다 — [TRADEMARK.md](./TRADEMARK.md).
+
+> 이미 배포된 버전은 당시 라이선스를 유지합니다: **0.8.0 미만 — MIT**, **0.8.0 ~ 이번 변경 이전 — CC BY 4.0 + 상업 이중 라이선스**.

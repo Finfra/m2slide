@@ -4,6 +4,10 @@ All notable changes to this project. m2slide follows [SemVer](https://semver.org
 
 ## [Unreleased]
 
+### Changed
+
+- 라이선스 프로파일 A 적용 (Issue420) — CC BY 4.0 이중 라이선스(`LICENSE.md`) 폐기 → 소스 코드 **Apache-2.0**(`LICENSE`·`NOTICE`) + 번들 테마 **m2slide Theme License**(`theme/LICENSE.md`) + `TRADEMARK.md`·`COMMERCIAL.md`. 산출물 첫·끝 장 "Powered by finfra.kr, Made by m2slide" 표기 조건과 뱃지 자동 삽입은 그대로이고, 근거만 CC BY 에서 테마 자산 저작권으로 옮겼다. 직접 만든 테마는 표기 의무가 없다. `license_attribution: false` 경고 문구도 "테마 라이선스 조건 이탈" 로 바뀐다. 이미 나간 버전은 당시 라이선스 유지(< 0.8.0 MIT, 0.8.0 ~ 이번 변경 이전 CC BY 4.0 이중)
+
 ### Added
 
 - `head_number` (`full`|`short`) — head-bar 슬롯 선두의 일차 접두(`N-`)를 렌더 시점에만 제거하는 옵션 (Issue378). `1-5. 닫는 절` → `5. 닫는 절`. 원고의 절 번호는 타 문서가 참조하는 공용 식별자라 소스에서 뗄 수 없는 경우를 위한 것. 점 형식(`4.2.1.`)과 `1-` 로 시작하지 않는 텍스트는 무변경이고, 미지정 시 기존 출력과 완전히 동일하다
