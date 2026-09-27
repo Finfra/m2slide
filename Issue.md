@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 420
+* Issue HWM: 421
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -113,7 +113,13 @@
 
 # 📕 중요
 
-## Issue418: m2slide pptx 파리티·빌드 게이트·깨진 링크 (등록: 2026-09-27)
+# 📙 일반
+
+# 📗 선택
+
+# ✅ 완료
+
+## Issue418: m2slide pptx 파리티·빌드 게이트·깨진 링크 (등록: 2026-09-27, 해결: 2026-09-27, commit: `384896f`, `f6e911a`, `2f2100a`, `5f7f002`) ✅
 * 목적: 같은 원고에서 HTML 16장이 pptx 28장으로 불어나고 도해가 평문이 됐는데 빌드는 rc=0 으로 끝났다 (prj7#Issue36 점검)
 * 상세:
     - `lib/pptx/build-pptx.sh`: 최종 check-conform 이 `tail -1 || true` — FAIL 이면 항목 출력 + exit 2
@@ -125,12 +131,27 @@
     - 링크 깨짐: `.claude/rules/md-m2slide-rules.md` 등 `~/.claude/rules/md-slide-rules.md`(→ `_doc_arch/rules-ondemand/`) · `opus-4-7-execution-rules`(→ `opus-4-8`) 약 15곳 · README pptx 사용법 보강
 * 구현 명세:
     - 근거: prj7 `_doc_work/report/output-quality-2026.09.27/m2slide.md`
-
-# 📙 일반
-
-# 📗 선택
-
-# ✅ 완료
+    - 위임: pm-do 세션(팀장핀봇 `fbot-lead-m2slide`, `solo`) — 2026-09-27 23:00 OS 재부팅으로 중단 후 재개. P3 는 서브 에이전트가 원인 규명·수정, 팀장이 diff·red 재현으로 검증
+* 결과:
+    - 원 문제 덱 사본 재빌드: pptx **28장 → 17장**(HTML 16 + agenda) · 최종 FAIL **1 → 0** · 표지 제목 = frontmatter · 평문 이월 3건이 장 번호·사유로 로그에 남음
+    - P4 게이트: 최종 check-conform FAIL → `build-pptx.sh` rc 2(항목 전문 출력) → `m2slide.sh` rc 1. `--pptx-no-verify` 만 통과
+    - P5·P6b: 모드 판정·원고 선택을 HTML 빌더와 통일(입력 폴더 AGENDA.md) · single 메타 = 슬라이드 소스 frontmatter · 모든 H1 진입부 정규화 · 표지 글자를 요소 깊이로 추출(태그 절단·`&lt;` 누출 해소)
+    - 캔버스 이탈의 실제 원인: lane T 좌표 정책이 **3:2(1920×1280) 실측**인데 16:9 에 그대로 적용 — ego 로 두 판형 앵커를 재어 하단 고정 이동으로 보정, pie 범례는 HTML `renderPie` 의 `max(56, 520/n)` 로 재계산
+    - P6: lane B 대상 추가 대신 **평문 이월 로그**(장 번호·제목·사유 «블록 뒤에 본문이 더 있다»)로 닫음. 네이티브 차트(pie)는 이월 집계에서 제외
+    - P2: 원인은 `generate-slides.js` 가 아니라 `slide-parser.js resolveSlideTitle` — chapter layout 에서도 H1 을 버렸다. pptx(`entry_slide`)·역변환(`pptx2source` h1_attach)을 함께 맞춤
+    - P3: 한글·3줄과 무관 — 로드 시 **전환 중 3D transform 상태의 비현재 장**을 한 번 재고 끝나던 것. 순차 이동 진입에서만 재현(직접 로드는 옛 코드도 통과). `offset*` 좌표 + ResizeObserver 재그리기
+    - P7: single 판정 통일(`markdown/덱.md` 단독 덱의 본문 index.html 누락 해소) · puppeteer 캐시 부재 시 시스템 Chrome 자동 지정
+    - P8: legacy 안내 URL 은 **저장소 안 프로젝트도 404** 였다(Issue236.11 차단 경로) → `/p/<이름>/n/c`, 저장소 밖은 `file://`
+    - 링크: 추적 파일 11곳 + 정책 yml 3종(백업 후 단독 커밋). 상대 링크 5단계는 원래부터 `~/_git/__all/.claude` 로 풀려 끊겨 있었다 — 깊이 재계산. README en·kr pptx 절 교체
+    - TDD: red — `9.single-parity.sh` 9단언 전부 ❌ · `chapter-title.test.js` 1 fail · `1.annotate-nav.sh` HEAD 판 over 6 → green — 9/9 · 3/3 · 0. 회귀: `node --test` 204/204 · 3.parity igTest·m2Slide_chapter_mode 7/7 · 4.laneb 6/6 · 5.lanem · 6.roundtrip aTest·igTest·aTest-all 계약대로 · 7.coverage 미측정 0 · 8.assembly FAIL 0 · policy-fixture · lint-data
+    - 재생목록 #12 `single-mode-pptx-parity`
+    - ⚠️ 영향 범위(P2): `#layout-chapter` + H1 + H2 인 챕터 장 32개(8개 프로젝트 — GenContentProd·aTest-all·cg-e2e·fSnippetCliIntro·fWarrangeCliIntro·igTest·m2slide_info·m2slide_info_en)가 **재빌드하면** 큰 제목이 H2 부제 → H1 으로 바뀐다. `docs/` 발행본 재빌드·재배포는 하지 않았다
+    - 후속 후보(이 이슈 범위 밖 — 이슈화는 우선순위 판단 후):
+        - lane B — 블록 **뒤에 본문이 더 있는** cards·process 도 도형으로(지금은 평문 이월 + 로그). prj7 덱 7개 블록 중 3개가 이 형태였다 — «실측 8건 전부 블록이 장 끝» 전제가 깨졌다
+        - single mode 에서 `# H1` + `## H2` + 본문이 **한 장**이면 autoToc 가 그 장을 Cards Page 로 바꾼 뒤 `cards_placeholder: false` 로 **경고 없이** 지운다 — HTML·pptx 양쪽 손실 — P3 조사 중 발견
+        - pptx 챕터 진입 장 꼴 — `Title and Content` 로 나와 제목이 위에 붙고 chapter 마스코트가 본문과 겹친다(conform WARN). HTML 처럼 가운데 큰 제목 + 부제로
+        - annotate 다줄 target — 2번째 줄 이하 over 선이 줄 사이에 들어가 윗줄 밑줄로 읽히고 곡선이 본문을 가로지른다(설계 한계, Issue364 높이 예산과 함께)
+    - 범위 밖(타 prj 소유 — 수정 안 함): prj3 `data/visual-gen/rules.yml`·`registry.yml`(D1·D2) · prj7 `generators/_slide/m2slide/card.md`·`tdd/_slide/m2slide/test_m2slide.py`(D4) · 미추적 `.agents/`·`.codex/`·`AGENTS.md` 의 옛 경로(생성 도구 산출물)
 
 ## Issue420: 라이선스 프로파일 A 적용 — CC BY 4.0 이중 → 코드 Apache-2.0 + theme/ Finfra Theme License(훅 ①③), 뱃지 코드 유지 (등록: 2026-09-27, 해결: 2026-09-27, commit: `c153b9b`) ✅
 * 목적: CC 는 소프트웨어 비권장이고 위치 지정 표기는 CC BY 조항과 긴장한다. 표기 의무를 테마 자산 저작권으로 옮기면 사용자 원고를 2차저작물로 주장할 필요가 없어 깨끗하다. 뱃지 동작은 그대로다
