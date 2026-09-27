@@ -1,0 +1,4 @@
+# Issue418 P3 회귀 픽스처 — annotate 를 **순차 이동으로 진입**할 때의 계측 (러너가 임시 사본에서 빌드)
+theme: default_lec
+slide_ratio: "16:9"
+cover_enabled: false
