@@ -119,6 +119,29 @@
 
 # ✅ 완료
 
+## Issue421: 테마 라이선스 v1.0 → v1.2 재동기 + THIRD-PARTY-NOTICES (prj6#Issue17 적대적 검토 반영) (등록: 2026-09-27, 해결: 2026-09-28, commit: f78906c) ✅
+* 목적: Issue420 의 `theme/LICENSE.md` 는 v1.0 이다. 적대적 검토에서 ① 유료 산출물에 'Powered by finfra.kr' 를 강제하면서 상표 정책은 유료 사용을 금지하는 모순 ② PDF·PPTX 에 CSS 가 복제되지 않아 저작권 조건이 닿지 않을 수 있는 문제가 나왔다. v1.2 는 한정 상표 허락과 계약 약정 병렬로 둘 다 해소한다
+* depends: prj6#Issue17
+* 상세:
+    - `theme/LICENSE.md` → THEME-LICENSE v1.2 전문(§2 계약 약정 · §3 표기용 한정 상표 허락 · `{{EFFECTIVE_DATE}}`=이번 커밋일). 표기 문구·첫/끝 장 위치는 현행 그대로
+    - `theme/THIRD-PARTY-NOTICES.md` 신설 — 실측(2026-09-27) 외부 폰트·제3자 이미지 없음 → `None` 한 줄 + 마스코트(finfraPuffer·Cat·Butterfly)가 Finfra 원작임을 1줄
+    - `TRADEMARK.md`·`COMMERCIAL.md`·`NOTICE` → v1.2 (m2slide 는 배포본 약관이 없으므로 COMMERCIAL 의 DISTRIBUTION-TERMS 행과 NOTICE 의 Official Build Components 구절은 뺀다)
+    - ⚠️ 다른 세션이 이 repo 에서 작업 중(작업트리 dirty 120) — 자기 파일만 `git add`, `-A` 금지
+    - 근거: 템플릿 `/Users/nowage/_git/___architect/data/template/license/`(v1.2, prj6 `3195f25`) · 검토 처분표 `/Users/nowage/_git/___architect/_doc_work/report/license-hook-review_issue17_report.md` §반영 결과 · 정본 `/Users/nowage/_git/___architect/_doc_arch/license-profiles.md` §3-2·§5 · §3-3
+    - **한국어 테마 라이선스 추가** (prj6 템플릿 `/Users/nowage/_git/___architect/data/template/license/THEME-LICENSE_ko.md`): `theme/LICENSE_ko.md` 를 영문 `theme/LICENSE.md` v1.2 와 **같은 커밋**으로 — 테마 §6 이 한국 거주 개인에게 동등 효력을 약속한다. `.gitignore` 의 `!/theme/LICENSE.md` 옆에 `!/theme/LICENSE_ko.md` 도 추가해야 추적된다
+* 구현 명세:
+    - 검증: `theme/LICENSE.md` `Version 1.2` · `./m2slide.sh --lint-license` 통과 · 빌드 산출물 첫/끝 장 뱃지 그대로 · `grep -c '{{'` 0
+    - 금지: `git push` · npm publish · `Finfra/homebrew-tap` 수정 · 기존 태그 변경 · 템플릿 frontmatter·`📄 템플릿` 블록 복사
+    - `Issue.md` 는 `python3 ~/.claude/sh/issue-tx.py --file Issue.md stage --issues <N>` / `check` 경유 · 커밋 후 ✅ 이동 + hash 기록
+* 결과 (2026-09-28, fbot-lead-m2slide 직접 수행 — 나래 경유 위임):
+    - `theme/LICENSE.md` v1.2(발효 2026-09-28) · `theme/LICENSE_ko.md` 신설 — 템플릿 본문과 diff 0(frontmatter·`📄 템플릿` 블록만 제거), 조항 번호 §1~§6 1:1
+    - `theme/THIRD-PARTY-NOTICES.md` 신설(None + 마스코트 원작 1줄) · `.gitignore` 에 `!/theme/LICENSE_ko.md`·`!/theme/THIRD-PARTY-NOTICES.md` — 후자도 `/theme/*` 에 걸려 화이트리스트가 필요했다
+    - `TRADEMARK.md` v1.2 — `{{MARKS}}`=`"m2slide"`. 배포본 약관이 없어 «unmodified official builds» 대신 «unmodified copies» 유지, Notes 의 DISTRIBUTION-TERMS 언급 제거
+    - `COMMERCIAL.md` 테마 행 §3 → §4 · `NOTICE` 는 «Except for the theme assets under theme/» 로 예외 대상을 테마로 바꿔 Apache 전체 선언을 피했다
+    - README(en·kr) 테마 행 한국어본 링크 · CHANGELOG `[Unreleased]` 1줄 · (로컬) `_doc_arch/license-attribution.md` v1.2 주석
+    - 검증: `--lint-license` 통과(3 테마 6.77~6.90:1) · 자리표 `{{` 0 · `m2Slide_single_mode` 임시 사본 빌드 rc0 · 뱃지 첫(0)/끝(36) 장 유지(Issue420 과 동일)
+    - 남은 것: `box.png`·`hr.png`(붓 질감 장식 프레임·구분선)의 원작 여부는 따로 확인하지 않았다 — prj6 실측 «제3자 이미지 없음» 을 따랐다 (검증 필요). push 미실행(금지 조건)
+
 ## Issue418: m2slide pptx 파리티·빌드 게이트·깨진 링크 (등록: 2026-09-27, 해결: 2026-09-27, commit: `384896f`, `f6e911a`, `2f2100a`, `5f7f002`) ✅
 * 목적: 같은 원고에서 HTML 16장이 pptx 28장으로 불어나고 도해가 평문이 됐는데 빌드는 rc=0 으로 끝났다 (prj7#Issue36 점검)
 * 상세:
