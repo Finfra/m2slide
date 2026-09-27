@@ -23,7 +23,7 @@ tools:
       - "mindmap"
     output: inline             # ```mermaid 블록 그대로
     fallback: img/{name}.svg   # 인라인 실패 시 mmdc로 SVG 생성
-    delegate_skill: make-mermaid
+    delegate_skill: ig-mermaid
 
   - id: mermaid_svg
     type: diagram
@@ -31,7 +31,7 @@ tools:
     triggers: ["complex_diagram"]
     output_path: img/
     output_format: svg
-    delegate_skill: make-mermaid
+    delegate_skill: ig-mermaid
 
   - id: excalidraw
     type: hand_drawn
@@ -42,7 +42,7 @@ tools:
       - "freeform_diagram"
     output_path: img/
     output_format: [svg, png, excalidraw]
-    delegate_skill: excalidraw-diagram
+    delegate_skill: ig-excalidraw
 
   # Issue312 — 구 `design_html` 대체. `handler: design-html` 은 글로벌·로컬 어디에도 실재하지
   # 않는 orphan 이었고(2026-08-11 실측), 그 결과 인포그래픽 요구가 mermaid·htmlart 로 흘러가
@@ -157,7 +157,7 @@ tools:
     source_attribution: none         # AI 자체 생성 산출물 → 슬라이드 출처(::: source) 표시 불요
     perf: "라우팅 백엔드에 따라 상이 — jm4(M4 Pro) 1024² 4-step ≈ 76초/장 실측(2026-07-13). fg1(NVIDIA)은 lms 대화중이면 중재 대기 발생. 대기열 있으면 + 선행 잡 시간"
     guard:
-      - "⚠️ `mflux-generate`/`mflux-run`/`mflux-enqueue` 직접 실행 절대 금지, `flux-fg1`·`flux-jm4` 직접 호출도 금지 — 반드시 img-add 경유 (백엔드 판정·강등 로직이 img-add 에만 있음)"
+      - "⚠️ `mflux-generate`/`mflux-run`/`mflux-enqueue` 직접 실행 절대 금지, `img-add-fg1`·`img-add-jm4` 직접 호출도 금지 — 반드시 img-add 경유 (백엔드 판정·강등 로직이 img-add 에만 있음)"
       - "img-add 최종 실패(양쪽 백엔드 소진) 시 즉시 image_fallback_chain 강등 — fail-loud, 조용한 진행 금지"
       - "--output 은 로컬 절대경로 필수 + 디렉토리 사전 존재"
       - "다건 생성: 큐가 직렬화하므로 배치 제한 불요 — 단 5장↑ 요청 시 체크포인트에 예상 소요(장당 ~76초 × N + 대기열) 명시"
@@ -238,7 +238,7 @@ tools:
       - "⚠️ 한글 텍스트는 재생성 품질이 낮다 — 한글이 포함된 영역은 text 편집 대상으로 삼지 말 것. 라틴 문자 짧은 라벨만 권장"
       - "⚠️ 문장부호 유실 가능 — 위 실측에서 `(File Ops)` → `(File Work` 로 닫는 괄호가 사라짐. 편집 후 육안 확인 필수"
     guard:
-      - "⚠️ `flux-fg1`·`flux-enqueue` 직접 호출 금지 — 반드시 img-add `--edit` 경유 (img-add 필수 원칙 계승)"
+      - "⚠️ `img-add-fg1`·`flux-enqueue` 직접 호출 금지 — 반드시 img-add `--edit` 경유 (img-add 필수 원칙 계승)"
       - "⚠️ 강등 금지 (fail-loud) — edit 실패 시 image_restyle(img2img)·local_image_gen 으로 조용히 대체하지 말 것. img2img 는 정밀 편집을 못 하므로(strength 0.3↑ 원본 복제 / 0.1 드리프트, 2026-07-13 실측) 사용자가 못 알아채는 품질 회귀가 된다. \"edit 백엔드 불가(사유)\" 명시 후 원본 유지·중단"
       - "--image-path 는 실존 파일 절대경로. 미존재 시 편집 생략 + 사유 1줄 보고"
       - "image_fallback_chain 진입 금지 — 원본이 이미 확보된 상태이므로 강등 불요(image_restyle 과 동일 정책)"
