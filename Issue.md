@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 418
+* Issue HWM: 419
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -36,6 +36,17 @@
 
 
 # 🚧 진행중
+
+## Issue419: 표지(`_cover`) frontmatter 값 HTML 이스케이프 — `<b>`·`&` 가 태그·엔티티로 새어 나옴 (등록: 2026-09-27)
+* 목적: prj41 videoMaker tdd #05 `title-card-frontmatter-fields` 가 red — m2slide 가 title/subtitle/instructor_name 등 frontmatter 값을 layout 변수(`{{title}}` 등)로 치환할 때 escape 하지 않는다. 사용자 결정(prj5#Issue101 ①, 2026-09-27 20:08): **escape 만** 한다. `.annot.`·`{raw}` 옵트인은 보류
+* 상세:
+    - 원인 지점 3곳 — 모두 [html-builder.js](lib/html-builder.js): ① single 표지 슬라이드 생성(`coverTitle` → `slide.title`) ② `_cfg.projectMeta` 를 layout 변수로 spread 하는 자리(`_cover`·`_toc`·`_cards`·`_agenda`) ③ chapter `generateCoverHTML` 의 `coverTitle`·fallback `<h1>`
+    - 위임: pm-do 세션(팀장핀봇 `fbot-lead-m2slide`, `solo`). prj41 파일은 수정하지 않고 `~/_git/__all/videoMaker/tdd/run.sh 05` 로 확인만
+* 구현 명세:
+    - TDD: 재현 테스트 [cover-meta-escape.test.js](lib/__tests__/cover-meta-escape.test.js)(single·chapter·경고) red 확인 → [utils.js](lib/utils.js) `escapeHtmlAttr` 로 frontmatter 문자열 값 escape → green → prj41 `tdd/run.sh 05` green
+    - 재생목록: [playlist.md](tdd/playlist.md) #11 `cover-meta-html-escape`
+    - TDD: red — `cover-meta-escape.test.js` 3 fail(`single: title 이 이스케이프되지 않음`·`chapter: …`·`경고 없음`) → green — 3 pass · 전체 `node --test lib/__tests__/*.test.js` 201 pass · prj41 `tdd/run.sh 05` ALL GREEN(baseline 은 `cover-title">최소 <b>제목</b> & 테스트` 로 ❌)
+    - ⚠️ 영향 범위(실측 2026-09-27): frontmatter `subtitle` 에 **의도적 HTML**(`<strong>`·`<small>`·`&nbsp;`)을 쓴 프로젝트 7개 — `fPmIntro`·`fPmIntro_en`·`fSnippetCliIntro`·`fWarrangeCliIntro`·`igTest`·`m2slide_info`·`m2slide_info_en`(앞 4개는 `docs/` 발행). escape 후 **재빌드하면 태그가 글자로 보인다**. 빌드 로그 경고로 드러내고, raw 옵트인(보류)이 결정될 때까지 원고는 건드리지 않는다(콘텐츠 불가침)
 
 ## Issue415: 아이폰에서 **탭(클릭)만으로** 덱이 동작하는지 ego-browser 로 점검·수정하고 aTest → aTest-all 2단계로 안정화 (등록: 2026-09-23)
 * 목적: 키보드 없는 아이폰에서 m2slide 덱을 탭만으로 넘기고 쓸 수 있어야 한다(사용자 전제: **터치 = 클릭**). 동시에 prj3 외부*핀봇(외부자문·외부컨설턴트)이 팀장핀봇 배분 경로로 실제 동작하는지 실증한다(요청: 사용자 → 나래, prj3#Issue678 후속)
