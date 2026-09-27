@@ -8,7 +8,7 @@ themes are free to use as long as the generated presentations keep the attributi
 
 | Situation                                                                            | Why                 |
 | :----------------------------------------------------------------------------------- | :------------------ |
-| Generated output **without** the "Powered by finfra.kr" attribution (bundled themes) | theme/LICENSE.md §3 |
+| Generated output **without** the "Powered by finfra.kr" attribution (bundled themes) | theme/LICENSE.md §4 |
 | Using the m2slide name or logo on your own product or service                        | TRADEMARK.md        |
 
 Presentations built with a theme **you authored yourself** (one that does not include or

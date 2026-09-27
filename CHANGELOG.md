@@ -7,6 +7,7 @@ All notable changes to this project. m2slide follows [SemVer](https://semver.org
 ### Changed
 
 - 라이선스 프로파일 A 적용 (Issue420) — CC BY 4.0 이중 라이선스(`LICENSE.md`) 폐기 → 소스 코드 **Apache-2.0**(`LICENSE`·`NOTICE`) + 번들 테마 **m2slide Theme License**(`theme/LICENSE.md`) + `TRADEMARK.md`·`COMMERCIAL.md`. 산출물 첫·끝 장 "Powered by finfra.kr, Made by m2slide" 표기 조건과 뱃지 자동 삽입은 그대로이고, 근거만 CC BY 에서 테마 자산 저작권으로 옮겼다. 직접 만든 테마는 표기 의무가 없다. `license_attribution: false` 경고 문구도 "테마 라이선스 조건 이탈" 로 바뀐다. 이미 나간 버전은 당시 라이선스 유지(< 0.8.0 MIT, 0.8.0 ~ 이번 변경 이전 CC BY 4.0 이중)
+- 테마 라이선스 v1.0 → **v1.2** (Issue421, 2026-09-28 발효) — ① 유료 산출물에도 표기 문구를 넣을 수 있게 **표기용 한정 상표 허락**(§3)을 두고 `TRADEMARK.md` 허용 항목과 맞췄다 ② PDF·PPTX 처럼 CSS 가 복제되지 않는 산출물에도 표기 조건이 닿도록 저작권 조건에 **계약 약정**을 병렬로 붙였다(§2). 한국 거주 개인에게 동등 효력인 한국어본 `theme/LICENSE_ko.md`, 제3자 자산 목록 `theme/THIRD-PARTY-NOTICES.md`(현재 없음) 신설. 표기 문구·첫/끝 장 위치·뱃지 코드는 그대로
 
 ### Added
 

@@ -2,11 +2,16 @@ m2slide
 Copyright (c) 2025 Finfra Co., Ltd. (https://finfra.kr)
 
 This product includes software developed by Finfra (https://finfra.kr).
-Licensed under the Apache License, Version 2.0. See LICENSE.
+Except for the theme assets under theme/, this product is licensed under the Apache
+License, Version 2.0. See LICENSE.
 
 The theme assets under theme/ are NOT covered by the Apache License. They are
-licensed under the m2slide Theme License (theme/LICENSE.md).
+licensed under the m2slide Theme License (theme/LICENSE.md; Korean text with equal
+effect for individuals residing in the Republic of Korea: theme/LICENSE_ko.md).
+Third-party assets bundled with the themes, if any, are listed in
+theme/THIRD-PARTY-NOTICES.md.
 
-"m2slide", "Finfra" and the "Powered by finfra.kr" line are trademarks of
-Finfra Co., Ltd. (https://finfra.kr). Use of these marks is governed by TRADEMARK.md and is not
-granted by the Apache License (Section 6).
+"m2slide", "Finfra", their respective logos and the "Powered by finfra.kr" line are
+trademarks of Finfra Co., Ltd. (https://finfra.kr). Use of these marks is governed by
+TRADEMARK.md and is not granted by the Apache License (Section 6). Retaining this
+NOTICE as required by Section 4(d) of the Apache License is always permitted.

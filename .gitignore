@@ -115,13 +115,15 @@ Temporary Items
 .apdisk
 # config.yml
 
-# theme: default·default_lec·default_dark·_shared + 테마 라이선스(LICENSE.md)만 추적, 그 외 사용자 커스텀은 추적 제외
+# theme: default·default_lec·default_dark·_shared + 테마 라이선스(LICENSE.md·LICENSE_ko.md·THIRD-PARTY-NOTICES.md)만 추적, 그 외 사용자 커스텀은 추적 제외
 /theme/*
 !/theme/default/
 !/theme/default_lec/
 !/theme/default_dark/
 !/theme/_shared/
 !/theme/LICENSE.md
+!/theme/LICENSE_ko.md
+!/theme/THIRD-PARTY-NOTICES.md
 
 # data: .gitkeep + SSOT 템플릿만 추적, 그 외 사용자 데이터는 추적 제외
 /data/*

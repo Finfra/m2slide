@@ -528,11 +528,11 @@ Check the help:
 
 ## License
 
-| Part                                                  | License                                                    | Attribution                                                                      |
-| :---------------------------------------------------- | :--------------------------------------------------------- | :------------------------------------------------------------------------------- |
-| Source code (`lib/`, `bin/`, build scripts)           | [Apache-2.0](./LICENSE) — see also [NOTICE](./NOTICE)      | None (keep NOTICE)                                                               |
-| Bundled themes (`theme/` — CSS, layouts, images)      | [m2slide Theme License](./theme/LICENSE.md)                | **"Powered by finfra.kr, Made by m2slide"** on the **first and last slides**      |
-| Presentations you generate                            | Yours                                                      | Inherit the theme condition only if you used a bundled theme                     |
+| Part                                             | License                                                                       | Attribution                                                                  |
+| :----------------------------------------------- | :---------------------------------------------------------------------------- | :--------------------------------------------------------------------------- |
+| Source code (`lib/`, `bin/`, build scripts)      | [Apache-2.0](./LICENSE) — see also [NOTICE](./NOTICE)                         | None (keep NOTICE)                                                           |
+| Bundled themes (`theme/` — CSS, layouts, images) | [m2slide Theme License](./theme/LICENSE.md) ([한국어](./theme/LICENSE_ko.md)) | **"Powered by finfra.kr, Made by m2slide"** on the **first and last slides** |
+| Presentations you generate                       | Yours                                                                         | Inherit the theme condition only if you used a bundled theme                 |
 
 * **Free**: keep the attribution line on the first and last slides — m2slide inserts it automatically.
 * **Paid**: generating presentations with a bundled theme **without** that line requires a commercial license — see [COMMERCIAL.md](./COMMERCIAL.md). Contact: <finfra@gmail.com> / <https://finfra.kr>
