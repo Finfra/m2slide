@@ -2,7 +2,7 @@
 """1.integrity 의 판정부 (Issue413).
 
 셸은 대상 선정·집계만 하고 **재는 것은 전부 여기**다. 설계 근거는
-`_doc_arch/pdf-parity-design.md` 「검사 장치」가 소유한다.
+`_doc_arch/pdf-parity.md` 「검사 장치」가 소유한다.
 
 rc 0 = 통과(또는 SKIP) · rc 1 = 위반
 """

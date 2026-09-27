@@ -47,12 +47,12 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 FIXTURES = os.path.join(ROOT, "data", "m2slide2ppt", "fixtures.yml")
 
 #   lane B 가 네이티브 도형으로 그릴 줄 아는 htmlart. 여기 없는 것은 lane C 이월이다
-#   (카탈로그 정본은 pptx-parity-design.md 「카탈로그」 절 · build-source.py ⑫)
+#   (카탈로그 정본은 pptx-parity.md 「카탈로그」 절 · build-source.py ⑫)
 LANE_B_KINDS = {"cards", "numbered", "process", "compare"}
 
 #   표지 제목 상자의 수용 폭(em). `cover_geometry` 의 w 1808px ÷ fs 155px.
 #   ⚠️ 이 값은 **고정 카탈로그에서 온 것**이라 덱별 실측이 아니다 — 그 한계는
-#      pptx-parity-design.md 「표지 제목」 에 적혀 있다. 여기서는 «넘치는가» 만 본다
+#      pptx-parity.md 「표지 제목」 에 적혀 있다. 여기서는 «넘치는가» 만 본다
 COVER_CAPACITY_EM = 1808.0 / 155.0
 
 FENCE = re.compile(r"^[ \t]*```")

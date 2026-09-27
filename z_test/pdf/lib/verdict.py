@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """3경로 측정값 → 결함 계열 판정 (Issue413).
 
-판정표 SSOT 는 `_doc_arch/pdf-parity-design.md` 「3경로 대조」다. 여기는 그 표를
+판정표 SSOT 는 `_doc_arch/pdf-parity.md` 「3경로 대조」다. 여기는 그 표를
 코드로 옮긴 것이고, 표가 바뀌면 **양쪽을 같이** 고친다.
 
 rc 0 = 셋이 일치 · rc 1 = 어긋남(계열을 찍는다) · rc 2 = 측정 실패

@@ -18,7 +18,7 @@
 # ⚠️ 정상값을 여기 적지 않는다 — 그것은 계약 `fidelity.yml` 소유다.
 #    여기는 «그 특성을 가진 덱이 있는가» 만 답한다. 층이 다르다.
 #
-# 설계 SSOT: _doc_arch/pptx-parity-design.md 「근거는 어디에 사는가 — 덱 특성 커버리지」
+# 설계 SSOT: _doc_arch/pptx-parity.md 「근거는 어디에 사는가 — 덱 특성 커버리지」
 
 axes:
   title_level_h3:

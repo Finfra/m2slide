@@ -331,7 +331,7 @@ BEFORE_MTIME=""
 #      m2slide 만 아는 것(빌드 지식·고유 지시자·이미지가 사는 두 자리)을 전달할 통로가
 #      달리 없기 때문이다. 글로벌 변환기를 m2slide 전용으로 고치지 않는 대신,
 #      m2slide 가 자기가 아는 것을 원고로 적어서 준다.
-#      설계: _doc_arch/pptx-parity-design.md "아키텍처 결정"
+#      설계: _doc_arch/pptx-parity.md "아키텍처 결정"
 BUILD_SRC="$SCRIPT_DIR/build-source.py"
 [ -f "$BUILD_SRC" ] || { echo "  ❌ 원고 생성기 없음: $BUILD_SRC" >&2; exit 1; }
 

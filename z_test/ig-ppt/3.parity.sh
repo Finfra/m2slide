@@ -191,7 +191,7 @@ if os.path.exists(index_html):
 has_agenda = os.path.exists(os.path.join(SLIDE_DIR, "agenda.html"))
 
 # 생성 장 예산 — **숫자를 박지 않고 pptx 가 스스로 적은 표식에서 센다** (Issue374).
-#   정본: _doc_arch/pptx-parity-design.md 「장 구성 — 무엇이 몇 장이 되나」
+#   정본: _doc_arch/pptx-parity.md 「장 구성 — 무엇이 몇 장이 되나」
 #   구 구현은 `has_cover + has_agenda` 로 **둘만** 셌다. 그런데 정방향은 chapter mode
 #   에서 덱 전체 목차(`deck_toc`)를 한 장 더 만들고 그것도 fidelity.yml 에
 #   `synthesized` 로 선언돼 있다 → 기대값이 1 모자라 ① 이 42 ↔ 41 로 실패했다.
@@ -285,7 +285,7 @@ else:
 #   그 layout 은 제목만 담으므로 현행 진입 장(`## 부제 + 목록`)은 구조가 맞지 않아
 #   `Title and Content` 로 나온다. 실측 igTest 는 챕터 5개인데 Section Header 0개다.
 #   layout 이름은 구조가 고르는 **결과값**이지 계약이 아니다 — 경계는 AGENDA 챕터
-#   순서와 각 챕터의 HTML 장수로 자른다. 정본: pptx-parity-design.md 「장 구성」
+#   순서와 각 챕터의 HTML 장수로 자른다. 정본: pptx-parity.md 「장 구성」
 bad = []
 body_titles = [t or "" for t in ptitles[n_prologue:]]
 cursor = 0

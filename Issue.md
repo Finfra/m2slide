@@ -178,7 +178,7 @@
     - 1920×1440 — 박스 1872 · 콘텐츠 **798(동일)** · 채움 **43%** · `scale(2)`
     - 🔴 박스는 커지는데 **스케일이 2 에서 멈춘다** — markmap-view 의 `maxInitialScale` 기본값이 **2** 다
     - 즉 **렌더 결과가 뷰포트 크기에 의존**하는 것이 본체다. 덱은 1920 폭으로 설계되는데 창에서 맞춰 보면 문제가 안 보이고, 배포본에서 드러난다
-    - ⚠️ 변환(PDF) 결함이 **아니다** — 같은 뷰포트로 브라우저를 열면 브라우저도 똑같이 작다. [pdf-parity-design.md](_doc_arch/pdf-parity-design.md) 의 3경로 대조로 보면 ①②③ 이 모두 같은 계열(C4)
+    - ⚠️ 변환(PDF) 결함이 **아니다** — 같은 뷰포트로 브라우저를 열면 브라우저도 똑같이 작다. [pdf-parity.md](_doc_arch/pdf-parity.md) 의 3경로 대조로 보면 ①②③ 이 모두 같은 계열(C4)
 * 구현 명세:
     - 로직: `deriveOptions` 에 `maxInitialScale` 을 올려 **`fitRatio` 가 판정하게** 한다. 그러면 어느 크기에서나 같은 비율로 찬다
     - 적용 지점은 **둘** — 덱 TOC 슬라이드([html-builder.js](lib/html-builder.js) `markmapDepth`)와 agenda 페이지(`expandLevel`). 한쪽만 고치면 다른 쪽이 그대로 남는다
@@ -202,7 +202,7 @@
 * plan: `_doc_work/plan/pdf-parity_plan.md`
 * task: `_doc_work/plan/pdf-parity_task.md`
 * 상세:
-    - 설계 SSOT 는 [pdf-parity-design.md](_doc_arch/pdf-parity-design.md) 가 이미 정리했다 — 원인 계열 4종(C1 계약 미전달·C2 도구 내부 결함·C3 런타임 타이밍 의존·C4 HTML 자체 결함)·3경로 대조 진단법·비결정성 판정 규약. 본 이슈는 **그 방법론을 실행체로 굳히는 것**이다
+    - 설계 SSOT 는 [pdf-parity.md](_doc_arch/pdf-parity.md) 가 이미 정리했다 — 원인 계열 4종(C1 계약 미전달·C2 도구 내부 결함·C3 런타임 타이밍 의존·C4 HTML 자체 결함)·3경로 대조 진단법·비결정성 판정 규약. 본 이슈는 **그 방법론을 실행체로 굳히는 것**이다
     - 지금 있는 것은 전부 «빌드 중 자기 점검» 이다(`Printed N` 대조·`--expect`·폰트 격리·`PDF_LOSS`). **«고친 것이 그대로인가» 를 나중에 다시 묻는 수단이 없다**
     - ⚠️ **작은 덱으로는 C3 가 재현되지 않는다** — 446장 연속 인쇄 중에만 타이밍이 밀린다. 기존 픽스처만으로 러너를 돌리면 이 계열은 영원히 안 잡힌다
 * 구현 명세:
@@ -242,7 +242,7 @@
     - H3 특성은 **새 최소 덱**으로 담는다(사용자 확정 2026-09-21) — `aTest-all` 에 덧붙이면 그 계열의 기존 evidence 수치가 전부 바뀌어 계약 갱신 범위가 번진다
     - `fidelity.yml` `subheading` 의 caveat *"H2 제목이 없는 슬라이드는 매칭 키가 없다"* 는 Issue403 으로 전제가 사라졌다 — 문구 교체
     - **검증은 반증으로 한다** — 신규 픽스처를 뺀 상태로 러너를 돌려 `title_level_h3` 가 `❌ 픽스처에 없음` 으로 뜨는지 본다. 초록불만 보면 감사가 실제로 도는지 알 수 없다
-    - 설계 SSOT: [`_doc_arch/pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) "근거는 어디에 사는가 — 덱 특성 커버리지"
+    - 설계 SSOT: [`_doc_arch/pptx-parity.md`](_doc_arch/pptx-parity.md) "근거는 어디에 사는가 — 덱 특성 커버리지"
 
 * 결과:
     - `data/m2slide2ppt/fixtures.yml`(`kind: catalog`) 신설 — **축의 정의·근거는 사람이, 수치는 `lib/pptx/scan-fixtures.py` 가** 채운다
@@ -1030,14 +1030,14 @@
     - **러너 ↔ 정책**: `3.parity` 는 `html_body + n_prologue`(41)를 기대하는데 현행 pptx 는 거기에 **Agenda 장 1개**를 더 만든다(42). ③④ 는 `Section Header` 전제인데 현행 진입 장은 `## 부제 + 목록` 이라 `Title and Content` 로 나온다
     - ⚠️ `6.roundtrip` 은 같은 덱에서 **통과**한다(생성물 예산 ±2 로 흡수). **두 러너가 같은 사실을 다르게 판정**하는 상태 자체가 정합 대상이다
 * 구현 명세:
-    - **① 문서 먼저** — 러너를 먼저 고치면 그 기대값이 또 다른 복제본이 되어 다음 변경 때 같은 자리에서 갈린다. `pptx-parity-design.md` 에 「장 구성 — 무엇이 몇 장이 되나」 절 신설(생성물 예산 정의 포함) + `chapter-single-mode.md` 에 명시 layout 예외 반영
+    - **① 문서 먼저** — 러너를 먼저 고치면 그 기대값이 또 다른 복제본이 되어 다음 변경 때 같은 자리에서 갈린다. `pptx-parity.md` 에 「장 구성 — 무엇이 몇 장이 되나」 절 신설(생성물 예산 정의 포함) + `chapter-single-mode.md` 에 명시 layout 예외 반영
     - **② 러너는 참조하게** — `3.parity` 의 `want` 에 pptx 전용 생성 장을 반영하되 **숫자를 박지 말고 pptx 에서 세어 얻는다**. ③④ 의 `Section Header` 전제 제거 — 챕터 경계는 AGENDA 챕터명 + 제목 순서로 찾는다
     - **③ 검증** — `3.parity igTest` 7/7 · 회귀 0(`6.roundtrip` 3덱 · `4.laneb` · `5.lanem` · `--lint-data` · `--coverage`) · **두 러너가 같은 덱에서 같은 판정**
     - 열린 질문 3건은 plan `# 열린 질문` 절 참조 (Agenda 장의 계약상 지위 · 진입 장을 Section Header 로 낼 것인가 🚧 · 두 러너 일원화 여부)
 * Checkpoints:
 * 결과 — **①②③**. `3.parity igTest` **3/7 → 7/7**:
     - 🔑 **Q1 은 결정이 아니라 확인으로 닫혔다** — `Agenda` 장은 [fidelity.yml](data/m2slide2ppt/fidelity.yml) 에 **이미 `agenda_slide` / `grade: synthesized`** 로 선언돼 있었다(HTML `agenda.html` 1장 ↔ pptx 1장). 새 계약이 필요한 게 아니라 **러너가 그 선언을 안 읽던 것**이 문제였다. 같은 파일에 `deck_toc_slide` 도 선언돼 있는데 러너가 그것을 빼먹은 것이 ① 의 42 ↔ 41 이었다
-    - **① 문서 먼저** — [pptx-parity-design.md](_doc_arch/pptx-parity-design.md) 「장 구성 — 무엇이 몇 장이 되나」 신설(대응 원칙 · 생성 장 카탈로그 · 진입 장 판정 · `Section Header` 경고). [chapter-single-mode.md](_doc_arch/chapter-single-mode.md) 에 **명시 `#layout-*` 예외** 반영 — `slide-parser` 가 `s.layout` 이 있으면 autoToc 판정을 건너뛰므로 `cards_placeholder=false` 의 제거 대상이 되지 않는다
+    - **① 문서 먼저** — [pptx-parity.md](_doc_arch/pptx-parity.md) 「장 구성 — 무엇이 몇 장이 되나」 신설(대응 원칙 · 생성 장 카탈로그 · 진입 장 판정 · `Section Header` 경고). [chapter-single-mode.md](_doc_arch/chapter-single-mode.md) 에 **명시 `#layout-*` 예외** 반영 — `slide-parser` 가 `s.layout` 이 있으면 autoToc 판정을 건너뛰므로 `cards_placeholder=false` 의 제거 대상이 되지 않는다
     - 🔑 **생성 장 셋을 한 덩어리로 세면 틀린다** — `chapter_toc` 는 HTML 챕터 안에도 있어 본문 계수에 이미 잡히고, `deck_toc`·`agenda` 만 예산에 더한다. 실측 igTest 표식 7개(`deck_toc` 1 · `agenda` 1 · `chapter_toc` 5) 중 **더할 것은 2개**. 러너는 숫자를 박지 않고 `lane-s.json` 에서 센다
     - 🔑 **`Section Header` 개수로 챕터 경계를 찾는 판정이 애초에 성립하지 않았다** — 그 layout 은 제목만 담으므로 현행 진입 장(`## 부제 + 목록`)은 `Title and Content` 로 나온다. 실측 igTest 는 **챕터 5개인데 `Section Header` 0개**다. 경계는 AGENDA 순서 + 챕터별 HTML 장수로 자른다
     - **진입 장 수는 세어 보고만 하고 단언하지 않는다** — 챕터별로 명시 layout 유무가 달라 *"챕터 수와 같아야 한다"* 도 *"0 이거나 전부"* 도 성립하지 않는다(실측 aTest-all: 챕터 6 중 진입 장 5). 진입쌍 어긋남은 ③ 이 잡는다
@@ -2012,7 +2012,7 @@
 * 🐞 **곁다리로 잡은 결함 2건** — ① `build-source.py` 심벌 제거(⑥)가 `[ \t]{2,} → " "` 를 줄 전체에 걸어 **선두 들여쓰기까지 뭉갰다**. `  - :fa-check: 완료` 의 2칸이 1칸이 되어 중첩 레벨이 통째로 사라진다(실측: aTest 심벌 카드 2장이 최상위 10항목으로 펴짐). ② python-pptx 로 **상속** placeholder 의 `height` 만 쓰면 `a:ext` 가 새로 생기며 `cx` 가 0 이 된다 — 본문이 폭 0 으로 사라진다. 네 값을 전부 적는다
 * ⚙️ **기본 on 으로 두고 `--pptx-no-lane-b` 로 끈다.** 설계 3레인 표는 lane B 를 "옵트인" 으로 적었지만 그 게이트가 지키려던 위험은 **lane C 의 토큰 비용**(장당 33만)이다. lane B 는 초 단위·토큰 0 이고 결정적이며 실패해도 lane A 를 남기는 덧칠이라 그 위험이 없다 — 위험 없는 곳에 게이트를 두면 기능이 그냥 안 쓰인다. 끄는 스위치는 남겼다(회귀를 가를 때 *"lane B 탓인가"* 를 1초에 답해야 한다)
 * 📌 남은 것은 **Issue333**(lane B 카탈로그 확장)으로 분리 등록. 순차형 4종은 m2slide 표만 고치면 되고, `pie`·`matrix` 류는 ppt-info 에 대응 블록이 없어 **글로벌 신설**이 선행이다
-* 📎 설계 SSOT [`_doc_arch/pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) "lane B 구현" 절을 함께 갱신했으나, 이 repo 는 `_doc_arch/` 를 gitignore 하므로([repo-tracking-rules](.claude/rules/repo-tracking-rules.md)) **로컬 파일로만 남는다**
+* 📎 설계 SSOT [`_doc_arch/pptx-parity.md`](_doc_arch/pptx-parity.md) "lane B 구현" 절을 함께 갱신했으나, 이 repo 는 `_doc_arch/` 를 gitignore 하므로([repo-tracking-rules](.claude/rules/repo-tracking-rules.md)) **로컬 파일로만 남는다**
 
 ## Issue332: ppt-maker 오케스트레이션 도입 — 원본 하나로 완성 덱까지 (등록: 2026-08-18, 해결: 2026-08-25, commit: 62f1cb4) ✅
 * 완료 실측 (2026-08-25, commit 62f1cb4): 진입점 [`m2slide.sh --ppt-make`](m2slide.sh) 신설 — ①입력 판정 ②앞단 `ppt-init` ③lane A ④뒷단 `ppt-check` ⑤인포그래픽 게이트 ⑥보고. 구현은 [`lib/pptx/ppt-make.sh`](lib/pptx/ppt-make.sh) 이고 **하는 일은 글로벌 호출과 결과 회수뿐**이다. [`3.parity.sh`](z_test/ig-ppt/3.parity.sh) **rc0 · 7/7 유지**(회귀 0). 새 경로 산출물로 `--no-build` 재판정도 7/7. 신·구 경로 pptx 는 **전 XML 파트·미디어 3개 바이트 동일**(차이는 tempdir 이름·docProps 시각뿐 — 비결정 요소). `2.deck.sh` rc0 · `--lint-deployment` 위반 0
@@ -2026,7 +2026,7 @@
 * depends: Issue330
 * 목적: 지금은 사람이 lane 을 고르고 단계를 잇는다. 글로벌 [`ppt-maker`](file:///Users/nowage/.claude/skills/ppt-maker/SKILL.md)(원본 → init·trace·spec·deck·check 오케스트레이션)를 m2slide 진입점에 붙여 **한 번의 호출로 완성 덱**까지 가게 한다. prj82 가 `run.sh` 로 하던 일을 제품 경로로 옮기는 것과 같은 성격.
 * 상세:
-    - prj82 계승·비계승 판정은 [`pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) "prj82 에서 무엇을 가져오나" 절 — `potx.md` **원칙**은 계승(m2slide 판은 `theme.yml`), `pages.py` 파이썬 원고는 **비계승**(m2slide 원고는 마크다운이고 그것이 존재 이유)
+    - prj82 계승·비계승 판정은 [`pptx-parity.md`](_doc_arch/pptx-parity.md) "prj82 에서 무엇을 가져오나" 절 — `potx.md` **원칙**은 계승(m2slide 판은 `theme.yml`), `pages.py` 파이썬 원고는 **비계승**(m2slide 원고는 마크다운이고 그것이 존재 이유)
     - ⚠️ 순환 주의 — `ppt-deck`/`ppt-maker` 폴백 ①이 *"m2slide 가 있으면 m2slide.sh 에 위임"* 이라 무조건 호출하면 상호 재귀([`ig-ppt-integration.md`](_doc_arch/ig-ppt-integration.md) "순환" 절). `md2pptx.py` 직접 호출 원칙 유지
     - lane 자동 선택은 **하지 않는다** — lane C(ig-maker)는 장당 33만 토큰이라 `ig-selector` 승인 게이트가 존재 이유다
 * 구현 명세:
@@ -2042,7 +2042,7 @@
 * 목적: 색·서체는 옮겨졌지만(accent `F5C518`·Malgun Gothic 실측 확인) **layout 개념과 코드 서식이 이탈**해 있다. m2slide layout 5종과 pptx 마스터의 대응을 세우고 템플릿 밖 폰트를 없앤다.
 * 상세:
     - 🟢 **초기 판단이 실측에서 뒤집혔다** — "마스터 레이아웃을 신설해야 한다"고 봤으나, `theme2reference.py --adapt` 가 표준 11종을 **이미 만들어 두었다**(reference.pptx 실측). 즉 G3 는 마스터 문제가 아니라 **원고를 그 모양으로 쓰는 문제**다
-    - pandoc 은 레이아웃을 이름으로 고르지 않고 **슬라이드 구조로 자동 선택**한다 → 매핑표는 [`pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) "layout 매핑" 절
+    - pandoc 은 레이아웃을 이름으로 고르지 않고 **슬라이드 구조로 자동 선택**한다 → 매핑표는 [`pptx-parity.md`](_doc_arch/pptx-parity.md) "layout 매핑" 절
     - ~~G6: `Courier` 15회(코드블록). 출처가 reference 테마인지 pandoc 하드코딩인지 **미판정** — 전자면 글로벌(prj3) 위임, 후자면 원고에서 코드블록 표현 교체~~ → **판정 완료: pandoc 하드코딩**. 위 🔑 항 참조(위임 아님, `retheme.py --font-only` 배선으로 해소)
     - 🔑 **챕터 진입 장이 3장으로 쪼개진다** (Issue326 실측 2026-08-18): 원본 `chapter` layout 1장이 pptx 에서 `Section Header`(H1) + 제목 없는 장("Chapter 1.") + `Title and Content`(부제) **3장**이 된다. 이것이 제목 보유율이 87% 에서 100% 로 못 가는 직접 원인(45장 중 6장 무제목 = 챕터 5개 × 1 + α). 원고에서 챕터 진입부를 **H1 단독**으로 만들면 1장으로 수렴한다
 * 🟢 부분 완료 (2026-08-19, commit: 53169cb): ① 챕터 진입 3장 → **2장**(Section Header + 챕터 TOC) 수렴 ② 무제목 장 **6 → 0**(igTest 41/41 제목 보유) — 원인이 둘이었다: H1 뒤 본문이 흘러나가는 것과 `Content with Caption` 넘침(표·그림 **뒤**의 글). 후자는 무거운 블록을 장 끝으로 옮겨 막았고, mermaid 펜스도 **그림이므로** 무거운 블록에 넣었다 ③ 제목색·강조색을 **CSS 실측값으로 교정**([`css-var.py`](lib/pptx/css-var.py)) — 글로벌 `title_color()` 는 accent 중 가장 어두운 색(#977A0E)을 고르는 추정이라 실제(#111111)와 달랐다 ④ 좁은 제목칸의 긴 한글 제목 잘림 → 자동 축소(레이아웃뿐 아니라 **장 쪽에도** 걸어야 듣는다. pandoc 이 빈 `<a:bodyPr/>` 로 상속을 덮는다)
@@ -2090,7 +2090,7 @@
 * depends: Issue326
 * 목적: m2slide 만 아는 것(빌드 지식)을 pptx 경로에 전달할 **유일한 통로**를 만든다. 구조 슬라이드·layout·cards 는 원고 md 에 없고 `_config.yml`·AGENDA·빌더가 만들기 때문에, md 만 읽는 글로벌 변환기는 원리적으로 알 수 없다.
 * 상세:
-    - 아키텍처 결정 근거·대안 3안 비교는 [`pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) "아키텍처 결정" 절. 채택안 ⓒ = **중간 원고**
+    - 아키텍처 결정 근거·대안 3안 비교는 [`pptx-parity.md`](_doc_arch/pptx-parity.md) "아키텍처 결정" 절. 채택안 ⓒ = **중간 원고**
     - `md2pptx.py` 는 위치 인자로 md 파일 목록을 받으므로(`md nargs="*"`), `--m2slide <폴더>` 대신 **생성 원고를 넘기면** 글로벌 수정 없이 성립한다
     - 산출 위치 `Projects/<N>/_pipeline/pptx/source/*.md` — `_pipeline/` 은 git 미추적([repo-tracking-rules](.claude/rules/repo-tracking-rules.md))
     - ⚠️ **내용을 새로 쓰지 않는다.** 문구는 원본 그대로 옮기고 구조만 만든다 — 넘으면 두 산출물이 다른 말을 하기 시작한다
@@ -2129,7 +2129,7 @@
 
 ## Issue325: PPTX 충실도 설계 SSOT 작성 — 실측 격차 카탈로그 + 원고 생성기 아키텍처 (등록: 2026-08-18, 해결: 2026-08-18) ✅
 * 목적: *"다운로드한 pptx 가 원본과 너무 다르다"* 는 관측을 **격차 목록·원인·해법 경계**로 확정해 후속 이슈 전부의 근거로 삼는다. 일치화를 시도한 적이 없었으므로(사용자 확인) 배선 문서와 별개로 충실도 설계가 필요했다.
-* 산출: [`_doc_arch/pptx-parity-design.md`](_doc_arch/pptx-parity-design.md) 신설
+* 산출: [`_doc_arch/pptx-parity.md`](_doc_arch/pptx-parity.md) 신설
 * 완료 범위 (실측 2026-08-18 · `~/Downloads/igTest.pptx` 35장 ↔ 원본 39장):
     - **파리티 정의** — 픽셀 일치가 아니라 3축(구조 동형 → 테마 동일 → 표현 등가) 우선순위. pptx 는 편집 가능해야 하므로 캡처 복제는 목표가 아니다
     - **격차 카탈로그 G1~G7** — 제목 5/35 · 구조 슬라이드 12장 부재 · layout 대응 0 · cards/htmlart 소실 · 마크다운 누출 2종 · Courier 15회 · 팔레트 스코프 오탐
