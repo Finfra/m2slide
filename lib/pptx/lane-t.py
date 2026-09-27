@@ -113,21 +113,60 @@ TABLE = load_section("table_geometry")
 
 #   표지·머리말 글자는 **빌드된 HTML 이 정본**이다. frontmatter·config 를 다시 조합하면
 #   HTML 과 어긋날 수 있고, 대조기(check-parity.py)도 HTML 을 보므로 출처를 하나로 둔다.
+#   ⚠️ 정규식 `(.*?)</` 로 잡지 않는다 (Issue418). 슬롯 안에 인라인 태그가 있으면 **첫 닫는
+#      태그에서 잘리고**(`<strong>` 앞에서 부제가 끊겼다 — prj7 실측), 엔티티(`&lt;`)도 그대로
+#      새어 나온다(frontmatter escape 뒤 `&lt;strong&gt;` 가 표지에 찍혔다). 요소를 **깊이로**
+#      따라가 보이는 글자 전부를 모은다 — HTML 이 화면에 그리는 글자와 같다.
 COVER_SEL = {
-    "title": r'class="cover-title"[^>]*>(.*?)</',
-    "subtitle": r'class="cover-subtitle"[^>]*>(.*?)</',
-    "iname": r'class="cover-instructor-name"[^>]*>(.*?)</',
-    "icontact": r'class="cover-instructor-contact"[^>]*>(.*?)</',
-    "corner_tl": r'class="cover-corner cover-tl"[^>]*>(.*?)</',
-    "corner_br": r'class="cover-corner cover-br"[^>]*>(.*?)</',
+    "title": "cover-title",
+    "subtitle": "cover-subtitle",
+    "iname": "cover-instructor-name",
+    "icontact": "cover-instructor-contact",
+    "corner_tl": "cover-corner cover-tl",
+    "corner_br": "cover-corner cover-br",
     #   Issue386: 우상단 코너(`cover-tr` = `version_badge`)가 빠져 있었다. 그 결과 우상단
     #     좌표(`cover_geometry.version`)를 **중앙 메타의 `version`** 이 차지했고,
     #     HTML 이 실제로 우상단에 보여주는 `version_badge` 는 pptx 에서 사라졌다
     #     (실측 2026-09-20 igTest: pptx 우상단 `1.0` ↔ HTML 우상단 `v0.8.0`).
-    "corner_tr": r'class="cover-corner cover-tr"[^>]*>(.*?)</',
-    "version": r'class="cover-meta"[^>]*>(.*?)</',
-    "license": r'class="m2-license-badge"[^>]*>(.*?)</',
+    "corner_tr": "cover-corner cover-tr",
+    "version": "cover-meta",
+    "license": "m2-license-badge",
 }
+
+
+class _ClassText(__import__("html.parser", fromlist=["HTMLParser"]).HTMLParser):
+    """class 토큰이 모두 맞는 **첫 요소**의 보이는 글자를 깊이째 모은다."""
+    VOID = {"br", "img", "hr", "input", "meta", "link", "source", "wbr"}
+
+    def __init__(self, cls):
+        super().__init__(convert_charrefs=True)
+        self.want, self.depth, self.buf, self.done = set(cls.split()), 0, [], False
+
+    def handle_starttag(self, tag, attrs):
+        if self.done or tag in self.VOID:
+            if self.depth and tag == "br":
+                self.buf.append(" ")
+            return
+        if self.depth:
+            self.depth += 1
+        elif self.want <= set((dict(attrs).get("class") or "").split()):
+            self.depth = 1
+
+    def handle_endtag(self, tag):
+        if self.depth and not self.done and tag not in self.VOID:
+            self.depth -= 1
+            if self.depth == 0:
+                self.done = True
+
+    def handle_data(self, data):
+        if self.depth and not self.done:
+            self.buf.append(data)
+
+
+def element_text(doc, cls):
+    p = _ClassText(cls)
+    p.feed(doc)
+    return re.sub(r"\s+", " ", "".join(p.buf)).strip()
 
 
 def strip_tags(x):
@@ -143,10 +182,10 @@ def read_cover(project_dir):
         return {}
     h = open(idx[0], encoding="utf-8").read()
     out = {}
-    for k, pat in COVER_SEL.items():
-        m = re.search(pat, h, re.S)
-        if m and strip_tags(m.group(1)):
-            out[k] = strip_tags(m.group(1))
+    for k, cls in COVER_SEL.items():
+        t = element_text(h, cls)
+        if t:
+            out[k] = t
     return out
 
 
@@ -200,6 +239,67 @@ def read_heads(project_dir):
 PX = {"margin": G["margin"], "line_top": G["rule_top"], "line_h": G["rule_h"],
       "line_bottom": G["rule_bottom"], "title_top": G["title_top"],
       "title_h": G["title_h"], "body_top": G["body_top"], "body_h": G["body_h"]}
+
+#   좌표 정책(transform.yml)은 **1920×1280(3:2) 캔버스에서 잰 값**이다 (머리말 참조).
+#   다른 판형에서는 세로가 달라지는데 그대로 쓰면 16:9(1080) 덱의 하단 요소 — 라이선스
+#   뱃지·하단 가로선·본문 상자·agenda 틀·pie 범례 — 가 **캔버스 밖**으로 나간다
+#   (Issue418 — prj7 실측 visual-gen-gate: check-conform 「캔버스 이탈 4장」, 빌드는 rc0).
+#
+#   HTML 에서 재 보면 각 요소는 위·아래 중 한쪽에 붙어 있다(ego 실측 2026-09-27, 16:9 vs 3:2):
+#     하단 고정  라이선스 뱃지 H−14 · 우하단 코너 H−13 · 하단 가로선 H−32 · 본문 하단 H−56
+#     상단 고정  표지 제목·부제·강사 박스 · 좌상단/우상단 코너 · 머리말 · 본문 상단
+#   그래서 비례 축소가 아니라 **붙은 쪽 기준 이동**이다. 하단 60px 안에 걸치는 상자는 아래에
+#   붙었다고 보고 옮기고, 위에서 아래 끝까지 뻗는 상자는 높이를 늘이거나 줄인다.
+REF_H = 1280
+
+
+def adapt_height(ch):
+    """판형 높이 `ch` 에 맞춰 세로 좌표를 옮긴다 — 3:2 면 아무것도 바꾸지 않는다."""
+    dh = ch - REF_H
+    if not dh:
+        return 0
+    PX["line_bottom"] += dh
+    PX["body_h"] += dh
+    for spec in COVER.values():
+        if isinstance(spec, dict) and "t" in spec and spec["t"] + spec.get("h", 0) > REF_H - 60:
+            spec["t"] += dh
+    for spec in (AGENDA.get("frame"), PIE.get("container")):
+        if isinstance(spec, dict) and "h" in spec:
+            spec["h"] += dh
+    if SPLIT.get("h"):
+        SPLIT["h"] += dh
+    return dh
+
+
+#   pie 의 자리 — HTML `renderPie`(htmlart_dispatch.client.js)의 viewBox 모델을 그대로 푼다.
+#     viewBox 964×600 · 반지름 260 · 여백 40 · 범례 x 604 · 범례 폭 320 · 칩 26(행의 18% 아래)
+#     행 높이 lH = max(56, 520/n) — **조각 수에 반비례**한다
+#   정책의 plot·legend 는 4조각·3:2 에서 잰 한 점이라, 그 값을 고정으로 쓰면 6조각에서
+#   범례 5·6행이 캔버스 밖으로 나간다(Issue418 실측). 정책 plot 에서 축척 k0 를 되읽어
+#   컨테이너가 바뀐 만큼 다시 맞춘다 — svg 는 컨테이너 안에 비율을 지켜 가운데로 앉는다.
+PIE_VB = {"w": 964.0, "h": 600.0, "r": 260.0, "pad": 40.0, "leg_x": 604.0, "leg_w": 320.0,
+          "swatch": 26.0, "gap": 12.0}
+
+
+def pie_layout(c, n):
+    pa0 = PIE["plot"]
+    k0 = pa0["w"] / (2 * PIE_VB["r"])
+    k = min(c["w"] / PIE_VB["w"], c["h"] / PIE_VB["h"])
+    x0 = c["l"] + (c["w"] - PIE_VB["w"] * k) / 2.0
+    y0 = c["t"] + (c["h"] - PIE_VB["h"] * k) / 2.0
+    side = 2 * PIE_VB["r"] * k
+    plot = {"l": x0 + PIE_VB["pad"] * k, "t": y0 + PIE_VB["pad"] * k, "w": side, "h": side}
+    row_h = max(56.0, 2 * PIE_VB["r"] / max(n, 1)) * k
+    #   글자 크기는 정책값(k0 기준 실측)을 축척만큼 — 행이 좁아지면 행 안에 들도록 줄인다
+    label_fs = min(PIE["label_fs"] * k / k0, row_h * 0.42)
+    sub_fs = min(PIE["sub_fs"] * k / k0, label_fs * 0.75)
+    leg = {"l": x0 + PIE_VB["leg_x"] * k, "t": y0 + PIE_VB["pad"] * k,
+           "w": PIE_VB["leg_w"] * k, "row_h": row_h, "swatch": PIE_VB["swatch"] * k,
+           "swatch_dy": row_h * 0.18, "gap": PIE_VB["gap"] * k,
+           "label_fs": label_fs, "sub_fs": sub_fs,
+           "label_h": label_fs * 1.25, "sub_h": sub_fs * 1.3}
+    return plot, leg
+
 
 #   본문 레이아웃 — 제목이 위에 붙고 아래가 본문인 것들. 세로까지 실측값으로 덮는다.
 #   표지·섹션 진입은 세로 가운데 배치라 이 규칙을 쓰면 안 된다(비례 보정만 한다).
@@ -934,7 +1034,7 @@ def render_pie(slide, px2emu, log):
         pt.format.fill.fore_color.rgb = RGBColor.from_string(cols[i % len(cols)])
         pt.format.line.fill.background()
     # 수동 배치 — 파이와 범례 자리를 HTML 실측대로
-    pa = PIE["plot"]; lg = PIE["legend"]
+    pa, lg = pie_layout(c, len(items))
     def frac(v, base, size):
         return (v - base) / float(size)
     plot_layout = parse_xml(
@@ -956,12 +1056,12 @@ def render_pie(slide, px2emu, log):
     #    원고 라벨을 이미 지니므로 범례 글자는 역변환에서 **걷어내는** 쪽이다.
     from pptx.enum.shapes import MSO_SHAPE
     total = sum(vals) or 1.0
-    lab_l = lg["l"] + lg["swatch"] + 18
-    lab_w = lg["w"] - lg["swatch"] - 18
+    lab_l = lg["l"] + lg["swatch"] + lg["gap"]
+    lab_w = lg["w"] - lg["swatch"] - lg["gap"]
     for i, it in enumerate(items):
         row_t = lg["t"] + i * lg["row_h"]
         sw = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
-                                    emu(lg["l"]), emu(row_t + lg.get("swatch_dy", 36)),
+                                    emu(lg["l"]), emu(row_t + lg["swatch_dy"]),
                                     emu(lg["swatch"]), emu(lg["swatch"]))
         sw.fill.solid()
         sw.fill.fore_color.rgb = RGBColor.from_string(cols[i % len(cols)])
@@ -976,15 +1076,16 @@ def render_pie(slide, px2emu, log):
         pct = round(vals[i] / total * 1000) / 10.0
         pct_s = ("%d" % pct) if pct == int(pct) else ("%.1f" % pct)
         lbl = names[i] + ((" (%s%%)" % pct_s) if vals[i] > 0 else "")
-        has_sub = bool(it["subs"])
-        lspec = {"l": lab_l, "w": lab_w, "h": lg.get("label_h", 38),
-                 "t": row_t + (lg["label_dy"] if has_sub else lg.get("label_dy_nosub", lg["label_dy"])),
-                 "fs": PIE["label_fs"], "align": "center", "bold": True}
+        #   라벨 + 서브라벨 묶음을 행 안에서 세로 가운데로 — HTML `centerLabel` 과 같다
+        blk = lg["label_h"] + len(it["subs"]) * lg["sub_h"]
+        top = row_t + max((lg["row_h"] - blk) / 2.0, 0)
+        lspec = {"l": lab_l, "w": lab_w, "h": lg["label_h"], "t": top,
+                 "fs": lg["label_fs"], "align": "center", "bold": True}
         add_text(slide.shapes, lspec, lbl, px2emu, tag="%s/pie-legend/%d" % (CONTENT_TAG, i))
         for j, sub in enumerate(it["subs"]):
-            spec = {"l": lab_l, "w": lab_w, "h": lg.get("sub_h", 23),
-                    "t": row_t + lg["sub_dy"] + j * lg.get("sub_h", 23),
-                    "fs": PIE["sub_fs"], "align": "center"}
+            spec = {"l": lab_l, "w": lab_w, "h": lg["sub_h"],
+                    "t": top + lg["label_h"] + j * lg["sub_h"],
+                    "fs": lg["sub_fs"], "align": "center"}
             add_text(slide.shapes, spec, sub, px2emu, tag="%s/pie-sub/%d" % (CONTENT_TAG, i))
     ph._element.getparent().remove(ph._element)
     log["pie"] = log.get("pie", 0) + 1
@@ -1241,6 +1342,7 @@ def main():
         return 0
 
     cw, ch = (int(x) for x in a.canvas_px.lower().split("x"))
+    adapt_height(ch)
     prs = Presentation(a.pptx)
     px2emu = prs.slide_width / cw
     #   세로도 같은 축척이어야 한다 — 판형이 맞으면 두 값이 같다

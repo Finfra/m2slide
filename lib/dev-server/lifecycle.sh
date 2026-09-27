@@ -14,6 +14,29 @@ DEV_SERVER_BIND="${DEV_SERVER_BIND:-127.0.0.1}"
 DEV_SERVER_PID_FILE="$DEV_SERVER_ROOT/_doc_work/.dev-server.pid"
 DEV_SERVER_LOG_FILE="$DEV_SERVER_ROOT/_doc_work/.dev-server.log"
 
+# 빌드 뒤 안내할 URL — **dev-server 가 실제로 서빙하는 형태**로 낸다 (Issue418)
+#   구 안내는 `/<상대경로>/slide/index.html` 이었다. 그 legacy 경로는 Issue236.11 에서 404 로
+#   막혔으므로 저장소 안 프로젝트도 열리지 않았고, 외부 경로는 `//Users/...` 가 되었다.
+#     Projects/<이름> 이 이 프로젝트를 가리킨다(심링크 포함 — `--link`·Projects.md `경로` 열)
+#         → http://<bind>:<port>/p/<이름>/n/c   (deck 진입 — 표지부터)
+#     그 밖 (저장소 밖 절대경로 빌드)
+#         → file://<프로젝트>/slide/index.html (dev-server 는 등록 안 된 경로를 모른다)
+# 인자: $1 프로젝트 dir  $2 m2slide 루트(기본 DEV_SERVER_ROOT)
+dev_server_project_url() {
+  local proj="$1" root="${2:-$DEV_SERVER_ROOT}" name real cand
+  proj="$(cd "$proj" 2>/dev/null && pwd)" || { echo "file://$1/slide/index.html"; return 0; }
+  name="$(basename "$proj")"
+  real="$(cd "$proj" && pwd -P)"
+  if [ -d "$root/Projects/$name" ]; then
+    cand="$(cd "$root/Projects/$name" && pwd -P)"
+    if [ "$cand" = "$real" ]; then
+      echo "http://${DEV_SERVER_BIND}:${DEV_SERVER_PORT}/p/${name}/n/c"
+      return 0
+    fi
+  fi
+  echo "file://${proj}/slide/index.html"
+}
+
 _dev_server_alive() {
   local pid="$1"
   [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null

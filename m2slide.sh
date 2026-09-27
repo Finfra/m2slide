@@ -602,8 +602,11 @@ if [ "$GENERATE_PDF" = true ]; then
     # Detect single-page mode: in single mode index.html IS the slide deck;
     # in chapter mode index.html is the deck cover and agenda.html is the
     # Markmap landing — neither is a chapter, but **둘 다 PDF 에 들어가야 한다**(Issue402).
+    #   판정은 HTML 빌더와 같다 — **입력 폴더에 AGENDA.md 가 없으면 single** (Issue418).
+    #   구 판정(`INPUT_DIR = PROJECT_DIR`)은 `markdown/덱.md` 단독 덱을 chapter mode 로 보아
+    #   본문 index.html 을 건너뛰고 표지·목차만 뽑으려다 실패했다(prj7 visual-gen-gate 실측).
     SINGLE_PAGE_MODE=false
-    if [ "$INPUT_DIR" = "$PROJECT_DIR" ]; then
+    if [ ! -f "$INPUT_DIR/AGENDA.md" ]; then
       SINGLE_PAGE_MODE=true
     fi
 
@@ -862,7 +865,11 @@ if [ "$DEV_SERVE" = true ]; then
     echo ""
     echo "🌐 Starting dev-server (Issue235)..."
     dev_server_start || echo "  ⚠️  dev-server start failed — file:// still works"
-    REL_PROJECT="${PROJECT_DIR#"$SCRIPT_DIR/"}"
-    echo "  📂 http://${DEV_SERVER_BIND}:${DEV_SERVER_PORT}/${REL_PROJECT}/slide/index.html"
+    # Issue418 — legacy `/<경로>/slide/index.html` 은 404 다. 판정은 lifecycle.sh 한 곳에 둔다
+    _url="$(dev_server_project_url "$PROJECT_DIR" "$SCRIPT_DIR")"
+    echo "  📂 $_url"
+    case "$_url" in
+      file://*) echo "     (저장소 밖 경로라 dev-server 가 서빙하지 않는다 — /p/ 로 보려면 --link)" ;;
+    esac
   fi
 fi

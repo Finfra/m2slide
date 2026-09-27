@@ -111,6 +111,38 @@ def load_targets(work):
     return [x for x in t if x.get("lane") == "b"], [x for x in t if x.get("lane") not in ("b", "g")]
 
 
+def native_kinds():
+    """lane T 가 네이티브 차트로 그리는 블록 — transform.yml `native_charts` 의 키."""
+    pol = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..",
+                       "data", "m2slide2ppt", "transform.yml")
+    try:
+        import yaml
+        with open(pol, encoding="utf-8") as fp:
+            return set(((yaml.safe_load(fp) or {}).get("native_charts") or {}).keys())
+    except Exception:
+        return set()
+
+
+def slide_positions(pptx_path):
+    """(제목, 같은 제목 순번) → 1-base 장 번호. 못 열면 빈 dict — 로그만 장 번호 없이 나간다."""
+    try:
+        from pptx import Presentation
+        prs = Presentation(pptx_path)
+    except Exception:
+        return {}
+    seen, out = {}, {}
+    for i, sl in enumerate(prs.slides, 1):
+        t = ""
+        for sh in sl.shapes:
+            if sh.is_placeholder and sh.has_text_frame and sh.name.startswith("Title"):
+                t = re.sub(r"\s+", " ", sh.text_frame.text).strip()
+                break
+        k = seen.get(t, 0)
+        seen[t] = k + 1
+        out[(t, k)] = i
+    return out
+
+
 def ensure_asset(work, theme_name):
     """글로벌 `igpath.ensure_asset()` 로 `_asset_ppt` 골격을 확보한다.
 
@@ -377,12 +409,26 @@ def main():
         return 0
 
     targets, deferred = load_targets(work)
+    #   네이티브 차트로 그리는 블록(`native_charts` — 지금은 pie)은 **이월이 아니다** (Issue418).
+    #   lane T 가 차트 도형으로 그리는데도 이월로 세면 작성자는 «평문이 됐다» 로 읽는다.
+    native = native_kinds()
+    deferred = [d for d in deferred if d.get("raw") not in native]
     if deferred and not a.quiet:
         by = {}
         for d in deferred:
             by.setdefault(d.get("raw", "?"), []).append(d.get("title", ""))
         print("  lane C 이월 %d건 — %s"
               % (len(deferred), " · ".join("%s ×%d" % (k, len(v)) for k, v in sorted(by.items()))))
+        #   **어느 장의 무엇이** 평문 불릿으로 남는지 한 줄씩 (Issue418). 요약만으로는 같은
+        #   cards 중 어느 것이 도형이 되고 어느 것이 평문인지 작성자가 예측할 수 없었다
+        #   (prj7 실측: cards 3개는 도형, 4개·title-only 는 평문 — 사유는 «블록 뒤 본문»).
+        pos = slide_positions(a.out_pptx)
+        for d in deferred:
+            t = d.get("title", "")
+            n = pos.get((t, d.get("ord", 0)))
+            print("    ⚠️ 평문 불릿으로 남음 — %s«%s» %s (%s)"
+                  % (("p%d " % n) if n else "", t, d.get("raw", "?"),
+                     d.get("reason") or "사유 미기록"))
     if not targets:
         if not a.quiet:
             print("  lane B 대상 0장 — 건너뜀")

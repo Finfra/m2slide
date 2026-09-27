@@ -1,0 +1,13 @@
+# Issue418 회귀 픽스처 — single mode(`markdown/` 는 있고 AGENDA.md 는 없다) · 16:9 · H1 챕터 여러 개
+#   prj7 점검(2026-09-27 visual-gen-gate 덱)에서 드러난 결함 조합을 줄여 담았다.
+#   ⚠️ 이 폴더는 저장소에 추적된다 — 러너가 임시 사본을 떠서 빌드하므로 여기에 산출물이 생기지 않는다
+theme: default_lec
+theme_default_layout: contents
+cover_enabled: true
+cover_layout: _cover
+slide_ratio: "16:9"
+markmap_depth: 2
+toc_card_mode: true
+head_left: d1
+head_right: now
+auto_layout_detect: true

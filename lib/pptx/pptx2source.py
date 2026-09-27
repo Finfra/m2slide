@@ -603,6 +603,9 @@ def convert(pptx_path, outdir, name):
         j = i - 1
         prev_sig = raw[j][1][3] if (j >= 0 and raw[j][0] == "slide") else {}
         if j >= 0 and j not in drop and "chapter" in ((prev_sig or {}).get("layout") or []):
+            #   ⓒ 진입 장 제목이 이미 H1 이다 (Issue418 — 정방향 `entry_slide`). 붙이면 두 번 된다
+            if int((prev_sig or {}).get("hlvl", 2) or 2) == 1:
+                continue
             h1_attach[j] = t                 # ⓑ 앞 진입 장의 H1
         else:
             h1_solo[i] = t                   # ⓐ H1 만 있던 장
@@ -632,8 +635,17 @@ def convert(pptx_path, outdir, name):
         #   원고에 없던 H2 가 생겨 `h2_slide_title` 이 lossless 인데 늘어난다.
         dirs = ["#" + d for d in sig.get("id", []) + sig.get("anim", []) +
                 ["layout-" + x for x in sig.get("layout", [])]]
+        #   chapter layout 진입 장 (Issue418) — pptx 제목이 H1 이고 H2 부제는 본문 첫 문단이다.
+        #   원고 순서 `# H1` · 디렉티브 · `::: part` · `## H2` 로 되돌린다
+        entry_h1 = bool(title) and int(sig.get("hlvl", 2) or 2) == 1 and \
+            "chapter" in " ".join(sig.get("layout", []))
+        if sig.get("sub"):
+            heads[norm_txt(sig["sub"])] = 2
         out = []
-        if i in h1_attach:
+        if entry_h1:
+            out += ["# %s" % title] + dirs + [""]
+            dirs = []
+        if i in h1_attach and not entry_h1:
             #   원고는 `# H1` **바로 아래**에 디렉티브를 둔다. 순서를 지키지 않으면
             #   재빌드 때 디렉티브 영역이 H2 에 막혀 `#layout-chapter` 가 죽는다
             #   (md-m2slide-rules 「슬라이드 단위 애니메이션 디렉티브」 — 첫 헤더
@@ -643,7 +655,7 @@ def convert(pptx_path, outdir, name):
         if sig.get("_part"):
             #   원고 순서는 `# H1` · 디렉티브 · `::: part` · `## H2` 다 (Issue389)
             out += ["::: part", sig["_part"], ":::", ""]
-        if title:
+        if title and not entry_h1:
             #   정방향이 장 제목을 H2 로 올렸으면(Issue403) 그 원래 깊이로 되돌린다.
             #   신호가 없으면 H2 다 — 승격이 없었다는 뜻이다
             out.append("%s %s" % ("#" * int(sig.get("hlvl", 2) or 2), title))

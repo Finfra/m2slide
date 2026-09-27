@@ -173,6 +173,9 @@ FENCE_DROP_LABEL = dict(_FENCES.get("drop") or {}) or {
 }
 FENCE_DROP_NOTE = _FENCES.get("drop_note") or "· %s — 웹 슬라이드에서 동작하는 요소입니다"
 TAG = re.compile(r"<[^>]+>")
+#    lane T 가 **네이티브 차트**로 그리는 블록 — lane B 카탈로그 밖이지만 평문이 되지 않는다
+#    (Issue418: pie 가 «lane C 이월» 로 세어져 작성자가 평문화로 오독했다)
+NATIVE_CHARTS = set((_POL.get("native_charts") or {"htmlart pie": "pie"}).keys())
 
 # ── ⑬ lane M — 수식. pandoc 에 Math 를 주면 그 장의 본문이 통째로 사라진다(위 설명).
 #    마커는 **pandoc 이 손대지 않는 평문**이어야 하고, 본문에 우연히 나타날 수 없어야 한다.
@@ -519,6 +522,77 @@ def promote_headings(blocks, stat):
     return out
 
 
+#   chapter layout — slide-parser `CHAPTER_LAYOUT` 과 같은 규칙 (Issue418)
+CHAPTER_LAYOUT_LINE = re.compile(r"^[ \t]*#layout-(?:\d+\.\d+\.)?_?chapter[ \t]*$")
+
+
+def is_chapter_entry(block):
+    """명시 `#layout-chapter` 가 붙은 H1 블록 — HTML 에서 **제목 = H1** 인 진입 장이다."""
+    return (top_heading_level(block) == 1
+            and any(CHAPTER_LAYOUT_LINE.match(ln) for ln in block.split("\n")))
+
+
+def normalize_chapters(blocks, chapter_title, stat, cards_ph=True, toc_ph=True,
+                       lane_s=None, lane_s_seen=None, src_label=""):
+    """⑧ 원고 안의 **모든** H1 진입부를 정규화한다 (Issue418).
+
+    구 구현은 파일의 **첫 블록 하나만** 보았다. chapter mode 는 파일 = 챕터라 그것으로
+    충분했지만, single mode 는 한 파일 안에 `# 01.`·`# 02.` … 가 이어진다. 둘째 H1 부터
+    원고 그대로 pandoc 에 넘어가 챕터마다 ① Section Header ② `Chapter N.` 만 남은 무제목 장
+    ③ H2 장으로 **3분할**됐고, 첫 H1 의 챕터 TOC 는 덱 전체의 H2 를 긁었다
+    (prj7 visual-gen-gate 실측 2026-09-27: HTML 16장 → pptx 28장, 빌드 rc0).
+
+    범위는 «이 H1 부터 다음 H1 앞까지» 다 — 챕터 TOC 도 그 범위의 H2 만 담는다.
+    TOC 는 chapter mode 에서만 나오고(toc_ph) 파일당 한 장이라 **첫 H1 에만** 건다.
+    """
+    lv = [top_heading_level(b) for b in blocks]
+    out, first, i = [], True, 0
+    while i < len(blocks):
+        if lv[i] != 1:
+            out.append(blocks[i])
+            i += 1
+            continue
+        j = i + 1
+        while j < len(blocks) and lv[j] != 1:
+            j += 1
+        out.extend(normalize_chapter(blocks[i:j], chapter_title if first else None, stat,
+                                     cards_ph, toc_ph and first,
+                                     lane_s, lane_s_seen, src_label))
+        first = False
+        i = j
+    return out
+
+
+def entry_slide(first, h1):
+    """명시 layout 진입 장 → pptx 한 장. 제목 = H1 · H2 부제는 본문 문단 (Issue418).
+
+    HTML 과 같은 꼴이다 — chapter layout 은 `{{title}}` 에 H1 을, `{{content}}` 에 H2 부제와
+    문단을 넣는다(slide-parser `CHAPTER_LAYOUT`). 부제를 `###` 로 두면 pandoc 이 본문 헤딩으로
+    크게 찍고 ③-b 강조색 규칙에도 걸리므로 **글자 그대로의 문단**으로 둔다 — 문장을 바꾸지 않는다.
+    `::: part` 라벨은 lane T 가 HTML 에서 읽어 따로 그린다(Issue389) — 여기서는 걷는다.
+    """
+    return retitle(PART_BLOCK.sub("", first), h1, sub_to_para=True)
+
+
+def retitle(block, h1, sub_to_para=False):
+    """코드펜스 밖의 첫 H1 을 `## h1` 로, (선택) 그 뒤 첫 H2 를 평문 문단으로 바꾼다."""
+    lines, done_h1, done_h2 = [], False, not sub_to_para
+    for ln, protected in split_code(block):
+        if not protected and not done_h1 and H1.match(ln):
+            lines.append("## %s" % h1)
+            done_h1 = True
+            continue
+        m = None if protected else H2.match(ln)
+        if done_h1 and not done_h2 and m:
+            #   `02. 부제` 를 그대로 문단으로 두면 pandoc 이 **번호 목록**으로 읽어 `2.` 로
+            #   바꾼다(visual-gen-gate 렌더 실측) — 목차 불릿과 같은 이스케이프를 건다
+            lines.append(bullet_text(m.group(1)))
+            done_h2 = True
+            continue
+        lines.append(ln)
+    return "\n".join(lines).strip("\n") + "\n"
+
+
 def normalize_chapter(blocks, chapter_title, stat, cards_ph=True, toc_ph=True,
                       lane_s=None, lane_s_seen=None, src_label=""):
     """⑧ 챕터 진입부를 **H1 단독 + 챕터 TOC** 두 장으로 정규화한다.
@@ -582,22 +656,22 @@ def normalize_chapter(blocks, chapter_title, stat, cards_ph=True, toc_ph=True,
     #      산출물 기준이 아니었다 — 두 축이 다른 정본을 보고 있었다.
     stat["chapter"] += 1
     out = []
+    #   HTML 의 autoToc 와 같은 규칙 — **뒤에 H2 장이 따라올 때만** Cards Page 로 바뀐다
+    #   (slide-parser: `nextLevel === level + 1`). 자식 없는 H1 장은 평범한 장으로 남는다.
+    has_child = any(top_heading_level(b) == 2 for b in blocks[1:])
     if explicit_entry:
-        #   H1 만 걷어내고 그대로 장으로 남긴다 — 제목(H2 부제)·본문은 원고의 것이다.
-        #   TOC 장 제목은 위에서 **챕터명**으로 잡았으므로 둘이 겹치지 않는다
-        #   ⚠️ H1 만 빼면 `::: part` 의 "Chapter N." 이 **제목보다 앞에** 남는다.
-        #      pandoc 은 그것을 제목 없는 내용으로 보고 직전 장 본문에 붙인다 —
-        #      실측(aTest-all 2026-09-19): ch02 마지막 장 `직접 확인할 수 있음` 의
-        #      본문 끝에 `Chapter 2.` 가 붙어 ⑴ 전수 대조 장 수가 어긋나고
-        #      ⑵ lane B 의 "본문 끝이 사이드카와 일치할 때만 걷어낸다" 안전장치가
-        #      그 장을 통째로 건너뛰었다(도형 없음 · 평문 불릿 잔존).
-        #      part 라벨은 제목의 번호("02.")와 같은 말이라 **버린다** — 이 함수
-        #      docstring 이 이미 그렇게 정해 두었는데 이 경로에만 빠져 있었다.
-        kept = PART_BLOCK.sub("", first)
-        kept = "\n".join(ln for ln in kept.split("\n") if not H1.match(ln))
-        if kept.strip():
-            out.append(kept.strip("\n") + "\n")
-            stat["chapter_entry_kept"] += 1
+        #   ⚠️ 제목은 **H1** 이다 (Issue418) — HTML chapter layout 이 H1 을 제목으로 쓴다.
+        #      구 구현은 H1 을 걷고 H2 부제를 제목으로 남겼는데, 그것은 HTML 의 결함
+        #      (slide-parser 가 chapter layout 에서도 H1 을 버렸다)을 그대로 따라간 것이다.
+        #   ⚠️ `::: part` 의 "Chapter N." 을 남기면 **제목보다 앞에** 와서 pandoc 이 직전 장
+        #      본문에 붙인다(실측 aTest-all 2026-09-19: 전수 대조 장 수 어긋남 · lane B 가
+        #      그 장을 건너뜀). 라벨은 lane T 가 HTML 에서 읽어 그린다(Issue389).
+        out.append(entry_slide(first, h1))
+        stat["chapter_entry_kept"] += 1
+    elif not has_child and not cards_ph:
+        #   자식 없는 H1 장 — HTML 은 Cards Page 로 바꾸지 않고 H1 을 제목으로 둔다
+        out.append(retitle(first, h1))
+        stat["chapter_entry_kept"] += 1
     if cards_ph:
         out.append("# %s\n" % h1)
     if toc_ph and toc:
@@ -719,6 +793,11 @@ def scan_lane_b(blocks, src_label, seen, out, stat):
         kind = ("smartart" if smart else None) or LANE_B_CATALOG.get(raw)
         if kind is None:
             rec["lane"] = "c"
+            if raw in NATIVE_CHARTS:
+                #   lane C 로 적되(기존 소비처 계약) 이월로 세지 않는다 — lane T 가 차트로 그린다
+                rec["reason"] = "lane T 네이티브 차트"
+                out.append(rec)
+                continue
             rec["reason"] = "패턴 카탈로그 미등재"
             out.append(rec)
             stat["laneb_defer"] += 1
@@ -836,7 +915,19 @@ def scan_signals(text, src_label, seen, out):
         #      였을 때, 제목이 `### H3` 인 덱은 장을 하나도 식별하지 못해 신호가
         #      통째로 비었다(실측 1.design_rnd: 398장 중 2장만 기입). 최상위 헤딩이
         #      곧 그 장의 제목이라는 m2slide 의 의미를 그대로 쓴다
+        sub_ln = None
+        if is_chapter_entry(blk):
+            #   명시 chapter layout 진입 장의 pptx 제목은 **H1** 이다 (Issue418 — `entry_slide`).
+            #   H2 는 부제 문단이 되므로 그 줄을 적어 두어 역변환이 `## ` 로 되돌리게 한다
+            for i, ln in enumerate(lines):
+                if title is None and H1.match(ln):
+                    title, title_ln, hlvl = strip_inline(H1.match(ln).group(1)), i, 1
+                elif title is not None and H2.match(ln):
+                    sub_ln = i
+                    break
         for i, ln in enumerate(lines):
+            if title is not None:
+                break
             m = TOP_HEAD.match(ln)
             if m:
                 hlvl = len(m.group(1))
@@ -852,6 +943,8 @@ def scan_signals(text, src_label, seen, out):
         if hlvl != 2:
             #   승격 전의 **원래 깊이**를 적는다 — 역변환이 `### ` 를 되돌리는 근거다
             sig["hlvl"] = hlvl
+        if sub_ln is not None:
+            sig["sub"] = strip_inline(H2.match(lines[sub_ln]).group(1))
         in_fence, lang = False, None
         bullet_i = 0
         for i, ln in enumerate(lines):
@@ -972,8 +1065,8 @@ def clean(text, srcdir, proj, stat, chapter_title=None,
     #   ⑧-b HTML 이 Cards Page 로 바꿔 지우는 장을 먼저 뺀다 (H1 은 ⑧ 이 맡는다)
     if not cards_ph:
         blocks = drop_auto_toc(blocks, stat)
-    blocks = normalize_chapter(blocks, chapter_title, stat, cards_ph, toc_ph,
-                               lane_s, lane_s_seen, src_label)
+    blocks = normalize_chapters(blocks, chapter_title, stat, cards_ph, toc_ph,
+                                lane_s, lane_s_seen, src_label)
     #   ⑧-c 장 제목을 pandoc 의 slide level 로 — 부모·자식 판정이 끝난 뒤다
     blocks = promote_headings(blocks, stat)
     blocks = [defer_heavy(b, stat) for b in blocks]
@@ -987,20 +1080,51 @@ def clean(text, srcdir, proj, stat, chapter_title=None,
     return text
 
 
-def sources(project_dir):
-    """m2slide 원고 목록 — `md2pptx.m2slide_sources()` 와 같은 규칙(순서 포함)."""
+def input_dir(project_dir):
+    """HTML 빌더(`generate-slides.js`)와 같은 입력 폴더 — `markdown/` 이 있으면 거기다."""
     mdd = os.path.join(project_dir, "markdown")
-    if os.path.isdir(mdd):
-        files = sorted(f for f in glob.glob(os.path.join(mdd, "*.md"))
-                       if os.path.basename(f) != "AGENDA.md")
-        if files:
-            return files
-    name = os.path.basename(os.path.normpath(project_dir))
-    cand = os.path.join(project_dir, name + ".md")
-    if os.path.isfile(cand):
-        return [cand]
-    return sorted(f for f in glob.glob(os.path.join(project_dir, "*.md"))
-                  if os.path.basename(f) != "AGENDA.md")
+    return mdd if os.path.isdir(mdd) else project_dir
+
+
+def is_chapter_mode(project_dir):
+    """chapter mode = 입력 폴더에 AGENDA.md 가 있다 — HTML 빌더의 판정 그대로 (Issue418).
+
+    ⚠️ `markdown/` 폴더 유무로 가르면 안 된다. `markdown/덱.md` 하나에 AGENDA 가 없는
+       덱은 HTML 이 **single mode** 로 짓는데, 구 판정은 chapter mode 로 보아 HTML 에 없는
+       챕터 목차 장을 pptx 에만 만들었다(prj7 visual-gen-gate 실측 2026-09-27).
+    """
+    return os.path.isfile(os.path.join(input_dir(project_dir), "AGENDA.md"))
+
+
+def sources(project_dir):
+    """m2slide 원고 목록 — HTML 빌더(`generate-slides.js`)와 **같은 선택 규칙**.
+
+    chapter mode 는 입력 폴더의 `*.md`(AGENDA·`_note` 제외, 정렬), single mode 는 HTML 이
+    고르는 **한 파일**이다: ① `<프로젝트명>.md` ② `README.md` ③ 유일한 파일 ④ 유일한 일반
+    파일. 둘 이상이 남으면 HTML 빌드가 먼저 실패하므로 여기서도 실패한다.
+    (`<X>.ppt.md` 파생본 우선 규칙(Issue155)은 옮기지 않았다 — 그 파일은 layout-selector
+    산출물이라 pptx 경로가 쓰지 않는다)
+    """
+    ind = input_dir(project_dir)
+    files = sorted(f for f in glob.glob(os.path.join(ind, "*.md"))
+                   if os.path.basename(f) != "AGENDA.md" and not f.endswith("_note.md"))
+    if is_chapter_mode(project_dir):
+        return files
+    name = os.path.basename(os.path.normpath(project_dir)).lower()
+    by = {os.path.basename(f).lower(): f for f in files}
+    if name + ".md" in by:
+        return [by[name + ".md"]]
+    if "readme.md" in by:
+        return [by["readme.md"]]
+    if len(files) == 1:
+        return files
+    normal = [f for f in files if re.match(r"^[a-zA-Z0-9가-힣]", os.path.basename(f))]
+    if len(normal) == 1:
+        return normal
+    if normal:
+        sys.exit("[build-source] single mode 원고 후보가 여럿이다 — HTML 빌드와 같은 규칙으로 "
+                 "하나를 고를 수 없다: %s" % ", ".join(os.path.basename(f) for f in normal))
+    return []
 
 
 def read_frontmatter(path):
@@ -1113,8 +1237,11 @@ def main():
     for stale in glob.glob(os.path.join(outdir, "*.md")):
         os.remove(stale)                        # 지난 실행의 잔재가 섞이면 순서가 깨진다
 
-    agenda_path = os.path.join(proj, "markdown", "AGENDA.md")
-    meta = read_frontmatter(agenda_path)
+    agenda_path = os.path.join(input_dir(proj), "AGENDA.md")
+    #   운영 메타의 출처 — chapter mode 는 AGENDA.md, single mode 는 **슬라이드 소스 자신**
+    #   (md-m2slide-rules 「운영 메타데이터」). AGENDA 만 읽던 탓에 single mode 표지 제목이
+    #   폴더명으로 나갔다(Issue418 — prj7 실측 `visual-gen-gate`)
+    meta = read_frontmatter(agenda_path if is_chapter_mode(proj) else srcs[0])
     chapters = agenda_chapters(agenda_path)
     chapter_of = {f: t for t, f in chapters}
 
@@ -1146,7 +1273,10 @@ def main():
     #   single mode 에서 켜면 HTML 에 없는 목차 장이 pptx 에만 생긴다
     #   chapter mode 판정은 **`markdown/` 디렉토리**로 한다 — AGENDA 파싱 결과에
     #   기대면 그 파서가 틀렸을 때 장 구성까지 함께 어긋난다(실제로 그랬다)
-    is_chapter = os.path.isdir(os.path.join(proj, "markdown"))
+    #   chapter mode 판정은 **HTML 빌더와 같은 규칙**(입력 폴더의 AGENDA.md)이다 (Issue418).
+    #   구 판정(`markdown/` 폴더 유무)은 `markdown/덱.md` 단독 덱을 chapter mode 로 보아
+    #   HTML 에 없는 챕터 목차 장을 pptx 에만 만들었다
+    is_chapter = is_chapter_mode(proj)
     toc_ph = flag("toc_placeholder", True) and is_chapter
     if cover_on:
         dst = os.path.join(outdir, "00-cover.md")

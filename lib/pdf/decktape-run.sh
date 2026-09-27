@@ -61,4 +61,18 @@ if not out.exists() or out.read_text() != patched:
     out.write_text(patched)
 PY
 
+# --- Chrome 해소 (Issue418) ---------------------------------------------------
+#   npx 캐시의 decktape 는 puppeteer 가 내려받은 **전용 Chrome** 을 찾는다. `~/.cache/puppeteer`
+#   가 비면 «Could not find Chrome (ver. 146…)» 로 전 장이 실패한다(debug_TECH 2026-09-27 —
+#   코드 결함이 아니라 환경). 시스템 Chrome 이 있으면 그것을 쓴다 — 실측 33p·27p 정상.
+#   ⚠️ 사용자가 PUPPETEER_EXECUTABLE_PATH 를 이미 줬으면 **건드리지 않는다**.
+if [ -z "${PUPPETEER_EXECUTABLE_PATH:-}" ]; then
+  _pcache="${PUPPETEER_CACHE_DIR:-$HOME/.cache/puppeteer}"
+  _sys_chrome="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+  if ! ls "$_pcache"/chrome/*/ >/dev/null 2>&1 && [ -x "$_sys_chrome" ]; then
+    export PUPPETEER_EXECUTABLE_PATH="$_sys_chrome"
+    echo "  ℹ️  puppeteer Chrome 캐시 없음 → 시스템 Chrome 사용 ($_sys_chrome)" >&2
+  fi
+fi
+
 exec node "$DT_PATCHED" "$@"

@@ -27,10 +27,12 @@ shift 2 || true
 #   승인 게이트가 지키는 위험이 없는 곳에 게이트를 두면 기능이 그냥 안 쓰이게 된다.
 #   ⚠️ 끄는 스위치는 남긴다 — 회귀를 가를 때 "lane B 탓인가" 를 1초에 답할 수 있어야 한다.
 LANE_B=1
+NO_VERIFY=0          # Issue418 — 최종 판정 게이트도 같은 스위치로 넘긴다 (md2pptx 에도 그대로 전달)
 _PASS=()
 for _a in "$@"; do
   case "$_a" in
     --no-lane-b) LANE_B=0 ;;
+    --no-verify) NO_VERIFY=1; _PASS+=("$_a") ;;
     *)           _PASS+=("$_a") ;;
   esac
 done
@@ -557,9 +559,27 @@ PY
   #   ⚠️ md2pptx 내장 검증은 ③ 시점 상태를 잰 것이라 ③-b·③-c 교정 **이전** 수치다.
   #      최종 파일의 판정을 다시 찍어 준다(`--lane a` 필수 — 기본값 b 는 본문 이미지를
   #      위반으로 보아 m2slide 덱을 오판한다).
+  #
+  #   ⚠️ **이 판정이 차단 게이트다** (Issue418). 구 코드는 `| tail -1 || true` 라 `FAIL 1` 이
+  #      찍혀도 rc0 으로 끝났고, 무엇이 FAIL 인지도 로그에 없었다(prj7 실측: 캔버스 이탈 4장이
+  #      배포 버튼까지 달려 나갔다). md2pptx 내장 검증은 ③ 시점만 재므로 lane B/G/T/M/S 가
+  #      **나중에 넣은 도형**의 위반은 여기서만 잡힌다 — 그래서 여기서 막는다.
+  #      FAIL 은 PowerPoint 가 거부하거나 깨져 보이는 위반이다(WARN 은 rc0 이라 통과한다).
   if [ -f "$CK/check-conform.py" ]; then
-    python3 "$CK/check-conform.py" "$OUT" --lane a --template "$REF" 2>/dev/null \
-      | tail -1 | sed 's/^/  최종 /' || true
+    CONF_RC=0
+    CONF_OUT="$(python3 "$CK/check-conform.py" "$OUT" --lane a --template "$REF" 2>&1)" || CONF_RC=$?
+    printf '%s\n' "$CONF_OUT" | tail -1 | sed 's/^/  최종 /'
+    if [ "$CONF_RC" != 0 ]; then
+      #   항목을 **전문으로** 남긴다 — 어느 장의 어느 도형인지가 없으면 고칠 곳을 못 찾는다
+      printf '%s\n' "$CONF_OUT" | grep -E 'FAIL|✕|이탈:|과다:|겹침:' | sed 's/^/    /' >&2 || true
+      if [ "$NO_VERIFY" = 1 ]; then
+        echo "  ⚠️ 최종 규격 검증 FAIL — --no-verify 로 차단을 넘긴다(배포 대상 아님)" >&2
+      else
+        echo "  ❌ 최종 규격 검증 실패 (check-conform rc=$CONF_RC) — lane 후처리 뒤 위반이 남았다" >&2
+        echo "     의도적으로 넘기려면: --pptx-no-verify" >&2
+        exit 2
+      fi
+    fi
   fi
 
   # ── ③-c2 본문 0 장 — **성공으로 위장한 손실**을 여기서 잡는다 (Issue339)
