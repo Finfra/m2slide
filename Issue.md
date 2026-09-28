@@ -121,24 +121,6 @@
 
 # 📙 일반
 
-## Issue425: Issue424 후속 — Pages main 반영(docs 커밋 6개) · aTest-all 분류 test · 이슈후보 2건 등록 (등록: 2026-09-29)
-* 목적: 사용자 지시 2026-09-29 *«나래로 위임하여 계속 진행»* — Issue424 종결 보고의 «지시 받으면 진행» 항목 A·B 를 마무리하고 동반 발견 결함을 이슈후보로 남긴다(요청: 세션 b89831bd → 나래 인박스 `fbotreq-1790609303-77637e12`)
-* 상세:
-    - A. **Pages 반영** — Pages 는 `main` 서빙인데 docs(pages) 커밋 6개(`0c7456a`·`bc755c0`·`cc5121d`·`73ac9f7`·`7c1db38`·`499c73b`)가 `feat/ig-ppt-maker-integration` 에만 있다. 공개 반영(H:공개)은 위 사용자 지시로 승인됨(나래 판정 — 승인 근거: A 를 «지시 받으면 진행» 으로 보고한 직후의 지시)
-    - B. `Projects.md`(로컬 등록부) **aTest-all 분류 열만 `test`** — cg-e2e 와 같은 회귀 픽스처인데 `/p/` «그 외» 에 있다
-    - D. 이슈후보 등록: ① `--lint-deployment` 가 강의 본문 예시(`curl localhost`·`/Users/...`)를 잡는 오탐 ③ publishing `o` 인데 원고 미추적(n3shIntro — 앱 소개 2차 이관 때 해소 예정). ② issue-tx 서브 번호 오독은 prj3 소관 — 나래가 prj3 에 등록
-    - 범위 밖: C(앱 소개 5덱 2차 prj42a 이관 — 분류 폴더·미공개 2덱 첫 공개가 사람 결정 대기) · E(LlmFlow 보류 유지 — 건드리지 않는다)
-* 구현 명세:
-    - A: `main` 에 6커밋 cherry-pick(충돌 시 docs 쪽 정본 유지·충돌 내역 결과에 기록) → push `main` → Pages 갱신 후 `finfra.github.io/m2slide` 갤러리 «원고 이전»·«통합됨» 카드와 `docs/m2Slide`·`m2Slide_en`·`m2Slide_MermaidExample` 리다이렉트 확인(ego-browser)
-    - ⚠️ 작업트리에 다른 세션 미커밋 변경이 있다 — `main` 전환 전 worktree 를 쓰거나 전환 가능 여부를 먼저 확인. 남의 변경을 stash·checkout 으로 건드리지 않는다
-    - B: 분류 열 1칸 수정 → `--sync-projects` 후 `/p/` 🧪 테스트 구역 표시 확인
-    - 검증: A 리다이렉트 3종·카드 2종 200 · B `/p/` 표시 · D 이슈후보 2건 등재
-    - TDD 해당 없음: 배포 반영·등록부 분류·이슈 등록 — 제품 코드 무변경
-* 결과(developer, 2026-09-29):
-    - B ✅ `Projects.md` aTest-all 분류 `test` 확인 — `--sync-projects` «이미 동기화 상태(변경 없음)», `/p/` 🧪 테스트(5) 구역에 aTest-all 표시(dev-server 9877 실측). Projects.md 는 gitignored 로컬 등록부라 커밋 없음
-    - D ✅ ① `--lint-deployment` 오탐은 69acb96 에서 이미 이슈후보 등재 → 중복 등록 안 함(issue-g 규칙4) · ③ n3shIntro «허용목록 o · 추적 0» 신규 등재. ② 는 명세대로 prj3(나래) 소관
-    - A 는 release(fbot-release-issue425) 소관 — developer 는 push 하지 않음. 원격 `main` 은 9c878fa(6커밋 cherry-pick, patch 동일)까지 반영된 상태를 확인
-
 ## Issue423: 이미지 해소 시 `X.annot.png` 짝 픽업 + 원본 강제 옵트아웃 — prj7 주석본 픽업 규약 구현 (등록: 2026-09-28)
 * 목적: prj7 cg 가 캡처 주석본(`img-annotate`)을 만들어도 덱을 만드는 경로가 그 산출을 집지 않아 **안 쓰인다**. prj7 규약(사용자 확정 2026-09-24) «`X.png` 를 넣을 때 옆에 `X.annot.png` 가 있으면 그것을 쓴다» 의 구현 자리가 m2slide 이미지 해소다
 * 상세:
@@ -158,6 +140,30 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue425: Issue424 후속 — Pages main 반영(docs 커밋 6개) · aTest-all 분류 test · 이슈후보 2건 등록 (등록: 2026-09-29, 해결: 2026-09-29, commit: c0a5823 · main: 2e5a497, b8394ac, 65eb9d4, 27d9646, 4450577, 9c878fa) ✅
+* 목적: 사용자 지시 2026-09-29 *«나래로 위임하여 계속 진행»* — Issue424 종결 보고의 «지시 받으면 진행» 항목 A·B 를 마무리하고 동반 발견 결함을 이슈후보로 남긴다(요청: 세션 b89831bd → 나래 인박스 `fbotreq-1790609303-77637e12`)
+* 상세:
+    - A. **Pages 반영** — Pages 는 `main` 서빙인데 docs(pages) 커밋 6개(`0c7456a`·`bc755c0`·`cc5121d`·`73ac9f7`·`7c1db38`·`499c73b`)가 `feat/ig-ppt-maker-integration` 에만 있다. 공개 반영(H:공개)은 위 사용자 지시로 승인됨(나래 판정 — 승인 근거: A 를 «지시 받으면 진행» 으로 보고한 직후의 지시)
+    - B. `Projects.md`(로컬 등록부) **aTest-all 분류 열만 `test`** — cg-e2e 와 같은 회귀 픽스처인데 `/p/` «그 외» 에 있다
+    - D. 이슈후보 등록: ① `--lint-deployment` 가 강의 본문 예시(`curl localhost`·`/Users/...`)를 잡는 오탐 ③ publishing `o` 인데 원고 미추적(n3shIntro — 앱 소개 2차 이관 때 해소 예정). ② issue-tx 서브 번호 오독은 prj3 소관 — 나래가 prj3 에 등록
+    - 범위 밖: C(앱 소개 5덱 2차 prj42a 이관 — 분류 폴더·미공개 2덱 첫 공개가 사람 결정 대기) · E(LlmFlow 보류 유지 — 건드리지 않는다)
+* 구현 명세:
+    - A: `main` 에 6커밋 cherry-pick(충돌 시 docs 쪽 정본 유지·충돌 내역 결과에 기록) → push `main` → Pages 갱신 후 `finfra.github.io/m2slide` 갤러리 «원고 이전»·«통합됨» 카드와 `docs/m2Slide`·`m2Slide_en`·`m2Slide_MermaidExample` 리다이렉트 확인(ego-browser)
+    - ⚠️ 작업트리에 다른 세션 미커밋 변경이 있다 — `main` 전환 전 worktree 를 쓰거나 전환 가능 여부를 먼저 확인. 남의 변경을 stash·checkout 으로 건드리지 않는다
+    - B: 분류 열 1칸 수정 → `--sync-projects` 후 `/p/` 🧪 테스트 구역 표시 확인
+    - 검증: A 리다이렉트 3종·카드 2종 200 · B `/p/` 표시 · D 이슈후보 2건 등재
+    - TDD 해당 없음: 배포 반영·등록부 분류·이슈 등록 — 제품 코드 무변경
+* 결과(developer, 2026-09-29):
+    - B ✅ `Projects.md` aTest-all 분류 `test` 확인 — `--sync-projects` «이미 동기화 상태(변경 없음)», `/p/` 🧪 테스트(5) 구역에 aTest-all 표시(dev-server 9877 실측). Projects.md 는 gitignored 로컬 등록부라 커밋 없음
+    - D ✅ ① `--lint-deployment` 오탐은 69acb96 에서 이미 이슈후보 등재 → 중복 등록 안 함(issue-g 규칙4) · ③ n3shIntro «허용목록 o · 추적 0» 신규 등재. ② 는 명세대로 prj3(나래) 소관
+    - A 는 release(fbot-release-issue425) 소관 — developer 는 push 하지 않음. 원격 `main` 은 9c878fa(6커밋 cherry-pick, patch 동일)까지 반영된 상태를 확인
+* 결과(release, 2026-09-29):
+    - A ✅ 임시 worktree(`origin/main` detached, 작업트리 무접촉)에서 6커밋 cherry-pick — **충돌 0**. 결과 `docs/` 전체가 기능 브랜치 `378eba2` 의 `docs/` 와 diff 0 → `git push origin HEAD:main`(비강제) `eb96e75..9c878fa`. 로컬 `main` ref 는 건드리지 않음(원래 origin 보다 4커밋 뒤)
+    - main 대응 해시: `0c7456a→2e5a497` · `bc755c0→b8394ac` · `cc5121d→65eb9d4` · `73ac9f7→27d9646` · `7c1db38→4450577` · `499c73b→9c878fa`
+    - 게이트: Pages 워크플로 run `36444425372` success(upload-pages-artifact·deploy-pages ✓)
+    - 라이브 parity(ego-browser + curl): `m2Slide/`→`m2slide_info/index.html` · `m2Slide_en/`→`m2slide_info_en/index.html` · `m2Slide_MermaidExample/`→`m2Slide_visual_component/07-diagram-gallery.html` 도착 · 갤러리 «원고 이전» 6카드·«통합됨» 카드 표시 · `m2slide-deck` 이전 링크 6개 전부 200
+    - 보고: `_doc_work/report/issue425-release_report.md`
 
 ## Issue424: Projects 원고 정리 — 덱 통합 2건 + 강연 덱 prj42a(Projects_deck) 이관 (등록: 2026-09-28, 착수: 2026-09-28, 해결: 2026-09-28, commit: 960541e, 582e054, ec70efd, 0c7456a, bad0ca7, d1a62ce, 8f53425, b712415, 2afc9cd, bc755c0, cc5121d, 5ca9883, 45f2372, 73ac9f7, 7c1db38 · prj42a: 83f334d, 7c2ea87, 1ad4ee4, 44b7759, cbd27c2, de09b05) ✅
 * 목적: 본체 `Projects/` 에 강연·소개·테스트 덱이 섞여 있고, 공개(publishing `o`) 강연 일부는 원고가 어느 git 에도 없다. [deck-repo.md](_doc_arch/deck-repo.md) 의 «도구와 콘텐츠 분리» 를 적용해 «m2slide 자신을 설명·검증하는 덱은 prj42, 그 밖의 콘텐츠는 prj42a» 로 가른다
