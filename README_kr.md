@@ -10,7 +10,6 @@
 
 **📊 m2slide 소개 데크**:
 - [m2Slide란? (설명용)](https://finfra.github.io/m2slide/m2slide_info/)
-- [m2Slide 소개](https://finfra.github.io/m2slide/m2Slide/)
 
 **📋 공개 프로젝트 목록**: [Projects_org.md](./Projects_org.md)
 > 이 저장소에 포함된 예제 프로젝트 목록. `./m2slide.sh --sync-projects` 로 자동 생성되므로 직접 편집하지 마세요.

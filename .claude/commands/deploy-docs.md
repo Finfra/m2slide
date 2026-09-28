@@ -229,6 +229,37 @@ case "$REAL" in "$DECK"/*) REL="${REAL#"$DECK"/}" ;; *) REL="" ;; esac
 * `.card-wrap`·`.card-source`·`.card-source-label`·`.card-source-path` CSS 는 [docs/index.html](../../docs/index.html) `<style>` 에 이미 있다(추가 불요)
 * 같은 사실은 공개 목록 `Projects_org.md` 에도 «m2slide-deck 으로 이전된 프로젝트» 절로 자동 생성된다(`--sync-projects`)
 
+#### 5-b. 다른 덱으로 통합된 덱 — 리다이렉트 + 통합 카드 (Issue424)
+
+덱을 다른 덱에 흡수해 원고를 z_done 으로 보냈을 때(`Projects/z_done/<Name>_v<VERSION>`), 발행본을 지우면 기존 URL·외부 링크가 404 가 된다. 발행본 자리를 **리다이렉트 스텁**으로 바꾸고 카드에 통합 대상을 표시한다.
+
+* `docs/{old}/` — 기존 `*.html` 파일마다 같은 이름의 스텁을 남기고(깊은 링크 보존) 나머지 자산(`css/`·`img/`·`theme-img/`·`*.epub` 등)은 지운다. 스텁은 상대 경로만 쓴다(file-deployment-rules):
+
+```html
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{target 제목} 으로 통합됨</title>
+<link rel="canonical" href="../{target}/index.html">
+<meta http-equiv="refresh" content="0; url=../{target}/index.html">
+</head><body><p>이 덱({old})은 <a href="../{target}/index.html">{target 제목}</a> 으로 통합되었습니다.</p></body></html>
+```
+
+* 카드 — 5-a 와 같은 `card-wrap` 형식이되 배지를 `통합됨` 하나로 두고, 아래 링크는 통합 대상 덱을 가리킨다:
+
+```html
+      <div class="card-wrap" data-merged-into="{target}">
+        <a class="card" href="{old}/index.html" data-project="{old}">
+          <h2>{old 제목}</h2>
+          <div class="project-id">{old}</div>
+          <span class="badge">통합됨</span>
+        </a>
+        <a class="card-source" href="{target}/index.html" title="이 덱은 {target} 으로 통합됨"><span class="card-source-label">🔀 통합됨 → {target}</span><span class="card-source-path">{target 제목}</span></a>
+      </div>
+```
+
+* 통합 대상 덱이 옛 덱을 링크하고 있었다면 그 원고도 고쳐 재발행한다 — 스텁이 받아 주긴 하지만 자기 자신에게 되돌아오는 링크가 된다
+
 ### B-6. 검증
 
 `apply-verify-rules`에 따른 산출물 검증:
