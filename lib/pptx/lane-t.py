@@ -63,6 +63,8 @@ except ImportError:
     sys.exit(2)
 
 #   pandoc/theme2reference 가 남기는 기본 콘텐츠 박스 (10×7.5in 시절 좌표)
+#   ⚠️ 이 값은 **옛 reference 의 프레임**일 뿐이다 — 실제 원본 프레임은 source_frame() 이
+#      reference 에서 읽는다(Issue427).
 OLD_W, OLD_H = 9144000, 6858000
 OLD_BOX_L, OLD_BOX_W = 457200, 8229600
 
@@ -307,25 +309,49 @@ BODY_LAYOUTS = {"Title and Content", "Two Content", "Content with Caption",
                 "Title Only", "Comparison", "Blank"}
 
 
-def remap_x(v, L, W):
+def source_frame(prs):
+    """reference placeholder 가 **어느 판형 좌표로** 적혀 있는지 읽는다 (Issue427).
+
+    반환: `(판형 높이, 콘텐츠 박스 왼쪽, 콘텐츠 박스 폭)` — remap_* 의 분모.
+
+    글로벌 `theme2reference --adapt` 의 계약이 바뀌었다. 예전에는 슬라이드 크기만
+    키우고 placeholder 는 4:3(10×7.5in) 좌표로 두었으나, prj3 f75dc1af 부터는
+    `fit_canvas()` 가 마스터·레이아웃 xfrm 도 **같은 비율로 옮겨 둔다**. 그것을 4:3
+    이라고 가정해 다시 늘리면 표지·섹션 placeholder 가 캔버스 밖으로 밀린다.
+
+    그래서 상수를 믿지 않고 마스터 placeholder 의 오른쪽 끝을 잰다 — 옛 4:3 폭을
+    넘으면 이미 판형에 맞춰진 것이다. 옛 reference 도 그대로 동작한다.
+    """
+    right = max((ph.left + ph.width for ph in prs.slide_master.placeholders), default=0)
+    if right <= OLD_W * 1.02:
+        return OLD_H, OLD_BOX_L, OLD_BOX_W
+    sx, sy = prs.slide_width / OLD_W, prs.slide_height / OLD_H
+    return OLD_H * sy, OLD_BOX_L * sx, OLD_BOX_W * sx
+
+
+def remap_x(v, L, W, frame):
     """콘텐츠 박스 매핑 — 단순 비례가 아니다.
 
     비례로 늘리면 여백도 함께 늘어난다(0.5in → 0.67in). m2slide 여백은 56px 로
     고정이므로, **박스 안에서의 상대 위치**를 새 박스로 옮긴다.
     """
-    return int(round(L + (v - OLD_BOX_L) / OLD_BOX_W * W))
+    _, box_l, box_w = frame
+    return int(round(L + (v - box_l) / box_w * W))
 
 
-def remap_w(v, W):
-    return int(round(v / OLD_BOX_W * W))
+def remap_w(v, W, frame):
+    return int(round(v / frame[2] * W))
 
 
-def remap_y(v, T, H):
-    return int(round(T + v / OLD_H * H))
+def remap_y(v, T, H, frame):
+    return int(round(T + v / frame[0] * H))
 
 
-def fix_placeholders(container, name, L, W, T, H, px2emu, log):
-    """레이아웃/마스터 하나의 placeholder 를 새 판형에 맞춘다."""
+def fix_placeholders(container, name, L, W, T, H, px2emu, log, frame):
+    """레이아웃/마스터 하나의 placeholder 를 새 판형에 맞춘다.
+
+    `frame` 은 source_frame() 이 reference 에서 읽은 원본 프레임이다.
+    """
     body = name in BODY_LAYOUTS
     for ph in container.placeholders:
         try:
@@ -333,17 +359,17 @@ def fix_placeholders(container, name, L, W, T, H, px2emu, log):
         except Exception:
             continue
         ol, ow, ot, oh = ph.left, ph.width, ph.top, ph.height
-        ph.left = remap_x(ol, L, W)
-        ph.width = remap_w(ow, W)
-        ph.top = remap_y(ot, T, H)
-        ph.height = int(round(oh / OLD_H * H))
+        ph.left = remap_x(ol, L, W, frame)
+        ph.width = remap_w(ow, W, frame)
+        ph.top = remap_y(ot, T, H, frame)
+        ph.height = int(round(oh / frame[0] * H))
         if body and t.startswith("Title"):
             ph.left, ph.width = L, W
             ph.top = int(PX["title_top"] * px2emu)
             ph.height = int(PX["title_h"] * px2emu)
         elif body and (t.startswith("Content") or t.startswith("Text")):
             #   Two Content·Comparison 은 좌우로 갈리므로 가로는 건드리지 않는다
-            if remap_w(ow, W) > W * 0.8:
+            if remap_w(ow, W, frame) > W * 0.8:
                 ph.left, ph.width = L, W
             ph.top = int(PX["body_top"] * px2emu)
             ph.height = int(PX["body_h"] * px2emu)
@@ -1360,9 +1386,11 @@ def main():
     lh = int(PX["line_h"] * px2emu)
 
     if a.mode == "layout":
-        fix_placeholders(prs.slide_master, "", L, W, T, H, px2emu, log)
+        #   원본 프레임은 마스터를 고치기 **전에** 잰다 — 고친 뒤에는 이미 새 판형이다
+        frame = source_frame(prs)
+        fix_placeholders(prs.slide_master, "", L, W, T, H, px2emu, log, frame)
         for lay in prs.slide_master.slide_layouts:
-            fix_placeholders(lay, lay.name, L, W, T, H, px2emu, log)
+            fix_placeholders(lay, lay.name, L, W, T, H, px2emu, log, frame)
             log["layout"] += 1
         prs.save(a.pptx)
         #   ⚠️ **저장 뒤에** 고친다 — 패키지를 직접 손보는 작업이라 먼저 하면

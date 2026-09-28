@@ -8,8 +8,8 @@ date: 2026.09.26
 
 원고 md 한 벌에서 HTML·PDF·pptx 덱을 뽑을 때 내용 손실·조판 흔들림·조용한 성공 보고가 다시 생기지 않게 막는다
 
-* 기존 러너: `cd ~/_git/__all/videoMaker/lib/m2slide && node --test 'lib/__tests__/*.test.js' ; bash z_test/pdf/{1.integrity,2.tripath,3.nondeterminism}.sh ; bash z_test/ig-ppt/{0..9}.*.sh ; bash z_test/run-policy-fixture.sh ; bash z_test/ego-mobile/run.sh aTest aTest-all`
-* 목표 12개 전부 테스트로 덮임 (2026.09.27 전량 green — prj5#Issue100 · #11 은 prj5#Issue101 ①/Issue419 · #12 는 Issue418 에서 추가)
+* 기존 러너: `cd ~/_git/__all/videoMaker/lib/m2slide && node --test 'lib/__tests__/*.test.js' ; bash z_test/pdf/{1.integrity,2.tripath,3.nondeterminism}.sh ; bash z_test/ig-ppt/{0..10}.*.sh ; bash z_test/run-policy-fixture.sh ; bash z_test/ego-mobile/run.sh aTest aTest-all`
+* 목표 13개 전부 테스트로 덮임 (2026.09.27 전량 green — prj5#Issue100 · #11 은 prj5#Issue101 ①/Issue419 · #12 는 Issue418 · #13 은 Issue427 에서 추가)
 * ⚠️ `--pdf` 러너는 puppeteer 캐시(`~/.cache/puppeteer`)가 비면 Chrome 을 못 찾는다 — `PUPPETEER_EXECUTABLE_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"` 로 시스템 Chrome 을 지정한다
 * ⚠️ Node 24 의 `node --test` 는 디렉토리 인자를 받지 않는다(`Cannot find module …/__tests__`) — glob 으로 넘긴다
 
@@ -31,6 +31,7 @@ date: 2026.09.26
 | 10  | `projects-md-registry`           | Projects.md `경로` 열이 외부 마운트의 유일한 기록이다 — sync 가 심링크를 표대로 복원·흡수하고 실디렉토리는 건드리지 않으며, `/p/` 는 표에 없는 폴더를 미등재로 드러낸다 | Issue416 /p/ 목록 출처가 폴더·심링크·Projects.md 로 갈려 외부 여부·경로가 표에 없음                          | `node --test lib/__tests__/sync-projects-md.test.js && python3 -m unittest lib/dev-server/test_server.py` | ✅ 신규 |
 | 11  | `cover-meta-html-escape`         | 표지(`_cover`) 슬롯에 들어가는 frontmatter 값(title·subtitle·instructor_name)이 HTML 이스케이프되어 `<b>`·`&` 가 태그·엔티티로 새지 않는다 (single·chapter 양 모드) + HTML 이 든 값은 빌드 로그에 경고 | prj41 videoMaker tdd #05 red(prj5#Issue101 ①) — Issue419 표지 frontmatter escape 누락(lib/html-builder.js) | `node --test lib/__tests__/cover-meta-escape.test.js` | ✅ 신규 |
 | 12  | `single-mode-pptx-parity`        | single mode 덱(`markdown/` 단독·H1 챕터 여럿·16:9)의 pptx 가 HTML 과 같은 장 수·제목 순서·표지 메타를 갖고, lane 후처리 뒤 최종 check-conform FAIL 이면 빌드가 rc 2 로 멈추며, `--pdf` 가 본문 index.html 을 뽑는다 | Issue418 prj7 점검 — HTML 16장 → pptx 28장·캔버스 이탈 4장인데 빌드 rc0 (visual-gen-gate) | `bash z_test/ig-ppt/9.single-parity.sh` | ✅ 신규 |
+| 13  | `lanet-reads-source-frame`       | lane T 가 reference placeholder 의 원본 프레임을 상수(4:3)가 아니라 reference 에서 읽어, 판형에 맞춰진 글로벌 reference 도 옛 4:3 reference 도 표지·섹션 placeholder 를 판형 안에 둔다 | Issue427 글로벌 `theme2reference --adapt` 계약 변화(prj3 f75dc1af) 뒤 lane-t 이중 스케일로 표지 캔버스 이탈 → 6.roundtrip·9.single-parity rc1 (prj3#Issue783) | `bash z_test/ig-ppt/10.lanet-frame.sh` | ✅ 신규 |
 
 # 규약
 
