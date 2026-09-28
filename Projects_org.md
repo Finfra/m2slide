@@ -17,7 +17,6 @@ tags: []
 | m2   | m2slide_info             | 1.0  | m2Slide란? (설명용)        |
 | m2   | m2slide_info_en          | 1.0  | What is m2slide?  (설명용) |
 | m2   | m2Slide_visual_component | 1.1  | 시각 컴포넌트 데모         |
-| m2   | m2Slide_MermaidExample   | 1.0  | Mermaid 다이어그램 예제    |
 | app  | fPmIntro                 | 1.0  | fPM 소개                   |
 | app  | fPmIntro_en              | 1.0  | fPM 소개 영문판            |
 | app  | n3shIntro                | 1.1  | n3sh 세벌식 속기 확장 소개 |
