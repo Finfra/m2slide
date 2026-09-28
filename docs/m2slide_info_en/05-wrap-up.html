@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Key takeaways and next steps</title>
+  <title>05. Wrap-up</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -824,6 +824,14 @@ body {
   gap: 0;
 }
 
+/* Issue415: 좁은 화면(폭 435 미만)의 reveal 스크롤 뷰는 `.reveal-viewport.reveal-scroll .scroll-page section
+   { display:block !important }` 로 위 flex 를 덮어쓴다. 그러면 -body 가 남는 높이를 못 채워 flex:1 로
+   크기를 받는 htmlArt(process·pie 등)가 높이 0 이 된다(아이폰 실기기 보고, WebKit 실측 h=0).
+   스크롤 뷰에서만 발동하는 선택자라 PC 페이지 뷰는 무변경. 사용자 컨펌 2026-09-24 (base.css 가드) */
+.reveal-viewport.reveal-scroll .scroll-page section[class*="layout-"] {
+  display: flex !important;
+}
+
 .reveal section[class*="layout-"] > div[class$="-header"] {
   flex-shrink: 0;
   display: flex;
@@ -835,7 +843,18 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1em 0;
+}
+
+/* Issue360: padding 은 '기본값' 이므로 명시도 0(:where) + 세로만 선언한다.
+   구 `padding: 1em 0`(0-3-2)은 아래 layout 별 규칙(0-3-1)과 theme 의 0-3-1 선언을
+   전부 이겨서, base 가 스스로 적은 1.5em 조차 한 번도 적용된 적이 없었다.
+   그 충돌을 우회한 흔적이 이미 둘 있다 — layout-chapter 의 `.slides` 4-class 선택자와
+   _blank 의 !important. 같은 함정을 두 번 밟았다는 뜻이라 규칙 쪽을 고친다.
+   가로는 아예 선언하지 않는다: theme 의 `5%` 같은 가로 선언이 자연히 살아야 하고,
+   기본값으로 가로 여백을 강제할 이유도 없다. flex/overflow 는 레이아웃 골격이라
+   명시도를 그대로 둔다(내려가면 closing-body 의 flex-grow:0 등이 되살아나 배치가 바뀐다). */
+:where(.reveal section[class*="layout-"] > div[class$="-body"]) {
+  padding-block: 1em;
 }
 
 /* === Accent line (divider) — 공통 골격, 색상은 theme에서 override === */
@@ -906,7 +925,12 @@ body {
 }
 
 .reveal section.layout-_contents .contents-body {
-  padding: 1.5em 0;
+  /* Issue360: 구 `padding: 1.5em 0` → `padding-block: 1em`. 전자는 범용 규칙(0-3-2)에
+     눌려 한 번도 적용된 적이 없는 미검증 값이었고, 실제 기준은 줄곧 1em 이었다.
+     가로는 선언하지 않는다 — theme 의 가로 선언이 살아야 한다. 이 규칙(0-3-1)은
+     theme 의 낮은 명시도 부분 선언(ex: `padding-top: 0`, 0-0-4)을 이겨야 하므로
+     :where 기본값에 맡기지 않고 여기 명시한다. theme 의 0-3-1 선언은 나중 로드라 이긴다. */
+  padding-block: 1em;
 }
 
 .reveal section.layout-_contents ul,
@@ -940,7 +964,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 .reveal section.layout-contents-full ul,
@@ -1015,7 +1041,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* 5. Chapter Layout */
@@ -1042,7 +1070,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* 6. Exercise Layout */
@@ -1069,7 +1099,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* 6.2 Exercise-Small Layout */
@@ -1119,7 +1151,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* image-only / full-video 자동 감지 시 풀스크린 미디어 표시 (공통 패턴) */
@@ -1206,7 +1240,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 .reveal section.layout-toc .toc-markmap {
@@ -1310,7 +1346,8 @@ body.agenda-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (standalone agenda letterbox). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   font-family: var(--global-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif);
 }
@@ -1324,7 +1361,8 @@ body.agenda-page {
     calc(100vh - 2 * var(--slide-outer-padding, 0px)),
     calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
   );
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (ratio frame). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   position: relative;
 }
@@ -1390,7 +1428,8 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783349155284">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"/>
+  <link rel="stylesheet" href="css/custom.css?v=1790567142127">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1438,7 +1477,7 @@ html.ratio-fill .agenda-frame {
       color: inherit;
     }
     #toc-mindmap text {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif !important;
+      font-family: 'Nanum Gothic Coding', 'D2Coding', -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif !important;
       font-size: 16px !important;
       font-weight: 700;
     }
@@ -1474,6 +1513,39 @@ html.ratio-fill .agenda-frame {
     .reveal .controls .navigate-down.m2-enabled:hover {
       opacity: 0.7;
     }
+    /* Issue301: ←/→ 도 ↑/↓ 처럼 항상 회색 노출 (reveal 기본은 마지막/첫 슬라이드에서 .enabled 제거 → 숨김).
+       챕터 마지막 페이지에서 → 를 숨기지 않고 회색으로 남겨 "다음 챕터로 갈 수 있음"을 표시.
+       reveal 의 .enabled 클래스가 붙으면(이동 가능) opacity 1, 아니면 0.25 회색. page-indicator 모드는
+       body[data-nav-indicator="page"] 규칙(더 높은 specificity)이 여전히 display:none 으로 숨김. */
+    .reveal .controls .navigate-left,
+    .reveal .controls .navigate-right {
+      display: block !important;
+      visibility: visible !important;
+      pointer-events: auto !important;
+      opacity: 0.25;
+      transition: opacity 0.2s;
+      /* Issue301: reveal 기본은 비활성 ←/→에 translateX(±10px)를 남겨(마름모 밖으로 밀림),
+         .enabled 일 때만 transform:none 으로 제자리 복귀시킴. 회색(비활성) 상태에도 항상 노출하므로
+         transform:none 을 강제해 활성/비활성 무관하게 마름모 정위치를 유지(우측 → 삐져나옴 방지). */
+      transform: none !important;
+    }
+    .reveal .controls .navigate-left.enabled,
+    .reveal .controls .navigate-right.enabled {
+      opacity: 1;
+    }
+    .reveal .controls .navigate-left:hover,
+    .reveal .controls .navigate-right:hover {
+      opacity: 0.7;
+    }
+    /* 마름모(↑/↓) + 좌우(←/→) 화살표 색 — 페이지번호와 동일 체인.
+       nav_color(--m2-nav-color) > 테마 --kn-page-num-color(다크 자동 대응) > 폴백.
+       reveal 기본 arrow 색을 덮어써 다크 테마에서 화살표가 안 보이는 문제 해결 */
+    .reveal .controls .navigate-up,
+    .reveal .controls .navigate-down,
+    .reveal .controls .navigate-left,
+    .reveal .controls .navigate-right {
+      color: var(--m2-nav-color, var(--kn-page-num-color, rgba(0, 0, 0, 0.6))) !important;
+    }
     /* 페이지 번호 — 마름모 정중앙 */
     /* theme/default/slide.css:80 에서 .reveal .controls를 position: fixed + bottom:0 right:0 으로 viewport 기준 강제 */
     /* → .controls 안의 화살표 button 좌표가 viewport 우측 하단 기준이 됨. 페이지번호도 같은 기준 위해 fixed */
@@ -1485,7 +1557,8 @@ html.ratio-fill .agenda-frame {
       width: 60px !important;
       height: 14px !important;
       background: transparent !important;
-      color: rgba(0, 0, 0, 0.6) !important;
+      /* 색: nav_color(--m2-nav-color) 명시 > 테마 --kn-page-num-color(다크 테마 자동 대응) > 하드코딩 폴백 */
+      color: var(--m2-nav-color, var(--kn-page-num-color, rgba(0, 0, 0, 0.6))) !important;
       padding: 0 !important;
       font-size: 13px !important;
       text-align: center;
@@ -1559,7 +1632,7 @@ html.ratio-fill .agenda-frame {
   </style>
 </head>
 <body class="  media-enlarge-fit" data-nav-indicator="both" style="
-  --global-font-family: Pretendard, sans-serif;
+  --global-font-family: 'Nanum Gothic Coding', 'D2Coding', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
   --title-font-family: GmarketSansBold;
   --title-font-weight: 50;
   --title-font-size: 1.5em;
@@ -1594,6 +1667,7 @@ html.ratio-fill .agenda-frame {
   --slide-outer-padding: 0px;
   --slide-inner-padding: 0px;
   --m2-card-columns: auto-fit;
+  --m2-contents-justify: flex-start;
 ">
   <!-- Issue107: nav-up-btn 제거 — Reveal 기본 .controls .navigate-up/.navigate-down에 동작 위임 -->
   <!-- Issue55 Phase 7: #toc-container 오버레이 제거 — 마크맵은 _toc.html layout 내부 SVG 또는 agenda.html에서 렌더 -->
@@ -1606,10 +1680,10 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/1" data-heading-level="1" class="layout-chapter">
   <div class="chapter-part"><p>Chapter 5.</p></div>
   <div class="chapter-header">
-    <h1 class="chapter-title">Key takeaways and next steps</h1>
+    <h1 class="chapter-title">05. Wrap-up</h1>
     
   </div>
-  
+  <div class="chapter-body"><h2 class="title">Key takeaways and next steps</h2></div>
 </section>
 
 
@@ -1636,7 +1710,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/3" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">05. Wrap-up</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Key Takeaways — Answers to Three Questions</h2>
   <div class="contents-body">
@@ -1665,7 +1739,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/4" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">05. Wrap-up</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">In One Line</h2>
   <div class="contents-body">
@@ -1679,7 +1753,7 @@ html.ratio-fill .agenda-frame {
 <section data-slide-hash="#/5" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">05. Wrap-up</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Next Steps</h2>
   <div class="contents-body">
@@ -1697,7 +1771,7 @@ For a deeper look, continue in the <a href="https://finfra.github.io/m2slide/m2S
 <section data-slide-hash="#/6" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">05. Wrap-up</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Link Roundup</h2>
   <div class="contents-body">
@@ -1716,10 +1790,10 @@ For a deeper look, continue in the <a href="https://finfra.github.io/m2slide/m2S
 </table></div>
 </section>
 
-<section data-slide-hash="#/7" class="layout-_contents">
+<section data-slide-hash="#/7" class="layout-_contents"><div class="m2-license-badge" data-m2-license="true">Powered by finfra.kr, Made by m2slide</div>
   <div class="contents-head-bar">
     <div class="contents-head-left">05. Wrap-up</div>
-    
+    <div class="contents-head-right"></div>
   </div>
   <h2 class="title">Wrap-up</h2>
   <div class="contents-body">
@@ -1766,13 +1840,17 @@ For a deeper look, continue in the <a href="https://finfra.github.io/m2slide/m2S
       // Issue108: URL hash와 페이지 번호 표시 모두 1-based로 통일 (#/1이 첫 슬라이드)
       hashOneBasedIndex: true,
       plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ],
-      // Issue215: ratio-3-2/16-9는 number, fill만 string. 무조건 인용 시 number를 문자열로
+      // Issue215: ratio-3-2/4-3/16-9는 number, fill만 string. 무조건 인용 시 number를 문자열로
       // 전달하여 reveal.js Overview의 width+70 연산이 문자열 concat (192070) 되고
       // grid spacing이 100배 비정상 → ESC overview 그리드 깨짐. cover Reveal.initialize(L2261-2262)
       // 패턴과 일치시킴.
       width: 1920,
       height: 1280,
       margin: 0.0,
+      // Issue415: 좁은 화면(폭 435 미만)의 reveal 스크롤 뷰에서 한 장을 뷰포트 높이가 아니라 슬라이드 실높이로 쌓는다.
+      //   기본값 'full' 은 390 폭 3:2 슬라이드(실높이 260)에 844 를 배정해 장마다 빈칸이 생겼다(아이폰 실기기 보고).
+      //   페이지 뷰(PC)에는 영향 없음 — 스크롤 뷰에서만 읽히는 옵션이다.
+      scrollLayout: 'compact',
       // Issue63: width 남을 때 horizontal center / height 남을 때 top 정렬.
       // ratio 모드에서는 항상 false (Reveal vertical centering이 ratio fit과 충돌하는 이슈 회피).
       // ratio-fill 모드에서만 사용자 top_align 설정 따름.
@@ -1889,7 +1967,7 @@ For a deeper look, continue in the <a href="https://finfra.github.io/m2slide/m2S
 
 
     // Inject configuration
-    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"head_left":"d1","head_right":"now","head_breadcum":true,"cardColumns":"auto-fit","style":{"global":{"fontFamily":"Pretendard, sans-serif","fontImport":[]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
+    window.slideConfig = {"markmap_depth":2,"chapter_markmap_depth":3,"head_left":"d1","head_right":"now","head_breadcum":true,"head_number":"full","cardColumns":"auto-fit","style":{"global":{"fontFamily":"'Nanum Gothic Coding', 'D2Coding', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif","fontImport":["https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"]},"title":{"font_size":"1.5em","font_color":"#000000","align":"center","outer_padding":"1%","font_family":"GmarketSansBold","font_weight":"50"},"main_title":{"font_size":"2em","font_color":"#333333","align":"center","outer_padding":"40px 0 20px 0","font_family":"GmarketSansBold","font_weight":"400"},"outline_title":{"font_size":"2em","font_color":"#000000","align":"center","outer_padding":"0","font_family":"GmarketSansBold","font_weight":"600"},"outline_title_sub":{"font_size":"0.5em","font_color":"#666666","align":"right","outer_padding":"5px","font_family":"GmarketSansBold","font_weight":"100"},"theContents":{"font_size":"1em","font_color":"#000000","align":"left","outer_padding":"1%","font_family":"Nanum Gothic Coding","fontSizeMin":"20px","fontSizeMaxRatio":0.66,"font_size_auto":true,"media_container_enlarge":"fit"}}};
 
     // Dynamic Styling and Resizing Script
     let observer; // Define observer at top level
@@ -2114,8 +2192,16 @@ For a deeper look, continue in the <a href="https://finfra.github.io/m2slide/m2S
       try {
         /* Issue: agenda(deriveOptions 기본값)와 동일 옵션으로 통일 — 일관된 시각언어
            기본값: paddingX:8, spacingHorizontal:80, spacingVertical:5, fitRatio:0.95 */
+        /* Issue414: markmap 의 maxInitialScale 기본값은 **2** 라, 컨테이너가 커져도
+        스케일이 2 에서 멈춘다. 덱은 1920 폭으로 설계되는데 브라우저 창(1280 내외)에서
+        맞춰 보면 그럴듯해 보이고, PDF·대형 화면(1920×1440)에서는 **같은 크기 그대로**
+        남아 박스의 43% 만 채운다(실측 2026-09-21: 박스 1872 / 콘텐츠 798).
+        즉 **렌더 결과가 뷰포트 크기에 의존**하는 것이 결함의 본체다.
+        상한을 올려 fitRatio 가 판정하게 하면 어느 크기에서나 같은 비율로 찬다.
+        ⚠️ 무한대로 열지 않는다 — 항목이 1~2개뿐인 덱에서 글자가 터무니없이 커진다.
+           6 은 1920 폭에서 6항목이 요구하는 4.5 에 여유를 둔 값이다. */
         var opts = window.markmap.deriveOptions
-          ? window.markmap.deriveOptions({ initialExpandLevel: 3 })
+          ? window.markmap.deriveOptions({ initialExpandLevel: 3, maxInitialScale: 6 })
           : { autoFit: true, fitRatio: 0.95, spacingHorizontal: 80, spacingVertical: 5, paddingX: 8, initialExpandLevel: 3 };
         opts.autoFit = true;  /* deriveOptions는 autoFit:false가 기본이므로 명시 */
         markmapInstance = window.markmap.Markmap.create(svg, opts, tocData);
@@ -2467,6 +2553,13 @@ For a deeper look, continue in the <a href="https://finfra.github.io/m2slide/m2S
       upBtn.classList.toggle('m2-enabled', !isCoverSlide(cur));
       // ↓ : leaf fall-through 가능 여부 + Cover/TOC/Anchor 항상 활성
       downBtn.classList.toggle('m2-enabled', m2EvalDownEnabled());
+      // Issue301: reveal 이 끝단(첫/마지막 슬라이드)에서 ←/→ 버튼에 disabled 속성을 붙이면
+      //   disabled 버튼은 click 이벤트를 발화하지 않아 클릭 위임이 무력화된다. 매 slidechanged 마다
+      //   disabled 를 제거해 챕터 경계에서도 ←/→ 클릭이 키 네비게이션(다음/이전 챕터)으로 위임되게 한다.
+      var leftC = document.querySelector('.reveal .controls .navigate-left');
+      var rightC = document.querySelector('.reveal .controls .navigate-right');
+      if (leftC) leftC.removeAttribute('disabled');
+      if (rightC) rightC.removeAttribute('disabled');
     }
     Reveal.on('ready', function() {
       var upBtn = document.querySelector('.reveal .controls .navigate-up');
@@ -2485,6 +2578,25 @@ For a deeper look, continue in the <a href="https://finfra.github.io/m2slide/m2S
           e.stopImmediatePropagation();
           if (!downBtn.classList.contains('m2-enabled')) return;
           m2DispatchKey('ArrowDown', 40);
+        }, true);
+      }
+      // Issue301: ←/→ 클릭을 키보드 ArrowLeft/ArrowRight 로 위임 → 키 네비게이션 매트릭스 재사용.
+      //   마지막 슬라이드 → 는 안내 메시지 후 다음 챕터(?fwd=1), 첫 슬라이드 ← 는 이전 챕터/agenda 로 이동.
+      //   capture + stopImmediatePropagation 으로 reveal 기본 click(단순 next/prev, 끝단에서 no-op) 차단.
+      var leftBtn = document.querySelector('.reveal .controls .navigate-left');
+      var rightBtn = document.querySelector('.reveal .controls .navigate-right');
+      if (leftBtn) {
+        leftBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          m2DispatchKey('ArrowLeft', 37);
+        }, true);
+      }
+      if (rightBtn) {
+        rightBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          m2DispatchKey('ArrowRight', 39);
         }, true);
       }
       m2UpdateNavControls();
@@ -2821,6 +2933,9 @@ For a deeper look, continue in the <a href="https://finfra.github.io/m2slide/m2S
           // 수평 swipe: 좌→우 = ← (prev), 우→좌 = → (next)
           simulateKey(dx < 0 ? 'ArrowRight' : 'ArrowLeft', dx < 0 ? 39 : 37);
         } else if (ady > adx && ady >= SWIPE_MIN_PX) {
+          // Issue415: 스크롤 뷰의 수직 드래그는 네이티브 스크롤이다. 제스처 종료 시점의
+          // 런타임 상태를 읽어 회전·리사이즈로 뷰 모드가 바뀐 경우도 즉시 반영한다.
+          if (Reveal.isScrollView()) return;
           // 수직 swipe (Issue87 2026-05-04 swap): 위→아래 = ↑(parent), 아래→위 = ↓(child)
           // 단축키(⇤/⇥/⇞/⇟)는 swipe로 트리거 불가 — sibling/끝단 점프는 키보드 전용
           simulateKey(dy > 0 ? 'ArrowUp' : 'ArrowDown', dy > 0 ? 38 : 40);
