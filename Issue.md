@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 426
+* Issue HWM: 427
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -118,6 +118,27 @@
     - 완료 조건: 아이폰 에뮬에서 탭만으로 전 내비게이션 통과 · **PC 에서 클릭·키보드 내비게이션 무회귀** · **위 실기기 결함(리프레쉬 후 스크롤 불가) 해소** · `aTest`·`aTest-all` 초록 · 결과 보고서 · 외부*핀봇 2종 각 1회 이상 배분·완료 기록(원장)
 
 # 📕 중요
+
+## Issue427: `lane-t.py` 4:3 좌표 상수 가정 — 글로벌 reference 가 이미 판형에 맞춰져 표지·섹션 placeholder 를 **두 번 늘려** 캔버스 밖으로 민다 (등록: 2026-09-29)
+* 목적: `6.roundtrip.sh`(aTest)·`9.single-parity.sh`(gate16) 가 check-conform `✕ FAIL 캔버스 이탈 1장` 으로 빌드 rc1 이다. prj3#Issue783 귀속 조사에서 원인이 글로벌 산출물이 아니라 **이 저장소의 계약 가정**으로 확정됐다 — 글로벌이 바뀐 계약을 한쪽(lane-t)이 아직 모른다
+* depends: prj3#Issue783
+* 상세:
+    - 출처: prj3 fbot-developer-issue783 (prj3#Issue756 C 등급 — 타 repo 이슈 **등록**만, 코드 수정은 이 저장소 소관)
+    - 계약 변화: prj3 `f75dc1af`(Issue719 P1) 부터 `theme2reference.py` 의 `fit_canvas()` 가 캔버스를 넓히면서 **마스터·레이아웃 xfrm 도 같은 비율로 옮긴다**(prj7 계약 «16:9 레이아웃 오른쪽 끝 ≥ 캔버스 85%»). 그런데 [lane-t.py](lib/pptx/lane-t.py) 는 `OLD_W, OLD_H = 9144000, 6858000` · `OLD_BOX_L, OLD_BOX_W = 457200, 8229600` 을 상수로 두고 `remap_x/remap_w/remap_y` 로 **4:3 좌표라고 가정해** 다시 늘린다
+    - 실측(2026-09-29, igTest theme.yml 338.67×225.78mm): 글로벌 산출 reference 의 Title Slide `Title 1 [25,70 287×48]mm` — 판형 안. `lane-t --mode layout` 뒤 `[27,84 401×54]` — 폭 401 > 339 **이탈**. Section Header·푸터 placeholder 도 같이 이탈(본문 레이아웃은 실측 PX 로 덮어써 무사 — 표지·섹션만 «비례 보정» 경로라 드러난다)
+    - 증명(격리 사본 `/tmp/i783/m2`, 원본 무변경): 아래 패치만 넣으면 `6.roundtrip.sh` rc0(«왕복이 계약대로 돈다») · `9.single-parity.sh` 전부 통과 · `3.parity.sh igTest` 7/7
+* 구현 명세:
+    - TDD red 먼저: 글로벌 `theme2reference.py --adapt` 로 만든 reference 에 `lane-t --mode layout` 을 돌린 뒤 모든 마스터·레이아웃 placeholder 가 판형 안인지 단언 → 현 HEAD 에서 red 확인
+    - 수정 방향(증명 패치 — 원본 프레임을 상수가 아니라 **reference 에서 읽는다**. 옛 4:3 reference 도 그대로 동작):
+        ```python
+        # layout 모드 fix_placeholders 호출 직전
+        right = max((ph.left + ph.width for ph in prs.slide_master.placeholders), default=0)
+        if right > OLD_W * 1.02:          # 이미 판형에 맞춰진 reference
+            sx, sy = prs.slide_width / OLD_W, prs.slide_height / OLD_H
+            OLD_H, OLD_BOX_L, OLD_BOX_W = OLD_H * sy, OLD_BOX_L * sx, OLD_BOX_W * sx
+        ```
+        전역 재할당보다 `fix_placeholders` 에 프레임을 인자로 넘기는 편이 낫다 — 판단은 이 저장소 몫
+    - 검증: `bash z_test/ig-ppt/6.roundtrip.sh` rc0 · `9.single-parity.sh` 전부 통과 · `3.parity.sh igTest` 7/7 · 완료 시 prj3#Issue783 에 해시 통지
 
 # 📙 일반
 
