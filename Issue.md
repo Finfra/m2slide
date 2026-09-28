@@ -33,6 +33,9 @@
 1. htmlart 고정 폰트 잔여 + 세로 넘침 — `centerLabel` 을 고정 폰트로 부르는 `venn`(28/18)·`hexagon`(25/17)·`pie`(20/15) 와 `balance` 가 세로로 넘친다. prj60 전수(2026-09-20, `z_test/htmlart-fo-audit.mjs`) venn 4건(+4~15px)·balance 10건(+6~23px). Issue391 과 같은 결함 계열 — fit 경로(`uniformTitleFs`)로 통일
 1. `::: part` 를 소비하지 않는 테마에서 그 블록이 **조용히 사라진다** — `theme/default` 의 `_chapter.html` 에 `{{part}}` 가 없어 원고에 쓴 5개가 HTML·pptx 양쪽에서 버려진다(aTest-all 실측). 슬롯 미소비를 저작 단계에서 경고할지
 1. 캡처 이미지 테두리가 `default`·`default_dark` 에는 **아예 없다** — `--m2-media-border` 도 `.reveal .media-container img` 규칙도 `default_lec` 에만 있다(2026-09-20 실측). Issue397 과 같은 결함 계열이나 성격이 갈린다: `default` 는 기존 덱 **전부**의 렌더가 바뀌어 회귀 범위가 다르고, `default_dark` 는 배경이 `#0c0e16` 이라 **검정 alpha 로는 성립하지 않아** 흰 alpha 로 다시 역산해야 한다(기준은 같은 WCAG 3:1)
+1. 앱 소개 5덱(fPmIntro·fPmIntro_en·n3shIntro·fSnippetCliIntro·fWarrangeCliIntro) prj42a `decks/tech/` 2차 이관 — Issue424_1 안정 후(사용자 결정 2026-09-28). fSnippet·fWarrange 는 publishing 빈값이라 **첫 공개(H:공개)** 확정 필요. fPmIntro 의 mp4 34MB 는 prj42a `.gitignore` `*.mp4` + finfra.kr 호스팅. docs 이전 링크 표시는 Issue424 규약 그대로
+1. LlmFlow(353장) prj42a 이관 — **보류**(사용자 결정 2026-09-28). publishing `x` 라 이관 = 첫 공개. 공개 결정이 먼저이며 그 전까지 원고는 git 미추적 상태로 남는다
+1. `Projects.md` publishing `o` 15개 vs `Projects/.gitignore` 허용목록 11개 불일치 — AgenticCoding·graphify·StellarEvolution·n3shIntro 가 빠져 원고가 git 미추적. 앞 3개는 Issue424_1 이관으로 해소되지만 `--sync-projects` 가 왜 어긋났는지(생성 로직 vs 미실행)는 남는다 (Issue424 에서 발견)
 
 
 # 🚧 진행중
@@ -129,6 +132,39 @@
     - **이전 링크 표시(docs/)**: 이관 덱은 `docs/index.html` 카드에 «원고 이전 → `github.com/Finfra/m2slide-deck/tree/main/decks/education/<X>`» 링크를, 통합 덱은 «통합됨 → <정본 덱>» 링크를 단다. 표시 로직은 `/deploy-docs` 카드 생성 절차(B-5)에 넣어 재배포 때 사라지지 않게 한다 — 손으로 고친 카드는 다음 배포에 덮인다
     - 검증: 덱마다 `./m2slide.sh <X>` rc0 · `/p/<X>` 표시 · `--lint-deployment <X>` 0 · `docs/index.html` 에 이전 링크 존재 · 링크 대상 경로가 prj42a 에 실재
     - 완료 기준: 아래 서브 이슈 전부 ✅
+
+## Issue424_1: 강연 1차 6덱 prj42a 이관 + docs 이전 링크 (등록: 2026-09-28)
+* 목적: AgenticCoding·BasicKnowledgeForAI_small·GenContentProd·LlmAndVibeCoding·StellarEvolution·graphify 를 `Projects_deck/decks/education/` 으로 옮긴다 — 6덱 모두 이미 Pages 공개 중이라 노출 범위는 바뀌지 않는다
+* 상세:
+    - prj42 추적 해제 대상은 3덱(BasicKnowledgeForAI_small 50·GenContentProd 204·LlmAndVibeCoding 62 파일). 나머지 3덱은 원래 미추적 — prj42a 커밋이 첫 버전 관리다
+    - AgenticCoding 은 이미지 71장 약 40MB — prj42a push 용량 확인
+    - `Projects/_ppt/` 강연 원본 pptx·pdf 와 `z_done/` 강연 구버전은 옮기지 않는다(공개 불필요)
+    - ⚠️ `docs/AgenticCoding/` 은 있는데 `docs/index.html` 카드가 없다(2026-09-28 실측) — 이전 링크를 달 때 카드 누락도 함께 본다
+* 구현 명세: Issue424 공통 절차 · 덱 단위로 커밋해 한 덱이 막혀도 나머지가 진행되게 한다
+
+## Issue424_2: m2Slide(·_en) → m2slide_info(·_en) 통합 (등록: 2026-09-28)
+* 목적: m2Slide(7장: what·why·30초 시작)는 m2slide_info(34장: what·why·where·강점·마무리)의 축약판이다. 소개 덱을 하나로 모은다
+* 상세:
+    - m2Slide 고유분은 «한 번 쓰고 네 가지로 낸다» 문장과 빌드 한 줄 정도 → m2slide_info 01장에 흡수. 영문판도 같다
+    - `README.md`·`README_kr.md` 첫 소개 링크가 `m2Slide(_en)` 을 가리킨다 → info 로 교체
+    - `docs/m2Slide(_en)/` 에는 리다이렉트 한 장을 남기고, 카드에는 «통합됨 → m2slide_info» 를 표시한다
+    - `lib/dev-server/test_server.py` 가 `'m2Slide'` 를 경로 변환 문자열로 쓴다 — 폴더 이동 후에도 통과하는지 확인
+* 구현 명세: 원고 흡수 → `release_date` 갱신 → 빌드·HTML 검증 → m2Slide(·_en) 는 `z_done/<Name>_v<VERSION>` 으로 이동(project-version-rules)
+
+## Issue424_3: m2Slide_MermaidExample → m2Slide_visual_component 챕터 통합 (등록: 2026-09-28)
+* 목적: Mermaid 도 시각 구성요소의 하나다 — 쇼케이스를 한 덱으로 모은다
+* 상세:
+    - MermaidExample 은 single mode 41장 → visual_component(chapter mode 96장)에 챕터 1개로 넣는다
+    - visual_component 는 회귀 덱이기도 하다([transform.yml](data/m2slide2ppt/transform.yml) 참조) — 챕터를 더하면 회귀 기준이 바뀌므로 관련 러너를 다시 돌려 기준을 재설정한다
+    - `docs/m2Slide_MermaidExample/` 은 리다이렉트 + 카드 «통합됨 → m2Slide_visual_component» 표시
+* 구현 명세: 챕터 추가 → AGENDA 갱신 → 빌드·HTML 검증 → 회귀 러너 재측정 → MermaidExample 은 z_done 이동
+
+## Issue424_4: 참조 없는 테스트 잔재 z_done 이동 (등록: 2026-09-28)
+* 목적: `/p/` 목록에서 러너·코드가 쓰지 않는 덱을 걷어낸다
+* 상세:
+    - MediaBackendTest(참조 0) · aTest.bak.20260909(참조 0, 백업본) · aTest_rt(`z_test/pdf/lib/integrity.py` 주석 속 실측 사례 1곳뿐)
+    - 삭제가 아니라 z_done 이동 — 되돌릴 수 있게 둔다
+* 구현 명세: 이동 전 `grep -rF` 로 참조 0 재확인 → z_done 이동 → `--sync-projects` → `/p/` 목록에서 사라졌는지 확인
 
 ## Issue423: 이미지 해소 시 `X.annot.png` 짝 픽업 + 원본 강제 옵트아웃 — prj7 주석본 픽업 규약 구현 (등록: 2026-09-28)
 * 목적: prj7 cg 가 캡처 주석본(`img-annotate`)을 만들어도 덱을 만드는 경로가 그 산출을 집지 않아 **안 쓰인다**. prj7 규약(사용자 확정 2026-09-24) «`X.png` 를 넣을 때 옆에 `X.annot.png` 가 있으면 그것을 쓴다» 의 구현 자리가 m2slide 이미지 해소다
