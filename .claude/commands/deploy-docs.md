@@ -201,6 +201,34 @@ HAS_PPTX=$([ -f "docs/{project}/{project}.pptx" ] && echo true || echo false)
 
 **구현 방식**: 정확한 매칭을 위해 Read → 문자열 치환 → Write 패턴 사용. sed/awk inline 편집 금지(개행 처리·이스케이프 위험).
 
+#### 5-a. 원고가 m2slide-deck 으로 이전된 덱 — 이전 링크 카드 (Issue424)
+
+원고를 [Projects_deck](../../_doc_arch/deck-repo.md)(github.com/Finfra/m2slide-deck)으로 옮긴 덱은 발행본(`docs/{project}/`)은 이 repo 에 그대로 두되, **카드에 원고 위치 링크를 반드시 표시**한다. 기존 URL 로 들어온 독자가 원고를 찾을 수 있어야 한다(사용자 조건 2026-09-28).
+
+**판정** — `Projects/{project}` 의 실제 경로가 `Projects_deck/` 안이면 이전 덱이다:
+
+```bash
+REAL=$(cd "Projects/{project}" && pwd -P)
+DECK=$(cd Projects_deck 2>/dev/null && pwd -P)
+case "$REAL" in "$DECK"/*) REL="${REAL#"$DECK"/}" ;; *) REL="" ;; esac
+## REL 이 있으면 이전 덱 → URL = https://github.com/Finfra/m2slide-deck/tree/main/$REL
+```
+
+**카드 블록** — 카드(`<a>`)를 `card-wrap` 으로 감싸고 그 아래에 링크를 둔다. 카드 전체가 `<a>` 라 안에 링크를 넣으면 중첩 `<a>` 가 되어 브라우저가 카드를 쪼갠다:
+
+```html
+      <div class="card-wrap" data-moved-to="m2slide-deck">
+        <a class="card" href="{project}/index.html" data-project="{project}">
+          ...위 카드 블록과 같음 (들여쓰기 +2)...
+        </a>
+        <a class="card-source" href="https://github.com/Finfra/m2slide-deck/tree/main/{REL}" title="원고가 m2slide-deck 저장소로 이전됨"><span class="card-source-label">📦 원고 이전 → m2slide-deck</span><span class="card-source-path">{REL 에서 decks/ 를 뗀 것}</span></a>
+      </div>
+```
+
+* update 모드에서 이전 덱의 기존 블록은 `<a class="card">` 가 아니라 **감싼 `<div class="card-wrap">` 전체**를 교체한다 — 카드만 바꾸면 링크가 중복되거나 사라진다
+* `.card-wrap`·`.card-source`·`.card-source-label`·`.card-source-path` CSS 는 [docs/index.html](../../docs/index.html) `<style>` 에 이미 있다(추가 불요)
+* 같은 사실은 공개 목록 `Projects_org.md` 에도 «m2slide-deck 으로 이전된 프로젝트» 절로 자동 생성된다(`--sync-projects`)
+
 ### B-6. 검증
 
 `apply-verify-rules`에 따른 산출물 검증:
@@ -216,6 +244,9 @@ grep -c '{{' "docs/{project}/index.html"   # 0이어야 함
 
 ## index.html 카드 등록 확인
 grep -c "data-project=\"{project}\"" docs/index.html   # 정확히 1이어야 함
+
+## 이전 덱이면(5-a) 원고 이전 링크가 정확히 1개
+grep -c "class=\"card-source\" href=\"https://github.com/Finfra/m2slide-deck/tree/main/$REL\"" docs/index.html
 ```
 
 **deploy_formats 추가 검증** (명시된 형식만):
