@@ -1,6 +1,6 @@
 ---
 title: "fPM 소개: Claude Code 다중 프로젝트 자동화 프레임워크"
-subtitle: "왜 fPM인가 — 일반 Claude Code의 한계에서 출발하는 hub·<strong>웹 대시보드·VSCode 연동</strong>·cdf 패밀리(cdfn 이름검색·frecency)·sshf 원격 서버·원라인 설치·멀티 프로젝트 관리"
+subtitle: "왜 fPM인가 — 일반 Claude Code의 한계에서 출발하는 hub·웹 대시보드·VSCode 연동·cdf 패밀리(cdfn 이름검색·frecency)·sshf 원격 서버·원라인 설치·멀티 프로젝트 관리"
 date: 2026-06-30
 type: ppt
 theme: default

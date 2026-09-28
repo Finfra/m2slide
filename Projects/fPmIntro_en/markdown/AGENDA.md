@@ -1,6 +1,6 @@
 ---
 title: "Meet fPM: A Multi-Project Automation Framework for Claude Code"
-subtitle: "Why fPM — starting from the limits of plain Claude Code: hub, <strong>web dashboard, VSCode integration</strong>, the cdf family (cdfn name search, frecency), sshf remote servers, one-line install, and multi-project management"
+subtitle: "Why fPM — starting from the limits of plain Claude Code: hub, web dashboard, VSCode integration, the cdf family (cdfn name search, frecency), sshf remote servers, one-line install, and multi-project management"
 date: 2026-06-30
 type: ppt
 theme: default
@@ -11,7 +11,7 @@ version_badge: "v0.10.8"
 github_url: "github.com/Finfra/fpm"
 homepage: "finfra.kr"
 markmap_depth: 2
-release_date: 2026-07-06
+release_date: 2026-09-28
 ---
 
 ## [1. Why fPM — the Limits of Plain Claude Code](./01-what-is-fpm.md)
