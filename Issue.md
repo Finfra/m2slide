@@ -158,6 +158,9 @@
     - 서브 4건 ✅ — 강연 6덱 prj42a 이관 · m2Slide(·_en) 통합 · MermaidExample 통합 · 테스트 잔재 3 z_done. `/p/` 는 링크 8(외부) 포함 활성 23 · 비활성 17
     - 이전 링크 표시(사용자 조건)는 세 자리에 있다 — `docs/index.html` 카드(이전 6 · 통합 3) · `Projects_org.md` «m2slide-deck 으로 이전된 프로젝트» 절 · `docs/<옛 덱>/` 리다이렉트 스텁. 재배포에도 남도록 `/deploy-docs` 5-a·5-b 와 `sync-projects-md.js` 에 넣었다
     - 동반 결함 `2afc9cd`: `--lint-deployment` 가 `--link` 심링크 프로젝트를 0개 검사하고 통과시켰다(`find` 기본 -P). 앞서 이관 6덱에 보고한 «lint 위반 0» 은 이 결함 때문에 **검사 없는 통과**였고, 고친 뒤 재검사에서 AgenticCoding 본문 예시 3건이 걸렸다(원래 있던 오탐 — 이슈후보) · 기록 `_doc_work/debug_TECH.md` 2026-09-28
+    - **사용자 정정 2026-09-28 (분류)**: 강연 5덱(AgenticCoding·BasicKnowledgeForAI_small·GenContentProd·LlmAndVibeCoding·graphify)은 education 이 아니라 신설 `decks/agentic-ai/`(Agentic AI), StellarEvolution 은 `decks/misc/` — prj42a `e1ceff0` · prj42 `Projects.md` 경로 열 → `--sync-projects` 심링크 재지정 · 갤러리·`Projects_org.md` 링크 갱신. 위 결과의 `decks/education/` 표기는 이 정정 전 상태다
+    - **사용자 정정 2026-09-28 (cg-e2e)**: 테스트 영역 — `Projects.md` 분류를 `test` 로(로컬 등록부, `/p/` 🧪 테스트 구역)
+    - push(사용자 지시 2026-09-28): 로컬 `/p/`·`/pd/` 2단계 링크 5,617개 200·오류 페이지 0 확인 후 m2slide-deck(`f5029b3..e1ceff0`) → m2slide 순
     - ⚠️ **push 하지 않았다 — 순서가 있다**: ① m2slide-deck push(갤러리·`Projects_org.md` 링크 대상) ② m2slide push. Pages 는 main 에서 서빙하고 현 브랜치는 `feat/ig-ppt-maker-integration` 이라 docs(pages) 커밋 5개(`0c7456a`·`bc755c0`·`cc5121d`·`73ac9f7`·`7c1db38`)는 main 반영이 필요하다
 
 ## Issue424_1: 강연 1차 6덱 prj42a 이관 + docs 이전 링크 (등록: 2026-09-28, 해결: 2026-09-28, commit: 960541e, 582e054, ec70efd, 0c7456a · prj42a: 83f334d, 7c2ea87, 1ad4ee4, 44b7759, cbd27c2, de09b05) ✅
