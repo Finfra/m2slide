@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 421
+* Issue HWM: 422
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -114,6 +114,15 @@
 # 📕 중요
 
 # 📙 일반
+
+## Issue422: 발행 덱 7개 표지 subtitle 의 의도적 HTML 정리 — Issue419 escape 후속 (등록: 2026-09-28)
+* 목적: Issue419(표지 frontmatter HTML escape, 사용자 결정 «escape 만») 이후 subtitle 의 의도적 HTML(`<strong>`·`<small>`·`&nbsp;`)이 재빌드 시 글자로 보인다
+* 상세:
+    - 출처: prj3 mq `20260927-203951-001` — prj3#Issue756 C 등급 결정: 선택지 ②(원고 subtitle 평문 정리). ①(raw 옵트인)은 사용자 결정 «escape 만» 과 어긋나고 ③(현상 유지)은 재빌드를 막는다
+    - 대상 `Projects/`: fPmIntro·fPmIntro_en·fSnippetCliIntro·fWarrangeCliIntro·igTest·m2slide_info·m2slide_info_en
+    - ⚠️ 앞 4개는 `docs/` 발행본 — **재발행(push)은 H 등급(공개)** 이라 사용자 결정 묶음으로 따로 올라감
+* 구현 명세:
+    - 7개 원고 subtitle 을 markdown 강조·평문으로 치환 → 재빌드 → escape 경고 0 확인. 로컬 커밋까지, 발행 push 는 사용자 결정 후
 
 # 📗 선택
 
