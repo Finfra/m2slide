@@ -1425,8 +1425,9 @@ class DevHandler(SimpleHTTPRequestHandler):
     def _serve_root(self):
         """GET / — landing page with server info + main navigation."""
         projects = self._list_projects()
-        if 'm2Slide' in projects:
-            sample = 'm2Slide'
+        # 도구 소개 정본(Issue424_2 — m2Slide 는 m2slide_info 로 통합됐다)
+        if 'm2slide_info' in projects:
+            sample = 'm2slide_info'
         else:
             sample = projects[0] if projects else 'm2Slide_single_mode'
         body = (
