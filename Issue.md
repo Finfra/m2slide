@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 423
+* Issue HWM: 424
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -114,6 +114,21 @@
 # 📕 중요
 
 # 📙 일반
+
+## Issue424: Projects 원고 정리 — 덱 통합 2건 + 강연 덱 prj42a(Projects_deck) 이관 (등록: 2026-09-28)
+* 목적: 본체 `Projects/` 에 강연·소개·테스트 덱이 섞여 있고, 공개(publishing `o`) 강연 일부는 원고가 어느 git 에도 없다. [deck-repo.md](_doc_arch/deck-repo.md) 의 «도구와 콘텐츠 분리» 를 적용해 «m2slide 자신을 설명·검증하는 덱은 prj42, 그 밖의 콘텐츠는 prj42a» 로 가른다
+* 상세:
+    - 정리안(29덱 판정표·중복도 대조): `_doc_work/htm/hub_htm_20260928_220734_a_deck-migration.md`
+    - **사용자 결정 2026-09-28** (AskUserQuestion): LlmFlow 이관 **보류**(publishing `x` — 이관 = 첫 공개) · 앱 소개 5덱은 **1차 후 별도** · m2Slide 통합 **진행** · MermaidExample 통합 **진행**
+    - **사용자 조건 2026-09-28**: 옮기거나 합친 덱은 m2slide **`docs/`(Pages)에 이전된 링크를 표시**해야 한다 — 기존 URL 로 들어온 사람이 새 위치를 찾을 수 있어야 한다
+    - 실측(2026-09-28): publishing `o` 인데 원고가 git 미추적인 덱 4개(AgenticCoding·graphify·StellarEvolution·n3shIntro) — `Projects.md` publishing `o` 15개 vs `Projects/.gitignore` 허용목록 11개. `docs/` 에는 빌드본만 있어 디스크 유실 시 원고 복구 불가
+    - 제외: `1.design_rnd`(prj60 소유 링크 · 고객사 과정 진행 중) · `cg-e2e`(prj7 링크) · 회귀 픽스처 전부(igTest 는 m2slide_info 와 줄 100% 일치하지만 동결 픽스처)
+    - ⚠️ prj42a 는 **공개 저장소**이고 기본 라이선스가 CC BY-NC-SA 4.0 이다 — 옮기는 덱의 현재 라이선스 배지와 맞는지 확인. push 는 사용자가 한다
+* 구현 명세:
+    - 공통 이관 절차(덱마다): `mv Projects/<X> Projects_deck/decks/education/<X>` → `./m2slide.sh --link Projects_deck/decks/education/<X> <X>` (폴더 이름 유지 → `/p/<X>`·`/deploy-docs <X>`·`docs/<X>/` URL 불변) → prj42 추적분은 `git rm --cached -r`(이력 보존) → `--sync-projects` 가 링크 덱을 허용목록에서 빼는지 확인 → prj42a 에 `_template/README.md` 기준 README + 커밋
+    - **이전 링크 표시(docs/)**: 이관 덱은 `docs/index.html` 카드에 «원고 이전 → `github.com/Finfra/m2slide-deck/tree/main/decks/education/<X>`» 링크를, 통합 덱은 «통합됨 → <정본 덱>» 링크를 단다. 표시 로직은 `/deploy-docs` 카드 생성 절차(B-5)에 넣어 재배포 때 사라지지 않게 한다 — 손으로 고친 카드는 다음 배포에 덮인다
+    - 검증: 덱마다 `./m2slide.sh <X>` rc0 · `/p/<X>` 표시 · `--lint-deployment <X>` 0 · `docs/index.html` 에 이전 링크 존재 · 링크 대상 경로가 prj42a 에 실재
+    - 완료 기준: 아래 서브 이슈 전부 ✅
 
 ## Issue423: 이미지 해소 시 `X.annot.png` 짝 픽업 + 원본 강제 옵트아웃 — prj7 주석본 픽업 규약 구현 (등록: 2026-09-28)
 * 목적: prj7 cg 가 캡처 주석본(`img-annotate`)을 만들어도 덱을 만드는 경로가 그 산출을 집지 않아 **안 쓰인다**. prj7 규약(사용자 확정 2026-09-24) «`X.png` 를 넣을 때 옆에 `X.annot.png` 가 있으면 그것을 쓴다» 의 구현 자리가 m2slide 이미지 해소다
