@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 424
+* Issue HWM: 425
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -119,6 +119,20 @@
 # 📕 중요
 
 # 📙 일반
+
+## Issue425: Issue424 후속 — Pages main 반영(docs 커밋 6개) · aTest-all 분류 test · 이슈후보 2건 등록 (등록: 2026-09-29)
+* 목적: 사용자 지시 2026-09-29 *«나래로 위임하여 계속 진행»* — Issue424 종결 보고의 «지시 받으면 진행» 항목 A·B 를 마무리하고 동반 발견 결함을 이슈후보로 남긴다(요청: 세션 b89831bd → 나래 인박스 `fbotreq-1790609303-77637e12`)
+* 상세:
+    - A. **Pages 반영** — Pages 는 `main` 서빙인데 docs(pages) 커밋 6개(`0c7456a`·`bc755c0`·`cc5121d`·`73ac9f7`·`7c1db38`·`499c73b`)가 `feat/ig-ppt-maker-integration` 에만 있다. 공개 반영(H:공개)은 위 사용자 지시로 승인됨(나래 판정 — 승인 근거: A 를 «지시 받으면 진행» 으로 보고한 직후의 지시)
+    - B. `Projects.md`(로컬 등록부) **aTest-all 분류 열만 `test`** — cg-e2e 와 같은 회귀 픽스처인데 `/p/` «그 외» 에 있다
+    - D. 이슈후보 등록: ① `--lint-deployment` 가 강의 본문 예시(`curl localhost`·`/Users/...`)를 잡는 오탐 ③ publishing `o` 인데 원고 미추적(n3shIntro — 앱 소개 2차 이관 때 해소 예정). ② issue-tx 서브 번호 오독은 prj3 소관 — 나래가 prj3 에 등록
+    - 범위 밖: C(앱 소개 5덱 2차 prj42a 이관 — 분류 폴더·미공개 2덱 첫 공개가 사람 결정 대기) · E(LlmFlow 보류 유지 — 건드리지 않는다)
+* 구현 명세:
+    - A: `main` 에 6커밋 cherry-pick(충돌 시 docs 쪽 정본 유지·충돌 내역 결과에 기록) → push `main` → Pages 갱신 후 `finfra.github.io/m2slide` 갤러리 «원고 이전»·«통합됨» 카드와 `docs/m2Slide`·`m2Slide_en`·`m2Slide_MermaidExample` 리다이렉트 확인(ego-browser)
+    - ⚠️ 작업트리에 다른 세션 미커밋 변경이 있다 — `main` 전환 전 worktree 를 쓰거나 전환 가능 여부를 먼저 확인. 남의 변경을 stash·checkout 으로 건드리지 않는다
+    - B: 분류 열 1칸 수정 → `--sync-projects` 후 `/p/` 🧪 테스트 구역 표시 확인
+    - 검증: A 리다이렉트 3종·카드 2종 200 · B `/p/` 표시 · D 이슈후보 2건 등재
+    - TDD 해당 없음: 배포 반영·등록부 분류·이슈 등록 — 제품 코드 무변경
 
 ## Issue423: 이미지 해소 시 `X.annot.png` 짝 픽업 + 원본 강제 옵트아웃 — prj7 주석본 픽업 규약 구현 (등록: 2026-09-28)
 * 목적: prj7 cg 가 캡처 주석본(`img-annotate`)을 만들어도 덱을 만드는 경로가 그 산출을 집지 않아 **안 쓰인다**. prj7 규약(사용자 확정 2026-09-24) «`X.png` 를 넣을 때 옆에 `X.annot.png` 가 있으면 그것을 쓴다» 의 구현 자리가 m2slide 이미지 해소다
