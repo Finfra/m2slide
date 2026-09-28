@@ -55,7 +55,7 @@
     - 검증: 덱마다 `./m2slide.sh <X>` rc0 · `/p/<X>` 표시 · `--lint-deployment <X>` 0 · `docs/index.html` 에 이전 링크 존재 · 링크 대상 경로가 prj42a 에 실재
     - 완료 기준: 아래 서브 이슈 전부 ✅
 
-## Issue424_1: 강연 1차 6덱 prj42a 이관 + docs 이전 링크 (등록: 2026-09-28)
+## Issue424_1: 강연 1차 6덱 prj42a 이관 + docs 이전 링크 (등록: 2026-09-28, 해결: 2026-09-28, commit: 960541e, 582e054, ec70efd, 0c7456a · prj42a: 83f334d, 7c2ea87, 1ad4ee4, 44b7759, cbd27c2, de09b05) ✅
 * 목적: AgenticCoding·BasicKnowledgeForAI_small·GenContentProd·LlmAndVibeCoding·StellarEvolution·graphify 를 `Projects_deck/decks/education/` 으로 옮긴다 — 6덱 모두 이미 Pages 공개 중이라 노출 범위는 바뀌지 않는다
 * 상세:
     - prj42 추적 해제 대상은 3덱(BasicKnowledgeForAI_small 50·GenContentProd 204·LlmAndVibeCoding 62 파일). 나머지 3덱은 원래 미추적 — prj42a 커밋이 첫 버전 관리다
@@ -63,6 +63,14 @@
     - `Projects/_ppt/` 강연 원본 pptx·pdf 와 `z_done/` 강연 구버전은 옮기지 않는다(공개 불필요)
     - 6덱 모두 `docs/` 발행본과 `docs/index.html` 카드가 있다(LEC 4 · INFO graphify · ETC StellarEvolution) — 이전 링크는 이 카드들에 단다
 * 구현 명세: Issue424 공통 절차 · 덱 단위로 커밋해 한 덱이 막혀도 나머지가 진행되게 한다
+* 결과:
+    - 방식: `mv Projects/<X> Projects_deck/decks/education/<X>` → `--link` 심링크. `/p/` 목록·`Projects.md` 등록부(경로 열, 소유 prj `42a`)·`/deploy-docs` 가 그대로 동작한다. `--sync-projects` 는 경로 있는 행을 허용목록에서 빼므로(`publishedRows` 의 `!r[2]`) 3덱이 자동으로 추적 제외됐다
+    - prj42a: 덱 단위 커밋 6 — `83f334d` StellarEvolution · `7c2ea87` graphify · `1ad4ee4` BasicKnowledgeForAI_small · `44b7759` LlmAndVibeCoding · `cbd27c2` GenContentProd · `de09b05` AgenticCoding. 덱마다 `_template` 형식 README(저자는 frontmatter `instructor_name` 이 있는 4덱만 옮김 — StellarEvolution·graphify 는 «원고에 미기재»)
+    - prj42: `960541e` `Projects_org.md` 에 «m2slide-deck 으로 이전된 프로젝트» 절 자동 생성(README 가 링크하는 공개 목록 — 이전 링크 표시 조건의 두 번째 자리) · `582e054` 3덱 추적 해제 · `ec70efd` `/deploy-docs` 5-a(이전 덱 카드 규약) · `0c7456a` `docs/index.html` 6카드에 «📦 원고 이전 → m2slide-deck» 링크
+    - 검증: 6덱 이름 빌드 rc0 · placeholder·`undefined` 0 · `--lint-deployment` 위반 0 · `/p/<X>` 표시 · `sync-projects-md.test.js` 13/13(신규 3, red 확인) · ego-browser `file://` 갤러리 `card-source` 6·중첩 `<a>` 0·카드 간격 0 — 캡처 `_doc_work/capture/issue424/docs-gallery-lec.png`
+    - ⚠️ push 하지 않았다. **순서가 있다** — m2slide-deck 을 먼저 push 해야 갤러리 링크가 404 가 아니다. `0c7456a`(docs)는 현 브랜치가 `feat/ig-ppt-maker-integration` 이라 Pages(main) 반영에 cherry-pick 이 필요하다
+    - 부수: `Projects/.gitignore` 재생성으로 `n3shIntro`(publishing `o`)가 허용목록에 들어갔다 — 원고는 커밋하지 않아 untracked 로 보인다. 앱 소개 2차 이관 때 결정
+    - 발견: `issue-tx.py` 가 `Issue424_1` 을 `4241` 로 읽어 서브 블록을 스테이징하지 못한다 — Issue.md 커밋은 HEAD blob 에 같은 변환을 적용해 임시 인덱스로 우회했다(글로벌 SCAR 라 여기서 고치지 않음)
 
 ## Issue424_2: m2Slide(·_en) → m2slide_info(·_en) 통합 (등록: 2026-09-28)
 * 목적: m2Slide(7장: what·why·30초 시작)는 m2slide_info(34장: what·why·where·강점·마무리)의 축약판이다. 소개 덱을 하나로 모은다
@@ -81,12 +89,13 @@
     - `docs/m2Slide_MermaidExample/` 은 리다이렉트 + 카드 «통합됨 → m2Slide_visual_component» 표시
 * 구현 명세: 챕터 추가 → AGENDA 갱신 → 빌드·HTML 검증 → 회귀 러너 재측정 → MermaidExample 은 z_done 이동
 
-## Issue424_4: 참조 없는 테스트 잔재 z_done 이동 (등록: 2026-09-28)
+## Issue424_4: 참조 없는 테스트 잔재 z_done 이동 (등록: 2026-09-28, 해결: 2026-09-28, commit: 없음 — 미추적 폴더 이동) ✅
 * 목적: `/p/` 목록에서 러너·코드가 쓰지 않는 덱을 걷어낸다
 * 상세:
     - MediaBackendTest(참조 0) · aTest.bak.20260909(참조 0, 백업본) · aTest_rt(`z_test/pdf/lib/integrity.py` 주석 속 실측 사례 1곳뿐)
     - 삭제가 아니라 z_done 이동 — 되돌릴 수 있게 둔다
 * 구현 명세: 이동 전 `grep -rF` 로 참조 0 재확인 → z_done 이동 → `--sync-projects` → `/p/` 목록에서 사라졌는지 확인
+* 결과: `z_done/MediaBackendTest` · `z_done/aTest.bak.20260909_v2.0`(VERSION 2.0 — project-version-rules) · `z_done/aTest_rt`. 3개 모두 git 미추적이라 저장소 변경은 없다. `--sync-projects` 로 비활성 표 이동 · `/p/` 목록 0건 확인. `aTest_rt` 는 `z_test/pdf/lib/integrity.py` 주석과 `data/_proposals/aTest_rt-2026-09-09.md` 에 실측 사례로 남아 있을 뿐 실행 경로 참조가 아니다
 
 ## Issue415: 아이폰에서 **탭(클릭)만으로** 덱이 동작하는지 ego-browser 로 점검·수정하고 aTest → aTest-all 2단계로 안정화 (등록: 2026-09-23)
 * 목적: 키보드 없는 아이폰에서 m2slide 덱을 탭만으로 넘기고 쓸 수 있어야 한다(사용자 전제: **터치 = 클릭**). 동시에 prj3 외부*핀봇(외부자문·외부컨설턴트)이 팀장핀봇 배분 경로로 실제 동작하는지 실증한다(요청: 사용자 → 나래, prj3#Issue678 후속)
