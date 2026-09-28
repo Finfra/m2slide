@@ -25,14 +25,14 @@ tags: []
 
 아래 프로젝트의 원고는 [m2slide-deck](https://github.com/Finfra/m2slide-deck) 저장소로 이전됨. 이 저장소의 `Projects/` 에는 없으며, 발행본(GitHub Pages)은 그대로 [목록](https://finfra.github.io/m2slide/)에서 볼 수 있음.
 
-| 분류 | 프로젝트                  | 버전 | 설명                              | 원고 위치                                                                                                                               |
-| :--- | :------------------------ | :--- | :-------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------- |
-| lec  | BasicKnowledgeForAI_small | 1.0  | AI과정 부록 - 기초 지식편         | [decks/education/BasicKnowledgeForAI_small](https://github.com/Finfra/m2slide-deck/tree/main/decks/education/BasicKnowledgeForAI_small) |
-| lec  | LlmAndVibeCoding          | 2.1  | LLM 툴 진화·바이브 코딩 세대 구분 | [decks/education/LlmAndVibeCoding](https://github.com/Finfra/m2slide-deck/tree/main/decks/education/LlmAndVibeCoding)                   |
-| lec  | GenContentProd            | 1.2  | 콘텐츠 생성 프로덕션              | [decks/education/GenContentProd](https://github.com/Finfra/m2slide-deck/tree/main/decks/education/GenContentProd)                       |
-| lec  | AgenticCoding             | 1.1  | 에이전틱 코딩 강연 자료           | [decks/education/AgenticCoding](https://github.com/Finfra/m2slide-deck/tree/main/decks/education/AgenticCoding)                         |
-| Info | graphify                  | 0.9  | graphify 지식 그래프 소개         | [decks/education/graphify](https://github.com/Finfra/m2slide-deck/tree/main/decks/education/graphify)                                   |
-| etc  | StellarEvolution          | 1.0  | 항성의 진화 — 3D·시뮬레이터 강연  | [decks/education/StellarEvolution](https://github.com/Finfra/m2slide-deck/tree/main/decks/education/StellarEvolution)                   |
+| 분류 | 프로젝트                  | 버전 | 설명                              | 원고 위치                                                                                                                                 |
+| :--- | :------------------------ | :--- | :-------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| lec  | BasicKnowledgeForAI_small | 1.0  | AI과정 부록 - 기초 지식편         | [decks/agentic-ai/BasicKnowledgeForAI_small](https://github.com/Finfra/m2slide-deck/tree/main/decks/agentic-ai/BasicKnowledgeForAI_small) |
+| lec  | LlmAndVibeCoding          | 2.1  | LLM 툴 진화·바이브 코딩 세대 구분 | [decks/agentic-ai/LlmAndVibeCoding](https://github.com/Finfra/m2slide-deck/tree/main/decks/agentic-ai/LlmAndVibeCoding)                   |
+| lec  | GenContentProd            | 1.2  | 콘텐츠 생성 프로덕션              | [decks/agentic-ai/GenContentProd](https://github.com/Finfra/m2slide-deck/tree/main/decks/agentic-ai/GenContentProd)                       |
+| lec  | AgenticCoding             | 1.1  | 에이전틱 코딩 강연 자료           | [decks/agentic-ai/AgenticCoding](https://github.com/Finfra/m2slide-deck/tree/main/decks/agentic-ai/AgenticCoding)                         |
+| Info | graphify                  | 0.9  | graphify 지식 그래프 소개         | [decks/agentic-ai/graphify](https://github.com/Finfra/m2slide-deck/tree/main/decks/agentic-ai/graphify)                                   |
+| etc  | StellarEvolution          | 1.0  | 항성의 진화 — 3D·시뮬레이터 강연  | [decks/misc/StellarEvolution](https://github.com/Finfra/m2slide-deck/tree/main/decks/misc/StellarEvolution)                               |
 
 ## 이모지 범례
 
