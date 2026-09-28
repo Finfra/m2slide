@@ -5,7 +5,7 @@ author: 남중구 (핀프라)
 type: ppt
 cover_enabled: false
 markmap_depth: 2
-release_date: 2026-09-19
+release_date: 2026-09-28
 ---
 
 ## [1. 텍스트·구조 요소](./01-text-structure.md)
@@ -14,3 +14,4 @@ release_date: 2026-09-19
 ## [4. React·WordArt·3D·Simulation](./04-artifact-3d-sim.md)
 ## [5. htmlArt 27종](./05-htmlart-27.md)
 ## [6. 이미지·애니메이션·이모지](./06-image-animation-emoji.md)
+## [7. 다이어그램 확장 갤러리](./07-diagram-gallery.md)
