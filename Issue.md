@@ -37,6 +37,7 @@
 1. LlmFlow(353장) prj42a 이관 — **보류**(사용자 결정 2026-09-28). publishing `x` 라 이관 = 첫 공개. 공개 결정이 먼저이며 그 전까지 원고는 git 미추적 상태로 남는다
 1. `Projects.md` publishing `o` 15개 vs `Projects/.gitignore` 허용목록 11개 불일치 — AgenticCoding·graphify·StellarEvolution·n3shIntro 가 빠져 원고가 git 미추적. 앞 3개는 Issue424_1 이관으로 해소되지만 `--sync-projects` 가 왜 어긋났는지(생성 로직 vs 미실행)는 남는다 (Issue424 에서 발견)
 1. `--lint-deployment` 가 강의 본문의 명령·경로 예시(`curl localhost:3000`·`/Users/...`)를 위반으로 잡는다 — AgenticCoding·LlmFlow·z_done 30줄. 자산 참조(`src`·`href`·`url(`)만 보도록 좁힐지 (Issue424 에서 발견)
+1. `Projects.md` publishing `o`·`Projects/.gitignore` 허용(`!/n3shIntro/`)인데 **원고 추적 파일 0개** — 허용목록만 맞고 `git add` 가 된 적이 없다(2026-09-29 `git ls-files Projects/n3shIntro` 0). 앱 소개 5덱 prj42a 2차 이관 때 해소 예정이나, `--sync-projects` 가 «허용 ↔ 실제 추적» 불일치를 보고하게 할지 (Issue425 에서 발견)
 1. [글로벌 SCAR] `~/.claude/sh/issue-tx.py` 가 서브 이슈 번호 `Issue424_1` 을 `4241` 로 읽어 `stage/commit --issues` 에 서브 블록을 싣지 못한다 — prj42 에서는 HEAD blob 변환 + 임시 인덱스로 우회. `~/.claude/Issue.md` 등록 후보 (Issue424 에서 발견)
 
 
@@ -133,6 +134,10 @@
     - B: 분류 열 1칸 수정 → `--sync-projects` 후 `/p/` 🧪 테스트 구역 표시 확인
     - 검증: A 리다이렉트 3종·카드 2종 200 · B `/p/` 표시 · D 이슈후보 2건 등재
     - TDD 해당 없음: 배포 반영·등록부 분류·이슈 등록 — 제품 코드 무변경
+* 결과(developer, 2026-09-29):
+    - B ✅ `Projects.md` aTest-all 분류 `test` 확인 — `--sync-projects` «이미 동기화 상태(변경 없음)», `/p/` 🧪 테스트(5) 구역에 aTest-all 표시(dev-server 9877 실측). Projects.md 는 gitignored 로컬 등록부라 커밋 없음
+    - D ✅ ① `--lint-deployment` 오탐은 69acb96 에서 이미 이슈후보 등재 → 중복 등록 안 함(issue-g 규칙4) · ③ n3shIntro «허용목록 o · 추적 0» 신규 등재. ② 는 명세대로 prj3(나래) 소관
+    - A 는 release(fbot-release-issue425) 소관 — developer 는 push 하지 않음. 원격 `main` 은 9c878fa(6커밋 cherry-pick, patch 동일)까지 반영된 상태를 확인
 
 ## Issue423: 이미지 해소 시 `X.annot.png` 짝 픽업 + 원본 강제 옵트아웃 — prj7 주석본 픽업 규약 구현 (등록: 2026-09-28)
 * 목적: prj7 cg 가 캡처 주석본(`img-annotate`)을 만들어도 덱을 만드는 경로가 그 산출을 집지 않아 **안 쓰인다**. prj7 규약(사용자 확정 2026-09-24) «`X.png` 를 넣을 때 옆에 `X.annot.png` 가 있으면 그것을 쓴다» 의 구현 자리가 m2slide 이미지 해소다
