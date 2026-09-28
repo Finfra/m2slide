@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>3. 차트·지도·인포그래픽</title>
+  <title>7. 다이어그램 확장 갤러리</title>
   <script>
     // Issue110/125: visibility 가드 — body 파싱 전 documentElement에 클래스 부여
     try {
@@ -45,7 +45,7 @@
       } catch (e) {}
     })();
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"3","slideOffset":34,"totalSlides":127};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"7","slideOffset":102,"totalSlides":127};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1429,7 +1429,7 @@ html.ratio-fill .agenda-frame {
 
   </style>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"/>
-  <link rel="stylesheet" href="css/custom.css?v=1790604309029">
+  <link rel="stylesheet" href="css/custom.css?v=1790604309041">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1630,7 +1630,6 @@ html.ratio-fill .agenda-frame {
     @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
   </style>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
 </head>
 <body class="  media-enlarge-fit" data-nav-indicator="both" style="
   --global-font-family: 'Nanum Gothic Coding', 'D2Coding', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
@@ -1680,7 +1679,7 @@ html.ratio-fill .agenda-frame {
 
 <section data-slide-hash="#/1" data-heading-level="1" class="layout-chapter">
   <div class="chapter-header">
-    <h1 class="chapter-title">3. 차트·지도·인포그래픽</h1>
+    <h1 class="chapter-title">7. 다이어그램 확장 갤러리</h1>
   </div>
   
 </section>
@@ -1695,298 +1694,563 @@ html.ratio-fill .agenda-frame {
 -->
 <section data-slide-hash="#/2" class="layout-_cards layout-_toc title-slide" id="toc-placeholder">
   <header class="toc-page-header">
-    <h1 class="toc-page-title">차트·지도·인포그래픽</h1>
+    <h1 class="toc-page-title">다이어그램 확장 갤러리</h1>
   </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="7">
-<li class="chapter-card"><a href="#/3">3.1 Chart.js — 막대 차트 (bar)</a></li>
-<li class="chapter-card"><a href="#/4">3.1b Chart.js — 선 차트 (line)</a></li>
-<li class="chapter-card"><a href="#/5">3.1c Chart.js — 원형 차트 (pie)</a></li>
-<li class="chapter-card"><a href="#/6">3.2 Leaflet — 서울 지도</a></li>
-<li class="chapter-card"><a href="#/7">3.2b Leaflet — 판교 테크노밸리</a></li>
-<li class="chapter-card"><a href="#/8">3.3 d3 인포그래픽 — 가로 막대</a></li>
-<li class="chapter-card"><a href="#/9">3.3b d3 — 버블 차트</a></li>
+  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="23">
+<li class="chapter-card"><a href="#/3">7.1 Mermaid — 본문 + 다이어그램 배치</a></li>
+<li class="chapter-card"><a href="#/4">7.2 Mermaid — Architecture</a></li>
+<li class="chapter-card"><a href="#/5">7.3 Mermaid — Block</a></li>
+<li class="chapter-card"><a href="#/6">7.4 Mermaid — C4</a></li>
+<li class="chapter-card"><a href="#/7">7.5 Mermaid — Kanban</a></li>
+<li class="chapter-card"><a href="#/8">7.6 Mermaid — Packet</a></li>
+<li class="chapter-card"><a href="#/9">7.7 Mermaid — Pie</a></li>
+<li class="chapter-card"><a href="#/10">7.8 Mermaid — Radar</a></li>
+<li class="chapter-card"><a href="#/11">7.9 Mermaid — Requirement</a></li>
+<li class="chapter-card"><a href="#/12">7.10 Mermaid — Sankey</a></li>
+<li class="chapter-card"><a href="#/13">7.11 Mermaid — Timeline</a></li>
+<li class="chapter-card"><a href="#/14">7.12 Mermaid — Timeline (계속)</a></li>
+<li class="chapter-card"><a href="#/15">7.13 Mermaid — Treemap</a></li>
+<li class="chapter-card"><a href="#/16">7.14 Kroki — blockdiag</a></li>
+<li class="chapter-card"><a href="#/17">7.15 Kroki — seqdiag</a></li>
+<li class="chapter-card"><a href="#/18">7.16 Kroki — actdiag</a></li>
+<li class="chapter-card"><a href="#/19">7.17 Kroki — nwdiag</a></li>
+<li class="chapter-card"><a href="#/20">7.18 Vega</a></li>
+<li class="chapter-card"><a href="#/21">7.19 PlantUML — Class Diagram</a></li>
+<li class="chapter-card"><a href="#/22">7.20 PlantUML — Component Diagram</a></li>
+<li class="chapter-card"><a href="#/23">7.21 PlantUML — Activity Diagram</a></li>
+<li class="chapter-card"><a href="#/24">7.22 PlantUML — Use Case Diagram</a></li>
+<li class="chapter-card"><a href="#/25">7.23 다이어그램 백엔드 정리</a></li>
 </ul></div>
 </section>
 
 
 <section data-slide-hash="#/3" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">3. 차트·지도·인포그래픽</div>
-    <div class="contents-head-right">3.1 Chart.js — 막대 차트 (bar)</div>
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.1 Mermaid — 본문 + 다이어그램 배치</div>
   </div>
-  <h2 class="title">3.1 Chart.js — 막대 차트 (bar)</h2>
+  <h2 class="title">7.1 Mermaid — 본문 + 다이어그램 배치</h2>
   <div class="contents-body">
-<p>렌더 백엔드: Chart.js (CDN 조건부 주입). fenced lang <code>chart</code>. 본문 = Chart.js config JSON.</p>
-<p>config 파싱 실패 시 에러 메시지 표시 (빌드 중단 없음).</p>
+<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
 
-<div class="component-container" data-component="chart">
-{
-  "type": "bar",
-  "data": {
-    "labels": ["1월", "2월", "3월", "4월", "5월", "6월"],
-    "datasets": [
-      {
-        "label": "슬라이드 생성 수",
-        "data": [12, 19, 8, 25, 32, 41],
-        "backgroundColor": [
-          "rgba(78,201,176,0.7)",
-          "rgba(78,201,176,0.7)",
-          "rgba(78,201,176,0.7)",
-          "rgba(206,145,120,0.7)",
-          "rgba(206,145,120,0.7)",
-          "rgba(206,145,120,0.7)"
-        ],
-        "borderColor": "rgba(78,201,176,1)",
-        "borderWidth": 1
-      }
-    ]
-  },
-  "options": {
-    "responsive": true,
-    "plugins": {
-      "legend": { "position": "top" },
-      "title": { "display": true, "text": "월별 슬라이드 생성 현황" }
-    },
-    "scales": {
-      "y": { "beginAtZero": true }
-    }
-  }
-}
+<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+
+<div class="media-container mermaid">
+graph TD;
+    A[2022 이전] --> B[ChatGPT];
+    A --> C[IDE 통합];
+    B --> D[CLI 시대];
+    C --> D;
 </div></div>
 </section>
 
 <section data-slide-hash="#/4" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">3. 차트·지도·인포그래픽</div>
-    <div class="contents-head-right">3.1b Chart.js — 선 차트 (line)</div>
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.2 Mermaid — Architecture</div>
   </div>
-  <h2 class="title">3.1b Chart.js — 선 차트 (line)</h2>
+  <h2 class="title">7.2 Mermaid — Architecture</h2>
   <div class="contents-body">
-<div class="component-container" data-component="chart">
-{
-  "type": "line",
-  "data": {
-    "labels": ["Q1", "Q2", "Q3", "Q4"],
-    "datasets": [
-      {
-        "label": "방문자 수 (천명)",
-        "data": [120, 190, 150, 280],
-        "fill": false,
-        "borderColor": "rgba(78,201,176,1)",
-        "backgroundColor": "rgba(78,201,176,0.2)",
-        "tension": 0.4,
-        "pointRadius": 6,
-        "pointBackgroundColor": "rgba(206,145,120,1)"
-      },
-      {
-        "label": "전환율 (%)",
-        "data": [3.2, 4.1, 3.8, 5.5],
-        "fill": false,
-        "borderColor": "rgba(206,145,120,1)",
-        "backgroundColor": "rgba(206,145,120,0.2)",
-        "tension": 0.4,
-        "pointRadius": 6
-      }
-    ]
-  },
-  "options": {
-    "responsive": true,
-    "plugins": {
-      "title": { "display": true, "text": "분기별 방문자·전환율 추이" }
-    }
-  }
-}
+<div class="media-container mermaid">
+architecture-beta
+    group api(cloud)[API]
+
+    service db(database)[Database] in api
+    service disk1(disk)[Storage] in api
+    service disk2(disk)[Storage] in api
+    service server(server)[Server] in api
+
+    db:L -- R:server
+    disk1:T -- B:server
+    disk2:T -- B:db
 </div></div>
 </section>
 
 <section data-slide-hash="#/5" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">3. 차트·지도·인포그래픽</div>
-    <div class="contents-head-right">3.1c Chart.js — 원형 차트 (pie)</div>
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.3 Mermaid — Block</div>
   </div>
-  <h2 class="title">3.1c Chart.js — 원형 차트 (pie)</h2>
+  <h2 class="title">7.3 Mermaid — Block</h2>
   <div class="contents-body">
-<div class="component-container" data-component="chart">
-{
-  "type": "pie",
-  "data": {
-    "labels": ["htmlArt", "Chart.js", "Mermaid", "React", "p5.js", "기타"],
-    "datasets": [
-      {
-        "label": "구성요소 사용 비중",
-        "data": [35, 20, 18, 15, 8, 4],
-        "backgroundColor": [
-          "rgba(78,201,176,0.8)",
-          "rgba(206,145,120,0.8)",
-          "rgba(86,156,214,0.8)",
-          "rgba(220,220,170,0.8)",
-          "rgba(197,134,192,0.8)",
-          "rgba(150,150,150,0.8)"
-        ],
-        "borderColor": "#1e1e1e",
-        "borderWidth": 2
-      }
-    ]
-  },
-  "options": {
-    "responsive": true,
-    "plugins": {
-      "legend": { "position": "right" },
-      "title": { "display": true, "text": "시각 구성요소 사용 비중" }
-    }
-  }
-}
+<div class="media-container mermaid">
+block-beta
+columns 1
+  db(("DB"))
+  blockArrowId6<["&nbsp;&nbsp;&nbsp;"]>(down)
+  block:ID
+    A
+    B["A wide one in the middle"]
+    C
+  end
+  space
+  D
+  ID --> D
+  C --> D
+  style B fill:#969,stroke:#333,stroke-width:4px
 </div></div>
 </section>
 
 <section data-slide-hash="#/6" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">3. 차트·지도·인포그래픽</div>
-    <div class="contents-head-right">3.2 Leaflet — 서울 지도</div>
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.4 Mermaid — C4</div>
   </div>
-  <h2 class="title">3.2 Leaflet — 서울 지도</h2>
+  <h2 class="title">7.4 Mermaid — C4</h2>
   <div class="contents-body">
-<p>렌더 백엔드: Leaflet.js + OpenStreetMap (CDN 조건부 주입). fenced lang <code>map</code>.</p>
-<p><code>center</code>: <code>[위도, 경도]</code>, <code>zoom</code>: 1~18, <code>markers[].popup</code>: 팝업 텍스트.</p>
+<div class="media-container mermaid">
+C4Context
+    title System Context diagram for Internet Banking System
+    Enterprise_Boundary(b0, "BankBoundary0") {
+        Person(customerA, "Banking Customer A", "A customer of the bank, with personal bank accounts.")
+        Person(customerB, "Banking Customer B")
+        Person_Ext(customerC, "Banking Customer C", "desc")
 
-<div class="component-container" data-component="map">
-{
-  "center": [37.5665, 126.9780],
-  "zoom": 12,
-  "markers": [
-    { "coords": [37.5665, 126.9780], "popup": "서울 시청" },
-    { "coords": [37.5796, 126.9770], "popup": "경복궁" },
-    { "coords": [37.5512, 126.9882], "popup": "남산타워" },
-    { "coords": [37.5172, 127.0473], "popup": "강남구청" }
-  ]
-}
+        Person(customerD, "Banking Customer D", "A customer of the bank, <br/> with personal bank accounts.")
+
+        System(SystemAA, "Internet Banking System", "Allows customers to view information about their bank accounts, and make payments.")
+
+        Enterprise_Boundary(b1, "BankBoundary") {
+            SystemDb_Ext(SystemE, "Mainframe Banking System", "Stores all of the core banking information about customers, accounts, transactions, etc.")
+
+            System_Boundary(b2, "BankBoundary2") {
+                System(SystemA, "Banking System A")
+                System(SystemB, "Banking System B", "A system of the bank, with personal bank accounts. next line.")
+            }
+
+            System_Ext(SystemC, "E-mail system", "The internal Microsoft Exchange e-mail system.")
+            SystemDb(SystemD, "Banking System D Database", "A system of the bank, with personal bank accounts.")
+
+            Boundary(b3, "BankBoundary3", "boundary") {
+                SystemQueue(SystemF, "Banking System F Queue", "A system of the bank.")
+                SystemQueue_Ext(SystemG, "Banking System G Queue", "A system of the bank, with personal bank accounts.")
+            }
+        }
+    }
+
+    BiRel(customerA, SystemAA, "Uses")
+    BiRel(SystemAA, SystemE, "Uses")
+    Rel(SystemAA, SystemC, "Sends e-mails", "SMTP")
+    Rel(SystemC, customerA, "Sends e-mails to")
 </div></div>
 </section>
 
 <section data-slide-hash="#/7" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">3. 차트·지도·인포그래픽</div>
-    <div class="contents-head-right">3.2b Leaflet — 판교 테크노밸리</div>
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.5 Mermaid — Kanban</div>
   </div>
-  <h2 class="title">3.2b Leaflet — 판교 테크노밸리</h2>
+  <h2 class="title">7.5 Mermaid — Kanban</h2>
   <div class="contents-body">
-<div class="component-container" data-component="map">
-{
-  "center": [37.3947, 127.1116],
-  "zoom": 14,
-  "markers": [
-    { "coords": [37.3947, 127.1116], "popup": "판교 테크노밸리" },
-    { "coords": [37.3990, 127.1078], "popup": "카카오 판교아지트" },
-    { "coords": [37.3920, 127.1130], "popup": "네이버 1784" }
-  ]
-}
+<div class="media-container mermaid">
+%% Mermaid config removed for slide compatibility
+kanban
+  Todo
+    [Create Documentation]
+    docs[Create Blog about the new diagram]
+  [In progress]
+    id6[Create renderer so that it works in all cases. We also add some extra text here for testing purposes. And some more just for the extra flare.]
+  id9[Ready for deploy]
+    id8[Design grammar]@{ assigned: 'knsv' }
+  id10[Ready for test]
+    id4[Create parsing tests]@{ ticket: 2038, assigned: 'K.Sveidqvist', priority: 'High' }
+    id66[last item]@{ priority: 'Very Low', assigned: 'knsv' }
+  id11[Done]
+    id5[define getData]
+    id2[Title of diagram is more than 100 chars when user duplicates diagram with 100 char]@{ ticket: 2036, priority: 'Very High'}
+    id3[Update DB function]@{ ticket: 2037, assigned: knsv, priority: 'High' }
+
+  id12[Can't reproduce]
+    id3[Weird flickering in Firefox]
+
 </div></div>
 </section>
 
 <section data-slide-hash="#/8" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">3. 차트·지도·인포그래픽</div>
-    <div class="contents-head-right">3.3 d3 인포그래픽 — 가로 막대</div>
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.6 Mermaid — Packet</div>
   </div>
-  <h2 class="title">3.3 d3 인포그래픽 — 가로 막대</h2>
+  <h2 class="title">7.6 Mermaid — Packet</h2>
   <div class="contents-body">
-<p>렌더 백엔드: d3.js (markmap 의존성 재사용 — 추가 CDN 없음). fenced lang <code>d3</code>.</p>
-<p>인자: <code>d3</code> (라이브러리), <code>el</code> (컨테이너 div). <code>el.clientWidth/clientHeight</code> 참조 권장.</p>
-
-<div class="component-container" data-component="d3">
-const data = [
-  { label: 'htmlArt', value: 35, color: '#4ec9b0' },
-  { label: 'Chart.js', value: 20, color: '#ce9178' },
-  { label: 'Mermaid',  value: 18, color: '#569cd6' },
-  { label: 'React',    value: 15, color: '#dcdcaa' },
-  { label: 'p5.js',    value: 8,  color: '#c586c0' },
-  { label: '기타',     value: 4,  color: '#888' }
-];
-
-const w = el.clientWidth || 600;
-const h = el.clientHeight || 280;
-const margin = { top: 20, right: 30, bottom: 20, left: 80 };
-const width = w - margin.left - margin.right;
-const height = h - margin.top - margin.bottom;
-
-const svg = d3.select(el).append('svg')
-  .attr('width', w).attr('height', h)
-  .append('g')
-  .attr('transform', `translate(${margin.left},${margin.top})`);
-
-const x = d3.scaleLinear().domain([0, 40]).range([0, width]);
-const y = d3.scaleBand().domain(data.map(d =&gt; d.label)).range([0, height]).padding(0.2);
-
-svg.append('g').call(d3.axisLeft(y).tickSize(0))
-  .selectAll('text').style('fill', '#ccc').style('font-size', '13px');
-
-svg.selectAll('rect')
-  .data(data).enter().append('rect')
-  .attr('x', 0)
-  .attr('y', d =&gt; y(d.label))
-  .attr('width', d =&gt; x(d.value))
-  .attr('height', y.bandwidth())
-  .attr('fill', d =&gt; d.color)
-  .attr('rx', 3);
-
-svg.selectAll('.label')
-  .data(data).enter().append('text')
-  .attr('x', d =&gt; x(d.value) + 5)
-  .attr('y', d =&gt; y(d.label) + y.bandwidth() / 2 + 4)
-  .text(d =&gt; `${d.value}%`)
-  .style('fill', '#ccc').style('font-size', '12px');
+<div class="media-container mermaid">
+%% title: "TCP Packet"
+packet
+0-15: "Source Port"
+16-31: "Destination Port"
+32-63: "Sequence Number"
+64-95: "Acknowledgment Number"
+96-99: "Data Offset"
+100-105: "Reserved"
+106: "URG"
+107: "ACK"
+108: "PSH"
+109: "RST"
+110: "SYN"
+111: "FIN"
+112-127: "Window"
+128-143: "Checksum"
+144-159: "Urgent Pointer"
+160-191: "(Options and Padding)"
+192-255: "Data (variable length)"
 </div></div>
 </section>
 
 <section data-slide-hash="#/9" class="layout-_contents">
   <div class="contents-head-bar">
-    <div class="contents-head-left">3. 차트·지도·인포그래픽</div>
-    <div class="contents-head-right">3.3b d3 — 버블 차트</div>
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.7 Mermaid — Pie</div>
   </div>
-  <h2 class="title">3.3b d3 — 버블 차트</h2>
+  <h2 class="title">7.7 Mermaid — Pie</h2>
   <div class="contents-body">
-<div class="component-container" data-component="d3">
-const nodes = [
-  { id: 'htmlArt', r: 50, color: '#4ec9b0' },
-  { id: 'Mermaid', r: 35, color: '#569cd6' },
-  { id: 'Chart.js', r: 30, color: '#ce9178' },
-  { id: 'React', r: 28, color: '#dcdcaa' },
-  { id: 'KaTeX', r: 20, color: '#c586c0' },
-  { id: 'Leaflet', r: 20, color: '#4fc1ff' },
-  { id: 'p5.js', r: 18, color: '#f44747' },
-  { id: 'model3d', r: 15, color: '#888' }
-];
-
-const w = el.clientWidth || 700;
-const h = el.clientHeight || 320;
-
-const svg = d3.select(el).append('svg').attr('width', w).attr('height', h);
-
-const simulation = d3.forceSimulation(nodes)
-  .force('charge', d3.forceManyBody().strength(5))
-  .force('center', d3.forceCenter(w / 2, h / 2))
-  .force('collision', d3.forceCollide(d =&gt; d.r + 4));
-
-const circles = svg.selectAll('circle')
-  .data(nodes).enter().append('circle')
-  .attr('r', d =&gt; d.r)
-  .attr('fill', d =&gt; d.color)
-  .attr('opacity', 0.8);
-
-const labels = svg.selectAll('text')
-  .data(nodes).enter().append('text')
-  .text(d =&gt; d.id)
-  .attr('text-anchor', 'middle')
-  .attr('dy', '0.35em')
-  .style('fill', '#fff')
-  .style('font-size', d =&gt; `${Math.max(9, d.r / 3.5)}px`)
-  .style('pointer-events', 'none');
-
-simulation.on('tick', () =&gt; {
-  circles.attr('cx', d =&gt; d.x).attr('cy', d =&gt; d.y);
-  labels.attr('x', d =&gt; d.x).attr('y', d =&gt; d.y);
-});
+<div class="media-container mermaid">
+pie title Pets adopted by volunteers
+    "Dogs" : 386
+    "Cats" : 85
+    "Rats" : 15
 </div></div>
+</section>
+
+<section data-slide-hash="#/10" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.8 Mermaid — Radar</div>
+  </div>
+  <h2 class="title">7.8 Mermaid — Radar</h2>
+  <div class="contents-body">
+<div class="media-container mermaid">
+%% title: "Grades"
+radar-beta
+  axis m["Math"], s["Science"], e["English"]
+  axis h["History"], g["Geography"], a["Art"]
+  curve a["Alice"]{85, 90, 80, 70, 75, 90}
+  curve b["Bob"]{70, 75, 85, 80, 90, 85}
+
+  max 100
+  min 0
+
+</div></div>
+</section>
+
+<section data-slide-hash="#/11" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.9 Mermaid — Requirement</div>
+  </div>
+  <h2 class="title">7.9 Mermaid — Requirement</h2>
+  <div class="contents-body">
+<div class="media-container mermaid">
+requirementDiagram
+
+    requirement test_req {
+    id: 1
+    text: the test text.
+    risk: high
+    verifymethod: test
+    }
+
+    element test_entity {
+    type: simulation
+    }
+
+    test_entity - satisfies -> test_req
+</div></div>
+</section>
+
+<section data-slide-hash="#/12" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.10 Mermaid — Sankey</div>
+  </div>
+  <h2 class="title">7.10 Mermaid — Sankey</h2>
+  <div class="contents-body">
+<div class="media-container mermaid">
+%% sankey config removed for slide compatibility
+sankey-beta
+
+Agricultural 'waste',Bio-conversion,124.729
+Bio-conversion,Liquid,0.597
+Bio-conversion,Losses,26.862
+Bio-conversion,Solid,280.322
+Bio-conversion,Gas,81.144
+Biofuel imports,Liquid,35
+Biomass imports,Solid,35
+Coal imports,Coal,11.606
+Coal reserves,Coal,63.965
+Coal,Solid,75.571
+District heating,Industry,10.639
+District heating,Heating and cooling - commercial,22.505
+District heating,Heating and cooling - homes,46.184
+Electricity grid,Over generation / exports,104.453
+Electricity grid,Heating and cooling - homes,113.726
+Electricity grid,H2 conversion,27.14
+Electricity grid,Industry,342.165
+Electricity grid,Road transport,37.797
+Electricity grid,Agriculture,4.412
+Electricity grid,Heating and cooling - commercial,40.858
+Electricity grid,Losses,56.691
+Electricity grid,Rail transport,7.863
+Electricity grid,Lighting & appliances - commercial,90.008
+Electricity grid,Lighting & appliances - homes,93.494
+Gas imports,NGas,40.719
+Gas reserves,NGas,82.233
+Gas,Heating and cooling - commercial,0.129
+Gas,Losses,1.401
+Gas,Thermal generation,151.891
+Gas,Agriculture,2.096
+Gas,Industry,48.58
+Geothermal,Electricity grid,7.013
+H2 conversion,H2,20.897
+H2 conversion,Losses,6.242
+H2,Road transport,20.897
+Hydro,Electricity grid,6.995
+Liquid,Industry,121.066
+Liquid,International shipping,128.69
+Liquid,Road transport,135.835
+Liquid,Domestic aviation,14.458
+Liquid,International aviation,206.267
+Liquid,Agriculture,3.64
+Liquid,National navigation,33.218
+Liquid,Rail transport,4.413
+Marine algae,Bio-conversion,4.375
+NGas,Gas,122.952
+Nuclear,Thermal generation,839.978
+Oil imports,Oil,504.287
+Oil reserves,Oil,107.703
+Oil,Liquid,611.99
+Other waste,Solid,56.587
+Other waste,Bio-conversion,77.81
+Pumped heat,Heating and cooling - homes,193.026
+Pumped heat,Heating and cooling - commercial,70.672
+Solar PV,Electricity grid,59.901
+Solar Thermal,Heating and cooling - homes,19.263
+Solar,Solar Thermal,19.263
+Solar,Solar PV,59.901
+Solid,Agriculture,0.882
+Solid,Thermal generation,400.12
+Solid,Industry,46.477
+Thermal generation,Electricity grid,525.531
+Thermal generation,Losses,787.129
+Thermal generation,District heating,79.329
+Tidal,Electricity grid,9.452
+UK land based bioenergy,Bio-conversion,182.01
+Wave,Electricity grid,19.013
+Wind,Electricity grid,289.366
+</div></div>
+</section>
+
+<section data-slide-hash="#/13" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.11 Mermaid — Timeline</div>
+  </div>
+  <h2 class="title">7.11 Mermaid — Timeline</h2>
+  <div class="contents-body">
+<ul>
+<li class="bullet-dot">base</li>
+</ul>
+<div class="media-container mermaid">
+timeline
+    title History of Social Media Platform
+    2002 : LinkedIn
+    2004 : Facebook
+         : Google
+    2005 : YouTube
+    2006 : Twitter
+</div></div>
+</section>
+
+<section data-slide-hash="#/14" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.12 Mermaid — Timeline (계속)</div>
+  </div>
+  <h2 class="title">7.12 Mermaid — Timeline (계속)</h2>
+  <div class="contents-body">
+<ul>
+<li class="bullet-dot">beta</li>
+</ul>
+<div class="media-container mermaid">
+timeline-beta
+    section Projects
+      2023 : Start
+      2024 : Release
+</div></div>
+</section>
+
+<section data-slide-hash="#/15" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.13 Mermaid — Treemap</div>
+  </div>
+  <h2 class="title">7.13 Mermaid — Treemap</h2>
+  <div class="contents-body">
+<div class="media-container mermaid">
+treemap-beta
+"Section 1"
+    "Leaf 1.1": 12
+    "Section 1.2"
+      "Leaf 1.2.1": 12
+"Section 2"
+    "Leaf 2.1": 20
+    "Leaf 2.2": 25
+</div></div>
+</section>
+
+<section data-slide-hash="#/16" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.14 Kroki — blockdiag</div>
+  </div>
+  <h2 class="title">7.14 Kroki — blockdiag</h2>
+  <div class="contents-body">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/blockdiag_3d91c7f2dbe3.svg" alt="blockdiag diagram"/></div>
+</div></div>
+</section>
+
+<section data-slide-hash="#/17" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.15 Kroki — seqdiag</div>
+  </div>
+  <h2 class="title">7.15 Kroki — seqdiag</h2>
+  <div class="contents-body">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/seqdiag_dbdff9c23f59.svg" alt="seqdiag diagram"/></div>
+</div></div>
+</section>
+
+<section data-slide-hash="#/18" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.16 Kroki — actdiag</div>
+  </div>
+  <h2 class="title">7.16 Kroki — actdiag</h2>
+  <div class="contents-body">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/actdiag_1bae3522e5aa.svg" alt="actdiag diagram"/></div>
+</div></div>
+</section>
+
+<section data-slide-hash="#/19" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.17 Kroki — nwdiag</div>
+  </div>
+  <h2 class="title">7.17 Kroki — nwdiag</h2>
+  <div class="contents-body">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/nwdiag_bb80f1642847.svg" alt="nwdiag diagram"/></div>
+</div></div>
+</section>
+
+<section data-slide-hash="#/20" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.18 Vega</div>
+  </div>
+  <h2 class="title">7.18 Vega</h2>
+  <div class="contents-body">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/vega_d76c226e4a8f.svg" alt="vega diagram"/></div>
+</div></div>
+</section>
+
+<section data-slide-hash="#/21" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.19 PlantUML — Class Diagram</div>
+  </div>
+  <h2 class="title">7.19 PlantUML — Class Diagram</h2>
+  <div class="contents-body">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/plantuml_69cf0e62bce1.svg" alt="plantuml diagram"/></div>
+</div></div>
+</section>
+
+<section data-slide-hash="#/22" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.20 PlantUML — Component Diagram</div>
+  </div>
+  <h2 class="title">7.20 PlantUML — Component Diagram</h2>
+  <div class="contents-body">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/plantuml_ea4b30d578d8.svg" alt="plantuml diagram"/></div>
+</div></div>
+</section>
+
+<section data-slide-hash="#/23" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.21 PlantUML — Activity Diagram</div>
+  </div>
+  <h2 class="title">7.21 PlantUML — Activity Diagram</h2>
+  <div class="contents-body">
+<div style="display:flex; gap:20px;">
+  <div style="flex:1;">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/plantuml_a179295a8a63.svg" alt="plantuml diagram"/></div>
+</div>
+  </div>
+  <div style="flex:1;">
+<ul>
+<li class="bullet-dot">항목 1</li>
+<li class="bullet-dot">항목 2</li>
+</ul>
+
+  </div>
+</div></div>
+</section>
+
+<section data-slide-hash="#/24" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.22 PlantUML — Use Case Diagram</div>
+  </div>
+  <h2 class="title">7.22 PlantUML — Use Case Diagram</h2>
+  <div class="contents-body">
+<div class="media-container kroki">
+<div class="graph-scroll"><img src="kroki/plantuml_c5b8bcde4acc.svg" alt="plantuml diagram"/></div>
+</div></div>
+</section>
+
+<section data-slide-hash="#/25" class="layout-_contents"><div class="m2-license-badge" data-m2-license="true">Powered by finfra.kr, Made by m2slide</div>
+  <div class="contents-head-bar">
+    <div class="contents-head-left">7. 다이어그램 확장 갤러리</div>
+    <div class="contents-head-right">7.23 다이어그램 백엔드 정리</div>
+  </div>
+  <h2 class="title">7.23 다이어그램 백엔드 정리</h2>
+  <div class="contents-body">
+<div class="m2-cards cards">
+<ul>
+<li class="bullet-dot"><strong>Mermaid</strong>
+<ul>
+<li class="bullet-dash">Flowchart·Class·Sequence·ER·State·Gantt·Pie 등 텍스트 기반 다이어그램</li>
+</ul>
+</li>
+<li class="bullet-dot"><strong>PlantUML</strong>
+<ul>
+<li class="bullet-dash">Class·Component·Activity·Use Case UML 다이어그램</li>
+</ul>
+</li>
+<li class="bullet-dot"><strong>Kroki 계열</strong>
+<ul>
+<li class="bullet-dash">blockdiag·seqdiag·actdiag·nwdiag·ditaa ASCII 변환</li>
+</ul>
+</li>
+<li class="bullet-dot"><strong>데이터 시각화</strong>
+<ul>
+<li class="bullet-dash">Vega·Vega-lite 선언형 차트</li>
+</ul>
+</li>
+</ul>
+</div>
+
+<blockquote>
+이 장은 2장에 없는 종류만 모았다(옛 <code>m2Slide_MermaidExample</code> 덱 통합). Flowchart·Sequence·Gantt·Class·State·ER·Mindmap·Git·User Journey·Quadrant·XY·Graphviz·Vega-Lite·ditaa 는 2장 예시가 정본이다
+</blockquote></div>
 </section>
 
     </div>
@@ -1999,99 +2263,6 @@ simulation.on('tick', () =&gt; {
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/highlight/highlight.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/plugin/notes/notes.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-  <script>
-(function(){
-  function fitSvg(el){
-    var svg = el.querySelector("svg");
-    if (!svg || svg.getAttribute("viewBox")) return;
-    var vw = parseFloat(svg.getAttribute("width")) || svg.clientWidth || 480;
-    var vh = parseFloat(svg.getAttribute("height")) || svg.clientHeight || 270;
-    svg.setAttribute("viewBox", "0 0 " + vw + " " + vh);
-    svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
-    svg.removeAttribute("width");
-    svg.removeAttribute("height");
-  }
-  function render(){
-    if (typeof d3 === "undefined") return;
-    document.querySelectorAll("div[data-component=\"d3\"]").forEach(function(el){
-      if (el.getAttribute("data-rendered")) return;
-      var code = (el.textContent || "").trim();
-      el.textContent = "";
-      el.setAttribute("data-rendered", "1");
-      try { new Function("d3", "el", code)(d3, el); fitSvg(el); }
-      catch(e){ el.innerHTML = "<div class=\"component-error\">d3 렌더 실패: " + e.message + "</div>"; }
-    });
-  }
-  if (window.Reveal && Reveal.on) Reveal.on("ready", render);
-  else document.addEventListener("DOMContentLoaded", render);
-})();
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js"></script>
-  <script>
-(function(){
-  function render(){
-    if (typeof Chart !== "function") return;
-    document.querySelectorAll("div[data-component=\"chart\"]").forEach(function(el){
-      if (el.querySelector("canvas")) return;
-      var cfg;
-      try { cfg = JSON.parse((el.textContent || "").trim()); }
-      catch(e){ el.innerHTML = "<div class=\"component-error\">chart config JSON 파싱 실패</div>"; return; }
-      el.textContent = "";
-      var canvas = document.createElement("canvas");
-      el.appendChild(canvas);
-      try { new Chart(canvas, cfg); }
-      catch(e){ el.innerHTML = "<div class=\"component-error\">chart 렌더 실패: " + e.message + "</div>"; }
-    });
-  }
-  if (window.Reveal && Reveal.on) Reveal.on("ready", render);
-  else document.addEventListener("DOMContentLoaded", render);
-})();
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script>
-(function(){
-  var maps = [];
-  function fitHeight(el){
-    var ph = (el.parentElement && el.parentElement.clientHeight) || 0;
-    if (ph > 240) el.style.height = ph + "px";
-    else if (!el.style.height) el.style.height = "420px";
-  }
-  function renderAll(){
-    if (typeof L === "undefined") return;
-    document.querySelectorAll("div[data-component=\"map\"]").forEach(function(el){
-      if (el.getAttribute("data-rendered")) return;
-      var cfg;
-      try { cfg = JSON.parse((el.textContent || "").trim()); }
-      catch(e){ el.innerHTML = "<div class=\"component-error\">map config JSON 파싱 실패</div>"; return; }
-      el.textContent = "";
-      el.setAttribute("data-rendered", "1");
-      fitHeight(el);
-      try {
-        var map = L.map(el).setView(cfg.center || [0,0], cfg.zoom || 2);
-        L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: "\u00a9 OpenStreetMap", maxZoom: 19
-        }).addTo(map);
-        (cfg.markers || []).forEach(function(m){
-          var mk = L.marker(m.coords).addTo(map);
-          if (m.popup) mk.bindPopup(m.popup);
-        });
-        maps.push(map);
-      } catch(e){ el.innerHTML = "<div class=\"component-error\">map 렌더 실패: " + e.message + "</div>"; }
-    });
-  }
-  function refresh(){
-    maps.forEach(function(m){
-      try { fitHeight(m.getContainer()); m.invalidateSize(); } catch(e){}
-    });
-  }
-  if (window.Reveal && Reveal.on) {
-    Reveal.on("ready", function(){ renderAll(); setTimeout(refresh, 120); });
-    Reveal.on("slidechanged", function(){ setTimeout(refresh, 120); });
-  } else {
-    document.addEventListener("DOMContentLoaded", renderAll);
-  }
-})();
-  </script>
   <script>
     // Allow URL toggle: ?top=1 to enable top-align-mode regardless of config
     try {
@@ -2383,34 +2554,98 @@ simulation.on('tick', () =&gt; {
       "content": "",
       "children": [
             {
-                  "content": "<a href=\"#/1\">3. 차트·지도·인포그래픽</a>",
+                  "content": "<a href=\"#/1\">7. 다이어그램 확장 갤러리</a>",
                   "children": [
                         {
-                              "content": "<a href=\"#/2\">3.1 Chart.js — 막대 차트 (bar)</a>",
+                              "content": "<a href=\"#/2\">7.1 Mermaid — 본문 + 다이어그램 배치</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/3\">3.1b Chart.js — 선 차트 (line)</a>",
+                              "content": "<a href=\"#/3\">7.2 Mermaid — Architecture</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/4\">3.1c Chart.js — 원형 차트 (pie)</a>",
+                              "content": "<a href=\"#/4\">7.3 Mermaid — Block</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/5\">3.2 Leaflet — 서울 지도</a>",
+                              "content": "<a href=\"#/5\">7.4 Mermaid — C4</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/6\">3.2b Leaflet — 판교 테크노밸리</a>",
+                              "content": "<a href=\"#/6\">7.5 Mermaid — Kanban</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/7\">3.3 d3 인포그래픽 — 가로 막대</a>",
+                              "content": "<a href=\"#/7\">7.6 Mermaid — Packet</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/8\">3.3b d3 — 버블 차트</a>",
+                              "content": "<a href=\"#/8\">7.7 Mermaid — Pie</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/9\">7.8 Mermaid — Radar</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/10\">7.9 Mermaid — Requirement</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/11\">7.10 Mermaid — Sankey</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/12\">7.11 Mermaid — Timeline</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/13\">7.12 Mermaid — Timeline (계속)</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/14\">7.13 Mermaid — Treemap</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/15\">7.14 Kroki — blockdiag</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/16\">7.15 Kroki — seqdiag</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/17\">7.16 Kroki — actdiag</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/18\">7.17 Kroki — nwdiag</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/19\">7.18 Vega</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/20\">7.19 PlantUML — Class Diagram</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/21\">7.20 PlantUML — Component Diagram</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/22\">7.21 PlantUML — Activity Diagram</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/23\">7.22 PlantUML — Use Case Diagram</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/24\">7.23 다이어그램 백엔드 정리</a>",
                               "children": []
                         }
                   ]
@@ -2682,11 +2917,11 @@ simulation.on('tick', () =&gt; {
     var M2SLIDE_AGENDA_FWD_URL = 'agenda.html?fwd=1';
     // Issue119: cover layout 이름 (_config.yml cover_layout, 기본 _cover). isCoverSlide() 판정에 사용.
     var M2SLIDE_COVER_LAYOUT = '_cover';
-    var PREV_CHAPTER = '02-diagram-math-symbol.html';
-    var NEXT_CHAPTER = '04-artifact-3d-sim.html';
+    var PREV_CHAPTER = '06-image-animation-emoji.html';
+    var NEXT_CHAPTER = 'index.html';
     // Issue136: ⇤/⇥ 단축키 전용 — main/sub 계층 인식 sibling 점프 (NEXT/PREV_CHAPTER는 sequential 파일 순서 그대로)
-    var PREV_SIBLING_CHAPTER = '02-diagram-math-symbol.html';
-    var NEXT_SIBLING_CHAPTER = '04-artifact-3d-sim.html';
+    var PREV_SIBLING_CHAPTER = '06-image-animation-emoji.html';
+    var NEXT_SIBLING_CHAPTER = '';
     // Issue87: ⇟ PgDown(마지막 페이지 직행) — Single mode은 '' (deck last로 자체 계산)
     var LAST_CHAPTER = '07-diagram-gallery.html';
     function isCoverSlide(slide) {
@@ -3166,7 +3401,7 @@ simulation.on('tick', () =&gt; {
       if (event.key === 'ArrowRight' || event.keyCode === 39) {
         var totalSlides = Reveal.getTotalSlides();
         var currentSlideNumber = Reveal.getSlidePastCount() + 1;
-        var hasNextChapter = '04-artifact-3d-sim.html' !== '';
+        var hasNextChapter = 'index.html' !== '';
         if (currentSlideNumber >= totalSlides) {
           // 남은 fragment가 있으면 reveal 기본 fragment 진행에 맡김 —
           // 마지막 슬라이드에서 fragment 도중 안내 메시지·다음 챕터 점프 금지
@@ -3177,7 +3412,7 @@ simulation.on('tick', () =&gt; {
               lastSlideMessage.style.display = 'none';
               lastSlideMessageShown = false;
               // Issue104: 다음 챕터 진입은 forward — ?fwd=1 시그널
-              window.location.href = '04-artifact-3d-sim.html?fwd=1';
+              window.location.href = 'index.html?fwd=1';
             } else {
               event.preventDefault();
               lastSlideMessage.style.display = 'block';

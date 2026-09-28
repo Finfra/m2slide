@@ -820,6 +820,14 @@ body {
   gap: 0;
 }
 
+/* Issue415: 좁은 화면(폭 435 미만)의 reveal 스크롤 뷰는 `.reveal-viewport.reveal-scroll .scroll-page section
+   { display:block !important }` 로 위 flex 를 덮어쓴다. 그러면 -body 가 남는 높이를 못 채워 flex:1 로
+   크기를 받는 htmlArt(process·pie 등)가 높이 0 이 된다(아이폰 실기기 보고, WebKit 실측 h=0).
+   스크롤 뷰에서만 발동하는 선택자라 PC 페이지 뷰는 무변경. 사용자 컨펌 2026-09-24 (base.css 가드) */
+.reveal-viewport.reveal-scroll .scroll-page section[class*="layout-"] {
+  display: flex !important;
+}
+
 .reveal section[class*="layout-"] > div[class$="-header"] {
   flex-shrink: 0;
   display: flex;
@@ -831,7 +839,18 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1em 0;
+}
+
+/* Issue360: padding 은 '기본값' 이므로 명시도 0(:where) + 세로만 선언한다.
+   구 `padding: 1em 0`(0-3-2)은 아래 layout 별 규칙(0-3-1)과 theme 의 0-3-1 선언을
+   전부 이겨서, base 가 스스로 적은 1.5em 조차 한 번도 적용된 적이 없었다.
+   그 충돌을 우회한 흔적이 이미 둘 있다 — layout-chapter 의 `.slides` 4-class 선택자와
+   _blank 의 !important. 같은 함정을 두 번 밟았다는 뜻이라 규칙 쪽을 고친다.
+   가로는 아예 선언하지 않는다: theme 의 `5%` 같은 가로 선언이 자연히 살아야 하고,
+   기본값으로 가로 여백을 강제할 이유도 없다. flex/overflow 는 레이아웃 골격이라
+   명시도를 그대로 둔다(내려가면 closing-body 의 flex-grow:0 등이 되살아나 배치가 바뀐다). */
+:where(.reveal section[class*="layout-"] > div[class$="-body"]) {
+  padding-block: 1em;
 }
 
 /* === Accent line (divider) — 공통 골격, 색상은 theme에서 override === */
@@ -902,7 +921,12 @@ body {
 }
 
 .reveal section.layout-_contents .contents-body {
-  padding: 1.5em 0;
+  /* Issue360: 구 `padding: 1.5em 0` → `padding-block: 1em`. 전자는 범용 규칙(0-3-2)에
+     눌려 한 번도 적용된 적이 없는 미검증 값이었고, 실제 기준은 줄곧 1em 이었다.
+     가로는 선언하지 않는다 — theme 의 가로 선언이 살아야 한다. 이 규칙(0-3-1)은
+     theme 의 낮은 명시도 부분 선언(ex: `padding-top: 0`, 0-0-4)을 이겨야 하므로
+     :where 기본값에 맡기지 않고 여기 명시한다. theme 의 0-3-1 선언은 나중 로드라 이긴다. */
+  padding-block: 1em;
 }
 
 .reveal section.layout-_contents ul,
@@ -936,7 +960,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 .reveal section.layout-contents-full ul,
@@ -1011,7 +1037,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* 5. Chapter Layout */
@@ -1038,7 +1066,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* 6. Exercise Layout */
@@ -1065,7 +1095,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* 6.2 Exercise-Small Layout */
@@ -1115,7 +1147,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* image-only / full-video 자동 감지 시 풀스크린 미디어 표시 (공통 패턴) */
@@ -1202,7 +1236,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 .reveal section.layout-toc .toc-markmap {
@@ -1306,7 +1342,8 @@ body.agenda-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (standalone agenda letterbox). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   font-family: var(--global-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif);
 }
@@ -1320,7 +1357,8 @@ body.agenda-page {
     calc(100vh - 2 * var(--slide-outer-padding, 0px)),
     calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
   );
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (ratio frame). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   position: relative;
 }
@@ -1398,7 +1436,12 @@ html.ratio-fill .agenda-frame {
     @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
 </style>
-<link rel="stylesheet" href="css/custom.css?v=1783348962558">
+<style data-m2slide-print="agenda">
+/* Issue402: agenda 가 PDF 에 들어간다 — 다운로드 버튼은 웹 UI 이지 인쇄물의 일부가 아니다.
+   base.css·theme 를 건드리지 않고 이 페이지에만 건다(base.css 는 전 프로젝트 공유라 가드 대상). */
+@media print { .toc-page-downloads { display: none !important; } }
+</style>
+<link rel="stylesheet" href="css/custom.css?v=1790604309046">
 </head>
 <body class="agenda-page" data-nav-indicator="both">
 <div class="agenda-frame">
@@ -1417,13 +1460,38 @@ html.ratio-fill .agenda-frame {
 <script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
 <script>
 (function(){
-  const tocData = {"content":"","children":[{"content":"<a href=\"01-text-structure.html\">1. 텍스트·구조 요소</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html\">2. 라이브러리 다이어그램·수식·심벌</a>","children":[]},{"content":"<a href=\"03-chart-map-infographic.html\">3. 차트·지도·인포그래픽</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html\">4. React·WordArt·3D·Simulation</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html\">5. htmlArt 27종</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html\">6. 이미지·애니메이션·이모지</a>","children":[]}]};
+  const tocData = {"content":"","children":[{"content":"<a href=\"01-text-structure.html\">1. 텍스트·구조 요소</a>","children":[{"content":"<a href=\"01-text-structure.html#/1\">1. 텍스트·구조 요소</a>","children":[]},{"content":"<a href=\"01-text-structure.html#/3\">1.1 표 (Table)</a>","children":[]},{"content":"<a href=\"01-text-structure.html#/4\">1.2 코드 블록 (Code Block)</a>","children":[]},{"content":"<a href=\"01-text-structure.html#/5\">1.2b 코드 블록 — JavaScript</a>","children":[]},{"content":"<a href=\"01-text-structure.html#/6\">1.3 카드 컴포넌트 (::: cards)</a>","children":[]},{"content":"<a href=\"01-text-structure.html#/7\">1.3b 카드 — title-only (가로 행 자동 레이아웃)</a>","children":[]},{"content":"<a href=\"01-text-structure.html#/8\">1.4 멀티컬럼 — ::: columns</a>","children":[]},{"content":"<a href=\"01-text-structure.html#/9\">1.4b 멀티컬럼 — ::right:: (Slidev 호환)</a>","children":[]},{"content":"<a href=\"01-text-structure.html#/10\">1.5 슬롯 (Fenced Div Slot)</a>","children":[]},{"content":"<a href=\"01-text-structure.html#/11\">1.6 markmap TOC</a>","children":[]}]},{"content":"<a href=\"02-diagram-math-symbol.html\">2. 라이브러리 다이어그램·수식·심벌</a>","children":[{"content":"<a href=\"02-diagram-math-symbol.html#/1\">2. 라이브러리 다이어그램·수식·심벌</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/3\">2.1 Mermaid — Flowchart</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/4\">2.1b Mermaid — Sequence Diagram</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/5\">2.1c Mermaid — Gantt</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/6\">2.1d Mermaid — Class Diagram</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/7\">2.1e Mermaid — State Diagram</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/8\">2.1f Mermaid — ER Diagram</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/9\">2.1g Mermaid — Mindmap</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/10\">2.1h Mermaid — Git Graph</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/11\">2.1i Mermaid — User Journey</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/12\">2.1j Mermaid — Quadrant Chart</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/13\">2.1k Mermaid — XY Chart</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/14\">2.2 Kroki (PlantUML / Graphviz)</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/15\">2.2b Graphviz dot</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/16\">2.2c PlantUML — Sequence Diagram</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/17\">2.2d Vega-Lite</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/18\">2.2e ditaa — ASCII → 그림</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/19\">2.2f text-wireframe — 원문 그대로 (D2Coding)</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/20\">2.3 KaTeX 수식 — 블록</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/21\">2.3b KaTeX — 인라인 + 혼합</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/22\">2.4 Font Awesome 심벌</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/23\">2.4b Font Awesome — 리스트 마커 활용</a>","children":[]}]},{"content":"<a href=\"03-chart-map-infographic.html\">3. 차트·지도·인포그래픽</a>","children":[{"content":"<a href=\"03-chart-map-infographic.html#/1\">3. 차트·지도·인포그래픽</a>","children":[]},{"content":"<a href=\"03-chart-map-infographic.html#/3\">3.1 Chart.js — 막대 차트 (bar)</a>","children":[]},{"content":"<a href=\"03-chart-map-infographic.html#/4\">3.1b Chart.js — 선 차트 (line)</a>","children":[]},{"content":"<a href=\"03-chart-map-infographic.html#/5\">3.1c Chart.js — 원형 차트 (pie)</a>","children":[]},{"content":"<a href=\"03-chart-map-infographic.html#/6\">3.2 Leaflet — 서울 지도</a>","children":[]},{"content":"<a href=\"03-chart-map-infographic.html#/7\">3.2b Leaflet — 판교 테크노밸리</a>","children":[]},{"content":"<a href=\"03-chart-map-infographic.html#/8\">3.3 d3 인포그래픽 — 가로 막대</a>","children":[]},{"content":"<a href=\"03-chart-map-infographic.html#/9\">3.3b d3 — 버블 차트</a>","children":[]}]},{"content":"<a href=\"04-artifact-3d-sim.html\">4. React·WordArt·3D·Simulation</a>","children":[{"content":"<a href=\"04-artifact-3d-sim.html#/1\">4. React·WordArt·3D·Simulation</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html#/3\">4.1 React Artifact — 카운터</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html#/4\">4.1b React — 아코디언 컴포넌트</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html#/5\">4.2 WordArt — 텍스트 장식</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html#/6\">4.2b WordArt — SVG 곡선 텍스트</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html#/7\">4.3 3D 모델 뷰어 (model3d)</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html#/8\">4.4 Simulation — p5.js 바운싱 볼</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html#/9\">4.4b p5.js — Lissajous 곡선</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html#/10\">4.4c p5.js — Boids 군집 시뮬레이션</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html#/11\">4.4d p5.js — Wave Field (사인파 격자)</a>","children":[]}]},{"content":"<a href=\"05-htmlart-27.html\">5. htmlArt 27종</a>","children":[{"content":"<a href=\"05-htmlart-27.html#/1\">5. htmlArt 27종</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/3\">5.1 process — 순차 단계</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/4\">5.2 cycle — 순환·반복</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/5\">5.3 hierarchy — 계층·조직도</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/6\">5.4 pyramid — 비례·적층</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/7\">5.5 timeline — 연표·마일스톤</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/8\">5.6 venn — 벤다이어그램</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/9\">5.7 matrix — 2차원 분류 사분면</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/10\">5.8 target — 동심원·포함 관계</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/11\">5.9 funnel — 깔때기·수렴</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/12\">5.10 gear — 맞물림·연동</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/13\">5.11 radial — 중심 + 방사형</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/14\">5.12 chevron — 갈매기형 진행</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/15\">5.13 step — 계단형 상승</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/16\">5.14 arrow — 수렴·집약</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/17\">5.15 numbered — 번호 목록</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/18\">5.16 hexagon — 육각형 허니컴</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/19\">5.17 bracket — 그룹 묶음</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/20\">5.18 block — 세로 블록 목록</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/21\">5.19 tab — 탭 그룹</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/22\">5.20 pie — 비율 원형</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/23\">5.21 balance — 균형·시소</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/24\">5.22 compare — 좌우 비교</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/25\">5.23 explain — 중앙 명제 + 풀이</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/26\">5.24 workflow — 사람 endcap + 단계 체인</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/27\">5.25 bend_process — Serpentine 흐름</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/28\">5.26 annotate — 원문 주해</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/29\">5.27 callout — 중앙 hub + fan-out</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/30\">5.27b callout — horizontal (기본 stem)</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/31\">5.27c callout — vertical ({.v})</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/32\">5.27d callout — wide ({.w})</a>","children":[]}]},{"content":"<a href=\"06-image-animation-emoji.html\">6. 이미지·애니메이션·이모지</a>","children":[{"content":"<a href=\"06-image-animation-emoji.html#/1\">6. 이미지·애니메이션·이모지</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/3\">6.1 이미지 삽입</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/4\">6.1b 이미지 + 텍스트 2분할</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/5\">6.2 슬라이드 전환 효과 (#transition-*)</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/6\">6.2 전환 효과 데모 (zoom)</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/7\">6.2b 배경색 + 전환 속도</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/8\">6.3 단계별 등장 ({.fragment})</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/9\">6.3b fragment — 문법</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/10\">6.4 자동 애니메이션 (#auto-animate)</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/11\">6.4 auto-animate — before</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/12\">6.4b auto-animate — after</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/13\">6.5 자동 재생 (#autoslide-*)</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/14\">6.5 autoslide 데모</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/15\">6.6 이모지</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/16\">6.6b 이모지 + 텍스트 혼합 슬라이드</a>","children":[]}]},{"content":"<a href=\"07-diagram-gallery.html\">7. 다이어그램 확장 갤러리</a>","children":[{"content":"<a href=\"07-diagram-gallery.html#/1\">7. 다이어그램 확장 갤러리</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/3\">7.1 Mermaid — 본문 + 다이어그램 배치</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/4\">7.2 Mermaid — Architecture</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/5\">7.3 Mermaid — Block</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/6\">7.4 Mermaid — C4</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/7\">7.5 Mermaid — Kanban</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/8\">7.6 Mermaid — Packet</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/9\">7.7 Mermaid — Pie</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/10\">7.8 Mermaid — Radar</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/11\">7.9 Mermaid — Requirement</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/12\">7.10 Mermaid — Sankey</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/13\">7.11 Mermaid — Timeline</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/14\">7.12 Mermaid — Timeline (계속)</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/15\">7.13 Mermaid — Treemap</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/16\">7.14 Kroki — blockdiag</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/17\">7.15 Kroki — seqdiag</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/18\">7.16 Kroki — actdiag</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/19\">7.17 Kroki — nwdiag</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/20\">7.18 Vega</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/21\">7.19 PlantUML — Class Diagram</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/22\">7.20 PlantUML — Component Diagram</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/23\">7.21 PlantUML — Activity Diagram</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/24\">7.22 PlantUML — Use Case Diagram</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/25\">7.23 다이어그램 백엔드 정리</a>","children":[]}]}]};
   function init() {
     if (!window.markmap) { return setTimeout(init, 50); }
     const svg = document.querySelector('.toc-mindmap-svg');
-    if (!svg) return;
-    const opts = window.markmap.deriveOptions({ initialExpandLevel: 2 });
+    // agenda_card_mode: markmap svg 없음 → 가드 즉시 해제 (2초 fallback 대기로 인한 blank 방지)
+    if (!svg) { requestAnimationFrame(m2ReleaseCrossGuard); return; }
+    /* Issue414: markmap 의 maxInitialScale 기본값은 **2** 라, 컨테이너가 커져도
+    스케일이 2 에서 멈춘다. 덱은 1920 폭으로 설계되는데 브라우저 창(1280 내외)에서
+    맞춰 보면 그럴듯해 보이고, PDF·대형 화면(1920×1440)에서는 **같은 크기 그대로**
+    남아 박스의 43% 만 채운다(실측 2026-09-21: 박스 1872 / 콘텐츠 798).
+    즉 **렌더 결과가 뷰포트 크기에 의존**하는 것이 결함의 본체다.
+    상한을 올려 fitRatio 가 판정하게 하면 어느 크기에서나 같은 비율로 찬다.
+    ⚠️ 무한대로 열지 않는다 — 항목이 1~2개뿐인 덱에서 글자가 터무니없이 커진다.
+       6 은 1920 폭에서 6항목이 요구하는 4.5 에 여유를 둔 값이다. */
+    const opts = window.markmap.deriveOptions({ initialExpandLevel: 2, maxInitialScale: 6 });
     window.mm = window.markmap.Markmap.create(svg, opts, tocData);
+    /* Issue414 후속: 컨테이너가 나중에 커지면 **다시 fit** 한다.
+       decktape 는 page.goto() 를 먼저 하고 page.setViewport() 를 나중에 한다
+       (decktape.js 292행 → 360행). 그래서 markmap 은 기본 800x600 에서 fit 하고
+       그 뒤 뷰포트가 1920x1440 으로 커져도 그대로 굳어 박스의 일부만 채운다.
+       덱 TOC 슬라이드는 autoFit + refitMarkmap 재시도가 이 자리를 덮고 있었으나
+       agenda 페이지에는 없었다 — 그래서 agenda 만 작게 나왔다.
+       ⚠️ resize 이벤트에 기대지 않는다. 뷰포트 변경이 이벤트로 오지 않는 경로가
+          있어(CDP Emulation) 박스 자체를 관찰하는 편이 확실하다. */
+    var _box = svg.parentNode;
+    if (_box && window.ResizeObserver) {
+      var _t;
+      new ResizeObserver(function(){
+        clearTimeout(_t);
+        _t = setTimeout(function(){ try { window.mm.fit(); } catch (e) {} }, 60);
+      }).observe(_box);
+    }
     // Issue110: cross-page 가드 해제 (markmap 렌더 후 다음 frame)
     requestAnimationFrame(m2ReleaseCrossGuard);
   }
@@ -1472,7 +1540,7 @@ html.ratio-fill .agenda-frame {
       var sep = base.indexOf('?') === -1 ? '?' : '&';
       return base + sep + signal + hash;
     }
-  const _tocData = {"content":"","children":[{"content":"<a href=\"01-text-structure.html\">1. 텍스트·구조 요소</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html\">2. 라이브러리 다이어그램·수식·심벌</a>","children":[]},{"content":"<a href=\"03-chart-map-infographic.html\">3. 차트·지도·인포그래픽</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html\">4. React·WordArt·3D·Simulation</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html\">5. htmlArt 27종</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html\">6. 이미지·애니메이션·이모지</a>","children":[]}]};
+  const _tocData = {"content":"","children":[{"content":"<a href=\"01-text-structure.html\">1. 텍스트·구조 요소</a>","children":[{"content":"<a href=\"01-text-structure.html#/1\">1. 텍스트·구조 요소</a>","children":[]},{"content":"<a href=\"01-text-structure.html#/3\">1.1 표 (Table)</a>","children":[]},{"content":"<a href=\"01-text-structure.html#/4\">1.2 코드 블록 (Code Block)</a>","children":[]},{"content":"<a href=\"01-text-structure.html#/5\">1.2b 코드 블록 — JavaScript</a>","children":[]},{"content":"<a href=\"01-text-structure.html#/6\">1.3 카드 컴포넌트 (::: cards)</a>","children":[]},{"content":"<a href=\"01-text-structure.html#/7\">1.3b 카드 — title-only (가로 행 자동 레이아웃)</a>","children":[]},{"content":"<a href=\"01-text-structure.html#/8\">1.4 멀티컬럼 — ::: columns</a>","children":[]},{"content":"<a href=\"01-text-structure.html#/9\">1.4b 멀티컬럼 — ::right:: (Slidev 호환)</a>","children":[]},{"content":"<a href=\"01-text-structure.html#/10\">1.5 슬롯 (Fenced Div Slot)</a>","children":[]},{"content":"<a href=\"01-text-structure.html#/11\">1.6 markmap TOC</a>","children":[]}]},{"content":"<a href=\"02-diagram-math-symbol.html\">2. 라이브러리 다이어그램·수식·심벌</a>","children":[{"content":"<a href=\"02-diagram-math-symbol.html#/1\">2. 라이브러리 다이어그램·수식·심벌</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/3\">2.1 Mermaid — Flowchart</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/4\">2.1b Mermaid — Sequence Diagram</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/5\">2.1c Mermaid — Gantt</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/6\">2.1d Mermaid — Class Diagram</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/7\">2.1e Mermaid — State Diagram</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/8\">2.1f Mermaid — ER Diagram</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/9\">2.1g Mermaid — Mindmap</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/10\">2.1h Mermaid — Git Graph</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/11\">2.1i Mermaid — User Journey</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/12\">2.1j Mermaid — Quadrant Chart</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/13\">2.1k Mermaid — XY Chart</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/14\">2.2 Kroki (PlantUML / Graphviz)</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/15\">2.2b Graphviz dot</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/16\">2.2c PlantUML — Sequence Diagram</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/17\">2.2d Vega-Lite</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/18\">2.2e ditaa — ASCII → 그림</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/19\">2.2f text-wireframe — 원문 그대로 (D2Coding)</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/20\">2.3 KaTeX 수식 — 블록</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/21\">2.3b KaTeX — 인라인 + 혼합</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/22\">2.4 Font Awesome 심벌</a>","children":[]},{"content":"<a href=\"02-diagram-math-symbol.html#/23\">2.4b Font Awesome — 리스트 마커 활용</a>","children":[]}]},{"content":"<a href=\"03-chart-map-infographic.html\">3. 차트·지도·인포그래픽</a>","children":[{"content":"<a href=\"03-chart-map-infographic.html#/1\">3. 차트·지도·인포그래픽</a>","children":[]},{"content":"<a href=\"03-chart-map-infographic.html#/3\">3.1 Chart.js — 막대 차트 (bar)</a>","children":[]},{"content":"<a href=\"03-chart-map-infographic.html#/4\">3.1b Chart.js — 선 차트 (line)</a>","children":[]},{"content":"<a href=\"03-chart-map-infographic.html#/5\">3.1c Chart.js — 원형 차트 (pie)</a>","children":[]},{"content":"<a href=\"03-chart-map-infographic.html#/6\">3.2 Leaflet — 서울 지도</a>","children":[]},{"content":"<a href=\"03-chart-map-infographic.html#/7\">3.2b Leaflet — 판교 테크노밸리</a>","children":[]},{"content":"<a href=\"03-chart-map-infographic.html#/8\">3.3 d3 인포그래픽 — 가로 막대</a>","children":[]},{"content":"<a href=\"03-chart-map-infographic.html#/9\">3.3b d3 — 버블 차트</a>","children":[]}]},{"content":"<a href=\"04-artifact-3d-sim.html\">4. React·WordArt·3D·Simulation</a>","children":[{"content":"<a href=\"04-artifact-3d-sim.html#/1\">4. React·WordArt·3D·Simulation</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html#/3\">4.1 React Artifact — 카운터</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html#/4\">4.1b React — 아코디언 컴포넌트</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html#/5\">4.2 WordArt — 텍스트 장식</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html#/6\">4.2b WordArt — SVG 곡선 텍스트</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html#/7\">4.3 3D 모델 뷰어 (model3d)</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html#/8\">4.4 Simulation — p5.js 바운싱 볼</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html#/9\">4.4b p5.js — Lissajous 곡선</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html#/10\">4.4c p5.js — Boids 군집 시뮬레이션</a>","children":[]},{"content":"<a href=\"04-artifact-3d-sim.html#/11\">4.4d p5.js — Wave Field (사인파 격자)</a>","children":[]}]},{"content":"<a href=\"05-htmlart-27.html\">5. htmlArt 27종</a>","children":[{"content":"<a href=\"05-htmlart-27.html#/1\">5. htmlArt 27종</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/3\">5.1 process — 순차 단계</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/4\">5.2 cycle — 순환·반복</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/5\">5.3 hierarchy — 계층·조직도</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/6\">5.4 pyramid — 비례·적층</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/7\">5.5 timeline — 연표·마일스톤</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/8\">5.6 venn — 벤다이어그램</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/9\">5.7 matrix — 2차원 분류 사분면</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/10\">5.8 target — 동심원·포함 관계</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/11\">5.9 funnel — 깔때기·수렴</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/12\">5.10 gear — 맞물림·연동</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/13\">5.11 radial — 중심 + 방사형</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/14\">5.12 chevron — 갈매기형 진행</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/15\">5.13 step — 계단형 상승</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/16\">5.14 arrow — 수렴·집약</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/17\">5.15 numbered — 번호 목록</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/18\">5.16 hexagon — 육각형 허니컴</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/19\">5.17 bracket — 그룹 묶음</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/20\">5.18 block — 세로 블록 목록</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/21\">5.19 tab — 탭 그룹</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/22\">5.20 pie — 비율 원형</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/23\">5.21 balance — 균형·시소</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/24\">5.22 compare — 좌우 비교</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/25\">5.23 explain — 중앙 명제 + 풀이</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/26\">5.24 workflow — 사람 endcap + 단계 체인</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/27\">5.25 bend_process — Serpentine 흐름</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/28\">5.26 annotate — 원문 주해</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/29\">5.27 callout — 중앙 hub + fan-out</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/30\">5.27b callout — horizontal (기본 stem)</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/31\">5.27c callout — vertical ({.v})</a>","children":[]},{"content":"<a href=\"05-htmlart-27.html#/32\">5.27d callout — wide ({.w})</a>","children":[]}]},{"content":"<a href=\"06-image-animation-emoji.html\">6. 이미지·애니메이션·이모지</a>","children":[{"content":"<a href=\"06-image-animation-emoji.html#/1\">6. 이미지·애니메이션·이모지</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/3\">6.1 이미지 삽입</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/4\">6.1b 이미지 + 텍스트 2분할</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/5\">6.2 슬라이드 전환 효과 (#transition-*)</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/6\">6.2 전환 효과 데모 (zoom)</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/7\">6.2b 배경색 + 전환 속도</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/8\">6.3 단계별 등장 ({.fragment})</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/9\">6.3b fragment — 문법</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/10\">6.4 자동 애니메이션 (#auto-animate)</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/11\">6.4 auto-animate — before</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/12\">6.4b auto-animate — after</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/13\">6.5 자동 재생 (#autoslide-*)</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/14\">6.5 autoslide 데모</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/15\">6.6 이모지</a>","children":[]},{"content":"<a href=\"06-image-animation-emoji.html#/16\">6.6b 이모지 + 텍스트 혼합 슬라이드</a>","children":[]}]},{"content":"<a href=\"07-diagram-gallery.html\">7. 다이어그램 확장 갤러리</a>","children":[{"content":"<a href=\"07-diagram-gallery.html#/1\">7. 다이어그램 확장 갤러리</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/3\">7.1 Mermaid — 본문 + 다이어그램 배치</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/4\">7.2 Mermaid — Architecture</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/5\">7.3 Mermaid — Block</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/6\">7.4 Mermaid — C4</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/7\">7.5 Mermaid — Kanban</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/8\">7.6 Mermaid — Packet</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/9\">7.7 Mermaid — Pie</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/10\">7.8 Mermaid — Radar</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/11\">7.9 Mermaid — Requirement</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/12\">7.10 Mermaid — Sankey</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/13\">7.11 Mermaid — Timeline</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/14\">7.12 Mermaid — Timeline (계속)</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/15\">7.13 Mermaid — Treemap</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/16\">7.14 Kroki — blockdiag</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/17\">7.15 Kroki — seqdiag</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/18\">7.16 Kroki — actdiag</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/19\">7.17 Kroki — nwdiag</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/20\">7.18 Vega</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/21\">7.19 PlantUML — Class Diagram</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/22\">7.20 PlantUML — Component Diagram</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/23\">7.21 PlantUML — Activity Diagram</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/24\">7.22 PlantUML — Use Case Diagram</a>","children":[]},{"content":"<a href=\"07-diagram-gallery.html#/25\">7.23 다이어그램 백엔드 정리</a>","children":[]}]}]};
   function firstHrefFromToc(node){
     if (!node || !node.children || node.children.length === 0) return null;
     for (const child of node.children) {
@@ -1486,7 +1554,7 @@ html.ratio-fill .agenda-frame {
     return null;
   }
   const AGENDA_MODE = 'chapter';
-  const AGENDA_LAST_CHAPTER = '06-image-animation-emoji.html';
+  const AGENDA_LAST_CHAPTER = '07-diagram-gallery.html';
   const AGENDA_COVER_ENABLED = true;
   const nextUrl = firstHrefFromToc(_tocData);
   // Agenda 진입 시 hash #/N 있으면 deck으로 자동 redirect (agenda 는 reveal.js 없으므로 hash 무의미)
