@@ -37,19 +37,6 @@
 
 # 🚧 진행중
 
-## Issue422: 발행 덱 7개 표지 subtitle 의 의도적 HTML 정리 — Issue419 escape 후속 (등록: 2026-09-28)
-* 목적: Issue419(표지 frontmatter HTML escape, 사용자 결정 «escape 만») 이후 subtitle 의 의도적 HTML(`<strong>`·`<small>`·`&nbsp;`)이 재빌드 시 글자로 보인다
-* 상세:
-    - 출처: prj3 mq `20260927-203951-001` — prj3#Issue756 C 등급 결정: 선택지 ②(원고 subtitle 평문 정리). ①(raw 옵트인)은 사용자 결정 «escape 만» 과 어긋나고 ③(현상 유지)은 재빌드를 막는다
-    - 대상 `Projects/`: fPmIntro·fPmIntro_en·fSnippetCliIntro·fWarrangeCliIntro·igTest·m2slide_info·m2slide_info_en
-    - ⚠️ 앞 4개는 `docs/` 발행본 — **재발행(push)은 H 등급(공개)** 이라 사용자 결정 묶음으로 따로 올라감
-    - **사용자 결정 2026-09-28: 정리 후 재발행** (prj3 세션 05cbbead AskUserQuestion · mq `20260928-120443-001` · 위임 지시 `_doc_work/delegation_2026.09.28_deck-republish.md`). 원격 push 는 prj3 세션이 한다
-    - ⚠️ **범위 정정(실측 2026-09-28)**: 위 «앞 4개» 는 틀렸다. `docs/` 에 실제로 있는 것은 `fPmIntro`·`fPmIntro_en`·`m2slide_info`·`m2slide_info_en` 이고, `fSnippetCliIntro`·`fWarrangeCliIntro` 는 `docs/`·`docs/index.html` 카드·`Projects.md` publishing 어디에도 없다(미발행 — git 미추적). 재발행은 **실제 발행본 4덱**으로 하고, 두 CLI 덱을 `docs/` 에 새로 싣는 것은 신규 공개라 이번 결정 밖이다
-* 구현 명세:
-    - 7개 원고 subtitle 을 markdown 강조·평문으로 치환 → 재빌드 → escape 경고 0 확인. 로컬 커밋까지, 발행 push 는 사용자 결정 후
-    - 치환 형태는 **평문**이다 — 표지 `{{subtitle}}` 은 escape 만 하고 인라인 markdown 을 렌더하지 않으므로 `**강조**` 는 별표가 글자로 보인다. `<strong>`·`<small>` 은 태그만 걷고 `&nbsp;·&nbsp;` 은 ` · ` 로 바꾼다(문구 불변)
-    - 발행본 재빌드는 HEAD 기준 **임시 worktree** 에서 한다 — 작업 트리의 타 세션 미커밋 `lib/generate-slides.js` 변경이 `docs/` 산출물에 섞이지 않게
-
 ## Issue415: 아이폰에서 **탭(클릭)만으로** 덱이 동작하는지 ego-browser 로 점검·수정하고 aTest → aTest-all 2단계로 안정화 (등록: 2026-09-23)
 * 목적: 키보드 없는 아이폰에서 m2slide 덱을 탭만으로 넘기고 쓸 수 있어야 한다(사용자 전제: **터치 = 클릭**). 동시에 prj3 외부*핀봇(외부자문·외부컨설턴트)이 팀장핀봇 배분 경로로 실제 동작하는지 실증한다(요청: 사용자 → 나래, prj3#Issue678 후속)
 * plan: `_doc_work/plan/iphone-tap-nav_plan.md`
@@ -131,6 +118,26 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue422: 발행 덱 7개 표지 subtitle 의 의도적 HTML 정리 — Issue419 escape 후속 (등록: 2026-09-28, 해결: 2026-09-28, commit: 1d839eb, 6a652d8, 3f656fd) ✅
+* 목적: Issue419(표지 frontmatter HTML escape, 사용자 결정 «escape 만») 이후 subtitle 의 의도적 HTML(`<strong>`·`<small>`·`&nbsp;`)이 재빌드 시 글자로 보인다
+* report: `_doc_work/report/deck-republish_report.md`
+* 상세:
+    - 출처: prj3 mq `20260927-203951-001` — prj3#Issue756 C 등급 결정: 선택지 ②(원고 subtitle 평문 정리). ①(raw 옵트인)은 사용자 결정 «escape 만» 과 어긋나고 ③(현상 유지)은 재빌드를 막는다
+    - 대상 `Projects/`: fPmIntro·fPmIntro_en·fSnippetCliIntro·fWarrangeCliIntro·igTest·m2slide_info·m2slide_info_en
+    - ⚠️ 앞 4개는 `docs/` 발행본 — **재발행(push)은 H 등급(공개)** 이라 사용자 결정 묶음으로 따로 올라감
+    - **사용자 결정 2026-09-28: 정리 후 재발행** (prj3 세션 05cbbead AskUserQuestion · mq `20260928-120443-001` · 위임 지시 `_doc_work/delegation_2026.09.28_deck-republish.md`). 원격 push 는 prj3 세션이 한다
+    - ⚠️ **범위 정정(실측 2026-09-28)**: 위 «앞 4개» 는 틀렸다. `docs/` 에 실제로 있는 것은 `fPmIntro`·`fPmIntro_en`·`m2slide_info`·`m2slide_info_en` 이고, `fSnippetCliIntro`·`fWarrangeCliIntro` 는 `docs/`·`docs/index.html` 카드·`Projects.md` publishing 어디에도 없다(미발행 — git 미추적). 재발행은 **실제 발행본 4덱**으로 하고, 두 CLI 덱을 `docs/` 에 새로 싣는 것은 신규 공개라 이번 결정 밖이다
+* 구현 명세:
+    - 7개 원고 subtitle 을 markdown 강조·평문으로 치환 → 재빌드 → escape 경고 0 확인. 로컬 커밋까지, 발행 push 는 사용자 결정 후
+    - 치환 형태는 **평문**이다 — 표지 `{{subtitle}}` 은 escape 만 하고 인라인 markdown 을 렌더하지 않으므로 `**강조**` 는 별표가 글자로 보인다. `<strong>`·`<small>` 은 태그만 걷고 `&nbsp;·&nbsp;` 은 ` · ` 로 바꾼다(문구 불변)
+    - 발행본 재빌드는 HEAD 기준 **임시 worktree** 에서 한다 — 작업 트리의 타 세션 미커밋 `lib/generate-slides.js` 변경이 `docs/` 산출물에 섞이지 않게
+* 결과:
+    - `1d839eb` 원고 4개(추적분) subtitle 평문 + `release_date` 갱신 — 미추적 3원고(fSnippetCliIntro·fWarrangeCliIntro·igTest)는 로컬 치환만
+    - `6a652d8` `docs/fPmIntro`·`docs/fPmIntro_en` 재발행본(26 파일) · `3f656fd` `docs/m2slide_info`·`docs/m2slide_info_en`(16 파일) — 덱 묶음별로 나눠 push 범위를 prj3 가 고를 수 있게 했다
+    - 검증: 7덱 빌드 rc0 · **escape 경고 0** · 배포 lint 위반 0 · placeholder 0 · `docs/index.html` 카드 불변 · ego-browser `file://` 표지 4장 subtitle 자식 요소 0(태그 글자 노출 없음) — 캡처 `_doc_work/capture/issue422/`
+    - origin/main(`7b0e819`) 위 `git apply --check` 3건 OK — Pages 는 docs 커밋만 main 에 cherry-pick 하면 된다
+    - ⚠️ 재발행은 subtitle 만 바꾸지 않는다 — 현 브랜치 렌더 전반이 함께 실린다(전역 글꼴 Pretendard→Nanum Gothic Coding `70e29d3` 등, docs +17570/−2486). 원격 push 는 하지 않았다(prj3 몫)
 
 ## Issue421: 테마 라이선스 v1.0 → v1.2 재동기 + THIRD-PARTY-NOTICES (prj6#Issue17 적대적 검토 반영) (등록: 2026-09-27, 해결: 2026-09-28, commit: f78906c) ✅
 * 목적: Issue420 의 `theme/LICENSE.md` 는 v1.0 이다. 적대적 검토에서 ① 유료 산출물에 'Powered by finfra.kr' 를 강제하면서 상표 정책은 유료 사용을 금지하는 모순 ② PDF·PPTX 에 CSS 가 복제되지 않아 저작권 조건이 닿지 않을 수 있는 문제가 나왔다. v1.2 는 한정 상표 허락과 계약 약정 병렬로 둘 다 해소한다
