@@ -13,8 +13,6 @@
 # Allow project directories (publishing = o)
 !/fPmIntro/
 !/fPmIntro_en/
-!/m2Slide/
-!/m2Slide_en/
 !/m2slide_info/
 !/m2slide_info_en/
 !/m2Slide_MermaidExample/

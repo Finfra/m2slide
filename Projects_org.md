@@ -14,8 +14,6 @@ tags: []
 
 | 분류 | 프로젝트                 | 버전 | 설명                       |
 | :--- | :----------------------- | :--- | :------------------------- |
-| m2   | m2Slide                  | 1.0  | m2Slide 소개               |
-| m2   | m2Slide_en               | 1.0  | Meet m2Slide               |
 | m2   | m2slide_info             | 1.0  | m2Slide란? (설명용)        |
 | m2   | m2slide_info_en          | 1.0  | What is m2slide?  (설명용) |
 | m2   | m2Slide_visual_component | 1.1  | 시각 컴포넌트 데모         |
