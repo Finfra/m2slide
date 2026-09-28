@@ -45,7 +45,7 @@
       } catch (e) {}
     })();
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"1","slideOffset":0,"totalSlides":39};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"1","slideOffset":0,"totalSlides":41};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1429,7 +1429,7 @@ html.ratio-fill .agenda-frame {
 
   </style>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"/>
-  <link rel="stylesheet" href="css/custom.css?v=1790567142033">
+  <link rel="stylesheet" href="css/custom.css?v=1790603830961">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1697,12 +1697,13 @@ html.ratio-fill .agenda-frame {
   <header class="toc-page-header">
     <h1 class="toc-page-title">m2slide란?</h1>
   </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="5">
+  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="6">
 <li class="chapter-card"><a href="#/3">m2slide 한 줄 정의</a></li>
-<li class="chapter-card"><a href="#/4">어떤 문제의식에서 출발했나</a></li>
-<li class="chapter-card"><a href="#/5">이 자료가 다루는 세 가지 질문</a></li>
-<li class="chapter-card"><a href="#/6">실제로 이렇게 씁니다</a></li>
-<li class="chapter-card"><a href="#/7">직접 확인할 수 있음</a></li>
+<li class="chapter-card"><a href="#/4">한 번 쓰고, 네 가지로 낸다</a></li>
+<li class="chapter-card"><a href="#/5">어떤 문제의식에서 출발했나</a></li>
+<li class="chapter-card"><a href="#/6">이 자료가 다루는 세 가지 질문</a></li>
+<li class="chapter-card"><a href="#/7">실제로 이렇게 씁니다</a></li>
+<li class="chapter-card"><a href="#/8">직접 확인할 수 있음</a></li>
 </ul></div>
 </section>
 
@@ -1730,6 +1731,31 @@ graph LR
 </section>
 
 <section data-slide-hash="#/4" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">01. m2slide란?</div>
+    <div class="contents-head-right"></div>
+  </div>
+  <h2 class="title">한 번 쓰고, 네 가지로 낸다</h2>
+  <div class="contents-body">
+
+<table>
+<thead>
+<tr><th style="text-align:left">산출물</th><th style="text-align:left">옵션</th><th style="text-align:left">용도</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align:left">HTML</td><td style="text-align:left">(기본)</td><td style="text-align:left">Reveal.js 브라우저 발표</td></tr>
+<tr><td style="text-align:left">EPUB</td><td style="text-align:left"><code>--epub</code></td><td style="text-align:left">전자책</td></tr>
+<tr><td style="text-align:left">PDF</td><td style="text-align:left"><code>--pdf</code></td><td style="text-align:left">배포·인쇄</td></tr>
+<tr><td style="text-align:left">PPTX</td><td style="text-align:left"><code>--pptx</code></td><td style="text-align:left">PowerPoint 호환</td></tr>
+</tbody>
+</table>
+
+<ul>
+<li class="bullet-dot"><code>.md</code> 하나가 모든 형식의 원본(SSOT)</li>
+</ul></div>
+</section>
+
+<section data-slide-hash="#/5" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">01. m2slide란?</div>
     <div class="contents-head-right"></div>
@@ -1764,7 +1790,7 @@ graph LR
 </div></div>
 </section>
 
-<section data-slide-hash="#/5" class="layout-_contents">
+<section data-slide-hash="#/6" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">01. m2slide란?</div>
     <div class="contents-head-right"></div>
@@ -1783,7 +1809,7 @@ graph LR
 </ul></div>
 </section>
 
-<section data-slide-hash="#/6" class="layout-_contents">
+<section data-slide-hash="#/7" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">01. m2slide란?</div>
     <div class="contents-head-right"></div>
@@ -1799,14 +1825,15 @@ graph LR
 git clone https://github.com/Finfra/m2slide.git
 
 # 2) 프로젝트 폴더의 마크다운을 한 줄로 빌드
-./m2slide.sh MyProject</code></pre>
+./m2slide.sh MyProject
+./m2slide.sh MyProject --epub   # + 전자책</code></pre>
 
 <ul>
 <li class="bullet-dot">빌드 결과는 바로 브라우저에서 열리는 HTML 슬라이드 — 서버·배포 설정 없이 <code>file://</code>로 확인 가능</li>
 </ul></div>
 </section>
 
-<section data-slide-hash="#/7" class="layout-_contents">
+<section data-slide-hash="#/8" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">01. m2slide란?</div>
     <div class="contents-head-right"></div>
@@ -2146,19 +2173,23 @@ git clone https://github.com/Finfra/m2slide.git
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/3\">어떤 문제의식에서 출발했나</a>",
+                              "content": "<a href=\"#/3\">한 번 쓰고, 네 가지로 낸다</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/4\">이 자료가 다루는 세 가지 질문</a>",
+                              "content": "<a href=\"#/4\">어떤 문제의식에서 출발했나</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/5\">실제로 이렇게 씁니다</a>",
+                              "content": "<a href=\"#/5\">이 자료가 다루는 세 가지 질문</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/6\">직접 확인할 수 있음</a>",
+                              "content": "<a href=\"#/6\">실제로 이렇게 씁니다</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/7\">직접 확인할 수 있음</a>",
                               "children": []
                         }
                   ]
