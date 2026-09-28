@@ -820,6 +820,14 @@ body {
   gap: 0;
 }
 
+/* Issue415: 좁은 화면(폭 435 미만)의 reveal 스크롤 뷰는 `.reveal-viewport.reveal-scroll .scroll-page section
+   { display:block !important }` 로 위 flex 를 덮어쓴다. 그러면 -body 가 남는 높이를 못 채워 flex:1 로
+   크기를 받는 htmlArt(process·pie 등)가 높이 0 이 된다(아이폰 실기기 보고, WebKit 실측 h=0).
+   스크롤 뷰에서만 발동하는 선택자라 PC 페이지 뷰는 무변경. 사용자 컨펌 2026-09-24 (base.css 가드) */
+.reveal-viewport.reveal-scroll .scroll-page section[class*="layout-"] {
+  display: flex !important;
+}
+
 .reveal section[class*="layout-"] > div[class$="-header"] {
   flex-shrink: 0;
   display: flex;
@@ -831,7 +839,18 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1em 0;
+}
+
+/* Issue360: padding 은 '기본값' 이므로 명시도 0(:where) + 세로만 선언한다.
+   구 `padding: 1em 0`(0-3-2)은 아래 layout 별 규칙(0-3-1)과 theme 의 0-3-1 선언을
+   전부 이겨서, base 가 스스로 적은 1.5em 조차 한 번도 적용된 적이 없었다.
+   그 충돌을 우회한 흔적이 이미 둘 있다 — layout-chapter 의 `.slides` 4-class 선택자와
+   _blank 의 !important. 같은 함정을 두 번 밟았다는 뜻이라 규칙 쪽을 고친다.
+   가로는 아예 선언하지 않는다: theme 의 `5%` 같은 가로 선언이 자연히 살아야 하고,
+   기본값으로 가로 여백을 강제할 이유도 없다. flex/overflow 는 레이아웃 골격이라
+   명시도를 그대로 둔다(내려가면 closing-body 의 flex-grow:0 등이 되살아나 배치가 바뀐다). */
+:where(.reveal section[class*="layout-"] > div[class$="-body"]) {
+  padding-block: 1em;
 }
 
 /* === Accent line (divider) — 공통 골격, 색상은 theme에서 override === */
@@ -902,7 +921,12 @@ body {
 }
 
 .reveal section.layout-_contents .contents-body {
-  padding: 1.5em 0;
+  /* Issue360: 구 `padding: 1.5em 0` → `padding-block: 1em`. 전자는 범용 규칙(0-3-2)에
+     눌려 한 번도 적용된 적이 없는 미검증 값이었고, 실제 기준은 줄곧 1em 이었다.
+     가로는 선언하지 않는다 — theme 의 가로 선언이 살아야 한다. 이 규칙(0-3-1)은
+     theme 의 낮은 명시도 부분 선언(ex: `padding-top: 0`, 0-0-4)을 이겨야 하므로
+     :where 기본값에 맡기지 않고 여기 명시한다. theme 의 0-3-1 선언은 나중 로드라 이긴다. */
+  padding-block: 1em;
 }
 
 .reveal section.layout-_contents ul,
@@ -936,7 +960,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 .reveal section.layout-contents-full ul,
@@ -1011,7 +1037,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* 5. Chapter Layout */
@@ -1038,7 +1066,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* 6. Exercise Layout */
@@ -1065,7 +1095,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* 6.2 Exercise-Small Layout */
@@ -1115,7 +1147,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* image-only / full-video 자동 감지 시 풀스크린 미디어 표시 (공통 패턴) */
@@ -1202,7 +1236,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 .reveal section.layout-toc .toc-markmap {
@@ -1306,7 +1342,8 @@ body.agenda-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (standalone agenda letterbox). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   font-family: var(--global-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif);
 }
@@ -1320,7 +1357,8 @@ body.agenda-page {
     calc(100vh - 2 * var(--slide-outer-padding, 0px)),
     calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
   );
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (ratio frame). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   position: relative;
 }
@@ -1398,7 +1436,12 @@ html.ratio-fill .agenda-frame {
     @keyframes m2-page-fade-in { from { opacity: 0; } to { opacity: 1; } }
     body.m2-cross-loaded { animation: m2-page-fade-in 250ms ease-out !important; }
 </style>
-<link rel="stylesheet" href="css/custom.css?v=1783349009468">
+<style data-m2slide-print="agenda">
+/* Issue402: agenda 가 PDF 에 들어간다 — 다운로드 버튼은 웹 UI 이지 인쇄물의 일부가 아니다.
+   base.css·theme 를 건드리지 않고 이 페이지에만 건다(base.css 는 전 프로젝트 공유라 가드 대상). */
+@media print { .toc-page-downloads { display: none !important; } }
+</style>
+<link rel="stylesheet" href="css/custom.css?v=1790567141799">
 </head>
 <body class="agenda-page" data-nav-indicator="both">
 <div class="agenda-frame">
@@ -1417,13 +1460,38 @@ html.ratio-fill .agenda-frame {
 <script src="https://cdn.jsdelivr.net/npm/markmap-view@0.18.12/dist/browser/index.js"></script>
 <script>
 (function(){
-  const tocData = {"content":"","children":[{"content":"<a href=\"01-what-is-fpm.html\">1. 왜 fPM인가 — 일반 Claude Code의 한계</a>","children":[{"content":"<a href=\"01.1-fpm-vs-plain-claude.html\">1.1 Claude Code 단독의 고충 → fPM이 해결하는 방식</a>","children":[]}]},{"content":"<a href=\"02-hub-mode.html\">2. hub 모드 — HTML 렌더 & Q&A 폼</a>","children":[{"content":"<a href=\"02.1-hub-demo.html\">2.1 ..show / ..ask 실시간 데모</a>","children":[]}]},{"content":"<a href=\"03-dashboard.html\">3. 실시간 대시보드 — ..board & SSE 모니터링</a>","children":[]},{"content":"<a href=\"04-vscode-integration.html\">4. VSCode ↔ 대시보드 연동</a>","children":[]},{"content":"<a href=\"05-multi-project.html\">5. 다중 프로젝트 관리 — cdf 패밀리</a>","children":[{"content":"<a href=\"05.1-pm-do.html\">5.1 pm-do: 크로스 프로젝트 위임 & depends 의존성</a>","children":[]},{"content":"<a href=\"05.2-sshf-remote.html\">5.2 sshf & 원격 서버 — 로컬과 동일한 워크플로우</a>","children":[]}]},{"content":"<a href=\"06-getting-started.html\">6. fPM 도입하기 & 다음 단계</a>","children":[]}]};
+  const tocData = {"content":"","children":[{"content":"<a href=\"01-what-is-fpm.html\">1. 왜 fPM인가 — 일반 Claude Code의 한계</a>","children":[{"content":"<a href=\"01.1-fpm-vs-plain-claude.html\">1.1 Claude Code 단독의 고충 → fPM이 해결하는 방식</a>","children":[]}]},{"content":"<a href=\"02-hub-mode.html\">2. hub 모드 — HTML 렌더 & Q&A 폼</a>","children":[{"content":"<a href=\"02.1-hub-demo.html\">2.1 ..show / ..ask 실시간 데모</a>","children":[]}]},{"content":"<a href=\"03-dashboard.html\">3. 실시간 대시보드 — ..board & SSE 모니터링</a>","children":[{"content":"<a href=\"03-dashboard.html#/2\">실시간 대시보드 — ..board & SSE 모니터링</a>","children":[]},{"content":"<a href=\"03-dashboard.html#/3\">..board — tmux runner + 실시간 push</a>","children":[]},{"content":"<a href=\"03-dashboard.html#/4\">진행률·경과·체크리스트</a>","children":[]},{"content":"<a href=\"03-dashboard.html#/5\">hub vs ..board — 언제 무엇을</a>","children":[]}]},{"content":"<a href=\"04-vscode-integration.html\">4. VSCode ↔ 대시보드 연동</a>","children":[{"content":"<a href=\"04-vscode-integration.html#/2\">VSCode ↔ 대시보드 연동</a>","children":[]},{"content":"<a href=\"04-vscode-integration.html#/3\">카드에서 명명 브라우저 탭으로 점프</a>","children":[]},{"content":"<a href=\"04-vscode-integration.html#/4\">문서를 만든 세션으로 되돌아가기</a>","children":[]},{"content":"<a href=\"04-vscode-integration.html#/5\">슬래시 커맨드로 통합 조작</a>","children":[]}]},{"content":"<a href=\"05-multi-project.html\">5. 다중 프로젝트 관리 — cdf 패밀리</a>","children":[{"content":"<a href=\"05.1-pm-do.html\">5.1 pm-do: 크로스 프로젝트 위임 & depends 의존성</a>","children":[]},{"content":"<a href=\"05.2-sshf-remote.html\">5.2 sshf & 원격 서버 — 로컬과 동일한 워크플로우</a>","children":[]}]},{"content":"<a href=\"06-getting-started.html\">6. fPM 도입하기 & 다음 단계</a>","children":[{"content":"<a href=\"06-getting-started.html#/2\">fPM 도입하기 & 다음 단계</a>","children":[]},{"content":"<a href=\"06-getting-started.html#/3\">원라인 설치</a>","children":[]},{"content":"<a href=\"06-getting-started.html#/4\">셀프업데이트 커맨드</a>","children":[]},{"content":"<a href=\"06-getting-started.html#/5\">hub 설정 — 기본(Basic)</a>","children":[]},{"content":"<a href=\"06-getting-started.html#/6\">hub 설정 — 세션·피드(Sessions)</a>","children":[]},{"content":"<a href=\"06-getting-started.html#/7\">다음 단계 — SCAR 배포 & 연동</a>","children":[]},{"content":"<a href=\"06-getting-started.html#/8\">첫 실습 — 지금 해보기</a>","children":[]},{"content":"<a href=\"06-getting-started.html#/9\">함께 시작하세요</a>","children":[]}]}]};
   function init() {
     if (!window.markmap) { return setTimeout(init, 50); }
     const svg = document.querySelector('.toc-mindmap-svg');
-    if (!svg) return;
-    const opts = window.markmap.deriveOptions({ initialExpandLevel: 2 });
+    // agenda_card_mode: markmap svg 없음 → 가드 즉시 해제 (2초 fallback 대기로 인한 blank 방지)
+    if (!svg) { requestAnimationFrame(m2ReleaseCrossGuard); return; }
+    /* Issue414: markmap 의 maxInitialScale 기본값은 **2** 라, 컨테이너가 커져도
+    스케일이 2 에서 멈춘다. 덱은 1920 폭으로 설계되는데 브라우저 창(1280 내외)에서
+    맞춰 보면 그럴듯해 보이고, PDF·대형 화면(1920×1440)에서는 **같은 크기 그대로**
+    남아 박스의 43% 만 채운다(실측 2026-09-21: 박스 1872 / 콘텐츠 798).
+    즉 **렌더 결과가 뷰포트 크기에 의존**하는 것이 결함의 본체다.
+    상한을 올려 fitRatio 가 판정하게 하면 어느 크기에서나 같은 비율로 찬다.
+    ⚠️ 무한대로 열지 않는다 — 항목이 1~2개뿐인 덱에서 글자가 터무니없이 커진다.
+       6 은 1920 폭에서 6항목이 요구하는 4.5 에 여유를 둔 값이다. */
+    const opts = window.markmap.deriveOptions({ initialExpandLevel: 2, maxInitialScale: 6 });
     window.mm = window.markmap.Markmap.create(svg, opts, tocData);
+    /* Issue414 후속: 컨테이너가 나중에 커지면 **다시 fit** 한다.
+       decktape 는 page.goto() 를 먼저 하고 page.setViewport() 를 나중에 한다
+       (decktape.js 292행 → 360행). 그래서 markmap 은 기본 800x600 에서 fit 하고
+       그 뒤 뷰포트가 1920x1440 으로 커져도 그대로 굳어 박스의 일부만 채운다.
+       덱 TOC 슬라이드는 autoFit + refitMarkmap 재시도가 이 자리를 덮고 있었으나
+       agenda 페이지에는 없었다 — 그래서 agenda 만 작게 나왔다.
+       ⚠️ resize 이벤트에 기대지 않는다. 뷰포트 변경이 이벤트로 오지 않는 경로가
+          있어(CDP Emulation) 박스 자체를 관찰하는 편이 확실하다. */
+    var _box = svg.parentNode;
+    if (_box && window.ResizeObserver) {
+      var _t;
+      new ResizeObserver(function(){
+        clearTimeout(_t);
+        _t = setTimeout(function(){ try { window.mm.fit(); } catch (e) {} }, 60);
+      }).observe(_box);
+    }
     // Issue110: cross-page 가드 해제 (markmap 렌더 후 다음 frame)
     requestAnimationFrame(m2ReleaseCrossGuard);
   }
@@ -1472,7 +1540,7 @@ html.ratio-fill .agenda-frame {
       var sep = base.indexOf('?') === -1 ? '?' : '&';
       return base + sep + signal + hash;
     }
-  const _tocData = {"content":"","children":[{"content":"<a href=\"01-what-is-fpm.html\">1. 왜 fPM인가 — 일반 Claude Code의 한계</a>","children":[{"content":"<a href=\"01.1-fpm-vs-plain-claude.html\">1.1 Claude Code 단독의 고충 → fPM이 해결하는 방식</a>","children":[]}]},{"content":"<a href=\"02-hub-mode.html\">2. hub 모드 — HTML 렌더 & Q&A 폼</a>","children":[{"content":"<a href=\"02.1-hub-demo.html\">2.1 ..show / ..ask 실시간 데모</a>","children":[]}]},{"content":"<a href=\"03-dashboard.html\">3. 실시간 대시보드 — ..board & SSE 모니터링</a>","children":[]},{"content":"<a href=\"04-vscode-integration.html\">4. VSCode ↔ 대시보드 연동</a>","children":[]},{"content":"<a href=\"05-multi-project.html\">5. 다중 프로젝트 관리 — cdf 패밀리</a>","children":[{"content":"<a href=\"05.1-pm-do.html\">5.1 pm-do: 크로스 프로젝트 위임 & depends 의존성</a>","children":[]},{"content":"<a href=\"05.2-sshf-remote.html\">5.2 sshf & 원격 서버 — 로컬과 동일한 워크플로우</a>","children":[]}]},{"content":"<a href=\"06-getting-started.html\">6. fPM 도입하기 & 다음 단계</a>","children":[]}]};
+  const _tocData = {"content":"","children":[{"content":"<a href=\"01-what-is-fpm.html\">1. 왜 fPM인가 — 일반 Claude Code의 한계</a>","children":[{"content":"<a href=\"01.1-fpm-vs-plain-claude.html\">1.1 Claude Code 단독의 고충 → fPM이 해결하는 방식</a>","children":[]}]},{"content":"<a href=\"02-hub-mode.html\">2. hub 모드 — HTML 렌더 & Q&A 폼</a>","children":[{"content":"<a href=\"02.1-hub-demo.html\">2.1 ..show / ..ask 실시간 데모</a>","children":[]}]},{"content":"<a href=\"03-dashboard.html\">3. 실시간 대시보드 — ..board & SSE 모니터링</a>","children":[{"content":"<a href=\"03-dashboard.html#/2\">실시간 대시보드 — ..board & SSE 모니터링</a>","children":[]},{"content":"<a href=\"03-dashboard.html#/3\">..board — tmux runner + 실시간 push</a>","children":[]},{"content":"<a href=\"03-dashboard.html#/4\">진행률·경과·체크리스트</a>","children":[]},{"content":"<a href=\"03-dashboard.html#/5\">hub vs ..board — 언제 무엇을</a>","children":[]}]},{"content":"<a href=\"04-vscode-integration.html\">4. VSCode ↔ 대시보드 연동</a>","children":[{"content":"<a href=\"04-vscode-integration.html#/2\">VSCode ↔ 대시보드 연동</a>","children":[]},{"content":"<a href=\"04-vscode-integration.html#/3\">카드에서 명명 브라우저 탭으로 점프</a>","children":[]},{"content":"<a href=\"04-vscode-integration.html#/4\">문서를 만든 세션으로 되돌아가기</a>","children":[]},{"content":"<a href=\"04-vscode-integration.html#/5\">슬래시 커맨드로 통합 조작</a>","children":[]}]},{"content":"<a href=\"05-multi-project.html\">5. 다중 프로젝트 관리 — cdf 패밀리</a>","children":[{"content":"<a href=\"05.1-pm-do.html\">5.1 pm-do: 크로스 프로젝트 위임 & depends 의존성</a>","children":[]},{"content":"<a href=\"05.2-sshf-remote.html\">5.2 sshf & 원격 서버 — 로컬과 동일한 워크플로우</a>","children":[]}]},{"content":"<a href=\"06-getting-started.html\">6. fPM 도입하기 & 다음 단계</a>","children":[{"content":"<a href=\"06-getting-started.html#/2\">fPM 도입하기 & 다음 단계</a>","children":[]},{"content":"<a href=\"06-getting-started.html#/3\">원라인 설치</a>","children":[]},{"content":"<a href=\"06-getting-started.html#/4\">셀프업데이트 커맨드</a>","children":[]},{"content":"<a href=\"06-getting-started.html#/5\">hub 설정 — 기본(Basic)</a>","children":[]},{"content":"<a href=\"06-getting-started.html#/6\">hub 설정 — 세션·피드(Sessions)</a>","children":[]},{"content":"<a href=\"06-getting-started.html#/7\">다음 단계 — SCAR 배포 & 연동</a>","children":[]},{"content":"<a href=\"06-getting-started.html#/8\">첫 실습 — 지금 해보기</a>","children":[]},{"content":"<a href=\"06-getting-started.html#/9\">함께 시작하세요</a>","children":[]}]}]};
   function firstHrefFromToc(node){
     if (!node || !node.children || node.children.length === 0) return null;
     for (const child of node.children) {

@@ -823,6 +823,14 @@ body {
   gap: 0;
 }
 
+/* Issue415: 좁은 화면(폭 435 미만)의 reveal 스크롤 뷰는 `.reveal-viewport.reveal-scroll .scroll-page section
+   { display:block !important }` 로 위 flex 를 덮어쓴다. 그러면 -body 가 남는 높이를 못 채워 flex:1 로
+   크기를 받는 htmlArt(process·pie 등)가 높이 0 이 된다(아이폰 실기기 보고, WebKit 실측 h=0).
+   스크롤 뷰에서만 발동하는 선택자라 PC 페이지 뷰는 무변경. 사용자 컨펌 2026-09-24 (base.css 가드) */
+.reveal-viewport.reveal-scroll .scroll-page section[class*="layout-"] {
+  display: flex !important;
+}
+
 .reveal section[class*="layout-"] > div[class$="-header"] {
   flex-shrink: 0;
   display: flex;
@@ -834,7 +842,18 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1em 0;
+}
+
+/* Issue360: padding 은 '기본값' 이므로 명시도 0(:where) + 세로만 선언한다.
+   구 `padding: 1em 0`(0-3-2)은 아래 layout 별 규칙(0-3-1)과 theme 의 0-3-1 선언을
+   전부 이겨서, base 가 스스로 적은 1.5em 조차 한 번도 적용된 적이 없었다.
+   그 충돌을 우회한 흔적이 이미 둘 있다 — layout-chapter 의 `.slides` 4-class 선택자와
+   _blank 의 !important. 같은 함정을 두 번 밟았다는 뜻이라 규칙 쪽을 고친다.
+   가로는 아예 선언하지 않는다: theme 의 `5%` 같은 가로 선언이 자연히 살아야 하고,
+   기본값으로 가로 여백을 강제할 이유도 없다. flex/overflow 는 레이아웃 골격이라
+   명시도를 그대로 둔다(내려가면 closing-body 의 flex-grow:0 등이 되살아나 배치가 바뀐다). */
+:where(.reveal section[class*="layout-"] > div[class$="-body"]) {
+  padding-block: 1em;
 }
 
 /* === Accent line (divider) — 공통 골격, 색상은 theme에서 override === */
@@ -905,7 +924,12 @@ body {
 }
 
 .reveal section.layout-_contents .contents-body {
-  padding: 1.5em 0;
+  /* Issue360: 구 `padding: 1.5em 0` → `padding-block: 1em`. 전자는 범용 규칙(0-3-2)에
+     눌려 한 번도 적용된 적이 없는 미검증 값이었고, 실제 기준은 줄곧 1em 이었다.
+     가로는 선언하지 않는다 — theme 의 가로 선언이 살아야 한다. 이 규칙(0-3-1)은
+     theme 의 낮은 명시도 부분 선언(ex: `padding-top: 0`, 0-0-4)을 이겨야 하므로
+     :where 기본값에 맡기지 않고 여기 명시한다. theme 의 0-3-1 선언은 나중 로드라 이긴다. */
+  padding-block: 1em;
 }
 
 .reveal section.layout-_contents ul,
@@ -939,7 +963,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 .reveal section.layout-contents-full ul,
@@ -1014,7 +1040,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* 5. Chapter Layout */
@@ -1041,7 +1069,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* 6. Exercise Layout */
@@ -1068,7 +1098,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* 6.2 Exercise-Small Layout */
@@ -1118,7 +1150,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 /* image-only / full-video 자동 감지 시 풀스크린 미디어 표시 (공통 패턴) */
@@ -1205,7 +1239,9 @@ body {
   flex-grow: 1;
   overflow-y: auto;
   min-height: 0;
-  padding: 1.5em 0;
+  /* Issue360: 구 `1.5em 0` 은 범용 규칙에 눌려 적용된 적 없는 미검증 값. 기준은 1em 이다.
+     가로는 theme 몫이라 선언하지 않는다. 이 자리에 두는 이유는 위 §9 주석 참조. */
+  padding-block: 1em;
 }
 
 .reveal section.layout-toc .toc-markmap {
@@ -1309,7 +1345,8 @@ body.agenda-page {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (standalone agenda letterbox). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   font-family: var(--global-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif);
 }
@@ -1323,7 +1360,8 @@ body.agenda-page {
     calc(100vh - 2 * var(--slide-outer-padding, 0px)),
     calc((100vw - 2 * var(--slide-outer-padding, 0px)) / var(--slide-ratio))
   );
-  background: #ffffff;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응 (ratio frame). 미정의 시 #ffffff fallback */
+  background: var(--m2-bg, #ffffff);
   overflow: hidden;
   position: relative;
 }
@@ -1389,7 +1427,8 @@ html.ratio-fill .agenda-frame {
   <style data-m2slide-palette="default">
 
   </style>
-  <link rel="stylesheet" href="css/custom.css?v=1783349009675">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"/>
+  <link rel="stylesheet" href="css/custom.css?v=1790567141937">
   <style>
     /* 커버 페이지 전용: 컨트롤·슬라이드번호·프로그레스 숨김 */
     .reveal .controls, .reveal .progress, .reveal .slide-number { display: none !important; }
@@ -1408,7 +1447,7 @@ html.ratio-fill .agenda-frame {
   </style>
 </head>
 <body data-nav-indicator="both" style="
-  --global-font-family: Pretendard, sans-serif;
+  --global-font-family: 'Nanum Gothic Coding', 'D2Coding', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
   --title-font-family: GmarketSansBold;
   --title-font-weight: 50;
   --title-font-size: 1.5em;
@@ -1445,13 +1484,13 @@ html.ratio-fill .agenda-frame {
 ">
 <div class="reveal ratio-3-2">
   <div class="slides">
-<section class="layout-_cover">
+<section class="layout-_cover"><div class="m2-license-badge" data-m2-license="true">Powered by finfra.kr, Made by m2slide</div>
   <div class="cover-corner cover-tl">github.com/Finfra/fpm</div>
   <div class="cover-corner cover-tr">v0.10.8</div>
   <div class="cover-corner cover-br">finfra.kr</div>
   <div class="cover-header">
     <h1 class="cover-title">Meet fPM: A Multi-Project Automation Framework for Claude Code</h1>
-    <div class="cover-subtitle">Why fPM — starting from the limits of plain Claude Code: hub, <strong>web dashboard, VSCode integration</strong>, the cdf family (cdfn name search, frecency), sshf remote servers, one-line install, and multi-project management</div>
+    <div class="cover-subtitle">Why fPM — starting from the limits of plain Claude Code: hub, web dashboard, VSCode integration, the cdf family (cdfn name search, frecency), sshf remote servers, one-line install, and multi-project management</div>
     
   </div>
 
@@ -1489,6 +1528,8 @@ Reveal.initialize({
   width: 1920,
   height: 1280,
   margin: 0.0,
+  // Issue415: 스크롤 뷰 장 높이를 슬라이드 실높이로 (덱 Reveal.initialize 와 동일 정책)
+  scrollLayout: 'compact',
   // Issue89: m2slide가 처리하는 키 — Reveal 기본 keymap 비활성화
   // Issue226: ESC(27) 표준 toggleOverview 명시 (cover Reveal.initialize도 동일 패턴)
   keyboard: { 36: null, 35: null, 33: null, 34: null, 27: 'toggleOverview' }
