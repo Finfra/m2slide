@@ -40,7 +40,7 @@ Chapter 5.
 * 세부 사용법(설치·프로젝트 생성·빌드 명령)은 저장소 README·저작 파이프라인 문서 참고
 * 가장 빠른 이해는 온라인 데모에서 실제 프로젝트를 직접 열어보는 것
 
-> 더 자세한 내용은 [m2slide 소개 자료](https://finfra.github.io/m2slide/m2Slide/index.html)에서 이어서 볼 수 있음
+> 내장 구성요소는 [시각 구성요소 쇼케이스](https://finfra.github.io/m2slide/m2Slide_visual_component/)에서 실제로 볼 수 있음
 
 ---
 
@@ -50,7 +50,8 @@ Chapter 5.
 | :--- | :--- |
 | GitHub | [github.com/Finfra/m2slide](https://github.com/Finfra/m2slide) |
 | 온라인 데모 | [finfra.github.io/m2slide](https://finfra.github.io/m2slide) |
-| 더 자세한 소개 | [finfra.github.io/m2slide/m2Slide](https://finfra.github.io/m2slide/m2Slide/index.html) |
+| 시각 구성요소 | [finfra.github.io/m2slide/m2Slide_visual_component](https://finfra.github.io/m2slide/m2Slide_visual_component/) |
+| 문의 | [finfra@gmail.com](mailto:finfra@gmail.com) |
 | 사용법 | [README.md](https://github.com/Finfra/m2slide/blob/main/README.md) |
 | 라이선스 | 무료 (CC BY 4.0 — 첫·끝 슬라이드 출처표기 조건) · 출처표기 제거는 상용 라이선스 |
 | 이 자료의 소스 | `Projects/m2slide_info/markdown/` |

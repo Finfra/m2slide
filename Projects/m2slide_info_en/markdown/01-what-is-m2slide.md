@@ -30,6 +30,19 @@ graph LR
 
 ---
 
+## Write Once, Publish Four Ways
+
+| Output | Option    | Use                      |
+| :----- | :-------- | :----------------------- |
+| HTML   | (default) | Reveal.js browser talk   |
+| EPUB   | `--epub`  | E-book                   |
+| PDF    | `--pdf`   | Distribution · print     |
+| PPTX   | `--pptx`  | PowerPoint compatibility |
+
+* A single `.md` is the source of truth (SSOT) for every format
+
+---
+
 ## What Problem Did It Start From?
 
 * Presentation material gets revised often, yet **every PPT edit is tedious**
@@ -67,6 +80,7 @@ git clone https://github.com/Finfra/m2slide.git
 
 # 2) Build a project folder's Markdown in one line
 ./m2slide.sh MyProject
+./m2slide.sh MyProject --epub   # + e-book
 ```
 
 * The build opens straight in the browser as HTML slides — no server or deploy setup, verify via `file://`

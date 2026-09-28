@@ -40,7 +40,7 @@ Chapter 5.
 * For detailed usage (install, project creation, build commands), see the repo README and the authoring pipeline docs
 * The fastest way to get it is to open a real project in the online demo yourself
 
-> For a deeper look, continue in the [m2slide overview](https://finfra.github.io/m2slide/m2Slide/index.html)
+> See the built-in components live in the [visual components showcase](https://finfra.github.io/m2slide/m2Slide_visual_component/)
 
 ---
 
@@ -50,7 +50,8 @@ Chapter 5.
 | :--- | :--- |
 | GitHub | [github.com/Finfra/m2slide](https://github.com/Finfra/m2slide) |
 | Online demo | [finfra.github.io/m2slide](https://finfra.github.io/m2slide) |
-| Fuller intro | [finfra.github.io/m2slide/m2Slide](https://finfra.github.io/m2slide/m2Slide/index.html) |
+| Visual components | [finfra.github.io/m2slide/m2Slide_visual_component](https://finfra.github.io/m2slide/m2Slide_visual_component/) |
+| Contact | [finfra@gmail.com](mailto:finfra@gmail.com) |
 | Usage | [README.md](https://github.com/Finfra/m2slide/blob/main/README.md) |
 | Source of this material | `Projects/m2slide_info_en/markdown/` |
 

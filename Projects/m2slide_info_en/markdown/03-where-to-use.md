@@ -31,6 +31,15 @@ Chapter 3.
 
 ---
 
+## Presenting Gets Easier
+
+* **Markmap TOC** — auto-generated clickable mind map
+* **Hierarchical navigation** — automatic links between chapters
+* **Step-by-step reveal** — one `{.fragment}` token does it
+* **Charts · math · mermaid · 3D** — drop in via fenced blocks
+
+---
+
 ## Internal Docs and Onboarding Material
 
 * Docs edited by many people benefit from a **text format with no merge conflicts**

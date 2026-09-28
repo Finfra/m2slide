@@ -30,6 +30,19 @@ graph LR
 
 ---
 
+## 한 번 쓰고, 네 가지로 낸다
+
+| 산출물 | 옵션     | 용도                    |
+| :----- | :------- | :---------------------- |
+| HTML   | (기본)   | Reveal.js 브라우저 발표 |
+| EPUB   | `--epub` | 전자책                  |
+| PDF    | `--pdf`  | 배포·인쇄               |
+| PPTX   | `--pptx` | PowerPoint 호환         |
+
+* `.md` 하나가 모든 형식의 원본(SSOT)
+
+---
+
 ## 어떤 문제의식에서 출발했나
 
 * 발표 자료는 자주 고쳐 쓰는데, **PPT는 고칠 때마다 손이 많이 감**
@@ -67,6 +80,7 @@ git clone https://github.com/Finfra/m2slide.git
 
 # 2) 프로젝트 폴더의 마크다운을 한 줄로 빌드
 ./m2slide.sh MyProject
+./m2slide.sh MyProject --epub   # + 전자책
 ```
 
 * 빌드 결과는 바로 브라우저에서 열리는 HTML 슬라이드 — 서버·배포 설정 없이 `file://`로 확인 가능
