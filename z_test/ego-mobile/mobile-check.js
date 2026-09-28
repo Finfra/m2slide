@@ -125,12 +125,14 @@ try {
   for (let i = 0; i < 20 && (await page.evaluate(() => typeof Reveal)) === "undefined"; i++) await sleep(300);
   const h0 = await page.evaluate(() => ({ scrollView: !!document.querySelector(".reveal-scroll"), h: Reveal.getIndices().h, path: location.pathname }));
   // 빠른 가로 스와이프(오른쪽→왼쪽 = 다음) — CDP 로는 2.9s 걸려 700ms 게이트에 걸린다(실측). 페이지 내 합성 120ms
-  await page.evaluate(async () => {
+  // ⚠️ touchend 는 페이지 안 setTimeout 으로 예약하고 evaluate 는 바로 돌려받는다. touchend 를 await 한
+  //    뒤 반환하면 표지의 «다음»(agenda 페이지 이동)이 응답보다 먼저 커밋돼 `Inspected target navigated
+  //    or closed` 로 throw → L1 이 기록되지 않는다(aTest 3회 중 2회 실측, Issue426). 이동 결과는 아래 재시도가 잰다
+  await page.evaluate(() => {
     const el = document.elementFromPoint(422, 195);
     const T = x => new Touch({ identifier: 2, target: el, clientX: x, clientY: 195 });
     el.dispatchEvent(new TouchEvent("touchstart", { bubbles: true, touches: [T(640)], changedTouches: [T(640)] }));
-    await new Promise(r => setTimeout(r, 120));
-    el.dispatchEvent(new TouchEvent("touchend", { bubbles: true, touches: [], changedTouches: [T(200)] }));
+    setTimeout(() => el.dispatchEvent(new TouchEvent("touchend", { bubbles: true, touches: [], changedTouches: [T(200)] })), 120);
   });
   // 표지의 «다음» 은 agenda 페이지 이동일 수 있다 — 새 문서가 뜨는 동안 평가가 실패하므로 재시도
   let h1 = null;

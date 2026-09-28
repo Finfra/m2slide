@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 425
+* Issue HWM: 426
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -42,6 +42,18 @@
 
 
 # 🚧 진행중
+
+## Issue426: TDD 풀 회귀(prj5#Issue108) — 러너 오라클 결함 2건: PDF ⑤ 출처 판정·ego 모바일 L1 경합 (등록: 2026-09-29)
+* 목적: prj5#Issue108 TDD 풀에서 재생목록 #3·#4(`1.integrity.sh`)·#9(`ego-mobile/run.sh`)가 red 였다. 둘 다 **제품 결함이 아니라 러너 판정 결함**이라 green 인 산출물을 실패로 보고했다 — «실패» 가 거짓이면 진짜 회귀도 묻힌다
+* 상세:
+    - #3·#4 ⑤ 표지·목차 자리: 1.design_rnd(외부 마운트, 이번에 기본 대상에 새로 들어옴) 합본 앞 3p 가 `표지 → (텍스트 없음) → (출처 불명)` 으로 판정돼 rc1. 실제 순서는 정상 — 3p 는 1챕터 표지인데 제목이 `-webkit-text-stroke` 라 Chrome 인쇄에서 윤곽선(path)으로 나가 텍스트가 0이고, 남은 줄은 내비 표시 `1 › 1 / 446` 뿐이다. `_origin()` docstring 은 «내비 줄은 자연히 빠진다» 고 했지만 실제로는 세어져 «출처 불명» 이 됐다
+    - #9 L1 가로 스와이프: aTest 표지의 «다음» 이 agenda 페이지 이동인데, 스와이프 합성 `evaluate` 가 touchend 를 await 한 뒤 반환해 이동이 응답보다 먼저 커밋되면 `Inspected target navigated or closed` 로 throw → L1 미기록 + ERR. 수정 전 aTest 3회 중 2회 재현(경합)
+* 구현 명세:
+    - `z_test/pdf/lib/integrity.py` `_origin()`: 내비 줄(`^\d+ › \d+ /\s*\d+$`)을 본문 줄에서 빼고, 본문 줄이 0이면 내비 챕터 번호 1 → 첫 챕터로 판정
+    - `z_test/ego-mobile/mobile-check.js`: touchend 를 페이지 안 `setTimeout` 으로 예약하고 evaluate 는 즉시 반환 — 이동 결과는 기존 재시도 루프가 잰다
+    - TDD(red→green):
+        - ⑤ red: `python3 /tmp/p42_i426_check.py`(정상 합본·표지목차 누락·목차 누락 3케이스) → 정상 합본 ok=False rc1 · `1.integrity.sh 1.design_rnd` rc1 ⇒ green: 3케이스 PASS rc0(음성 2케이스는 계속 실패 판정 — Issue402 가드 유지) · `1.integrity.sh 1.design_rnd` rc0 · `1.integrity.sh`(기본) rc0
+        - L1 red: `z_test/ego-mobile/run.sh aTest` 3회 → rc1·rc1·rc0 ⇒ green: 5회 연속 rc0(L1 PASS `/p/aTest/n/1/1#0 → /p/aTest/n/a#-1`) · `run.sh aTest aTest-all` rc0(14 PASS)
 
 ## Issue415: 아이폰에서 **탭(클릭)만으로** 덱이 동작하는지 ego-browser 로 점검·수정하고 aTest → aTest-all 2단계로 안정화 (등록: 2026-09-23)
 * 목적: 키보드 없는 아이폰에서 m2slide 덱을 탭만으로 넘기고 쓸 수 있어야 한다(사용자 전제: **터치 = 클릭**). 동시에 prj3 외부*핀봇(외부자문·외부컨설턴트)이 팀장핀봇 배분 경로로 실제 동작하는지 실증한다(요청: 사용자 → 나래, prj3#Issue678 후속)

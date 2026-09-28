@@ -131,15 +131,26 @@ def _plain(html_path: pathlib.Path) -> str:
     return re.sub(r"\s+", " ", _html.unescape(re.sub(r"<[^>]+>", " ", s)))
 
 
+_NAV_RE = re.compile(r"^(\d+) › \d+ /\s*\d+$")
+
+
 def _origin(page, sources: dict):
     """페이지 텍스트 줄이 가장 많이 발견되는 원고 이름. 줄이 없으면 None.
 
     ⚠️ 쪽 수(①)만으로는 표지·목차가 **제자리에 있는지** 모른다 — 챕터 장 2장이
        더해지고 표지·목차가 빠져도 수는 맞는다. 그래서 쪽마다 출처를 되짚는다.
-       JS 가 만든 줄(내비 표시 `1 › 1 / 31` 등)은 어느 원고에도 없어 자연히 빠진다.
+       JS 가 만든 내비 표시(`<챕터> › <장> / <전체>`, ex) `1 › 1 / 446`)는 어느 원고에도
+       없으므로 본문 줄에서 뺀다 — 세면 «출처 불명» 으로 떨어진다.
+    ⚠️ 본문 줄이 하나도 없는 장이 있다 — `-webkit-text-stroke` 제목은 Chrome 인쇄에서
+       윤곽선(path)으로 나가 텍스트가 0이다(1.design_rnd 챕터 표지, Issue426). 그때는
+       내비 표시의 챕터 번호가 출처다: 1 이면 첫 챕터.
     """
     lines = [l.strip() for l in page.get_text().splitlines() if len(l.strip()) >= 4]
+    nav = [m for m in (_NAV_RE.match(l) for l in lines) if m]
+    lines = [l for l in lines if not _NAV_RE.match(l)]
     if not lines:
+        if nav and "first" in sources and nav[0].group(1) == "1":
+            return "first"
         return None
     score = {k: sum(1 for l in lines if l in s) for k, s in sources.items()}
     best = max(score, key=score.get)
