@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 422
+* Issue HWM: 423
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -114,6 +114,22 @@
 # 📕 중요
 
 # 📙 일반
+
+## Issue423: 이미지 해소 시 `X.annot.png` 짝 픽업 + 원본 강제 옵트아웃 — prj7 주석본 픽업 규약 구현 (등록: 2026-09-28)
+* 목적: prj7 cg 가 캡처 주석본(`img-annotate`)을 만들어도 덱을 만드는 경로가 그 산출을 집지 않아 **안 쓰인다**. prj7 규약(사용자 확정 2026-09-24) «`X.png` 를 넣을 때 옆에 `X.annot.png` 가 있으면 그것을 쓴다» 의 구현 자리가 m2slide 이미지 해소다
+* 상세:
+    - 출처: prj7#Issue23 발의 «prj42 m2slide 이미지 해소 + `{raw}`» → prj7#Issue43 ② 로 등록(기획핀봇 fbot-planner-issue43). 총괄핀봇 나래 전결 `fbotev-1790570660-4058710d` · prj3#Issue756 C 등급 — 타 repo 이슈 **등록**만
+    - 규약 SSOT: [cg-image-pipeline.md](~/_git/___cg/_doc_arch/cg-image-pipeline.md) ③ «규약 — 「호출」이 아니라 「짝 조회」다». 사본을 두지 않고 표기 3종만 옮긴다 — `![](shot.png)` 는 짝 `shot.annot.png` 가 있으면 치환 · `![](shot.png){raw}` 는 원본 강제 · `![](shot.annot.png)` 는 그대로
+    - 🔴 m2slide 는 `img-annotate` 를 **부르지 않는다** — 이미 있는 파일을 집기만 하므로 prj7 도구에 의존이 생기지 않는다. 짝은 `--flatten` 산출 `.annot.png` 이고 기본 산출 `.annot.svg` 는 대상이 아니다
+    - 실측(2026-09-28): `lib/` 의 `.annot.` 처리 0건. HTML 이미지 해소는 [markdown.js](lib/markdown.js) 두 곳 — 단독 줄 정규식(`^!\[..\]\(..\)\s*$` — `{raw}` 접미가 붙으면 매치가 깨진다)과 인라인 치환. pptx·epub·pdf 경로가 같은 해소를 타는지는 미확인
+    - ⚠️ **토큰 충돌** — prj42 에서 `{raw}` 는 이미 Issue419 의 «표지 frontmatter raw HTML 옵트인(보류)» 을 가리키는 말로 쓰였다([html-builder.js](lib/html-builder.js) 17행 · [cover-meta-escape.test.js](lib/__tests__/cover-meta-escape.test.js) 9행 주석). 이미지 원본 강제와 뜻이 다르므로 구현 전에 토큰을 가를지 정한다 — prj7 규약 쪽 개명이 필요하면 prj7 에 반송
+    - ⚠️ **보류 이력** — 2026-09-27 사용자 결정(prj5#Issue101 ①)은 «escape 만 — `.annot.`·`{raw}` 는 보류» 였다. 2026-09-28 결정(mq `20260928-133624-001` [H:비용] «부분 진행»)의 prj7 잔여 마감 중 이 이슈 **등록**만 진행됐다. 구현 착수는 나래의 prj42 팀장 배분을 따른다
+* 구현 명세:
+    - TDD red 먼저: 픽스처 `shot.png`+`shot.annot.png` 로 빌드해 ① 짝 있으면 `<img src>` 가 `shot.annot.png` ② 옵트아웃이면 `shot.png` ③ 짝 없으면 원본 그대로 — 3단언 red 확인 → 구현 → green
+    - 해소 판정은 **한 함수**로 둔다 — HTML 단독·인라인·pptx·epub 가 각자 판정하면 갈린다
+    - 짝 존재 판정의 기준 경로(원고 쪽 vs 빌드 `img/` 복사본)를 정한다 — `img/` 이중 복사([decisions.md](_doc_arch/decisions.md) "`img/` 이중 복사를 유지한다")라 기준이 둘이다
+    - 완료 시 prj7 에 이슈 번호·커밋 해시 통지 → prj7 `tdd/playlist.md` #10 `annot-pair-pickup`(⏸️) E2E 는 prj7 이 쓴다(«조합» 검증이라 prj7 소관). prj42 는 단위 테스트까지
+    - 범위 밖: `img-annotate` 호출·자동 주석 생성 · prj3 `ppt-check` `check-annot-pair`(WARN) 발의
 
 # 📗 선택
 
