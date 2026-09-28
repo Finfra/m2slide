@@ -45,7 +45,7 @@
       } catch (e) {}
     })();
   </script>
-  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"1","slideOffset":0,"totalSlides":37};</script>
+  <script>window.M2_CHAPTER_META={"mode":"global","breadcrumb":true,"chapterNum":"1","slideOffset":0,"totalSlides":39};</script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reset.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.0.4/dist/reveal.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.css">
@@ -1429,7 +1429,7 @@ html.ratio-fill .agenda-frame {
 
   </style>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Gothic+Coding&display=swap"/>
-  <link rel="stylesheet" href="css/custom.css?v=1790567142122">
+  <link rel="stylesheet" href="css/custom.css?v=1790603831149">
   <script>
     // Suppress specific SVG errors from Markmap/D3 to avoid noise in PDF generation
     (function() {
@@ -1697,12 +1697,13 @@ html.ratio-fill .agenda-frame {
   <header class="toc-page-header">
     <h1 class="toc-page-title">What is m2slide?</h1>
   </header>
-  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="5">
+  <div class="toc-cards"><ul class="chapter-list chapter-list--cards" data-count="6">
 <li class="chapter-card"><a href="#/3">m2slide in One Line</a></li>
-<li class="chapter-card"><a href="#/4">What Problem Did It Start From?</a></li>
-<li class="chapter-card"><a href="#/5">The Three Questions This Material Answers</a></li>
-<li class="chapter-card"><a href="#/6">Here's How You Actually Use It</a></li>
-<li class="chapter-card"><a href="#/7">See It for Yourself</a></li>
+<li class="chapter-card"><a href="#/4">Write Once, Publish Four Ways</a></li>
+<li class="chapter-card"><a href="#/5">What Problem Did It Start From?</a></li>
+<li class="chapter-card"><a href="#/6">The Three Questions This Material Answers</a></li>
+<li class="chapter-card"><a href="#/7">Here's How You Actually Use It</a></li>
+<li class="chapter-card"><a href="#/8">See It for Yourself</a></li>
 </ul></div>
 </section>
 
@@ -1730,6 +1731,31 @@ graph LR
 </section>
 
 <section data-slide-hash="#/4" class="layout-_contents">
+  <div class="contents-head-bar">
+    <div class="contents-head-left">01. What is m2slide?</div>
+    <div class="contents-head-right"></div>
+  </div>
+  <h2 class="title">Write Once, Publish Four Ways</h2>
+  <div class="contents-body">
+
+<table>
+<thead>
+<tr><th style="text-align:left">Output</th><th style="text-align:left">Option</th><th style="text-align:left">Use</th></tr>
+</thead>
+<tbody>
+<tr><td style="text-align:left">HTML</td><td style="text-align:left">(default)</td><td style="text-align:left">Reveal.js browser talk</td></tr>
+<tr><td style="text-align:left">EPUB</td><td style="text-align:left"><code>--epub</code></td><td style="text-align:left">E-book</td></tr>
+<tr><td style="text-align:left">PDF</td><td style="text-align:left"><code>--pdf</code></td><td style="text-align:left">Distribution · print</td></tr>
+<tr><td style="text-align:left">PPTX</td><td style="text-align:left"><code>--pptx</code></td><td style="text-align:left">PowerPoint compatibility</td></tr>
+</tbody>
+</table>
+
+<ul>
+<li class="bullet-dot">A single <code>.md</code> is the source of truth (SSOT) for every format</li>
+</ul></div>
+</section>
+
+<section data-slide-hash="#/5" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">01. What is m2slide?</div>
     <div class="contents-head-right"></div>
@@ -1764,7 +1790,7 @@ graph LR
 </div></div>
 </section>
 
-<section data-slide-hash="#/5" class="layout-_contents">
+<section data-slide-hash="#/6" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">01. What is m2slide?</div>
     <div class="contents-head-right"></div>
@@ -1783,7 +1809,7 @@ graph LR
 </ul></div>
 </section>
 
-<section data-slide-hash="#/6" class="layout-_contents">
+<section data-slide-hash="#/7" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">01. What is m2slide?</div>
     <div class="contents-head-right"></div>
@@ -1799,14 +1825,15 @@ graph LR
 git clone https://github.com/Finfra/m2slide.git
 
 # 2) Build a project folder's Markdown in one line
-./m2slide.sh MyProject</code></pre>
+./m2slide.sh MyProject
+./m2slide.sh MyProject --epub   # + e-book</code></pre>
 
 <ul>
 <li class="bullet-dot">The build opens straight in the browser as HTML slides — no server or deploy setup, verify via <code>file://</code></li>
 </ul></div>
 </section>
 
-<section data-slide-hash="#/7" class="layout-_contents">
+<section data-slide-hash="#/8" class="layout-_contents">
   <div class="contents-head-bar">
     <div class="contents-head-left">01. What is m2slide?</div>
     <div class="contents-head-right"></div>
@@ -2146,19 +2173,23 @@ git clone https://github.com/Finfra/m2slide.git
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/3\">What Problem Did It Start From?</a>",
+                              "content": "<a href=\"#/3\">Write Once, Publish Four Ways</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/4\">The Three Questions This Material Answers</a>",
+                              "content": "<a href=\"#/4\">What Problem Did It Start From?</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/5\">Here's How You Actually Use It</a>",
+                              "content": "<a href=\"#/5\">The Three Questions This Material Answers</a>",
                               "children": []
                         },
                         {
-                              "content": "<a href=\"#/6\">See It for Yourself</a>",
+                              "content": "<a href=\"#/6\">Here's How You Actually Use It</a>",
+                              "children": []
+                        },
+                        {
+                              "content": "<a href=\"#/7\">See It for Yourself</a>",
                               "children": []
                         }
                   ]
