@@ -393,14 +393,22 @@ if [ "$1" = "--lint-deployment" ]; then
   echo "🔍 Lint deployment artifacts under: $LINT_BASE"
   # Patterns that break file:// deployment
   PATTERNS='localhost|127\.0\.0\.1|0\.0\.0\.0|/Users/|/home/[a-z]|file:///Users/|file:///home/'
-  HITS=$(find "$LINT_BASE" -path '*/slide/*.html' -type f -print0 2>/dev/null \
+  # -H: 시작 경로가 --link 심링크여도 따라 들어간다(Issue424). 기본 -P 는 링크 자체만 보고 내려가지 않아
+  #     링크 프로젝트를 0개 검사하고 «위반 없음» 을 냈다. 하위의 심링크는 여전히 따라가지 않는다.
+  LINT_COUNT=$(find -H "$LINT_BASE" -path '*/slide/*.html' -type f 2>/dev/null | wc -l | tr -d ' ')
+  HITS=$(find -H "$LINT_BASE" -path '*/slide/*.html' -type f -print0 2>/dev/null \
     | xargs -0 grep -EHn "$PATTERNS" 2>/dev/null || true)
   if [ -n "$HITS" ]; then
-    echo "❌ Deployment violations found (file:// 호환성 위반):" >&2
+    echo "❌ Deployment violations found (file:// 호환성 위반, 검사 ${LINT_COUNT}개):" >&2
     echo "$HITS" >&2
     exit 1
   fi
-  echo "✅ No deployment violations"
+  # 0개 검사를 «통과» 로 보고하지 않는다 — 빌드 전이거나 경로가 틀린 것이다
+  if [ "$LINT_COUNT" -eq 0 ]; then
+    echo "⚠️  검사할 slide/*.html 없음 — 빌드 여부·경로를 확인할 것 (위반 판정 아님)"
+    exit 0
+  fi
+  echo "✅ No deployment violations (검사 ${LINT_COUNT}개)"
   exit 0
 fi
 
