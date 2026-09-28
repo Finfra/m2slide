@@ -38,6 +38,14 @@
   min-height: 0;
   overflow: hidden;
 }
+/* Issue284: 컴포넌트 블록(htmlArt/cards/media) 바로 뒤 텍스트는 간격을 더 벌려
+   붙어 보이지 않게 함. contents-body gap(0.5em) 위에 추가 상단 마진(총 ~1.4em).
+   컴포넌트 자체엔 margin 금지(Issue198)이므로 "다음 형제"에만 부여. */
+.reveal section[class*="layout-"] .contents-body > .component-container + *,
+.reveal section[class*="layout-"] .contents-body > .m2-cards + *,
+.reveal section[class*="layout-"] .contents-body > .m2-htmlart + * {
+  margin-top: 0.9em;
+}
 .reveal section[class*="layout-"] .component-container > svg {
   flex: 1 1 0;
   width: 100% !important;
@@ -132,7 +140,18 @@
 /* 카드 제목 밴드 — 테마 컬러 변수. 제목은 `**볼드**`로 작성 */
 .reveal section[class*="layout-"] .m2-cards > ul > li > strong,
 .reveal section[class*="layout-"] .m2-cards > ol > li > strong {
-  display: block;
+  /* Issue284: 제목 밴드 높이 균일화 — 1줄/2줄 제목이 섞여도 같은 높이.
+     flex 중앙정렬 + min-height(2줄 기준, border-box). 3줄 이상은 min-height 초과로 자연 확장. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* 마커 간격: 심벌(:fa-*: → <i>)이 제목 앞 마커로 올 때 flex 는 <i>·텍스트를
+     별개 item 으로 나눠 사이 공백(마크다운 1칸)을 제거함 → glyph 가 글자에 붙음.
+     gap 으로 심벌↔텍스트 시각 간격 확보(이모지는 텍스트 노드 내부라 무영향).
+     단일 item(순수 텍스트 제목)에는 no-op. 정책: md-m2slide-rules.md "마커 간격". */
+  gap: 0.4em;
+  min-height: 3.2em;
+  box-sizing: border-box;
   margin: 0;
   padding: 0.25em 0.6em;
   background: var(--m2-card-title-bg, var(--kn-accent));
@@ -212,10 +231,11 @@
   --htmlart-accent-5: var(--m2-accent-5, #2ECC71);
   --htmlart-accent-6: var(--m2-accent-6, #E74C3C);
   --htmlart-fg: var(--m2-text, var(--kn-text, #ffffff));
-  --htmlart-box-bg: rgba(0, 0, 0, 0.045);
   --htmlart-surface: var(--m2-surface, #f4f4f5);            /* 노드 박스 불투명 배경 — d3 연결선이 박스 뒤로 가려지게 (Issue195) */
-  --htmlart-box-border: rgba(0, 0, 0, 0.16);
-  --htmlart-arrow: rgba(0, 0, 0, 0.5);
+  /* Issue274: 선/화살표/테두리 색 = config override(--m2-htmlart-line) > 테마 기본(--m2-line) > 하드코딩 fallback.
+     라이트 테마(default·default_lec)는 --m2-line 미설정 → 기존 rgba 유지(회귀 0). 다크 테마는 --m2-line 로 밝은 선색 지정. */
+  --htmlart-box-border: var(--m2-htmlart-line, var(--m2-line, rgba(0, 0, 0, 0.16)));
+  --htmlart-arrow: var(--m2-htmlart-line, var(--m2-line, rgba(0, 0, 0, 0.5)));
   font-size: 0.92em;
   /* Issue197/198: .contents-body(flex column)의 bullet 다음 잔여 세로 공간을 도해가 채움
      — .media-container·.component-container 와 동일한 콘텐츠 컨테이너 fill 계약.
@@ -260,6 +280,19 @@
 .reveal .columns:has(.m2-htmlart) {
   align-items: stretch;
 }
+/* 이미지가 든 columns: 텍스트 컬럼도 행(=이미지) 높이를 받도록 stretch —
+   base.css `.m2-cols{align-items:center}` 가 텍스트 컬럼을 콘텐츠 높이로 붕괴시켜
+   컬럼 안 하단 anchor(margin-top:auto)가 무력화되는 것을 보정 (htmlArt 패턴과 동일 취지). */
+.reveal .m2-cols:has(.media-container),
+.reveal .columns:has(.media-container) {
+  align-items: stretch;
+}
+/* 컬럼의 마지막 요소가 요약 blockquote(punchline)면 컬럼 하단으로 밀어
+   위 본문과 시각적으로 분리 — flex column 의 margin-top:auto 로 남은 세로 공간을 흡수. */
+.reveal .m2-col > blockquote:last-child,
+.reveal .column > blockquote:last-child {
+  margin-top: auto;
+}
 .reveal .m2-htmlart ul,
 .reveal .m2-htmlart ol {
   list-style: none;
@@ -274,6 +307,33 @@
 .reveal .m2-htmlart.component-error {
   color: #c0392b;
   font-size: 0.85em;
+}
+
+/* Issue392: 세로로 눌린 htmlArt 를 좌우 2열로 — 판정·DOM 재배치는
+   lib/component-hooks/htmlart_dispatch.client.js `relayoutSquished()` 가 한다.
+   본 규칙은 그 결과 클래스(.htmlart-side)를 받는 표시 계약일 뿐이며,
+   클래스가 붙지 않은 장은 1px 도 바뀌지 않는다.
+   .contents-body 는 이미 flex column 이므로 방향만 돌리면 된다. */
+.reveal section[class*="layout-"] .contents-body.htmlart-side {
+  flex-direction: row;
+  align-items: stretch;
+  gap: 1.2em;
+}
+.reveal section[class*="layout-"] .contents-body.htmlart-side > .m2-htmlart,
+.reveal section[class*="layout-"] .contents-body.htmlart-side > .htmlart-side-rest {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+}
+.reveal section[class*="layout-"] .contents-body.htmlart-side > .htmlart-side-rest {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5em;
+  overflow: hidden;
+}
+/* 세로로 쌓였을 때의 간격 보정(위 `.m2-htmlart + *`)은 좌우 배치에선 불필요 */
+.reveal section[class*="layout-"] .contents-body.htmlart-side > .m2-htmlart + * {
+  margin-top: 0;
 }
 
 /* ── htmlArt 타입 CSS (process·cycle·hierarchy·pyramid) ───────────────────
@@ -369,6 +429,70 @@
   --htmlart-explain-line: var(--htmlart-accent);
 }
 
+/* ── License attribution badge (Issue292) ─────────────────────────────────
+   theme/LICENSE.md(테마 라이선스) 조건 — 첫 장·마지막 장에 항상 표기.
+   설계 SSOT: _doc_arch/license-attribution.md
+   - 위치: 하단 중앙, 상하단 노랑 가로선(section[class*="layout-"]::after, bottom:12px
+     height:10px, z-index:100 — 본 파일 §2) "바깥"(아래)에 배치. 2026-07-15 사용자 시각
+     피드백("노란바 아래로") 반영 — 기존 bottom:0.5em은 그 노랑 선과 겹쳐 보였음.
+     .cover-corner(github_url·homepage 등 기존 코너 뱃지)가 이미 동일하게
+     bottom:1px + font-size:0.31em 조합으로 그 선 바깥 좁은 띠에 배치하는 선례를 그대로 따름.
+   - 크기: 노랑 선 바깥 띠(~11px)에 맞춰 0.3em대로 축소 — 이 슬롯의 "참조용 텍스트" 기준을
+     본문 캡션이 아닌 같은 위치의 기존 .cover-corner 관례(0.31em)로 재해석.
+   - 색상: 전용 변수 --m2-license-fg(진한회색, theme별 override) — 순수 --kn-text(검정/흰색)보다
+     부드럽게. 각 theme의 기본 배경 위에서 WCAG 2.1 contrast ratio ≥4.5:1 보증
+     (검증: `./m2slide.sh --lint-license`). 대비는 색상만으로 결정되므로 크기 축소와 무관.
+   - 장식: --kn-accent(노랑, 전 theme 공통 고정 식별색) 저알파 text-shadow로 은은한 노랑 그림자
+     — "너무 진하지 않게" 요청 반영. 그림자는 장식일 뿐 대비 계산에는 무관(글자色만 대비 대상).
+   - 크기 하한: max()로 고정 — 프로젝트 커스텀 CSS가 font-size를 줄여도 --m2-license-fs-min 밑으로 못 내려감.
+   - bottom: 0 (2026-07-18) — 뱃지 박스(≈19px)가 노랑 선 아래 띠(12px)보다 커서 선과 겹쳐
+     "답답해" 보인다는 피드백. 위치로 확보 가능한 최대 여유가 2px 뿐이라 bottom:2px → 0 으로 내림.
+     더 떼려면 선 자체를 올리거나(::after bottom 상향) 글자를 줄여야 함.
+   - opacity로 색을 흐리게 하지 않음 — opacity는 대비 보증을 깨뜨리므로 사용 금지. "연한 느낌"은
+     회색 톤 자체(--m2-license-fg)와 노랑 그림자로만 표현.
+   ──────────────────────────────────────────────────────────────────────── */
+:root {
+  --m2-license-fs-min: 0.3em;    /* 하한 — .cover-corner(0.31em) 관례에 맞춘 값. 이 아래로 줄어들 수 없음 */
+  --m2-license-fs: 0.34em;       /* 기본 크기 */
+  --m2-license-fg: #5a5a5a;      /* 진한회색(라이트 테마 기본) — dark 테마는 --m2-license-fg override */
+  --m2-license-shadow: rgba(245, 197, 24, 0.45); /* --kn-accent(#F5C518) 저알파 — 은은한 노랑 그림자 */
+}
+.reveal .slides section .m2-license-badge {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  font-size: max(var(--m2-license-fs-min), var(--m2-license-fs));
+  color: var(--m2-license-fg);
+  text-shadow: 0 0 6px var(--m2-license-shadow);
+  font-family: inherit;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 5;
+}
+/* standalone 페이지(agenda.html 등, reveal.js 미사용) — 노랑 가로선 요소 자체가 없어 겹침 위험은
+   없으나, 시각 통일을 위해 동일하게 절대 px 하한으로 축소 배치 */
+.m2-license-badge--frame,
+.m2-license-badge--standalone {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  font-size: max(10px, 0.6vw);
+  color: var(--m2-license-fg);
+  text-shadow: 0 0 6px var(--m2-license-shadow);
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 50;
+}
+.m2-license-badge--standalone {
+  position: fixed; /* .agenda-frame 미탐지 시 fallback — 위치 앵커(position:relative)가 없을 수 있어 fixed */
+}
+
 /* <<< @import ../_shared/components.css */
 
 /* =========================================================================
@@ -385,6 +509,11 @@
   --m2-card-title-fg: var(--m2-text, #111111);       /* 제목 글자: palette text */
   --m2-card-body-bg: rgba(0, 0, 0, 0.04);   /* 본문: 슬라이드 배경 위 옅은 틴트 */
   --m2-card-border: rgba(0, 0, 0, 0.12);    /* 테두리: 옅은 중립색 */
+  /* 캡처 이미지 테두리 — 값은 WCAG 2.1 §1.4.11(비텍스트 대비) 3:1 에 맞춘 것이다.
+     0.42 를 흰 배경에 얹으면 #949494 = 3.03:1 로 기준을 막 넘는다(팔레트 5종 전부 3.01~3.03).
+     ⚠️ 구 0.16 은 1.45:1 이라 기준의 절반도 안 됐다 — 「테두리가 없다」는 신고가 실제로는
+     「걸려 있는데 안 읽힌다」였던 이유다. 눈대중으로 되돌리지 말 것. */
+  --m2-media-border: rgba(0, 0, 0, 0.42);
 }
 
 /* 슬라이드 본문 색상 — 흰 배경, 검정 텍스트 (sky.css 의존 제거 후 명시) */
@@ -425,8 +554,10 @@
   z-index: 100;            /* layout 자식(flex item) 위로 — 하단 가로선이 본문에 가려지지 않도록 */
 }
 
-.reveal section[class*="layout-"]::before { top: 12px; }
-.reveal section[class*="layout-"]::after  { bottom: 12px; }
+/* 12px → 22px (2026-07-18): 하단 선 바깥 띠가 좁아 라이선스 뱃지와 겹치던 문제.
+   theme/default 와 동일 값 유지 (parity). */
+.reveal section[class*="layout-"]::before { top: 22px; }
+.reveal section[class*="layout-"]::after  { bottom: 22px; }
 
 /* 모든 layout-* section min-height:100% (default 테마 동등 포팅) — flex 높이 chain 확보.
    default_lec엔 누락되어 있어 contents-body flex-grow가 definite height를 못 받음 →
@@ -507,7 +638,12 @@
 .reveal section[class*="layout-"] .blank-title::after,
 .reveal section[class*="layout-"] .closing-title::after,
 .reveal section[class*="layout-"] .summary-title::after,
-.reveal section[class*="layout-"] .toc-title::after {
+.reveal section[class*="layout-"] .toc-title::after,
+/* Issue371: split 은 `{{content}}` 를 `.split-header` 로 한 겹 감싸므로 위 `> .title`
+   (section 직계)에 걸리지 않아 **제목 아래가 빈 띠로 남았다.** divider 가 없어서가
+   아니라 브러시가 선택자에서 빗나간 것이다 — 그래서 divider 를 되살리는 대신(그쪽은
+   §3 아래 `[class$="-divider"]` 숨김과도 충돌한다) 여기 한 줄을 더한다. */
+.reveal section.layout-split-image-text .split-header > .title::after {
   content: "";
   position: absolute;
   left: 0;
@@ -548,6 +684,10 @@
   display: flex;
   flex-direction: column;
   min-height: 0;
+  /* Issue284: default 테마 parity — 컴포넌트↔인접 텍스트 세로 간격 (gap only, Issue198 margin 금지 회피) */
+  gap: 0.5em;
+  /* Issue284 opt-in: _config.yml contents_balance: center → --m2-contents-justify 주입 (기본 flex-start = 기존 동작) */
+  justify-content: var(--m2-contents-justify, flex-start);
 }
 
 /* contents-body flex:1 1 auto 가 definite height 를 받으려면 부모 section 자체가
@@ -628,6 +768,40 @@
   overflow: hidden;
 }
 
+/* 캡처 이미지 테두리 — 흰 배경 스크린샷이 흰 슬라이드에 얹히면 경계가 사라져
+   어디까지가 화면 캡처인지 읽히지 않는다. raster 이미지에만 준다:
+   svg(mermaid·htmlArt)는 자체 윤곽이 있고 위 규칙이 100% 로 늘리므로 제외.
+
+   ⚠️ 값을 «이미지 밝기별로» 가르지 않는다. 셋 다 그럴 이유가 없다:
+   ① 테두리가 읽혀야 할 상대는 이미지가 아니라 슬라이드 배경이고, default_lec 팔레트
+      5종 배경은 전부 near-white(#FFFFFF~#FFF8F0)라 상대가 하나로 고정돼 있다.
+   ② 어두운 캡처에서는 「과해지는」 것이 아니라 이미 있는 경계에 묻힌다 — 해가 없다.
+   ③ 런타임 밝기 판정은 file:// 배포에서 아예 불가능하다(로컬 이미지를 canvas 에
+      올리면 tainted 되어 getImageData 가 SecurityError). 단일 파일 배포 계약
+      (.claude/rules/file-deployment-rules.md)과 정면으로 충돌한다. */
+.reveal .media-container img {
+  border: 2px solid var(--m2-media-border, rgba(0, 0, 0, 0.42));
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+/* ⚠️ 테두리의 전제 조건 — fit 모드에서 요소 박스를 그려지는 이미지에 맞춘다.
+   base.css §fit 은 img 를 `width/height:100% + object-fit:contain` 으로 만들어
+   요소 박스가 letterbox 여백까지 포함한다(실측 1.design_rnd 3일차: 박스 777×991 에
+   이미지 777×463 — 박스의 53% 가 빈 여백). 그 상태로 테두리를 걸면 이미지가 아니라
+   빈 박스를 두르므로, fit 모드에 한해 auto 사이징으로 되돌려 shrink-wrap 시킨다.
+
+   보이는 이미지 크기는 그대로다 — contain 의 맞춤 결과와 max-width/max-height 의
+   맞춤 결과가 같은 값이기 때문. 다만 원본보다 «확대»되던 이미지는 원본 크기로
+   내려온다(실측 38장 중 2장, 1.82배·1.11배 — 둘 다 확대로 뭉개지던 것).
+   svg 는 대상이 아니다(위 mermaid/media svg 규칙이 계속 100% 로 늘린다). */
+.media-enlarge-fit .reveal section[class*="layout-"] .media-container img {
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
 .reveal section[class*="layout-"] .mermaid svg,
 .reveal section[class*="layout-"] .media-container svg {
   width: 100% !important;
@@ -645,7 +819,8 @@
    Issue97: min-height 100vh → 100% (default §3.1 동일, base.css §10 layout-* 100% 규칙 따름) */
 .reveal section.layout-_cover,
 .guide-line-mode .reveal .slides section.layout-_cover {
-  background-color: #ffffff !important;
+  /* Issue271: 하드코딩 #ffffff → var(--m2-bg) 로 테마 배경 반응. 미정의 테마는 #ffffff fallback (회귀 0) */
+  background-color: var(--m2-bg, #ffffff) !important;
   background-image: url('../theme-img/finfraPuffer1.png');
   background-repeat: no-repeat;
   background-position: 6% 14%;
@@ -711,7 +886,8 @@
    hr.png 하단 브러시(§3 > .title::after)가 폭 가득 (contents-full 만 텍스트 폭으로 짧게 나오던 문제 교정 2026-07-02). */
 .reveal section.layout-_contents > .title,
 .reveal section.layout-contents > .title,
-.reveal section.layout-contents-full > .title {
+.reveal section.layout-contents-full > .title,
+.reveal section.layout-split-image-text .split-header > .title {
   width: 100%;
   text-align: center;
   box-sizing: border-box;
@@ -722,26 +898,31 @@
    head_left 라벨이 항상 바 위에 오도록 함 (사용자 요구: "바가 무조건 아래"). */
 .reveal section.layout-_contents::before,
 .reveal section.layout-contents::before,
-.reveal section.layout-contents-full::before {
+.reveal section.layout-contents-full::before,
+.reveal section.layout-split-image-text::before {
   display: none !important;
 }
 /* head-bar가 비어 숨김된 슬라이드(단일모드 등)는 상단 §2 브러시 복원 — 상단 무바 회귀 방지 */
 .reveal section.layout-_contents:has(> .contents-head-bar:empty)::before,
 .reveal section.layout-_contents:has(> .contents-head-bar > .contents-head-left:empty):has(> .contents-head-bar > .contents-head-right:empty)::before,
 .reveal section.layout-contents-full:has(> .contents-head-bar:empty)::before,
-.reveal section.layout-contents-full:has(> .contents-head-bar > .contents-head-left:empty):has(> .contents-head-bar > .contents-head-right:empty)::before {
+.reveal section.layout-contents-full:has(> .contents-head-bar > .contents-head-left:empty):has(> .contents-head-bar > .contents-head-right:empty)::before,
+.reveal section.layout-split-image-text:has(> .contents-head-bar:empty)::before,
+.reveal section.layout-split-image-text:has(> .contents-head-bar > .contents-head-left:empty):has(> .contents-head-bar > .contents-head-right:empty)::before {
   display: block !important;
 }
 /* contents-full/contents 도 _contents 와 동일하게 head-bar 라벨 아래 브러시 배치 —
    미적용 시 §2 상단 프레임선이 챕터명 라벨과 겹쳐 "챕터명 이상"하게 보임 (사용자 요구 2026-07-03). */
 .reveal section.layout-_contents > .contents-head-bar,
 .reveal section.layout-contents > .contents-head-bar,
-.reveal section.layout-contents-full > .contents-head-bar {
+.reveal section.layout-contents-full > .contents-head-bar,
+.reveal section.layout-split-image-text > .contents-head-bar {
   position: relative;
 }
 .reveal section.layout-_contents > .contents-head-bar::after,
 .reveal section.layout-contents > .contents-head-bar::after,
-.reveal section.layout-contents-full > .contents-head-bar::after {
+.reveal section.layout-contents-full > .contents-head-bar::after,
+.reveal section.layout-split-image-text > .contents-head-bar::after {
   content: "";
   position: absolute;
   left: 0;
@@ -752,8 +933,18 @@
   background-size: 100% 100%;
   background-repeat: no-repeat;
   pointer-events: none;
-  z-index: 100;
+  /* Issue408: z-index 를 두지 않는다.
+     이 브러시는 `bottom:-6px` 로 head-bar 를 4px 넘어 **제목 박스 안까지** 내려온다.
+     z-index:100 이면 제목 글자 위에 그려지고, 불투명 PNG 라 걸린 글자가 지워진다.
+     한글·라틴은 그 띠까지 안 올라오지만 **이모지는 em 박스를 넘어 뻗어** 걸린다
+     (실측 prj60 1.design_rnd p39·p40·p42·p157 — `🙋`·`✅` 윗부분 소실).
+     z 를 빼면 트리 순서대로 칠해진다 — head-bar 가 제목보다 앞에 있으므로
+     **제목이 위**가 되고, 선은 글자 뒤로 지나간다. 레이아웃은 1px 도 안 움직인다.
+     ⚠️ 제목 쪽 선택자를 늘려 올리는 방법은 쓰지 않는다 — layout 마다 제목이
+        `.title`(직속)·`.exercise-title`(`.exercise-header` 안)로 갈려 있어
+        목록을 유지해야 하고, 빠뜨린 layout 이 곧 재발이다(실제로 한 번 빠뜨렸다). */
 }
+
 
 /* Issue97 (Issue80 §2.5 동기): _contents_no_title — 헤더 영역 없음, 본문이 위까지 차지 */
 .reveal section.layout-_contents_no_title > .contents-body,
@@ -848,34 +1039,168 @@
   display: none;
 }
 
-/* 4.5 exercise: butterfly 좌측 + cat 우하단 */
-.reveal section.layout-exercise {
-  background-image:
-    url('../theme-img/finfraButterfly.png'),
-    url('../theme-img/finfraCat.png');
-  background-repeat: no-repeat, no-repeat;
-  background-position: 4% 60%, 96% 92%;
-  background-size: 14% auto, 16% auto;
-}
-
-.reveal section.layout-exercise .exercise-body {
-  padding-left: 18%;
-  padding-right: 4%;
-}
-
-/* 4.6 exercise-small: butterfly 크게 좌측 + cat 우하단 (말풍선) */
+/* 4.5 + 4.6 exercise / exercise-small — 실습 2종 공통 규칙 (__lec 2026.09.19 요구)
+   구 구조는 두 레이아웃이 마스코트·여백을 각자 선언해 나비가 14% vs 22% 로 갈렸다.
+   같은 "실습"인데 크기가 1.57배 차이 나 넘길 때마다 눈에 띈다 → 공통 선언으로 병합한다.
+   나비는 summary 레이아웃(§4.7.5)과 같은 9% 로 최소화한다 — 테마 안에서 유일하게
+   실습 2종만 크던 값이라 summary 쪽이 이미 기준선 역할을 하고 있었다. */
+.reveal section.layout-exercise,
 .reveal section.layout-exercise-small {
   background-image:
     url('../theme-img/finfraButterfly.png'),
     url('../theme-img/finfraCat.png');
   background-repeat: no-repeat, no-repeat;
-  background-position: 6% 50%, 92% 90%;
-  background-size: 22% auto, 18% auto;
+  background-position: 3% 64%, 95% 92%;
+  background-size: 9% auto, 12% auto;
 }
 
-.reveal section.layout-exercise-small .exercise-body {
-  padding-left: 30%;
+/* Issue359: 선택자에 `> div` 를 반드시 유지할 것 — 장황해 보여도 필수다.
+   base.css §9 의 `.reveal section[class*="layout-"] > div[class$="-body"]`(명시도 0-3-2)가
+   shorthand `padding: 1em 0` 로 좌우 padding 을 0 으로 덮는다. theme 이 나중에 로드돼도
+   0-3-1 로는 못 이긴다. 자식 결합자 + 요소 선택자로 0-3-2 동점을 만들어야 후순위 로드가 이긴다.
+   좌여백은 나비 축소(22%·14% → 9%)에 맞춰 13% 로 통일했다 — 구 30%·18% 는 이제 없는
+   마스코트를 피하던 값이라 실습 지시문만 불필요하게 접혔다. */
+.reveal section.layout-exercise > div.exercise-body,
+.reveal section.layout-exercise-small > div.exercise-body {
+  padding-left: 13%;
   padding-right: 4%;
+}
+
+/* 실습 제목 밴드를 _contents(이론 장표)와 동일하게 맞춘다 (__lec 2026.09.19 요구).
+   구 구조에서는 §4.2 가 _contents 제목만 --title-font-size(1.5em)로 내려 잡고
+   실습 제목은 base.css 기본값(exercise 2.8em · exercise-small 2.2em)에 방치돼,
+   이론 60px vs 실습 88·112px 로 갈렸다. 2줄 제목일 때 본문 시작선이
+   195px(이론) vs 389px(exercise)까지 벌어져 장표를 넘길 때 제목 밴드가 출렁인다.
+   아래 3개 선언으로 제목 시작 y·제목 블록 높이·본문 시작 y 가 _contents 와 완전 일치한다. */
+.reveal section.layout-exercise .exercise-title,
+.reveal section.layout-exercise-small .exercise-title {
+  font-size: var(--title-font-size, 1.5em);
+  padding-top: var(--title-padding, 0);
+  padding-bottom: 0.4em;
+}
+
+/* 34px = _contents 의 contents-head-bar 밴드 높이(padding-top 8px + 1em 라인).
+   실습 레이아웃엔 head-bar 가 없으므로 헤더 상단 패딩이 그 자리를 대신해야
+   제목 시작선이 62px 로 일치한다. 하단 31px 은 _contents 제목의 margin-bottom 과 동일. */
+.reveal section.layout-exercise .exercise-header,
+.reveal section.layout-exercise-small .exercise-header {
+  padding: 34px 0 31px 0;
+}
+
+/* 실습 2종을 이론 장과 같은 머리 구조로 맞춘다 (__lec 2026.09.20 요구).
+   ① 제목 브러시가 글자 폭에서 끊기던 것을 전폭으로 — base.css §1208
+      `section[class*="layout-"] > div[class$="-header"]` 가 `display:flex` 와 함께
+      `align-items: center` 를 주는데, flex 교차축이 center 면 자식이 shrink-to-fit 이 된다.
+      그래서 `.exercise-title` 박스가 글자 폭만큼만 잡히고 `::after` 의 hr.png 가 그 안에서 끊겼다.
+      이론 장은 제목이 `-header` div 밖(section 직계 `.title`)이라 이 규칙을 안 받아 전폭이었다.
+      실측(1808px 기준): 이론 제목폭 1808·left 56 고정 vs 실습 1312·1610 / left 304·155 유동.
+      제목 길이에 따라 좌측 시작점이 움직여 장을 넘길 때 제목이 좌우로 출렁였다.
+   ② head-bar 를 실습에도 달았으므로 위 블록의 상단 34px 을 회수한다 — 그 값은 애초에
+      "실습엔 head-bar 가 없으니 그 자리를 패딩이 대신한다" 는 전제로 넣은 것이다.
+      이제 head-bar 가 실물로 있으니 패딩까지 두면 제목이 이론 장보다 34px 아래로 내려간다.
+   🔴 위 블록에 합치지 말 것 — `.layout-exercise .exercise-header` 는 (0,3,1) 이라
+      base.css 의 (0,3,2) 에 진다. 자식 결합자 + `div` 요소로 (0,3,2) 동점을 만들어야
+      후순위 로드가 이긴다 (Issue359 와 같은 기법). */
+.reveal section.layout-exercise > div.exercise-header,
+.reveal section.layout-exercise-small > div.exercise-header {
+  align-items: stretch;
+  padding: 0 0 31px 0;
+}
+
+/* 제목을 헤더 전폭으로 — `align-items: stretch` 만으로는 안 된다.
+   §3 제목 공통 규칙이 `margin: 0 auto` 를 주는데, **flex 아이템의 auto margin 은
+   남는 공간을 먼저 흡수**하므로 교차축 정렬보다 이긴다. 그래서 좌우 margin 을 0 으로
+   되돌리고 폭을 명시해야 브러시(`::after` hr.png)가 이론 장과 같은 폭으로 깔린다.
+   명시도: 클래스 4 · 요소 2 = (0,4,2) > §3 의 (0,3,1). */
+.reveal section.layout-exercise > div.exercise-header > .exercise-title,
+.reveal section.layout-exercise-small > div.exercise-header > .exercise-title {
+  width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+/* 실습 2종 head-bar — 이론 장과 같은 모양으로 (__lec 2026.09.20 요구).
+   🔴 head-bar 규칙은 이 파일에서 **layout 이름을 나열**하는 선택자로 4곳에 흩어져 있고
+      (§ position·::after 브러시 · display:flex 본체 · 좌/우 자식 · 빈 값 숨김),
+      실습 2종이 그 네 목록에 **전부 빠져** 있었다. 그래서 head-bar 를 템플릿에 달아도
+      `display:block` · `position:static` · 브러시 없음으로 떨어졌다(실측 높이 45px vs 이론 37px).
+      목록 4곳에 이름을 더하는 대신 여기 한 블록으로 모은다 — 나열 선택자는 layout 이 늘 때마다
+      같은 누락을 반복하므로, 적어도 실습 계열은 한 자리에서 끝나게 한다. */
+.reveal section.layout-exercise > .contents-head-bar,
+.reveal section.layout-exercise-small > .contents-head-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 28px 0 28px;
+  margin: 0;
+  font-size: 0.5em;
+  color: rgba(0, 0, 0, 0.6);
+  min-height: 0;
+  line-height: 1.3;
+  position: relative;
+}
+.reveal section.layout-exercise > .contents-head-bar > .contents-head-left,
+.reveal section.layout-exercise-small > .contents-head-bar > .contents-head-left {
+  text-align: left;
+  flex: 1 1 50%;
+  font-weight: 600;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.reveal section.layout-exercise > .contents-head-bar > .contents-head-right,
+.reveal section.layout-exercise-small > .contents-head-bar > .contents-head-right {
+  text-align: right;
+  flex: 1 1 50%;
+  opacity: 0.75;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+.reveal section.layout-exercise > .contents-head-bar:empty,
+.reveal section.layout-exercise-small > .contents-head-bar:empty,
+.reveal section.layout-exercise > .contents-head-bar:has(> .contents-head-left:empty):has(> .contents-head-right:empty),
+.reveal section.layout-exercise-small > .contents-head-bar:has(> .contents-head-left:empty):has(> .contents-head-right:empty) {
+  display: none;
+}
+.reveal section.layout-exercise > .contents-head-bar::after,
+.reveal section.layout-exercise-small > .contents-head-bar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 10px;
+  background-image: url('../theme-img/hr.png');
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  /* Issue408: z-index 를 두지 않는다.
+     이 브러시는 `bottom:-6px` 로 head-bar 를 4px 넘어 **제목 박스 안까지** 내려온다.
+     z-index:100 이면 제목 글자 위에 그려지고, 불투명 PNG 라 걸린 글자가 지워진다.
+     한글·라틴은 그 띠까지 안 올라오지만 **이모지는 em 박스를 넘어 뻗어** 걸린다
+     (실측 prj60 1.design_rnd p39·p40·p42·p157 — `🙋`·`✅` 윗부분 소실).
+     z 를 빼면 트리 순서대로 칠해진다 — head-bar 가 제목보다 앞에 있으므로
+     **제목이 위**가 되고, 선은 글자 뒤로 지나간다. 레이아웃은 1px 도 안 움직인다.
+     ⚠️ 제목 쪽 선택자를 늘려 올리는 방법은 쓰지 않는다 — layout 마다 제목이
+        `.title`(직속)·`.exercise-title`(`.exercise-header` 안)로 갈려 있어
+        목록을 유지해야 하고, 빠뜨린 layout 이 곧 재발이다(실제로 한 번 빠뜨렸다). */
+}
+
+/* 상단 §2 프레임 브러시를 숨긴다 — 이론 장이 하는 것과 같다.
+   head-bar 가 **자기 아래**에 브러시를 그리므로 §2 의 `::before`(top:12px, head-bar 위)를
+   그대로 두면 선이 넷이 된다: head-bar 위 1 + head-bar 아래 1 + 제목 아래 1 + 하단 1.
+   맨 위 것이 남는 선이고, 이론 장은 이미 이 숨김 목록에 들어 있었다. 실습 2종만 빠져 있었다. */
+.reveal section.layout-exercise::before,
+.reveal section.layout-exercise-small::before {
+  display: none !important;
+}
+/* head-bar 가 비어 숨김된 슬라이드는 상단 브러시를 되살린다 — 상단 무바 회귀 방지.
+   단일 모드처럼 outline 이 없어 head_left/right 가 둘 다 빈 덱이 여기 걸린다. */
+.reveal section.layout-exercise:has(> .contents-head-bar:empty)::before,
+.reveal section.layout-exercise:has(> .contents-head-bar > .contents-head-left:empty):has(> .contents-head-bar > .contents-head-right:empty)::before,
+.reveal section.layout-exercise-small:has(> .contents-head-bar:empty)::before,
+.reveal section.layout-exercise-small:has(> .contents-head-bar > .contents-head-left:empty):has(> .contents-head-bar > .contents-head-right:empty)::before {
+  display: block !important;
 }
 
 /* 4.7 closing: puffer1 중앙 큼 + cat 우하단
@@ -1171,6 +1496,24 @@
   height: 100%;
   min-height: 0;
   display: block;
+}
+
+/* agenda_card_mode: 카드 그리드(.toc-cards)도 markmap 박스와 동일한 accent 테두리 프레임.
+   카드 모드 컨테이너는 .layout-_cards.layout-_toc — .toc-markmap 셀렉터에 매치되지 않아
+   테두리가 소실되던 회귀 보정 (default 테마 parity). */
+.agenda-frame .layout-_cards {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.agenda-frame .toc-cards {
+  flex: 1 1 0;
+  min-height: 0;
+  border: 2px solid var(--kn-accent);
+  border-radius: 8px;
+  padding: 12px;
+  overflow: auto;
+  background: #ffffff;
 }
 
 /* Issue113: agenda-frame은 transform: scale을 받지 않는 standalone 컨테이너.
@@ -1470,6 +1813,33 @@ body.agenda-page .agenda-frame {
   display: none;
 }
 
+/* 4:3 덱의 머리말 축소분 보정 (__lec 2026.09.19 요구 — prj42 레퍼런스 덱 대조).
+   4:3 은 1920×1440 이라 세로가 모자란 창에서 3:2(1920×1280) 대비 정확히 12.5% 더 축소된다
+   (1440÷1280 = 1.125. 1600×900 창 실측 배율 0.6250 vs 0.7031, 머리말 화면 12.5px vs 14.1px).
+   머리말은 0.5em 회색이라 그 축소가 "흐리고 작다"로 그대로 체감된다. 축소분만큼 되돌린다.
+   ⚠️ `.reveal.ratio-4-3` 로 스코프한 이유 — 3:2 덱은 축소 손해가 **없다**. 같이 키우면 그쪽만
+   과해진다. 보정은 손해를 본 비율에만 준다. 테마 전역으로 올리면 레퍼런스 덱이 망가진다.
+   ⚠️ 우측 `.contents-head-right` 의 `opacity: 0.75` 는 그대로 둔다 — 좌/우 위계는 테마 의도다. */
+.reveal.ratio-4-3 section[class*="layout-"] > .contents-head-bar {
+  font-size: 0.56em;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+/* 실습·정리 장표의 본문 글자 크기를 이론 장표와 맞춘다 (__lec 2026.09.19 요구).
+   base.css 는 ul/ol 의 `font-size: 1.1em` 을 `_contents`(L876)·`contents-full`(L912) 에만 준다.
+   그 목록에서 실습 2종·summary 가 빠져 있어 같은 불릿이 **이론 44px / 실습 40px** 로 갈렸고,
+   장표를 넘길 때마다 글자가 커졌다 작아졌다 했다. 크기만 맞춘다 — 글꼴·색·굵기는 건드리지 않는다.
+   ⚠️ 근본 원인은 layout 이름을 **나열**하는 선택자다. 새 layout 이 늘 때마다 여기 손대야 하고,
+   실제로 실습 계열은 head-bar·제목 풀폭 브러시에서도 같은 이유로 매번 빠졌다. */
+.reveal section.layout-exercise ul,
+.reveal section.layout-exercise ol,
+.reveal section.layout-exercise-small ul,
+.reveal section.layout-exercise-small ol,
+.reveal section.layout-summary ul,
+.reveal section.layout-summary ol {
+  font-size: 1.1em;
+}
+
 /* =========================================================================
    Split-image-text layout — H2 title 자동 렌더 ({{content}} 경유)
    - layout 템플릿이 {{content}}를 split-header에 넣으면 H2가 <h2 class="title">로 변환되어 들어옴
@@ -1583,4 +1953,20 @@ body.agenda-page .agenda-frame {
 .reveal .slides section strong {
   color: var(--m2-accent-5, #C82506);
   font-weight: 700;
+}
+
+/* ── 본문 폰트 family 지정 배선 (Issue387) ────────────────────────────────
+   `_config.yml` 의 `style.theContents.font_family` 는 파싱되어
+   `--content-font-family` 변수로 산출까지 나오는데, 그 변수를 쓰는 셀렉터가
+   base.css 의 `.reveal .theContents` **하나뿐**이었다. 현행 layout 템플릿의 본문
+   컨테이너는 `contents-body`·`exercise-body`·`summary-body` … 이므로 그 변수가
+   **아무 요소에도 닿지 않았다** — 사용자가 폰트를 지정해도 보이지 않는다
+   (실측 2026-09-20: `index.html` 에 `--content-font-family: 'Helvetica Neue'…` 가
+   나갔는데 본문 `li` 의 computed 는 `--global-font-family` 기본값).
+
+   ⚠️ 상속을 덮는 것이라 명시도 다툼이 없다 — `.reveal` 의 `--global-font-family` 는
+      자식에게 **상속**으로 내려오고, 자식에 직접 선언하면 그것이 이긴다.
+   ⚠️ 변수 미지정 시 `inherit` 이므로 기존 덱은 무변경이다(회귀 0). */
+.reveal section[class*="layout-"] > div[class$="-body"] {
+  font-family: var(--content-font-family, inherit);
 }
