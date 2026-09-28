@@ -36,66 +36,11 @@
 1. 앱 소개 5덱(fPmIntro·fPmIntro_en·n3shIntro·fSnippetCliIntro·fWarrangeCliIntro) prj42a `decks/tech/` 2차 이관 — Issue424_1 안정 후(사용자 결정 2026-09-28). fSnippet·fWarrange 는 publishing 빈값이라 **첫 공개(H:공개)** 확정 필요. fPmIntro 의 mp4 34MB 는 prj42a `.gitignore` `*.mp4` + finfra.kr 호스팅. docs 이전 링크 표시는 Issue424 규약 그대로
 1. LlmFlow(353장) prj42a 이관 — **보류**(사용자 결정 2026-09-28). publishing `x` 라 이관 = 첫 공개. 공개 결정이 먼저이며 그 전까지 원고는 git 미추적 상태로 남는다
 1. `Projects.md` publishing `o` 15개 vs `Projects/.gitignore` 허용목록 11개 불일치 — AgenticCoding·graphify·StellarEvolution·n3shIntro 가 빠져 원고가 git 미추적. 앞 3개는 Issue424_1 이관으로 해소되지만 `--sync-projects` 가 왜 어긋났는지(생성 로직 vs 미실행)는 남는다 (Issue424 에서 발견)
+1. `--lint-deployment` 가 강의 본문의 명령·경로 예시(`curl localhost:3000`·`/Users/...`)를 위반으로 잡는다 — AgenticCoding·LlmFlow·z_done 30줄. 자산 참조(`src`·`href`·`url(`)만 보도록 좁힐지 (Issue424 에서 발견)
+1. [글로벌 SCAR] `~/.claude/sh/issue-tx.py` 가 서브 이슈 번호 `Issue424_1` 을 `4241` 로 읽어 `stage/commit --issues` 에 서브 블록을 싣지 못한다 — prj42 에서는 HEAD blob 변환 + 임시 인덱스로 우회. `~/.claude/Issue.md` 등록 후보 (Issue424 에서 발견)
 
 
 # 🚧 진행중
-
-## Issue424: Projects 원고 정리 — 덱 통합 2건 + 강연 덱 prj42a(Projects_deck) 이관 (등록: 2026-09-28, 착수: 2026-09-28)
-* 목적: 본체 `Projects/` 에 강연·소개·테스트 덱이 섞여 있고, 공개(publishing `o`) 강연 일부는 원고가 어느 git 에도 없다. [deck-repo.md](_doc_arch/deck-repo.md) 의 «도구와 콘텐츠 분리» 를 적용해 «m2slide 자신을 설명·검증하는 덱은 prj42, 그 밖의 콘텐츠는 prj42a» 로 가른다
-* 상세:
-    - 정리안(29덱 판정표·중복도 대조): `_doc_work/htm/hub_htm_20260928_220734_a_deck-migration.md`
-    - **사용자 결정 2026-09-28** (AskUserQuestion): LlmFlow 이관 **보류**(publishing `x` — 이관 = 첫 공개) · 앱 소개 5덱은 **1차 후 별도** · m2Slide 통합 **진행** · MermaidExample 통합 **진행**
-    - **사용자 조건 2026-09-28**: 옮기거나 합친 덱은 m2slide **`docs/`(Pages)에 이전된 링크를 표시**해야 한다 — 기존 URL 로 들어온 사람이 새 위치를 찾을 수 있어야 한다
-    - 실측(2026-09-28): publishing `o` 인데 원고가 git 미추적인 덱 4개(AgenticCoding·graphify·StellarEvolution·n3shIntro) — `Projects.md` publishing `o` 15개 vs `Projects/.gitignore` 허용목록 11개. `docs/` 에는 빌드본만 있어 디스크 유실 시 원고 복구 불가
-    - 제외: `1.design_rnd`(prj60 소유 링크 · 고객사 과정 진행 중) · `cg-e2e`(prj7 링크) · 회귀 픽스처 전부(igTest 는 m2slide_info 와 줄 100% 일치하지만 동결 픽스처)
-    - ⚠️ prj42a 는 **공개 저장소**이고 기본 라이선스가 CC BY-NC-SA 4.0 이다 — 옮기는 덱의 현재 라이선스 배지와 맞는지 확인. push 는 사용자가 한다
-* 구현 명세:
-    - 공통 이관 절차(덱마다): `mv Projects/<X> Projects_deck/decks/education/<X>` → `./m2slide.sh --link Projects_deck/decks/education/<X> <X>` (폴더 이름 유지 → `/p/<X>`·`/deploy-docs <X>`·`docs/<X>/` URL 불변) → prj42 추적분은 `git rm --cached -r`(이력 보존) → `--sync-projects` 가 링크 덱을 허용목록에서 빼는지 확인 → prj42a 에 `_template/README.md` 기준 README + 커밋
-    - **이전 링크 표시(docs/)**: 이관 덱은 `docs/index.html` 카드에 «원고 이전 → `github.com/Finfra/m2slide-deck/tree/main/decks/education/<X>`» 링크를, 통합 덱은 «통합됨 → <정본 덱>» 링크를 단다. 표시 로직은 `/deploy-docs` 카드 생성 절차(B-5)에 넣어 재배포 때 사라지지 않게 한다 — 손으로 고친 카드는 다음 배포에 덮인다
-    - 검증: 덱마다 `./m2slide.sh <X>` rc0 · `/p/<X>` 표시 · `--lint-deployment <X>` 0 · `docs/index.html` 에 이전 링크 존재 · 링크 대상 경로가 prj42a 에 실재
-    - 완료 기준: 아래 서브 이슈 전부 ✅
-
-## Issue424_1: 강연 1차 6덱 prj42a 이관 + docs 이전 링크 (등록: 2026-09-28, 해결: 2026-09-28, commit: 960541e, 582e054, ec70efd, 0c7456a · prj42a: 83f334d, 7c2ea87, 1ad4ee4, 44b7759, cbd27c2, de09b05) ✅
-* 목적: AgenticCoding·BasicKnowledgeForAI_small·GenContentProd·LlmAndVibeCoding·StellarEvolution·graphify 를 `Projects_deck/decks/education/` 으로 옮긴다 — 6덱 모두 이미 Pages 공개 중이라 노출 범위는 바뀌지 않는다
-* 상세:
-    - prj42 추적 해제 대상은 3덱(BasicKnowledgeForAI_small 50·GenContentProd 204·LlmAndVibeCoding 62 파일). 나머지 3덱은 원래 미추적 — prj42a 커밋이 첫 버전 관리다
-    - AgenticCoding 은 이미지 71장 약 40MB — prj42a push 용량 확인
-    - `Projects/_ppt/` 강연 원본 pptx·pdf 와 `z_done/` 강연 구버전은 옮기지 않는다(공개 불필요)
-    - 6덱 모두 `docs/` 발행본과 `docs/index.html` 카드가 있다(LEC 4 · INFO graphify · ETC StellarEvolution) — 이전 링크는 이 카드들에 단다
-* 구현 명세: Issue424 공통 절차 · 덱 단위로 커밋해 한 덱이 막혀도 나머지가 진행되게 한다
-* 결과:
-    - 방식: `mv Projects/<X> Projects_deck/decks/education/<X>` → `--link` 심링크. `/p/` 목록·`Projects.md` 등록부(경로 열, 소유 prj `42a`)·`/deploy-docs` 가 그대로 동작한다. `--sync-projects` 는 경로 있는 행을 허용목록에서 빼므로(`publishedRows` 의 `!r[2]`) 3덱이 자동으로 추적 제외됐다
-    - prj42a: 덱 단위 커밋 6 — `83f334d` StellarEvolution · `7c2ea87` graphify · `1ad4ee4` BasicKnowledgeForAI_small · `44b7759` LlmAndVibeCoding · `cbd27c2` GenContentProd · `de09b05` AgenticCoding. 덱마다 `_template` 형식 README(저자는 frontmatter `instructor_name` 이 있는 4덱만 옮김 — StellarEvolution·graphify 는 «원고에 미기재»)
-    - prj42: `960541e` `Projects_org.md` 에 «m2slide-deck 으로 이전된 프로젝트» 절 자동 생성(README 가 링크하는 공개 목록 — 이전 링크 표시 조건의 두 번째 자리) · `582e054` 3덱 추적 해제 · `ec70efd` `/deploy-docs` 5-a(이전 덱 카드 규약) · `0c7456a` `docs/index.html` 6카드에 «📦 원고 이전 → m2slide-deck» 링크
-    - 검증: 6덱 이름 빌드 rc0 · placeholder·`undefined` 0 · `--lint-deployment` 위반 0 · `/p/<X>` 표시 · `sync-projects-md.test.js` 13/13(신규 3, red 확인) · ego-browser `file://` 갤러리 `card-source` 6·중첩 `<a>` 0·카드 간격 0 — 캡처 `_doc_work/capture/issue424/docs-gallery-lec.png`
-    - ⚠️ push 하지 않았다. **순서가 있다** — m2slide-deck 을 먼저 push 해야 갤러리 링크가 404 가 아니다. `0c7456a`(docs)는 현 브랜치가 `feat/ig-ppt-maker-integration` 이라 Pages(main) 반영에 cherry-pick 이 필요하다
-    - 부수: `Projects/.gitignore` 재생성으로 `n3shIntro`(publishing `o`)가 허용목록에 들어갔다 — 원고는 커밋하지 않아 untracked 로 보인다. 앱 소개 2차 이관 때 결정
-    - 발견: `issue-tx.py` 가 `Issue424_1` 을 `4241` 로 읽어 서브 블록을 스테이징하지 못한다 — Issue.md 커밋은 HEAD blob 에 같은 변환을 적용해 임시 인덱스로 우회했다(글로벌 SCAR 라 여기서 고치지 않음)
-
-## Issue424_2: m2Slide(·_en) → m2slide_info(·_en) 통합 (등록: 2026-09-28)
-* 목적: m2Slide(7장: what·why·30초 시작)는 m2slide_info(34장: what·why·where·강점·마무리)의 축약판이다. 소개 덱을 하나로 모은다
-* 상세:
-    - m2Slide 고유분은 «한 번 쓰고 네 가지로 낸다» 문장과 빌드 한 줄 정도 → m2slide_info 01장에 흡수. 영문판도 같다
-    - `README.md`·`README_kr.md` 첫 소개 링크가 `m2Slide(_en)` 을 가리킨다 → info 로 교체
-    - `docs/m2Slide(_en)/` 에는 리다이렉트 한 장을 남기고, 카드에는 «통합됨 → m2slide_info» 를 표시한다
-    - `lib/dev-server/test_server.py` 가 `'m2Slide'` 를 경로 변환 문자열로 쓴다 — 폴더 이동 후에도 통과하는지 확인
-* 구현 명세: 원고 흡수 → `release_date` 갱신 → 빌드·HTML 검증 → m2Slide(·_en) 는 `z_done/<Name>_v<VERSION>` 으로 이동(project-version-rules)
-
-## Issue424_3: m2Slide_MermaidExample → m2Slide_visual_component 챕터 통합 (등록: 2026-09-28)
-* 목적: Mermaid 도 시각 구성요소의 하나다 — 쇼케이스를 한 덱으로 모은다
-* 상세:
-    - MermaidExample 은 single mode 41장 → visual_component(chapter mode 96장)에 챕터 1개로 넣는다
-    - visual_component 는 회귀 덱이기도 하다([transform.yml](data/m2slide2ppt/transform.yml) 참조) — 챕터를 더하면 회귀 기준이 바뀌므로 관련 러너를 다시 돌려 기준을 재설정한다
-    - `docs/m2Slide_MermaidExample/` 은 리다이렉트 + 카드 «통합됨 → m2Slide_visual_component» 표시
-* 구현 명세: 챕터 추가 → AGENDA 갱신 → 빌드·HTML 검증 → 회귀 러너 재측정 → MermaidExample 은 z_done 이동
-
-## Issue424_4: 참조 없는 테스트 잔재 z_done 이동 (등록: 2026-09-28, 해결: 2026-09-28, commit: 없음 — 미추적 폴더 이동) ✅
-* 목적: `/p/` 목록에서 러너·코드가 쓰지 않는 덱을 걷어낸다
-* 상세:
-    - MediaBackendTest(참조 0) · aTest.bak.20260909(참조 0, 백업본) · aTest_rt(`z_test/pdf/lib/integrity.py` 주석 속 실측 사례 1곳뿐)
-    - 삭제가 아니라 z_done 이동 — 되돌릴 수 있게 둔다
-* 구현 명세: 이동 전 `grep -rF` 로 참조 0 재확인 → z_done 이동 → `--sync-projects` → `/p/` 목록에서 사라졌는지 확인
-* 결과: `z_done/MediaBackendTest` · `z_done/aTest.bak.20260909_v2.0`(VERSION 2.0 — project-version-rules) · `z_done/aTest_rt`. 3개 모두 git 미추적이라 저장소 변경은 없다. `--sync-projects` 로 비활성 표 이동 · `/p/` 목록 0건 확인. `aTest_rt` 는 `z_test/pdf/lib/integrity.py` 주석과 `data/_proposals/aTest_rt-2026-09-09.md` 에 실측 사례로 남아 있을 뿐 실행 경로 참조가 아니다
 
 ## Issue415: 아이폰에서 **탭(클릭)만으로** 덱이 동작하는지 ego-browser 로 점검·수정하고 aTest → aTest-all 2단계로 안정화 (등록: 2026-09-23)
 * 목적: 키보드 없는 아이폰에서 m2slide 덱을 탭만으로 넘기고 쓸 수 있어야 한다(사용자 전제: **터치 = 클릭**). 동시에 prj3 외부*핀봇(외부자문·외부컨설턴트)이 팀장핀봇 배분 경로로 실제 동작하는지 실증한다(요청: 사용자 → 나래, prj3#Issue678 후속)
@@ -194,6 +139,78 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue424: Projects 원고 정리 — 덱 통합 2건 + 강연 덱 prj42a(Projects_deck) 이관 (등록: 2026-09-28, 착수: 2026-09-28, 해결: 2026-09-28, commit: 960541e, 582e054, ec70efd, 0c7456a, bad0ca7, d1a62ce, 8f53425, b712415, 2afc9cd, bc755c0, cc5121d, 5ca9883, 45f2372, 73ac9f7, 7c1db38 · prj42a: 83f334d, 7c2ea87, 1ad4ee4, 44b7759, cbd27c2, de09b05) ✅
+* 목적: 본체 `Projects/` 에 강연·소개·테스트 덱이 섞여 있고, 공개(publishing `o`) 강연 일부는 원고가 어느 git 에도 없다. [deck-repo.md](_doc_arch/deck-repo.md) 의 «도구와 콘텐츠 분리» 를 적용해 «m2slide 자신을 설명·검증하는 덱은 prj42, 그 밖의 콘텐츠는 prj42a» 로 가른다
+* 상세:
+    - 정리안(29덱 판정표·중복도 대조): `_doc_work/htm/hub_htm_20260928_220734_a_deck-migration.md`
+    - **사용자 결정 2026-09-28** (AskUserQuestion): LlmFlow 이관 **보류**(publishing `x` — 이관 = 첫 공개) · 앱 소개 5덱은 **1차 후 별도** · m2Slide 통합 **진행** · MermaidExample 통합 **진행**
+    - **사용자 조건 2026-09-28**: 옮기거나 합친 덱은 m2slide **`docs/`(Pages)에 이전된 링크를 표시**해야 한다 — 기존 URL 로 들어온 사람이 새 위치를 찾을 수 있어야 한다
+    - 실측(2026-09-28): publishing `o` 인데 원고가 git 미추적인 덱 4개(AgenticCoding·graphify·StellarEvolution·n3shIntro) — `Projects.md` publishing `o` 15개 vs `Projects/.gitignore` 허용목록 11개. `docs/` 에는 빌드본만 있어 디스크 유실 시 원고 복구 불가
+    - 제외: `1.design_rnd`(prj60 소유 링크 · 고객사 과정 진행 중) · `cg-e2e`(prj7 링크) · 회귀 픽스처 전부(igTest 는 m2slide_info 와 줄 100% 일치하지만 동결 픽스처)
+    - ⚠️ prj42a 는 **공개 저장소**이고 기본 라이선스가 CC BY-NC-SA 4.0 이다 — 옮기는 덱의 현재 라이선스 배지와 맞는지 확인. push 는 사용자가 한다
+* 구현 명세:
+    - 공통 이관 절차(덱마다): `mv Projects/<X> Projects_deck/decks/education/<X>` → `./m2slide.sh --link Projects_deck/decks/education/<X> <X>` (폴더 이름 유지 → `/p/<X>`·`/deploy-docs <X>`·`docs/<X>/` URL 불변) → prj42 추적분은 `git rm --cached -r`(이력 보존) → `--sync-projects` 가 링크 덱을 허용목록에서 빼는지 확인 → prj42a 에 `_template/README.md` 기준 README + 커밋
+    - **이전 링크 표시(docs/)**: 이관 덱은 `docs/index.html` 카드에 «원고 이전 → `github.com/Finfra/m2slide-deck/tree/main/decks/education/<X>`» 링크를, 통합 덱은 «통합됨 → <정본 덱>» 링크를 단다. 표시 로직은 `/deploy-docs` 카드 생성 절차(B-5)에 넣어 재배포 때 사라지지 않게 한다 — 손으로 고친 카드는 다음 배포에 덮인다
+    - 검증: 덱마다 `./m2slide.sh <X>` rc0 · `/p/<X>` 표시 · `--lint-deployment <X>` 0 · `docs/index.html` 에 이전 링크 존재 · 링크 대상 경로가 prj42a 에 실재
+    - 완료 기준: 아래 서브 이슈 전부 ✅
+* 결과:
+    - 서브 4건 ✅ — 강연 6덱 prj42a 이관 · m2Slide(·_en) 통합 · MermaidExample 통합 · 테스트 잔재 3 z_done. `/p/` 는 링크 8(외부) 포함 활성 23 · 비활성 17
+    - 이전 링크 표시(사용자 조건)는 세 자리에 있다 — `docs/index.html` 카드(이전 6 · 통합 3) · `Projects_org.md` «m2slide-deck 으로 이전된 프로젝트» 절 · `docs/<옛 덱>/` 리다이렉트 스텁. 재배포에도 남도록 `/deploy-docs` 5-a·5-b 와 `sync-projects-md.js` 에 넣었다
+    - 동반 결함 `2afc9cd`: `--lint-deployment` 가 `--link` 심링크 프로젝트를 0개 검사하고 통과시켰다(`find` 기본 -P). 앞서 이관 6덱에 보고한 «lint 위반 0» 은 이 결함 때문에 **검사 없는 통과**였고, 고친 뒤 재검사에서 AgenticCoding 본문 예시 3건이 걸렸다(원래 있던 오탐 — 이슈후보) · 기록 `_doc_work/debug_TECH.md` 2026-09-28
+    - ⚠️ **push 하지 않았다 — 순서가 있다**: ① m2slide-deck push(갤러리·`Projects_org.md` 링크 대상) ② m2slide push. Pages 는 main 에서 서빙하고 현 브랜치는 `feat/ig-ppt-maker-integration` 이라 docs(pages) 커밋 5개(`0c7456a`·`bc755c0`·`cc5121d`·`73ac9f7`·`7c1db38`)는 main 반영이 필요하다
+
+## Issue424_1: 강연 1차 6덱 prj42a 이관 + docs 이전 링크 (등록: 2026-09-28, 해결: 2026-09-28, commit: 960541e, 582e054, ec70efd, 0c7456a · prj42a: 83f334d, 7c2ea87, 1ad4ee4, 44b7759, cbd27c2, de09b05) ✅
+* 목적: AgenticCoding·BasicKnowledgeForAI_small·GenContentProd·LlmAndVibeCoding·StellarEvolution·graphify 를 `Projects_deck/decks/education/` 으로 옮긴다 — 6덱 모두 이미 Pages 공개 중이라 노출 범위는 바뀌지 않는다
+* 상세:
+    - prj42 추적 해제 대상은 3덱(BasicKnowledgeForAI_small 50·GenContentProd 204·LlmAndVibeCoding 62 파일). 나머지 3덱은 원래 미추적 — prj42a 커밋이 첫 버전 관리다
+    - AgenticCoding 은 이미지 71장 약 40MB — prj42a push 용량 확인
+    - `Projects/_ppt/` 강연 원본 pptx·pdf 와 `z_done/` 강연 구버전은 옮기지 않는다(공개 불필요)
+    - 6덱 모두 `docs/` 발행본과 `docs/index.html` 카드가 있다(LEC 4 · INFO graphify · ETC StellarEvolution) — 이전 링크는 이 카드들에 단다
+* 구현 명세: Issue424 공통 절차 · 덱 단위로 커밋해 한 덱이 막혀도 나머지가 진행되게 한다
+* 결과:
+    - 방식: `mv Projects/<X> Projects_deck/decks/education/<X>` → `--link` 심링크. `/p/` 목록·`Projects.md` 등록부(경로 열, 소유 prj `42a`)·`/deploy-docs` 가 그대로 동작한다. `--sync-projects` 는 경로 있는 행을 허용목록에서 빼므로(`publishedRows` 의 `!r[2]`) 3덱이 자동으로 추적 제외됐다
+    - prj42a: 덱 단위 커밋 6 — `83f334d` StellarEvolution · `7c2ea87` graphify · `1ad4ee4` BasicKnowledgeForAI_small · `44b7759` LlmAndVibeCoding · `cbd27c2` GenContentProd · `de09b05` AgenticCoding. 덱마다 `_template` 형식 README(저자는 frontmatter `instructor_name` 이 있는 4덱만 옮김 — StellarEvolution·graphify 는 «원고에 미기재»)
+    - prj42: `960541e` `Projects_org.md` 에 «m2slide-deck 으로 이전된 프로젝트» 절 자동 생성(README 가 링크하는 공개 목록 — 이전 링크 표시 조건의 두 번째 자리) · `582e054` 3덱 추적 해제 · `ec70efd` `/deploy-docs` 5-a(이전 덱 카드 규약) · `0c7456a` `docs/index.html` 6카드에 «📦 원고 이전 → m2slide-deck» 링크
+    - 검증: 6덱 이름 빌드 rc0 · placeholder·`undefined` 0 · `--lint-deployment` 위반 0 · `/p/<X>` 표시 · `sync-projects-md.test.js` 13/13(신규 3, red 확인) · ego-browser `file://` 갤러리 `card-source` 6·중첩 `<a>` 0·카드 간격 0 — 캡처 `_doc_work/capture/issue424/docs-gallery-lec.png`
+    - ⚠️ push 하지 않았다. **순서가 있다** — m2slide-deck 을 먼저 push 해야 갤러리 링크가 404 가 아니다. `0c7456a`(docs)는 현 브랜치가 `feat/ig-ppt-maker-integration` 이라 Pages(main) 반영에 cherry-pick 이 필요하다
+    - 부수: `Projects/.gitignore` 재생성으로 `n3shIntro`(publishing `o`)가 허용목록에 들어갔다 — 원고는 커밋하지 않아 untracked 로 보인다. 앱 소개 2차 이관 때 결정
+    - 발견: `issue-tx.py` 가 `Issue424_1` 을 `4241` 로 읽어 서브 블록을 스테이징하지 못한다 — Issue.md 커밋은 HEAD blob 에 같은 변환을 적용해 임시 인덱스로 우회했다(글로벌 SCAR 라 여기서 고치지 않음)
+
+## Issue424_2: m2Slide(·_en) → m2slide_info(·_en) 통합 (등록: 2026-09-28, 해결: 2026-09-28, commit: bad0ca7, d1a62ce, 8f53425, b712415, bc755c0, cc5121d) ✅
+* 목적: m2Slide(7장: what·why·30초 시작)는 m2slide_info(34장: what·why·where·강점·마무리)의 축약판이다. 소개 덱을 하나로 모은다
+* 상세:
+    - m2Slide 고유분은 «한 번 쓰고 네 가지로 낸다» 문장과 빌드 한 줄 정도 → m2slide_info 01장에 흡수. 영문판도 같다
+    - `README.md`·`README_kr.md` 첫 소개 링크가 `m2Slide(_en)` 을 가리킨다 → info 로 교체
+    - `docs/m2Slide(_en)/` 에는 리다이렉트 한 장을 남기고, 카드에는 «통합됨 → m2slide_info» 를 표시한다
+    - `lib/dev-server/test_server.py` 가 `'m2Slide'` 를 경로 변환 문자열로 쓴다 — 폴더 이동 후에도 통과하는지 확인
+* 구현 명세: 원고 흡수 → `release_date` 갱신 → 빌드·HTML 검증 → m2Slide(·_en) 는 `z_done/<Name>_v<VERSION>` 으로 이동(project-version-rules)
+* 결과:
+    - 흡수(`bad0ca7`): 01장 «한 번 쓰고, 네 가지로 낸다» 산출물 4종 표 · 빌드 예시 `--epub` 줄 · 03장 «발표가 편해진다» · 05장 m2Slide 링크 2곳 → 시각 구성요소 쇼케이스·문의. 한·영 동일. `release_date` 는 이미 2026-09-28
+    - `d1a62ce` dev-server 홈 예시 m2Slide → m2slide_info(test_server 74 OK) · `8f53425` 추적 해제(`z_done/m2Slide_v1.0`·`m2Slide_en_v1.0`) · `b712415` README 링크 제거 + `/deploy-docs` 5-b(통합 덱 규약)
+    - Pages: `bc755c0` m2slide_info(·_en) 재발행(HEAD 임시 worktree — 타 세션 미커밋 `lib/generate-slides.js` 배제) · `cc5121d` `docs/m2Slide(·_en)/` 파일별 리다이렉트 스텁 + 갤러리 «통합됨» 카드
+    - 검증: 빌드 rc0 · 흡수 슬라이드 산출 확인 · m2Slide 링크 0 · ego `file://` 리다이렉트 3건 도착(깊은 링크 포함)
+
+## Issue424_3: m2Slide_MermaidExample → m2Slide_visual_component 챕터 통합 (등록: 2026-09-28, 해결: 2026-09-28, commit: 5ca9883, 45f2372, 73ac9f7, 7c1db38) ✅
+* 목적: Mermaid 도 시각 구성요소의 하나다 — 쇼케이스를 한 덱으로 모은다
+* 상세:
+    - MermaidExample 은 single mode 41장 → visual_component(chapter mode 96장)에 챕터 1개로 넣는다
+    - visual_component 는 회귀 덱이기도 하다([transform.yml](data/m2slide2ppt/transform.yml) 참조) — 챕터를 더하면 회귀 기준이 바뀌므로 관련 러너를 다시 돌려 기준을 재설정한다
+    - `docs/m2Slide_MermaidExample/` 은 리다이렉트 + 카드 «통합됨 → m2Slide_visual_component» 표시
+* 구현 명세: 챕터 추가 → AGENDA 갱신 → 빌드·HTML 검증 → 회귀 러너 재측정 → MermaidExample 은 z_done 이동
+* 결과:
+    - ⚠️ 명세의 «41장을 챕터 1개로» 와 다르게 **2장에 없는 종류 23장만** 옮겼다 — 2장이 이미 Mermaid 11종·Kroki 4종을 갖고 있어 같은 종류를 두 벌 두면 쇼케이스가 중복된다. 겹친 14종은 2장 예시가 정본, 원본 전체는 `z_done/m2Slide_MermaidExample_v1.0` 에 보관
+    - `5ca9883` 7장 «다이어그램 확장 갤러리»(Mermaid 확장 12 · Kroki blockdiag 계열 4 · Vega · PlantUML 4 · 정리) + AGENDA `release_date` 2026-09-19 → 2026-09-28 · `45f2372` 추적 해제
+    - Pages: `73ac9f7` visual_component 재발행(7장 + kroki SVG 캐시 9) · `7c1db38` `docs/m2Slide_MermaidExample/` → 7장 리다이렉트 + «통합됨» 카드
+    - 검증: ego `file://` 7장 25장 전 장 순회 mermaid 13/13 · kroki 9/9 · 렌더 오류 0. 명세의 «회귀 러너 재측정» 은 대상이 없었다 — visual_component 를 읽는 러너는 없고 참조 2곳(`transform.yml`·`htmlart_dispatch.client.js`)은 주석 속 실측 사례다
+
+## Issue424_4: 참조 없는 테스트 잔재 z_done 이동 (등록: 2026-09-28, 해결: 2026-09-28, commit: 없음 — 미추적 폴더 이동) ✅
+* 목적: `/p/` 목록에서 러너·코드가 쓰지 않는 덱을 걷어낸다
+* 상세:
+    - MediaBackendTest(참조 0) · aTest.bak.20260909(참조 0, 백업본) · aTest_rt(`z_test/pdf/lib/integrity.py` 주석 속 실측 사례 1곳뿐)
+    - 삭제가 아니라 z_done 이동 — 되돌릴 수 있게 둔다
+* 구현 명세: 이동 전 `grep -rF` 로 참조 0 재확인 → z_done 이동 → `--sync-projects` → `/p/` 목록에서 사라졌는지 확인
+* 결과: `z_done/MediaBackendTest` · `z_done/aTest.bak.20260909_v2.0`(VERSION 2.0 — project-version-rules) · `z_done/aTest_rt`. 3개 모두 git 미추적이라 저장소 변경은 없다. `--sync-projects` 로 비활성 표 이동 · `/p/` 목록 0건 확인. `aTest_rt` 는 `z_test/pdf/lib/integrity.py` 주석과 `data/_proposals/aTest_rt-2026-09-09.md` 에 실측 사례로 남아 있을 뿐 실행 경로 참조가 아니다
 
 ## Issue422: 발행 덱 7개 표지 subtitle 의 의도적 HTML 정리 — Issue419 escape 후속 (등록: 2026-09-28, 해결: 2026-09-28, commit: 1d839eb, 6a652d8, 3f656fd) ✅
 * 목적: Issue419(표지 frontmatter HTML escape, 사용자 결정 «escape 만») 이후 subtitle 의 의도적 HTML(`<strong>`·`<small>`·`&nbsp;`)이 재빌드 시 글자로 보인다
