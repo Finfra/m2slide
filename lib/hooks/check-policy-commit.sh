@@ -12,7 +12,7 @@
 #    경로 기반 판정이 어긋난다는 것이 Issue340 의 출발점이었으므로 여기도 같이 고친다.
 #
 # 차단이 아니라 경고 — 설계 문서·lint 구현 등 정당한 동반 변경이 존재하므로
-# hard fail 은 과하다. 규율 SSOT: .claude/rules/data-access-rules.md "정책 yml 커밋 규율".
+# hard fail 은 과하다. 규율 SSOT: .claude/rules-ondemand/data-access-detail.md "정책 yml 커밋 규율".
 #
 # 이 스크립트는 pre-commit 훅으로 심어져 실행된다 (install-hooks.sh 참조).
 # repo 마다 개별 설치 필요 (.git/hooks/ 는 git 추적 대상이 아님).
@@ -50,6 +50,7 @@ while IFS= read -r f; do
     # 동반 허용 (정책 변경의 일부) — other 로 분류하지 않음 (무시)
     _doc_arch/*.md) ;;
     .claude/rules/data-access-rules.md) ;;
+    .claude/rules-ondemand/data-access-detail.md) ;;
     lib/lint-policy-*.py) ;;
     lib/hooks/check-policy-commit.sh) ;;
     z_test/fixtures/policy/*) ;;
@@ -76,7 +77,7 @@ done < <(git diff --cached --name-only --diff-filter=ACMR)
   echo "   혼재된 그 외 파일 (${#other[@]}):"
   printf '     - %s\n' "${other[@]}"
   echo ""
-  echo "   규율: .claude/rules/data-access-rules.md \"정책 yml 커밋 규율\""
+  echo "   규율: .claude/rules-ondemand/data-access-detail.md \"정책 yml 커밋 규율\""
   echo "   분리하려면:  git reset  후  정책 yml 만 add 하여 별도 커밋"
   echo ""
 } >&2

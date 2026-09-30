@@ -2,6 +2,8 @@
 name: md-m2slide-rules
 description: m2slide 프로젝트 마크다운 작성 규칙. md-slide-rules의 m2slide 특화 버전
 date: 2026-05-01
+paths:
+  - "Projects/**/*.md"
 ---
 
 > 기본 규칙은 `~/.claude/_doc_arch/rules-ondemand/md-slide-rules.md` 참조 (Frontmatter, 슬라이드 구분자, 헤더 컨벤션, 멀티 컬럼 등 슬라이드 도구 공통).

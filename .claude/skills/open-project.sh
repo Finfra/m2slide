@@ -63,7 +63,7 @@ if [[ "$DRY_RUN" == true ]]; then
   exit 0
 fi
 
-# AppleScript로 Chrome 새 탭 + activate (shell open -a 금지 — apply-verify-rules §4)
+# AppleScript로 Chrome 새 탭 + activate (shell open -a 금지 — apply-verify-detail §4)
 if [[ "$OSTYPE" == "darwin"* && -d "/Applications/Google Chrome.app" ]]; then
   osascript <<EOF
 tell application "Google Chrome"

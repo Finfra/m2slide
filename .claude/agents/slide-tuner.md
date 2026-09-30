@@ -304,7 +304,7 @@ for card in payload[1:]:
 
 ## Step 7. 재빌드 + 변경 슬라이드 재캡처
 
-> 캡처 산출물은 **사람이 눈으로 대조할 PNG** 다. 엔진은 **ego** — 2026-09-19 의 15초 타임아웃을 근거로 두었던 Playwright 예외는 2026-09-20 재실측(74~85ms)으로 해제됐다([apply-verify-rules](../rules/apply-verify-rules.md) §4.0). **진입·구조 판정은 `evaluate()`·`snapshot()`** 이 더 정확하니 그 축을 캡처로 대신하지 말 것.
+> 캡처 산출물은 **사람이 눈으로 대조할 PNG** 다. 엔진은 **ego** — 2026-09-19 의 15초 타임아웃을 근거로 두었던 Playwright 예외는 2026-09-20 재실측(74~85ms)으로 해제됐다([apply-verify-detail](../rules-ondemand/apply-verify-detail.md) §4.0). **진입·구조 판정은 `evaluate()`·`snapshot()`** 이 더 정확하니 그 축을 캡처로 대신하지 말 것.
 
 ```bash
 ./m2slide.sh <project>

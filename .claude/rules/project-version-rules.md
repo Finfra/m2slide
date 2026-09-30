@@ -2,6 +2,11 @@
 name: project-version-rules
 description: m2slide 프로젝트 폴더 버전 관리 규칙 — 폴더명 무버전 + VERSION 파일 SSOT, z_done 아카이브 시 버전 복원
 date: 2026-07-01
+paths:
+  - "Projects/*/VERSION"
+  - "Projects.md"
+  - "Projects/.gitignore"
+  - "Projects/z_done/**"
 ---
 
 # 적용 범위
@@ -58,11 +63,11 @@ date: 2026-07-01
 
 # 위반 시 대응
 
-* `Projects/<Name>/` 폴더명에 `_v{버전}` 접미사가 재등장하면 즉시 무버전으로 rename + VERSION 파일로 이관 ([`~/.claude/rules/rename-reference-rules.md`](~/.claude/rules/rename-reference-rules.md) 5단계 절차 준수)
+* `Projects/<Name>/` 폴더명에 `_v{버전}` 접미사가 재등장하면 즉시 무버전으로 rename + VERSION 파일로 이관 ([`~/.claude/_doc_arch/rules-ondemand/rename-reference-rules.md`](~/.claude/_doc_arch/rules-ondemand/rename-reference-rules.md) 5단계 절차 준수)
 * z_done 이동 시 버전 접미사 누락 발견하면 VERSION 읽어 재rename
 
 # 참조
 
-* rename 참조 동기화: [`~/.claude/rules/rename-reference-rules.md`](~/.claude/rules/rename-reference-rules.md)
+* rename 참조 동기화: [`~/.claude/_doc_arch/rules-ondemand/rename-reference-rules.md`](~/.claude/_doc_arch/rules-ondemand/rename-reference-rules.md)
 * 저장소 루트 VERSION(도구 자체 버전, 별개): [`.claude/commands/deploy.md`](../commands/deploy.md)
 * 프로젝트 구조: [`CLAUDE.md`](../../CLAUDE.md)

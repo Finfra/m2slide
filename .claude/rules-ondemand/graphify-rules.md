@@ -4,7 +4,7 @@ description: graphify 활용 룰 — 글로벌 위임 + m2slide 자동 발동 �
 date: 2026-05-25
 ---
 
-> 본 룰은 글로벌 `~/.claude/rules/graphify-rules.md`에 위임. 본 파일은 진입점·표지 역할 + m2slide 고유 자동 트리거 정책.
+> 본 룰은 글로벌 `~/.claude/_doc_arch/rules-ondemand/graphify-rules.md`에 위임. 본 파일은 진입점·표지 역할 + m2slide 고유 자동 트리거 정책.
 
 # 핵심
 
@@ -58,5 +58,5 @@ date: 2026-05-25
 # 적용 SSOT
 
 * 본 프로젝트 표준 설정 근거: `~/_git/___pm/_doc_arch/graphify-priority-setup.md`
-* 글로벌 룰 전문: `~/.claude/rules/graphify-rules.md`
+* 글로벌 룰 전문: `~/.claude/_doc_arch/rules-ondemand/graphify-rules.md`
 * 등록 이슈: `Issue.md` Issue231

@@ -2,6 +2,8 @@
 name: capture-output-rules
 description: m2slide 캡처·스크린샷 파일 출력 경로 의무 (_doc_work/capture/) 및 루트 오염 차단 절차
 date: 2026-05-24
+paths:
+  - "_doc_work/capture/**"
 ---
 
 # 적용 트리거
@@ -10,7 +12,7 @@ m2slide 저장소(`lib/m2slide/`)에서 다음 동작 발생 시 자동 발동:
 
 * 스크린샷·캡처 파일(`.png`, `.jpg`, `.jpeg`, `.webp`) 신규 생성
 * 브라우저 캡처 호출 — ego `page.screenshot({ path })`
-    - ⚠️ 엔진 선택은 여기가 아니라 [apply-verify-rules](apply-verify-rules.md) §4.0 이 정한다(2026-09-20 부터 **캡처를 포함해 전 축이 ego**). 본 룰은 **어느 엔진이든 경로 의무**만 건다
+    - ⚠️ 엔진 선택은 여기가 아니라 [apply-verify-detail](../rules-ondemand/apply-verify-detail.md) §4.0 이 정한다(2026-09-20 부터 **캡처를 포함해 전 축이 ego**). 본 룰은 **어느 엔진이든 경로 의무**만 건다
 * `fcapture` / `capture-w` / `capture-m` 스킬 실행
 * AppleScript `screencapture` 직접 실행
 * 비교용 변종 캡처(`compare-*.png`, `v2-*.png`, `slide-*.png`, `htmlart-*.png` 등) 생성

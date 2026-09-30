@@ -2,6 +2,11 @@
 name: file-deployment-rules
 description: m2slide 빌드 산출물 파일 단위 배포 보장 — file:// 단독 동작 + 임의 단일 .html 파일 + img/ 만으로 동작해야 함. server-only 의존 금지.
 date: 2026-05-25
+paths:
+  - "generate-slides.js"
+  - "lib/**/*.js"
+  - "theme/**/*.html"
+  - "Projects/*/slide/**"
 ---
 
 # 핵심 원칙

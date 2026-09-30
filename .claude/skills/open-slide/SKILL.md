@@ -6,7 +6,7 @@ date: 2026-05-25
 
 # 목적
 
-m2slide 코드/콘텐츠 수정 후 특정 슬라이드(예: `aTest_v1` 08.4 #/6) 직접 검증 시 매번 절대경로·쿼리·hash 수작업 + macOS `open` 동일 URL 재호출 시 새 탭만 추가되고 foreground 안 오는 마찰 제거. apply-verify-rules §4 의무 절차에서 "슬라이드 열기" 단계 자동화.
+m2slide 코드/콘텐츠 수정 후 특정 슬라이드(예: `aTest_v1` 08.4 #/6) 직접 검증 시 매번 절대경로·쿼리·hash 수작업 + macOS `open` 동일 URL 재호출 시 새 탭만 추가되고 foreground 안 오는 마찰 제거. apply-verify-detail §4 의무 절차에서 "슬라이드 열기" 단계 자동화.
 
 # 트리거 (자동 발동)
 
@@ -14,7 +14,7 @@ m2slide 코드/콘텐츠 수정 후 특정 슬라이드(예: `aTest_v1` 08.4 #/6
 
 * "슬라이드 N번 열어줘", "X.Y #N 보여줘", "08.4 6번 확인"
 * "검증해줘", "verify slide", "open slide"
-* 코드/콘텐츠 수정 후 빌드 완료 + 특정 슬라이드 진입 필요 시 (apply-verify-rules §4 흐름)
+* 코드/콘텐츠 수정 후 빌드 완료 + 특정 슬라이드 진입 필요 시 (apply-verify-detail §4 흐름)
 * "재오픈", "Chrome 포커스 안 옴"
 
 # 입력 형식
@@ -71,7 +71,7 @@ http://localhost:9877/p/<project>/n/<chap>/<section-id>    # deck nav + reveal.j
 * `<N>`: slide 1-base 정수 (m2slide hashOneBasedIndex 정합)
 * `<section-id>`: reveal.js 자동 id (`toc-placeholder` 등) — `/n/` path만 지원
 * `<absolute_path>`: `pwd -P` 결과 또는 git root (시각 채널 file:// 전용)
-* `?fwd=1` 쿼리는 `#hash` 앞에 배치 (Reveal.js hash 파싱 충돌 회피 — apply-verify-rules §4.1)
+* `?fwd=1` 쿼리는 `#hash` 앞에 배치 (Reveal.js hash 파싱 충돌 회피 — apply-verify-detail §4.1)
 * `?fwd=1`은 시각 채널에서만 사용 (m2slide 내부 fade-in 트랜지션 cue). 헤드리스에서는 short form 인덱스로 절대 좌표 직접 지정
 * legacy `http://localhost:9877/Projects/<project>/slide/<X>.html` 형식은 차단됨 (Issue236.11 — 404)
 * **Issue248**: `/s/` = solo design view (단일 section), `/n/` = deck navigation. legacy `?mode=nav`는 302로 `/n/` 변환
@@ -79,7 +79,7 @@ http://localhost:9877/p/<project>/n/<chap>/<section-id>    # deck nav + reveal.j
 
 ## 4. 브라우저 실행 + 포커스 강제
 
-**⚠️ shell `open -a` 명령 금지** — 동일 URL 재호출 시 새 탭만 추가되고 foreground 안 와서 컨텐츠 슬라이드 접속 검증 실패. AppleScript(시각 채널) 또는 ego-browser(헤드리스)만 사용 (apply-verify-rules §4 정책).
+**⚠️ shell `open -a` 명령 금지** — 동일 URL 재호출 시 새 탭만 추가되고 foreground 안 와서 컨텐츠 슬라이드 접속 검증 실패. AppleScript(시각 채널) 또는 ego-browser(헤드리스)만 사용 (apply-verify-detail §4 정책).
 
 기본 (Chrome) — AppleScript:
 
@@ -116,7 +116,7 @@ EOF
 ```
 
 ego-browser 대안 (`--firefox` 없이 페이지 콘텐츠 자동 검증이 필요할 때):
-* `ego-browser nodejs` heredoc 에서 `page.goto(...)` — 기본 엔진 ([apply-verify-rules](../../rules/apply-verify-rules.md) §4.0)
+* `ego-browser nodejs` heredoc 에서 `page.goto(...)` — 기본 엔진 ([apply-verify-detail](../../rules-ondemand/apply-verify-detail.md) §4.0)
 * **`file://` 도 직접 연다** — dev-server 경유가 강제되지 않는다 (Playwright 는 `file://` 차단이라 `--verify` 가 필수였다. ego 는 배포 조건 그대로 잰다)
 * 판정은 `evaluate()`·`snapshot()`. PNG 가 필요하면 §4.2 예외 경로
 
@@ -151,7 +151,7 @@ ego-browser 대안 (`--firefox` 없이 페이지 콘텐츠 자동 검증이 필�
     ```
     * `path` 는 **절대경로**로 준다 — heredoc 의 cwd 가 호출 위치와 다를 수 있다. 경로 의무는 [capture-output-rules](../../rules/capture-output-rules.md)
     * 구조·텍스트 판정이 목적이면 캡처하지 말 것 — 3번 `evaluate()` 가 더 정확하고 빠르다
-    * 15초 타임아웃을 만나면 재시도가 아니라 `task.newPage()` 로 새 Page 에서 찍는다 ([apply-verify-rules](../../rules/apply-verify-rules.md) §4.0)
+    * 15초 타임아웃을 만나면 재시도가 아니라 `task.newPage()` 로 새 Page 에서 찍는다 ([apply-verify-detail](../../rules-ondemand/apply-verify-detail.md) §4.0)
 5. console 이벤트에서 `Runtime.exceptionThrown`·`Log.entryAdded`(level=error/warning) 추출
 6. console에서 ERROR·WARN 추출하여 §5 결과 보고에 포함
 
@@ -235,6 +235,6 @@ ego-browser 대안 (`--firefox` 없이 페이지 콘텐츠 자동 검증이 필�
 
 # 참조
 
-* URL 규약 SSOT: [`../../rules/apply-verify-rules.md`](../../rules/apply-verify-rules.md) §4.1
+* URL 규약 SSOT: [`../../rules-ondemand/apply-verify-detail.md`](../../rules-ondemand/apply-verify-detail.md) §4.1
 * 빌드 wrapper: [`../../../m2slide.sh`](../../../m2slide.sh)
 * `/run` 커맨드 (빌드+cover 진입): [`../../commands/run.md`](../../commands/run.md)

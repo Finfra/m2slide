@@ -2,6 +2,12 @@
 name: config-sync-rules
 description: _config.yml 설정 키 추가·제거·변경 시 _config.org.yml·설정 GUI·파서·설계문서 동기화 강제 규칙
 date: 2026-07-10
+paths:
+  - "lib/config.js"
+  - "_config.org.yml"
+  - "_config.yml"
+  - "Projects/*/_config.yml"
+  - "lib/dev-server/server.py"
 ---
 
 # 목적

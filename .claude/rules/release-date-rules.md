@@ -2,6 +2,8 @@
 name: release-date-rules
 description: 슬라이드 소스 .md frontmatter 수정 시 release_date를 수정한 날짜로 자동 갱신하는 규칙
 date: 2026-05-09
+paths:
+  - "Projects/**/*.md"
 ---
 
 # 적용 트리거

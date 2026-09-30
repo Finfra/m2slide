@@ -47,6 +47,6 @@ dev-server는 `/p/` 프로젝트 목록·설정 GUI(⚙️ 모달)·슬라이드
 
 ## 참조
 
-* 빌드·검증 룰: [`.claude/rules/apply-verify-rules.md`](../rules/apply-verify-rules.md) "헤드리스 채널" 섹션
+* 빌드·검증 룰: [`.claude/rules-ondemand/apply-verify-detail.md`](../rules-ondemand/apply-verify-detail.md) "헤드리스 채널" 섹션
 * 빌드 wrapper: [`m2slide.sh`](../../m2slide.sh) `--serve` subcommand
 * 배포 검증 룰: [`.claude/rules/file-deployment-rules.md`](../rules/file-deployment-rules.md)

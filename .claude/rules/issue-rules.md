@@ -2,6 +2,9 @@
 name: issue-rules
 description: m2slide 이슈 관리 규칙 (issue-g 기반, 웹 프로젝트)
 date: 2026-05-01
+paths:
+  - "Issue.md"
+  - "z_old/old_issue.md"
 ---
 
 > 공통 규칙은 `~/.claude/rules/issue-g.md` 참조.
@@ -29,7 +32,7 @@ date: 2026-05-01
 ```
 
 * 번호 표기는 **`IssueNN:` 콜론** — 글로벌 `issue-g` · 상위 videoMaker 와 동일한 표준이다
-* ⚠️ **마침표 표기(`IssueNN.`) 금지** — 구 m2slide 로컬 규약이었으나 폐기했다(2026-08-11). `issue-map` 생성기([`build_issue_map.py`](../../../../../.claude/skills/issue-map/build_issue_map.py))는 **자기 프로젝트 `Issue.md` 를 콜론으로만 파싱**하므로, 마침표를 쓰면 이슈가 0건으로 읽혀 `Issue_map.htm` 이 조용히 갱신되지 않는다. 실제로 그 상태로 방치되어 완료 이슈가 남아 있는 낡은 맵이 계속 서빙됐다. 마침표 관용(`[:.]`)은 **타 프로젝트 조회 경로 전용**이라 자기 repo 에는 적용되지 않는다
+* ⚠️ **마침표 표기(`IssueNN.`) 금지** — 구 m2slide 로컬 규약이었으나 폐기했다(2026-08-11). `issue-map` 생성기([`build_issue_map.py`](~/.claude/skills/issue-map/build_issue_map.py))는 **자기 프로젝트 `Issue.md` 를 콜론으로만 파싱**하므로, 마침표를 쓰면 이슈가 0건으로 읽혀 `Issue_map.htm` 이 조용히 갱신되지 않는다. 실제로 그 상태로 방치되어 완료 이슈가 남아 있는 낡은 맵이 계속 서빙됐다. 마침표 관용(`[:.]`)은 **타 프로젝트 조회 경로 전용**이라 자기 repo 에는 적용되지 않는다
 * 완료 시 `(등록: YYYY-MM-DD, 해결: YYYY-MM-DD, commit: <hash>) ✅` 추가
 
 # GitHub Issue 연동

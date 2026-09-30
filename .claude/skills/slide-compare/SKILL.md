@@ -83,7 +83,7 @@ EOF
 
 ## Step 5 — m2slide 슬라이드 캡처 (ego-browser)
 
-> 본 스킬의 산출물은 *"사람이 눈으로 대조할 PNG"* 다. **캡처도 ego 로 찍는다** — 2026-09-19 의 15초 타임아웃을 근거로 두었던 Playwright 예외는 2026-09-20 재실측(74~85ms)으로 해제됐다([apply-verify-rules](../../rules/apply-verify-rules.md) §4.0).
+> 본 스킬의 산출물은 *"사람이 눈으로 대조할 PNG"* 다. **캡처도 ego 로 찍는다** — 2026-09-19 의 15초 타임아웃을 근거로 두었던 Playwright 예외는 2026-09-20 재실측(74~85ms)으로 해제됐다([apply-verify-detail](../../rules-ondemand/apply-verify-detail.md) §4.0).
 
 `Projects/<P>/markdown/AGENDA.md` 또는 `slide/*.html` 목록으로 chapter list 산출. 각 챕터의 슬라이드 수는 `http://localhost:9877/p/<P>/s/<chap>` JSON endpoint로 확인.
 
@@ -214,4 +214,4 @@ slide-tuner Step 6(피드백 회수)·Step 7(재빌드·재캡처)은 그대로 
 * slide-tuner agent: [`../../agents/slide-tuner.md`](../../agents/slide-tuner.md) Step 4~5를 본 스킬로 위임
 * ppt2m2slide agent: [`../../agents/ppt2m2slide.md`](../../agents/ppt2m2slide.md) round-trip 검증 옵션
 * htm form template: `~/.claude/hooks/fpm-ask-form-template.js` (form 작성 시 참조 — hub 생태계 제공. m2slide standalone 무관 optional. Issue270)
-* apply-verify-rules: [`../../rules/apply-verify-rules.md`](../../rules/apply-verify-rules.md) §4.5 헤드리스 검증
+* apply-verify-rules: [`../../rules-ondemand/apply-verify-detail.md`](../../rules-ondemand/apply-verify-detail.md) §4.5 헤드리스 검증

@@ -2,6 +2,10 @@
 name: repo-tracking-rules
 description: git push 용량 초과 재발 방지 — 배포 불필요 자산 gitignore 정책 + 신규 자산 추가 시 판정 절차
 date: 2026-07-03
+paths:
+  - ".gitignore"
+  - "Projects/.gitignore"
+  - "lib/vendor/**"
 ---
 
 # 배경
