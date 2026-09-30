@@ -119,23 +119,6 @@
 
 # 📕 중요
 
-## Issue429: 지시 파일 상시 로드 다이어트 — 113.4k → ~24k (등록: 2026-09-30)
-* 목적: Claude Code 가 세션 시작 시 «27 instruction files add up to 152.2k chars, over the 120.0k-char total limit» 경고를 낸다. 한도를 넘은 규칙은 잘리거나 빠질 수 있어 **규칙이 무시되는 것처럼 보이는 원인**이 되고, 매 턴 컨텍스트를 잡아먹는다
-* 상세 (실측 2026-09-30, 글자 수 기준 — `wc -c` 는 바이트라 한글이 3배로 부풀어 보인다):
-    - prj42 `CLAUDE.md` + `.claude/rules/` 13파일 = **113.4k** · 글로벌 `~/.claude` 10파일 = 28.6k(prj3#Issue779_4 에서 이미 감량) → 합 142.1k. 경고의 27파일·152.2k 와의 차 4파일·~10k 는 상위 폴더 CLAUDE.md·memory 로 추정(검증 필요)
-    - 큰 3개: `md-m2slide-rules` 27.2k · `apply-verify-rules` 24.9k · `CLAUDE.md` 21.6k(이 중 PPTX 절 하나가 8.4k) · 다음 `data-access-rules` 11.1k
-    - 🔴 끊긴 참조 — 글로벌 감량 때 `graphify-rules` 가 `~/.claude/_doc_arch/rules-ondemand/` 로 옮겨졌는데 [CLAUDE.md](CLAUDE.md) «graphify» 절(561행)은 여전히 `~/.claude/rules/graphify-rules.md` 를 가리킨다(한쪽만 갱신되어 갈라진 계약). `md-rules`·`md-slide-rules` 참조는 이미 갱신됨
-    - 진단 기록: [debug_TECH.md](_doc_work/debug_TECH.md) «Claude Code 지시 파일 한도»
-* 구현 명세:
-    - 판정 원칙: **모든 세션에 해당하지 않으면 조건부**, 언제 위반할지 모르는 것(오표기·승인)은 상시 — 글로벌과 같은 기준([scar-context-load-arch.md](~/.claude/_doc_arch/scar-context-load-arch.md))
-    - `md-m2slide-rules` → frontmatter `paths: ["Projects/**/*.md"]` 로 조건부 로드. 시각화 구성요소 카탈로그(~8k)는 `_doc_arch/component-libraries.md` 와 중복 대조 후 흡수
-    - `apply-verify-rules` → §1~3·§5(~4k)만 상시, §4.0~4.12(~20k) 는 `_doc_arch/rules-ondemand/apply-verify-detail.md`
-    - `CLAUDE.md` → L1 아이덴티티·CSS 가드·base.css 가드·명령 요약만 남김(~6k). PPTX 절은 `_doc_arch/pptx-parity-design.md`, 변환 프로세스·Theme·구현 상세는 해당 `_doc_arch/` 문서로 옮기고 포인터
-    - `data-access-rules` → 접근 허용 표만 상시(~2k), backup·커밋 규율·schema lint 는 detail
-    - 나머지 9개(28.6k) → 트리거가 파일 패턴이면 `paths:`, 아니면 `rules-ondemand/` + CLAUDE.md «읽는 시점» 표. `identifier-meta-rules` 는 오표기 계열이라 상시 유지(요약만). `graphify-rules` 는 글로벌 hook 이 환기하므로 삭제 후보
-    - 끊긴 참조 1곳을 `~/.claude/_doc_arch/rules-ondemand/` 로 갱신
-    - 검증: ① 같은 스크립트로 재측정해 합 ≤ 60k ② 새 세션에서 한도 경고 소멸 ③ `paths:` 조건부 규칙이 합산에서 빠지는지 확인 — 안 빠지면 `rules-ondemand/` 로 전환 ④ 옮긴 문서의 링크 무결성(rename 절차)
-
 # 📙 일반
 
 ## Issue428: 앱 소개 2차 prj42a 이관 — 3덱(fPmIntro·fPmIntro_en·n3shIntro) `decks/app/` 신설 (등록: 2026-09-30)
@@ -174,6 +157,30 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue429: 지시 파일 상시 로드 다이어트 — 113.4k → 21.7k (등록: 2026-09-30, 해결: 2026-10-01, commit: a19b734) ✅
+* 목적: Claude Code 가 세션 시작 시 «27 instruction files add up to 152.2k chars, over the 120.0k-char total limit» 경고를 낸다. 한도를 넘은 규칙은 잘리거나 빠질 수 있어 **규칙이 무시되는 것처럼 보이는 원인**이 되고, 매 턴 컨텍스트를 잡아먹는다
+* 상세 (실측 2026-09-30, 글자 수 기준 — `wc -c` 는 바이트라 한글이 3배로 부풀어 보인다):
+    - prj42 `CLAUDE.md` + `.claude/rules/` 13파일 = **113.4k** · 글로벌 `~/.claude` 10파일 = 28.6k(prj3#Issue779_4 에서 이미 감량) → 합 142.1k. 경고의 27파일·152.2k 와의 차 4파일·~10k 는 상위 폴더 CLAUDE.md·memory 로 추정(검증 필요)
+    - 큰 3개: `md-m2slide-rules` 27.2k · `apply-verify-rules` 24.9k · `CLAUDE.md` 21.6k(이 중 PPTX 절 하나가 8.4k) · 다음 `data-access-rules` 11.1k
+    - 🔴 끊긴 참조 — 글로벌 감량 때 `graphify-rules` 가 `~/.claude/_doc_arch/rules-ondemand/` 로 옮겨졌는데 [CLAUDE.md](CLAUDE.md) «graphify» 절(561행)은 여전히 `~/.claude/rules/graphify-rules.md` 를 가리킨다(한쪽만 갱신되어 갈라진 계약). `md-rules`·`md-slide-rules` 참조는 이미 갱신됨
+    - 진단 기록: [debug_TECH.md](_doc_work/debug_TECH.md) «Claude Code 지시 파일 한도»
+* 구현 명세:
+    - 판정 원칙: **모든 세션에 해당하지 않으면 조건부**, 언제 위반할지 모르는 것(오표기·승인)은 상시 — 글로벌과 같은 기준([scar-context-load-arch.md](~/.claude/_doc_arch/scar-context-load-arch.md))
+    - `md-m2slide-rules` → frontmatter `paths: ["Projects/**/*.md"]` 로 조건부 로드. 시각화 구성요소 카탈로그(~8k)는 `_doc_arch/component-libraries.md` 와 중복 대조 후 흡수
+    - `apply-verify-rules` → §1~3·§5(~4k)만 상시, §4.0~4.12(~20k) 는 `_doc_arch/rules-ondemand/apply-verify-detail.md`
+    - `CLAUDE.md` → L1 아이덴티티·CSS 가드·base.css 가드·명령 요약만 남김(~6k). PPTX 절은 `_doc_arch/pptx-parity-design.md`, 변환 프로세스·Theme·구현 상세는 해당 `_doc_arch/` 문서로 옮기고 포인터
+    - `data-access-rules` → 접근 허용 표만 상시(~2k), backup·커밋 규율·schema lint 는 detail
+    - 나머지 9개(28.6k) → 트리거가 파일 패턴이면 `paths:`, 아니면 `rules-ondemand/` + CLAUDE.md «읽는 시점» 표. `identifier-meta-rules` 는 오표기 계열이라 상시 유지(요약만). `graphify-rules` 는 글로벌 hook 이 환기하므로 삭제 후보
+    - 끊긴 참조 1곳을 `~/.claude/_doc_arch/rules-ondemand/` 로 갱신
+    - 검증: ① 같은 스크립트로 재측정해 합 ≤ 60k ② 새 세션에서 한도 경고 소멸 ③ `paths:` 조건부 규칙이 합산에서 빠지는지 확인 — 안 빠지면 `rules-ondemand/` 로 전환 ④ 옮긴 문서의 링크 무결성(rename 절차)
+* 결과 (2026-10-01):
+    - m2slide 상시 로드 **113.4k → 21.7k**(CLAUDE.md 10.0k · apply-verify 6.4k · data-access 3.1k · identifier-meta 2.1k). 글로벌 28.6k + 상위 폴더 4파일 17.5k 포함 총 **67.8k**(한도 120k). 경고의 «차 4파일·~10k» 는 상위 폴더 CLAUDE.md 3종 + videoMaker `issue-rules` 로 확인
+    - 상세편은 `_doc_arch/`(gitignore — 로컬 전용이라 추적 중인 본문이 저장소에서 사라진다) 대신 **`.claude/rules-ondemand/`**(추적·`rules/` 트리 밖)에 둠: `apply-verify-detail`·`data-access-detail`·`pptx-rules`·`m2slide-reference`·`graphify-rules`(삭제 대신 이동)
+    - `paths:` 8종: `md-m2slide`·`release-date`·`file-deployment`·`config-sync`·`issue`·`capture-output`·`project-version`·`repo-tracking`. 참조 60여 곳을 깨지 않으려고 파일 경로는 유지
+    - 실측(새 세션 1-shot, 도구 금지): 전문 주입 = CLAUDE.md + 상시 3종뿐, 상세편·`paths:` 규칙 본문 NO(대조군 YES) · 매칭 경로 Read 시 `paths:` 규칙 본문이 주입됨(YES) — 사문화 아님
+    - 끊긴 참조 3건 추가 갱신(`graphify-rules`·`rename-reference-rules` ×2 → `rules-ondemand/`, `build_issue_map.py` 상대경로 깊이 오류). §4 를 부르는 6곳·pre-commit 훅 규율 경로를 상세편으로 갱신
+    - 미이행: `md-m2slide-rules` 시각화 카탈로그의 `_doc_arch/component-libraries.md` 흡수 — `_doc_arch` 가 gitignore 라 추적 본문이 로컬 전용이 되고, `paths:` 로 이미 시작 로드에서 빠졌다
 
 ## Issue427: `lane-t.py` 4:3 좌표 상수 가정 — 글로벌 reference 가 이미 판형에 맞춰져 표지·섹션 placeholder 를 **두 번 늘려** 캔버스 밖으로 민다 (등록: 2026-09-29, 해결: 2026-09-29, commit: 1d28887) ✅
 * 목적: `6.roundtrip.sh`(aTest)·`9.single-parity.sh`(gate16) 가 check-conform `✕ FAIL 캔버스 이탈 1장` 으로 빌드 rc1 이다. prj3#Issue783 귀속 조사에서 원인이 글로벌 산출물이 아니라 **이 저장소의 계약 가정**으로 확정됐다 — 글로벌이 바뀐 계약을 한쪽(lane-t)이 아직 모른다
