@@ -121,7 +121,7 @@
 
 # 📙 일반
 
-## Issue428: (!) 앱 소개 2차 prj42a 이관 — 3덱(fPmIntro·fPmIntro_en·n3shIntro) `decks/app/` 신설 (등록: 2026-09-30)
+## Issue428: 앱 소개 2차 prj42a 이관 — 3덱(fPmIntro·fPmIntro_en·n3shIntro) `decks/app/` 신설 (등록: 2026-09-30)
 * 목적: Issue424 후속 C. 앱 소개 덱을 prj42a(Projects_deck) 로 옮겨 «도구와 콘텐츠 분리»([deck-repo.md](_doc_arch/deck-repo.md))를 마저 적용한다
 * 상세:
     - 출처: 총괄핀봇 fbot-chief-narae 인박스 `fbotreq-1790774421-e4a142c6` (mq `20260929-003200-001` C 묶음 — 답 미기록으로 멈춰 있던 것을 사용자에게 직접 수령)
@@ -136,6 +136,7 @@
     5. 검증: 3덱 이름 빌드 rc0 · `--lint-deployment` 검사 N개(0개 통과 금지 — Issue424 `2afc9cd` 선례) · `/p/`·`/pd/` 표시 · 새 GitHub 경로 200 · push 순서 m2slide-deck → m2slide
     - ⚠️ 착수 시점 작업트리에 `Projects/fPmIntro*/slide/*.html` 미커밋 변경이 있다(타 세션 추정) — mv 전에 출처 확인, 임의 폐기 금지
     - 완료 기준: 1~5 전부 + 완료 시 요청 `fbotreq-1790774421-e4a142c6` 발신 세션(prj42)에 해시 통지
+    - **팀장 결정 2026-09-30 (L)**: `(!)` 는 오부착(상세·구현 명세 완비 — issue-detail 진입 조건 위반)이라 제거하고 정식 이슈로 착수. prj42a 수정·커밋은 Issue424 선례(prj42 세션이 prj42a 커밋)와 사용자 결정 ⓐⓑ 범위 안. mp4 finfra.kr 업로드(H)·push·main 반영은 멈추고 보고 — 출처 `fbotreq-1790774581-cf0db44d`
 
 ## Issue423: 이미지 해소 시 `X.annot.png` 짝 픽업 + 원본 강제 옵트아웃 — prj7 주석본 픽업 규약 구현 (등록: 2026-09-28)
 * 목적: prj7 cg 가 캡처 주석본(`img-annotate`)을 만들어도 덱을 만드는 경로가 그 산출을 집지 않아 **안 쓰인다**. prj7 규약(사용자 확정 2026-09-24) «`X.png` 를 넣을 때 옆에 `X.annot.png` 가 있으면 그것을 쓴다» 의 구현 자리가 m2slide 이미지 해소다
