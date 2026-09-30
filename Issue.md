@@ -1,6 +1,6 @@
 # Issue Management
 * https://github.com/Finfra/m2slide/issues
-* Issue HWM: 428
+* Issue HWM: 429
 * Checkpoints:
     - 70e29d3 (2026-09-11) m2slide→pptx 정책 갱신·lane G SmartArt 종결 시점
     - 3510da8 (2026-08-11) ig-maker·ppt-maker 통합 착수 직전
@@ -118,6 +118,23 @@
     - 완료 조건: 아이폰 에뮬에서 탭만으로 전 내비게이션 통과 · **PC 에서 클릭·키보드 내비게이션 무회귀** · **위 실기기 결함(리프레쉬 후 스크롤 불가) 해소** · `aTest`·`aTest-all` 초록 · 결과 보고서 · 외부*핀봇 2종 각 1회 이상 배분·완료 기록(원장)
 
 # 📕 중요
+
+## Issue429: 지시 파일 상시 로드 다이어트 — 113.4k → ~24k (등록: 2026-09-30)
+* 목적: Claude Code 가 세션 시작 시 «27 instruction files add up to 152.2k chars, over the 120.0k-char total limit» 경고를 낸다. 한도를 넘은 규칙은 잘리거나 빠질 수 있어 **규칙이 무시되는 것처럼 보이는 원인**이 되고, 매 턴 컨텍스트를 잡아먹는다
+* 상세 (실측 2026-09-30, 글자 수 기준 — `wc -c` 는 바이트라 한글이 3배로 부풀어 보인다):
+    - prj42 `CLAUDE.md` + `.claude/rules/` 13파일 = **113.4k** · 글로벌 `~/.claude` 10파일 = 28.6k(prj3#Issue779_4 에서 이미 감량) → 합 142.1k. 경고의 27파일·152.2k 와의 차 4파일·~10k 는 상위 폴더 CLAUDE.md·memory 로 추정(검증 필요)
+    - 큰 3개: `md-m2slide-rules` 27.2k · `apply-verify-rules` 24.9k · `CLAUDE.md` 21.6k(이 중 PPTX 절 하나가 8.4k) · 다음 `data-access-rules` 11.1k
+    - 🔴 끊긴 참조 — 글로벌 감량 때 `graphify-rules` 가 `~/.claude/_doc_arch/rules-ondemand/` 로 옮겨졌는데 [CLAUDE.md](CLAUDE.md) «graphify» 절(561행)은 여전히 `~/.claude/rules/graphify-rules.md` 를 가리킨다(한쪽만 갱신되어 갈라진 계약). `md-rules`·`md-slide-rules` 참조는 이미 갱신됨
+    - 진단 기록: [debug_TECH.md](_doc_work/debug_TECH.md) «Claude Code 지시 파일 한도»
+* 구현 명세:
+    - 판정 원칙: **모든 세션에 해당하지 않으면 조건부**, 언제 위반할지 모르는 것(오표기·승인)은 상시 — 글로벌과 같은 기준([scar-context-load-arch.md](~/.claude/_doc_arch/scar-context-load-arch.md))
+    - `md-m2slide-rules` → frontmatter `paths: ["Projects/**/*.md"]` 로 조건부 로드. 시각화 구성요소 카탈로그(~8k)는 `_doc_arch/component-libraries.md` 와 중복 대조 후 흡수
+    - `apply-verify-rules` → §1~3·§5(~4k)만 상시, §4.0~4.12(~20k) 는 `_doc_arch/rules-ondemand/apply-verify-detail.md`
+    - `CLAUDE.md` → L1 아이덴티티·CSS 가드·base.css 가드·명령 요약만 남김(~6k). PPTX 절은 `_doc_arch/pptx-parity-design.md`, 변환 프로세스·Theme·구현 상세는 해당 `_doc_arch/` 문서로 옮기고 포인터
+    - `data-access-rules` → 접근 허용 표만 상시(~2k), backup·커밋 규율·schema lint 는 detail
+    - 나머지 9개(28.6k) → 트리거가 파일 패턴이면 `paths:`, 아니면 `rules-ondemand/` + CLAUDE.md «읽는 시점» 표. `identifier-meta-rules` 는 오표기 계열이라 상시 유지(요약만). `graphify-rules` 는 글로벌 hook 이 환기하므로 삭제 후보
+    - 끊긴 참조 1곳을 `~/.claude/_doc_arch/rules-ondemand/` 로 갱신
+    - 검증: ① 같은 스크립트로 재측정해 합 ≤ 60k ② 새 세션에서 한도 경고 소멸 ③ `paths:` 조건부 규칙이 합산에서 빠지는지 확인 — 안 빠지면 `rules-ondemand/` 로 전환 ④ 옮긴 문서의 링크 무결성(rename 절차)
 
 # 📙 일반
 
