@@ -125,19 +125,6 @@
 
 # 📙 일반
 
-## Issue430: img-cartoon L2 정책이 개명 전 경로 `data/promo-cartoon/` 에 남아 읽히지 않는다 (등록: 2026-10-02)
-* 목적: prj3#Issue703(2026-09-27)이 `promo-cartoon` → `img-cartoon` 으로 개명한 뒤 img-cartoon SKILL.md 는 호출 prj 의 **`data/img-cartoon/policy.yml`** 을 L2 로 읽는다. prj42 의 L2 는 옛 경로 `data/promo-cartoon/policy.yml` 에만 있어 **조용히 무시**된다 — `product: m2slide`·`killer_scene_source`·`output_dir` 대신 L1 기본값과 스킬 `assets/pilot/` 폴백으로 간다
-* 상세:
-    - 출처: prj7(cg) Issue47 — CG 정책 계층 점검(2026-10-02). 사용자 지시 *"prj42 의 폴리시 활용처럼 현재 프로젝트에서 폴리시를 잘 활용"*. 결정 권한 C(타 repo Issue.md 등록)
-    - 실측: `ls data/img-cartoon` 부재 · `data/promo-cartoon/{policy.yml,output}` 존재 · SKILL.md 43·201행 경로 `{project_root}/data/img-cartoon/policy.yml`
-    - 반쯤 개명된 흔적: [ig-ppt-integration.md](_doc_arch/ig-ppt-integration.md) 181행은 `img-cartoon` 으로 고쳐졌는데 185행 L2 경로는 `data/promo-cartoon/policy.yml` 그대로다 — 문서와 데이터가 한쪽만 갱신됐다
-    - 판정 지점은 하나(SKILL.md 경로)로 두고 **데이터를 맞춘다** — 스킬에 옛 경로 폴백을 넣지 않는다(판정 단일 지점)
-* 구현 명세:
-    - `git mv`·`mv data/promo-cartoon data/img-cartoon` (`output/` 포함) · 헤더 주석의 upstream 경로 `~/.claude/data/img-cartoon/policy.yml` 로 · `output_dir: data/img-cartoon/output/`
-    - `.gitignore` 화이트리스트·[pipeline-policy-cascade.md](_doc_arch/pipeline-policy-cascade.md) «이 축에 들지 않는 data/ 폴더» 표·[ig-ppt-integration.md](_doc_arch/ig-ppt-integration.md) 185행의 `promo-cartoon` 경로 갱신 — `grep -rn 'data/promo-cartoon'` 0건
-    - `lint-policy-kind.py` 등 정책 린터가 새 경로를 범주 `policy/upstream` 으로 인식하는지 확인
-    - 검증: prj7 `python3 -m unittest discover -s tdd/_routing/visual-gen -p 'test_visual_gen_policy.py'` 에서 `test_prj42_cartoon_l2_uses_current_name` 이 **unexpected success** 로 뒤집힌다(prj7 이 박제를 해제한다)
-
 ## Issue428: 앱 소개 2차 prj42a 이관 — 3덱(fPmIntro·fPmIntro_en·n3shIntro) `decks/app/` 신설 (등록: 2026-09-30)
 * 목적: Issue424 후속 C. 앱 소개 덱을 prj42a(Projects_deck) 로 옮겨 «도구와 콘텐츠 분리»([deck-repo.md](_doc_arch/deck-repo.md))를 마저 적용한다
 * 상세:
@@ -175,6 +162,20 @@
 # 📗 선택
 
 # ✅ 완료
+
+## Issue430: img-cartoon L2 정책이 개명 전 경로 `data/promo-cartoon/` 에 남아 읽히지 않는다 (등록: 2026-10-02, 해결: 2026-10-02, commit: 없음 — data/·_doc_arch/ 는 .gitignore 비추적) ✅
+* 목적: prj3#Issue703(2026-09-27)이 `promo-cartoon` → `img-cartoon` 으로 개명한 뒤 img-cartoon SKILL.md 는 호출 prj 의 **`data/img-cartoon/policy.yml`** 을 L2 로 읽는다. prj42 의 L2 는 옛 경로 `data/promo-cartoon/policy.yml` 에만 있어 **조용히 무시**된다 — `product: m2slide`·`killer_scene_source`·`output_dir` 대신 L1 기본값과 스킬 `assets/pilot/` 폴백으로 간다
+* 상세:
+    - 출처: prj7(cg) Issue47 — CG 정책 계층 점검(2026-10-02). 사용자 지시 *"prj42 의 폴리시 활용처럼 현재 프로젝트에서 폴리시를 잘 활용"*. 결정 권한 C(타 repo Issue.md 등록)
+    - 실측: `ls data/img-cartoon` 부재 · `data/promo-cartoon/{policy.yml,output}` 존재 · SKILL.md 43·201행 경로 `{project_root}/data/img-cartoon/policy.yml`
+    - 반쯤 개명된 흔적: [ig-ppt-integration.md](_doc_arch/ig-ppt-integration.md) 181행은 `img-cartoon` 으로 고쳐졌는데 185행 L2 경로는 `data/promo-cartoon/policy.yml` 그대로다 — 문서와 데이터가 한쪽만 갱신됐다
+    - 판정 지점은 하나(SKILL.md 경로)로 두고 **데이터를 맞춘다** — 스킬에 옛 경로 폴백을 넣지 않는다(판정 단일 지점)
+* 구현 명세:
+    - `git mv`·`mv data/promo-cartoon data/img-cartoon` (`output/` 포함) · 헤더 주석의 upstream 경로 `~/.claude/data/img-cartoon/policy.yml` 로 · `output_dir: data/img-cartoon/output/`
+    - `.gitignore` 화이트리스트·[pipeline-policy-cascade.md](_doc_arch/pipeline-policy-cascade.md) «이 축에 들지 않는 data/ 폴더» 표·[ig-ppt-integration.md](_doc_arch/ig-ppt-integration.md) 185행의 `promo-cartoon` 경로 갱신 — `grep -rn 'data/promo-cartoon'` 0건
+    - `lint-policy-kind.py` 등 정책 린터가 새 경로를 범주 `policy/upstream` 으로 인식하는지 확인
+    - 검증: prj7 `python3 -m unittest discover -s tdd/_routing/visual-gen -p 'test_visual_gen_policy.py'` 에서 `test_prj42_cartoon_l2_uses_current_name` 이 **unexpected success** 로 뒤집힌다(prj7 이 박제를 해제한다)
+* 결과: `data/promo-cartoon/` → `data/img-cartoon/` 이전(output 포함, policy.yml 헤더·output_dir 갱신) · ig-ppt-integration 185행·pipeline-policy-cascade 27·45행 경로 갱신 · `--lint-data` 통과(policy/upstream 1개 인식) · `.gitignore` 는 `/data/*` 기본 제외라 화이트리스트 변경 불필요. prj7 unittest(unexpected success) 확인은 타 repo 라 미수행 — prj7 이 해제 시 확인
 
 ## Issue429: 지시 파일 상시 로드 다이어트 — 113.4k → 21.7k (등록: 2026-09-30, 해결: 2026-10-01, commit: a19b734) ✅
 * 목적: Claude Code 가 세션 시작 시 «27 instruction files add up to 152.2k chars, over the 120.0k-char total limit» 경고를 낸다. 한도를 넘은 규칙은 잘리거나 빠질 수 있어 **규칙이 무시되는 것처럼 보이는 원인**이 되고, 매 턴 컨텍스트를 잡아먹는다
