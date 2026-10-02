@@ -4,7 +4,7 @@ description: "Claude Code 가 이 저장소에서 작업할 때 참고하는 가
 date: 2026.09.03
 
 # ── L1 아이덴티티 (Issue472) ──────────────────────────────────────────
-# 스키마 정본: prj6 ~/_git/___architect/_doc_arch/project-identity-scheme.md
+# 스키마 정본: prj6 ~/_git/___oracle/_doc_arch/project-identity-scheme.md
 # ⚠️ 빈 필드는 추측으로 채우지 말 것 — 틀린 값은 빈 값보다 나쁘다
 prj: 42
 identity: 마크다운 원고를 Reveal.js 웹 슬라이드로 바꾸는 변환기 (외부 의존 없는 순수 Node.js)
