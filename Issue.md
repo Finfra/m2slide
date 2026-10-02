@@ -121,6 +121,9 @@
     - 외부자문핀봇(`advisor`, 도구 `codex-arch-reviewer`): [key_navigation.md](_doc_arch/key_navigation.md) ↔ 구현(`lib/html-builder.js` 스와이프 IIFE·`scrollLayout`·T14 «미설계» 기록) drift 를 **터치 관점**으로 대조 → `_doc_work/report/` 리포트. 설계 문서 대조만, 코드 수정 없음
     - 두 배분이 닫히면 팀장이 결과 보고서 `_doc_work/report/issue415-result_report.md` 를 종합하고 developer 에게 종결(`/issue-closer`)을 배분한다
     - ✅ **외부자문 완료 (2026-10-02, `fbot-advisor-issue415`)** — [iphone-tap-nav_advisor-arch_report.md](_doc_work/report/iphone-tap-nav_advisor-arch_report.md) (엔진: codex 일반 drift + Claude 터치 대조). 터치 관점 high 0 · medium 4 / 일반 high 1(101행 PgUp 이 `agenda_enabled:false` 에서 틀림). key_navigation.md 미반영: 스크롤 뷰 세로 스와이프 예외(28·143·197행)·T14 «미설계» 기록·표지 전면 탭 매트릭스 · 낡은 마커(221행). 문서 수정은 하지 않음 — 반영은 별도 판단
+    - 🎯 **반영 범위 판정 (2026-10-02, 팀장 L 결정 `fbotev-1790943709-7a8d3083`, 배분 `fbotdisp-1790943265-43162259` 종결)**
+        - 범위 안(종결 배분 때 developer 가 [key_navigation.md](_doc_arch/key_navigation.md) 에 함께 반영): 이 이슈가 만든 drift — 스크롤 뷰 세로 스와이프 예외(`0a4369e`, 28·143·197행) · 표지 전면 탭(Q2) 매트릭스 · T14 «미설계»(Q3 결정)
+        - 범위 밖(별도 이슈후보 — 종결 때 등록): 기존 drift — 101행 PgUp 이 `agenda_enabled:false` 에서 `index.html` 로 감 · 221행 «Chapter leaf ↓ fall-through 미구현» 낡은 마커 · 145행·K10 `_toc`/`_cards` 혼용
 
 # 📕 중요
 
