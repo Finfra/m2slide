@@ -120,6 +120,7 @@
     - QA핀봇(`qa`): **PC 1440×900 페이지 뷰 클릭·키보드 매트릭스**([key_navigation.md](_doc_arch/key_navigation.md)) 회귀 + 모바일 `z_test/ego-mobile/run.sh aTest aTest-all` 재측정(흔들리는 L1 포함) → 모바일·PC 나란히 둔 표로 `_doc_work/report/iphone-tap-nav_qa-stage2_report.md`. 결함이 나오면 고치지 말고 목록만
     - 외부자문핀봇(`advisor`, 도구 `codex-arch-reviewer`): [key_navigation.md](_doc_arch/key_navigation.md) ↔ 구현(`lib/html-builder.js` 스와이프 IIFE·`scrollLayout`·T14 «미설계» 기록) drift 를 **터치 관점**으로 대조 → `_doc_work/report/` 리포트. 설계 문서 대조만, 코드 수정 없음
     - 두 배분이 닫히면 팀장이 결과 보고서 `_doc_work/report/issue415-result_report.md` 를 종합하고 developer 에게 종결(`/issue-closer`)을 배분한다
+    - ✅ **외부자문 완료 (2026-10-02, `fbot-advisor-issue415`)** — [iphone-tap-nav_advisor-arch_report.md](_doc_work/report/iphone-tap-nav_advisor-arch_report.md) (엔진: codex 일반 drift + Claude 터치 대조). 터치 관점 high 0 · medium 4 / 일반 high 1(101행 PgUp 이 `agenda_enabled:false` 에서 틀림). key_navigation.md 미반영: 스크롤 뷰 세로 스와이프 예외(28·143·197행)·T14 «미설계» 기록·표지 전면 탭 매트릭스 · 낡은 마커(221행). 문서 수정은 하지 않음 — 반영은 별도 판단
 
 # 📕 중요
 
