@@ -27,6 +27,8 @@
 # 🌱 이슈후보
 
 
+1. key_navigation.md ↔ 구현 drift 3건(Issue415 외부자문, 터치 무관 기존분) — ⓐ ⇞ PgUp 이 `agenda_enabled:false` 에서 `index.html` 로 가는데 문서 표는 «어디서든 agenda.html» ⓑ «Chapter leaf ↓ fall-through 미구현» 낡은 마커(구현은 Issue93 이후 완료) 정리 ⓒ H1 anchor 식별이 `_toc`/`_cards` 혼용(K10·페이지 계층 절) — 호환 표기 통일
+1. single 모드 Agenda → 의 도착지가 문서와 다르다(Issue415 종결 점검 ②) — 문서 표는 → = «첫 본문 슬라이드»·↓ = «첫 H1 anchor» 로 가르지만 구현은 → ↓ Space 모두 `firstHrefFromToc` 하나(= 첫 H1 anchor `#/2`). 문서를 구현에 맞출지(→ = ↓) 구현을 문서에 맞출지 판정 필요
 1. single mode 의 H1 을 원고로 되찾기 — chapter mode 는 챕터 TOC 장 제목에서 되찾았으나(Issue388) single mode 는 H1 만 있던 장이 pptx 에 흔적을 남기지 않아 불가. 정방향이 신호(lane S·docProps)만 남기면 되고 **deck 은 변하지 않는다**(되살린 `# H1` 을 재빌드하면 `cards_placeholder: false` 가 다시 지운다). 닫으면 `fidelity.yml h1_chapter` 를 `lossy` 로 올릴 수 있다
 1. `m2Slide_chapter_mode` 의 `bullet_nesting` ±4 — m2slide(2칸=1레벨) ↔ pandoc(CommonMark) 해석차. **왕복 문제이기 전에 HTML·pptx 산출물 불일치**다(`fidelity.yml` caveat 에 🚧 로 있음)
 1. htmlart 캔버스 종횡비 정렬 — `arrow` 외 나머지(funnel·venn·bracket·block·hexagon·step·numbered·balance 는 가로를, timeline·chevron·process·hierarchy·workflow 는 세로를 버린다). 원인은 Issue390 과 같다 — 그 이슈가 «세로 반지름을 고정하고 가로를 목표 비율에서 역산한다» 는 해법과 M 스윕 검증 절차를 남겼으니([types.yml](data/htmlart/types.yml) `arrow.canvas_note`) 거기서 시작한다. 다만 타입마다 배치 재설계가 필요하다
