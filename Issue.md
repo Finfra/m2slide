@@ -116,6 +116,10 @@
     - ⚠️ 실기기 결함 수정이 resize 핸들러·스크롤 뷰를 건드리므로 **PC 회귀 위험이 가장 크다** — patch 마다 두 환경 모두 재검증. 결과 보고서는 모바일·PC 를 나란히 둔 표로
 * 구현 명세:
     - 완료 조건: 아이폰 에뮬에서 탭만으로 전 내비게이션 통과 · **PC 에서 클릭·키보드 내비게이션 무회귀** · **위 실기기 결함(리프레쉬 후 스크롤 불가) 해소** · `aTest`·`aTest-all` 초록 · 결과 보고서 · 외부*핀봇 2종 각 1회 이상 배분·완료 기록(원장)
+* 🎯 **잔여 배분 지시 (2026-10-02, 팀장 `fbot-lead-m2slide` — 배분 `fbotdisp-1790943101-0e633763`)** — 외부컨설턴트(contractor)는 A1 로 완료. 남은 3건을 아래처럼 나눈다:
+    - QA핀봇(`qa`): **PC 1440×900 페이지 뷰 클릭·키보드 매트릭스**([key_navigation.md](_doc_arch/key_navigation.md)) 회귀 + 모바일 `z_test/ego-mobile/run.sh aTest aTest-all` 재측정(흔들리는 L1 포함) → 모바일·PC 나란히 둔 표로 `_doc_work/report/iphone-tap-nav_qa-stage2_report.md`. 결함이 나오면 고치지 말고 목록만
+    - 외부자문핀봇(`advisor`, 도구 `codex-arch-reviewer`): [key_navigation.md](_doc_arch/key_navigation.md) ↔ 구현(`lib/html-builder.js` 스와이프 IIFE·`scrollLayout`·T14 «미설계» 기록) drift 를 **터치 관점**으로 대조 → `_doc_work/report/` 리포트. 설계 문서 대조만, 코드 수정 없음
+    - 두 배분이 닫히면 팀장이 결과 보고서 `_doc_work/report/issue415-result_report.md` 를 종합하고 developer 에게 종결(`/issue-closer`)을 배분한다
 
 # 📕 중요
 
@@ -166,6 +170,7 @@
     - 짝 존재 판정의 기준 경로(원고 쪽 vs 빌드 `img/` 복사본)를 정한다 — `img/` 이중 복사([decisions.md](_doc_arch/decisions.md) "`img/` 이중 복사를 유지한다")라 기준이 둘이다
     - 완료 시 prj7 에 이슈 번호·커밋 해시 통지 → prj7 `tdd/playlist.md` #10 `annot-pair-pickup`(⏸️) E2E 는 prj7 이 쓴다(«조합» 검증이라 prj7 소관). prj42 는 단위 테스트까지
     - 범위 밖: `img-annotate` 호출·자동 주석 생성 · prj3 `ppt-check` `check-annot-pair`(WARN) 발의
+    - **팀장 결정 2026-10-02 (L) — 토큰 충돌 종결**: `{raw}` 는 prj7 규약대로 **이미지 원본 강제**에 쓴다(prj7 반송 없음). 근거: prj42 의 Issue419 `{raw}` 는 구현 0·보류 상태의 주석 속 «류» 표기일 뿐이고, 문법 위치도 다르다(이미지 `![](..)` 직후 접미 vs 표지 frontmatter 값). [html-builder.js](lib/html-builder.js) 17행·[cover-meta-escape.test.js](lib/__tests__/cover-meta-escape.test.js) 9행 주석은 «raw HTML 옵트인(토큰 미정·보류)» 으로 고쳐 혼동을 없앤다 — Issue419 후속이 열리면 다른 토큰을 고른다. 착수 근거: 배분 `fbotdisp-1790943101-0e633763`
 
 # 📗 선택
 
