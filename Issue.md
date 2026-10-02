@@ -129,6 +129,7 @@
         - ① [key_navigation.md](_doc_arch/key_navigation.md) 에 위 «범위 안» drift 3건 반영(설계 문서만, 코드 수정 없음)
         - ② QA 미확인 1건 — single 모드 Agenda → 가 도달하는 `#/2` 가 첫 본문 슬라이드인지 인덱스 대조 후 결과 1줄(불일치면 종결 말고 보고)
         - ③ 위 «범위 밖» drift 3건을 `🌱 이슈후보` 에 등록
+    - 🔶 **종결 배분 진행 (2026-10-02, `fbot-developer-issue430`)** — ① ✅ [key_navigation.md](_doc_arch/key_navigation.md) 에 «범위 안» 3건 반영(스크롤 뷰 세로 swipe 예외·`scrollLayout` · 표지 전면 탭 · T14 미설계 — «터치(모바일) 동작» 절 신설, `_doc_arch` 는 gitignore 라 로컬 전용) · ③ ✅ «범위 밖» 3건을 `🌱 이슈후보` 1건으로 등록 · ② ⚠️ **불일치** — single Agenda → 는 `#/2` 로 가며 `index.html` 의 `#/2`(DOM 2번째) 는 **첫 본문이 아니라 첫 H1 anchor**(`data-heading-level="1"`, "1. 텍스트 레이아웃"). 배분 지시대로 **종결하지 않고 보고** — 이슈후보 2번으로 판정 요청 등록
 
 # 📕 중요
 
