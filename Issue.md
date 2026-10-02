@@ -132,6 +132,7 @@
         - ② QA 미확인 1건 — single 모드 Agenda → 가 도달하는 `#/2` 가 첫 본문 슬라이드인지 인덱스 대조 후 결과 1줄(불일치면 종결 말고 보고)
         - ③ 위 «범위 밖» drift 3건을 `🌱 이슈후보` 에 등록
     - 🔶 **종결 배분 진행 (2026-10-02, `fbot-developer-issue430`)** — ① ✅ [key_navigation.md](_doc_arch/key_navigation.md) 에 «범위 안» 3건 반영(스크롤 뷰 세로 swipe 예외·`scrollLayout` · 표지 전면 탭 · T14 미설계 — «터치(모바일) 동작» 절 신설, `_doc_arch` 는 gitignore 라 로컬 전용) · ③ ✅ «범위 밖» 3건을 `🌱 이슈후보` 1건으로 등록 · ② ⚠️ **불일치** — single Agenda → 는 `#/2` 로 가며 `index.html` 의 `#/2`(DOM 2번째) 는 **첫 본문이 아니라 첫 H1 anchor**(`data-heading-level="1"`, "1. 텍스트 레이아웃"). 배분 지시대로 **종결하지 않고 보고** — 이슈후보 2번으로 판정 요청 등록
+    - 🎯 **② 판정 (2026-10-02, 팀장 L `fbotev-1790944138-2ebd6fc1`) — 종결 차단 아님**: `firstHrefFromToc` 는 `b890464e`(2026-05-02) 이후 무변경이고 이 이슈의 커밋 `0a4369e`·`cf74c53` 은 그 경로를 건드리지 않았다 → 회귀가 아닌 **기존 drift**. 이슈후보 2번으로 분리 유지(문서↔구현 어느 쪽을 고칠지는 그 이슈에서 판정). 완료 조건은 QA 2단계(`3136176`)로 충족 → developer 는 `/issue-closer` 로 종결(`issue-tx commit --issues 415` 경로 지정만, 타 세션 미커밋분 혼입 금지). 재배분 `fbotdisp-1790944182-8edc1313`
 
 # 📕 중요
 
