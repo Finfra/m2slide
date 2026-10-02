@@ -348,8 +348,8 @@
     - `theme/THIRD-PARTY-NOTICES.md` 신설 — 실측(2026-09-27) 외부 폰트·제3자 이미지 없음 → `None` 한 줄 + 마스코트(finfraPuffer·Cat·Butterfly)가 Finfra 원작임을 1줄
     - `TRADEMARK.md`·`COMMERCIAL.md`·`NOTICE` → v1.2 (m2slide 는 배포본 약관이 없으므로 COMMERCIAL 의 DISTRIBUTION-TERMS 행과 NOTICE 의 Official Build Components 구절은 뺀다)
     - ⚠️ 다른 세션이 이 repo 에서 작업 중(작업트리 dirty 120) — 자기 파일만 `git add`, `-A` 금지
-    - 근거: 템플릿 `/Users/nowage/_git/___architect/data/template/license/`(v1.2, prj6 `3195f25`) · 검토 처분표 `/Users/nowage/_git/___architect/_doc_work/report/license-hook-review_issue17_report.md` §반영 결과 · 정본 `/Users/nowage/_git/___architect/_doc_arch/license-profiles.md` §3-2·§5 · §3-3
-    - **한국어 테마 라이선스 추가** (prj6 템플릿 `/Users/nowage/_git/___architect/data/template/license/THEME-LICENSE_ko.md`): `theme/LICENSE_ko.md` 를 영문 `theme/LICENSE.md` v1.2 와 **같은 커밋**으로 — 테마 §6 이 한국 거주 개인에게 동등 효력을 약속한다. `.gitignore` 의 `!/theme/LICENSE.md` 옆에 `!/theme/LICENSE_ko.md` 도 추가해야 추적된다
+    - 근거: 템플릿 `/Users/nowage/_git/___oracle/data/template/license/`(v1.2, prj6 `3195f25`) · 검토 처분표 `/Users/nowage/_git/___oracle/_doc_work/report/license-hook-review_issue17_report.md` §반영 결과 · 정본 `/Users/nowage/_git/___oracle/_doc_arch/license-profiles.md` §3-2·§5 · §3-3
+    - **한국어 테마 라이선스 추가** (prj6 템플릿 `/Users/nowage/_git/___oracle/data/template/license/THEME-LICENSE_ko.md`): `theme/LICENSE_ko.md` 를 영문 `theme/LICENSE.md` v1.2 와 **같은 커밋**으로 — 테마 §6 이 한국 거주 개인에게 동등 효력을 약속한다. `.gitignore` 의 `!/theme/LICENSE.md` 옆에 `!/theme/LICENSE_ko.md` 도 추가해야 추적된다
 * 구현 명세:
     - 검증: `theme/LICENSE.md` `Version 1.2` · `./m2slide.sh --lint-license` 통과 · 빌드 산출물 첫/끝 장 뱃지 그대로 · `grep -c '{{'` 0
     - 금지: `git push` · npm publish · `Finfra/homebrew-tap` 수정 · 기존 태그 변경 · 템플릿 frontmatter·`📄 템플릿` 블록 복사
@@ -405,7 +405,7 @@
     - 뱃지 자동 삽입·`license_attribution: false` 경고 코드 유지. 경고 문구 근거만 "CC BY 4.0 위반 소지" → "테마 라이선스 조건 이탈"(코드 + `_doc_arch/license-attribution.md` 동시 — 2원 구조)
     - README(en·kr) 라이선스 절: 코드 Apache-2.0 / `theme/` Finfra Theme License 표 · CHANGELOG 항목 · "<0.8.0 MIT, 0.8.0~이번 커밋 이전 CC BY 4.0 이중" 주석
     - ⚠️ 다른 세션이 이 repo 에서 작업 중(작업트리 dirty) — 자기 파일만 `git add`, `-A` 금지
-    - 정본 `/Users/nowage/_git/___architect/_doc_arch/license-profiles.md` §4 row 42 · 템플릿 `/Users/nowage/_git/___architect/data/template/license/README.md`(자리표 값 표 포함 — `{{N}}`=250 · `{{LICENSOR}}`=`Finfra Co., Ltd. (https://finfra.kr)` · `{{CONTACT}}`=finfra@gmail.com)
+    - 정본 `/Users/nowage/_git/___oracle/_doc_arch/license-profiles.md` §4 row 42 · 템플릿 `/Users/nowage/_git/___oracle/data/template/license/README.md`(자리표 값 표 포함 — `{{N}}`=250 · `{{LICENSOR}}`=`Finfra Co., Ltd. (https://finfra.kr)` · `{{CONTACT}}`=finfra@gmail.com)
 * 구현 명세:
     - 검증: 파일 5종 + `theme/LICENSE.md` 존재 · `./m2slide.sh --lint-license` 통과 · 기존 테스트 green · 빌드 산출물 첫/끝 장 뱃지 그대로
     - 금지: `git push`(사용자가 push) · npm publish · 기존 릴리스 태그 변경
@@ -2181,14 +2181,14 @@
 * 상세:
     - [CLAUDE.md](CLAUDE.md) frontmatter 에 **L1 은 이미 기재됨**(prj1#Issue472_3 팬아웃). 본 이슈는 그 위의 **L2 불변 조항 문서**다
     - 한 줄 정체성: 마크다운 → 웹 슬라이드 변환기
-    - 형식은 prj1 `fpm-identity.md` → prj6 `architect-identity.md` → prj5 `common-identity.md` 로 **세 번 검증된 것**을 준용한다
+    - 형식은 prj1 `fpm-identity.md` → prj6 `oracle-identity.md` → prj5 `common-identity.md` 로 **세 번 검증된 것**을 준용한다
 * 구현 명세:
     - `_doc_arch/m2slide-identity.md` 신설. 절 구성: 개요(왜 필요해졌나 — 구체 사건) / 무엇인가(한 줄 + 축) / 무엇이 아닌가(표) / 불변 조항(번호 고정) / 현행 준수 실측 / 미해결
     - **조항은 *"지키면 좋은 것"* 이 아니라 *"어기면 그 기능이 이 제품의 일부가 아닌 것"* 으로 쓴다.** 기능 목록을 나열하는 문서가 아니다
     - 이 프로젝트에서 다룰 후보: 원고가 SSOT 이고 슬라이드가 생성물이라는 경계 · 외부 의존 0 원칙
     - 재료: `_doc_base/promotion_0.initial.md`(있으면 포지셔닝·타깃) · 기존 `_doc_arch/` 설계 문서 · 실제로 혼동이 일어났던 이슈
     - ⚠️ 근거 없는 조항을 발명하지 말 것 — **실제로 헷갈렸던 사건**이 있는 것부터 적는다. 없으면 조항 1개로 시작해도 된다
-    - 스키마·형식 정본: prj6 [project-identity-scheme.md](~/_git/___architect/_doc_arch/project-identity-scheme.md)
+    - 스키마·형식 정본: prj6 [project-identity-scheme.md](~/_git/___oracle/_doc_arch/project-identity-scheme.md)
 * 결과:
     - `_doc_arch/m2slide-identity.md` 신설 (98줄). 절 구성은 명세대로 — 개요(구체 사건 3건) / 무엇인가 / 무엇이 아닌가(표 5행) / 불변 조항 4개 / 현행 준수 실측 / 미해결 3건
     - **조항은 실제로 헷갈렸던 사건이 있는 것만 썼다** — ① 원고 SSOT(산출물 직접 수정이 룰 예외 조항으로 존재) ② 파일 하나 배포(dev-server 도입이 `file-deployment-rules` 신설을 불렀다) ③ 외부 의존 0(Issue339 lane M 이 새 렌더러 대신 pandoc 재사용을 택한 근거) ④ 파생 형식이 웹을 좁히지 않음(Issue339 에서 컴포넌트를 웹에서 빼지 않고 pptx 에 표식만 남긴 판정)
