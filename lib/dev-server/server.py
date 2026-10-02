@@ -3,7 +3,8 @@
 
 localhost-only static HTTP server for m2slide build artifacts.
 Document root = m2slide project root (passed via --root).
-Bound to 127.0.0.1 only.
+Bound to 127.0.0.1 only. tailnet 은 `tailscale serve` 프록시 경유 — 원격(XFF 기준)은
+GET·HEAD 만, POST 는 이 머신 안에서만 (prj3#Issue848).
 
 Short URL routing (Issue236.5~12 · Issue248):
   GET /p/<project>/s/<chap>/<slide>            → solo design view (single section)
@@ -27,6 +28,7 @@ SSOT: lib/m2slide/_doc_arch/dev-server.md
 
 import argparse
 import datetime
+import ipaddress
 import json
 import os
 import re
@@ -186,10 +188,73 @@ def wrap_text_html(file_path: str, n: int, total: int, section_html: str,
     )
 
 
+# ---------- remote access gate (prj3#Issue848) ----------
+# tailnet 접근은 `tailscale serve` 프록시(→ 127.0.0.1:9877)로 연다 — dev-server.md
+# «bind 주소와 tailnet 접근». 프록시를 거치면 peer 가 늘 127.0.0.1 이라 쓰기 엔드포인트가
+# tailnet 전체에 열려 있었다. 프록시가 붙이는 X-Forwarded-For 로 실제 클라이언트를 가려
+# 원격은 허용 대역의 읽기(GET·HEAD)만 받는다. POST 는 이 머신 안에서만.
+
+DEFAULT_ALLOW = '100.64.0.0/10'   # Tailscale CGNAT 대역 = tailnet
+_REMOTE_METHODS = ('GET', 'HEAD')
+
+
+def _is_loopback(addr):
+    try:
+        ip = ipaddress.ip_address(addr)
+    except ValueError:
+        return False
+    if getattr(ip, 'ipv4_mapped', None):
+        ip = ip.ipv4_mapped
+    return ip.is_loopback
+
+
+def effective_client_ip(peer_ip, xff):
+    """loopback peer(= 로컬 프록시)의 X-Forwarded-For 첫 주소만 믿는다. 원격 peer 의 XFF 는 위조 가능."""
+    if xff and xff.strip() and _is_loopback(peer_ip):
+        return xff.split(',')[0].strip()
+    return peer_ip
+
+
+def parse_allow_nets(spec):
+    nets = []
+    for tok in (spec or '').split(','):
+        tok = tok.strip()
+        if tok:
+            nets.append(ipaddress.ip_network(tok, strict=False))
+    return nets
+
+
+def client_allowed(client_ip, method, allow_nets):
+    """loopback 은 전부 허용. 그 밖은 허용 대역 + 읽기 메서드만."""
+    try:
+        ip = ipaddress.ip_address(client_ip)
+    except ValueError:
+        return False
+    if getattr(ip, 'ipv4_mapped', None):
+        ip = ip.ipv4_mapped
+    if ip.is_loopback:
+        return True
+    if method not in _REMOTE_METHODS:
+        return False
+    return any(ip in n for n in allow_nets)
+
+
 # ---------- HTTP handler ----------
 
 class DevHandler(SimpleHTTPRequestHandler):
     """Short-form `/p/<P>/...` routing + build-artifact proxy (Issue236)."""
+
+    ALLOW_NETS = parse_allow_nets(DEFAULT_ALLOW)   # main() 이 --allow 로 덮는다
+
+    def parse_request(self):
+        # 모든 메서드 공통 게이트 — do_GET/do_POST 에 닿기 전에 거른다 (prj3#Issue848)
+        if not super().parse_request():
+            return False
+        client = effective_client_ip(self.client_address[0], self.headers.get('X-Forwarded-For'))
+        if not client_allowed(client, self.command, self.ALLOW_NETS):
+            self.send_error(403, 'remote access is read-only (GET/HEAD from allowed networks)')
+            return False
+        return True
 
     def log_message(self, format, *args):
         try:
@@ -2381,8 +2446,8 @@ class DevHandler(SimpleHTTPRequestHandler):
         (parity with prj1 hub 'Open settings file'). Touches the file first when
         missing, matching Save which creates _config.yml on first write. The
         project is whitelisted via _list_projects() and the path is fixed under
-        Projects/<P>/, so no arbitrary path is opened. Server binds 127.0.0.1
-        only, so no extra IP allowlist is needed."""
+        Projects/<P>/, so no arbitrary path is opened. POST from anywhere but
+        this machine (incl. tailscale serve proxy) is refused in parse_request (prj3#Issue848)."""
         if not os.path.isdir(self._project_root(project)):  # deck-aware (Issue290)
             self.send_error(404, f'project not found: {project}')
             return
@@ -2937,6 +3002,9 @@ def main():
     parser.add_argument("--root", required=True, help="document root (m2slide project root)")
     parser.add_argument("--port", type=int, default=9877, help="port (default 9877)")
     parser.add_argument("--bind", default="127.0.0.1", help="bind address (default 127.0.0.1)")
+    parser.add_argument("--allow", default=DEFAULT_ALLOW,
+                        help="non-loopback clients (incl. via tailscale serve X-Forwarded-For) allowed "
+                             "read-only GET/HEAD, comma CIDR list (default %s) — prj3#Issue848" % DEFAULT_ALLOW)
     args = parser.parse_args()
 
     root = os.path.abspath(args.root)
@@ -2945,6 +3013,7 @@ def main():
         sys.exit(1)
 
     os.chdir(root)
+    DevHandler.ALLOW_NETS = parse_allow_nets(args.allow)
     server = ThreadingHTTPServer((args.bind, args.port), DevHandler)
     sys.stderr.write("m2slide dev-server listening on http://%s:%d/ root=%s\n" % (
         args.bind, args.port, root))
