@@ -124,6 +124,11 @@
     - 🎯 **반영 범위 판정 (2026-10-02, 팀장 L 결정 `fbotev-1790943709-7a8d3083`, 배분 `fbotdisp-1790943265-43162259` 종결)**
         - 범위 안(종결 배분 때 developer 가 [key_navigation.md](_doc_arch/key_navigation.md) 에 함께 반영): 이 이슈가 만든 drift — 스크롤 뷰 세로 스와이프 예외(`0a4369e`, 28·143·197행) · 표지 전면 탭(Q2) 매트릭스 · T14 «미설계»(Q3 결정)
         - 범위 밖(별도 이슈후보 — 종결 때 등록): 기존 drift — 101행 PgUp 이 `agenda_enabled:false` 에서 `index.html` 로 감 · 221행 «Chapter leaf ↓ fall-through 미구현» 낡은 마커 · 145행·K10 `_toc`/`_cards` 혼용
+    - ✅ **QA 2단계 완료 (2026-10-02, `fbot-qa-issue415`, commit: `3136176`)** — 기능·계약·회귀 합격(0), 결함 0. 모바일 M1~M6·L1 전부 PASS([ego-mobile_20261002_211448.md](_doc_work/report/ego-mobile_20261002_211448.md)) · PC 1440×900 chapter·single 키 매트릭스 설계표 대비 불일치 0, 클릭·쓸기 유지([iphone-tap-nav_qa-stage2_report.md](_doc_work/report/iphone-tap-nav_qa-stage2_report.md)). 기록 축은 팀장이 배분 `fbotdisp-1790943262-f532c465` 원장 종결로 충족. 결과 보고서 2차 배분 절 갱신
+    - 🎯 **종결 배분 (팀장 → developer)** — 아래 3가지를 하고 `/issue-closer` 로 닫는다:
+        - ① [key_navigation.md](_doc_arch/key_navigation.md) 에 위 «범위 안» drift 3건 반영(설계 문서만, 코드 수정 없음)
+        - ② QA 미확인 1건 — single 모드 Agenda → 가 도달하는 `#/2` 가 첫 본문 슬라이드인지 인덱스 대조 후 결과 1줄(불일치면 종결 말고 보고)
+        - ③ 위 «범위 밖» drift 3건을 `🌱 이슈후보` 에 등록
 
 # 📕 중요
 
