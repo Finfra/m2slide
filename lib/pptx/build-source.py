@@ -110,7 +110,7 @@ SYMBOL = re.compile(r":fa-[\w-]+:")
 #   그 이미지만 절대화를 빠져나가고, pandoc 이 상대경로를 못 찾아 **덱 전체가 죽는다**
 #   (실측 2026-09-20: 48건 중 1건이 이 형태 → rc 99). 1단계 중첩까지 허용한다.
 MD_LABEL = r"(?:[^\[\]]|\[[^\[\]]*\])*"
-IMG = re.compile(r"(!\[" + MD_LABEL + r"\]\()([^)\s]+)(\s+\"[^\"]*\")?(\))")
+IMG = re.compile(r"(!\[" + MD_LABEL + r"\]\()([^)\s]+)(\s+\"[^\"]*\")?(\))(\{raw\})?")
 FENCE = re.compile(r"^[ \t]*```")
 HR = re.compile(r"^[ \t]*-{3,}[ \t]*$")
 H1 = re.compile(r"^#[ \t]+(.+?)[ \t]*$")
@@ -270,6 +270,18 @@ def split_slides(text):
     return blocks
 
 
+def _pick_annot_pair(path, srcdir, proj):
+    """Issue423: `X.png` 옆에 `X.annot.png` 가 있으면 그것을 쓴다(lib/image-pair.js 미러).
+    `.annot.svg`·이미 `.annot.png`·원격 URL 은 대상 아님. {raw} 는 호출부(abspath)가 걸러 이 함수에 오지 않는다."""
+    m = re.match(r"^(.*?)(?<!\.annot)\.png$", path, re.I)
+    if not m:
+        return path
+    paired = m.group(1) + ".annot.png"
+    if any(os.path.isfile(os.path.join(d, paired)) for d in (srcdir, proj)):
+        return paired
+    return path
+
+
 def resolve_image(path, srcdir, proj, stat):
     """m2slide 이미지 탐색 규칙대로 실물을 찾아 절대경로로 준다.
 
@@ -283,6 +295,7 @@ def resolve_image(path, srcdir, proj, stat):
     **조용히 빠지고** 있었다. 원고는 `markdown/` 에 있고 실물은 프로젝트 루트
     `img/` 에 있었기 때문이다(igpublish 발행 위치 = `publish: img/`).
     """
+    path = _pick_annot_pair(path, srcdir, proj)  # Issue423 — lib/image-pair.js 와 같은 규칙
     near = os.path.join(srcdir, path)           # ① 원고 옆
     if os.path.isfile(near):
         return os.path.normpath(near)
@@ -1052,10 +1065,16 @@ def clean(text, srcdir, proj, stat, chapter_title=None,
 
     # ⑦ 이미지 절대경로화 — 원고 위치가 바뀌므로 필수
     def abspath(m):
-        head, path, title, tail = m.groups()
+        head, path, title, tail, raw = m.groups()
         if path.startswith(("http://", "https://", "data:", "/")):
             return m.group(0)
         stat["img_abs"] += 1
+        if raw:                                  # Issue423 — {raw} 원본 강제: 짝 조회 생략, 토큰 제거
+            near = os.path.join(srcdir, path)
+            found = near if os.path.isfile(near) else os.path.join(proj, path)
+            if not os.path.isfile(found):
+                stat["img_missing"] += 1         # 조용히 지우지 않는다 — md2pptx 가 파일없음을 보고
+            return head + os.path.normpath(found if os.path.isfile(found) else near) + (title or "") + tail
         return head + resolve_image(path, srcdir, proj, stat) + (title or "") + tail
 
     text = IMG.sub(abspath, text)
