@@ -141,6 +141,7 @@
     - ⚠️ 착수 시점 작업트리에 `Projects/fPmIntro*/slide/*.html` 미커밋 변경이 있다(타 세션 추정) — mv 전에 출처 확인, 임의 폐기 금지
     - 완료 기준: 1~5 전부 + 완료 시 요청 `fbotreq-1790774421-e4a142c6` 발신 세션(prj42)에 해시 통지
     - **팀장 결정 2026-09-30 (L)**: `(!)` 는 오부착(상세·구현 명세 완비 — issue-detail 진입 조건 위반)이라 제거하고 정식 이슈로 착수. prj42a 수정·커밋은 Issue424 선례(prj42 세션이 prj42a 커밋)와 사용자 결정 ⓐⓑ 범위 안. mp4 finfra.kr 업로드(H)·push·main 반영은 멈추고 보고 — 출처 `fbotreq-1790774581-cf0db44d`
+* 진행 2026-10-02 (fbot-developer-issue428): 1~3·5 로컬분 완료 — prj42a 커밋 `790511f`(app 분류)·`a1dfdad`(fPmIntro)·`eb5a32d`(fPmIntro_en)·`5977cbf`(n3shIntro), prj42 `624a944`(추적 해제·--link·docs 카드 3장·sync 생성물). 검증: 3덱 빌드 rc0 · `--lint-deployment` 덱별 0건(검사 12·12·2개) · `/p/`·`/pd/` 200 · mp4 는 finfra.kr URL 참조라 업로드 불필요(H 해당 없음). **남은 것(H, 사용자 승인 대기)**: push 순서 m2slide-deck(ahead 5) → m2slide, main 반영, 새 GitHub 경로 200 확인 후 종결·`fbotreq-1790774421-e4a142c6` 통지. 슬라이드 html 미커밋 변경은 빌드 산출물이라 폐기 없이 prj42a 로 그대로 옮겨짐(`slide/` 는 prj42a gitignore)
 
 # 📗 선택
 
