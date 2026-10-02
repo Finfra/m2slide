@@ -142,7 +142,11 @@
     - 완료 기준: 1~5 전부 + 완료 시 요청 `fbotreq-1790774421-e4a142c6` 발신 세션(prj42)에 해시 통지
     - **팀장 결정 2026-09-30 (L)**: `(!)` 는 오부착(상세·구현 명세 완비 — issue-detail 진입 조건 위반)이라 제거하고 정식 이슈로 착수. prj42a 수정·커밋은 Issue424 선례(prj42 세션이 prj42a 커밋)와 사용자 결정 ⓐⓑ 범위 안. mp4 finfra.kr 업로드(H)·push·main 반영은 멈추고 보고 — 출처 `fbotreq-1790774581-cf0db44d`
 
-## Issue423: 이미지 해소 시 `X.annot.png` 짝 픽업 + 원본 강제 옵트아웃 — prj7 주석본 픽업 규약 구현 (등록: 2026-09-28)
+# 📗 선택
+
+# ✅ 완료
+
+## Issue423: 이미지 해소 시 `X.annot.png` 짝 픽업 + 원본 강제 옵트아웃 — prj7 주석본 픽업 규약 구현 (등록: 2026-09-28, 해결: 2026-10-02, commit: ff95e20) ✅
 * 목적: prj7 cg 가 캡처 주석본(`img-annotate`)을 만들어도 덱을 만드는 경로가 그 산출을 집지 않아 **안 쓰인다**. prj7 규약(사용자 확정 2026-09-24) «`X.png` 를 넣을 때 옆에 `X.annot.png` 가 있으면 그것을 쓴다» 의 구현 자리가 m2slide 이미지 해소다
 * 상세:
     - 출처: prj7#Issue23 발의 «prj42 m2slide 이미지 해소 + `{raw}`» → prj7#Issue43 ② 로 등록(기획핀봇 fbot-planner-issue43). 총괄핀봇 나래 전결 `fbotev-1790570660-4058710d` · prj3#Issue756 C 등급 — 타 repo 이슈 **등록**만
@@ -158,10 +162,9 @@
     - 완료 시 prj7 에 이슈 번호·커밋 해시 통지 → prj7 `tdd/playlist.md` #10 `annot-pair-pickup`(⏸️) E2E 는 prj7 이 쓴다(«조합» 검증이라 prj7 소관). prj42 는 단위 테스트까지
     - 범위 밖: `img-annotate` 호출·자동 주석 생성 · prj3 `ppt-check` `check-annot-pair`(WARN) 발의
     - **팀장 결정 2026-10-02 (L) — 토큰 충돌 종결**: `{raw}` 는 prj7 규약대로 **이미지 원본 강제**에 쓴다(prj7 반송 없음). 근거: prj42 의 Issue419 `{raw}` 는 구현 0·보류 상태의 주석 속 «류» 표기일 뿐이고, 문법 위치도 다르다(이미지 `![](..)` 직후 접미 vs 표지 frontmatter 값). [html-builder.js](lib/html-builder.js) 17행·[cover-meta-escape.test.js](lib/__tests__/cover-meta-escape.test.js) 9행 주석은 «raw HTML 옵트인(토큰 미정·보류)» 으로 고쳐 혼동을 없앤다 — Issue419 후속이 열리면 다른 토큰을 고른다. 착수 근거: 배분 `fbotdisp-1790943101-0e633763`
-
-# 📗 선택
-
-# ✅ 완료
+    - 구현(2026-10-02): [image-pair.js](lib/image-pair.js) `resolveImageUrl` 단일 판정 — markdown.js 단독 줄·인라인 · generate-epub.js 가 호출, pptx 는 build-source.py `_pick_annot_pair` 가 같은 규칙 미러(Python 이라 호출 불가). 존재 기준 = 원고 쪽 소스(프로젝트 루트·markdown/), `{raw}` 는 짝 조회 생략·토큰 제거. html-builder.js·cover-meta-escape.test.js 주석 정정 완료
+    - * TDD(종결): 해당 항목 · local — red(image-pair 모듈 부재로 10단언 실패) → green(`lib/__tests__/image-annot-pair.test.js` 10건, 전체 221 pass). pptx 미러는 `_pick_annot_pair` 수동 확인만(자동 테스트 없음)
+    - prj7 통지: 이슈 Issue423 · 커밋 ff95e20 — prj7 `tdd/playlist.md` #10 `annot-pair-pickup` E2E 는 prj7 소관
 
 ## Issue430: img-cartoon L2 정책이 개명 전 경로 `data/promo-cartoon/` 에 남아 읽히지 않는다 (등록: 2026-10-02, 해결: 2026-10-02, commit: 없음 — data/·_doc_arch/ 는 .gitignore 비추적) ✅
 * 목적: prj3#Issue703(2026-09-27)이 `promo-cartoon` → `img-cartoon` 으로 개명한 뒤 img-cartoon SKILL.md 는 호출 prj 의 **`data/img-cartoon/policy.yml`** 을 L2 로 읽는다. prj42 의 L2 는 옛 경로 `data/promo-cartoon/policy.yml` 에만 있어 **조용히 무시**된다 — `product: m2slide`·`killer_scene_source`·`output_dir` 대신 L1 기본값과 스킬 `assets/pilot/` 폴백으로 간다
