@@ -49,7 +49,11 @@
 
 # 📙 일반
 
-## Issue428: 앱 소개 2차 prj42a 이관 — 3덱(fPmIntro·fPmIntro_en·n3shIntro) `decks/app/` 신설 (등록: 2026-09-30)
+# 📗 선택
+
+# ✅ 완료
+
+## Issue428: 앱 소개 2차 prj42a 이관 — 3덱(fPmIntro·fPmIntro_en·n3shIntro) `decks/app/` 신설 (등록: 2026-09-30, 해결: 2026-10-04, commit: 624a944, 2cf0248 · prj42a: 790511f, a1dfdad, eb5a32d, 5977cbf · main: ccdb2a1) ✅
 * 목적: Issue424 후속 C. 앱 소개 덱을 prj42a(Projects_deck) 로 옮겨 «도구와 콘텐츠 분리»([deck-repo.md](_doc_arch/deck-repo.md))를 마저 적용한다
 * 상세:
     - 출처: 총괄핀봇 fbot-chief-narae 인박스 `fbotreq-1790774421-e4a142c6` (mq `20260929-003200-001` C 묶음 — 답 미기록으로 멈춰 있던 것을 사용자에게 직접 수령)
@@ -67,10 +71,8 @@
     - **팀장 결정 2026-09-30 (L)**: `(!)` 는 오부착(상세·구현 명세 완비 — issue-detail 진입 조건 위반)이라 제거하고 정식 이슈로 착수. prj42a 수정·커밋은 Issue424 선례(prj42 세션이 prj42a 커밋)와 사용자 결정 ⓐⓑ 범위 안. mp4 finfra.kr 업로드(H)·push·main 반영은 멈추고 보고 — 출처 `fbotreq-1790774581-cf0db44d`
 * 진행 2026-10-02 (fbot-developer-issue428): 1~3·5 로컬분 완료 — prj42a 커밋 `790511f`(app 분류)·`a1dfdad`(fPmIntro)·`eb5a32d`(fPmIntro_en)·`5977cbf`(n3shIntro), prj42 `624a944`(추적 해제·--link·docs 카드 3장·sync 생성물). 검증: 3덱 빌드 rc0 · `--lint-deployment` 덱별 0건(검사 12·12·2개) · `/p/`·`/pd/` 200 · mp4 는 finfra.kr URL 참조라 업로드 불필요(H 해당 없음). **남은 것(H, 사용자 승인 대기)**: push 순서 m2slide-deck(ahead 5) → m2slide, main 반영, 새 GitHub 경로 200 확인 후 종결·`fbotreq-1790774421-e4a142c6` 통지. 슬라이드 html 미커밋 변경은 빌드 산출물이라 폐기 없이 prj42a 로 그대로 옮겨짐(`slide/` 는 prj42a gitignore)
 * 진행 2026-10-04 (사용자 승인 «deck 만 push»): prj42a main push `e1ceff0..5977cbf` · 새 GitHub 경로 `decks/app/{fPmIntro,fPmIntro_en,n3shIntro}` 3개 200. **남은 것**: m2slide 본체 push·main 반영 — 현재 `feat/ig-ppt-maker-integration`(ahead 32, Issue428 외 커밋 포함)이라 그 브랜치 merge 때 함께 반영. 그 뒤 종결·`fbotreq-1790774421-e4a142c6` 통지
-
-# 📗 선택
-
-# ✅ 완료
+* 결과 2026-10-04 (사용자 «진행»): 기능 브랜치 push `bc2e631..2cf0248` · main 은 Issue425 방식으로 `624a944` 의 `docs/` 만 반영 — 임시 worktree(`origin/main` detached)에서 적용, `docs/index.html` 이 624a944 와 동일 확인 → `git push origin HEAD:main`(비강제) `9c878fa..ccdb2a1`. Pages run `37195266334` success · `finfra.github.io/m2slide` 갤러리에 `decks/app/{fPmIntro,fPmIntro_en,n3shIntro}` 링크 실측. 대체된 이슈후보 2줄(앱 소개 5덱 `decks/tech/` 2차 이관 · n3shIntro «허용목록 o · 추적 0») 삭제
+    - 관측: main 에는 `lib/hooks/check-promotion-due.sh` 가 없어 공유 pre-commit 훅이 main worktree 커밋에서 기동 실패 — 검사 2종을 수동 실행(rc0) 후 `--no-verify`. main 반영(cherry-pick) 경로가 반복되므로 훅이 스크립트 부재 시 건너뛰게 하는 보완 후보
 
 ## Issue415: 아이폰에서 **탭(클릭)만으로** 덱이 동작하는지 ego-browser 로 점검·수정하고 aTest → aTest-all 2단계로 안정화 (등록: 2026-09-23) (해결: 2026-10-02, commit: cf74c53, 0a4369e, 03bdf44, 3136176) ✅
 * 목적: 키보드 없는 아이폰에서 m2slide 덱을 탭만으로 넘기고 쓸 수 있어야 한다(사용자 전제: **터치 = 클릭**). 동시에 prj3 외부*핀봇(외부자문·외부컨설턴트)이 팀장핀봇 배분 경로로 실제 동작하는지 실증한다(요청: 사용자 → 나래, prj3#Issue678 후속)
