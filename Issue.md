@@ -35,11 +35,9 @@
 1. htmlart 고정 폰트 잔여 + 세로 넘침 — `centerLabel` 을 고정 폰트로 부르는 `venn`(28/18)·`hexagon`(25/17)·`pie`(20/15) 와 `balance` 가 세로로 넘친다. prj60 전수(2026-09-20, `z_test/htmlart-fo-audit.mjs`) venn 4건(+4~15px)·balance 10건(+6~23px). Issue391 과 같은 결함 계열 — fit 경로(`uniformTitleFs`)로 통일
 1. `::: part` 를 소비하지 않는 테마에서 그 블록이 **조용히 사라진다** — `theme/default` 의 `_chapter.html` 에 `{{part}}` 가 없어 원고에 쓴 5개가 HTML·pptx 양쪽에서 버려진다(aTest-all 실측). 슬롯 미소비를 저작 단계에서 경고할지
 1. 캡처 이미지 테두리가 `default`·`default_dark` 에는 **아예 없다** — `--m2-media-border` 도 `.reveal .media-container img` 규칙도 `default_lec` 에만 있다(2026-09-20 실측). Issue397 과 같은 결함 계열이나 성격이 갈린다: `default` 는 기존 덱 **전부**의 렌더가 바뀌어 회귀 범위가 다르고, `default_dark` 는 배경이 `#0c0e16` 이라 **검정 alpha 로는 성립하지 않아** 흰 alpha 로 다시 역산해야 한다(기준은 같은 WCAG 3:1)
-1. 앱 소개 5덱(fPmIntro·fPmIntro_en·n3shIntro·fSnippetCliIntro·fWarrangeCliIntro) prj42a `decks/tech/` 2차 이관 — Issue424_1 안정 후(사용자 결정 2026-09-28). fSnippet·fWarrange 는 publishing 빈값이라 **첫 공개(H:공개)** 확정 필요. fPmIntro 의 mp4 34MB 는 prj42a `.gitignore` `*.mp4` + finfra.kr 호스팅. docs 이전 링크 표시는 Issue424 규약 그대로
 1. LlmFlow(353장) prj42a 이관 — **보류**(사용자 결정 2026-09-28). publishing `x` 라 이관 = 첫 공개. 공개 결정이 먼저이며 그 전까지 원고는 git 미추적 상태로 남는다
 1. `Projects.md` publishing `o` 15개 vs `Projects/.gitignore` 허용목록 11개 불일치 — AgenticCoding·graphify·StellarEvolution·n3shIntro 가 빠져 원고가 git 미추적. 앞 3개는 Issue424_1 이관으로 해소되지만 `--sync-projects` 가 왜 어긋났는지(생성 로직 vs 미실행)는 남는다 (Issue424 에서 발견)
 1. `--lint-deployment` 가 강의 본문의 명령·경로 예시(`curl localhost:3000`·`/Users/...`)를 위반으로 잡는다 — AgenticCoding·LlmFlow·z_done 30줄. 자산 참조(`src`·`href`·`url(`)만 보도록 좁힐지 (Issue424 에서 발견)
-1. `Projects.md` publishing `o`·`Projects/.gitignore` 허용(`!/n3shIntro/`)인데 **원고 추적 파일 0개** — 허용목록만 맞고 `git add` 가 된 적이 없다(2026-09-29 `git ls-files Projects/n3shIntro` 0). 앱 소개 5덱 prj42a 2차 이관 때 해소 예정이나, `--sync-projects` 가 «허용 ↔ 실제 추적» 불일치를 보고하게 할지 (Issue425 에서 발견)
 1. [글로벌 SCAR] `~/.claude/sh/issue-tx.py` 가 서브 이슈 번호 `Issue424_1` 을 `4241` 로 읽어 `stage/commit --issues` 에 서브 블록을 싣지 못한다 — prj42 에서는 HEAD blob 변환 + 임시 인덱스로 우회. `~/.claude/Issue.md` 등록 후보 (Issue424 에서 발견)
 
 
