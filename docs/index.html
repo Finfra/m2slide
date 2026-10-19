@@ -46,6 +46,16 @@ html {
 .header .repo-link:hover {
   background: rgba(255, 255, 255, 0.18);
 }
+.header .repo-links {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.header .repo-links .repo-link {
+  margin-top: 0;
+}
 .container {
   max-width: 960px;
   margin: 40px auto;
@@ -173,7 +183,10 @@ a {
 <div class="header">
   <h1>m2slide</h1>
   <p>마크다운 기반 프레젠테이션 모음</p>
-  <a class="repo-link" href="https://github.com/Finfra/m2slide" target="_blank" rel="noopener">⭐ GitHub 저장소 · github.com/Finfra/m2slide</a>
+  <div class="repo-links">
+    <a class="repo-link" href="https://github.com/Finfra/m2slide" target="_blank" rel="noopener">⭐ GitHub 저장소 · github.com/Finfra/m2slide</a>
+    <a class="repo-link" href="https://finfra.github.io/m2slide-deck/" target="_blank" rel="noopener">📦 덱 갤러리 · finfra.github.io/m2slide-deck</a>
+  </div>
 </div>
 <div class="container">
   <section class="proj-section" id="section-m2">
@@ -243,6 +256,15 @@ a {
     </div>
     <div class="grid">
       <!-- PROJECT_ENTRIES_LEC_START -->
+      <div class="card-wrap" data-moved-to="m2slide-deck">
+        <a class="card" href="https://finfra.github.io/m2slide-deck/DesignRndAI/index.html" target="_blank" rel="noopener" data-project="DesignRndAI">
+          <h2>설계·R&amp;D 생성형 AI 활용 — 도면·기술문서 분석·지식화</h2>
+          <div class="project-id">DesignRndAI</div>
+          <span class="badge">프레젠테이션</span>
+          <span class="badge badge-pptx">m2slide-deck 사이트</span>
+        </a>
+        <a class="card-source" href="https://github.com/Finfra/m2slide-deck/tree/main/decks/agentic-ai/DesignRndAI" title="원고가 m2slide-deck 저장소에 있음"><span class="card-source-label">📦 원고 → m2slide-deck</span><span class="card-source-path">agentic-ai/DesignRndAI</span></a>
+      </div>
       <div class="card-wrap" data-moved-to="m2slide-deck">
         <a class="card" href="BasicKnowledgeForAI_small/index.html" data-project="BasicKnowledgeForAI_small">
           <h2>AI과정 부록 - 기초 지식편</h2>
